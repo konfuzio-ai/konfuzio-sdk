@@ -53,15 +53,15 @@ To use `konfuzio_sdk` on your machine you can install it via:
 
 #### Option 2
 
-If access to the SDK GitLab project is granted:
+Clone the project:
 
 * clone the project in your working directory
   
-  `git clone https://gitlab.com/konfuzio/konfuzio-python-sdk.git`
+  `git clone https://github.com/konfuzio-ai/Python-SDK.git`
 
 * go inside the project folder
   
-  `cd konfuzio-python-sdk`
+  `cd Python-SDK`
 
 * install it
   
@@ -203,7 +203,7 @@ The latest documentation can be accessed at https://konfuzio.gitlab.io/python-sd
 
 ## Contact
 
-Please add your questions or ideas in the [Issue Tracker](https://gitlab.com/konfuzio/konfuzio-python-sdk/-/issues).
+Please add your questions or ideas in the [Issue Tracker](https://github.com/konfuzio-ai/Python-SDK/issues).
 
 ## Contribute
 
