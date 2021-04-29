@@ -38,9 +38,9 @@ Section Class
 .. autoclass:: Section
    :members:
 
-SectionLabel Class
+Template Class
 ^^^^^^^^^^^^^^^^^^
-.. autoclass:: SectionLabel
+.. autoclass:: Template
    :members:
 
 Label Class

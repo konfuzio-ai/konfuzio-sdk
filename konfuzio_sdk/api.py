@@ -38,7 +38,7 @@ def get_auth_token(username, password):
     """
     Generate the authentication token for the user.
 
-    :return: Response
+    :return: The new generated token.
     """
     url = get_auth_token_url()
     user_credentials = {"username": username, "password": password}
@@ -167,7 +167,7 @@ def get_document_text(document_id, session=konfuzio_session()):
 
     :param document_id: ID of the file
     :param session: Session to connect to the server
-    :return: Text of the document.
+    :return: Document text.
     """
     url = get_document_api_details_url(document_id)
     r = retry_get(session, url)
@@ -225,7 +225,7 @@ def get_document_annotations(document_id, include_extractions=False, session=kon
 
 def get_document_sections(document_id, session=konfuzio_session()):
     """
-    Use the text-extraction server to retrieve sections, which are instances of the SectionLabel.
+    Use the text-extraction server to retrieve templates, which are instances of the Template Class.
 
     :param document_id: ID of the file
     :param session: Session to connect to the server
@@ -439,12 +439,12 @@ def download_file_konfuzio_api(document_id: int, ocr: bool = True, session=konfu
     """
     Download file from the Konfuzio server using the document id.
 
-    Django authentication is forms-based, whereas DRF uses BasicAuth.
+    Django authentication is form-based, whereas DRF uses BasicAuth.
 
     :param document_id: ID of the document
     :param ocr: Bool to get the ocr version of the document
     :param session: Session to connect to the server
-    :return: Downloaded file.
+    :return: The downloaded file.
     """
     if ocr:
         url = get_document_ocr_file_url(document_id)
