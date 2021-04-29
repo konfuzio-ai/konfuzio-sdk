@@ -50,7 +50,7 @@ class Section(Data):
         Create a section.
 
         :param id: ID of the section
-        :param document: Document were the section belongs
+        :param document: Document where the section belongs
         :param template: Template
         :param annotations: Annotations of the section
         """
@@ -238,14 +238,14 @@ class Annotation(Data):
         """
         Initialize the Annotation.
 
-        :param start_offset: Starting of the offset string (int)
+        :param start_offset: Start of the offset string (int)
         :param end_offset: Ending of the offset string (int)
         :param label: ID of the label or Label object
         :param is_correct: If the annotation is correct or not (bool)
         :param revised: If the annotation is revised or not (bool)
         :param id: ID of the annotation (int)
         :param accuracy: Accuracy of the annotation (float)
-        :param document: Document where to annotate
+        :param document: Document to annotate
         :param section: Section of the document where the label belongs
         :param template_text: Name of the template where the label belongs
         :param translated_string: Translated string
@@ -464,7 +464,7 @@ class Document(Data):
 
     def offset(self, start_offset: int, end_offset: int) -> List[Annotation]:
         """
-        Convert a offset to a list of annotations.
+        Convert an offset to a list of annotations.
 
         :param start_offset: Starting of the offset string (int)
         :param end_offset: Ending of the offset string (int)
@@ -567,7 +567,7 @@ class Document(Data):
 
     def get_file(self, update: bool = False):
         """
-        Get OCR version of original file.
+        Get OCR version of the original file.
 
         :param update: Update the downloaded file even if it is already available
         :return: Path to OCR file.
@@ -713,11 +713,11 @@ class Document(Data):
         """
         Get bbox information per character of file.
 
-        There's two ways to access it:
+        There are two ways to access it:
         - If the bbox attribute is set when creating the Document, it is returned immediately.
         - Otherwise, we open the file at bbox_file_path and return its content.
 
-        In the second case we do not store bbox as an attribute on Document because with many big
+        In the second case, we do not store bbox as an attribute on Document because with many big
         documents this quickly fills the available memory. So it is first written to a file by
         get_document_details and then retrieved from that file when accessing it.
 
@@ -741,7 +741,7 @@ class Document(Data):
         """
         Save Document online.
 
-        :return: true if new document was created
+        :return: true if the new document was created
         """
         new_document_added = False
         if not self.is_online:
@@ -764,7 +764,7 @@ class Document(Data):
         return self
 
     def delete(self):
-        """Delete all local information for document."""
+        """Delete all local information for the document."""
         shutil.rmtree(self.root)
 
 
@@ -785,7 +785,8 @@ class Project(Data):
 
         :param id: ID of the project
         :param offline: If to get the data from Konfuzio Host
-        :param data_root: Path to the folder with the data. If not specified used the project defined one.
+        :param data_root: Path to the folder with the data. If not specified uses the data_root defined in the project,
+        by default.
         """
         self.id = id
         self.templates: List[Template] = []
@@ -826,7 +827,7 @@ class Project(Data):
             document.sections = document_sections
 
     def make_paths(self):
-        """Create paths needed to store project."""
+        """Create paths needed to store the project."""
         # create folders if not available
         # Ensure self.data_root exists
         if not os.path.exists(self.data_root):
@@ -835,7 +836,7 @@ class Project(Data):
 
     def get(self, update=False):
         """
-        Access meta information of full project.
+        Access meta information of the project.
 
         :param update: Update the downloaded information even it is already available
         """
@@ -882,7 +883,7 @@ class Project(Data):
 
     def get_meta(self, update=False):
         """
-        Get list of all documents in the project and their information.
+        Get the list of all documents in the project and their information.
 
         :param update: Update the downloaded information even it is already available
         :return: Information of the documents in the project.
@@ -1001,7 +1002,7 @@ class Project(Data):
 
         Dataset status: training = 2
 
-        :param update: Bool to update the meta information from the project
+        :param update: Bool to update the meta-information from the project
         :return: training documents
         """
         document_list_cache = self.documents
@@ -1019,7 +1020,7 @@ class Project(Data):
 
         Dataset status: test = 3
 
-        :param update: Bool to update the meta information from the project
+        :param update: Bool to update the meta-information from the project
         :return: test documents
         """
         document_list_cache = self.test_documents
@@ -1068,7 +1069,7 @@ class Project(Data):
                 return template
 
     def clean_meta(self):
-        """Clean the meta information about the Project, Labels and Templates."""
+        """Clean the meta-information about the Project, Labels, and Templates."""
         if self.meta_file_path:
             os.remove(self.meta_file_path)
         assert not is_file(self.meta_file_path, raise_exception=False)
@@ -1088,7 +1089,7 @@ class Project(Data):
         self.templates: List[Template] = []
 
     def update(self):
-        """Update the project and all documents by downloading them from host - will not work offline."""
+        """Update the project and all documents by downloading them from the host. Note : It will not work offline."""
         # make sure you always update any changes to Labels, ProjectMeta
         self.existing_meta_data = self.meta_data  # get meta data of what currently exists locally
         self.clean_meta()

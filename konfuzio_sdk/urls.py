@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 def get_auth_token_url() -> str:
     """
-    Generate url that creates an authentication token for the user.
+    Generate URL that creates an authentication token for the user.
 
     :return: URL to generate the token.
     """
@@ -18,7 +18,7 @@ def get_auth_token_url() -> str:
 
 def get_project_list_url() -> str:
     """
-    Generate url to load all the projects available for the user.
+    Generate URL to load all the projects available for the user.
 
     :return: URL to get all the projects for the user.
     """
@@ -27,7 +27,7 @@ def get_project_list_url() -> str:
 
 def create_new_project_url() -> str:
     """
-    Generate url to create a new project.
+    Generate URL to create a new project.
 
     :return: URL to create a new project.
     """
@@ -36,7 +36,7 @@ def create_new_project_url() -> str:
 
 def get_documents_meta_url() -> str:
     """
-    Generate url to load meta information about documents.
+    Generate URL to load meta information about documents.
 
     :return: URL to get all the documents details.
     """
@@ -54,7 +54,7 @@ def get_upload_document_url() -> str:
 
 def get_create_label_url() -> str:
     """
-    Generate url to create a label.
+    Generate URL to create a label.
 
     :return: URL to create a label.
     """
@@ -63,17 +63,17 @@ def get_create_label_url() -> str:
 
 def get_document_ocr_file_url(document_id: int) -> str:
     """
-    Generate url to access OCR version of document.
+    Generate URL to access OCR version of document.
 
     :param document_id: ID of the document as integer
-    :return: URL to get ocr document file.
+    :return: URL to get OCR document file.
     """
     return f'{KONFUZIO_HOST}/doc/show/{document_id}/'
 
 
 def get_document_original_file_url(document_id: int) -> str:
     """
-    Generate URL to access original version of document.
+    Generate URL to access original version of the document.
 
     :param document_id: ID of the document as integer
     :return: URL to get the original document
@@ -109,7 +109,7 @@ def get_project_url(project_id=None) -> str:
 
 def post_project_api_document_annotations_url(document_id: int) -> str:
     """
-    Add annotations of a document.
+    Add new annotations to a document.
 
     :param document_id: ID of the document as integer
     :return: URL for adding annotations to a document
@@ -119,11 +119,11 @@ def post_project_api_document_annotations_url(document_id: int) -> str:
 
 def delete_project_api_document_annotations_url(document_id: int, annotation_id: int) -> str:
     """
-    Delete annotations of a document.
+    Delete the annotation of a document.
 
     :param document_id: ID of the document as integer
     :param annotation_id: ID of the annotation as integer
-    :return: URL to delete annotations of a document
+    :return: URL to delete annotation of a document
     """
     return f'{KONFUZIO_HOST}/api/projects/{KONFUZIO_PROJECT_ID}/docs/{document_id}/' f'annotations/{annotation_id}/'
 

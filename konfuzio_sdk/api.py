@@ -77,7 +77,7 @@ def get_project_name_from_id(project_id: int) -> str:
     Get the project name given the project_id.
 
     :param project_id: ID of the project
-    :return: Name of the project in json format.
+    :return: Name of the project in JSON format.
     """
     session = konfuzio_session()
     url = get_project_url(project_id)
@@ -87,7 +87,7 @@ def get_project_name_from_id(project_id: int) -> str:
 
 def retry_get(session, url):
     """
-    Workaround to avoid exceptions in case server does not respond.
+    Workaround to avoid exceptions in case the server does not respond.
 
     :param session: Working session
     :param url: Url of the endpoint
@@ -117,10 +117,10 @@ def retry_get(session, url):
 
 def get_csrf(session):
     """
-    Get new csrf from HOST.
+    Get new CSRF from the host.
 
     :param session: Working session
-    :return: New csrf token.
+    :return: New CSRF token.
     """
     login = session.get(KONFUZIO_HOST)
     csrf_token = login.cookies['csrftoken']
@@ -143,7 +143,7 @@ def get_document_details(document_id, session=konfuzio_session()):
     Use the text-extraction server to retrieve the data from a document.
 
     :param document_id: ID of the document
-    :param session: Session to connect to server
+    :param session: Session to connect to the server
     :return: Data of the document.
     """
     url = get_document_api_details_url(document_id, include_extractions=False, extra_fields='bbox,hocr')
@@ -166,7 +166,7 @@ def get_document_text(document_id, session=konfuzio_session()):
     Use the text-extraction server to retrieve the text found in the document.
 
     :param document_id: ID of the file
-    :param session: Session to connect to server
+    :param session: Session to connect to the server
     :return: Text of the document.
     """
     url = get_document_api_details_url(document_id)
@@ -182,11 +182,11 @@ def get_document_text(document_id, session=konfuzio_session()):
 
 def get_document_hocr(document_id, session=konfuzio_session()):
     """
-    Use the text-extraction server to retrieve the hocr data.
+    Use the text-extraction server to retrieve the hOCR data.
 
     :param document_id: ID of the file
-    :param session: Session to connect to server
-    :return: Hocr data of the document.
+    :param session: Session to connect to the server
+    :return: hOCR data of the document.
     """
     url = get_document_api_details_url(document_id, extra_fields='bbox,hocr')
     r = retry_get(session, url)
@@ -205,7 +205,7 @@ def get_document_annotations(document_id, include_extractions=False, session=kon
 
     :param document_id: ID of the file
     :param include_extractions: Bool to include extractions
-    :param session: Session to connect to server
+    :param session: Session to connect to the server
     :return: Sorted annotations.
     """
     url = get_document_api_details_url(document_id, include_extractions=include_extractions)
@@ -228,7 +228,7 @@ def get_document_sections(document_id, session=konfuzio_session()):
     Use the text-extraction server to retrieve sections, which are instances of the SectionLabel.
 
     :param document_id: ID of the file
-    :param session: Session to connect to server
+    :param session: Session to connect to the server
     :return: Sorted annotations.
     """
     url = get_document_api_details_url(document_id)
@@ -247,7 +247,7 @@ def post_document_bulk_annotation(document_id: int, annotation_list, session=kon
 
     :param document_id: ID of the file
     :param annotation_list: List of annotations
-    :param session: Session to connect to server
+    :param session: Session to connect to the server
     :return: Response status.
     """
     url = post_project_api_document_annotations_url(document_id)
@@ -276,8 +276,8 @@ def post_document_annotation(
     :param end_offset: End offset of the annotation
     :param label_id: ID of the label.
     :param accuracy: Accuracy of the annotation
-    :param revised: If the annotations is revised or not (bool)
-    :param session: Session to connect to server
+    :param revised: If the annotations are revised or not (bool)
+    :param session: Session to connect to the server
     :return: Response status.
     """
     url = post_project_api_document_annotations_url(document_id)
@@ -304,7 +304,7 @@ def delete_document_annotation(document_id: int, annotation_id: int, session=kon
 
     :param document_id: ID of the document
     :param annotation_id: ID of the annotation
-    :param session: Session to connect to server.
+    :param session: Session to connect to the server.
     :return: Response status.
     """
     url = delete_project_api_document_annotations_url(document_id, annotation_id)
@@ -323,7 +323,7 @@ def get_meta_of_files(session=konfuzio_session()) -> List[dict]:
     TEST = 3
     LOW_OCR_QUALITY = 4
 
-    :param session: Session to connect to server
+    :param session: Session to connect to the server
     :return: Sorted documents names in the format {id: 'pdf_name'}.
     """
     url = get_documents_meta_url()
@@ -351,7 +351,7 @@ def get_project_labels(session=konfuzio_session()) -> List[dict]:
     """
     Get Labels available in project.
 
-    :param session: Session to connect to server
+    :param session: Session to connect to the server
     :return: Sorted labels.
     """
     url = get_project_url()
@@ -366,7 +366,7 @@ def create_label_in_default_template(project_id: int, label_name: str, session=k
 
     :param project_id: Project ID where to create the label
     :param label_name: Name for the label
-    :param session: Session to connect to server
+    :param session: Session to connect to the server
     :return: Label ID in the Konfuzio APP.
     """
     url = get_create_label_url()
@@ -387,7 +387,7 @@ def get_project_templates(session=konfuzio_session()) -> List[dict]:
     """
     Get templates available in project.
 
-    :param session: Session to connect to server
+    :param session: Session to connect to the server
     :return: Sorted templates.
     """
     url = get_project_url()
@@ -402,7 +402,7 @@ def upload_file_konfuzio_api(filepath: str, project_id: int, session=konfuzio_se
     Upload file to Konfuzio API.
 
     :param filepath: Path to file to be uploaded
-    :param session: Session to connect to server
+    :param session: Session to connect to the server
     :param project_id: Project ID where to upload the document
     :return: Response status.
     """
@@ -424,7 +424,7 @@ def delete_file_konfuzio_api(document_id: int, session=konfuzio_session()):
     Delete Document by ID via Konfuzio API.
 
     :param document_id: ID of the document
-    :param session: Session to connect to server
+    :param session: Session to connect to the server
     :return: File id in Konfuzio APP.
     """
     url = get_document_result_v1(document_id)
@@ -437,13 +437,13 @@ def delete_file_konfuzio_api(document_id: int, session=konfuzio_session()):
 
 def download_file_konfuzio_api(document_id: int, ocr: bool = True, session=konfuzio_session()):
     """
-    Download file from a Konfuzio server using the document id.
+    Download file from the Konfuzio server using the document id.
 
-    Django authentication is forms based, whereas DRF uses BasicAuth.
+    Django authentication is forms-based, whereas DRF uses BasicAuth.
 
     :param document_id: ID of the document
     :param ocr: Bool to get the ocr version of the document
-    :param session: Session to connect to server
+    :param session: Session to connect to the server
     :return: Downloaded file.
     """
     if ocr:

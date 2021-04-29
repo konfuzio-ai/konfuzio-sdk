@@ -56,7 +56,7 @@ def init_settings(project_folder):
 
 def init_env(project_folder):
     """
-    Add .env file to the working directory.
+    Add the .env file to the working directory.
 
     :param project_folder: Root folder of the project where to place the .env file
     :return: file content

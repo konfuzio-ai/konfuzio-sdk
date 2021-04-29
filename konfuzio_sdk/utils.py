@@ -19,9 +19,9 @@ logger = logging.getLogger(__name__)
 
 def get_id(a_string, include_time: bool = False) -> int:
     """
-    Create a unique ID from a string and the time when the operation was done.
+    Generate a unique ID.
 
-    :param a_string: String for generating unique ID
+    :param a_string: String used to generating the unique ID
     :param include_time: Bool to include the time in the unique ID
     :return: Unique ID
     """
@@ -43,7 +43,7 @@ def is_file(file_path, raise_exception=True, maximum_size=100000000, allow_empty
     :param raise_exception: Will raise an exception if file is not available
     :param maximum_size: Maximum size of the expected file, default < 100 mb
     :param allow_empty: Bool to allow empty files
-    :return: True or false depending on the existing of the file
+    :return: True or false depending on the existence of the file
     """
     if os.path.isfile(file_path):
         file_size = os.path.getsize(file_path)
@@ -79,7 +79,7 @@ def get_timestamp(format='%Y-%m-%d-%H-%M-%S') -> str:
 
 def load_image(input_file: Union[str, BytesIO]):
     """
-    Load an image by path or via io.Bytes, e.g. via download by url.
+    Load an image by path or via io.Bytes, e.g. via download by URL.
 
     :param input_file: Path to image or image in bytes format
     :return: Loaded image
