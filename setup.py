@@ -1,0 +1,46 @@
+"""Setup."""
+import sys
+import textwrap
+import setuptools
+
+# check python version
+CURRENT_PYTHON = sys.version_info[:2]
+REQUIRED_PYTHON = (3, 6)
+
+if CURRENT_PYTHON < REQUIRED_PYTHON:
+    sys.stderr.write(
+        textwrap.dedent(
+            f"""
+    ==========================
+    Unsupported Python version
+    ==========================
+    This version of Konfuzio SDK requires Python {REQUIRED_PYTHON}, but you're trying to
+    install it on Python {CURRENT_PYTHON}.
+    """
+        )
+    )
+    sys.exit(1)
+
+setuptools.setup(
+    name="konfuzio_sdk",
+    version="0.0.1",
+    author='Helm & Nagel GmbH',
+    author_email="info@helm-nagel.com",
+    description="Konfuzio Software Development Kit",
+    url="https://gitlab.com/konfuzio/konfuzio-python-sdk",
+    packages=['konfuzio_sdk'],
+    include_package_data=True,
+    entry_points={'console_scripts': ['konfuzio_sdk=konfuzio_sdk.cli:main']},
+    install_requires=[
+        'filetype',
+        'numpy',
+        'pandas',
+        'Pillow',
+        'python-dateutil',
+        'python-decouple',
+        'requests',
+        'tabulate',
+        'tqdm',
+    ],
+    extras_require={'dev': ['flake8', 'pydocstyle', 'pytest', 'pre-commit', 'sphinx', 'sphinx-reload']},
+)

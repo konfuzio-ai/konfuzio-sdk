@@ -1,0 +1,191 @@
+### 2021-03-29_
+
+#### Changed
+
+- Removed config directory from setup.py. 
+
+- Delete config directory. 
+
+- Reset the version of package in setup.py to 0.0.1
+
+  
+
+### 2021-03-26_
+
+#### Fixed
+
+- Fixes for the password input in the *cli.py* and *test_cli.py*.
+
+- Quick code clean.
+
+- Small fix flake8.
+
+  
+
+### 2021-03-25_
+
+#### Added
+
+- Defining tests in pipeline.
+- Definition of the classes.
+- Add str methods.
+
+#### Changed
+
+- Split in pipeline 
+- Mark tests as local and split in pipeline.
+- Replace test docs for zip.
+- Clean definition of classes.
+
+#### Fixed
+
+- Fix *test_get_file_type* method in *test_utils.py* .
+
+  
+
+### 2021-03-24_
+
+#### Added
+
+- Added test_utils.py class.
+- Added test_cli.py class.
+
+#### Changed
+
+- Removed functions from urls.py that are not being used.
+
+- Allow overwrite of classes in Project.
+
+  
+
+### 2021-03-18_
+
+#### Changed
+
+- Remove creation of releases folder.
+
+  
+
+### 2021-03-17_
+
+#### Added
+
+- Initialization of SDK.
+
+#### Changed
+
+- New changes in the konfuzio_sdk package.
+
+  
+
+### 2021-03-15_
+
+#### Changed
+
+- Move data methods from trainer to SDK and update tests.
+
+#### Fixed
+
+- Code clean.
+
+  
+
+### 2021-03-11_
+
+#### Added
+
+- Add test data.
+- Add flake8 config .
+- Add tests for images endpoints from API.
+- Add test pdf for uploading.
+- Add git pipeline.
+- Add dockerfile.
+- Add tests for api.py.
+
+#### Changed
+
+- **does_not_raise** moved from wrapper in Trainer.
+- Remove container.
+- Update setup.py.
+
+#### Fixed
+
+- Clean tests for API.
+
+  
+
+### 2021-03-10_
+
+#### Added
+
+- Add other API endpoints and update data.py .
+
+#### Changed
+
+- Update setup.py.
+
+  
+
+### 2021-03-3_
+
+#### Added
+
+- Added new file for ReadMe.
+
+  
+
+### 2021-03-2_
+
+#### Added
+
+- Add labels description to Label.
+
+  
+
+### 2021-02-23_
+
+#### Changed
+
+- Update README.md.
+
+  
+
+### 2021-02-17_
+
+#### Added
+
+- Added **get_bbox()** method to Document class.
+
+  
+
+### 2021-02-16_
+
+#### Changed
+
+- Removed methods from each class in data.py that are not used for data downloading. 
+
+  
+
+### 2021-02-15_
+
+#### Added
+
+- Utils class added with utility functions for data.py.
+
+#### Changed
+
+- Update README.md. 
+
+- Remove commented is_file function inside data.py.
+
+  
+
+### 2021-02-12_
+
+#### Added
+
+- Add README.md file.
+
+#### Changed
+
+- Refactor data.py.
