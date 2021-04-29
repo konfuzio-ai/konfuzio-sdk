@@ -1,28 +1,32 @@
-### 2021-03-29_
+### 2021-04-29
+
+#### Changed
+
+- Update api endpoint.
+- Methods for saving online Documents and Labels.
+
+
+### 2021-03-29
 
 #### Changed
 
 - Removed config directory from setup.py. 
-
 - Delete config directory. 
-
 - Reset the version of package in setup.py to 0.0.1
 
   
 
-### 2021-03-26_
+### 2021-03-26
 
 #### Fixed
 
 - Fixes for the password input in the *cli.py* and *test_cli.py*.
-
 - Quick code clean.
-
 - Small fix flake8.
 
   
 
-### 2021-03-25_
+### 2021-03-25
 
 #### Added
 
@@ -43,7 +47,7 @@
 
   
 
-### 2021-03-24_
+### 2021-03-24
 
 #### Added
 
@@ -53,12 +57,11 @@
 #### Changed
 
 - Removed functions from urls.py that are not being used.
-
-- Allow overwrite of classes in Project.
+- Allow to overwrite of classes in Project.
 
   
 
-### 2021-03-18_
+### 2021-03-18
 
 #### Changed
 
@@ -66,7 +69,7 @@
 
   
 
-### 2021-03-17_
+### 2021-03-17
 
 #### Added
 
@@ -78,7 +81,7 @@
 
   
 
-### 2021-03-15_
+### 2021-03-15
 
 #### Changed
 
@@ -90,7 +93,7 @@
 
   
 
-### 2021-03-11_
+### 2021-03-11
 
 #### Added
 
@@ -175,7 +178,6 @@
 #### Changed
 
 - Update README.md. 
-
 - Remove commented is_file function inside data.py.
 
   
