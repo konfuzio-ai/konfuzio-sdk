@@ -170,7 +170,7 @@ An example of how Konfuzio SDK package can be used in a pipeline to have an easy
 
 ## Documentation
 
-The latest documentation can be accessed at https://konfuzio.gitlab.io/konfuzio-python-sdk/.
+The latest documentation can be accessed at https://konfuzio.gitlab.io/python-sdk/.
 
 ## Directory Structure
 
