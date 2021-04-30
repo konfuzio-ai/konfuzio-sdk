@@ -103,7 +103,7 @@ def init_env(project_folder):
     rows = [list(x.values())[:2] for x in project_list]
     print(f"{tabulate.tabulate(rows, header)}\n")
 
-    project_id = input("Id of the project you want to download the data: ")
+    project_id = input("ID of the project you want to connect: ")
     with open(os.path.join(project_folder, ".env"), "a") as f:
         f.write("KONFUZIO_PROJECT_ID = %s" % project_id)
 
