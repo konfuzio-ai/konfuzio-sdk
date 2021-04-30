@@ -126,7 +126,7 @@ input_expression = "John Smith"
 
 # Label for the annotation
 label_name = "Name"
-# Creation of the Label in the project
+# Creation of the Label in the project default template
 my_label = Label(my_project, text=label_name)
 # Saving it online
 my_label.save()
