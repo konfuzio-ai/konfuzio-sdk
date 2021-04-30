@@ -21,7 +21,7 @@ from konfuzio_sdk.api import (
     retry_get,
     delete_document_annotation,
     upload_file_konfuzio_api,
-    create_label_in_default_template,
+    create_label,
 )
 from konfuzio_sdk.utils import is_file
 
@@ -205,7 +205,9 @@ class Label(Data):
         """
         new_label_added = False
         try:
-            response = create_label_in_default_template(project_id=self.project.id, label_name=self.name)
+            response = create_label(project_id=self.project.id,
+                                    label_name=self.name,
+                                    templates=self.templates)
             self.id = response
             new_label_added = True
         except Exception:

@@ -360,21 +360,29 @@ def get_project_labels(session=konfuzio_session()) -> List[dict]:
     return sorted_labels
 
 
-def create_label_in_default_template(project_id: int, label_name: str, session=konfuzio_session()) -> List[dict]:
+def create_label(project_id: int, label_name: str, templates: list, session=konfuzio_session()) -> List[dict]:
     """
-    Create a Label and associate it with the default template of the project.
+    Create a Label and associate it with templates.
+
+    If no templates are specified, the label is associated with the first default template of the project.
 
     :param project_id: Project ID where to create the label
     :param label_name: Name for the label
+    :param templates: Templates that use the label
     :param session: Session to connect to the server
     :return: Label ID in the Konfuzio APP.
     """
     url = get_create_label_url()
 
-    templates = get_project_templates()
-    default_template = [t for t in templates if t['is_default']][0]
+    if len(templates) == 0:
+        prj_templates = get_project_templates()
+        default_template = [t for t in prj_templates if t['is_default']][0]
+        templates_ids = [default_template['id']]
 
-    data = {"project": project_id, "text": label_name, "templates": [default_template['id']]}
+    else:
+        templates_ids = [template.id for template in templates]
+
+    data = {"project": project_id, "text": label_name, "templates": templates_ids}
 
     r = session.post(url=url, data=data)
 
