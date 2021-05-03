@@ -77,9 +77,16 @@ def init_env(project_folder):
         )
 
     data_folder = input("Folder where to allocate the data (the default is 'data'): ")
-
     if data_folder == "":
         data_folder = "data"
+    if os.path.exists(f"{project_folder}/{data_folder}"):
+        if len(os.listdir(f"{project_folder}/{data_folder}")) != 0:
+            print(
+                f"The directory : {project_folder}/{data_folder} is not empty.If you choose to continue, the old data "
+                f"will be deleted permanently.")
+            update_data_dir = input("Choose another folder to allocate the data? (Y/N)")
+            if update_data_dir == 'Y':
+                data_folder = input("Folder where to allocate the data: ")
 
     with open(os.path.join(project_folder, ".env"), "w") as f:
         f.write("KONFUZIO_HOST = %s" % host)
