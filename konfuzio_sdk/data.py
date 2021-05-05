@@ -687,7 +687,7 @@ class Document(Data):
                         self.add_annotation(annotation)
                     else:
                         logger.warning(
-                            f'Annotation {raw_annotation["id"]} is not used '
+                            f'Annotation {raw_annotation["id"]} is a custom string and, therefore, it will not be used '
                             f'in training {KONFUZIO_HOST}/a/{raw_annotation["id"]}.'
                         )
 
