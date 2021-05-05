@@ -11,6 +11,8 @@ from tqdm import tqdm
 
 from konfuzio_sdk.api import get_auth_token, get_project_list, create_new_project
 
+sys.tracebacklimit = 0
+
 logger = logging.getLogger(__name__)
 
 CLI_ERROR = """
