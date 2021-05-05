@@ -14,7 +14,7 @@ Source Code
 API
 ---------
 
-`[source] <https://gitlab.com/konfuzio/python-sdk/-/blob/master/konfuzio_sdk/api.py>`__
+`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/api.py>`__
 
 .. automodule:: konfuzio_sdk.api
     :members:
@@ -23,7 +23,7 @@ API
 CLI
 ----------
 
-`[source] <https://gitlab.com/konfuzio/python-sdk/-/blob/master/konfuzio_sdk/cli.py>`__
+`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/cli.py>`__
 
 .. automodule:: konfuzio_sdk.cli
     :members:
@@ -32,7 +32,7 @@ CLI
 Data
 ---------
 
-`[source] <https://gitlab.com/konfuzio/python-sdk/-/blob/master/konfuzio_sdk/data.py>`__
+`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/data.py>`__
 
 .. automodule:: konfuzio_sdk.data
 
@@ -83,7 +83,7 @@ Project CLass
 URLs
 ----------
 
-`[source] <https://gitlab.com/konfuzio/python-sdk/-/blob/master/konfuzio_sdk/urls.py>`__
+`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/urls.py>`__
 
 .. automodule:: konfuzio_sdk.urls
     :members:
@@ -92,7 +92,7 @@ URLs
 Utils
 ----------
 
-`[source] <https://gitlab.com/konfuzio/python-sdk/-/blob/master/konfuzio_sdk/utils.py>`__
+`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/utils.py>`__
 
 .. automodule:: konfuzio_sdk.utils
     :members:
