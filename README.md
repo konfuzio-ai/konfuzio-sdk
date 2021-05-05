@@ -11,7 +11,7 @@ Using the SDK you can communicate with the Konfuzio App and use the data structu
 
 ## Roadmap
 
-- [Hello World Konfuzio Tutorial](https://github.com/konfuzio-ai/document-ai-python-sdk/docs/QuickStart.md)
+- [Hello World Konfuzio Tutorial](https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/QuickStart.md)
 - [Source Code Online Documentation](https://konfuzio.gitlab.io/python-sdk/)
 - [Active Learning Tutorial](https://colab.research.google.com/drive/1JaVL2L6MVUtl-x-8eGJ9FnSkAybHv3nh?usp=sharing): An example of how Konfuzio SDK package can be used in a pipeline to have an easy feedback workflow can be seen in the tutorial bellow.
 - [(coming soon): Tutorial: Count number of relevant words per document](https://github.com/konfuzio-ai/document-ai-python-sdk/issues/)
@@ -24,7 +24,7 @@ Using the SDK you can communicate with the Konfuzio App and use the data structu
 ## References
 
 - [Open API Documentation](https://app.konfuzio.com/v2/swagger/)
-- [How to Contribute](/https://github.com/konfuzio-ai/document-ai-python-sdkCONTRIBUTION.md)
+- [How to Contribute](https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/CONTRIBUTION.md)
 - [Issue Tracker](https://github.com/konfuzio-ai/document-ai-python-sdk/issues)
-- [MIT License](https://github.com/konfuzio-ai/document-ai-python-sdk/LICENSE.md)
+- [MIT License](https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/LICENSE.md)
 - [Konfuzio Homepage](https://www.konfuzio.com/en/)
