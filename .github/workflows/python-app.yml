@@ -52,15 +52,14 @@ jobs:
         pydocstyle
 
     - name: Checkout
-      uses: actions/checkout@master
+      uses: actions/checkout@v2
       with:
-        fetch-depth: 0
-        docs-folder: "docs/"
-    - name : Test1
-      uses: actions/upload-artifact@v1
+        ref: live-documentation
+    - name : Upload
+      uses: actions/upload-artifact@v2
       with:
         name: DocumentationHTML
-        path: docs/_build/html/
+        path: docs/build/html/
     - name: Commit documentation changes
       run: |
           git clone https://github.com/ammaraskar/sphinx-action-test.git --branch gh-pages --single-branch gh-pages
