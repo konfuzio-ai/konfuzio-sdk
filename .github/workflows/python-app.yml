@@ -66,6 +66,10 @@ jobs:
       with:
         name: DocumentationHTML
         path: docs/build/
+    - name: Update gh-pages
+      run: |
+        git checkout gh-pages
+        git pull
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:
