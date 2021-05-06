@@ -55,7 +55,7 @@ jobs:
       uses: actions/checkout@v2
       with:
         ref: live-documentation
-    - name : Upload
+    - name : Upload Files
       uses: actions/upload-artifact@v2
       with:
         name: DocumentationHTML
