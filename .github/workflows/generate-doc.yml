@@ -23,7 +23,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8 pytest
         pip install -e .[dev]
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Sphinx Pages
       uses: seanzhengw/sphinx-pages@master
       id: sphinx-pages
