@@ -52,7 +52,7 @@ Clone the project:
 
 * clone the project in your working directory
   
-  `https://github.com/konfuzio-ai/document-ai-python-sdk.git`
+  `git clone https://github.com/konfuzio-ai/document-ai-python-sdk.git`
 
 * go inside the project folder
   
