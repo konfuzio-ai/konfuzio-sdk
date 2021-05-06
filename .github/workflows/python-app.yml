@@ -65,7 +65,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: DocumentationHTML
-        path: docs/build/html/
+        path: docs/build/
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:
