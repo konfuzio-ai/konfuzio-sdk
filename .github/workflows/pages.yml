@@ -1,0 +1,27 @@
+name: Publish to GitHub Pages
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v1
+
+      - name: Generate pages content
+        run: |
+          pip install -e .[dev]
+          pip install sphinx_rtd_theme
+          sphinx-build -d _build/doctrees docs/source _build/html
+          mv _build/html public
+
+      - name: Publish generated content to GitHub Pages
+        uses: tsunematsu21/actions-publish-gh-pages@v1.0.1
+        with:
+          dir: public
+          branch: gh-pages
+          token: ${{ secrets.ACCESS_TOKEN }}
