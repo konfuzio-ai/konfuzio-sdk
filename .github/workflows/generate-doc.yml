@@ -1,14 +1,9 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
-
 name: Github pages
-
 on:
   push:
-    branches: [ live-documentation ]
+    branches: [ master ]
   pull_request:
-    branches: [ live-documentation ]
-
+    branches: [ master ]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -23,12 +18,17 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8 pytest
         pip install -e .[dev]
-    - name: Sphinx Pages
-      uses: seanzhengw/sphinx-pages@master
-      id: sphinx-pages
+    - name: Generate documentation
+      uses: ammaraskar/sphinx-action@master
       with:
+        docs-folder: "docs/"
+    - name : Upload Files
+      uses: actions/upload-artifact@v2
+      with:
+        name: DocumentationHTML
+        path: docs/build/
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        branch: gh-pages
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        create_readme: true
-
-
-
