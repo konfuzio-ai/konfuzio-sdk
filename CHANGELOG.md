@@ -1,3 +1,11 @@
+### 2021-05-06 v.0.0.1
+
+#### Changed
+
+- Updated documentation.
+- Setup github actions.
+
+
 ### 2021-04-29
 
 #### Changed
