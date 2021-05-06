@@ -6,9 +6,9 @@ name: Github pages
 
 on:
   push:
-    branches: [ live-documentation ]
+    branches: [ master ]
   pull_request:
-    branches: [ live-documentation ]
+    branches: [ master ]
 
 jobs:
   build:
