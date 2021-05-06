@@ -42,5 +42,5 @@ setuptools.setup(
         'tabulate',
         'tqdm',
     ],
-    extras_require={'dev': ['flake8', 'pydocstyle', 'pytest', 'pre-commit', 'sphinx', 'sphinx-reload']},
+    extras_require={'dev': ['flake8', 'pydocstyle', 'pytest', 'pre-commit', 'sphinx', 'sphinx-reload', 'm2r2']},
 )
