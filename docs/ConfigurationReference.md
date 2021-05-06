@@ -52,11 +52,11 @@ Clone the project:
 
 * clone the project in your working directory
   
-  `git clone https://github.com/konfuzio-ai/Python-SDK.git`
+  `https://github.com/konfuzio-ai/document-ai-python-sdk.git`
 
 * go inside the project folder
   
-  `cd Python-SDK`
+  `cd document-ai-python-sdk`
 
 * install it
   
