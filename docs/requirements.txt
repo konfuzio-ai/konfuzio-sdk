@@ -1,6 +1,5 @@
 Sphinx==3.5.3
 sphinx-reload==0.2.0
-sphinx-rtd-theme==0.5.1
 sphinxcontrib-applehelp==1.0.2
 sphinxcontrib-devhelp==1.0.2
 sphinxcontrib-htmlhelp==1.0.3
