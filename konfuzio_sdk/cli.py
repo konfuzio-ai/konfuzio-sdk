@@ -103,16 +103,22 @@ def init_env(project_folder):
     project_list = json.loads(get_project_list(token).text)
 
     if len(project_list) == 0:
-        print("There are no available projects. Creating a new project now..")
-        create_project()
+        print("There are no available projects. Creating a new project now...")
+        _ = create_project()
         project_list = json.loads(get_project_list().text)
 
     print(f"List with all the available projects for {user}:")
     header = ["Project ID", "Project name"]
     rows = [list(x.values())[:2] for x in project_list]
+    rows.append([0, '[TO CREATE A NEW PROJECT]'])
     print(f"{tabulate.tabulate(rows, header)}\n")
 
     project_id = input("ID of the project you want to connect: ")
+
+    if int(project_id) == 0:
+        print("Creating a new project...")
+        project_id = create_project()
+
     with open(os.path.join(project_folder, ".env"), "a") as f:
         f.write("KONFUZIO_PROJECT_ID = %s" % project_id)
 
@@ -158,9 +164,11 @@ def create_project():
     project_name = input("Name of the project: ")
     response = create_new_project(project_name)
     if response.status_code == 201:
-        print(f"Project {project_name} was created successfully!")
+        project_id = json.loads(response.text)["id"]
+        print(f"Project {project_name} (ID {project_id}) was created successfully!")
+        return project_id
     else:
-        print(f'The project {project_name} was not created.')
+        raise Exception(f'The project {project_name} was not created.')
 
 
 def main():

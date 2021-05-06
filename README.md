@@ -5,14 +5,14 @@ Using the SDK you can communicate with the Konfuzio App and use the data structu
 
 ## Quickstart
 
-1. `pip install konfuzio`
+1. `python -m pip install --extra-index-url https://test.pypi.org/simple/ konfuzio-sdk==0.0.1`
 2. [Register online for free](https://app.konfuzio.com)
 3. `konfuzio_sdk init`
 
 ## Roadmap
 
 - [Hello World Konfuzio Tutorial](https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/QuickStart.md)
-- [Source Code Online Documentation](https://konfuzio.gitlab.io/python-sdk/)
+- [Source Code Online Documentation](https://konfuzio-ai.github.io/document-ai-python-sdk/)
 - [Active Learning Tutorial](https://colab.research.google.com/drive/1JaVL2L6MVUtl-x-8eGJ9FnSkAybHv3nh?usp=sharing): An example of how Konfuzio SDK package can be used in a pipeline to have an easy feedback workflow can be seen in the tutorial bellow.
 - [(coming soon): Tutorial: Count number of relevant words per document](https://github.com/konfuzio-ai/document-ai-python-sdk/issues/)
 - (coming soon): Tutorial: How to set up a python environment for beginners

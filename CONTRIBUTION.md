@@ -38,7 +38,7 @@ To run tests from a specific file, do:
 ## Directory Structure
 
 ```
-├── konfuzio-python-sdk         <- SDK project name
+├── document-ai-python-sdk      <- SDK project name
 │   │
 │   ├── docs                    <- Documentation to use konfuzio_sdk package in a project
 │   │
@@ -54,7 +54,6 @@ To run tests from a specific file, do:
 │   ├── tests                   <- Pytests: basic tests to test scripts based on a demo project
 │   │
 │   ├── .gitignore              <- Specify files untracked and ignored by git
-│   ├── .gitlab-ci.yml          <- CI/CD configurations
 │   ├── README.md               <- Readme to get to know konfuzio_sdk package
 │   ├── pytest.ini              <- Configurations for pytests
 │   ├── settings.py             <- Settings of SDK project
