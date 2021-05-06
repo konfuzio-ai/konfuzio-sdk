@@ -1,9 +1,7 @@
 name: Github pages
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    branches: [ live-documentation ]
 jobs:
   build:
     runs-on: ubuntu-latest
