@@ -53,25 +53,37 @@ jobs:
 
 
 
+#    - name: Checkout
+#      uses: actions/checkout@v2
+#      with:
+#        ref: live-documentation
+#    - name: Generate documentation
+#      uses: ammaraskar/sphinx-action@master
+#      with:
+#        docs-folder: "docs/"
+#    - name : Upload Files
+#      uses: actions/upload-artifact@v2
+#      with:
+#        name: DocumentationHTML
+#        path: docs/build/
+#    - name: Update gh-pages
+#      run: |
+#        git checkout gh-pages
+#        git pull
+#    - name: Push changes
+#      uses: ad-m/github-push-action@master
+#      with:
+#        branch: gh-pages
+#        github_token: ${{ secrets.GITHUB_TOKEN }}
+
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@master
       with:
-        ref: live-documentation
-    - name: Generate documentation
-      uses: ammaraskar/sphinx-action@master
-      with:
-        docs-folder: "docs/"
-    - name : Upload Files
-      uses: actions/upload-artifact@v2
-      with:
-        name: DocumentationHTML
-        path: docs/build/
-    - name: Update gh-pages
-      run: |
-        git checkout gh-pages
-        git pull
+        fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
+    - name: Build and Commit
+      uses: sphinx-notes/pages@master
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:
-        branch: gh-pages
         github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: gh-pages
