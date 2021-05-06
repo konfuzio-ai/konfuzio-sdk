@@ -51,26 +51,21 @@ jobs:
         cd konfuzio_sdk
         pydocstyle
 
+
+
     - name: Checkout
       uses: actions/checkout@v2
       with:
         ref: live-documentation
+    - name: Generate documentation
+      uses: ammaraskar/sphinx-action@master
+      with:
+        docs-folder: "docs/"
     - name : Upload Files
       uses: actions/upload-artifact@v2
       with:
         name: DocumentationHTML
         path: docs/build/html/
-    - name: Commit documentation changes
-      run: |
-          git clone https://github.com/ammaraskar/sphinx-action-test.git --branch gh-pages --single-branch gh-pages
-          cp -r docs/build/html/* gh-pages/
-          cd gh-pages
-          git config --local user.email "xpoda.info@gmail.com"
-          git config --local user.name "Xhensila Poda"
-          git add .
-          git commit -m "Update documentation" -a || true
-          # The above command will fail if no changes were present, so we ignore
-          # the return code.
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:
