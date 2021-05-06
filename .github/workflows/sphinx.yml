@@ -25,9 +25,17 @@ jobs:
         pip install flake8 pytest
         pip install -e .[dev]
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Sphinx Pages
-      uses: seanzhengw/sphinx-pages@master
-      id: sphinx-pages
+    - name: Generate documentation
+      uses: ammaraskar/sphinx-action@master
       with:
+        docs-folder: "docs/"
+    - name : Upload Files
+      uses: actions/upload-artifact@v2
+      with:
+        name: DocumentationHTML
+        path: docs/build/
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        branch: gh-pages
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        create_readme: true
