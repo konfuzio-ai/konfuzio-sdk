@@ -7,7 +7,8 @@ Using the SDK you can communicate with the Konfuzio App and use the data structu
 
 1. `pip install konfuzio-sdk`
 2. [Register online for free](https://app.konfuzio.com)
-3. `konfuzio_sdk init`
+3. `cd <your_working_directory>`
+4. `konfuzio_sdk init`
 
 ## Roadmap
 
