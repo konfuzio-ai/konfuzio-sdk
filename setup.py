@@ -23,11 +23,11 @@ if CURRENT_PYTHON < REQUIRED_PYTHON:
 
 setuptools.setup(
     name="konfuzio_sdk",
-    version="0.0.1",
+    version="0.1.0",
     author='Helm & Nagel GmbH',
     author_email="info@helm-nagel.com",
     description="Konfuzio Software Development Kit",
-    url="https://gitlab.com/konfuzio/konfuzio-python-sdk",
+    url="https://github.com/konfuzio-ai/document-ai-python-sdk",
     packages=['konfuzio_sdk'],
     include_package_data=True,
     entry_points={'console_scripts': ['konfuzio_sdk=konfuzio_sdk.cli:main']},
