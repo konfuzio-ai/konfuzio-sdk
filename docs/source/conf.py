@@ -24,9 +24,9 @@ copyright = '2021, Helm und Nagel GmbH'
 author = 'Helm und Nagel GmbH'
 
 # The short X.Y version
-version = 'v.0.0.4'
+version = 'v.0.1.0'
 # The full version, including alpha/beta/rc tags
-release = 'alpha'
+release = 'beta'
 
 
 # -- General configuration ---------------------------------------------------
