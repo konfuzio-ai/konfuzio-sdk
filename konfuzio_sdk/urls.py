@@ -147,4 +147,4 @@ def get_document_segmentation_details_url(document_id: int, project_id, action='
     :param action: Action from where to get the results
     :return: URL to access the segmentation results of a document
     """
-    return f'https://app.konfuzio.com/api/projects/{project_id}/docs/{document_id}/{action}/'
+    return f'{KONFUZIO_HOST}/api/projects/{project_id}/docs/{document_id}/{action}/'
