@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
 
   
@@ -32,6 +34,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -229,8 +232,8 @@ Using the SDK you can communicate with the Konfuzio App and use the data structu
 <p><a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/api.py">[source]</a></p>
 <span class="target" id="module-konfuzio_sdk.api"></span><p>Connect to the Konfuzio Server to receive or send data.</p>
 <dl class="py function">
-<dt id="konfuzio_sdk.api.create_label">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></code><code class="sig-name descname"><span class="pre">create_label</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">project_id:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">label_name:</span> <span class="pre">str</span></em>, <em class="sig-param"><span class="pre">templates:</span> <span class="pre">list</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#konfuzio_sdk.api.create_label" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.api.create_label">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">create_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">project_id:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">label_name:</span> <span class="pre">str</span></em>, <em class="sig-param"><span class="pre">templates:</span> <span class="pre">list</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#konfuzio_sdk.api.create_label" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a Label and associate it with templates.</p>
 <p>If no templates are specified, the label is associated with the first default template of the project.</p>
 <dl class="field-list simple">
@@ -249,8 +252,8 @@ Using the SDK you can communicate with the Konfuzio App and use the data structu
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.api.create_new_project">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></code><code class="sig-name descname"><span class="pre">create_new_project</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.create_new_project" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.api.create_new_project">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">create_new_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.create_new_project" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new project for the user.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -260,8 +263,8 @@ Using the SDK you can communicate with the Konfuzio App and use the data structu
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.api.delete_document_annotation">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></code><code class="sig-name descname"><span class="pre">delete_document_annotation</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">document_id:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">annotation_id:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.delete_document_annotation" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.api.delete_document_annotation">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">delete_document_annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">document_id:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">annotation_id:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.delete_document_annotation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete a given annotation of the given document.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -278,8 +281,8 @@ Using the SDK you can communicate with the Konfuzio App and use the data structu
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.api.delete_file_konfuzio_api">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></code><code class="sig-name descname"><span class="pre">delete_file_konfuzio_api</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">document_id:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.delete_file_konfuzio_api" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.api.delete_file_konfuzio_api">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">delete_file_konfuzio_api</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">document_id:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.delete_file_konfuzio_api" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete Document by ID via Konfuzio API.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -295,8 +298,8 @@ Using the SDK you can communicate with the Konfuzio App and use the data structu
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.api.download_file_konfuzio_api">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></code><code class="sig-name descname"><span class="pre">download_file_konfuzio_api</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">document_id:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">ocr:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.download_file_konfuzio_api" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.api.download_file_konfuzio_api">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">download_file_konfuzio_api</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">document_id:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">ocr:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.download_file_konfuzio_api" title="Permalink to this definition">¶</a></dt>
 <dd><p>Download file from the Konfuzio server using the document id.</p>
 <p>Django authentication is form-based, whereas DRF uses BasicAuth.</p>
 <dl class="field-list simple">
@@ -314,8 +317,8 @@ Using the SDK you can communicate with the Konfuzio App and use the data structu
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.api.download_images">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></code><code class="sig-name descname"><span class="pre">download_images</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">urls</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.download_images" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.api.download_images">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">download_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">urls</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.download_images" title="Permalink to this definition">¶</a></dt>
 <dd><p>Download images by a list of urls.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -328,8 +331,8 @@ Using the SDK you can communicate with the Konfuzio App and use the data structu
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.api.get_auth_token">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></code><code class="sig-name descname"><span class="pre">get_auth_token</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">username</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.get_auth_token" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.api.get_auth_token">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">get_auth_token</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">username</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.get_auth_token" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate the authentication token for the user.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -339,8 +342,8 @@ Using the SDK you can communicate with the Konfuzio App and use the data structu
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.api.get_csrf">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></code><code class="sig-name descname"><span class="pre">get_csrf</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.get_csrf" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.api.get_csrf">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">get_csrf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.get_csrf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get new CSRF from the host.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -353,8 +356,8 @@ Using the SDK you can communicate with the Konfuzio App and use the data structu
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.api.get_document_annotations">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></code><code class="sig-name descname"><span class="pre">get_document_annotations</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">document_id</span></em>, <em class="sig-param"><span class="pre">include_extractions=False</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.get_document_annotations" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.api.get_document_annotations">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">get_document_annotations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">document_id</span></em>, <em class="sig-param"><span class="pre">include_extractions=False</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.get_document_annotations" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use the text-extraction server to retrieve human revised annotations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -371,8 +374,8 @@ Using the SDK you can communicate with the Konfuzio App and use the data structu
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.api.get_document_details">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></code><code class="sig-name descname"><span class="pre">get_document_details</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">document_id</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.get_document_details" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.api.get_document_details">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">get_document_details</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">document_id</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.get_document_details" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use the text-extraction server to retrieve the data from a document.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -388,8 +391,8 @@ Using the SDK you can communicate with the Konfuzio App and use the data structu
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.api.get_document_hocr">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></code><code class="sig-name descname"><span class="pre">get_document_hocr</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">document_id</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.get_document_hocr" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.api.get_document_hocr">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">get_document_hocr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">document_id</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.get_document_hocr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use the text-extraction server to retrieve the hOCR data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -405,8 +408,8 @@ Using the SDK you can communicate with the Konfuzio App and use the data structu
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.api.get_document_sections">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></code><code class="sig-name descname"><span class="pre">get_document_sections</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">document_id</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.get_document_sections" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.api.get_document_sections">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">get_document_sections</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">document_id</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.get_document_sections" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use the text-extraction server to retrieve templates, which are instances of the Template Class.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -422,8 +425,8 @@ Using the SDK you can communicate with the Konfuzio App and use the data structu
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.api.get_document_text">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></code><code class="sig-name descname"><span class="pre">get_document_text</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">document_id</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.get_document_text" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.api.get_document_text">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">get_document_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">document_id</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.get_document_text" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use the text-extraction server to retrieve the text found in the document.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -439,8 +442,8 @@ Using the SDK you can communicate with the Konfuzio App and use the data structu
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.api.get_meta_of_files">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></code><code class="sig-name descname"><span class="pre">get_meta_of_files</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#konfuzio_sdk.api.get_meta_of_files" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.api.get_meta_of_files">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">get_meta_of_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#konfuzio_sdk.api.get_meta_of_files" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get dictionary of previously uploaded document names to Konfuzio API.</p>
 <p>Dataset_status:
 NONE = 0
@@ -459,8 +462,8 @@ LOW_OCR_QUALITY = 4</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.api.get_project_labels">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></code><code class="sig-name descname"><span class="pre">get_project_labels</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#konfuzio_sdk.api.get_project_labels" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.api.get_project_labels">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">get_project_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#konfuzio_sdk.api.get_project_labels" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get Labels available in project.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -473,8 +476,8 @@ LOW_OCR_QUALITY = 4</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.api.get_project_list">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></code><code class="sig-name descname"><span class="pre">get_project_list</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.get_project_list" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.api.get_project_list">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">get_project_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.get_project_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the list of all projects for the user.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -484,8 +487,8 @@ LOW_OCR_QUALITY = 4</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.api.get_project_name_from_id">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></code><code class="sig-name descname"><span class="pre">get_project_name_from_id</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.api.get_project_name_from_id" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.api.get_project_name_from_id">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">get_project_name_from_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.api.get_project_name_from_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the project name given the project_id.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -498,8 +501,8 @@ LOW_OCR_QUALITY = 4</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.api.get_project_templates">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></code><code class="sig-name descname"><span class="pre">get_project_templates</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#konfuzio_sdk.api.get_project_templates" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.api.get_project_templates">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">get_project_templates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#konfuzio_sdk.api.get_project_templates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get templates available in project.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -512,8 +515,8 @@ LOW_OCR_QUALITY = 4</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.api.get_results_from_segmentation">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></code><code class="sig-name descname"><span class="pre">get_results_from_segmentation</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#konfuzio_sdk.api.get_results_from_segmentation" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.api.get_results_from_segmentation">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">get_results_from_segmentation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#konfuzio_sdk.api.get_results_from_segmentation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get bbox results from segmentation endpoint.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -526,8 +529,8 @@ LOW_OCR_QUALITY = 4</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.api.is_url">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></code><code class="sig-name descname"><span class="pre">is_url</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#konfuzio_sdk.api.is_url" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.api.is_url">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">is_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#konfuzio_sdk.api.is_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return true if the string is a valid URL.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -540,8 +543,8 @@ LOW_OCR_QUALITY = 4</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.api.is_url_image">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></code><code class="sig-name descname"><span class="pre">is_url_image</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_url</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.is_url_image" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.api.is_url_image">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">is_url_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_url</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.is_url_image" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if the URL will return an image.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -554,8 +557,8 @@ LOW_OCR_QUALITY = 4</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.api.konfuzio_session">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></code><code class="sig-name descname"><span class="pre">konfuzio_session</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.konfuzio_session" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.api.konfuzio_session">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">konfuzio_session</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.konfuzio_session" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a session incl. base auth to the KONFUZIO_HOST.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -565,8 +568,8 @@ LOW_OCR_QUALITY = 4</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.api.post_document_annotation">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></code><code class="sig-name descname"><span class="pre">post_document_annotation</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">document_id:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">start_offset:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">end_offset:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">label_id:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">accuracy:</span> <span class="pre">float</span></em>, <em class="sig-param"><span class="pre">revised:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em>, <em class="sig-param"><span class="pre">is_correct:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em>, <em class="sig-param"><span class="pre">section=None</span></em>, <em class="sig-param"><span class="pre">template_id=None</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.post_document_annotation" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.api.post_document_annotation">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">post_document_annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">document_id:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">start_offset:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">end_offset:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">label_id:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">accuracy:</span> <span class="pre">float</span></em>, <em class="sig-param"><span class="pre">revised:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em>, <em class="sig-param"><span class="pre">is_correct:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em>, <em class="sig-param"><span class="pre">section=None</span></em>, <em class="sig-param"><span class="pre">template_id=None</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.post_document_annotation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add an annotation to an existing document.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -587,8 +590,8 @@ LOW_OCR_QUALITY = 4</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.api.post_document_bulk_annotation">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></code><code class="sig-name descname"><span class="pre">post_document_bulk_annotation</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">document_id:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">annotation_list</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.post_document_bulk_annotation" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.api.post_document_bulk_annotation">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">post_document_bulk_annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">document_id:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">annotation_list</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.post_document_bulk_annotation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a list of annotations to an existing document.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -605,8 +608,8 @@ LOW_OCR_QUALITY = 4</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.api.retry_get">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></code><code class="sig-name descname"><span class="pre">retry_get</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.retry_get" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.api.retry_get">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">retry_get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.retry_get" title="Permalink to this definition">¶</a></dt>
 <dd><p>Workaround to avoid exceptions in case the server does not respond.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -622,8 +625,8 @@ LOW_OCR_QUALITY = 4</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.api.upload_file_konfuzio_api">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></code><code class="sig-name descname"><span class="pre">upload_file_konfuzio_api</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">filepath:</span> <span class="pre">str</span></em>, <em class="sig-param"><span class="pre">project_id:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em>, <em class="sig-param"><span class="pre">dataset_status:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.upload_file_konfuzio_api" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.api.upload_file_konfuzio_api">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">upload_file_konfuzio_api</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">filepath:</span> <span class="pre">str</span></em>, <em class="sig-param"><span class="pre">project_id:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em>, <em class="sig-param"><span class="pre">dataset_status:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.upload_file_konfuzio_api" title="Permalink to this definition">¶</a></dt>
 <dd><p>Upload file to Konfuzio API.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -645,21 +648,21 @@ LOW_OCR_QUALITY = 4</p>
 <p><a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/cli.py">[source]</a></p>
 <span class="target" id="module-konfuzio_sdk.cli"></span><p>Command Line interface to the konfuzio_sdk package.</p>
 <dl class="py function">
-<dt id="konfuzio_sdk.cli.create_project">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.cli.</span></code><code class="sig-name descname"><span class="pre">create_project</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.cli.create_project" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.cli.create_project">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.cli.</span></span><span class="sig-name descname"><span class="pre">create_project</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.cli.create_project" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new project.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.cli.data">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.cli.</span></code><code class="sig-name descname"><span class="pre">data</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.cli.data" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.cli.data">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.cli.</span></span><span class="sig-name descname"><span class="pre">data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.cli.data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Download the data from the example project.</p>
 <p>It has to be run after having the .env and settings.py files.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.cli.init">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.cli.</span></code><code class="sig-name descname"><span class="pre">init</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'./'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.cli.init" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.cli.init">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.cli.</span></span><span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'./'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.cli.init" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add settings and .env files to the working directory.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -669,8 +672,8 @@ LOW_OCR_QUALITY = 4</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.cli.init_env">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.cli.</span></code><code class="sig-name descname"><span class="pre">init_env</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_folder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.cli.init_env" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.cli.init_env">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.cli.</span></span><span class="sig-name descname"><span class="pre">init_env</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_folder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.cli.init_env" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add the .env file to the working directory.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -683,8 +686,8 @@ LOW_OCR_QUALITY = 4</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.cli.init_settings">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.cli.</span></code><code class="sig-name descname"><span class="pre">init_settings</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_folder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.cli.init_settings" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.cli.init_settings">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.cli.</span></span><span class="sig-name descname"><span class="pre">init_settings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_folder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.cli.init_settings" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add settings file to the working directory.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -694,8 +697,8 @@ LOW_OCR_QUALITY = 4</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.cli.main">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.cli.</span></code><code class="sig-name descname"><span class="pre">main</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.cli.main" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.cli.main">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.cli.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.cli.main" title="Permalink to this definition">¶</a></dt>
 <dd><p>CLI of Konfuzio SDK.</p>
 </dd></dl>
 
@@ -707,8 +710,8 @@ LOW_OCR_QUALITY = 4</p>
 <div class="section" id="data-class">
 <h2>Data Class<a class="headerlink" href="#data-class" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt>
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.data.</span></code><code class="sig-name descname"><span class="pre">Data</span></code></dt>
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.data.</span></span><span class="sig-name descname"><span class="pre">Data</span></span></dt>
 <dd><p>Collect general functionality to work with data from API.</p>
 </dd></dl>
 
@@ -716,8 +719,8 @@ LOW_OCR_QUALITY = 4</p>
 <div class="section" id="section-class">
 <h2>Section Class<a class="headerlink" href="#section-class" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt>
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.data.</span></code><code class="sig-name descname"><span class="pre">Section</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">document</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotations</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.data.</span></span><span class="sig-name descname"><span class="pre">Section</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">document</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotations</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Represent a Section - group of annotations.</p>
 <p>Create a section.</p>
 <dl class="field-list simple">
@@ -736,8 +739,8 @@ LOW_OCR_QUALITY = 4</p>
 <div class="section" id="template-class">
 <h2>Template Class<a class="headerlink" href="#template-class" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt>
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.data.</span></code><code class="sig-name descname"><span class="pre">Template</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name_clean</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_template</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_multiple_sections</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.data.</span></span><span class="sig-name descname"><span class="pre">Template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name_clean</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_template</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_multiple_sections</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Store information of Templates for sections by which a Label can be grouped by.</p>
 <p>Create a named template.</p>
 <dl class="field-list simple">
@@ -755,8 +758,8 @@ LOW_OCR_QUALITY = 4</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">add_label</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">add_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Add label to template, if it does not exist.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -771,8 +774,8 @@ LOW_OCR_QUALITY = 4</p>
 <div class="section" id="label-class">
 <h2>Label Class<a class="headerlink" href="#label-class" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt>
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.data.</span></code><code class="sig-name descname"><span class="pre">Label</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_data_type_display</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text_clean</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">templates</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Template</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">initial_data</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.data.</span></span><span class="sig-name descname"><span class="pre">Label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_data_type_display</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text_clean</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">templates</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Template</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">initial_data</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Define and store the information a group of pieces of information that can be annotated in a Project.</p>
 <p>Create a named Label.</p>
 <dl class="field-list simple">
@@ -789,8 +792,8 @@ LOW_OCR_QUALITY = 4</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">add_template</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template</span></span></em><span class="sig-paren">)</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">add_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Add template to label, if it does not exist.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -799,9 +802,9 @@ LOW_OCR_QUALITY = 4</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt>
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">annotations</span></code></dt>
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">annotations</span></span></dt>
 <dd><p>Add annotation to label.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -810,21 +813,21 @@ LOW_OCR_QUALITY = 4</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt>
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">correct_annotations</span></code></dt>
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">correct_annotations</span></span></dt>
 <dd><p>Return correct annotations.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt>
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">documents</span></code></dt>
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">documents</span></span><em class="property"><span class="pre">:</span> <span class="pre">List[konfuzio_sdk.data.Document]</span></em></dt>
 <dd><p>Return all documents which contain annotations of this label.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">save</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span></dt>
 <dd><p>Save Label online.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -839,8 +842,8 @@ LOW_OCR_QUALITY = 4</p>
 <div class="section" id="annotation-class">
 <h2>Annotation Class<a class="headerlink" href="#annotation-class" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt>
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.data.</span></code><code class="sig-name descname"><span class="pre">Annotation</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_offset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_offset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_correct</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">revised</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">accuracy</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">document</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template_text</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">translated_string</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">initial_data</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.data.</span></span><span class="sig-name descname"><span class="pre">Annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_offset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_offset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_correct</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">revised</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">accuracy</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">document</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template_text</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">translated_string</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">initial_data</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Define and store information of a single piece of information that a label has been assigned to in a Document.</p>
 <p>Initialize the Annotation.</p>
 <dl class="field-list simple">
@@ -862,26 +865,26 @@ LOW_OCR_QUALITY = 4</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">delete</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">None</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">delete</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">None</span></dt>
 <dd><p>Delete Annotation online.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt>
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">is_online</span></code></dt>
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">is_online</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional[int]</span></em></dt>
 <dd><p>Define if the Annotation is saved to the server.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt>
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">offset_string</span></code></dt>
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">offset_string</span></span><em class="property"><span class="pre">:</span> <span class="pre">str</span></em></dt>
 <dd><p>View the string representation of the Annotation.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">save</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span></dt>
 <dd><p>Save Annotation online.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -896,8 +899,8 @@ LOW_OCR_QUALITY = 4</p>
 <div class="section" id="document-class">
 <h2>Document Class<a class="headerlink" href="#document-class" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt>
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.data.</span></code><code class="sig-name descname"><span class="pre">Document</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_url</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_file_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_dataset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_status</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">updated_at</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">datetime.tzinfo</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bbox</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_pages</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">initial_data</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.data.</span></span><span class="sig-name descname"><span class="pre">Document</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_url</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_file_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_dataset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_status</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">updated_at</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">datetime.tzinfo</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bbox</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_pages</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">initial_data</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Access the information about one document, which is available online.</p>
 <p>Check if the document root is available, otherwise create it.</p>
 <dl class="field-list simple">
@@ -918,8 +921,8 @@ LOW_OCR_QUALITY = 4</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">add_annotation</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">annotation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_duplicate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">add_annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">annotation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_duplicate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Add an annotation to a document.</p>
 <p>If check_duplicate is True, we only add an annotation after checking it doesn’t exist in the document already.
 If check_duplicate is False, we add an annotation without checking, but it is considerably faster when the
@@ -938,14 +941,14 @@ number of annotations in the document is large.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt>
-<code class="sig-name descname"><span class="pre">annotation_class</span></code></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">annotation_class</span></span></dt>
 <dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">konfuzio_sdk.data.Annotation</span></code></p>
 </dd></dl>
 
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">annotations</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Label</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_correct</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_offset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_offset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">annotations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Label</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_correct</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_offset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_offset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span></dt>
 <dd><p>Filter available annotations. Exclude custom_offset_string annotations.</p>
 <p>You can specific an offset of a document, to filter the annotations by</p>
 <dl class="field-list simple">
@@ -964,14 +967,14 @@ number of annotations in the document is large.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">delete</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">delete</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
 <dd><p>Delete all local information for the document.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">get_bbox</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">get_bbox</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
 <dd><p>Get bbox information per character of file.</p>
 <p>There are two ways to access it:
 - If the bbox attribute is set when creating the Document, it is returned immediately.
@@ -987,8 +990,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">get_document_details</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span></em><span class="sig-paren">)</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">get_document_details</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Get data from a document.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -998,8 +1001,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">get_file</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">get_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Get OCR version of the original file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1012,8 +1015,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">get_images</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">get_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Get document pages as png images.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1025,21 +1028,21 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt>
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">is_online</span></code></dt>
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">is_online</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional[int]</span></em></dt>
 <dd><p>Define if the Document is saved to the server.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt>
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">is_without_errors</span></code></dt>
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">is_without_errors</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em></dt>
 <dd><p>Check if the document can be used for training clf.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">offset</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_offset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_offset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Annotation</span><span class="p"><span class="pre">]</span></span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">offset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_offset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_offset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Annotation</span><span class="p"><span class="pre">]</span></span></dt>
 <dd><p>Convert an offset to a list of annotations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1054,15 +1057,15 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt>
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">root</span></code></dt>
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">root</span></span></dt>
 <dd><p>Get the path to the folder where all the document information is cached locally.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">save</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span></dt>
 <dd><p>Save Document online.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1072,8 +1075,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">update</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
 <dd><p>Update document information.</p>
 </dd></dl>
 
@@ -1083,8 +1086,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 <div class="section" id="project-class">
 <h2>Project CLass<a class="headerlink" href="#project-class" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt>
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.data.</span></code><code class="sig-name descname"><span class="pre">Project</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.data.</span></span><span class="sig-name descname"><span class="pre">Project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Access the information of a project.</p>
 <p>Set up the data using the Konfuzio Host.</p>
 <dl class="field-list simple">
@@ -1098,8 +1101,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dl>
 <p>by default.</p>
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">add_document</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document</span></span></em><span class="sig-paren">)</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">add_document</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Add document to project, if it does not exist.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1109,8 +1112,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">add_label</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">konfuzio_sdk.data.Label</span></span></em><span class="sig-paren">)</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">add_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">konfuzio_sdk.data.Label</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Add label to project, if it does not exist.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1120,8 +1123,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">add_template</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">konfuzio_sdk.data.Template</span></span></em><span class="sig-paren">)</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">add_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">konfuzio_sdk.data.Template</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Add template to project, if it does not exist.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1131,14 +1134,14 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt>
-<code class="sig-name descname"><span class="pre">annotation_class</span></code></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">annotation_class</span></span></dt>
 <dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">konfuzio_sdk.data.Annotation</span></code></p>
 </dd></dl>
 
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">clean_documents</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span></em><span class="sig-paren">)</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">clean_documents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Clean the documents by removing those that have been removed from the App.</p>
 <p>Only if to update the project locally.</p>
 <dl class="field-list simple">
@@ -1149,20 +1152,20 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">clean_meta</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">clean_meta</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
 <dd><p>Clean the meta-information about the Project, Labels, and Templates.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt>
-<code class="sig-name descname"><span class="pre">document_class</span></code></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">document_class</span></span></dt>
 <dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">konfuzio_sdk.data.Document</span></code></p>
 </dd></dl>
 
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">get</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Access meta information of the project.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1172,8 +1175,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">get_documents</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">get_documents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Get all documents in a project which have been marked as available in the training dataset.</p>
 <p>Dataset status: training = 2</p>
 <dl class="field-list simple">
@@ -1187,8 +1190,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">get_label_by_id</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">konfuzio_sdk.data.Label</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">get_label_by_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">konfuzio_sdk.data.Label</span></dt>
 <dd><p>Return a label by ID.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1198,8 +1201,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">get_labels</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">get_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Get ID and name of any label in the project.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1212,8 +1215,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">get_meta</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">get_meta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Get the list of all documents in the project and their information.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1226,8 +1229,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">get_template_by_id</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">konfuzio_sdk.data.Template</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">get_template_by_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">konfuzio_sdk.data.Template</span></dt>
 <dd><p>Return a section label by ID.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1237,8 +1240,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">get_templates</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">get_templates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Get ID and name of any Template in the project.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1251,8 +1254,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">get_test_documents</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">get_test_documents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Get all documents in a project which have been marked as available in the test dataset.</p>
 <p>Dataset status: test = 3</p>
 <dl class="field-list simple">
@@ -1266,38 +1269,38 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt>
-<code class="sig-name descname"><span class="pre">label_class</span></code></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">label_class</span></span></dt>
 <dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">konfuzio_sdk.data.Label</span></code></p>
 </dd></dl>
 
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">load_sections</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">load_sections</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
 <dd><p>Load document sections for all training and test documents.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">make_paths</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">make_paths</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
 <dd><p>Create paths needed to store the project.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt>
-<code class="sig-name descname"><span class="pre">section_class</span></code></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">section_class</span></span></dt>
 <dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">konfuzio_sdk.data.Section</span></code></p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt>
-<code class="sig-name descname"><span class="pre">template_class</span></code></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">template_class</span></span></dt>
 <dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">konfuzio_sdk.data.Template</span></code></p>
 </dd></dl>
 
 <dl class="py method">
-<dt>
-<code class="sig-name descname"><span class="pre">update</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
 <dd><p>Update the project and all documents by downloading them from the host. Note : It will not work offline.</p>
 </dd></dl>
 
@@ -1310,8 +1313,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 <p><a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/urls.py">[source]</a></p>
 <span class="target" id="module-konfuzio_sdk.urls"></span><p>Endpoints of the Konfuzio Host.</p>
 <dl class="py function">
-<dt id="konfuzio_sdk.urls.create_new_project_url">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></code><code class="sig-name descname"><span class="pre">create_new_project_url</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.urls.create_new_project_url" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.urls.create_new_project_url">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">create_new_project_url</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.urls.create_new_project_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate URL to create a new project.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1321,8 +1324,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.urls.delete_project_api_document_annotations_url">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></code><code class="sig-name descname"><span class="pre">delete_project_api_document_annotations_url</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotation_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.urls.delete_project_api_document_annotations_url" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.urls.delete_project_api_document_annotations_url">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">delete_project_api_document_annotations_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotation_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.urls.delete_project_api_document_annotations_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete the annotation of a document.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1338,8 +1341,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.urls.get_auth_token_url">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></code><code class="sig-name descname"><span class="pre">get_auth_token_url</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.urls.get_auth_token_url" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.urls.get_auth_token_url">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_auth_token_url</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.urls.get_auth_token_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate URL that creates an authentication token for the user.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1349,8 +1352,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.urls.get_create_label_url">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></code><code class="sig-name descname"><span class="pre">get_create_label_url</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.urls.get_create_label_url" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.urls.get_create_label_url">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_create_label_url</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.urls.get_create_label_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate URL to create a label.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1360,8 +1363,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.urls.get_document_api_details_url">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></code><code class="sig-name descname"><span class="pre">get_document_api_details_url</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_extractions</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_fields</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bbox'</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.urls.get_document_api_details_url" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.urls.get_document_api_details_url">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_document_api_details_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_extractions</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_fields</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bbox'</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.urls.get_document_api_details_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate URL to access document details of one document in a project.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1378,8 +1381,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.urls.get_document_ocr_file_url">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></code><code class="sig-name descname"><span class="pre">get_document_ocr_file_url</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.urls.get_document_ocr_file_url" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.urls.get_document_ocr_file_url">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_document_ocr_file_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.urls.get_document_ocr_file_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate URL to access OCR version of document.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1392,8 +1395,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.urls.get_document_original_file_url">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></code><code class="sig-name descname"><span class="pre">get_document_original_file_url</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.urls.get_document_original_file_url" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.urls.get_document_original_file_url">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_document_original_file_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.urls.get_document_original_file_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate URL to access original version of the document.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1406,8 +1409,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.urls.get_document_result_v1">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></code><code class="sig-name descname"><span class="pre">get_document_result_v1</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.urls.get_document_result_v1" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.urls.get_document_result_v1">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_document_result_v1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.urls.get_document_result_v1" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate URL to access web interface for labeling of this project.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1420,8 +1423,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.urls.get_document_segmentation_details_url">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></code><code class="sig-name descname"><span class="pre">get_document_segmentation_details_url</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'segmentation'</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.urls.get_document_segmentation_details_url" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.urls.get_document_segmentation_details_url">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_document_segmentation_details_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'segmentation'</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.urls.get_document_segmentation_details_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate URL to get the segmentation results of a document.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1438,8 +1441,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.urls.get_documents_meta_url">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></code><code class="sig-name descname"><span class="pre">get_documents_meta_url</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.urls.get_documents_meta_url" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.urls.get_documents_meta_url">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_documents_meta_url</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.urls.get_documents_meta_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate URL to load meta information about documents.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1449,8 +1452,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.urls.get_project_list_url">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></code><code class="sig-name descname"><span class="pre">get_project_list_url</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.urls.get_project_list_url" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.urls.get_project_list_url">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_project_list_url</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.urls.get_project_list_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate URL to load all the projects available for the user.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1460,8 +1463,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.urls.get_project_url">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></code><code class="sig-name descname"><span class="pre">get_project_url</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.urls.get_project_url" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.urls.get_project_url">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_project_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.urls.get_project_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate URL to get project details.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1474,8 +1477,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.urls.get_upload_document_url">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></code><code class="sig-name descname"><span class="pre">get_upload_document_url</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.urls.get_upload_document_url" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.urls.get_upload_document_url">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_upload_document_url</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.urls.get_upload_document_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate URL to upload a document.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1485,8 +1488,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.urls.post_project_api_document_annotations_url">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></code><code class="sig-name descname"><span class="pre">post_project_api_document_annotations_url</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.urls.post_project_api_document_annotations_url" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.urls.post_project_api_document_annotations_url">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">post_project_api_document_annotations_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.urls.post_project_api_document_annotations_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add new annotations to a document.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1504,15 +1507,15 @@ get_document_details and then retrieved from that file when accessing it.</p>
 <p><a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/utils.py">[source]</a></p>
 <span class="target" id="module-konfuzio_sdk.utils"></span><p>Utils for the konfuzio sdk package.</p>
 <dl class="py function">
-<dt id="konfuzio_sdk.utils.does_not_raise">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.utils.</span></code><code class="sig-name descname"><span class="pre">does_not_raise</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.utils.does_not_raise" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.utils.does_not_raise">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.utils.</span></span><span class="sig-name descname"><span class="pre">does_not_raise</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.utils.does_not_raise" title="Permalink to this definition">¶</a></dt>
 <dd><p>Serve a complement to raise, no-op context manager does_not_raise.</p>
 <p>docs.pytest.org/en/latest/example/parametrize.html#parametrizing-conditional-raising</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.utils.get_file_type">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.utils.</span></code><code class="sig-name descname"><span class="pre">get_file_type</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">_io.BytesIO</span><span class="p"><span class="pre">,</span> </span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.utils.get_file_type" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.utils.get_file_type">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.utils.</span></span><span class="sig-name descname"><span class="pre">get_file_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">_io.BytesIO</span><span class="p"><span class="pre">,</span> </span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.utils.get_file_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the type of a file via the filetype library, which checks the magic bytes to see the internal format.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1525,8 +1528,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.utils.get_id">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.utils.</span></code><code class="sig-name descname"><span class="pre">get_id</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a_string</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_time</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#konfuzio_sdk.utils.get_id" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.utils.get_id">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.utils.</span></span><span class="sig-name descname"><span class="pre">get_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a_string</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_time</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#konfuzio_sdk.utils.get_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a unique ID.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1542,8 +1545,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.utils.get_timestamp">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.utils.</span></code><code class="sig-name descname"><span class="pre">get_timestamp</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'%Y-%m-%d-%H-%M-%S'</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.utils.get_timestamp" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.utils.get_timestamp">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.utils.</span></span><span class="sig-name descname"><span class="pre">get_timestamp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'%Y-%m-%d-%H-%M-%S'</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#konfuzio_sdk.utils.get_timestamp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return formatted timestamp.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1556,8 +1559,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.utils.is_file">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.utils.</span></code><code class="sig-name descname"><span class="pre">is_file</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_exception</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maximum_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_empty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#konfuzio_sdk.utils.is_file" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.utils.is_file">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.utils.</span></span><span class="sig-name descname"><span class="pre">is_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_exception</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maximum_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_empty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#konfuzio_sdk.utils.is_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if file is available or raise error if it does not exist.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1575,8 +1578,8 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="konfuzio_sdk.utils.load_image">
-<code class="sig-prename descclassname"><span class="pre">konfuzio_sdk.utils.</span></code><code class="sig-name descname"><span class="pre">load_image</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">_io.BytesIO</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.utils.load_image" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.utils.load_image">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.utils.</span></span><span class="sig-name descname"><span class="pre">load_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">_io.BytesIO</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.utils.load_image" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load an image by path or via io.Bytes, e.g. via download by URL.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
