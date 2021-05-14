@@ -2,8 +2,7 @@
    sphinx-quickstart on Tue Mar 23 06:37:31 2021.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
-.. toctree::
-   :maxdepth: 3
+
 .. image:: _static/docs__static_logo.png
     :alt: Konfuzio Logo
 .. mdinclude:: ../../README.md
@@ -40,7 +39,7 @@ Data
 
 
 Data Class
-----------
+------------
 .. autoclass:: Data
    :members:
    :noindex:
@@ -98,3 +97,6 @@ Utils
 
 .. automodule:: konfuzio_sdk.utils
     :members:
+
+
+.. mdinclude:: ../training_documentation.md
