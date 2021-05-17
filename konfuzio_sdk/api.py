@@ -283,7 +283,7 @@ def post_document_annotation(
     url = post_project_api_document_annotations_url(document_id)
     r = session.post(
         url,
-        json={
+        data={
             'start_offset': start_offset,
             'end_offset': end_offset,
             'label': label_id,
@@ -423,7 +423,7 @@ def upload_file_konfuzio_api(filepath: str, project_id: int, session=konfuzio_se
     files = {"data_file": (os.path.basename(filepath), file_data, "multipart/form-data")}
     data = {"project": project_id, "dataset_status": dataset_status}
 
-    r = session.post(url=url, files=files, json=data)
+    r = session.post(url=url, files=files, data=data)
     return r
 
 
