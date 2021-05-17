@@ -235,7 +235,6 @@ Using the SDK you can communicate with the Konfuzio App and use the data structu
 <dt class="sig sig-object py" id="konfuzio_sdk.api.create_label">
 <span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">create_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">project_id:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">label_name:</span> <span class="pre">str</span></em>, <em class="sig-param"><span class="pre">templates:</span> <span class="pre">list</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#konfuzio_sdk.api.create_label" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a Label and associate it with templates.</p>
-<p>If no templates are specified, the label is associated with the first default template of the project.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -253,7 +252,7 @@ Using the SDK you can communicate with the Konfuzio App and use the data structu
 
 <dl class="py function">
 <dt class="sig sig-object py" id="konfuzio_sdk.api.create_new_project">
-<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">create_new_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.create_new_project" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">create_new_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.create_new_project" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new project for the user.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -558,7 +557,7 @@ LOW_OCR_QUALITY = 4</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="konfuzio_sdk.api.konfuzio_session">
-<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">konfuzio_session</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.konfuzio_session" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">konfuzio_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.konfuzio_session" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a session incl. base auth to the KONFUZIO_HOST.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -649,7 +648,7 @@ LOW_OCR_QUALITY = 4</p>
 <span class="target" id="module-konfuzio_sdk.cli"></span><p>Command Line interface to the konfuzio_sdk package.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="konfuzio_sdk.cli.create_project">
-<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.cli.</span></span><span class="sig-name descname"><span class="pre">create_project</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.cli.create_project" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.cli.</span></span><span class="sig-name descname"><span class="pre">create_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.cli.create_project" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new project.</p>
 </dd></dl>
 
@@ -829,6 +828,7 @@ LOW_OCR_QUALITY = 4</p>
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span></dt>
 <dd><p>Save Label online.</p>
+<p>If no templates are specified, the label is associated with the first default template of the project.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>True if the new label was created.</p>
@@ -868,6 +868,12 @@ LOW_OCR_QUALITY = 4</p>
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">delete</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">None</span></dt>
 <dd><p>Delete Annotation online.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">get_link</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Get link to the annotation in the SmartView.</p>
 </dd></dl>
 
 <dl class="py property">
