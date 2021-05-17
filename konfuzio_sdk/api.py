@@ -42,7 +42,7 @@ def get_auth_token(username, password):
     """
     url = get_auth_token_url()
     user_credentials = {"username": username, "password": password}
-    r = requests.post(url, data=user_credentials)
+    r = requests.post(url, json=user_credentials)
     return r
 
 
@@ -59,16 +59,16 @@ def get_project_list(token):
     return r
 
 
-def create_new_project(project_name):
+def create_new_project(project_name, token=None):
     """
     Create a new project for the user.
 
     :return: Response object
     """
-    session = konfuzio_session()
+    session = konfuzio_session(token)
     url = create_new_project_url()
     new_project_data = {"name": project_name}
-    r = session.post(url=url, data=new_project_data)
+    r = session.post(url=url, json=new_project_data)
     return r
 
 
@@ -127,14 +127,16 @@ def get_csrf(session):
     return csrf_token
 
 
-def konfuzio_session():
+def konfuzio_session(token=None):
     """
     Create a session incl. base auth to the KONFUZIO_HOST.
 
     :return: Request session.
     """
+    if not token:
+        token = KONFUZIO_TOKEN
     session = requests.Session()
-    session.headers.update({'Authorization': f'Token {KONFUZIO_TOKEN}'})
+    session.headers.update({'Authorization': f'Token {token}'})
     return session
 
 
@@ -364,8 +366,6 @@ def create_label(project_id: int, label_name: str, templates: list, session=konf
     """
     Create a Label and associate it with templates.
 
-    If no templates are specified, the label is associated with the first default template of the project.
-
     :param project_id: Project ID where to create the label
     :param label_name: Name for the label
     :param templates: Templates that use the label
@@ -373,18 +373,11 @@ def create_label(project_id: int, label_name: str, templates: list, session=konf
     :return: Label ID in the Konfuzio APP.
     """
     url = get_create_label_url()
-
-    if len(templates) == 0:
-        prj_templates = get_project_templates()
-        default_template = [t for t in prj_templates if t['is_default']][0]
-        templates_ids = [default_template['id']]
-
-    else:
-        templates_ids = [template.id for template in templates]
+    templates_ids = [template.id for template in templates]
 
     data = {"project": project_id, "text": label_name, "templates": templates_ids}
 
-    r = session.post(url=url, data=data)
+    r = session.post(url=url, json=data)
 
     assert r.status_code == requests.codes.created, f'Status of request: {r}'
     label_id = r.json()['id']
@@ -438,7 +431,7 @@ def delete_file_konfuzio_api(document_id: int, session=konfuzio_session()):
     url = get_document_result_v1(document_id)
     data = {'id': document_id}
 
-    r = session.delete(url=url, data=data)
+    r = session.delete(url=url, json=data)
     assert r.status_code == 204
     return True
 
