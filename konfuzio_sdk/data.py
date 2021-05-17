@@ -218,8 +218,7 @@ class Label(Data):
             self.id = response
             new_label_added = True
         except Exception:
-            if response.status_code != 200:
-                logger.error(f'Not able to save label {self.name} online: {response}')
+            logger.error(f'Not able to save label {self.name}.')
 
         return new_label_added
 
@@ -324,6 +323,10 @@ class Annotation(Data):
     def offset_string(self) -> str:
         """View the string representation of the Annotation."""
         return self.document.text[self.start_offset : self.end_offset]
+
+    def get_link(self):
+        """Get link to the annotation in the SmartView."""
+        return 'https://app.konfuzio.com/a/' + str(self.id)
 
     def save(self) -> bool:
         """
