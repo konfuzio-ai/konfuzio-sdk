@@ -3,6 +3,7 @@
 #### Added
 
 - Method to get link from Annotation
+- Include readme file in the pip package
 
 #### Fixed
 
