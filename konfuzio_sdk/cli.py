@@ -115,6 +115,11 @@ def init_env(project_folder):
 
     project_id = input("ID of the project you want to connect: ")
 
+    if project_id not in [row[0] for row in rows]:
+        raise ValueError(
+            "[ERROR] The ID that you provided is not valid. Please run init again."
+        )
+
     if int(project_id) == 0:
         print("Creating a new project...")
         project_id = create_project()
@@ -193,4 +198,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    init()
