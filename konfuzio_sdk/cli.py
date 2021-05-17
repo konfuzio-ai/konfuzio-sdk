@@ -105,7 +105,7 @@ def init_env(project_folder):
     if len(project_list) == 0:
         print("There are no available projects. Creating a new project now...")
         _ = create_project()
-        project_list = json.loads(get_project_list().text)
+        project_list = json.loads(get_project_list(token).text)
 
     print(f"List with all the available projects for {user}:")
     header = ["Project ID", "Project name"]
