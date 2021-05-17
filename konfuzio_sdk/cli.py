@@ -104,7 +104,7 @@ def init_env(project_folder):
 
     if len(project_list) == 0:
         print("There are no available projects. Creating a new project now...")
-        _ = create_project()
+        _ = create_project(token)
         project_list = json.loads(get_project_list(token).text)
 
     print(f"List with all the available projects for {user}:")
@@ -122,7 +122,7 @@ def init_env(project_folder):
 
     if int(project_id) == 0:
         print("Creating a new project...")
-        project_id = create_project()
+        project_id = create_project(token)
 
     with open(os.path.join(project_folder, ".env"), "a") as f:
         f.write("KONFUZIO_PROJECT_ID = %s" % project_id)
@@ -164,10 +164,10 @@ def data():
     print("[SUCCESS] Data downloading finished successfully!")
 
 
-def create_project():
+def create_project(token=None):
     """Create a new project."""
     project_name = input("Name of the project: ")
-    response = create_new_project(project_name)
+    response = create_new_project(project_name, token)
     if response.status_code == 201:
         project_id = json.loads(response.text)["id"]
         print(f"Project {project_name} (ID {project_id}) was created successfully!")

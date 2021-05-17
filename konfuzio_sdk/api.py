@@ -59,13 +59,13 @@ def get_project_list(token):
     return r
 
 
-def create_new_project(project_name):
+def create_new_project(project_name, token=None):
     """
     Create a new project for the user.
 
     :return: Response object
     """
-    session = konfuzio_session()
+    session = konfuzio_session(token)
     url = create_new_project_url()
     new_project_data = {"name": project_name}
     r = session.post(url=url, json=new_project_data)
@@ -127,14 +127,16 @@ def get_csrf(session):
     return csrf_token
 
 
-def konfuzio_session():
+def konfuzio_session(token=None):
     """
     Create a session incl. base auth to the KONFUZIO_HOST.
 
     :return: Request session.
     """
+    if not token:
+        token = KONFUZIO_TOKEN
     session = requests.Session()
-    session.headers.update({'Authorization': f'Token {KONFUZIO_TOKEN}'})
+    session.headers.update({'Authorization': f'Token {token}'})
     return session
 
 
