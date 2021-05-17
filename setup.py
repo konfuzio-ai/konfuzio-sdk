@@ -23,7 +23,7 @@ if CURRENT_PYTHON < REQUIRED_PYTHON:
 
 setuptools.setup(
     name="konfuzio_sdk",
-    version="0.1.0",
+    version="0.1.1",
     author='Helm & Nagel GmbH',
     author_email="info@helm-nagel.com",
     description="Konfuzio Software Development Kit",
