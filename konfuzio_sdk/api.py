@@ -42,7 +42,7 @@ def get_auth_token(username, password):
     """
     url = get_auth_token_url()
     user_credentials = {"username": username, "password": password}
-    r = requests.post(url, data=user_credentials)
+    r = requests.post(url, json=user_credentials)
     return r
 
 
@@ -68,7 +68,7 @@ def create_new_project(project_name):
     session = konfuzio_session()
     url = create_new_project_url()
     new_project_data = {"name": project_name}
-    r = session.post(url=url, data=new_project_data)
+    r = session.post(url=url, json=new_project_data)
     return r
 
 
@@ -283,7 +283,7 @@ def post_document_annotation(
     url = post_project_api_document_annotations_url(document_id)
     r = session.post(
         url,
-        data={
+        json={
             'start_offset': start_offset,
             'end_offset': end_offset,
             'label': label_id,
@@ -384,7 +384,7 @@ def create_label(project_id: int, label_name: str, templates: list, session=konf
 
     data = {"project": project_id, "text": label_name, "templates": templates_ids}
 
-    r = session.post(url=url, data=data)
+    r = session.post(url=url, json=data)
 
     assert r.status_code == requests.codes.created, f'Status of request: {r}'
     label_id = r.json()['id']
@@ -423,7 +423,7 @@ def upload_file_konfuzio_api(filepath: str, project_id: int, session=konfuzio_se
     files = {"data_file": (os.path.basename(filepath), file_data, "multipart/form-data")}
     data = {"project": project_id, "dataset_status": dataset_status}
 
-    r = session.post(url=url, files=files, data=data)
+    r = session.post(url=url, files=files, json=data)
     return r
 
 
@@ -438,7 +438,7 @@ def delete_file_konfuzio_api(document_id: int, session=konfuzio_session()):
     url = get_document_result_v1(document_id)
     data = {'id': document_id}
 
-    r = session.delete(url=url, data=data)
+    r = session.delete(url=url, json=data)
     assert r.status_code == 204
     return True
 
