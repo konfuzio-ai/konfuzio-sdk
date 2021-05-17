@@ -364,8 +364,6 @@ def create_label(project_id: int, label_name: str, templates: list, session=konf
     """
     Create a Label and associate it with templates.
 
-    If no templates are specified, the label is associated with the first default template of the project.
-
     :param project_id: Project ID where to create the label
     :param label_name: Name for the label
     :param templates: Templates that use the label
@@ -373,14 +371,7 @@ def create_label(project_id: int, label_name: str, templates: list, session=konf
     :return: Label ID in the Konfuzio APP.
     """
     url = get_create_label_url()
-
-    if len(templates) == 0:
-        prj_templates = get_project_templates()
-        default_template = [t for t in prj_templates if t['is_default']][0]
-        templates_ids = [default_template['id']]
-
-    else:
-        templates_ids = [template.id for template in templates]
+    templates_ids = [template.id for template in templates]
 
     data = {"project": project_id, "text": label_name, "templates": templates_ids}
 

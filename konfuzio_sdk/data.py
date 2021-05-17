@@ -201,10 +201,17 @@ class Label(Data):
         """
         Save Label online.
 
+        If no templates are specified, the label is associated with the first default template of the project.
+
         :return: True if the new label was created.
         """
         new_label_added = False
         try:
+            if len(self.templates) == 0:
+                prj_templates = self.project.templates
+                default_template = [t for t in prj_templates if t.is_default][0]
+                self.add_template(default_template)
+
             response = create_label(project_id=self.project.id,
                                     label_name=self.name,
                                     templates=self.templates)
