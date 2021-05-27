@@ -959,8 +959,8 @@ class Project(Data):
                 with open(self.labels_file_path, 'r') as f:
                     labels_data = json.load(f)
             for label_data in labels_data:
-                if 'project' in label_data:
-                    label_data.pop('project')
+                # Remove the project from label_data as we use the already present project reference.
+                label_data.pop('project', None)
                 self.label_class(project=self, **label_data)
 
         return self.labels
