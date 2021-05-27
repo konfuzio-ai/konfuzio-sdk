@@ -4,7 +4,7 @@ name: Test publish to GitHub Pages
 on:
   push:
     branches:
-      - master
+      - update-documentation
 
 jobs:
   publish:
