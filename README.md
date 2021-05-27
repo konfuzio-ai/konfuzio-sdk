@@ -25,6 +25,7 @@ Using the SDK you can communicate with the Konfuzio App and use the data structu
 ## References
 
 - [Open API Documentation](https://app.konfuzio.com/v2/swagger/)
+- [Configuration](https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/ConfigurationReference.md)
 - [How to Contribute](https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/CONTRIBUTION.md)
 - [Issue Tracker](https://github.com/konfuzio-ai/document-ai-python-sdk/issues)
 - [MIT License](https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/LICENSE.md)

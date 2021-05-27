@@ -19,7 +19,7 @@ Create a label. Click on HOME>[Templates](https://app.konfuzio.com/admin/server/
 * #### Add Training Data
 Add your document to the training dataset. Click on [DOCUMENTS](https://app.konfuzio.com/admin/server/document/). Tick the box on the left side of your document name and select “Add to training dataset” in the action tab. Click on “Go”.  
 
-### Some words about the training structure
+### Some words about the data structure
 
 The data structure of a project in Konfuzio App includes:
 
@@ -44,7 +44,7 @@ To use `konfuzio_sdk` on your machine you can install it via:
 
 * Install the Python package directly in your working directory with:  
   
-  `python -m pip install --extra-index-url https://test.pypi.org/simple/ konfuzio-sdk==0.0.1`  
+  `pip install konfuzio_sdk`  
 
 #### Option 2
 
