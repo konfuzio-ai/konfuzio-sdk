@@ -1,3 +1,15 @@
+### 2021-05-17 v.0.1.1
+
+#### Added
+
+- Method to get link from Annotation
+- Include readme file in the pip package
+
+#### Fixed
+
+- Initialization of the package with new projects
+
+
 ### 2021-05-07 v.0.1.0
 
 #### Changed

@@ -59,7 +59,7 @@ for offsets in matches_locations:
     )
     new_annotation_added = annotation_obj.save()
     if new_annotation_added:
-        new_annotations_links.append('https://app.konfuzio.com/a/' + str(annotation_obj.id))
+        new_annotations_links.append(annotation_obj.get_link())
 
 print(new_annotations_links)
 
