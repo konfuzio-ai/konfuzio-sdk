@@ -22,16 +22,16 @@ Download the **On-Prem and Private Cloud** documentation to deploy Konfuzio on a
    :caption: Konfuzio Python SDK
    :glob:
 
-   crawler/docs/Konfuzio_SDK/index
+   crawler/docs/konfuzio_sdk/index
 
 .. toctree::
    :caption: Training Package
    :glob:
 
-   crawler/docs/Training_Package/index
+   crawler/docs/training_package/index
 
 .. toctree::
    :caption: Web App
    :glob:
 
-   crawler/docs/Web_App/index
+   crawler/docs/web_app/index
