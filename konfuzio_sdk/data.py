@@ -225,8 +225,9 @@ class Label(Data):
 
 class Annotation(Data):
     """
-    An annotation is ~a single piece~(one annotation can have mul. chr., words, lines, areas) a set of characters
-    and/or bounding boxes that a label has been assigned to.
+    An annotation is ~a single piece~ of a set of characters and/or bounding boxes that a label has been assigned to.
+
+    One annotation can have mul. chr., words, lines, areas.
     """
 
     def __init__(
