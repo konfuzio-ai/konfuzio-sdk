@@ -9,7 +9,15 @@ html.writer-html4 .rst-content dl:not(.docutils)>dt, html.writer-html5 .rst-cont
     line-height: normal;
     background: transparent !important;
     color: #2980b9;
-    border-top: 3px solid #44b78b; !important
+    border-top: 3px solid #44b78b !important;
     padding: 6px;
     position: relative;
+}
+
+.wy-menu-vertical header, .wy-menu-vertical p.caption {
+    color: #3fb78d;
+}
+
+.wy-nav-top {
+    background: #3fb78d;
 }
