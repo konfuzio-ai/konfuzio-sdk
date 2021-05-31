@@ -4,11 +4,11 @@ Our **API Documentation** is available online via https://app.konfuzio.com/api. 
 
 The Konfuzio Software Development Kit, the **Konfuzio SDK**, can be installed via [pip install konfuzio-sdk](https://pypi.org/project/konfuzio-sdk/). Find examples in Python and review the source code on [GitHub](https://github.com/konfuzio-ai/document-ai-python-sdk).
 
-In addition, enterprise clients do have access to our [Python Konfuzio Trainer Module](https://github.com/konfuzio-ai/document-ai-python-sdk/blob/update-documentation/docs/training_documentation.md) to define, train and run custom Document AI.
+In addition, enterprise clients do have access to our [Python Konfuzio Trainer Module](./training_documentation.html) to define, train and run custom Document AI.
 
 Download the **On-Prem and Private Cloud** documentation to deploy Konfuzio on a single VM or on your cluster. Use [this link](https://deep-tech.com/pdf/konfuzio_on_prem.pdf) to access the latest version.
 
-The [Changelog of our Server](https://github.com/konfuzio-ai/document-ai-python-sdk/blob/update-documentation/docs/changelog_app.md) provides you with insights about any (future) release.
+The [Changelog of our Server](./changelog_app.html) provides you with insights about any (future) release.
 
 **This technical documentation is updated frequently. Please feel free to share your feedback via info@konfuzio.com**.
 

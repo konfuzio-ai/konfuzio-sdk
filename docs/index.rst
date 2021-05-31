@@ -4,19 +4,24 @@
 .. mdinclude:: konfuzio.md
 
 .. toctree::
-   :caption: Konfuzio Python SDK
-   :glob:
 
-   crawler/docs/konfuzio_sdk/index
+   self
+
+.. toctree::
+   :caption: Konfuzio Python SDK
+
+   crawler/docs/konfuzio_sdk/sdkreadme
+   crawler/docs/konfuzio_sdk/helloworld
+   crawler/docs/konfuzio_sdk/sourcecode
 
 .. toctree::
    :caption: Training Package
-   :glob:
 
-   crawler/docs/training_package/index
+   crawler/docs/training_package/trainingpackage
 
 .. toctree::
    :caption: Web App
-   :glob:
 
-   crawler/docs/web_app/index
+   crawler/docs/web_app/api
+   crawler/docs/web_app/changelog
+   crawler/docs/web_app/coordinates
