@@ -18,7 +18,6 @@ jobs:
           pip install crawler
           pip install sphinx_rtd_theme
           sphinx-build -d _build/doctrees docs _build/html
-          mv _build/html/_static/CNAME public
           mv _build/html public
       - name: Publish generated content to GitHub Pages
         uses: tsunematsu21/actions-publish-gh-pages@v1.0.1
