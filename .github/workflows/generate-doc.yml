@@ -19,7 +19,7 @@ jobs:
           pip install sphinx_rtd_theme
           sphinx-build -d _build/doctrees docs _build/html
           mv _build/html public
-          mc CNAME public
+          mv CNAME public
       - name: Publish generated content to GitHub Pages
         uses: tsunematsu21/actions-publish-gh-pages@v1.0.1
         with:
