@@ -3,7 +3,7 @@ name: Publish to GitHub Pages
 on:
   push:
     branches:
-      - master
+      - update-documentation
 
 jobs:
   publish:
