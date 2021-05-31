@@ -68,7 +68,7 @@ class Section(Data):
 
 
 class Template(Data):
-    """Store information of Templates for sections by which a Label can be grouped by."""
+    """A template is a set of labels."""
 
     def __init__(
         self,
@@ -123,7 +123,7 @@ class Template(Data):
 
 
 class Label(Data):
-    """Define and store the information a group of pieces of information that can be annotated in a Project."""
+    """A label is the name of a group of individual pieces of information annotated in a type of document."""
 
     def __init__(
         self,
@@ -224,7 +224,11 @@ class Label(Data):
 
 
 class Annotation(Data):
-    """Define and store information of a single piece of information that a label has been assigned to in a Document."""
+    """
+    An annotation is ~a single piece~ of a set of characters and/or bounding boxes that a label has been assigned to.
+
+    One annotation can have mul. chr., words, lines, areas.
+    """
 
     def __init__(
         self,

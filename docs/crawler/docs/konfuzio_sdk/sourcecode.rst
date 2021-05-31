@@ -1,20 +1,9 @@
-.. konfuzio_sdk documentation master file, created by
-   sphinx-quickstart on Tue Mar 23 06:37:31 2021.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-.. toctree::
-   :maxdepth: 3
-.. image:: _static/docs__static_logo.png
-    :alt: Konfuzio Logo
-.. mdinclude:: ../../README.md
-
-
 Source Code
 =============
 
 
 API
-===========
+------------
 
 `[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/api.py>`__
 
@@ -23,7 +12,7 @@ API
 
 
 CLI
-===========
+------------
 
 `[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/cli.py>`__
 
@@ -32,7 +21,7 @@ CLI
 
 
 Data
-===========
+------------
 
 `[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/data.py>`__
 
@@ -40,50 +29,50 @@ Data
 
 
 Data Class
-----------
+~~~~~~~~~~~
 .. autoclass:: Data
    :members:
    :noindex:
 
 Section Class
---------------------
+~~~~~~~~~~~~~~~
 .. autoclass:: Section
    :members:
    :noindex:
 
 Template Class
---------------------
+~~~~~~~~~~~~~~~
 .. autoclass:: Template
    :members:
    :noindex:
 
 Label Class
---------------------
+~~~~~~~~~~~~~~~
 
 .. autoclass:: Label
    :members:
    :noindex:
 
 Annotation Class
---------------------
+~~~~~~~~~~~~~~~~~~
 .. autoclass:: Annotation
    :members:
    :noindex:
 
 Document Class
---------------------
+~~~~~~~~~~~~~~~~~~
 .. autoclass:: Document
    :members:
    :noindex:
 
 Project CLass
---------------------
+~~~~~~~~~~~~~~~
 .. autoclass:: Project
    :members:
    :noindex:
 
 URLs
-===========
+------------
 
 `[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/urls.py>`__
 
@@ -92,7 +81,7 @@ URLs
 
 
 Utils
-===========
+------------
 
 `[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/utils.py>`__
 

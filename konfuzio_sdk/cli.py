@@ -170,7 +170,8 @@ def create_project(token=None):
     response = create_new_project(project_name, token)
     if response.status_code == 201:
         project_id = json.loads(response.text)["id"]
-        print(f"Project {project_name} (ID {project_id}) was created successfully!")
+        print(f"Project {project_name} (ID {project_id}) was created successfully!"
+              f"Initializing the environment with the project that was created.")
         return project_id
     else:
         raise Exception(f'The project {project_name} was not created.')
