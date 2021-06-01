@@ -24,7 +24,7 @@ sys.path.insert(0, os.path.abspath('../konfuzio_sdk'))
 # -- Project information -----------------------------------------------------
 
 
-project = 'konfuzio'
+project = 'Konfuzio'
 copyright = '2021, Helm und Nagel GmbH'
 author = 'Helm und Nagel GmbH'
 
