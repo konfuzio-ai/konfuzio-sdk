@@ -30,8 +30,6 @@ author = 'Helm und Nagel GmbH'
 
 # The short X.Y version
 version = 'v.0.1.1'
-# The full version, including alpha/beta/rc tags
-release = 'beta'
 
 
 # -- General configuration ---------------------------------------------------
