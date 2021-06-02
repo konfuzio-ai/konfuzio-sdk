@@ -78,7 +78,7 @@ class Template(Data):
         name_clean: str,
         labels: List[int],
         is_default=False,
-        default_template=None,
+        default_template: "Template" = None,
         has_multiple_sections=False,
         **kwargs,
     ):
@@ -106,7 +106,6 @@ class Template(Data):
         for label_id in labels:
             label = self.project.get_label_by_id(id=label_id)
             self.add_label(label)
-            label.add_template(self)
 
     def __repr__(self):
         """Return string representation of the template."""
@@ -154,15 +153,22 @@ class Label(Data):
         self.data_type = get_data_type_display
         self.description = description
 
-        self.templates: List[Template] = templates
         self.project: Project = project
         self._correct_annotations_indexed = None
 
         project.add_label(self)
+        if templates:
+            [x.add_label(self) for x in templates]
 
     def __repr__(self):
         """Return string representation."""
         return self.name
+
+    @property
+    def templates(self):
+        """Get the templates in which this label is used."""
+        templates = [x for x in self.project.templates if self in x.labels]
+        return templates
 
     @property
     def annotations(self):
