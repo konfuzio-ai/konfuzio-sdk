@@ -6,7 +6,7 @@ The Konfuzio Software Development Kit, the **Konfuzio SDK**, can be installed vi
 
 In addition, enterprise clients do have access to our [Python Konfuzio Trainer Module](./training_documentation.html) to define, train and run custom Document AI.
 
-Download the **On-Prem and Private Cloud** documentation to deploy Konfuzio on a single VM or on your cluster. Use [this link](https://deep-tech.com/pdf/konfuzio_on_prem.pdf) to access the latest version.
+Download the **On-Prem and Private Cloud** documentation to deploy Konfuzio on a single VM or on your cluster. Use [this link](./_static/pdf/konfuzio_on_prem.pdf) to access the latest version.
 
 The [Changelog of our Server](./changelog_app.html) provides you with insights about any (future) release.
 
