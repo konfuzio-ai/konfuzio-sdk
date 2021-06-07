@@ -844,8 +844,12 @@ class Project(Data):
             for section in document._sections:
                 annotations = annotations_dict[section['id']] if section['id'] in annotations_dict else []
                 section['template'] = template_mapper_dict[section['section_label']]
-                section_instance = Section(**section, document=document, annotations=annotations)
-                document_sections.append(section_instance)
+                default_template = section['template'].default_template or section['template']
+                # we only add the sections that match the category of the document
+                # (ignore ghost sections that may exist)
+                if default_template == document.category_template:
+                    section_instance = Section(**section, document=document, annotations=annotations)
+                    document_sections.append(section_instance)
             document.sections = document_sections
 
     def make_paths(self):
