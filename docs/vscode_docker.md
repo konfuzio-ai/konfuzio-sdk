@@ -14,11 +14,7 @@ If you have not already installed docker, download and install it here (https://
 
 In most cases you are going to be using git, so just set up a new git-repository via the terminal, VSCode’s built-in console or VSCode’s git extension. This project should of course include the docker file that is used for deployment and which behavior you want to mimic locally.
  
-If you just want to try out how this all works, I have set up a sample repository using the Konfuzio’s SDK. You can clone our SDK from its github page (https://github.com/konfuzio-ai/document-ai-python-sdk.git). Please make sure that you are in the docker-vscode-branch of the repository by running:
-
-```ubuntu
-git checkout docker-vscode
-```
+If you just want to try out how this all works, I have set up a sample repository using the Konfuzio’s SDK. You can clone our SDK from its github page (https://github.com/konfuzio-ai/document-ai-python-sdk.git).
 
 <h2>3. Step: Install the remote development extension</h2>
 
@@ -28,7 +24,7 @@ In VSCode open the extensions tab and search **Remote - Containers** (or for its
 
 <h2>4. Step: Set up your remote development environment</h2>
 
-You should now see to black on green arrows in the bottom left of VSCode. Clicking the open extension’s command pallet which we from now on are going to use to work with it.
+You should now be able to find the remote extension's symbol (arrows on a green background) in the bottom left corner of the VSCode window (picture below). Clicking on the symbol opens the extension's command pallet which from now on is going to be our main access point to the extension.
 
 ![green arrows](images/vscode_docker/green_arrows.png)
 
@@ -39,7 +35,7 @@ In the Command Pallet (*'View' > 'Command Pallet'*) select Remote-Containers: Ad
 Now you should see in the file explorer under .devcontainer your devcontainer.json file. Open it. These are the basic configurations of your devcontainer. Most of this can be left unchanged. Maybe give your container a name by changing the name variable. Additionally you should specify all the ports you need inside your docker container in forwardPorts.
 If you are working with the sample project you do not need to specify any ports.
 
-![devcontainer.json](images/vscode_docker/devcontainer.json)
+![devcontainer.json](images/vscode_docker/devcontainer.png)
 
 <h2>5. Step: Build and run your docker container</h2>
 
@@ -75,4 +71,4 @@ pytest -m local
 - If you want to switch back to your local machine (to e.g. switch branch), open the extension’s command pallet by clicking on the arrows and select *‘Reopen Folder Locally’*.
  
 - If you want to rebuild the container, because e.g. a different branch uses different dependendencies, open the extension’s command palette and click *'Rebuild Container'*.
-(This of course means that you have to reinstall the python extension - if this becomes annoying you can specify its id in the devcontainer.json file to be pre installed with every rebuild).
+(This of course means that you have to reinstall the python extension - if this becomes annoying you can specify its id in the devcontainer.json file to be pre-installed with every rebuild).
