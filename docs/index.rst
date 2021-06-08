@@ -13,6 +13,7 @@
    crawler/docs/konfuzio_sdk/sdkreadme
    crawler/docs/konfuzio_sdk/helloworld
    crawler/docs/konfuzio_sdk/sourcecode
+   crawler/docs/konfuzio_sdk/vscode_docker
 
 .. toctree::
    :caption: Training Package
