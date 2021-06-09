@@ -67,6 +67,8 @@ language = 'en'
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
+# make sure that make html starts with the index.rst
+master_doc = 'index'
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -88,3 +90,4 @@ html_logo = '_static/docs__static_square_transparent_super_small.png'
 html_favicon = '_static/full_green_square.png'
 html_css_files = ['custom.css']
 html_show_sphinx = False
+
