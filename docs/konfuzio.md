@@ -1,3 +1,5 @@
+<meta name="description" content="Technical documentation of Konfuzio.">
+
 # Konfuzio
 
 Our **API Documentation** is available online via https://app.konfuzio.com/api. Have a look at our [YouTube API Tutorial](https://www.youtube.com/watch?v=NZKUrKyFVA8) too.

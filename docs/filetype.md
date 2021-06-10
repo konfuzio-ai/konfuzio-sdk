@@ -1,3 +1,5 @@
+<meta name="description" content="Supported file types by Konfuzio.">
+
 # Supported file types
 
 Konfuzio supports various file types:

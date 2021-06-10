@@ -1,3 +1,5 @@
+<meta name="description" content="Changelog of app.konfuzio.com Server.">
+
 # CHANGELOG
 
 All notable changes to this project will be documented in this file.

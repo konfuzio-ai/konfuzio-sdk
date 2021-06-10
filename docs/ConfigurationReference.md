@@ -1,3 +1,5 @@
+<meta name="description" content="General configurations for Konfuzio SDK.">
+
 # Configuration Reference Konfuzio Python SDK
 
 ### 1. Have your project in Konfuzio App  

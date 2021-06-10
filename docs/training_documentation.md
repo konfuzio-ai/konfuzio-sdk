@@ -1,3 +1,4 @@
+<meta name="description" content="Examples of use cases of Konfuzio Models.">
 
 # Training Documentation
 

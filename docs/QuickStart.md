@@ -1,3 +1,5 @@
+<meta name="description" content="Hello World tutorial of Konfuzio SDK.">
+
 # Quick Start Konfuzio Python SDK
 
 ## Example Usage
