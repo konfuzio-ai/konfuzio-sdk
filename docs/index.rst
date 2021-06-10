@@ -12,6 +12,7 @@
 
    docs/konfuzio_sdk/sdkreadme
    docs/konfuzio_sdk/helloworld
+   docs/konfuzio_sdk/coordinates
    docs/konfuzio_sdk/sourcecode
 
 .. toctree::
@@ -25,4 +26,3 @@
    docs/web_app/api
    docs/web_app/changelog
    docs/web_app/filetype
-   docs/web_app/coordinates
