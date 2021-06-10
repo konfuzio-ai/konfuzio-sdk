@@ -10,19 +10,19 @@
 .. toctree::
    :caption: Konfuzio Python SDK
 
-   crawler/docs/konfuzio_sdk/sdkreadme
-   crawler/docs/konfuzio_sdk/helloworld
-   crawler/docs/konfuzio_sdk/sourcecode
+   docs/konfuzio_sdk/sdkreadme
+   docs/konfuzio_sdk/helloworld
+   docs/konfuzio_sdk/sourcecode
 
 .. toctree::
    :caption: Training Package
 
-   crawler/docs/training_package/trainingpackage
+   docs/training_package/trainingpackage
 
 .. toctree::
    :caption: Web App
 
-   crawler/docs/web_app/api
-   crawler/docs/web_app/changelog
-   crawler/docs/web_app/filetype
-   crawler/docs/web_app/coordinates
+   docs/web_app/api
+   docs/web_app/changelog
+   docs/web_app/filetype
+   docs/web_app/coordinates

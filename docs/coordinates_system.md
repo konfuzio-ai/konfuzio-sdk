@@ -1,3 +1,5 @@
+<meta name="description" content="Coordinates system used in Konfuzio.">
+
 # Coordinates system
 
 The size of a page of a document can be obtained in the document object.
@@ -20,7 +22,7 @@ document.pages[i]['size']
 
 The coordinates system used has its origin in the bottom left corner of the page.
 
-![coordinates_system](images/coordinates_schema.png)
+[![coordinates_system](images/coordinates_schema.png)](#)
 
 
 To visualize the character bounding boxes of a document and overlapping them in the image opened with the python
@@ -55,7 +57,7 @@ plt.show()
 # image is subtracted to the y coordinates.
 ```
 
-![characters_bboxes](images/bboxes_characters.png)
+[![characters_bboxes](images/bboxes_characters.png)](#)
 
 The coordinates obtained from the segmentation endpoint of the API are based in the image array shape.
 To visualize the segmentation bounding boxes of a page on an image opened with the python library PIL, for example, 
@@ -76,7 +78,7 @@ plt.show()
 
 ```
 
-![segmentation_bboxes](images/bboxes_segmentation.png)
+[![segmentation_bboxes](images/bboxes_segmentation.png)](#)
 
 To visualize both at the same time we can convert the coordinates from the segmentation result to be based on the image
 size used for the characters bbox.
@@ -111,4 +113,4 @@ for bbox in image_segmentation_bboxes[i]:
 plt.imshow(image)
 plt.show()
 ```
-![characters_and_segmentation_bboxes](images/bboxes_overlap.png)
+[![characters_and_segmentation_bboxes](images/bboxes_overlap.png)](#)

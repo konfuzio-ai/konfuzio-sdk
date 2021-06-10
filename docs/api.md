@@ -1,8 +1,10 @@
+<meta name="description" content="Documentation of the Konfuzio API.">
+
 # API
 
 ## Documentation
 
-The API documentation is available at: http://app.konfuzio.com/swagger. To access the documentation please [register](https://app.konfuzio.com/accounts/signup/) beforehand.
+The API documentation is available at: https://app.konfuzio.com/swagger. To access the documentation please [register](https://app.konfuzio.com/accounts/signup/) beforehand.
 
 ## How to make an API Call
 
@@ -123,7 +125,7 @@ plt.show()
 
 ```
 
-![segmentation_endpoint](images/segmentation.png)
+[![segmentation_endpoint](images/segmentation.png)](#)
 
 [1] Kaming H. et al., "Mask R-CNN", 2018  
 [2] Zhong, X. et al., "PubLayNet: largest dataset ever for document layout analysis", 2019  
