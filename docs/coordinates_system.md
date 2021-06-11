@@ -5,7 +5,7 @@
 The size of a page of a document can be obtained in the document object.
 The format is [width, height].
 
-- 'original_size' corresponds to the size of the of the uploaded document (which can be a PDF file or an image.).
+- 'original_size' corresponds to the size of the uploaded document (which can be a PDF file or an image.).
   The bounding boxes of the annotations are based on this size.
    E.g.: original_size = [372.48, 463.68]
 
@@ -59,7 +59,7 @@ plt.show()
 
 [![characters_bboxes](images/bboxes_characters.png)](#)
 
-The coordinates obtained from the segmentation endpoint of the API are based in the image array shape.
+The coordinates obtained from the segmentation endpoint of the API are based on the image array shape.
 To visualize the segmentation bounding boxes of a page on an image opened with the python library PIL, for example, 
 we can overlap them directly.
 
@@ -81,7 +81,7 @@ plt.show()
 [![segmentation_bboxes](images/bboxes_segmentation.png)](#)
 
 To visualize both at the same time we can convert the coordinates from the segmentation result to be based on the image
-size used for the characters bbox.
+size used for the characters' bbox.
 
 ```python
 doc_bbox = document.get_bbox()

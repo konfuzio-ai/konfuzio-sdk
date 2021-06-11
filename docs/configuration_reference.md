@@ -2,9 +2,9 @@
 
 # Configuration Reference Konfuzio Python SDK
 
-### 1. Have your project in Konfuzio App  
+### 1. Have your project in Konfuzio Web App  
 
-To test our SDK you need to set some basic configurations in our App and have one document of your choice at hand. Just follow the instructions below to set yourself ready for the SDK.
+To test our SDK you need to set some basic configurations in our Web App and have one document of your choice at hand. Just follow the instructions below to set yourself ready for the SDK.
  
 * #### Sign Up/Log In
 Use web [log in](https://app.konfuzio.com/) or [register for free](https://app.konfuzio.com/accounts/signup/).
@@ -13,17 +13,17 @@ Use web [log in](https://app.konfuzio.com/) or [register for free](https://app.k
 Create a project in your Account. Click HOME >Projects>[Add Project +](https://app.konfuzio.com/admin/server/project/add/) to create a new AI project. Name your project and click on “SAVE”.
  
 * #### Upload Document
-Upload documents to your project. Click on [DOCUMENTS](https://app.konfuzio.com/admin/server/document/). Via Drag&Drop or the browser window you can upload your local files. After all uploaded documents light up green, click the Reload button to reload the page. Now the OCR process begins. Depending on the file size and number of documents, this may take a moment.
+Upload documents to your project. Click on [DOCUMENTS](https://app.konfuzio.com/admin/server/document/). Via Drag&Drop or the browser window, you can upload your local files. After all uploaded documents light up green, click the Reload button to reload the page. Now the OCR process begins. Depending on the file size and number of documents, this may take a moment.
  
 * #### Create Label
-Create a label. Click on HOME>[Templates](https://app.konfuzio.com/admin/server/sectionlabel/). Klick on the Template which has the same name as your project. Click on the green plus next to the "Chosen Labels" field. In the window that now opens, you can name your Label. Select your project in the "Project" tab and click on “SAVE” to close the window. Check if your label is displayed in the “Chosen Labels” field and click on “SAVE” again. 
+Create a label. Click on HOME>[Templates](https://app.konfuzio.com/admin/server/sectionlabel/). Click on the Template which has the same name as your project. Click on the green plus next to the "Chosen Labels" field. In the window that now opens, you can name your Label. Select your project in the "Project" tab and click on “SAVE” to close the window. Check if your label is displayed in the “Chosen Labels” field and click on “SAVE” again. 
  
 * #### Add Training Data
 Add your document to the training dataset. Click on [DOCUMENTS](https://app.konfuzio.com/admin/server/document/). Tick the box on the left side of your document name and select “Add to training dataset” in the action tab. Click on “Go”.  
 
 ### Some words about the data structure
 
-The data structure of a project in Konfuzio App includes:
+The data structure of a project in Konfuzio Web App includes:
 
 * Labels  
 A label is the name of a group of individual pieces of information found in a type of document.

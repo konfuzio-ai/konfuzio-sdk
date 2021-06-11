@@ -4,14 +4,14 @@
 
 ## Documentation
 
-The API documentation is available at: https://app.konfuzio.com/swagger. To access the documentation please [register](https://app.konfuzio.com/accounts/signup/) beforehand.
+The API documentation is available at: https://app.konfuzio.com/swagger.
 
 ## How to make an API Call
 
 The API supports Password Authentication and Token Authentication.
 An API Token can be obtained here: https://app.konfuzio.com/v2/swagger/#/token-auth/token_auth_create
 
-"ENDPOINT" needs to be replaced with the respective API endpoint.Username, password and token are randomized examples.
+"ENDPOINT" needs to be replaced with the respective API endpoint. Username, password, and token are randomized examples.
 
 ### Using CURL
 
@@ -87,8 +87,8 @@ print(categories[str(code_category)])
 
 ## Document Segmentation
 
-The API provides an endpoint that allows for detection of different elements in a document such as: text, title, table,
-list, and figure. For each element it is possible to get a classification and bounding box.
+The API provides an endpoint that allows for the detection of different elements in a document such as text, title, table,
+list, and figure. For each element, it is possible to get a classification and bounding box.
 
 The model used on the background for this endpoint is a Mask-RCNN [1] trained on the PubLayNet dataset [2].
 

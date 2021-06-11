@@ -8,7 +8,7 @@
    self
 
 .. toctree::
-   :caption: Konfuzio Python SDK
+   :caption: SDK
 
    docs/konfuzio_sdk/sdkreadme
    docs/konfuzio_sdk/helloworld
