@@ -1,6 +1,4 @@
 
-# Training Documentation
-
 The training features are not yet available in the SDK.
 
 ## LabelSectionModel Examples
@@ -9,7 +7,7 @@ The training features are not yet available in the SDK.
 
 A `LabelSectionModel` is a model that takes in a `Document` and predicts a `Label` per token and a `SectionLabel` for each line in the document.
 
-### Training our first LabelSectionModel
+## Training our first LabelSectionModel
 
 A `LabelSectionModel` contains both a `LabelClassifier` and `SectionClassifier`. Both classifiers have set default modules and training is performed with a set of default hyperparameters. The `build` method returns metrics for each classifier, a dictionary of lists with the loss and accuracy values per batch for training/evaluation, which can be used e.g. visualization.
 

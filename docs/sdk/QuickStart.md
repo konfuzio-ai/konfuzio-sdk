@@ -1,6 +1,8 @@
-# Quick Start Konfuzio Python SDK
+.. meta::
+   :description: todo
 
-## Example Usage
+
+# Hello World Tutorial
 
 Let's see some simple examples of how can we use the `konfuzio_sdk` package to get information on a project and to post annotations.
 

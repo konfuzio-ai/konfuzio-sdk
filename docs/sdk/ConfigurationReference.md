@@ -1,6 +1,5 @@
-# Configuration Reference Konfuzio Python SDK
+# Install SDK
 
-### 1. Have your project in Konfuzio App  
 
 To test our SDK you need to set some basic configurations in our App and have one document of your choice at hand. Just follow the instructions below to set yourself ready for the SDK.
  

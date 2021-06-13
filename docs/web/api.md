@@ -1,10 +1,19 @@
-# API
 
-## Documentation
+
+## Konfuzio API Video Tutorial
+
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/NZKUrKyFVA8/0.jpg)](https://www.youtube.com/watch?v=NZKUrKyFVA8)
+
+## Konfuzio Train AI Tutorial
+
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/fMiK1xRsNzY/0.jpg)](https://youtu.be/p7P964DJmCc)
+
+
+
+## How to make an API Call
 
 The API documentation is available at: http://app.konfuzio.com/swagger. To access the documentation please [register](https://app.konfuzio.com/accounts/signup/) beforehand.
 
-## How to make an API Call
 
 The API supports Password Authentication and Token Authentication.
 An API Token can be obtained here: https://app.konfuzio.com/v2/swagger/#/token-auth/token_auth_create
@@ -42,17 +51,7 @@ headers = {'Authorization': 'Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b'}
 r = requests.get(url="https://app.konfuzio.com/api/ENDPOINT/", headers=headers)
 ```
 
-## Tutorial Videos
-
-### How to use the Konfuzio API
-
-[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/NZKUrKyFVA8/0.jpg)](https://www.youtube.com/watch?v=NZKUrKyFVA8)
-
-### How To Konfuzio - In 10 Minuten zur eigenen Dokumenten API (German Version)
-
-[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/fMiK1xRsNzY/0.jpg)](https://www.youtube.com/watch?v=fMiK1xRsNzY)
-
-### Document Categorization
+### Document Categorization API
 
 The API provides an endpoint that allows to upload a document and also get directly its metadata.
 
@@ -83,7 +82,7 @@ code_category = r.json()["category_template"]
 print(categories[str(code_category)])
 ```
 
-## Document Segmentation
+## Document Segmentation API
 
 The API provides an endpoint that allows for detection of different elements in a document such as: text, title, table,
 list, and figure. For each element it is possible to get a classification and bounding box.
@@ -123,8 +122,22 @@ plt.show()
 
 ```
 
-![segmentation_endpoint](images/segmentation.png)
+![segmentation_endpoint](../_static/img/segmentation.png)
 
 [1] Kaming H. et al., "Mask R-CNN", 2018  
 [2] Zhong, X. et al., "PubLayNet: largest dataset ever for document layout analysis", 2019  
 [3] Yuxin, W. et al., Detectron2, GitHub repository, https://github.com/facebookresearch/detectron2, 2019  
+
+## Supported file types
+
+Konfuzio supports various file types:
+
+### PDFs   
+Konfuzio supports PDF/A-1, PDF/A-2, PDF/A-3, PDF/1.7, PDF/2.0. An attempt will be made to repair corrupted PDFs.
+
+### Images
+Konfuzio supports JPEG and PNG (including support for alpha channel). _Support for TIFF is experimental._
+
+### Office documents
+Konfuzio offers limited support for common office documents like Microsoft® Word (.doc, .docx), Excel (.xls, .xlsx), PowerPoint (.ppt, .pptx) and Publisher as well as the Open Document Format (ODF). Uploaded office documents are converted to PDFs by Konfuzio. Libre Office is used for the PDF conversion. The layout of the converted office document may differ from the original. Office files can not be edited after they have been uploaded.
+
