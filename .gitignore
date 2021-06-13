@@ -4,3 +4,5 @@ konfuzio_sdk.egg-info
 .idea
 docs/build/
 *.pyc
+venv/
+_build/
