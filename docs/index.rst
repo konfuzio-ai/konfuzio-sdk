@@ -1,28 +1,53 @@
 .. image:: _static/docs__static_logo.png
     :alt: Konfuzio Logo
-|
-.. mdinclude:: konfuzio.md
+    :align: right
+    :width: 30%
+
+
+
+##########################
+Konfuzio Developer’s Guide
+##########################
+
+SDK
+###
+
+short description
+
+Training
+########
+
+short description
+
+Web Server
+##########
+
+short description
 
 .. toctree::
-
-   self
-
-.. toctree::
+   :hidden:
+   :maxdepth: 3
    :caption: SDK
 
-   docs/konfuzio_sdk/sdkreadme
-   docs/konfuzio_sdk/helloworld
-   docs/konfuzio_sdk/coordinates
-   docs/konfuzio_sdk/sourcecode
+
+   sdk/configuration_reference.md
+   sdk/helloworld.md
+   sdk/coordinates_system.md
+   sdk/sourcecode.rst
+   sdk/changelog.md
+
 
 .. toctree::
-   :caption: Training Package
+   :maxdepth: 6
+   :hidden:
+   :caption: Training
 
-   docs/training_package/trainingpackage
+   training/training_documentation.md
 
 .. toctree::
-   :caption: Web App
+   :caption: Web Server
+   :hidden:
+   :maxdepth: 3
 
-   docs/web_app/api
-   docs/web_app/changelog
-   docs/web_app/filetype
+   web/api.md
+   web/changelog_app.md

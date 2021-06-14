@@ -1,1 +1,0 @@
-.. mdinclude:: ../../training_documentation.md
