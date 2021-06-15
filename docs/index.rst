@@ -41,7 +41,7 @@ The training module is available for enterprise clients and allows to define, tr
 Web Server
 ##########
 
-The Konfuzio Web Server allows to interact with your Konfuzio projects.
+The Konfuzio Web Server allows the interaction with the Konfuzio projects.
 
 .. toctree::
    :hidden:
