@@ -1,5 +1,5 @@
 .. meta::
-   :description: todo
+   :description: Hello World tutorial with simple examples of how can the konfuzio_sdk package be used to get or post information on a project. These code snippets should provide a first insight for a quick start with the package.
 
 # Hello World Tutorial
 

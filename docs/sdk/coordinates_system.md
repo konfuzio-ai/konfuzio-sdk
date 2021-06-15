@@ -1,3 +1,6 @@
+.. meta::
+   :description: Documentation of the coordinates system of the bounding boxes used in Konfuzio and some simple examples of how to use it for visualization, for example.
+
 # Coordinates system
 
 The size of a page of a document can be obtained in the document object.

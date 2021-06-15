@@ -1,3 +1,7 @@
+.. meta::
+   :description: All notable changes in the konfuzio-sdk package will be documented in this file, chronologically ordered and with the correspondent tag version of the package.
+
+
 # Changelog
 
 ### 2021-06-15 v.0.1.2

@@ -1,3 +1,7 @@
+.. meta::
+   :description: Basic configurations necessary to use the sdk: have a project in the Konfuzio Web App with some basic settings and initialize the konfuzio-sdk correctly.
+
+
 # Install SDK
 
 To test our SDK you need to set some basic configurations in our Web App and have one document of your choice at hand. Just follow the instructions below to set yourself ready for the SDK.

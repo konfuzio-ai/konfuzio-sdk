@@ -1,3 +1,5 @@
+.. meta::
+   :description: Documentation of the Konfuzio API with code snippets and examples on how to access it and how to use some of the endpoints.
 
 ## Konfuzio API Video Tutorial
 
