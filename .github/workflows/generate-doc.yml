@@ -15,7 +15,6 @@ jobs:
       - name: Generate pages content
         run: |
           pip install -e .[dev]
-          pip install crawler
           pip install sphinx_rtd_theme
           sphinx-build -d _build/doctrees docs _build/html
           mv _build/html public
