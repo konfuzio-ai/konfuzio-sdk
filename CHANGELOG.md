@@ -1,3 +1,14 @@
+### 2021-06-15 v.0.1.2
+
+#### Added
+
+- Documentation for the Konfuzio Web App and Training package
+
+#### Changed
+
+- Load sections that match the category of the document
+
+
 ### 2021-05-17 v.0.1.1
 
 #### Added
