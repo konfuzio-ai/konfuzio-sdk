@@ -119,7 +119,7 @@ plt.show()
 
 ```
 
-[![segmentation_endpoint](../_static/img/segmentation.png)](#)
+![segmentation_endpoint](../_static/img/segmentation.png)
 
 [1] Kaming H. et al., "Mask R-CNN", 2018  
 [2] Zhong, X. et al., "PubLayNet: largest dataset ever for document layout analysis", 2019  
