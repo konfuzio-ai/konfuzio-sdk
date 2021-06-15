@@ -2,12 +2,11 @@
 
 <h2>1. Step: Download and Install VS Code on your machine</h2>
 
-Either use the link (https://code.visualstudio.com/download) or if you are on Linux and have snap installed just run:
+Either use the link (https://code.visualstudio.com/download) or if you are on Linux and have snap installed just run (for this tutorial v1.56.2 was used):
 
 ```ubuntu
 sudo snap install --classic code
 ```
-
 If you have not already installed docker, download and install it here (https://docs.docker.com/get-docker/).
 
 <h2>2. Step: Pull/Create your project that includes the relevant docker file</h2>
@@ -20,7 +19,9 @@ If you just want to try out how this all works, I have set up a sample repositor
 
 <h2>3. Step: Install the remote development extension</h2>
 
-In VS Code open the extensions tab and search **Remote - Containers** (or for its ID: *ms-vscode-remote.remote-containers*). Install the extension.
+In VS Code open the extensions tab (its icon is located in the left sidebar) and search **Remote - Containers** (or for its ID: *ms-vscode-remote.remote-containers*). Install the extension.
+
+![extensions tab](images/vscode_docker/extensions.PNG)
 
 ![remote development extension](images/vscode_docker/remote_dev_extension.png)
 
@@ -30,11 +31,11 @@ You should now be able to find the remote extension's symbol (arrows on a green 
 
 ![green arrows](images/vscode_docker/green_arrows.png)
 
-In the Command Pallet (*'View' > 'Command Pallet'*) select Remote-Containers: Add Development Configuration Files > From '$your_dockerfile'
+In the Command Pallet (*'View' > 'Command Pallet'*) select *'Remote-Containers: Add Development Container Configuration Files' > 'From $your_dockerfile'*
 
 ![command pallet](images/vscode_docker/command_pallet.PNG)
 
-Now you should see in the file explorer under .devcontainer your devcontainer.json file. Open it. These are the basic configurations of your devcontainer. Most of this can be left unchanged. Maybe give your container a name by changing the name variable. Additionally, you should specify all the ports you need inside your docker container in forwardPorts.
+Now you should see in the file explorer under .devcontainer your devcontainer.json file. Open it. These are the basic configurations of your devcontainer. Most of this can be left unchanged. Maybe give your container a name by changing the 'name' variable. Additionally, you should specify all the ports you need inside your docker container in 'forwardPorts'.
 If you are working with the sample project you do not need to specify any ports.
 
 ![devcontainer.json](images/vscode_docker/devcontainer.png)
@@ -51,13 +52,13 @@ To confirm that you are now inside the container look again to the bottom left. 
 
 <h2>6. Step: Install the python extension inside the docker container to debug and run python files</h2>
 
-Again open up the extensions tab (now inside the docker container) and install the python extension (ID: ms-python.python).
+Again open up the extensions tab (now inside the docker container) and install the python extension (ID: *ms-python.python*).
  
 
 
 Now you can debug/run any python file you want. Open up the chosen python file and the 'Run and Debug' tab by clicking the run/debug icon that should be now available on the left taskbar.
  
-
+![run and debug tab](images/vscode_docker/run_and_debug.png)
 
 Click *‘Run and Debug’ > ‘Python File’* and you are good to go. Before make sure to set the needed breakpoints by clicking to the left of the line numbers.
 
