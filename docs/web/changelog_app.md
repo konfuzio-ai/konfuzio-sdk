@@ -293,7 +293,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 
 ### Added
 - A public registration page: https://app.konfuzio.com/accounts/signup 
-- A Internal registration page to create users manually and faster: https://app.konfuzio.com/register/ (you need to be logged in to see this page)
+- A Internal registration page to create users manually and faster: `https://app.konfuzio.com/register/` (you need to be logged in to see this page)
 - Users can invite new users to a project via "ProjectInvitations"
 - Password reset functionality
 
