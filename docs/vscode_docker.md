@@ -21,7 +21,7 @@ If you just want to try out how this all works, I have set up a sample repositor
 
 In VS Code open the extensions tab (its icon is located in the left sidebar) and search **Remote - Containers** (or for its ID: *ms-vscode-remote.remote-containers*). Install the extension.
 
-![extensions tab](images/vscode_docker/extensions.PNG)
+<!--[extensions tab](images/vscode_docker/extensions.PNG)-->
 
 ![remote development extension](images/vscode_docker/remote_dev_extension.png)
 
@@ -58,7 +58,7 @@ Again open up the extensions tab (now inside the docker container) and install t
 
 Now you can debug/run any python file you want. Open up the chosen python file and the 'Run and Debug' tab by clicking the run/debug icon that should be now available on the left taskbar.
  
-![run and debug tab](images/vscode_docker/run_and_debug.png)
+<!--[run and debug tab](images/vscode_docker/run_and_debug.PNG)-->
 
 Click *‘Run and Debug’ > ‘Python File’* and you are good to go. Before make sure to set the needed breakpoints by clicking to the left of the line numbers.
 
