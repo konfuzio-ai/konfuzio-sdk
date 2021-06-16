@@ -596,7 +596,8 @@ class Document(Data):
         """
         if self.is_without_errors and (not self.ocr_file_path or update):
             for page_index in range(0, self.number_of_pages):
-                self.ocr_file_path = os.path.join(self.root, 'ocr.pdf')
+                filename = os.path.splitext(self.name)[0] + '_ocr.pdf'
+                self.ocr_file_path = os.path.join(self.root, filename)
                 if not is_file(self.ocr_file_path, raise_exception=False) or update:
                     pdf_content = download_file_konfuzio_api(self.id, session=self.session)
                     with open(self.ocr_file_path, 'wb') as f:
