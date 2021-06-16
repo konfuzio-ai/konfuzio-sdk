@@ -85,3 +85,4 @@ pytest -m local
 
 - If you want to rebuild the container, because e.g. a different branch uses different dependencies, open the extension’s command palette and click *'Rebuild Container'*.
 (This of course means that you have to reinstall the python extension - if this becomes annoying you can specify its ID in the devcontainer.json file to be pre-installed with every rebuild).
+
