@@ -123,6 +123,19 @@ def get_file_type(input_file: Union[str, BytesIO, bytes] = None) -> str:
         """Check zip file namelist."""
         return any(x.startswith("%s/" % name.rstrip("/")) for x in z.namelist())
 
+    if extension is None:
+        if isinstance(input_file, str):
+            with open(input_file, 'rb') as f:
+                data_bytes = f.read()
+        elif isinstance(input_file, BytesIO):
+            data_bytes = input_file.read()
+        elif isinstance(input_file, bytes):
+            data_bytes = input_file
+        else:
+            raise NotImplementedError(f'Unsupported type of argument file: {type(input_file)}.')
+        if b'%PDF' in data_bytes:
+            extension = filetype.guess_extension(b'%PDF' + data_bytes.split(b'%PDF')[-1])
+
     file_type = None
     if extension == 'pdf':
         file_type = PDF_FILE

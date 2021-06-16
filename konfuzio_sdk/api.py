@@ -82,7 +82,7 @@ def get_project_name_from_id(project_id: int) -> str:
     session = konfuzio_session()
     url = get_project_url(project_id)
     r = session.get(url=url)
-    return r
+    return r.json()['name']
 
 
 def retry_get(session, url):

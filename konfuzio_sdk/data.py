@@ -78,7 +78,7 @@ class Template(Data):
         name_clean: str,
         labels: List[int],
         is_default=False,
-        default_template=None,
+        default_template: "Template" = None,
         has_multiple_sections=False,
         **kwargs,
     ):
@@ -106,7 +106,6 @@ class Template(Data):
         for label_id in labels:
             label = self.project.get_label_by_id(id=label_id)
             self.add_label(label)
-            label.add_template(self)
 
     def __repr__(self):
         """Return string representation of the template."""
@@ -154,15 +153,22 @@ class Label(Data):
         self.data_type = get_data_type_display
         self.description = description
 
-        self.templates: List[Template] = templates
         self.project: Project = project
         self._correct_annotations_indexed = None
 
         project.add_label(self)
+        if templates:
+            [x.add_label(self) for x in templates]
 
     def __repr__(self):
         """Return string representation."""
         return self.name
+
+    @property
+    def templates(self):
+        """Get the templates in which this label is used."""
+        templates = [x for x in self.project.templates if self in x.labels]
+        return templates
 
     @property
     def annotations(self):
@@ -838,8 +844,12 @@ class Project(Data):
             for section in document._sections:
                 annotations = annotations_dict[section['id']] if section['id'] in annotations_dict else []
                 section['template'] = template_mapper_dict[section['section_label']]
-                section_instance = Section(**section, document=document, annotations=annotations)
-                document_sections.append(section_instance)
+                default_template = section['template'].default_template or section['template']
+                # we only add the sections that match the category of the document
+                # (ignore ghost sections that may exist)
+                if default_template == document.category_template:
+                    section_instance = Section(**section, document=document, annotations=annotations)
+                    document_sections.append(section_instance)
             document.sections = document_sections
 
     def make_paths(self):
@@ -963,8 +973,8 @@ class Project(Data):
                 with open(self.labels_file_path, 'r') as f:
                     labels_data = json.load(f)
             for label_data in labels_data:
-                if 'project' in label_data:
-                    label_data.pop('project')
+                # Remove the project from label_data as we use the already present project reference.
+                label_data.pop('project', None)
                 self.label_class(project=self, **label_data)
 
         return self.labels

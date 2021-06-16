@@ -25,4 +25,5 @@
 
    crawler/docs/web_app/api
    crawler/docs/web_app/changelog
+   crawler/docs/web_app/filetype
    crawler/docs/web_app/coordinates
