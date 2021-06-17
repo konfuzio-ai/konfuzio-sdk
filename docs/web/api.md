@@ -58,6 +58,10 @@ The API provides an endpoint that allows to upload a document and also get direc
 import os
 import requests 
 from requests.auth import HTTPBasicAuth
+from konfuzio_sdk.data import Project
+
+my_project = Project()
+project_id = my_project.id
 
 auth = HTTPBasicAuth('USERNAME', 'PASSWORD')
 
@@ -73,7 +77,7 @@ files_data = {
 
 # sync = True to have directly the metadata of the file
 # PROJECT_ID - id of your project in app konfuzio
-data = {'project': PROJECT_ID, 'sync': True}
+data = {'project': project_id, 'sync': True}
 
 r = requests.post(url="https://app.konfuzio.com/api/v2/docs/", auth=auth, files=files_data, data=data)
 
@@ -83,7 +87,7 @@ print(categories[str(code_category)])
 
 ## Document Segmentation API
 
-The API provides an endpoint that allows for the detection of different elements in a document such as text, title, table,
+The API provides an endpoint that allows the detection of different elements in a document such as text, title, table,
 list, and figure. For each element, it is possible to get a classification and bounding box.
 
 The model used on the background for this endpoint is a Mask-RCNN [1] trained on the PubLayNet dataset [2].
@@ -93,15 +97,30 @@ This model is available in the Detectron2 [3] platform, which is a platform from
 To visualize the results of this endpoint (using a document uploaded in the Konfuzio app):
 
 ```python
+import cv2
 import requests 
+import matplotlib.pyplot as plt
+import numpy as np
+from PIL import Image
 from requests.auth import HTTPBasicAuth
+from konfuzio_sdk.data import Project
+
+my_project = Project()
+
+project_id = my_project.id
+# first training document uploaded in the project
+document = my_project.documents[0]
+doc_id = document.id
 
 auth = HTTPBasicAuth('USERNAME', 'PASSWORD')
-url = f'https://app.konfuzio.com/api/projects/{PROJECT_ID}/docs/{DOC_ID}/segmentation/'
+url = f'https://app.konfuzio.com/api/projects/{project_id}/docs/{doc_id}/segmentation/'
 r = requests.get(url=url, auth=auth)
 result = r.json()
 
-image_path = document.image_paths[i]
+# index of the page to test
+page_index = 0
+
+image_path = document.image_paths[page_index]
 image = Image.open(image_path).convert('RGB')
 
 color_code  = {'text': (255, 0, 0),
@@ -110,7 +129,7 @@ color_code  = {'text': (255, 0, 0),
                'table': (255, 255, 0),
                'figure': (0, 255, 255)}
 
-for bbox in result[i]:
+for bbox in result[page_index]:
     label = bbox['label']
     pp1 = (int(bbox["x0"]), int(bbox["y0"]))
     pp2 = (int(bbox["x1"]), int(bbox["y1"]))

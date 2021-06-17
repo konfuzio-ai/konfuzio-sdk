@@ -1,20 +1,11 @@
 .. meta::
-   :description: Hello World tutorial with simple examples of how can the konfuzio_sdk package be used to get or post information on a project. These code snippets should provide a first insight for a quick start with the package.
+   :description: Hello World tutorial with simple example of how can the konfuzio_sdk package be used to get or post information on a project. This code snippet should provide a first insight for a quick start with the package.
 
 # Hello World Tutorial
 
-Let's see some simple examples of how can we use the `konfuzio_sdk` package to get information on a project and to post annotations.
+Let's see a simple example of how can we use the `konfuzio_sdk` package to get information on a project and to post annotations.
 
-To see which labels are available in the project:
-
-```python
-from konfuzio_sdk.data import Project
-
-my_project = Project()
-print(my_project.labels)
-```
-
-To post annotations of a certain word or expression in the first document uploaded, you can follow the example below:
+You can follow the example below to post annotations of a certain word or expression in the first document uploaded.
 
 ```python
 import re
@@ -22,7 +13,6 @@ import re
 from konfuzio_sdk.data import Project, Annotation, Label
 
 my_project = Project()
-my_project.update()
 
 # Word/expression to annotate in the document
 # should match an existing one in your document
