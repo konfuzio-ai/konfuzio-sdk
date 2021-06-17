@@ -1,0 +1,395 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta content="Information about the Konfuzio Web Server including examples on how to use and communicate with it." name="description" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Konfuzio API Video Tutorial &mdash; Konfuzio  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../_static/full_green_square.png"/>
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="On-Premises Documentation" href="on_premises.html" />
+    <link rel="prev" title="LabelSectionModel Examples" href="../training/training_documentation.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Konfuzio
+          
+
+          
+            
+            <img src="../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v.0.1.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">SDK</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/configuration_reference.html">Install SDK</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/helloworld.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/coordinates_system.html">Coordinates System</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/sourcecode.html">Source Code Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/changelog.html">Changelog</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Training</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html">LabelSectionModel Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#documentmodel-examples">DocumentModel Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#design-philosophy">Design Philosophy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#tokenizers">Tokenizers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#vocabularies">Vocabularies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#text-modules">Text Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#image-modules">Image Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#loading-pre-trained-modules">Loading Pre-trained Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#extraction">Extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#ocr">OCR</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Web Server</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Konfuzio API Video Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#konfuzio-train-ai-tutorial">Konfuzio Train AI Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#how-to-make-an-api-call">How to make an API Call</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#using-curl">Using CURL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-python">Using Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#document-categorization-api">Document Categorization API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#document-segmentation-api">Document Segmentation API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#supported-file-types">Supported file types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#pdfs">PDFs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#images">Images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#office-documents">Office documents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="on_premises.html">On-Premises Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog_app.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Konfuzio</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Konfuzio API Video Tutorial</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="konfuzio-api-video-tutorial">
+<h1>Konfuzio API Video Tutorial<a class="headerlink" href="#konfuzio-api-video-tutorial" title="Permalink to this headline">¶</a></h1>
+<a class="reference external image-reference" href="https://www.youtube.com/watch?v=NZKUrKyFVA8"><img alt="IMAGE ALT TEXT HERE" src="https://img.youtube.com/vi/NZKUrKyFVA8/0.jpg" /></a>
+</div>
+<div class="section" id="konfuzio-train-ai-tutorial">
+<h1>Konfuzio Train AI Tutorial<a class="headerlink" href="#konfuzio-train-ai-tutorial" title="Permalink to this headline">¶</a></h1>
+<a class="reference external image-reference" href="https://youtu.be/p7P964DJmCc"><img alt="IMAGE ALT TEXT HERE" src="https://img.youtube.com/vi/fMiK1xRsNzY/0.jpg" /></a>
+</div>
+<div class="section" id="how-to-make-an-api-call">
+<h1>How to make an API Call<a class="headerlink" href="#how-to-make-an-api-call" title="Permalink to this headline">¶</a></h1>
+<p>The API documentation is available at: <a class="reference external" href="https://app.konfuzio.com/swagger">https://app.konfuzio.com/swagger</a>.</p>
+<p>The API supports Password Authentication and Token Authentication.
+An API Token can be obtained here: <a class="reference external" href="https://app.konfuzio.com/v2/swagger/#/token-auth/token_auth_create">https://app.konfuzio.com/v2/swagger/#/token-auth/token_auth_create</a></p>
+<p>“ENDPOINT” needs to be replaced with the respective API endpoint. Username, password, and token are randomized examples.</p>
+<div class="section" id="using-curl">
+<h2>Using CURL<a class="headerlink" href="#using-curl" title="Permalink to this headline">¶</a></h2>
+<p>Password authentication:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl -u john.doe@example.com:9XQw92GZsJB2Ti  -X GET <span class="s2">&quot;https://app.konfuzio.com/api/ENDPOINT/&quot;</span>
+</pre></div>
+</div>
+<p>Token authentication:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl -H <span class="s2">&quot;Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b&quot;</span> -X GET <span class="s2">&quot;https://app.konfuzio.com/api/ENDPOINT/&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="using-python">
+<h2>Using Python<a class="headerlink" href="#using-python" title="Permalink to this headline">¶</a></h2>
+<p>Password authentication:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">requests.auth</span> <span class="kn">import</span> <span class="n">HTTPBasicAuth</span>
+
+<span class="n">auth</span> <span class="o">=</span> <span class="n">HTTPBasicAuth</span><span class="p">(</span><span class="s1">&#39;john.doe@example.com&#39;</span><span class="p">,</span> <span class="s1">&#39;9XQw92GZsJB2Ti&#39;</span><span class="p">)</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://app.konfuzio.com/api/ENDPOINT/&quot;</span><span class="p">,</span> <span class="n">auth</span><span class="o">=</span><span class="n">auth</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Token authentication:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Authorization&#39;</span><span class="p">:</span> <span class="s1">&#39;Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b&#39;</span><span class="p">}</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://app.konfuzio.com/api/ENDPOINT/&quot;</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="document-categorization-api">
+<h2>Document Categorization API<a class="headerlink" href="#document-categorization-api" title="Permalink to this headline">¶</a></h2>
+<p>The API provides an endpoint that allows to upload a document and also get directly its metadata.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">requests.auth</span> <span class="kn">import</span> <span class="n">HTTPBasicAuth</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">()</span>
+<span class="n">project_id</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">id</span>
+
+<span class="n">auth</span> <span class="o">=</span> <span class="n">HTTPBasicAuth</span><span class="p">(</span><span class="s1">&#39;USERNAME&#39;</span><span class="p">,</span> <span class="s1">&#39;PASSWORD&#39;</span><span class="p">)</span>
+
+<span class="n">categories</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;xx&quot;</span><span class="p">:</span> <span class="s2">&quot;Category A&quot;</span><span class="p">,</span> <span class="s2">&quot;yy&quot;</span><span class="p">:</span> <span class="s2">&quot;Category B&quot;</span><span class="p">}</span>
+
+<span class="c1"># filepath - path to your local file</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">file_data</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+<span class="n">files_data</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;data_file&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filepath</span><span class="p">),</span> <span class="n">file_data</span><span class="p">,</span> <span class="s2">&quot;multipart/form-data&quot;</span><span class="p">),</span>
+<span class="p">}</span>
+
+<span class="c1"># sync = True to have directly the metadata of the file</span>
+<span class="c1"># PROJECT_ID - id of your project in app konfuzio</span>
+<span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;project&#39;</span><span class="p">:</span> <span class="n">project_id</span><span class="p">,</span> <span class="s1">&#39;sync&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">}</span>
+
+<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://app.konfuzio.com/api/v2/docs/&quot;</span><span class="p">,</span> <span class="n">auth</span><span class="o">=</span><span class="n">auth</span><span class="p">,</span> <span class="n">files</span><span class="o">=</span><span class="n">files_data</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+
+<span class="n">code_category</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;category_template&quot;</span><span class="p">]</span>
+<span class="k">print</span><span class="p">(</span><span class="n">categories</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">code_category</span><span class="p">)])</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="document-segmentation-api">
+<h1>Document Segmentation API<a class="headerlink" href="#document-segmentation-api" title="Permalink to this headline">¶</a></h1>
+<p>The API provides an endpoint that allows the detection of different elements in a document such as text, title, table,
+list, and figure. For each element, it is possible to get a classification and bounding box.</p>
+<p>The model used on the background for this endpoint is a Mask-RCNN [1] trained on the PubLayNet dataset [2].</p>
+<p>This model is available in the Detectron2 [3] platform, which is a platform from Facebook AI Research that implements state-of-the-art object detection algorithms. The weights of the model trained with PubLayNet can also be found online.</p>
+<p>To visualize the results of this endpoint (using a document uploaded in the Konfuzio app):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">requests.auth</span> <span class="kn">import</span> <span class="n">HTTPBasicAuth</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">()</span>
+
+<span class="n">project_id</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">id</span>
+<span class="c1"># first training document uploaded in the project</span>
+<span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">doc_id</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">id</span>
+
+<span class="n">auth</span> <span class="o">=</span> <span class="n">HTTPBasicAuth</span><span class="p">(</span><span class="s1">&#39;USERNAME&#39;</span><span class="p">,</span> <span class="s1">&#39;PASSWORD&#39;</span><span class="p">)</span>
+<span class="n">url</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;https://app.konfuzio.com/api/projects/{project_id}/docs/{doc_id}/segmentation/&#39;</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span> <span class="n">auth</span><span class="o">=</span><span class="n">auth</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+
+<span class="c1"># index of the page to test</span>
+<span class="n">page_index</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="n">image_path</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">image_paths</span><span class="p">[</span><span class="n">page_index</span><span class="p">]</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">image_path</span><span class="p">)</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">)</span>
+
+<span class="n">color_code</span>  <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+               <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+               <span class="s1">&#39;list&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span>
+               <span class="s1">&#39;table&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+               <span class="s1">&#39;figure&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">)}</span>
+
+<span class="k">for</span> <span class="n">bbox</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="n">page_index</span><span class="p">]:</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="n">bbox</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span>
+    <span class="n">pp1</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;x0&quot;</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;y0&quot;</span><span class="p">]))</span>
+    <span class="n">pp2</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;x1&quot;</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;y1&quot;</span><span class="p">]))</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">image</span><span class="p">),</span> <span class="n">pp1</span><span class="p">,</span> <span class="n">pp2</span><span class="p">,</span> <span class="n">color_code</span><span class="p">[</span><span class="n">label</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<a class="reference external image-reference" href="../_static/img/segmentation.png"><img alt="segmentation_endpoint" src="../_images/segmentation.png" /></a>
+<p>[1] Kaming H. et al., “Mask R-CNN”, 2018<span class="raw-html-m2r"><br></span>
+[2] Zhong, X. et al., “PubLayNet: largest dataset ever for document layout analysis”, 2019<span class="raw-html-m2r"><br></span>
+[3] Yuxin, W. et al., Detectron2, GitHub repository, <a class="reference external" href="https://github.com/facebookresearch/detectron2">https://github.com/facebookresearch/detectron2</a>, 2019</p>
+</div>
+<div class="section" id="supported-file-types">
+<h1>Supported file types<a class="headerlink" href="#supported-file-types" title="Permalink to this headline">¶</a></h1>
+<p>Konfuzio supports various file types:</p>
+<div class="section" id="pdfs">
+<h2>PDFs<a class="headerlink" href="#pdfs" title="Permalink to this headline">¶</a></h2>
+<p>Konfuzio supports PDF/A-1a, PDF/A-1b, PDF/A-2a, PDF/A-2b, PDF/A-3a, PDF/A-3b, PDF/X-1a, PDF/1.7, PDF/2.0. An attempt will be made to repair corrupted PDFs.</p>
+</div>
+<div class="section" id="images">
+<h2>Images<a class="headerlink" href="#images" title="Permalink to this headline">¶</a></h2>
+<p>Konfuzio supports JPEG and PNG (including support for alpha channel). <em>Support for TIFF is experimental.</em></p>
+</div>
+<div class="section" id="office-documents">
+<h2>Office documents<a class="headerlink" href="#office-documents" title="Permalink to this headline">¶</a></h2>
+<p>Konfuzio offers limited support for common office documents like Microsoft® Word (.doc, .docx), Excel (.xls, .xlsx), PowerPoint (.ppt, .pptx) and Publisher as well as the Open Document Format (ODF). Uploaded office documents are converted to PDFs by Konfuzio. Libre Office is used for the PDF conversion. The layout of the converted office document may differ from the original. Office files can not be edited after they have been uploaded.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="on_premises.html" class="btn btn-neutral float-right" title="On-Premises Documentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../training/training_documentation.html" class="btn btn-neutral float-left" title="LabelSectionModel Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Helm und Nagel GmbH.
+
+    </p>
+  </div> 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

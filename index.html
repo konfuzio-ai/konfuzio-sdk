@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Konfuzio &mdash; Konfuzio  documentation</title>
+  <title>Konfuzio Developer’s Guide &mdash; Konfuzio  documentation</title>
   
 
   
@@ -44,7 +44,7 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Konfuzio SDK" href="crawler/docs/konfuzio_sdk/sdkreadme.html" /> 
+    <link rel="next" title="Install SDK" href="sdk/configuration_reference.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -71,7 +71,7 @@
             
             
               <div class="version">
-                v.0.1.1
+                v.0.1.2
               </div>
             
           
@@ -96,26 +96,36 @@
               
             
             
-              <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Konfuzio</a></li>
-</ul>
-<p class="caption"><span class="caption-text">Konfuzio Python SDK</span></p>
+              <p class="caption"><span class="caption-text">SDK</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="crawler/docs/konfuzio_sdk/sdkreadme.html">Konfuzio SDK</a></li>
-<li class="toctree-l1"><a class="reference internal" href="crawler/docs/konfuzio_sdk/helloworld.html">Quick Start Konfuzio Python SDK</a></li>
-<li class="toctree-l1"><a class="reference internal" href="crawler/docs/konfuzio_sdk/sourcecode.html">Source Code</a></li>
-<li class="toctree-l1"><a class="reference internal" href="crawler/docs/konfuzio_sdk/vscode_docker.html">How to debug python code inside a docker container</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk/configuration_reference.html">Install SDK</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk/helloworld.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk/coordinates_system.html">Coordinates System</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk/sourcecode.html">Source Code Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk/changelog.html">Changelog</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Training Package</span></p>
+<p class="caption"><span class="caption-text">Training</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html">Training Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training/training_documentation.html">LabelSectionModel Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training/training_documentation.html#documentmodel-examples">DocumentModel Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training/training_documentation.html#design-philosophy">Design Philosophy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training/training_documentation.html#tokenizers">Tokenizers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training/training_documentation.html#vocabularies">Vocabularies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training/training_documentation.html#text-modules">Text Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training/training_documentation.html#image-modules">Image Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training/training_documentation.html#loading-pre-trained-modules">Loading Pre-trained Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training/training_documentation.html#extraction">Extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training/training_documentation.html#ocr">OCR</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Web App</span></p>
+<p class="caption"><span class="caption-text">Web Server</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="crawler/docs/web_app/api.html">API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="crawler/docs/web_app/changelog.html">CHANGELOG</a></li>
-<li class="toctree-l1"><a class="reference internal" href="crawler/docs/web_app/filetype.html">Supported file types</a></li>
-<li class="toctree-l1"><a class="reference internal" href="crawler/docs/web_app/coordinates.html">Coordinates system</a></li>
+<li class="toctree-l1"><a class="reference internal" href="web/api.html">Konfuzio API Video Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="web/api.html#konfuzio-train-ai-tutorial">Konfuzio Train AI Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="web/api.html#how-to-make-an-api-call">How to make an API Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="web/api.html#document-segmentation-api">Document Segmentation API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="web/api.html#supported-file-types">Supported file types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="web/on_premises.html">On-Premises Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="web/changelog_app.html">Changelog</a></li>
 </ul>
 
             
@@ -164,7 +174,7 @@
     
       <li><a href="#" class="icon icon-home"></a> &raquo;</li>
         
-      <li>Konfuzio</li>
+      <li>Konfuzio Developer’s Guide</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -181,386 +191,44 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <img alt="Konfuzio Logo" src="_images/docs__static_logo.png" />
+  <a class="reference internal image-reference" href="_images/docs__static_logo.png"><img alt="Konfuzio Logo" class="align-right" src="_images/docs__static_logo.png" style="width: 30%;" /></a>
 <div class="line-block">
 <div class="line"><br /></div>
 </div>
-<div class="section" id="konfuzio">
-<h1>Konfuzio<a class="headerlink" href="#konfuzio" title="Permalink to this headline">¶</a></h1>
-<p>Our <strong>API Documentation</strong> is available online via <a class="reference external" href="https://app.konfuzio.com/api">https://app.konfuzio.com/api</a>. Have a look at our <a class="reference external" href="https://www.youtube.com/watch?v=NZKUrKyFVA8">YouTube API Tutorial</a> too.</p>
-<p>The Konfuzio Software Development Kit, the <strong>Konfuzio SDK</strong>, can be installed via <a class="reference external" href="https://pypi.org/project/konfuzio-sdk/">pip install konfuzio-sdk</a>. Find examples in Python and review the source code on <a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk">GitHub</a>.</p>
-<p>In addition, enterprise clients do have access to our <a class="reference external" href="./training_documentation.html">Python Konfuzio Trainer Module</a> to define, train and run custom Document AI.</p>
-<p>Download the <strong>On-Prem and Private Cloud</strong> documentation to deploy Konfuzio on a single VM or on your cluster. Use <a class="reference external" href="./_static/pdf/konfuzio_on_prem.pdf">this link</a> to access the latest version.</p>
-<p>The <a class="reference external" href="./changelog_app.html">Changelog of our Server</a> provides you with insights about any (future) release.</p>
-<p><strong>This technical documentation is updated frequently. Please feel free to share your feedback via info&#64;konfuzio.com</strong>.</p>
+<div class="section" id="konfuzio-developers-guide">
+<h1>Konfuzio Developer’s Guide<a class="headerlink" href="#konfuzio-developers-guide" title="Permalink to this headline">¶</a></h1>
 <p>Konfuzio is a cloud and on-premises B2B platform used thousands of times a day to train and run AI.
 SMEs and large companies train their AI to understand and process documents, e-mails and texts like human beings.
 Find out more on our <a class="reference external" href="https://konfuzio.com">Homepage</a>.</p>
-<div class="section" id="what-does-konfuzio-do-under-the-hood">
-<h2>What does Konfuzio do under the hood?<a class="headerlink" href="#what-does-konfuzio-do-under-the-hood" title="Permalink to this headline">¶</a></h2>
-<p>In the following section we try to give an answer to the question “How can you, as a technical user, describe Konfuzio to a non-technical user?”</p>
-<p>The majority of documents consist of unstructured data, usually in the form of a PDF file. This data usually consists of multiple modalities – text, images, tables. Konfuzio applies a five step process to automatically detect structures within the unstructured data. Automatic detection of these structures greatly reduces human labor in the automated business process to a minimum. Our algorithms use state-of-the-art deep learning and transfer learning techniques in order to learn to detect structures with only a handful of human labeled examples.</p>
-<div class="section" id="first-step-page-segmentation">
-<h3>1.1. First Step: Page Segmentation<a class="headerlink" href="#first-step-page-segmentation" title="Permalink to this headline">¶</a></h3>
-<p>First, page segmentation is performed in order to locate and identify structural elements – like lists, tables, paragraphs, images, and headings – on each page of a document. At Konfuzio, we perform page segmentation with a <a class="reference external" href="https://arxiv.org/abs/1703.06870">mask R-CNN</a>, a deep learning model that is able to detect the position and classification of objects within an image. The model is able to operate across all document types, regardless of the language of the document.</p>
+<p>Our <strong>API Documentation</strong> is available online via <a class="reference external" href="https://app.konfuzio.com/api">https://app.konfuzio.com/api</a>. Have a look at our <a class="reference external" href="https://www.youtube.com/watch?v=NZKUrKyFVA8">YouTube API Tutorial</a> too.</p>
+<p>The documentation for the Konfuzio Software Development Kit, the <strong>Konfuzio SDK</strong>, can be found in the SDK section.
+You can also consult the source code on <a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk">GitHub</a>.</p>
+<p>In addition, enterprise clients do have access to our <a class="reference external" href="./training/training_documentation.html">Python Konfuzio Training Module</a>.</p>
+<p>The <a class="reference external" href="./web/changelog_app.html">Changelog of app.konfuzio.com Server</a> provides you with insights about any (future) release.</p>
+<p><strong>This technical documentation is updated frequently. Please feel free to share your feedback via info&#64;konfuzio.com</strong>.</p>
+<div class="section" id="sdk">
+<h2>SDK<a class="headerlink" href="#sdk" title="Permalink to this headline">¶</a></h2>
+<p>The Konfuzio Software Development Kit (SDK) provides the tools to work with the data layer used by the Konfuzio Web
+Server (App). Using the SDK you can communicate with the Konfuzio App and use the data structure in your projects.
+Find in this section the documentation of the package, the installation instructions and code examples that will help
+you in starting using it.</p>
 </div>
-<div class="section" id="second-step-text-recognition">
-<h3>1.2. Second Step: Text Recognition<a class="headerlink" href="#second-step-text-recognition" title="Permalink to this headline">¶</a></h3>
-<p>Next, we perform optical character recognition (OCR), which allows us to extract the text from each document. At Konfuzio, we use multiple OCR algorithms and select the appropriate one depending on the quality of the incoming document, enabling us to extract text from low-quality images and scanned documents. The extracted text is appended to the document so it can be searched and used in the next steps.</p>
+<div class="section" id="training">
+<h2>Training<a class="headerlink" href="#training" title="Permalink to this headline">¶</a></h2>
+<p>The training module allows to define, train and run custom Document AI.
+In the Training section you find the documentation of the features of this module, including the contents structure
+and examples of how to use it.</p>
 </div>
-<div class="section" id="third-step-entity-extraction">
-<h3>1.3. Third Step: Entity Extraction<a class="headerlink" href="#third-step-entity-extraction" title="Permalink to this headline">¶</a></h3>
-<p>Once we have the extracted text we can began to recognize entities within the text using a named entity recognition (NER) model. Our NER models use state-of-the-art deep learning-based natural language processing (NLP) models, such as <a class="reference external" href="https://arxiv.org/abs/1810.04805">BERT</a>. For each word in the document the NER model determines if it belongs into one of many useful generic categories, such as: date, country and currency, as well as user-defined domain-specific entities such as: currency, gross amount and house number.</p>
-</div>
-<div class="section" id="fourth-step-entity-aggregation">
-<h3>1.4. Fourth Step: Entity Aggregation<a class="headerlink" href="#fourth-step-entity-aggregation" title="Permalink to this headline">¶</a></h3>
-<p>In the fourth step the recognized entities are group together into user-defined sections, such as grouping “departure time”, “arrival time”, “destination” and “cost” entities together into a “travel booking” template. There can be multiple types of sections per document and multiple instances of each section, e.g. a document can have one “customer information” section and multiple “travel booking” sections. For each extracted entity we predict which type of section it belongs to, using information from the entity text, entity class and the document text surrounding the entity itself. As with the tntiy extraction, these predictions use state-of-the-art NLP techniques.</p>
-</div>
-<div class="section" id="fifth-step-active-learning">
-<h3>1.5 Fifth Step: Active Learning<a class="headerlink" href="#fifth-step-active-learning" title="Permalink to this headline">¶</a></h3>
-<p>To improve performance of the entity extraction and aggregation steps we make use of <em>active learning</em> techniques. User feedback, such as the acceptance or rejection of an extracted entity, is sent back to the NLP models which can adapt to domain-shifts within the training data.</p>
+<div class="section" id="web-server">
+<h2>Web Server<a class="headerlink" href="#web-server" title="Permalink to this headline">¶</a></h2>
+<p>The Konfuzio Web Server allows the interaction with the Konfuzio projects.
+In this section you can information regarding how to use it. Check here the latest updates, information in how to have
+Konfuzio on premises and examples on how to use the API for communicate directly with the Konfuzio Web Server.</p>
 <div class="toctree-wrapper compound">
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Konfuzio</a></li>
-</ul>
 </div>
 <div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">Konfuzio Python SDK</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="crawler/docs/konfuzio_sdk/sdkreadme.html">Konfuzio SDK</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/konfuzio_sdk/sdkreadme.html#quickstart">Quickstart</a></li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/konfuzio_sdk/sdkreadme.html#roadmap">Roadmap</a></li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/konfuzio_sdk/sdkreadme.html#references">References</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="crawler/docs/konfuzio_sdk/helloworld.html">Quick Start Konfuzio Python SDK</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/konfuzio_sdk/helloworld.html#example-usage">Example Usage</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="crawler/docs/konfuzio_sdk/sourcecode.html">Source Code</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/konfuzio_sdk/sourcecode.html#api">API</a></li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/konfuzio_sdk/sourcecode.html#cli">CLI</a></li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/konfuzio_sdk/sourcecode.html#data">Data</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/konfuzio_sdk/sourcecode.html#data-class">Data Class</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/konfuzio_sdk/sourcecode.html#section-class">Section Class</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/konfuzio_sdk/sourcecode.html#template-class">Template Class</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/konfuzio_sdk/sourcecode.html#label-class">Label Class</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/konfuzio_sdk/sourcecode.html#annotation-class">Annotation Class</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/konfuzio_sdk/sourcecode.html#document-class">Document Class</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/konfuzio_sdk/sourcecode.html#project-class">Project CLass</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/konfuzio_sdk/sourcecode.html#urls">URLs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/konfuzio_sdk/sourcecode.html#utils">Utils</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="crawler/docs/konfuzio_sdk/vscode_docker.html">How to debug python code inside a docker container</a></li>
-</ul>
 </div>
 <div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">Training Package</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html">Training Documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#labelsectionmodel-examples">LabelSectionModel Examples</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#training-our-first-labelsectionmodel">Training our first LabelSectionModel</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#customizing-the-labelsectionmodel">Customizing the LabelSectionModel</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#setting-the-labelsectionmodel-training-hyperparameters">Setting the LabelSectionModel training hyperparameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#customizing-the-labelsectionmodel-model-and-training-hyperparameters">Customizing the LabelSectionModel model and training hyperparameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#implementing-a-custom-labelsectionmodel-training-loop">Implementing a custom LabelSectionModel training loop</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#implementing-a-custom-labelsectionmodel-classifier-training-loop">Implementing a custom LabelSectionModel classifier training loop</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#documentmodel-examples">DocumentModel Examples</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#training-our-first-documentmodel">Training our first DocumentModel</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#customizing-the-documentmodel">Customizing the DocumentModel</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#classifying-documents-using-image-features-only">Classifying documents using image features only</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#classifying-documents-using-text-features-only">Classifying documents using text features only</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#setting-the-documentmodel-training-hyperparameters">Setting the DocumentModel training hyperparameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#implementing-a-custom-documentmodel-training-loop">Implementing a custom DocumentModel training loop</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#design-philosophy">Design Philosophy</a></li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#tokenizers">Tokenizers</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#whitespacetokenizer">WhitespaceTokenizer</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#spacytokenizer">SpacyTokenizer</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#phrasematchertokenizer">PhraseMatcherTokenizer</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#bpetokenizer">BPETokenizer</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#vocabularies">Vocabularies</a></li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#text-modules">Text Modules</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#nbow">NBOW</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#nbowselfattention">NBOWSelfAttention</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#lstm">LSTM</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#bert">BERT</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#image-modules">Image Modules</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#vgg">VGG</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#efficientnet">EfficientNet</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#loading-pre-trained-modules">Loading Pre-trained Modules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#extraction">Extraction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#ocr">OCR</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#ocr-with-the-azure-read-api">OCR with the Azure Read API</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#additional-filescanner-ocr-results">Additional FileScanner OCR results</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#further-usages-of-the-filescanner">Further usages of the FileScanner</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#labelsectionmodel-extraction">LabelSectionModel extraction</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/training_package/trainingpackage.html#documentmodel-extraction">DocumentModel extraction</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</div>
-<div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">Web App</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="crawler/docs/web_app/api.html">API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/api.html#documentation">Documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/api.html#how-to-make-an-api-call">How to make an API Call</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/api.html#using-curl">Using CURL</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/api.html#using-python">Using Python</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/api.html#tutorial-videos">Tutorial Videos</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/api.html#how-to-use-the-konfuzio-api">How to use the Konfuzio API</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/api.html#how-to-konfuzio-in-10-minuten-zur-eigenen-dokumenten-api-german-version">How To Konfuzio - In 10 Minuten zur eigenen Dokumenten API (German Version)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/api.html#document-categorization">Document Categorization</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/api.html#document-segmentation">Document Segmentation</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="crawler/docs/web_app/changelog.html">CHANGELOG</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id1">2021-05-26_20-16-02</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#added">Added</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id2">2021-05-24_13-42-45</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#changed">Changed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id3">2021-05-18_16-37-25</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id4">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#fixed">Fixed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id5">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#removed">Removed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id6">2021-05-04_12-37-16</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id7">Fixed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id8">2021-04-28_12-27-19</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id9">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id10">Changed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id11">2021-04-25_20-09-04</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id12">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id13">Fixed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id14">2021-04-19_22-32-19</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id15">Added</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id16">2021-04-03_09-46-56</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id17">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id18">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id19">Fixed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id20">2021-03-15_15-12-04</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id21">Added</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id22">2021-03-07_21-32-41</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id23">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id24">Fixed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id25">Changed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id26">2021-02-25_09-28-07</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id27">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id28">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id29">Fixed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id30">2021-02-15_18-56-51</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id31">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id32">Added</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id33">2021-02-13_18-18-52</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id34">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id35">Fixed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id36">2021-02-10_13-52-15</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id37">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id38">Fixed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id39">2021-02-03_17-07-23</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id40">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id41">Fixed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id42">Changed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id43">2021-01-26_18-07-11</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id44">Added</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id45">2021-01-20_11-17-24</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id46">Added</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id47">2021-01-14_22-06-52</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id48">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id49">Fixed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id50">2021-01-13_23-26-03</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id51">Fixed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id52">Added</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id53">2021-01-12_21-13-48</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id54">Fixed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id55">2021-01-10_18-36-49</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id56">Fixed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id57">2021-01-08_22-30-10</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id58">Fixed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id59">2021-01-05_11-53-22</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id60">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id61">Added</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id62">2020-12-22_19-04-04</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id63">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id64">Fixed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id65">2020-12-16_20-17-30</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id66">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id67">Fixed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id68">2020-12-16_09-44-30</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id69">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id70">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id71">Fixed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id72">2020-12-10_13-15-14</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id73">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id74">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id75">Fixed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id76">2020-12-01_21-08-32</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id77">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id78">Changed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id79">2020-11-26_19-43-14</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id80">Fixed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id81">Added</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id82">2020-11-20_20-05-47</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id83">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id84">Fixed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id85">Changed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id86">2020-11-09_18-04-28</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id87">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id88">Changed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id89">2020-10-27_10-37-15</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id90">Changed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id91">2020-10-21_08-53-42</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id92">Fixed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id93">2020-10-19_22-46-49</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id94">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id95">Fixed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id96">Added</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id97">2020-10-14_11-39-17</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id98">Changed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id99">2020-10-13_15-10-22</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id100">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id101">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id102">Fixed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id103">2020-10-03_15-18-47</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id104">Fixed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id105">2020-10-01_12-02-37</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id106">Fixed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id107">Changed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id108">2020-09-16_18-19-53</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id109">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id110">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id111">Fixed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id112">2020-09-11_13-47-51</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id113">Added</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id114">2020-09-09_16-12-44</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id115">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id116">Changed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id119">2020-09-08_22-38-19</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id120">Added</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id121">2020-09-08_09-17-00</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id122">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id123">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id124">Fixed</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id125">2020-09-07_17-48-22</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crawler/docs/web_app/changelog.html#id126">Fixed</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="crawler/docs/web_app/filetype.html">Supported file types</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/filetype.html#pdfs">PDFs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/filetype.html#images">Images</a></li>
-<li class="toctree-l2"><a class="reference internal" href="crawler/docs/web_app/filetype.html#office-documents">Office documents</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="crawler/docs/web_app/coordinates.html">Coordinates system</a></li>
-</ul>
-</div>
 </div>
 </div>
 </div>
@@ -571,7 +239,7 @@ Find out more on our <a class="reference external" href="https://konfuzio.com">H
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="crawler/docs/konfuzio_sdk/sdkreadme.html" class="btn btn-neutral float-right" title="Konfuzio SDK" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="sdk/configuration_reference.html" class="btn btn-neutral float-right" title="Install SDK" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
