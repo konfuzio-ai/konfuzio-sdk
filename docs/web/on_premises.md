@@ -190,7 +190,7 @@ password for `root` user. This can be extracted by the following command (replac
 
 ## Upgrade
 
-Before upgrading your Konfuzio installation, you need to check the [changelog](./changelog_app.md)
+Before upgrading your Konfuzio installation, you need to check the [changelog](./changelog_app.html)
 corresponding to the specific release you want to upgrade to and look for any that might
 pertain to the new version.
 

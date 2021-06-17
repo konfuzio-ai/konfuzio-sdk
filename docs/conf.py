@@ -43,7 +43,8 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'm2r2',
-    'sphinx.ext.githubpages'
+    'sphinx.ext.githubpages',
+    'notfound.extension',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -88,3 +89,14 @@ html_logo = '_static/docs__static_square_transparent_super_small.png'
 html_favicon = '_static/full_green_square.png'
 html_css_files = ['custom.css']
 html_show_sphinx = False
+
+# sphinx-notfound-page
+# https://github.com/readthedocs/sphinx-notfound-page
+notfound_context = {
+    'title': 'Page Not Found',
+    'body': '''
+<h1>Page Not Found</h1>
+<p>Sorry, we couldn't find that page.</p>
+<p>Please go back to the homepage https://dev.konfuzio.com/.</p>
+''',
+}
