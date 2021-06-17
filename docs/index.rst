@@ -15,12 +15,10 @@ Find out more on our `Homepage <https://konfuzio.com>`_.
 
 Our **API Documentation** is available online via https://app.konfuzio.com/api. Have a look at our `YouTube API Tutorial <https://www.youtube.com/watch?v=NZKUrKyFVA8>`_ too.
 
-The Konfuzio Software Development Kit, the **Konfuzio SDK**, can be installed via `pip install konfuzio-sdk <https://pypi.org/project/konfuzio-sdk/>`_.
-Find examples in Python and review the source code on `GitHub <https://github.com/konfuzio-ai/document-ai-python-sdk>`_.
+The documentation for the Konfuzio Software Development Kit, the **Konfuzio SDK**, can be found in the SDK section.
+You can also consult the source code on `GitHub <https://github.com/konfuzio-ai/document-ai-python-sdk>`_.
 
-In addition, enterprise clients do have access to our `Python Konfuzio Training Module <./training/training_documentation.html>`_ to define, train and run custom Document AI.
-
-Download the **On-Prem and Private Cloud** documentation to deploy Konfuzio on a single VM or on your cluster. Use `this link <./_static/pdf/konfuzio_on_prem.pdf>`_ to access the latest version.
+In addition, enterprise clients do have access to our `Python Konfuzio Training Module <./training/training_documentation.html>`_.
 
 The `Changelog of app.konfuzio.com Server <./web/changelog_app.html>`_ provides you with insights about any (future) release.
 
@@ -30,18 +28,25 @@ The `Changelog of app.konfuzio.com Server <./web/changelog_app.html>`_ provides 
 SDK
 ###
 
-The Konfuzio Software Development Kit (SDK) provides the tools to work with the data layer used by Konfuzio software.
-Using the SDK you can communicate with the Konfuzio App and use the data structure in your projects.
+The Konfuzio Software Development Kit (SDK) provides the tools to work with the data layer used by the Konfuzio Web
+Server (App). Using the SDK you can communicate with the Konfuzio App and use the data structure in your projects.
+Find in this section the documentation of the package, the installation instructions and code examples that will help
+you in starting using it.
 
 Training
 ########
 
-The training module is available for enterprise clients and allows to define, train and run custom Document AI.
+The training module allows to define, train and run custom Document AI.
+In the Training section you find the documentation of the features of this module, including the contents structure
+and examples of how to use it.
 
 Web Server
 ##########
 
 The Konfuzio Web Server allows the interaction with the Konfuzio projects.
+In this section you can information regarding how to use it. Check here the latest updates, information in how to have
+Konfuzio on premises and examples on how to use the API for communicate directly with the Konfuzio Web Server.
+
 
 .. toctree::
    :hidden:
@@ -69,4 +74,5 @@ The Konfuzio Web Server allows the interaction with the Konfuzio projects.
    :maxdepth: 3
 
    web/api.md
+   web/on_premises.md
    web/changelog_app.md

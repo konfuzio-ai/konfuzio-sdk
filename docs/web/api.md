@@ -1,5 +1,5 @@
 .. meta::
-   :description: Documentation of the Konfuzio API with code snippets and examples on how to access it and how to use some of the endpoints.
+   :description: Information about the Konfuzio Web Server including examples on how to use and communicate with it.
 
 ## Konfuzio API Video Tutorial
 
@@ -152,7 +152,7 @@ plt.show()
 Konfuzio supports various file types:
 
 ### PDFs   
-Konfuzio supports PDF/A-1, PDF/A-2, PDF/A-3, PDF/1.7, PDF/2.0. An attempt will be made to repair corrupted PDFs.
+Konfuzio supports PDF/A-1a, PDF/A-1b, PDF/A-2a, PDF/A-2b, PDF/A-3a, PDF/A-3b, PDF/X-1a, PDF/1.7, PDF/2.0. An attempt will be made to repair corrupted PDFs.
 
 ### Images
 Konfuzio supports JPEG and PNG (including support for alpha channel). _Support for TIFF is experimental._

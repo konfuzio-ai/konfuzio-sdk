@@ -1,5 +1,5 @@
 .. meta::
-   :description: Documentation of the features of the training package including the organization structure and examples of how to use it.
+   :description: Documentation of the features of the training package including the contents structure and examples of how to use it.
 
 The training features are not yet available in the SDK.
 
