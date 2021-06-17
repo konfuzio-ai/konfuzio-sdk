@@ -1,1 +1,0 @@
-.. mdinclude:: ../../../coordinates_system.md

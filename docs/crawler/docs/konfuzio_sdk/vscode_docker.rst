@@ -1,1 +1,0 @@
-.. mdinclude:: ../../../vscode_docker.md

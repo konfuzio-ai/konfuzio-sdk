@@ -29,7 +29,7 @@ copyright = '2021, Helm und Nagel GmbH'
 author = 'Helm und Nagel GmbH'
 
 # The short X.Y version
-version = 'v.0.1.1'
+version = 'v.0.1.2'
 
 
 # -- General configuration ---------------------------------------------------
@@ -43,7 +43,8 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'm2r2',
-    'sphinx.ext.githubpages'
+    'sphinx.ext.githubpages',
+    'notfound.extension',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -91,3 +92,13 @@ html_favicon = '_static/full_green_square.png'
 html_css_files = ['custom.css']
 html_show_sphinx = False
 
+# sphinx-notfound-page
+# https://github.com/readthedocs/sphinx-notfound-page
+notfound_context = {
+    'title': 'Page Not Found',
+    'body': '''
+<h1>Page Not Found</h1>
+<p>Sorry, we couldn't find that page.</p>
+<p>Please go back to the homepage https://dev.konfuzio.com/.</p>
+''',
+}

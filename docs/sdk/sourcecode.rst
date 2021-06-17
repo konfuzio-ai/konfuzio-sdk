@@ -1,5 +1,9 @@
-Source Code
-=============
+.. meta::
+   :description: Docstrings of the classes, methods, and functions in the source code of the konfuzio-sdk package with references to the code itself.
+
+
+Source Code Reference
+=====================
 
 
 API

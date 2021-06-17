@@ -1,52 +1,58 @@
-### 2021-06-15 v.0.1.2
+.. meta::
+   :description: All notable changes in the konfuzio-sdk package will be documented in this file, chronologically ordered and with the correspondent tag version of the package.
 
-#### Added
+
+# Changelog
+
+## 2021-06-15 v.0.1.2
+
+### Added
 
 - Documentation for the Konfuzio Web App and Training package
 
-#### Changed
+### Changed
 
 - Load sections that match the category of the document
 
 
-### 2021-05-17 v.0.1.1
+## 2021-05-17 v.0.1.1
 
-#### Added
+### Added
 
 - Method to get link from Annotation
 - Include readme file in the pip package
 
-#### Fixed
+### Fixed
 
 - Initialization of the package with new projects
 
 
-### 2021-05-07 v.0.1.0
+## 2021-05-07 v.0.1.0
 
-#### Changed
+### Changed
 
 - Cleaning of the repo.
 
 
-### 2021-05-06 v.0.0.1
+## 2021-05-06 v.0.0.1
 
-#### Changed
+### Changed
 
 - Updated documentation.
 - Setup github actions.
 
 
-### 2021-04-29
+## 2021-04-29
 
-#### Changed
+### Changed
 
 - Update api endpoint.
 - Methods for saving online Documents and Labels.
 
 
-### 2021-03-29
+## 2021-03-29
 
-#### Changed
+### Changed
 
 - Removed config directory from setup.py. 
 - Delete config directory. 
@@ -54,9 +60,9 @@
 
   
 
-### 2021-03-26
+## 2021-03-26
 
-#### Fixed
+### Fixed
 
 - Fixes for the password input in the *cli.py* and *test_cli.py*.
 - Quick code clean.
@@ -64,76 +70,76 @@
 
   
 
-### 2021-03-25
+## 2021-03-25
 
-#### Added
+### Added
 
 - Defining tests in pipeline.
 - Definition of the classes.
 - Add str methods.
 
-#### Changed
+### Changed
 
 - Split in pipeline 
 - Mark tests as local and split in pipeline.
 - Replace test docs for zip.
 - Clean definition of classes.
 
-#### Fixed
+### Fixed
 
 - Fix *test_get_file_type* method in *test_utils.py* .
 
   
 
-### 2021-03-24
+## 2021-03-24
 
-#### Added
+### Added
 
 - Added test_utils.py class.
 - Added test_cli.py class.
 
-#### Changed
+### Changed
 
 - Removed functions from urls.py that are not being used.
 - Allow to overwrite of classes in Project.
 
   
 
-### 2021-03-18
+## 2021-03-18
 
-#### Changed
+### Changed
 
 - Remove creation of releases folder.
 
   
 
-### 2021-03-17
+## 2021-03-17
 
-#### Added
+### Added
 
 - Initialization of SDK.
 
-#### Changed
+### Changed
 
 - New changes in the konfuzio_sdk package.
 
   
 
-### 2021-03-15
+## 2021-03-15
 
-#### Changed
+### Changed
 
 - Move data methods from trainer to SDK and update tests.
 
-#### Fixed
+### Fixed
 
 - Code clean.
 
   
 
-### 2021-03-11
+## 2021-03-11
 
-#### Added
+### Added
 
 - Add test data.
 - Add flake8 config .
@@ -143,89 +149,89 @@
 - Add dockerfile.
 - Add tests for api.py.
 
-#### Changed
+### Changed
 
 - **does_not_raise** moved from wrapper in Trainer.
 - Remove container.
 - Update setup.py.
 
-#### Fixed
+### Fixed
 
 - Clean tests for API.
 
   
 
-### 2021-03-10_
+## 2021-03-10_
 
-#### Added
+### Added
 
 - Add other API endpoints and update data.py .
 
-#### Changed
+### Changed
 
 - Update setup.py.
 
   
 
-### 2021-03-3_
+## 2021-03-3_
 
-#### Added
+### Added
 
 - Added new file for ReadMe.
 
   
 
-### 2021-03-2_
+## 2021-03-2_
 
-#### Added
+### Added
 
 - Add labels description to Label.
 
   
 
-### 2021-02-23_
+## 2021-02-23_
 
-#### Changed
+### Changed
 
 - Update README.md.
 
   
 
-### 2021-02-17_
+## 2021-02-17_
 
-#### Added
+### Added
 
 - Added **get_bbox()** method to Document class.
 
   
 
-### 2021-02-16_
+## 2021-02-16_
 
-#### Changed
+### Changed
 
 - Removed methods from each class in data.py that are not used for data downloading. 
 
   
 
-### 2021-02-15_
+## 2021-02-15_
 
-#### Added
+### Added
 
 - Utils class added with utility functions for data.py.
 
-#### Changed
+### Changed
 
 - Update README.md. 
 - Remove commented is_file function inside data.py.
 
   
 
-### 2021-02-12_
+## 2021-02-12_
 
-#### Added
+### Added
 
 - Add README.md file.
 
-#### Changed
+### Changed
 
 - Refactor data.py.

@@ -1,6 +1,9 @@
-# CHANGELOG
+.. meta::
+   :description: All notable changes in the server of app.konfuzio.com will be documented in this file, following the calendar versioning.
 
-All notable changes to this project will be documented in this file.
+# Changelog
+
+All notable changes in the server of app.konfuzio.com will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
@@ -290,7 +293,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 
 ### Added
 - A public registration page: https://app.konfuzio.com/accounts/signup 
-- A Internal registration page to create users manually and faster: https://app.konfuzio.com/register/ (you need to be logged in to see this page)
+- A Internal registration page to create users manually and faster: `https://app.konfuzio.com/register/` (you need to be logged in to see this page)
 - Users can invite new users to a project via "ProjectInvitations"
 - Password reset functionality
 
