@@ -11,12 +11,12 @@ Either use the link (https://code.visualstudio.com/download) or if you are on Li
 ```ubuntu
 sudo snap install --classic code
 ```
-If you have not already installed docker, download and install it here (https://docs.docker.com/get-docker/).
+If you have not already installed Docker, download and install it here (https://docs.docker.com/get-docker/).
 
-## 2. Step: Pull/Create your project that includes the relevant docker file
+## 2. Step: Pull/Create your project that includes the relevant Docker file
 
 In most cases you are going to be using git, so just set up a new git-repository via the terminal, VS Code’s built-in 
-console or VS Code’s git extension. This project should of course include the docker file that is used for deployment 
+console or VS Code’s git extension. This project should of course include the Docker file that is used for deployment 
 and which behavior you want to mimic locally.
  
 
@@ -31,7 +31,7 @@ its ID: *ms-vscode-remote.remote-containers*). Install the extension.
 
 <!--[extensions tab](images/vscode_docker/extensions.PNG)-->
 
-![remote development extension](../_static/img/vscode_docker/remote_dev_extension.png)
+![remote development extension](../_static/img/vscode_Docker/remote_dev_extension.png)
 
 ## 4. Step: Set up your remote development environment
 
@@ -48,16 +48,16 @@ Files' > 'From $your_dockerfile'*
 
 Now you should see in the file explorer under .devcontainer your devcontainer.json file. Open it. These are the basic 
 configurations of your devcontainer. Most of this can be left unchanged. Maybe give your container a name by changing 
-the 'name' variable. Additionally, you should specify all the ports you need inside your docker container in 
+the 'name' variable. Additionally, you should specify all the ports you need inside your Docker container in 
 'forwardPorts'.
 If you are working with the sample project you do not need to specify any ports.
 
 ![devcontainer.json](../_static/img/vscode_docker/devcontainer.png)
 
-## 5. Step: Build and run your docker container
+## 5. Step: Build and run your Docker container
 
 Open the extension’s command pallet by clicking on the arrows in the bottom left and search 
-for *‘Reopen Folder in Container’*. If you are doing this the first time, this builds the docker container and thus 
+for *‘Reopen Folder in Container’*. If you are doing this the first time, this builds the Docker container and thus 
 can take quite a bit of time.
  
 
@@ -67,13 +67,13 @@ see *'Dev Container: $your_name'* next to the two arrows.
 
 ![green arrows with text](../_static/img/vscode_docker/green_arrows_with_text.png)
 
-## 6. Step: Install the python extension inside the docker container to debug and run python files
+## 6. Step: Install the Python extension inside the Docker container to debug and run Python files
 
-Again open up the extensions tab (now inside the docker container) and install the python extension (ID: *ms-python.python*).
+Again open up the extensions tab (now inside the Docker container) and install the Python extension (ID: *ms-python.python*).
  
 
 
-Now you can debug/run any python file you want. Open up the chosen python file and the 'Run and Debug' tab by clicking 
+Now you can debug/run any Python file you want. Open up the chosen Python file and the 'Run and Debug' tab by clicking 
 the run/debug icon that should be now available on the left taskbar.
  
 <!--[run and debug tab](images/vscode_docker/run_and_debug.PNG)-->
@@ -86,7 +86,7 @@ clicking to the left of the line numbers.
 If you want to evaluate certain expressions while debugging, open up the terminal (if it is not open already) by 
 clicking *‘View’ > ‘Terminal’*. One of the terminal's tabs is the debug console, where you can evaluate any expression.
 
-If you are in the sample project you can make sure that the docker container works as expected by entering the tests 
+If you are in the sample project you can make sure that the Docker container works as expected by entering the tests 
 folder (*'cd tests'*) and executing:
 
 ```ubuntu
@@ -107,5 +107,5 @@ pytest -m local
 
 - If you want to rebuild the container, because e.g. a different branch uses different dependencies, open the 
   extension’s command palette and click *'Rebuild Container'*.
-(This of course means that you have to reinstall the python extension - if this becomes annoying you can specify 
+(This of course means that you have to reinstall the Python extension - if this becomes annoying you can specify 
   its ID in the devcontainer.json file to be pre-installed with every rebuild).
