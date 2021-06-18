@@ -65,7 +65,7 @@ def init_env(project_folder):
     """
     user = input("Username you use to login to Konfuzio APP: ")
     password = getpass.getpass("Password you use to login to Konfuzio APP: ")
-    host = input("Host from where to get the data (the default is https://app.konfuzio.com): ")
+    host = input("Host from where to get the data (press [ENTER] for the default: https://app.konfuzio.com): ")
 
     if host == "":
         host = "https://app.konfuzio.com"
@@ -78,7 +78,7 @@ def init_env(project_folder):
             "[ERROR] Your credentials are not correct! Please run init again and provide the correct credentials."
         )
 
-    data_folder = input("Folder where to allocate the data (the default is 'data'): ")
+    data_folder = input("Folder where to allocate the data (press [ENTER] for the default: 'data'): ")
     if data_folder == "":
         data_folder = "data"
     if os.path.exists(f"{project_folder}/{data_folder}"):

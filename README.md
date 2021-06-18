@@ -14,7 +14,7 @@ Using the SDK you can communicate with the Konfuzio App and use the data structu
 
 - [Hello World Konfuzio Tutorial](https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/helloworld.md)
 - [Source Code Online Documentation](https://konfuzio-ai.github.io/document-ai-python-sdk/)
-- [Human in the Loop Tutorial](https://colab.research.google.com/drive/1JaVL2L6MVUtl-x-8eGJ9FnSkAybHv3nh?usp=sharing): An example of how Konfuzio SDK package can be used in a pipeline to have an easy feedback workflow can be seen in the tutorial bellow.
+- [Human in the Loop Tutorial](https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/human_in_the_loop.ipynb): An example of how Konfuzio SDK package can be used in a pipeline to have an easy feedback workflow can be seen in this tutorial
 - [(coming soon): Tutorial: Count number of relevant words per document](https://github.com/konfuzio-ai/document-ai-python-sdk/issues/)
 - (coming soon): Tutorial: How to set up a python environment for beginners
 - (coming soon): Tutorial: Create a custom AI model with CI Pipeline and Webhook
