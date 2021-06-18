@@ -55,10 +55,10 @@ Konfuzio on premises and examples on how to use the API for communicate directly
 
 
    sdk/configuration_reference.md
-   sdk/coordinates_system.md
-   sdk/sourcecode.rst
-   sdk/changelog.md
    sdk/examples/examples.rst
+   sdk/sourcecode.rst
+   sdk/coordinates_system.md
+   sdk/changelog.md
 
 
 .. toctree::
