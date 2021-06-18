@@ -1,4 +1,4 @@
-# How to debug python code inside a Docker container
+# How to debug Python code inside a Docker container
 
 <h2>1. Step: Download and Install VS Code on your machine</h2>
 
