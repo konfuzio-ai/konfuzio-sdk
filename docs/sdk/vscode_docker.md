@@ -31,7 +31,7 @@ its ID: *ms-vscode-remote.remote-containers*). Install the extension.
 
 <!--[extensions tab](images/vscode_docker/extensions.PNG)-->
 
-![remote development extension](../_static/img/vscode_Docker/remote_dev_extension.png)
+![remote development extension](../_static/img/vscode_docker/remote_dev_extension.png)
 
 ## 4. Step: Set up your remote development environment
 
