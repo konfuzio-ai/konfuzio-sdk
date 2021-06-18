@@ -1,0 +1,283 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta content="Hello World tutorial with simple example of how can the konfuzio_sdk package be used to get or post information on a project. This code snippet should provide a first insight for a quick start with the package." name="description" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Hello World Tutorial &mdash; Konfuzio  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/full_green_square.png"/>
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Konfuzio
+          
+
+          
+            
+            <img src="../../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v.0.1.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">SDK</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../configuration_reference.html">Install SDK</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Code Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html">Source Code Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../coordinates_system.html">Coordinates System</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Training</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html">LabelSectionModel Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#documentmodel-examples">DocumentModel Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#design-philosophy">Design Philosophy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#tokenizers">Tokenizers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#vocabularies">Vocabularies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#text-modules">Text Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#image-modules">Image Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#loading-pre-trained-modules">Loading Pre-trained Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#extraction">Extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#ocr">OCR</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Web Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../web/api.html">Konfuzio API Video Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/api.html#konfuzio-train-ai-tutorial">Konfuzio Train AI Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/api.html#how-to-make-an-api-call">How to make an API Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/api.html#document-segmentation-api">Document Segmentation API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/api.html#supported-file-types">Supported file types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/on_premises.html">On-Premises Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/changelog_app.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Konfuzio</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Hello World Tutorial</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="hello-world-tutorial">
+<h1>Hello World Tutorial<a class="headerlink" href="#hello-world-tutorial" title="Permalink to this headline">¶</a></h1>
+<p>Let’s see a simple example of how can we use the <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> package to get information on a project and to post annotations.</p>
+<p>You can follow the example below to post annotations of a certain word or expression in the first document uploaded.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Annotation</span><span class="p">,</span> <span class="n">Label</span>
+
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">()</span>
+
+<span class="c1"># Word/expression to annotate in the document</span>
+<span class="c1"># should match an existing one in your document</span>
+<span class="n">input_expression</span> <span class="o">=</span> <span class="s2">&quot;John Smith&quot;</span>
+
+<span class="c1"># Label for the annotation</span>
+<span class="n">label_name</span> <span class="o">=</span> <span class="s2">&quot;Name&quot;</span>
+<span class="c1"># Creation of the Label in the project default template</span>
+<span class="n">my_label</span> <span class="o">=</span> <span class="n">Label</span><span class="p">(</span><span class="n">my_project</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">label_name</span><span class="p">)</span>
+<span class="c1"># Saving it online</span>
+<span class="n">my_label</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+<span class="c1"># Template where label belongs</span>
+<span class="n">template_id</span> <span class="o">=</span> <span class="n">my_label</span><span class="o">.</span><span class="n">templates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">id</span>
+
+<span class="c1"># First document in the project</span>
+<span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># Matches of the word/expression in the document</span>
+<span class="n">matches_locations</span> <span class="o">=</span> <span class="p">[(</span><span class="n">m</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">m</span><span class="o">.</span><span class="n">end</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">input_expression</span><span class="p">,</span> <span class="n">document</span><span class="o">.</span><span class="n">text</span><span class="p">)]</span>
+
+<span class="c1"># List to save the links to the annotations created</span>
+<span class="n">new_annotations_links</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="c1"># Create annotation for each match</span>
+<span class="k">for</span> <span class="n">offsets</span> <span class="ow">in</span> <span class="n">matches_locations</span><span class="p">:</span>
+    <span class="n">annotation_obj</span> <span class="o">=</span> <span class="n">Annotation</span><span class="p">(</span>
+        <span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">,</span>
+        <span class="n">document_id</span><span class="o">=</span><span class="n">document</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+        <span class="n">start_offset</span><span class="o">=</span><span class="n">offsets</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="n">end_offset</span><span class="o">=</span><span class="n">offsets</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">my_label</span><span class="p">,</span>
+        <span class="n">template_id</span><span class="o">=</span><span class="n">template_id</span><span class="p">,</span>
+        <span class="n">accuracy</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">new_annotation_added</span> <span class="o">=</span> <span class="n">annotation_obj</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">new_annotation_added</span><span class="p">:</span>
+        <span class="n">new_annotations_links</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">annotation_obj</span><span class="o">.</span><span class="n">get_link</span><span class="p">())</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">new_annotations_links</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Helm und Nagel GmbH.
+
+    </p>
+  </div> 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
