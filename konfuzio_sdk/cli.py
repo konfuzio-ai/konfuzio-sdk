@@ -65,7 +65,7 @@ def init_env(project_folder):
     """
     user = input("Username you use to login to Konfuzio APP: ")
     password = getpass.getpass("Password you use to login to Konfuzio APP: ")
-    host = input("Host from where to get the data (the default is https://app.konfuzio.com): ")
+    host = input("Host from where to get the data (press [ENTER] for the default: https://app.konfuzio.com): ")
 
     if host == "":
         host = "https://app.konfuzio.com"
@@ -110,7 +110,7 @@ def init_env(project_folder):
         print("Creating a new project...")
         project_id = create_project(token)
 
-    data_folder = input("Folder where to allocate the data (the default is 'data_<project_id>'): ")
+    data_folder = input("Folder where to allocate the data (press [ENTER] for the default: 'data_<project_id>'): ")
 
     if data_folder == "":
         data_folder = "data_" + project_id
