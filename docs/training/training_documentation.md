@@ -1,11 +1,11 @@
-
-# Training Documentation
+.. meta::
+   :description: Documentation of the features of the training package including the contents structure and examples of how to use it.
 
 The training features are not yet available in the SDK.
 
 ## LabelSectionModel Examples
 
-![LabelSectionModel diagram](https://gitlab.com/konfuzio/objectives/uploads/65abdc657334777877121a9fe0afff38/LabelSectionModel.png)
+![LabelSectionModel diagram](../_static/img/label_section_model.png)
 
 A `LabelSectionModel` is a model that takes in a `Document` and predicts a `Label` per token and a `SectionLabel` for each line in the document.
 
@@ -259,7 +259,7 @@ model.save()
 
 ## DocumentModel Examples
 
-![DocumentModel Diagram](https://gitlab.com/konfuzio/objectives/uploads/34f27b837823871108ab928fdd743a9a/DocumentModel.png)
+![DocumentModel Diagram](../_static/img/document_model.png)
 
 A `DocumentModel` takes pages as input and predicts the "category" (the project ID) for that page. It can use both image features (from a .png image of the page) and text features (from the OCR text from the page).
 

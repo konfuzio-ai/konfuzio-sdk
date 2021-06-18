@@ -1,1 +1,0 @@
-.. mdinclude:: ../../../filetype.md
