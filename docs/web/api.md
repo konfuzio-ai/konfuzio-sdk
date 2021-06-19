@@ -159,3 +159,7 @@ Konfuzio supports JPEG and PNG (including support for alpha channel). _Support f
 
 ### Office documents
 Konfuzio offers limited support for common office documents like Microsoft® Word (.doc, .docx), Excel (.xls, .xlsx), PowerPoint (.ppt, .pptx) and Publisher as well as the Open Document Format (ODF). Uploaded office documents are converted to PDFs by Konfuzio. Libre Office is used for the PDF conversion. The layout of the converted office document may differ from the original. Office files can not be edited after they have been uploaded.
+
+## Support
+
+To qualify for minimum response times according to your SLA, you must report the issue using the email [support@konfuzio.com](emailto:support@konfuzio.com).
