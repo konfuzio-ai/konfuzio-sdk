@@ -8,6 +8,14 @@ All notable changes in the server of app.konfuzio.com will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
 
+## 2021-06-20_15-14-31
+
+### Fixed
+- failed retraninings for some projects
+- increased disk usage due to an cache deletion issue
+- Filtering of ProjectInvitation according to currently selected project
+- Clarify return types in API documentation
+
 ## 2021-05-26_20-16-02
 
 ### Added
