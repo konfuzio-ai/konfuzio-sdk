@@ -33,15 +33,15 @@ Server (App). Using the SDK you can communicate with the Konfuzio App and use th
 Find in this section the documentation of the package, the installation instructions and code examples that will help
 you in starting using it.
 
-Training
-########
+Konfuzio Trainer
+################
 
 The training module allows to define, train and run custom Document AI.
 In the Training section you find the documentation of the features of this module, including the contents structure
 and examples of how to use it.
 
-Web Server
-##########
+Konfuzio Server
+###############
 
 The Konfuzio Web Server allows the interaction with the Konfuzio projects.
 In this section you can information regarding how to use it. Check here the latest updates, information in how to have
@@ -51,7 +51,7 @@ Konfuzio on premises and examples on how to use the API for communicate directly
 .. toctree::
    :hidden:
    :maxdepth: 3
-   :caption: SDK
+   :caption: Konfuzio SDK
 
 
    sdk/configuration_reference.md
@@ -64,12 +64,12 @@ Konfuzio on premises and examples on how to use the API for communicate directly
 .. toctree::
    :maxdepth: 6
    :hidden:
-   :caption: Training
+   :caption: Konfuzio Trainer
 
    training/training_documentation.md
 
 .. toctree::
-   :caption: Web Server
+   :caption: Konfuzio Server
    :hidden:
    :maxdepth: 3
 
