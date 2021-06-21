@@ -916,7 +916,7 @@ class Project(Data):
         :return: Information of the documents in the project.
         """
         if not self.meta_data or update:
-            self.meta_file_path = os.path.join(self.data_root, 'meta.json5')
+            self.meta_file_path = os.path.join(self.data_root, 'documents_meta.json5')
 
             if not is_file(self.meta_file_path, raise_exception=False) or update:
                 self.meta_data = get_meta_of_files(self.session)
