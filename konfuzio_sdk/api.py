@@ -345,8 +345,7 @@ def get_meta_of_files(session=konfuzio_session()) -> List[dict]:
             break
 
     sorted_documents = sorted(result, key=itemgetter('id'))
-    sorted_dataset_documents = [x for x in sorted_documents if x['dataset_status'] in [2, 3]]
-    return sorted_dataset_documents
+    return sorted_documents
 
 
 def get_project_labels(session=konfuzio_session()) -> List[dict]:
