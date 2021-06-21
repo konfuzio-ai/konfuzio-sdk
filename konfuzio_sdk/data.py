@@ -918,7 +918,7 @@ class Project(Data):
         if not self.meta_data or update:
             self.meta_file_path = os.path.join(self.data_root, 'meta.json5')
 
-            if not is_file(self.meta_file_path, raise_exception=False):
+            if not is_file(self.meta_file_path, raise_exception=False) or update:
                 self.meta_data = get_meta_of_files(self.session)
                 with open(self.meta_file_path, 'w') as f:
                     json.dump(self.meta_data, f, indent=2, sort_keys=True)
