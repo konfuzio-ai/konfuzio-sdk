@@ -1,6 +1,3 @@
-.. meta::
-   :description: Hello World tutorial with simple example of how can the konfuzio_sdk package be used to get or post information on a project. This code snippet should provide a first insight for a quick start with the package.
-
 ## Hello World Tutorial
 
 Let's see a simple example of how can we use the `konfuzio_sdk` package to get information on a project and to post annotations.
