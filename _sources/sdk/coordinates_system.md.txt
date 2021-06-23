@@ -10,7 +10,7 @@ The format is [width, height].
   The bounding boxes of the annotations are based on this size.
    E.g.: original_size = [372.48, 463.68]
 
-"size" is the dimension of the image representation of a document page. These representations are used for computer vision tasks and the SmartView.
+'size' is the dimension of the image representation of a document page. These representations are used for computer vision tasks and the SmartView.
   E.g.: size = [1552, 1932]
   
 

@@ -1,3 +1,5 @@
+.. meta::
+   :description: The Contribution Guide includes information on what you should follow to contribute to the SDK package.
 
 # Contribution Guide
 
