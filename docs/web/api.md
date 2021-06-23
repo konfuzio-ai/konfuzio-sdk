@@ -50,7 +50,7 @@ headers = {'Authorization': 'Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b'}
 r = requests.get(url="https://app.konfuzio.com/api/ENDPOINT/", headers=headers)
 ```
 
-### Document Categorization API
+## Document Categorization API
 
 The API provides an endpoint that allows to upload a document and also get directly its metadata.
 
