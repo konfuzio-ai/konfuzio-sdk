@@ -8,7 +8,7 @@
 
 ### Added
 
-- Documentation for the Konfuzio Web App and Training package
+- Documentation for the Konfuzio Web App and Trainer package
 
 ### Changed
 

@@ -98,15 +98,16 @@
               
             
             
-              <p class="caption"><span class="caption-text">SDK</span></p>
+              <p class="caption"><span class="caption-text">Konfuzio Python SDK</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../sdk/configuration_reference.html">Install SDK</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sdk/examples/examples.html">Code Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sdk/sourcecode.html">Source Code Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/contribution.html">Contribution Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sdk/coordinates_system.html">Coordinates System</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sdk/changelog.html">Changelog</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Training</span></p>
+<p class="caption"><span class="caption-text">Konfuzio Trainer</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html">LabelSectionModel Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#documentmodel-examples">DocumentModel Examples</a></li>
@@ -119,16 +120,16 @@
 <li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#extraction">Extraction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#ocr">OCR</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Web Server</span></p>
+<p class="caption"><span class="caption-text">Konfuzio Server</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Konfuzio API Video Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#konfuzio-train-ai-tutorial">Konfuzio Train AI Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#how-to-make-an-api-call">How to make an API Call</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#using-curl">Using CURL</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#using-python">Using Python</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#document-categorization-api">Document Categorization API</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="#document-categorization-api">Document Categorization API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#document-segmentation-api">Document Segmentation API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#supported-file-types">Supported file types</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#pdfs">PDFs</a></li>
@@ -247,8 +248,9 @@ An API Token can be obtained here: <a class="reference external" href="https://a
 </pre></div>
 </div>
 </div>
+</div>
 <div class="section" id="document-categorization-api">
-<h2>Document Categorization API<a class="headerlink" href="#document-categorization-api" title="Permalink to this headline">¶</a></h2>
+<h1>Document Categorization API<a class="headerlink" href="#document-categorization-api" title="Permalink to this headline">¶</a></h1>
 <p>The API provides an endpoint that allows to upload a document and also get directly its metadata.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">requests</span>
@@ -279,7 +281,6 @@ An API Token can be obtained here: <a class="reference external" href="https://a
 <span class="n">code_category</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;category_template&quot;</span><span class="p">]</span>
 <span class="k">print</span><span class="p">(</span><span class="n">categories</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">code_category</span><span class="p">)])</span>
 </pre></div>
-</div>
 </div>
 </div>
 <div class="section" id="document-segmentation-api">

@@ -17,6 +17,3 @@ can take advantage of open-source models to speed up the annotation process.
 You can download it from
 `here <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/human_in_the_loop.ipynb>`_
 and try it by yourself.
-
-
-.. mdinclude:: vscode_docker.md
