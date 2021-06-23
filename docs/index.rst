@@ -1,3 +1,6 @@
+.. meta::
+   :description: The Konfuzio Developer's Guide includes the technical documentation as well as usage examples for the different modules.
+
 .. image:: _static/docs__static_logo.png
     :alt: Konfuzio Logo
     :align: right
