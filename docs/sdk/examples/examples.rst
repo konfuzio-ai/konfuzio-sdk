@@ -1,6 +1,5 @@
 .. meta::
-   :description: Docstrings of the classes, methods, and functions in the source code of the konfuzio-sdk package with references to the code itself.
-
+   :description: Simple examples of how can the konfuzio_sdk package be used to get and post information on a project. These code snippets should provide a first insight for a quick start with the package.
 
 Code Examples
 =============
@@ -17,6 +16,3 @@ can take advantage of open-source models to speed up the annotation process.
 You can download it from
 `here <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/human_in_the_loop.ipynb>`_
 and try it by yourself.
-
-
-.. mdinclude:: vscode_docker.md
