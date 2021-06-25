@@ -93,6 +93,8 @@ html_css_files = ['custom.css']
 html_show_sphinx = False
 
 # sphinx-notfound-page
+notfound_urls_prefix = None
+
 # https://github.com/readthedocs/sphinx-notfound-page
 # notfound_context = {
 #     'title': 'Page Not Found',
