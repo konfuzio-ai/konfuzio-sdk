@@ -163,7 +163,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#alternative-deployment-options">Alternative deployment options</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#single-vm-setup">Single VM setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Single VM setup</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#custom-ai-model-training-via-ci-pipelines">Custom AI model training via CI pipelines</a></li>
 </ul>
 </li>
@@ -237,6 +237,7 @@
             
   <div class="section" id="on-premises-documentation">
 <h1>On-Premises Documentation<a class="headerlink" href="#on-premises-documentation" title="Permalink to this headline">¶</a></h1>
+<p>The recommended way to operate a production-ready and scalabe Konfuzio installation is via Kubernetes. An alternative and more light-weight deployment option is the <a class="reference external" href="#single-vm-setup">Single VM setup</a>.</p>
 <div class="section" id="required-tools">
 <h2>Required tools<a class="headerlink" href="#required-tools" title="Permalink to this headline">¶</a></h2>
 <p>Before deploying Konfuzio to your Kubernetes cluster, there are some tools you must have installed locally.</p>
@@ -437,8 +438,8 @@ step. Without a backup, Konfuzio data might be lost if the upgrade fails.</p></l
 </div>
 <div class="section" id="alternative-deployment-options">
 <h2>Alternative deployment options<a class="headerlink" href="#alternative-deployment-options" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="single-vm-setup">
-<h3>Single VM setup<a class="headerlink" href="#single-vm-setup" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id2">
+<h3>Single VM setup<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <p>Konfuzio can be configured to run on a single virtual machine, without relying on
 Kubernetes. In this scenario, all necessary containers are started manually or with a
 container orchestration tool of your choice.</p>
