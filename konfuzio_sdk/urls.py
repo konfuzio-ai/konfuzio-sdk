@@ -52,6 +52,15 @@ def get_upload_document_url() -> str:
     return f"{KONFUZIO_HOST}/api/v2/docs/"
 
 
+def update_document_url(document_id: int) -> str:
+    """
+    Generate URL to update a document.
+
+    :return: URL to update a document
+    """
+    return f"{KONFUZIO_HOST}/api/v2/docs/{document_id}"
+
+
 def get_create_label_url() -> str:
     """
     Generate URL to create a label.

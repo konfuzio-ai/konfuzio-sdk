@@ -25,6 +25,7 @@ from konfuzio_sdk.urls import (
     post_project_api_document_annotations_url,
     delete_project_api_document_annotations_url,
     get_upload_document_url,
+    update_document_url,
     get_document_result_v1,
     get_document_segmentation_details_url,
     get_create_label_url,
@@ -290,7 +291,7 @@ def post_document_annotation(
             'end_offset': end_offset,
             'label': label_id,
             'revised': revised,
-            'section': section,
+            #'section': section,
             'section_label_id': template_id,
             'accuracy': accuracy,
             'is_correct': is_correct,
@@ -361,7 +362,7 @@ def get_project_labels(session=konfuzio_session()) -> List[dict]:
     return sorted_labels
 
 
-def create_label(project_id: int, label_name: str, templates: list, session=konfuzio_session()) -> List[dict]:
+def create_label(project_id: int, label_name: str, templates: list, session=konfuzio_session(), **kwargs) -> List[dict]:
     """
     Create a Label and associate it with templates.
 
@@ -374,7 +375,17 @@ def create_label(project_id: int, label_name: str, templates: list, session=konf
     url = get_create_label_url()
     templates_ids = [template.id for template in templates]
 
-    data = {"project": project_id, "text": label_name, "templates": templates_ids}
+    description = kwargs.get('description', None)
+    has_multiple_top_candidates = kwargs.get('has_multiple_top_candidates', False)
+    get_data_type_display = kwargs.get('get_data_type_display', 'Text')
+
+    data = {"project": project_id,
+            "text": label_name,
+            "description": description,
+            "has_multiple_top_candidates": has_multiple_top_candidates,
+            "get_data_type_display": get_data_type_display,
+            "templates": templates_ids
+            }
 
     r = session.post(url=url, json=data)
 
@@ -415,7 +426,7 @@ def upload_file_konfuzio_api(filepath: str, project_id: int, session=konfuzio_se
     files = {"data_file": (os.path.basename(filepath), file_data, "multipart/form-data")}
     data = {"project": project_id, "dataset_status": dataset_status}
 
-    r = session.post(url=url, files=files, json=data)
+    r = session.post(url=url, files=files, data=data)
     return r
 
 
@@ -433,6 +444,30 @@ def delete_file_konfuzio_api(document_id: int, session=konfuzio_session()):
     r = session.delete(url=url, json=data)
     assert r.status_code == 204
     return True
+
+
+def update_file_status_konfuzio_api(document_id: int, file_name: str, dataset_status: int = 0,
+                                    session=konfuzio_session(), **kwargs):
+    """
+    Update the dataset status of an existing document via Konfuzio API.
+
+    :param document_id: ID of the document
+    :param dataset_status: New dataset status
+    :param session: Session to connect to the server
+    :return: Response status.
+    """
+    url = update_document_url(document_id)
+
+    sync = kwargs.get('sync', True)
+    category_template = kwargs.get('category_template', None)
+
+    data = {"data_file_name": file_name,
+            "dataset_status": dataset_status,
+            "sync": sync,
+            "category_template": category_template}
+
+    r = session.put(url=url, json=data)
+    return r
 
 
 def download_file_konfuzio_api(document_id: int, ocr: bool = True, session=konfuzio_session()):
