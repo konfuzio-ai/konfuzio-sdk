@@ -642,13 +642,11 @@ class Document(Data):
         self.section_file_path = os.path.join(self.root, 'sections.json5')
         self.txt_file_path = os.path.join(self.root, 'document.txt')
         self.hocr_file_path = os.path.join(self.root, 'document.hocr')
-        self.bbox_file_path = os.path.join(self.root, 'bbox.json5')
 
         if update or not (
             is_file(self.annotation_file_path, raise_exception=False)
             and is_file(self.section_file_path, raise_exception=False)
             and is_file(self.txt_file_path, raise_exception=False)
-            and is_file(self.bbox_file_path, raise_exception=False)
             and is_file(self.pages_file_path, raise_exception=False)
         ):
 
@@ -669,9 +667,6 @@ class Document(Data):
 
             with open(self.txt_file_path, 'w', encoding="utf-8") as f:
                 f.write(data['text'])
-
-            with open(self.bbox_file_path, 'w') as f:
-                json.dump(data['bbox'], f, indent=2, sort_keys=True)
 
             with open(self.pages_file_path, 'w') as f:
                 json.dump(data['pages'], f, indent=2, sort_keys=True)
@@ -753,10 +748,11 @@ class Document(Data):
             return self.bbox
 
         if not self.bbox_file_path:
-            raise Exception(
-                '`Document.get_document_details` must be run before accessing the bbox, '
-                'or `Document` must be initialized with the `bbox` parameter'
-            )
+            self.bbox_file_path = os.path.join(self.root, 'bbox.json5')
+
+            with open(self.bbox_file_path, 'w') as f:
+                data = get_document_details(document_id=self.id, session=self.session)
+                json.dump(data['bbox'], f, indent=2, sort_keys=True)
 
         with open(self.bbox_file_path, 'rb') as f:
             bbox = json.loads(f.read())
