@@ -22,6 +22,7 @@ from konfuzio_sdk.api import (
     delete_document_annotation,
     upload_file_konfuzio_api,
     create_label,
+    update_file_status_konfuzio_api,
 )
 from konfuzio_sdk.utils import is_file
 
@@ -203,7 +204,7 @@ class Label(Data):
         relevant_id = list(set([anno.document.id for anno in self.annotations]))
         return [doc for doc in self.project.documents if (doc.id in relevant_id)]
 
-    def save(self) -> bool:
+    def save(self, **kwargs) -> bool:
         """
         Save Label online.
 
@@ -216,11 +217,12 @@ class Label(Data):
             if len(self.templates) == 0:
                 prj_templates = self.project.templates
                 default_template = [t for t in prj_templates if t.is_default][0]
-                self.add_template(default_template)
+                default_template.add_label(self)
 
             response = create_label(project_id=self.project.id,
                                     label_name=self.name,
-                                    templates=self.templates)
+                                    templates=self.templates,
+                                    **kwargs)
             self.id = response
             new_label_added = True
         except Exception:
@@ -355,6 +357,7 @@ class Annotation(Data):
                 accuracy=self.accuracy,
                 is_correct=self.is_correct,
                 revised=self.revised,
+                section=self.section,
             )
             if response.status_code == 201:
                 json_response = json.loads(response.text)
@@ -762,21 +765,30 @@ class Document(Data):
 
     def save(self) -> bool:
         """
-        Save Document online.
+        Save or update Document online.
 
-        :return: true if the new document was created
+        :return: True if the new document was created or existing document was updated.
         """
-        new_document_added = False
+        document_saved = False
         if not self.is_online:
             response = upload_file_konfuzio_api(self.file_path,
                                                 project_id=self.project.id,
                                                 dataset_status=self.dataset_status)
             if response.status_code == 201:
                 self.id = json.loads(response.text)['id']
-                new_document_added = True
+                document_saved = True
             else:
                 logger.error(f'Not able to save document  {self.file_path} online: {response.text}')
-        return new_document_added
+        else:
+            response = update_file_status_konfuzio_api(document_id=self.id,
+                                                       dataset_status=self.dataset_status,
+                                                       file_name=self.name,
+                                                       category_template=self.category_template.id)
+            if response.status_code == 201:
+                document_saved = True
+            else:
+                logger.error(f'Not able to update document {self.id} online: {response.text}')
+        return document_saved
 
     def update(self):
         """Update document information."""
@@ -814,8 +826,13 @@ class Project(Data):
         self.id = id
         self.templates: List[Template] = []
         self.labels: List[Label] = []
+
         self.documents: List[Document] = []
         self.test_documents: List[Document] = []
+        self.no_status_documents: List[Document] = []
+        self.preparation_documents: List[Document] = []
+        self.low_ocr_documents: List[Document] = []
+
         self.templates_file_path = None
         self.labels_file_path = None
         self.meta_file_path = None
@@ -907,6 +924,12 @@ class Project(Data):
                 self.documents.append(document)
             elif document.dataset_status == 3:
                 self.test_documents.append(document)
+            elif document.dataset_status == 0:
+                self.no_status_documents.append(document)
+            elif document.dataset_status == 1:
+                self.preparation_documents.append(document)
+            elif document.dataset_status == 4:
+                self.low_ocr_documents.append(document)
 
     def get_meta(self, update=False):
         """
@@ -1034,10 +1057,7 @@ class Project(Data):
         """
         document_list_cache = self.documents
         self.documents: List[Document] = []
-
-        for document_data in self.meta_data:
-            if document_data['dataset_status'] == 2:
-                self._init_document(document_data, document_list_cache, update)
+        self.get_documents_from_project(dataset_statuses=[2], document_list_cache=document_list_cache, update=update)
 
         return self.documents
 
@@ -1052,12 +1072,41 @@ class Project(Data):
         """
         document_list_cache = self.test_documents
         self.test_documents: List[Document] = []
-
-        for document_data in self.meta_data:
-            if document_data['dataset_status'] == 3:
-                self._init_document(document_data, document_list_cache, update)
+        self.get_documents_from_project(dataset_statuses=[3], document_list_cache=document_list_cache, update=update)
 
         return self.test_documents
+
+    def get_documents_from_project(self, dataset_statuses: List[int] = [0], document_list_cache: List[Document] = [],
+                                   update: bool = False) -> List[Document]:
+        """
+        Get a list of documents with the specified dataset status from the project.
+
+        Besides returning a list, the documents are also initialized in the project.
+        They become accessible from the attributes of the class: self.test_documents, self.none_documents,...
+
+        :param dataset_statuses: List of status of the documents to get
+        :param document_list_cache: Cache with documents in the project
+        :param update: Bool to update the meta-information from the project
+        :return: Documents with the specified dataset status
+        """
+        documents = []
+
+        for document_data in self.meta_data:
+            if document_data['dataset_status'] in dataset_statuses:
+                self._init_document(document_data, document_list_cache, update)
+
+        if 0 in dataset_statuses:
+            documents.extend(self.no_status_documents)
+        if 1 in dataset_statuses:
+            documents.extend(self.preparation_documents)
+        if 2 in dataset_statuses:
+            documents.extend(self.documents)
+        if 3 in dataset_statuses:
+            documents.extend(self.test_documents)
+        if 4 in dataset_statuses:
+            documents.extend(self.low_ocr_documents)
+
+        return documents
 
     def clean_documents(self, update):
         """
