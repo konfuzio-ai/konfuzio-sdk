@@ -3,7 +3,7 @@
 
 # On-Premises Documentation
 
-The recommended way to operate a production-ready and scalabe Konfuzio installation is via Kubernetes. An alternative and more light-weight deployment option is the [Single VM setup](#single-vm-setup). 
+The recommended way to operate a production-ready and scalabe Konfuzio installation is via Kubernetes. An alternative and more light-weight deployment option is the [Single VM setup](/web/on_premises.md#single-vm-setup). 
 
 ## Required tools
 
