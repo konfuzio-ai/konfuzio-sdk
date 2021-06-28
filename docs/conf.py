@@ -44,11 +44,12 @@ extensions = [
     'sphinx.ext.coverage',
     'm2r2',
     'sphinx.ext.githubpages',
+    'sphinx_sitemap',
     'notfound.extension',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ['_templates', 'layout.html']
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -91,12 +92,7 @@ html_logo = '_static/docs__static_square_transparent_super_small.png'
 html_favicon = '_static/full_green_square.png'
 html_css_files = ['custom.css']
 html_show_sphinx = False
+html_baseurl = 'https://dev.konfuzio.com'
 
 # sphinx-notfound-page
 notfound_urls_prefix = None
-
-# https://github.com/readthedocs/sphinx-notfound-page
-# notfound_context = {
-#     'title': 'Page Not Found',
-#     'body': '<h1>Page not found</h1>\n\nPlease go back to the homepage https://dev.konfuzio.com/.'
-# }
