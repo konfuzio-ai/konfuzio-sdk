@@ -108,7 +108,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#directory-structure">Directory Structure</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#running-tests-locally">Running tests locally</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#running-tests-in-docker">Running tests in Docker</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#general-motivation-for-using-the-vs-code-remote-development-extension"> General Motivation for using the VS Code Remote Development Extension</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#general-motivation-for-using-the-vs-code-remote-development-extension">General Motivation for using the VS Code Remote Development Extension</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#download-and-install-vs-code-on-your-machine">1. Download and Install VS Code on your machine</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#pull-create-your-project-that-includes-the-relevant-docker-file">2. Pull/Create your project that includes the relevant Docker file</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#install-the-remote-development-extension">3. Install the remote development extension</a></li>
@@ -271,18 +271,18 @@ the folder to <em>.gitignore</em>.</p>
 <p>If you have problems with the dependencies, a solution could be to use a docker to run the code.
 Check here the steps for how to run/debug Python code inside a Docker container.</p>
 <div class="section" id="general-motivation-for-using-the-vs-code-remote-development-extension">
-<h3> General Motivation for using the VS Code Remote Development Extension<a class="headerlink" href="#general-motivation-for-using-the-vs-code-remote-development-extension" title="Permalink to this headline">¶</a></h3>
-<p>When it comes to running your code consistently and reliably, nothing beats Docker.
-Even if you are not using Docker for deployment, as soon as you collaborate with other developers testing pipelines
-have to be in place to ensure that a new merge does not accidentally break the whole project.
-Collaborating can also mean very different operating systems and configurations that lead to varying behaviors on different machines.
-This issue is also commonly resolved using Docker. But this of course means that there can be differences between your local machine
-and the Docker container when it comes to dependencies, which leads to tedious dependency management and prolonged feedback loops (especially on Windows)
-as you have to wait to see if the code you build really runs as expected in the Docker container.
-The best solution would be if you could combine the development tools of a Python IDE with the consistent test and execution results of a Docker container.
-Running a docker container on a local machine is quite easy.
-Though setting up your container for debugging can be a strenuous and frustrating experience. Luckily Microsoft’s Visual Studio Code Remote Development Extension
-offers a functional and easy to use solution.</p>
+<h3>General Motivation for using the VS Code Remote Development Extension<a class="headerlink" href="#general-motivation-for-using-the-vs-code-remote-development-extension" title="Permalink to this headline">¶</a></h3>
+<p>When it comes to running your code consistently and reliably, nothing beats Docker.
+Even if you are not using Docker for deployment, as soon as you collaborate with other developers testing pipelines
+have to be in place to ensure that a new merge does not accidentally break the whole project.
+Collaborating can also mean very different operating systems and configurations that lead to varying behaviors on different machines.
+This issue is also commonly resolved using Docker. But this of course means that there can be differences between your local machine
+and the Docker container when it comes to dependencies, which leads to tedious dependency management and prolonged feedback loops (especially on Windows)
+as you have to wait to see if the code you build really runs as expected in the Docker container.
+The best solution would be if you could combine the development tools of a Python IDE with the consistent test and execution results of a Docker container.
+Running a docker container on a local machine is quite easy.
+Though setting up your container for debugging can be a strenuous and frustrating experience. Luckily Microsoft’s Visual Studio Code Remote Development Extension
+offers a functional and easy to use solution.</p>
 </div>
 <div class="section" id="download-and-install-vs-code-on-your-machine">
 <h3>1. Download and Install VS Code on your machine<a class="headerlink" href="#download-and-install-vs-code-on-your-machine" title="Permalink to this headline">¶</a></h3>
