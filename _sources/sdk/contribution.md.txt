@@ -67,7 +67,21 @@ To run tests from a specific file, do:
 ## Running tests in Docker
 
 If you have problems with the dependencies, a solution could be to use a docker to run the code.
-Check here the steps for how to run/debug Python code inside a Docker container,
+Check here the steps for how to run/debug Python code inside a Docker container.
+
+### General Motivation for using the VS Code Remote Development Extension
+
+When it comes to running your code consistently and reliably, nothing beats Docker. 
+Even if you are not using Docker for deployment, as soon as you collaborate with other developers testing pipelines 
+have to be in place to ensure that a new merge does not accidentally break the whole project.
+Collaborating can also mean very different operating systems and configurations that lead to varying behaviors on different machines. 
+This issue is also commonly resolved using Docker. But this of course means that there can be differences between your local machine 
+and the Docker container when it comes to dependencies, which leads to tedious dependency management and prolonged feedback loops (especially on Windows) 
+as you have to wait to see if the code you build really runs as expected in the Docker container. 
+The best solution would be if you could combine the development tools of a Python IDE with the consistent test and execution results of a Docker container.
+Running a docker container on a local machine is quite easy. 
+Though setting up your container for debugging can be a strenuous and frustrating experience. Luckily Microsoft's Visual Studio Code Remote Development Extension 
+offers a functional and easy to use solution.
 
 ### 1. Download and Install VS Code on your machine
 
