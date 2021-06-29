@@ -377,13 +377,13 @@ def create_label(project_id: int, label_name: str, templates: list, session=konf
 
     description = kwargs.get('description', None)
     has_multiple_top_candidates = kwargs.get('has_multiple_top_candidates', False)
-    get_data_type_display = kwargs.get('get_data_type_display', 'Text')
+    data_type = kwargs.get('data_type', 'Text')
 
     data = {"project": project_id,
             "text": label_name,
             "description": description,
             "has_multiple_top_candidates": has_multiple_top_candidates,
-            "get_data_type_display": get_data_type_display,
+            "get_data_type_display": data_type,
             "templates": templates_ids
             }
 

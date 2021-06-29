@@ -132,8 +132,9 @@ class Label(Data):
         text: str = None,
         get_data_type_display: str = None,
         text_clean: str = None,
-        description: str = [],
+        description: str = None,
         templates: List[Template] = [],
+        has_multiple_top_candidates: bool = False,
         *initial_data,
         **kwargs,
     ):
@@ -153,6 +154,7 @@ class Label(Data):
         self.name_clean = text_clean
         self.data_type = get_data_type_display
         self.description = description
+        self.has_multiple_top_candidates = has_multiple_top_candidates
 
         self.project: Project = project
         self._correct_annotations_indexed = None
@@ -204,7 +206,7 @@ class Label(Data):
         relevant_id = list(set([anno.document.id for anno in self.annotations]))
         return [doc for doc in self.project.documents if (doc.id in relevant_id)]
 
-    def save(self, **kwargs) -> bool:
+    def save(self) -> bool:
         """
         Save Label online.
 
@@ -221,8 +223,11 @@ class Label(Data):
 
             response = create_label(project_id=self.project.id,
                                     label_name=self.name,
+                                    description=self.description,
+                                    has_multiple_top_candidates=self.has_multiple_top_candidates,
+                                    data_type=self.data_type,
                                     templates=self.templates,
-                                    **kwargs)
+                                    )
             self.id = response
             new_label_added = True
         except Exception:
