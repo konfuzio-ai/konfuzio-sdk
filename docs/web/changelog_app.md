@@ -8,6 +8,14 @@ All notable changes in the server of app.konfuzio.com will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
 
+## 2021-06-29_22-14-33
+
+### Added
+- HTTP codes to API interface
+
+### Fixed
+- Content type description for some API endpoints
+
 ## 2021-06-22_22-45-48
 
 ### Added
