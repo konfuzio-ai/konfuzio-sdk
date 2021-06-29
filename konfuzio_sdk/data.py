@@ -340,10 +340,21 @@ class Annotation(Data):
         """Get link to the annotation in the SmartView."""
         return 'https://app.konfuzio.com/a/' + str(self.id)
 
-    def save(self) -> bool:
+    def save(self, document_annotations: list = None) -> bool:
         """
         Save Annotation online.
 
+        If there is already an annotation in the same place as the current one, we will not be able to save the current
+        annotation.
+
+        In that case, we get the id of the original one to be able to track it.
+        The verification of the duplicates is done by checking if the offsets and label match with any annotations
+        online.
+        To be sure that we are comparing with the information online, we need to have the document updated.
+        The update can be done after the request (per annotation) or the updated annotations can be passed as input
+        of the function (advisable when dealing with big documents or documents with many annotations).
+
+        :param document_annotations: Annotations in the document (list)
         :return: True if new Annotation was created
         """
         new_annotation_added = False
@@ -367,18 +378,23 @@ class Annotation(Data):
                 logger.error(response.text)
                 try:
                     if 'In one project you cannot label the same text twice.' in response.text:
-                        # get the annotation
-                        self.document.update()
-                        for annotation in self.document.annotations():
-                            if (
-                                annotation.start_offset == self.start_offset
-                                and annotation.end_offset == self.end_offset
-                            ):
-                                if annotation.label == self.label:
-                                    # we found a duplicate of an annotation which is already online
-                                    self.id = annotation.id
-                            else:
-                                self.is_correct = False  # conflict other annotation, we cannot handle it automatically
+                        if document_annotations is None:
+                            # get the annotation
+                            self.document.update()
+                            document_annotations = self.document.annotations()
+                        # get the id of the existing annotation
+                        is_duplicated = False
+                        for annotation in document_annotations:
+                            if annotation.start_offset == self.start_offset and \
+                                    annotation.end_offset == self.end_offset and annotation.label == self.label:
+                                logger.error(f'ID of annotation online: {annotation.id}')
+                                self.id = annotation.id
+                                is_duplicated = True
+                                break
+
+                        # if there isn't a perfect match, the current annotation is considered incorrect
+                        if not is_duplicated:
+                            self.is_correct = False
 
                         new_annotation_added = False
                     else:
