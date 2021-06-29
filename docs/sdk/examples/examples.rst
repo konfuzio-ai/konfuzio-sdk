@@ -13,6 +13,9 @@ The tutorial for the *Human in the Loop of Machine Learning* aims to show you ho
 Konfuzio SDK package to include an easy feedback workflow in your training pipeline. It also gives an example of how you
 can take advantage of open-source models to speed up the annotation process.
 
-You can download it from
+You can |OpenInColab|_ or download it from
 `here <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/human_in_the_loop.ipynb>`_
 and try it by yourself.
+
+.. |OpenInColab| image:: https://colab.research.google.com/assets/colab-badge.svg
+.. _OpenInColab: https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/human_in_the_loop.ipynb
