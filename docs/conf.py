@@ -94,5 +94,7 @@ html_css_files = ['custom.css']
 html_show_sphinx = False
 html_baseurl = 'https://dev.konfuzio.com'
 
+sitemap_url_scheme = "{link}"
+
 # sphinx-notfound-page
 notfound_urls_prefix = None
