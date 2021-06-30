@@ -801,7 +801,7 @@ class Document(Data):
                                                        dataset_status=self.dataset_status,
                                                        file_name=self.name,
                                                        category_template=self.category_template.id)
-            if response.status_code == 201:
+            if response.status_code == 200:
                 document_saved = True
             else:
                 logger.error(f'Not able to update document {self.id} online: {response.text}')
