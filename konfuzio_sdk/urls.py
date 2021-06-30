@@ -58,7 +58,7 @@ def update_document_url(document_id: int) -> str:
 
     :return: URL to update a document
     """
-    return f"{KONFUZIO_HOST}/api/v2/docs/{document_id}"
+    return f"{KONFUZIO_HOST}/api/v2/docs/{document_id}/"
 
 
 def get_create_label_url() -> str:
