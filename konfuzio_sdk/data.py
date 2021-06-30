@@ -903,7 +903,7 @@ class Project(Data):
         """
         # if not self.meta_file_path or update:
         # add the labels first, before creating documents and annotations
-        self.get_meta()
+        self.get_meta(update=update)
         self.get_labels(update=update)
         self.get_templates(update=update)
         self.clean_documents(update=update)
@@ -936,7 +936,8 @@ class Project(Data):
 
         :param document: Document to add in the project
         """
-        if document not in self.documents:
+        if document not in self.documents + self.test_documents + self.no_status_documents + \
+                self.preparation_documents + self.low_ocr_documents:
             if document.dataset_status == 2:
                 self.documents.append(document)
             elif document.dataset_status == 3:
@@ -1140,6 +1141,14 @@ class Project(Data):
             for document_id in remove_document_ids:
                 document_path = os.path.join(self.data_root, 'pdf', document_id)
                 shutil.rmtree(document_path)
+
+            # to restart lists and allow changes in the dataset status
+            self.documents = []
+            self.test_documents = []
+            self.no_status_documents = []
+            self.preparation_documents = []
+            self.low_ocr_documents = []
+
 
     def get_label_by_id(self, id: int) -> Label:
         """
