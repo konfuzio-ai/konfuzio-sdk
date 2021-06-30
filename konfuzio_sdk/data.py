@@ -845,7 +845,6 @@ class Project(Data):
                 annotations = annotations_dict[section['id']] if section['id'] in annotations_dict else []
                 section['template'] = template_mapper_dict[section['section_label']]
                 default_template = section['template'].default_template or section['template']
-                section['section_label'] = section['template']
                 # we only add the sections that match the category of the document
                 # (ignore ghost sections that may exist)
                 if default_template == document.category_template:
