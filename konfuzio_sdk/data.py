@@ -291,12 +291,15 @@ class Annotation(Data):
             self.label: Label = label
 
         self.template = None
+        self.define_section = True
         # if no template_id we check if is passed by section_label_id
         if template_id is None:
             template_id = kwargs.get('section_label_id')
 
         if isinstance(template_id, int):
             self.template: Template = self.document.project.get_template_by_id(template_id)
+            if self.template.is_default:
+                self.define_section = False
 
         self.revised = revised
         self.section = section
@@ -374,6 +377,7 @@ class Annotation(Data):
                 is_correct=self.is_correct,
                 revised=self.revised,
                 section=self.section,
+                define_section=self.define_section
             )
             if response.status_code == 201:
                 json_response = json.loads(response.text)

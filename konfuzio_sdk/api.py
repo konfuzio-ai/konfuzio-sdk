@@ -269,10 +269,17 @@ def post_document_annotation(
     revised: bool = False,
     is_correct: bool = False,
     section=None,
+    define_section=True,
     session=konfuzio_session(),
 ):
     """
     Add an annotation to an existing document.
+
+    For the section definition, we can:
+    - define the section id where the annotation should belong (section=x (int), define_section=True)
+    - pass it as None and a new section will be created (section=None, define_section=True)
+    - do not pass the section field and a new section will be created if does not exist any or the annotation will be
+    added to the previous section created (define_section=False)
 
     :param document_id: ID of the file
     :param start_offset: Start offset of the annotation
@@ -284,20 +291,21 @@ def post_document_annotation(
     :return: Response status.
     """
     url = post_project_api_document_annotations_url(document_id)
-    r = session.post(
-        url,
-        json={
-            'start_offset': start_offset,
-            'end_offset': end_offset,
-            'label': label_id,
-            'revised': revised,
-            #'section': section,
-            'section_label_id': template_id,
-            'accuracy': accuracy,
-            'is_correct': is_correct,
-            'csrfmiddlewaretoken': get_csrf(session),
-        },
-    )
+
+    data = {
+        'start_offset': start_offset,
+        'end_offset': end_offset,
+        'label': label_id,
+        'revised': revised,
+        'section_label_id': template_id,
+        'accuracy': accuracy,
+        'is_correct': is_correct,
+        }
+
+    if define_section:
+        data['section'] = section
+
+    r = session.post(url, json=data)
     return r
 
 
