@@ -146,7 +146,7 @@ plt.show()
 [2] Zhong, X. et al., "PubLayNet: largest dataset ever for document layout analysis", 2019  
 [3] Yuxin, W. et al., Detectron2, GitHub repository, https://github.com/facebookresearch/detectron2, 2019  
 
-## Suported languages
+## Supported OCR languages
 
 The default OCR for https://app.konfuzio.com supports the following languages:
 
