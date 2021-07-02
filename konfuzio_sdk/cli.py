@@ -113,7 +113,7 @@ def init_env(project_folder):
     data_folder = input("Folder where to allocate the data (press [ENTER] for the default: 'data_<project_id>'): ")
 
     if data_folder == "":
-        data_folder = "data_" + project_id
+        data_folder = "data_" + str(project_id)
 
     data_folder = verify_data_folder(project_folder, data_folder)
 
