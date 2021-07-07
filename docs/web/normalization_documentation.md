@@ -33,7 +33,8 @@ e.g.: eleven = 11
 4) The expression "Nil" standing for "nothing" will be translated into 0:  
 e.g.: NIL = 0 
 
-```test_data_numbers = [
+```
+test_data_numbers = [
     ('59,00-', 59, 50945),
     ("'786,71-", 786.71, 51429),
     (':2.000, 08 ', 2000.08, 51437),
@@ -103,7 +104,8 @@ e.g.: 2001 = 2001-01-01
 e.g.: 14132020 = None  
 e.g.: 23.0K.2010 = None
 
-```test_data_dates = [
+```
+test_data_dates = [
 ('1. November 2019', '2019-11-01', 51453),
 ('23.0919', '2019-09-23', 51449),
 ('/04.12.', '0000-12-04', 47776),
@@ -132,7 +134,8 @@ Given the following examples, you can recognize how certain expressions are clus
 2) "Lieferung inkludiert: ja" ("Delivery included: yes") will be translated into "True".
 3) Empty expressions, like "", can't be translated and Konfuzio will return "None". 
 
-```test_data_bool = [
+```
+test_data_bool = [
     ('nicht versichert', False, 0),
     ('ja', True, 0),
     ('', None, 0),
