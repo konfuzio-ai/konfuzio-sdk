@@ -46,8 +46,13 @@ e.g.: NIL = 0
 |  €1.010.296 | yes   | 1010296.0    | 1010296 |
 |  ein | yes   | 1.0   | 1 |
 |  eleven | yes   | 11.0   | 11 |
-|  –100 | yes   | -100.0    | -100 |
+|  –100 | yes   | -100.0    | -100 
+|  -,- | ?   | ?    | ?|
+| (118.704) | ?   | ?    | ? |
+| 43.34.34 | ?   | ?    | ? |
 |  NIL | yes   | 0.0   | 0  |
+| StringThatIncludesNIL | ?   | ?   | ?  |
+
 
 
 ### 2. Percentage Numbers
@@ -67,7 +72,12 @@ e.g.: 0,00 = 0
 |  12,34 | yes   | 0.1234    | 0.1234 |
 |  12,34 % | yes   | 0.1234    | 0.1234 |
 |  434,27% | yes   | 43.427 ??  | 4.3427 |
+|  59,00- | ?   | ?  | ? |
+|  123,45 | ?   | ?  | ? |
 |  0,00 | yes   | 0.0    | 0 |
+
+
+
 
 ### 3. Date Values
 ---
@@ -111,11 +121,15 @@ e.g.: 23.0K.2010 = None
 | :------------- | :----------: | -----------: | -----------: |
 |  1. November 2019 | yes   | 01.11.2019   | 2019-11-01 |
 |  23.0919 | yes   | 23.09.19    | 2019-09-23 |
+|  13 Mar 2020 | ?   | ?    | ? |
+|  (29.03.2018) | ?   | ?    | ? |
 |  /04.12. | yes   | 0000-12-04    | 0000-12-04 |
 |  Oktober 2011 | yes   | 2011-10-01    | 2011-10-01 |
 |  2001 | yes   | 01.01.01    | 2001-01-01 |
+|  1993-02-05T00:00:00| ?   | ?   | ? |
 |  14132020 | no   | None    | null |
 |  23.0K.2010 | no   | None  | null |
+|  30.07.2.90 | ?   | ?  | ? |
 
 
 ### 4. Boolean values
@@ -149,7 +163,11 @@ Given the following examples, you can recognize how certain expressions are clus
 |  included yes | no   | None   | null |
 |  ja inkludiert | yes   | true    | true|
 |  yes included | yes   | true  | true |
+|  alleinstehend ohne Kind | ?   | ?  | ? |
 |   | no   |  to check, not recognizable as annotation | same |
+
+
+alleinstehend ohne Kind
 
 
 ### 5. Known Issues
