@@ -120,7 +120,6 @@ e.g.: 23.0K.2010 = None
 ---   
 Our application is also able to translate certain expressions into a boolean value, representing true or false values. This is based on certain pre-specified words. These words are representing positive or negative connotated responses with certain signal words which can be found down below in the _no_list_ and _yes_list_.
 
-_no english expressions here?_
 
 the pre-specified positive and negative (hence true and false) expressions:
 no_list = ['NEIN', 'NICHT', 'KEIN', 'OHNE', 'NO']
@@ -144,6 +143,6 @@ Given the following examples, you can recognize how certain expressions are clus
 
 ### 5. Known Issues
 
-1) Limitations to other languages besides german: 
+1) Limitations to other languages besides german: Konfuzio is optimized for the german language. It may partly support english expressions, but is limited in usage in english.
 
-2) Limitations to case sensitivity of boolean values: 
+2) Limitations to case sensitivity of boolean values: Classifying certain expressions as true or false values is based on pre-specified expressions. Thus, it is limited to these expressions when normalizing the inputs.
