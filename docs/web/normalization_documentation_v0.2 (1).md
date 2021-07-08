@@ -147,8 +147,8 @@ Given the following examples, you can recognize how certain expressions are clus
 |  included: yes | no   | None   | null |
 |  inkludiert ja | no   | None ?    | null ?|
 |  included yes | no   | None ?  | null ?|
-|  ja inkludiert | no   | None ?    | null ?|
-|  yes included | no   | None ?  | null ?|
+|  ja inkludiert | no   | true    | true|
+|  yes included | no   | true  | true |
 |   | no   |  to check, not recognizable as annotation | same |
 
 
@@ -157,3 +157,5 @@ Given the following examples, you can recognize how certain expressions are clus
 1) Limitations to other languages besides german: Konfuzio is optimized for the german language. It may partly support english expressions, but is limited in usage in english.
 
 2) Limitations to case sensitivity of boolean values: Classifying certain expressions as true or false values is based on pre-specified expressions. Thus, it is limited to these expressions when normalizing the inputs.
+
+(not machine readable on app?) 
