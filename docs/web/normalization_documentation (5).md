@@ -33,20 +33,7 @@ e.g.: eleven = 11
 4) The expression "Nil" standing for "nothing" will be translated into 0:  
 e.g.: NIL = 0 
 
-```
-test_data_numbers = [
-    ('59,00-', 59, 50945),
-    ('786,71-, 786.71, 51429),
-    (':2.000, 08 ', 2000.08, 51437),
-    ('-2.759,7°', 2759.7, 51447),
-    ('+159,;03', 159.03, 56253),
-    ('€1.010.296', 1010296, 93255),
-    ('ein', 1, 99479),
-    ('eleven', 11, None),
-    ('–100', 100, 109610),
-    ('NIL', 0, None)
-]
-```
+
 
 | Input      | Able to convert?     | Output Excel/CSV | Output API |
 | :------------- | :----------: | -----------: | -----------: |
@@ -73,14 +60,6 @@ e.g.: 12,34 % = 0.1234
 e.g.: 434,27% = 4.3427  
 e.g.: 0,00 = 0
 
-```
-test_data_percentage = [
-    ('12,34', 0.1234, None),
-    ('12,34 %', 0.1234, None),
-    ('434,27%,', 4.3427, None),
-    ('0,00', 0, None)
-]
-```
 
 | Input      | Able to convert?     | Output Excel/CSV | Output API |
 | :------------- | :----------: | -----------: | -----------: |
@@ -125,17 +104,6 @@ e.g.: 2001 = 2001-01-01
 e.g.: 14132020 = None  
 e.g.: 23.0K.2010 = None
 
-```
-test_data_dates = [
-('1. November 2019', '2019-11-01', 51453),
-('23.0919', '2019-09-23', 51449),
-('/04.12.', '0000-12-04', 47776),
-('Oktober 2011', '2011-10-01', 0),
-('2001', '2001-01-01', 0),
-('14132020', None, 0),
-('23.0K.2010', None, 0)
-]
-```
 
 | Input      | Able to convert?     | Output Excel/CSV | Output API |
 | :------------- | :----------: | -----------: | -----------: |
@@ -165,13 +133,7 @@ Given the following examples, you can recognize how certain expressions are clus
 2) "Lieferung inkludiert: ja" ("Delivery included: yes") will be translated into "True".
 3) Empty expressions, like "", can't be translated and Konfuzio will return "None". 
 
-```
-test_data_bool = [
-    ('nicht versichert', False, 0),
-    ('ja', True, 0),
-    ('', None, 0),
-]
-```
+
 
 | Input      | Able to convert?     | Output Excel/CSV | Output API |
 | :------------- | :----------: | -----------: | -----------: |
