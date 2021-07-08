@@ -155,6 +155,7 @@ Given the following examples, you can recognize how certain expressions are clus
 
 
 ### 5. Known Issues
+---
 
 1) Limitations to other languages besides german: ...
 
