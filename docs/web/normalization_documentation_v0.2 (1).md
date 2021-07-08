@@ -47,11 +47,11 @@ e.g.: NIL = 0
 |  ein | yes   | 1.0   | 1 |
 |  eleven | yes   | 11.0   | 11 |
 |  –100 | yes   | -100.0    | -100 
-|  -,- | ?   | ?    | ?|
-| (118.704) | ?   | ?    | ? |
-| 43.34.34 | ?   | ?    | ? |
+|  -,- | yes   | 0.0    | 0|
+| (118.704) | yes   | -118704.0    | -118704 ?? |
+| 43.34.34 | no   | None    | null |
 |  NIL | yes   | 0.0   | 0  |
-| StringThatIncludesNIL | ?   | ?   | ?  |
+| StringThatIncludesNIL | no  | None   | null  |
 
 
 
@@ -72,8 +72,8 @@ e.g.: 0,00 = 0
 |  12,34 | yes   | 0.1234    | 0.1234 |
 |  12,34 % | yes   | 0.1234    | 0.1234 |
 |  434,27% | yes   | 43.427 ??  | 4.3427 |
-|  59,00- | ?   | ?  | ? |
-|  123,45 | ?   | ?  | ? |
+|  59,00- | yes   | 0.59  | 0.59 |
+|  123,45 | yes   | 12.345 ??  | 1.2345 |
 |  0,00 | yes   | 0.0    | 0 |
 
 
@@ -84,18 +84,7 @@ e.g.: 0,00 = 0
 Konfuzio applies the so-called iso format (XXXX.XX.XX) for dates. It checks initially whether this format is already used which then won't be altered in this case. However, if another format is used, it will be adapted. In the next step, it checks if a format consisting only of a month and a year is used or even just a year without any other date information besides that.
 
 Konfuzio recognizes written months either in german or english language and translates them into the iso format. 
-
-```# written months to be replaced with the according numbers in german/english:
-month_dict_de_en = {'JANUAR': '01.', 'JANUARY': '01.', 'FEBRUAR': '02.', 'FEBRUARY': '02.', 'MÄRZ': '03.',
-                        'MARCH': '03.', 'APRIL': '04.', 'MAI': '05.', 'MAY': '05.', 'JUNI': '06.', 'JUNE': '06.',
-                        'JULI': '07.', 'JULY': '07.', 'AUGUST': '08.', 'SEPTEMBER': '09.',
-                        'OKTOBER': '10.', 'NOVEMBER': '11.', 'DEZEMBER': '12.', 'DECEMBER': '12.'}
-
-month_dict_short_eng_de = {'JAN': '01.', 'FEB': '02.', 'MAR': '03.', 'APR': '04.', 'MAY': '05.',
-                               'JUN': '06.', 'JUL': '07.', 'AUG': '08.', 'SEP': '09.',
-                               'OCT': '10.', 'OKT': '10.', 'NOV': '11.', 'DEC': '12.', 'DEZ': '12.'}
-```
-                              
+                         
                               
 **To give you specific examples:**
 1) Dates where the month is posted in a written expression with the year and the day as digits can be transformed into the iso format without any problems.  
@@ -121,15 +110,15 @@ e.g.: 23.0K.2010 = None
 | :------------- | :----------: | -----------: | -----------: |
 |  1. November 2019 | yes   | 01.11.2019   | 2019-11-01 |
 |  23.0919 | yes   | 23.09.19    | 2019-09-23 |
-|  13 Mar 2020 | ?   | ?    | ? |
-|  (29.03.2018) | ?   | ?    | ? |
+|  13 Mar 2020 | yes   | 13.03.2020    | 2020-03-13 |
+|  (29.03.2018) | yes   | 29.03.2018    | 2018-03-29 |
 |  /04.12. | yes   | 0000-12-04    | 0000-12-04 |
 |  Oktober 2011 | yes   | 2011-10-01    | 2011-10-01 |
 |  2001 | yes   | 01.01.01    | 2001-01-01 |
-|  1993-02-05T00:00:00| ?   | ?   | ? |
+|  1993-02- 05T00 00 00| yes  | 05.02.1993   | 1993-02-05 |
 |  14132020 | no   | None    | null |
 |  23.0K.2010 | no   | None  | null |
-|  30.07.2.90 | ?   | ?  | ? |
+|  30.07.2.90 | no   | None  | null |
 
 
 ### 4. Boolean values
@@ -163,11 +152,9 @@ Given the following examples, you can recognize how certain expressions are clus
 |  included yes | no   | None   | null |
 |  ja inkludiert | yes   | true    | true|
 |  yes included | yes   | true  | true |
-|  alleinstehend ohne Kind | ?   | ?  | ? |
+|  alleinstehend ohne Kind | no  | None  | null |
 |   | no   |  to check, not recognizable as annotation | same |
 
-
-alleinstehend ohne Kind
 
 
 ### 5. Known Issues
