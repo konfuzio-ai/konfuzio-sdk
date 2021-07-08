@@ -46,7 +46,7 @@ e.g.: NIL = 0
 |  ein | yes   | 1   | 1.0 |
 |  eleven | yes   | 11.0   | 11 |
 |  –100 | yes   | 100    | ? |
-|  NIL | yes   | 0.0   | 0 \ |
+|  NIL | yes   | 0.0   | 0 |
 
 
 ### 2. Percentage Numbers
@@ -66,7 +66,7 @@ e.g.: 0,00 = 0
 |  12,34 | yes   | 0.1234    | 0.1234 |
 |  12,34 % | yes   | 0.1234    | 0.1234 |
 |  434,27% | yes   | 43.427    | 4.3427 |
-|  0,00 | no   | 0.0    | 0 \ |
+|  0,00 | no   | 0.0    | 0 |
 
 ### 3. Date Values
 ---
@@ -113,7 +113,7 @@ e.g.: 23.0K.2010 = None
 |  Oktober 2011 | yes   | 2011-10-01    | 2011-10-01 |
 |  2001 | yes   | 01.01.01    | 2001-01-01 |
 |  14132020 | no   | None    | null |
-|  23.0K.2010 | no   | None  | null \ |
+|  23.0K.2010 | no   | None  | null |
 
 
 ### 4. Boolean values
@@ -139,7 +139,7 @@ Given the following examples, you can recognize how certain expressions are clus
 | :------------- | :----------: | -----------: | -----------: |
 |  nicht versichert | yes   | False None?    | null (check!) |
 |  ja | yes   | True None?   | null (check!) |
-|   | no   |   None | null (check!) \ |
+|   | no   |   None | null (check!) |
 
 
 ### 5. Known Issues
