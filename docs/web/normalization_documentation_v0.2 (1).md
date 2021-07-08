@@ -46,8 +46,8 @@ e.g.: NIL = 0
 |  €1.010.296 | yes   | 1010296.0    | 1010296 |
 |  ein | yes   | 1.0   | 1 |
 |  eleven | yes   | 11.0   | 11 |
-|  –100 | yes   | 100    | ? |
-|  NIL | yes   | 0.0   | 0 \ |
+|  –100 | yes   | -100.0    | -100 |
+|  NIL | yes   | 0.0   | 0  |
 
 
 ### 2. Percentage Numbers
@@ -66,8 +66,8 @@ e.g.: 0,00 = 0
 | :------------- | :----------: | -----------: | -----------: |
 |  12,34 | yes   | 0.1234    | 0.1234 |
 |  12,34 % | yes   | 0.1234    | 0.1234 |
-|  434,27% | yes   | 43.427    | 4.3427 |
-|  0,00 | no   | 0.0    | 0 \ |
+|  434,27% | yes   | 43.427 ??  | 4.3427 |
+|  0,00 | no   | 0.0    | 0 |
 
 ### 3. Date Values
 ---
@@ -109,13 +109,13 @@ e.g.: 23.0K.2010 = None
 
 | Input      | Able to convert?     | Output Excel/CSV | Output API |
 | :------------- | :----------: | -----------: | -----------: |
-|  1. November 2019 | yes   | 2019-11-01 None, check again!   | check again! |
-|  23.0919 | yes   | 23.09.19 ?    | 2019-09-23 |
+|  1. November 2019 | yes   | 01.11.2019   | 2019-11-01 |
+|  23.0919 | yes   | 23.09.19    | 2019-09-23 |
 |  /04.12. | yes   | 0000-12-04    | 0000-12-04 |
 |  Oktober 2011 | yes   | 2011-10-01    | 2011-10-01 |
 |  2001 | yes   | 01.01.01    | 2001-01-01 |
 |  14132020 | no   | None    | null |
-|  23.0K.2010 | no   | None  | null \ |
+|  23.0K.2010 | no   | None  | null |
 
 
 ### 4. Boolean values
@@ -133,18 +133,20 @@ Given the following examples, you can recognize how certain expressions are clus
 **To give you specific examples:** 
 1) The sentence "nicht." ("no.") will be assigned to "False".  
 2) "ja" ("yes") will be translated into "True".
-3) Empty expressions, like " ", can't be translated and Konfuzio will return "None". 
+3) Empty expressions, like " ", can't be translated. 
 
 
 | Input      | Able to convert?     | Output Excel/CSV | Output API |
 | :------------- | :----------: | -----------: | -----------: |
-|  nicht versichert | yes   | False None?    | null (check!) |
-|  ja | yes   | True None?   | null (check!) |
-|   | no   |   None | null (check!) \ |
+|  nicht | yes   | false    | false |
+|  no | yes   | false     | false |
+|  ja | yes   | true    | true |
+|  yes | yes   | true   | true |
+|   | no   |  to check, not recognizable as annotation | same |
 
 
 ### 5. Known Issues
 
-1) Limitations to other languages besides german: 
+1) Limitations to other languages besides german: Konfuzio is optimized for the german language. It may partly support english expressions, but is limited in usage in english.
 
-2) Limitations to case sensitivity of boolean values: 
+2) Limitations to case sensitivity of boolean values: Classifying certain expressions as true or false values is based on pre-specified expressions. Thus, it is limited to these expressions when normalizing the inputs.
