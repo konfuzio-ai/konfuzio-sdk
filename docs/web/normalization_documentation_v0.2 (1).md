@@ -145,10 +145,10 @@ Given the following examples, you can recognize how certain expressions are clus
 |  not insured | yes   | false     | false |
 |  inkludiert: ja | no   | None    | null |
 |  included: yes | no   | None   | null |
-|  inkludiert ja | no   | None ?    | null ?|
-|  included yes | no   | None ?  | null ?|
-|  ja inkludiert | no   | true    | true|
-|  yes included | no   | true  | true |
+|  inkludiert ja | no   | None     | null |
+|  included yes | no   | None   | null |
+|  ja inkludiert | yes   | true    | true|
+|  yes included | yes   | true  | true |
 |   | no   |  to check, not recognizable as annotation | same |
 
 
