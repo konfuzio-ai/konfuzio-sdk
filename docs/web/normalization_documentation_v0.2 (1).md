@@ -25,7 +25,6 @@ e.g.: :2.000, 08 = 2000.08
 e.g.: -2.759,7° = 2759.7  
 e.g.: +159,;03 = 159.03  
 e.g.: €1.010.296 = 1010296
-e.g.: -100 = ?
 
 3) Written numbers will be changed into a digits number format:  
 e.g.: ein = 1  
