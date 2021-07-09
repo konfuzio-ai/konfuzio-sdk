@@ -79,9 +79,9 @@ Konfuzio also handels percentage numbers of different formats and brings them in
 e.g.: 12,34 = 0.1234  
 e.g.: 12,34 % = 0.1234  
 e.g.: 434,27% = 4.3427    
-e.g.: 59,00- = 0.59
-e.g.: 123,45 = 12.345
-e.g.: 0,00 = 0
+e.g.: 59,00- = 0.59  
+e.g.: 123,45 = 12.345  
+e.g.: 0,00 = 0  
 
 
 | Input      | Able to convert?     | Output Excel/CSV | Output API |
