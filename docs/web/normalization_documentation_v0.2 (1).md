@@ -107,7 +107,7 @@ Konfuzio recognizes written months either in german or english language and tran
                               
 **To give you specific examples:**
 1) Dates where the month is posted in a written expression with the year and the day as digits can be transformed into the iso format without any problems.  
-e.g.: 1. November 2019 (1st November of 2019) = 2019-11-01   
+e.g.: 1. November 2019 = 2019-11-01   
 e.g.: 13 Mar 2020 = 2020-03-13
 
 2) If the year is indicated with just two digits, it will also be recognized, even if it's not separated with a sign like a dot or something similar.  
