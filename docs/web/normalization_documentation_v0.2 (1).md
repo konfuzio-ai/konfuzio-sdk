@@ -44,7 +44,8 @@ e.g.: eleven = 11
 5) Certain cases can't be normalized from Konfuzio:
 e.g.: 43.34.34 = None
 
-6) The expression "NIL" meaning "nothing" will be translated into 0, however strings including this expression can't be normalized:        
+6) The expression "NIL" meaning "nothing" will be translated into 0, however strings including this expression can't be normalized:  
+        
 e.g.: NIL = 0 
 
 
