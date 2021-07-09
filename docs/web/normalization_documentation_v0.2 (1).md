@@ -17,13 +17,13 @@ As there are varying ways to display float numbers, e.g. by using dots instead o
 The uniform chosen format uses a the english/american standard. Hence, dots are used as a separation for decimal numbers and commas to mark the thousands with two decimal places. 
 
 **To give you specific examples:**  
-1) Expressions only consisting of one or multiple dashes will be translated into Zero:  
-e.g.: -,- = 0  
+1) Expressions only consisting of one or multiple dashes will be translated into Zero:    
+e.g.: -,- = 0    
 
-2) For regular numbers, negative signs will be placed in front of the digits and zeros after digits will be removed; floats are displayed with two decimal places: 
-e.g.: 59,00- = -59  
-e.g.: 786,71- = -786.71 
-e.g.: (118.704) = -118704.0 
+2) For regular numbers, negative signs will be placed in front of the digits and zeros after digits will be removed; floats are displayed with two decimal places:   
+e.g.: 59,00- = -59    
+e.g.: 786,71- = -786.71   
+e.g.: (118.704) = -118704.0   
 
 3) Absolute numbers are shown without negative or positive signs in the common format as described above:  
 e.g.: 59,00- = 59
