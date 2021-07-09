@@ -44,7 +44,7 @@ e.g.: eleven = 11
 5) Certain cases can't be normalized from Konfuzio:
 e.g.: 43.34.34 = None
 
-6) The expression "NIL" meaning "nothing" will be translated into 0, however strings including this expression can't be normalized:  
+6) The expression "NIL" meaning "nothing" will be translated into 0, however strings including this expression can't be normalized:    
 e.g.: NIL = 0 
 
 
@@ -124,7 +124,7 @@ e.g.: 2001 = 2001-01-01
 5) Date time values are translated into the iso format as well, but removing the time values:  
 e.g.: 1993-02-05T00:00:00 = 1993-02-05
 
-3) Some cases can't be identified correctly or uniquely. Thus, Konfuzio can't transfer it into a date format and will return "None".  
+6) Some cases can't be identified correctly or uniquely. Thus, Konfuzio can't transfer it into a date format and will return "None".  
 e.g.: 14132020 = None  
 e.g.: 23.0K.2010 = None  
 e.g.: 30.07.2.90 = None
