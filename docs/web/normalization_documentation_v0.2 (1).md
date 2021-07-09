@@ -132,7 +132,7 @@ e.g.: 30.07.2.90 = None
 
 
 | Input      | Able to convert?     | Output Excel/CSV | Output API |
-| :------------- | :----------: | -----------: | -----------: |
+| :-------------: | :----------: | :-----------: | :-----------: |
 |  1. November 2019 | yes   | 2019-11-01   | 2019-11-01 |
 |  13 Mar 2020 | yes   | 2020-03-13    | 2020-03-13 |
 |  23.0919 | yes   | 2019-09-23    | 2019-09-23 |
@@ -175,7 +175,7 @@ e.g.: alleinstehend ohne Kind = None
 
 
 | Input      | Able to convert?     | Output Excel/CSV | Output API |
-| :------------- | :----------: | -----------: | -----------: |
+| :-------------: | :----------: | :-----------: | :-----------: |
 |  nicht | yes   | false    | false |
 |  no | yes   | false     | false |
 |  ja | yes   | true    | true |
