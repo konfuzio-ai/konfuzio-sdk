@@ -25,11 +25,11 @@ e.g.: 59,00- = -59
 e.g.: 786,71- = -786.71   
 e.g.: (118.704) = -118704.0   
 
-3) Absolute numbers are shown without negative or positive signs in the common format as described above:  
-e.g.: 59,00- = 59
-e.g.: 786,71- = 786.71
-e.g.: -2.759,7° = 2759.7
-e.g.: +159,;03 = 159.03
+3) Absolute numbers are shown without negative or positive signs in the common format as described above:    
+e.g.: 59,00- = 59  
+e.g.: 786,71- = 786.71  
+e.g.: -2.759,7° = 2759.7  
+e.g.: +159,;03 = 159.03  
 
 4) Irrelevant signs and whitespaces will be removed and it will be transformed into the unique format with a dot instead of a comma as the decimal separator:  
 e.g.: :2.000, 08 = 2000.08  
