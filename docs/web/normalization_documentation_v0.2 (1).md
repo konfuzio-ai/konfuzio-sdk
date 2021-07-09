@@ -41,11 +41,10 @@ e.g.: 7,375,009+ = 7375009.0
 e.g.: ein = 1  
 e.g.: eleven = 11
 
-5) Certain cases can't be normalized from Konfuzio:
+5) Certain cases can't be normalized from Konfuzio:  
 e.g.: 43.34.34 = None
 
 6) The expression "NIL" meaning "nothing" will be translated into 0, however strings including this expression can't be normalized:  
-        
 e.g.: NIL = 0 
 
 
