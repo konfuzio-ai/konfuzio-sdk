@@ -1,6 +1,6 @@
 ### [draft] Documentation Data Normalization
 ***
-Our Konfuzio application is able to normalize various data formats for different data types used in the annotations of the documents. It translates different formats of numbers, percentages, date and boolean values into a unique and machine-readable format. Down below you find an overview of the normalizations of the different data types with specific examples.
+Our Konfuzio application is able to normalize various data formats for different data types used in the annotations of the documents within your project. It translates different formats of numbers, percentages, date and boolean values into a unique and machine-readable format. Down below you find an overview of the normalizations of the different data types with specific examples.
 
 ### 1. Numbers
 ---
