@@ -148,7 +148,7 @@ e.g.: 30.07.2.90 = None
 
 ### 4. Boolean values
 ---   
-Our application is also able to translate certain expressions into a boolean value, representing true or false values. This is based on certain pre-specified words. These words are representing positive or negative connotated responses with certain signal words which can be found down below in the _no_list_ and _yes_list_.
+Our application is also able to translate certain expressions into so-called boolean values, representing true or false values. This is based on certain pre-specified words. These words are representing positive or negative connotated responses with certain signal words which can be found down below in the _no_list_ and _yes_list_.
 
 
 the pre-specified positive and negative (hence true and false) expressions:  
