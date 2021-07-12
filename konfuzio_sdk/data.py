@@ -849,7 +849,8 @@ class Project(Data):
                 section['template'] = template_mapper_dict[section['section_label']]
                 # we only add the sections that match the category of the document
                 # (ignore ghost sections that may exist)
-                if section['template'] == document.category_template:
+                if section['template'] == document.category_template or \
+                        document.category_template in section['template'].default_templates:
                     section_instance = self.section_class(**section, document=document, annotations=annotations)
                     document_sections.append(section_instance)
             document.sections = document_sections
