@@ -199,6 +199,6 @@ e.g.: alleinstehend ohne Kind = None
 
 2) Limitations to case sensitivity of boolean values: Classifying certain expressions as true or false values is based on pre-specified expressions. Thus, it is limited to these signal words as shown above in the lists when normalizing the inputs.
 
-3) The non-normalizable values which can't be converted from Konfuzio will be marked as "not machine-readable" on app.konfuzio.com and can be viewn in the smart view of the documents. 
+3) The non-normalizable values which can't be converted from Konfuzio will be marked as "not machine-readable" on app.konfuzio.com and can be viewed in the smart view of the documents. 
  
-5) Your excel output might differ in its format from the one defined above. This is due to the default formats from excel, e.g. the default date format which might change with the version you are using.  
+5) Your excel output might differ in its format from the one defined above. This is due to the default formats from excel, e.g. the default date format which might change with the version of excel of your respective country.  
