@@ -159,7 +159,7 @@ Given the following examples, you can recognize how certain expressions are clus
 
 **To give you specific examples:** 
 1) The word "nicht" ("no") will be assigned to "false".  
-2) "ja" ("yes") will be translated into "true".
+2) The expression "ja" ("yes") will be translated into "true".
 3) Expressions including the no or yes signal words can be translated, but only if the expression is starting with this word:  
 e.g.: nicht versichert = false  
 e.g.: not insured = false  
