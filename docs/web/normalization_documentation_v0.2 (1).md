@@ -72,7 +72,7 @@ e.g.: NIL = 0
 
 ### 2. Percentage Numbers
 ---
-Konfuzio also handels percentage numbers of different formats and brings them into a machine-readable one. Percentage expressions will not be displayed in the classic percentage format with the percentage sign %. The decimal number format out of 1 without the percentage sign will be used, but with a dot as a decimal separator and 4 decimal places. 
+Konfuzio also handels percentage numbers of different formats and brings them into a machine-readable one. Percentage expressions will not be displayed in the classic percentage format with the percentage sign %. The decimal number format without the percentage sign will be used, but with a dot as a decimal separator and 4 decimal places. 
 
 **To give you specific examples:**  
 1) Digits which are separated by commas with two decimal places will be easily converted into a uniform format, either with or without the percentage sign in its original format.  
