@@ -189,7 +189,7 @@ e.g.: alleinstehend ohne Kind = None
 |  ja inkludiert | yes   | true    | true|
 |  yes included | yes   | true  | true |
 |  alleinstehend ohne Kind | no  | None  | null |
-|   | no   |  to check, not recognizable as annotation | same |
+|   | no   |  not recognizable as annotation | not recognizable as annotation |
 
 
 
