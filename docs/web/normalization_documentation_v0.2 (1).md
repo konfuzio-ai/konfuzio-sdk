@@ -198,3 +198,6 @@ e.g.: alleinstehend ohne Kind = None
 1) Limitations to other languages besides german: Konfuzio is optimized for the german language. It may partly support english expressions, but is limited in the usage in english.
 
 2) Limitations to case sensitivity of boolean values: Classifying certain expressions as true or false values is based on pre-specified expressions. Thus, it is limited to these signal words as shown above in the lists when normalizing the inputs.
+
+3) Non machine readable on app 
+4) excel output 
