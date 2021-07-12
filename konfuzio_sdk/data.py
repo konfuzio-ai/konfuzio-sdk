@@ -98,6 +98,10 @@ class Template(Data):
         self.name = name
         self.name_clean = name_clean
         self.is_default = is_default
+        if 'default_template' in kwargs:
+            self.default_templates = [kwargs['default_template']]
+        else:
+            self.default_templates = default_templates
         self.default_templates = default_templates
         self.has_multiple_sections = has_multiple_sections
         self.project: Project = project
