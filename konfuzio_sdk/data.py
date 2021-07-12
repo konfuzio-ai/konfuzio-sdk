@@ -78,7 +78,7 @@ class Template(Data):
         name_clean: str,
         labels: List[int],
         is_default=False,
-        default_template: "Template" = None,
+        default_templates: ["Template"] = [],
         has_multiple_sections=False,
         **kwargs,
     ):
@@ -91,14 +91,14 @@ class Template(Data):
         :param name_clean: Normalized name of the template
         :param labels: Labels that belong to the template (IDs)
         :param is_default: Bool for template to be the default one in the project
-        :param default_template: Default template to which belongs
+        :param default_templates: Default templates to which belongs
         :param has_multiple_sections: Bool to allow the template to have different sections in a document
         """
         self.id = id
         self.name = name
         self.name_clean = name_clean
         self.is_default = is_default
-        self.default_template = default_template
+        self.default_templates = default_templates
         self.has_multiple_sections = has_multiple_sections
         self.project: Project = project
         project.add_template(self)
@@ -844,10 +844,9 @@ class Project(Data):
             for section in document._sections:
                 annotations = annotations_dict[section['id']] if section['id'] in annotations_dict else []
                 section['template'] = template_mapper_dict[section['section_label']]
-                default_template = section['template'].default_template or section['template']
                 # we only add the sections that match the category of the document
                 # (ignore ghost sections that may exist)
-                if default_template == document.category_template:
+                if section['template'] == document.category_template:
                     section_instance = self.section_class(**section, document=document, annotations=annotations)
                     document_sections.append(section_instance)
             document.sections = document_sections
@@ -951,9 +950,13 @@ class Project(Data):
 
         # Make default_template an Template instance
         for template in self.templates:
-            if isinstance(template.default_template, int):
-                template.default_template = self.get_template_by_id(template.default_template)
-
+            updated_list = []
+            for default_template in template.default_templates:
+                if isinstance(default_template, int):
+                    updated_list.append(self.get_template_by_id(default_template))
+                else:
+                    updated_list.append(default_template)
+            template.default_templates = updated_list
         return self.templates
 
     def get_labels(self, update=False):
