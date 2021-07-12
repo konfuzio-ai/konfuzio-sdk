@@ -807,6 +807,7 @@ class Document(Data):
                                                        category_template=self.category_template.id)
             if response.status_code == 200:
                 document_saved = True
+                self.project.update_document(document=self)
             else:
                 logger.error(f'Not able to update document {self.id} online: {response.text}')
         return document_saved
@@ -952,6 +953,47 @@ class Project(Data):
                 self.preparation_documents.append(document)
             elif document.dataset_status == 4:
                 self.low_ocr_documents.append(document)
+
+    def update_document(self, document):
+        """
+        Update document in the project.
+
+        Update can be in the dataset_status, name or category.
+        First, we need to find the document (different list accordingly with dataset_status).
+        Then, if we are just updating the name or category, we can change the fields in place.
+        If we are updating the document dataset status, we need to move the document from the project list.
+
+        :param document: Document to update in the project
+        """
+        current_status = document.dataset_status
+
+        prj_docs = [self.no_status_documents, self.preparation_documents, self.documents,
+                    self.test_documents, self.low_ocr_documents]
+
+        # get project list that contains the document
+        for project_documents in prj_docs:
+            if document in project_documents:
+                break
+
+        # update name and category and get dataset status
+        previous_status = 0
+        for doc in project_documents:
+            if doc.id == document.id:
+                doc.name = document.name
+                doc.category_template = document.category_template
+                previous_status = doc.dataset_status
+                break
+
+        # if the document is new to the project, just add it
+        if len(project_documents) == 0:
+            doc = document
+
+        # update project list if dataset status is different
+        if current_status != previous_status:
+            if doc in project_documents:
+                project_documents.remove(doc)
+            doc.dataset_status = current_status
+            self.add_document(doc)
 
     def get_meta(self, update=False):
         """

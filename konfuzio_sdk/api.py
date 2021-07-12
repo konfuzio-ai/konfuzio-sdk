@@ -466,15 +466,13 @@ def update_file_status_konfuzio_api(document_id: int, file_name: str, dataset_st
     """
     url = update_document_url(document_id)
 
-    sync = kwargs.get('sync', True)
     category_template = kwargs.get('category_template', None)
 
     data = {"data_file_name": file_name,
             "dataset_status": dataset_status,
-            "sync": sync,
             "category_template": category_template}
 
-    r = session.put(url=url, json=data)
+    r = session.patch(url=url, json=data)
     return r
 
 
