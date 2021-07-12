@@ -4,6 +4,13 @@
 
 # Changelog
 
+## 2021-06-30 v.0.1.3
+
+### Changed
+
+- Improved documentation dev.konfuzio.com
+- Definition of the section class in the Project 
+
 ## 2021-06-15 v.0.1.2
 
 ### Added

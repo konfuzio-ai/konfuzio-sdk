@@ -887,7 +887,7 @@ class Project(Data):
                 # we only add the sections that match the category of the document
                 # (ignore ghost sections that may exist)
                 if default_template == document.category_template:
-                    section_instance = Section(**section, document=document, annotations=annotations)
+                    section_instance = self.section_class(**section, document=document, annotations=annotations)
                     document_sections.append(section_instance)
             document.sections = document_sections
 

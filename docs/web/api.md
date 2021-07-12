@@ -146,6 +146,13 @@ plt.show()
 [2] Zhong, X. et al., "PubLayNet: largest dataset ever for document layout analysis", 2019  
 [3] Yuxin, W. et al., Detectron2, GitHub repository, https://github.com/facebookresearch/detectron2, 2019  
 
+## Supported OCR languages
+
+The default OCR engine for https://app.konfuzio.com supports the following languages:
+
+Afrikaans, Albanian, Arabic, Asturian, Basque, Bislama, Breton, Catalan, Cebuano, Chamorro, Chinese Simplified, Chinese Traditional, Cornish, Corsican, Crimean Tatar Latin, Czech, Danish, Dutch, English (incl. handwritten), Estonian, Fijian, Filipino, Finnish, French, Friulian, Galician, German, Gilbertese, Greek, Greenlandic, Haitian Creole, Hani, Hmong Daw Latin, Hungarian, Indonesian, Interlingua, Inuktitut Latin, Irish, Italian, Japanese, Javanese, K'iche', Kabuverdianu, Kachin Latin, Kara-Kalpak, Kashubian, Khasi, Korean, Kurdish Latin, Luxembourgish, Malay Latin, Manx, Neapolitan, Norwegian, Norwegian, Occitan, Polish, Portuguese, Romanian, Romansh, Russian, Scots, Scottish Gaelic, Serbian Cyrillic, Serbian Latin, Slovak, Slovenian, Spanish, Swahili Latin, Swedish, Tatar Latin, Tetum, Turkish, Upper Sorbian, Uzbek Latin, Volapük, Walser, Western Frisian, Yucatec Maya, Zhuang, Zulu.
+
+The availability of OCR languages depends on the selected OCR engine and might differ across configurations (e.g. on-premise installation).
 
 ## Supported file types
 
