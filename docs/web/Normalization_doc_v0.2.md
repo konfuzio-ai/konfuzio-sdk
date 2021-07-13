@@ -156,18 +156,18 @@ Given the following examples, you can recognize how certain expressions are clus
 **To give you specific examples:** 
 1) The word "nicht" ("no") will be assigned to "false".    
 2) The expression "ja" ("yes") will be translated into "true".  
-3) Expressions including the no or yes signal words can be translated, but only if the expression is starting with this word:  
-e.g.: nicht versichert 
-e.g.: not insured 
-e.g.: ja inkludiert 
-e.g.: yes included
+3) Expressions including the no or yes signal words can be translated, but only if the expression is starting with this word:    
+e.g.: nicht versichert   
+e.g.: not insured   
+e.g.: ja inkludiert   
+e.g.: yes included  
 
-4) If the expression is not starting with the signal word, it can't be translated:
-e.g.: inkludiert: ja
-e.g.: included: yes 
-e.g.: inkludiert ja 
-e.g.: included yes 
-e.g.: alleinstehend ohne Kind 
+4) If the expression is not starting with the signal word, it can't be translated:  
+e.g.: inkludiert: ja  
+e.g.: included: yes   
+e.g.: inkludiert ja   
+e.g.: included yes   
+e.g.: alleinstehend ohne Kind   
 
 5) Empty expressions, like " ", can't be translated. 
 
