@@ -87,12 +87,12 @@ e.g.: 0,00
 
 | Input      | example no. | Able to convert?     | Output Excel/CSV | Output API | Datatype Excel | Datatype JSON |
 | :-------------: | :----------: | :-----------: | :-----------: |:-----------: | :-----------: |  :-----------: |
-|  12,34 |1 | yes   | 0.1234    | 0.1234 |  string |
-|  12,34 % |1 | yes   | 0.1234    | 0.1234 |  string |
-|  434,27% | 1| yes   | 4.3427  | 4.3427 |string |
-|  59,00- | 1| yes   | 0.59  | 0.59 |string |
-|  123,45 | 1| yes   | 1.2345  | 1.2345 |string |
-|  0,00 |  1| yes   | 0.0    | 0 |string |
+|  12,34 |1 | yes   | 0.1234    | 0.1234 |  string | number |
+|  12,34 % |1 | yes   | 0.1234    | 0.1234 |  string | number |
+|  434,27% | 1| yes   | 4.3427  | 4.3427 |string | number |
+|  59,00- | 1| yes   | 0.59  | 0.59 |string | number |
+|  123,45 | 1| yes   | 1.2345  | 1.2345 |string | number |
+|  0,00 |  1| yes   | 0.0    | 0 |string | number |
 
 
 ### 3. Date Values
@@ -129,17 +129,17 @@ e.g.: 30.07.2.90
 
 | Input      | example no. | Able to convert?     | Output Excel/CSV | Output API | Datatype Excel | Datatype JSON |
 | :-------------: | :----------: | :-----------: | :-----------: | :-----------: | :-----------: |  :-----------: |
-|  1. November 2019 | 1| yes   | 2019-11-01   | 2019-11-01 |string |
-|  13 Mar 2020 | 1 | yes   | 2020-03-13    | 2020-03-13 |string |
-|  23.0919 | 2| yes   | 2019-09-23    | 2019-09-23 |string |
-|  (29.03.2018) |  2| yes   | 2018-03-29    | 2018-03-29 |string |
-|  /04.12. |  3 | yes   | 0000-12-04    | 0000-12-04 |string |
-|  Oktober 2011 | 4 | yes   | 2011-10-01    | 2011-10-01 |string |
-|  2001 | 4 | yes   | 2001-01-01    | 2001-01-01 | string |
-|  1993-02-05T00:00:00| 5 |yes  | 1993-02-05  | 1993-02-05 |string |
-|  14132020 |6 | no   | None    | null | string |
-|  23.0K.2010 |  6 |no   | None  | null |string |
-|  30.07.2.90 | 6 | no   | None  | null |string |
+|  1. November 2019 | 1| yes   | 2019-11-01   | 2019-11-01 |string | string | 
+|  13 Mar 2020 | 1 | yes   | 2020-03-13    | 2020-03-13 |string | string | 
+|  23.0919 | 2| yes   | 2019-09-23    | 2019-09-23 |string |string | 
+|  (29.03.2018) |  2| yes   | 2018-03-29    | 2018-03-29 |string |string | 
+|  /04.12. |  3 | yes   | 0000-12-04    | 0000-12-04 |string |string | 
+|  Oktober 2011 | 4 | yes   | 2011-10-01    | 2011-10-01 |string |string | 
+|  2001 | 4 | yes   | 2001-01-01    | 2001-01-01 | string |string | 
+|  1993-02-05T00:00:00| 5 |yes  | 1993-02-05  | 1993-02-05 |string |string | 
+|  14132020 |6 | no   | None    | null | - |- | 
+|  23.0K.2010 |  6 |no   | None  | null |- |- | 
+|  30.07.2.90 | 6 | no   | None  | null |- |- | 
 
 
 ### 4. Boolean values
@@ -171,19 +171,19 @@ e.g.: alleinstehend ohne Kind
 
 | Input      |example no. | Able to convert?     | Output Excel/CSV | Output API | Datatype Excel | Datatype JSON |
 | :-------------: | :----------: | :-----------: | :-----------: |  :-----------: | :-----------: |  :-----------: |
-|  nicht | 1  | yes   | false    | false | string |
-|  no | 1  | yes   | false     | false |string |
-|  ja | 2  | yes   | true    | true |string |
-|  yes | 2  | yes   | true   | true |string |
-|  nicht versichert| 3  | yes   | false    | false |string |
-|  not insured | 3  | yes   | false     | false | string |
-|  ja inkludiert | 3  | yes   | true    | true| string |
-|  yes included | 3  | yes   | true  | true | string |
-|  inkludiert: ja | 4  | no   | None    | null | string |
-|  included: yes | 4  | no   | None   | null | string |
-|  inkludiert ja | 4  | no   | None     | null | string |
-|  included yes | 4  | no   | None   | null | string |
-|  alleinstehend ohne Kind | 4  | no  | None  | null | string |
+|  nicht | 1  | yes   | false    | false | string | boolean |
+|  no | 1  | yes   | false     | false |string | boolean |
+|  ja | 2  | yes   | true    | true |string | boolean |
+|  yes | 2  | yes   | true   | true |string | boolean |
+|  nicht versichert| 3  | yes   | false    | false |string | boolean |
+|  not insured | 3  | yes   | false     | false | string | boolean |
+|  ja inkludiert | 3  | yes   | true    | true| string | boolean |
+|  yes included | 3  | yes   | true  | true | string | boolean |
+|  inkludiert: ja | 4  | no   | None    | null | string | - |
+|  included: yes | 4  | no   | None   | null | string | - |
+|  inkludiert ja | 4  | no   | None     | null | string | - |
+|  included yes | 4  | no   | None   | null | string | - |
+|  alleinstehend ohne Kind | 4  | no  | None  | null | string | - |
 
 
 ### 5. Known Issues and remarks
