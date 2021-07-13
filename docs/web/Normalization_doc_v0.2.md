@@ -50,7 +50,7 @@ e.g.: NIL
 e.g.: StringThatIncludesNIL
 
    
-| Input      | example no.| Able to convert?     | Output Excel/CSV | Output API | Datatype Excel | Datatype JSON |
+| Input      | example no.| Able to convert?     | Output Excel/CSV | Output API | Datatype CSV | Datatype JSON |
 | :-------------: | :----------: | :-----------: | :-----------: |:-----------:|:-----------:|:-----------:|
 |  -,- |1 | yes   | 0.0    | 0| string | number |
 |  59,00- | 2| yes   | -59.0    | -59 | string | number |
@@ -85,7 +85,7 @@ e.g.: 123,45
 e.g.: 0,00 
 
 
-| Input      | example no. | Able to convert?     | Output Excel/CSV | Output API | Datatype Excel | Datatype JSON |
+| Input      | example no. | Able to convert?     | Output Excel/CSV | Output API | Datatype CSV | Datatype JSON |
 | :-------------: | :----------: | :-----------: | :-----------: |:-----------: | :-----------: |  :-----------: |
 |  12,34 |1 | yes   | 0.1234    | 0.1234 |  string | number |
 |  12,34 % |1 | yes   | 0.1234    | 0.1234 |  string | number |
@@ -127,7 +127,7 @@ e.g.: 23.0K.2010
 e.g.: 30.07.2.90
    
 
-| Input      | example no. | Able to convert?     | Output Excel/CSV | Output API | Datatype Excel | Datatype JSON |
+| Input      | example no. | Able to convert?     | Output Excel/CSV | Output API | Datatype CSV | Datatype JSON |
 | :-------------: | :----------: | :-----------: | :-----------: | :-----------: | :-----------: |  :-----------: |
 |  1. November 2019 | 1| yes   | 2019-11-01   | 2019-11-01 |string | string | 
 |  13 Mar 2020 | 1 | yes   | 2020-03-13    | 2020-03-13 |string | string | 
@@ -169,7 +169,7 @@ e.g.: inkludiert ja
 e.g.: included yes   
 e.g.: alleinstehend ohne Kind   
 
-| Input      |example no. | Able to convert?     | Output Excel/CSV | Output API | Datatype Excel | Datatype JSON |
+| Input      |example no. | Able to convert?     | Output Excel/CSV | Output API | Datatype CSV | Datatype JSON |
 | :-------------: | :----------: | :-----------: | :-----------: |  :-----------: | :-----------: |  :-----------: |
 |  nicht | 1  | yes   | false    | false | string | boolean |
 |  no | 1  | yes   | false     | false |string | boolean |
