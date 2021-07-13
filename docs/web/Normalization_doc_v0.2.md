@@ -159,14 +159,14 @@ Given the following examples, you can recognize how certain expressions are clus
 3) Expressions including the no or yes signal words can be translated, but only if the expression is starting with this word:    
 e.g.: nicht versichert   
 e.g.: not insured   
-e.g.: ja inkludiert   
-e.g.: yes included  
+e.g.: ja versichert   
+e.g.: yes insured  
 
 4) If the expression is not starting with the signal word, it can't be translated as there is the possibility of a combination of positive and negative connotated words:  
-e.g.: inkludiert: ja  
-e.g.: included: yes   
-e.g.: inkludiert ja   
-e.g.: included yes   
+e.g.: versichert: ja  
+e.g.: insured: yes   
+e.g.: versichert ja   
+e.g.: insured yes   
 e.g.: alleinstehend ohne Kind   
 
 | Input      |example no. | Able to convert?     | Output Excel/CSV | Output API | Datatype CSV | Datatype JSON |
@@ -177,12 +177,12 @@ e.g.: alleinstehend ohne Kind
 |  yes | 2  | yes   | true   | true |string | boolean |
 |  nicht versichert| 3  | yes   | false    | false |string | boolean |
 |  not insured | 3  | yes   | false     | false | string | boolean |
-|  ja inkludiert | 3  | yes   | true    | true| string | boolean |
-|  yes included | 3  | yes   | true  | true | string | boolean |
-|  inkludiert: ja | 4  | no   | None    | null | string | - |
-|  included: yes | 4  | no   | None   | null | string | - |
-|  inkludiert ja | 4  | no   | None     | null | string | - |
-|  included yes | 4  | no   | None   | null | string | - |
+|  ja versichert | 3  | yes   | true    | true| string | boolean |
+|  yes insured | 3  | yes   | true  | true | string | boolean |
+|  versichert: ja | 4  | no   | None    | null | string | - |
+|  insured: yes | 4  | no   | None   | null | string | - |
+|  versichert ja | 4  | no   | None     | null | string | - |
+|  insured yes | 4  | no   | None   | null | string | - |
 |  alleinstehend ohne Kind | 4  | no  | None  | null | string | - |
 
 
