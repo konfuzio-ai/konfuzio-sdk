@@ -169,9 +169,6 @@ e.g.: inkludiert ja
 e.g.: included yes   
 e.g.: alleinstehend ohne Kind   
 
-5) Empty expressions, like " ", can't be translated. 
-
-
 | Input      |example no. | Able to convert?     | Output Excel/CSV | Output API | 
 | :-------------: | :----------: | :-----------: | :-----------: |  :-----------: |
 |  nicht | 1  | yes   | false    | false |
@@ -187,7 +184,6 @@ e.g.: alleinstehend ohne Kind
 |  inkludiert ja | 4  | no   | None     | null |
 |  included yes | 4  | no   | None   | null |
 |  alleinstehend ohne Kind | 4  | no  | None  | null |
-|   |  5  | no   |  not recognizable as annotation | not recognizable as annotation |
 
 
 ### 5. Known Issues and remarks
