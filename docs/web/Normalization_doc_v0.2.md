@@ -29,11 +29,11 @@ e.g.: (118.704)
 3) Absolute numbers are shown without negative or positive signs in the common format as described above:    
 e.g.: 59,00-  
 e.g.: 786,71-  
-e.g.: -2.759,7° 
+e.g.: -2.759,7°   
 e.g.: +159,;03  
 
-4) Irrelevant signs and whitespaces will be removed and it will be transformed into the unique format with a dot instead of a comma as the decimal separator:  
-e.g.: :2.000, 08 
+4) Irrelevant signs and whitespaces will be removed and it will be transformed into the unique format with a dot instead of a comma as the decimal separator:    
+e.g.: :2.000, 08   
 e.g.: -2.759,7°    
 e.g.: €1.010.296  
 e.g.: 7,375,009+
