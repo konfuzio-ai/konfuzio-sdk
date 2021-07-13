@@ -50,7 +50,7 @@ e.g.: NIL
 e.g.: StringThatIncludesNIL
 
    
-| Input      | Able to convert?     | Output Excel/CSV | Output API | example |
+| Input      | Able to convert?     | Output Excel/CSV | Output API | example no.|
 | :-------------: | :----------: | :-----------: | :-----------: |:-----------:|
 |  -,- | yes   | 0.0    | 0| 1 |
 |  59,00- | yes   | -59.0    | -59 |2|
@@ -77,22 +77,22 @@ Konfuzio also handels percentage numbers of different formats and brings them in
 
 **To give you specific examples:**  
 1) Digits which are separated by commas with two decimal places will be easily converted into a uniform format, either with or without the percentage sign in its original format.  
-e.g.: 12,34 = 0.1234  
-e.g.: 12,34 % = 0.1234  
-e.g.: 434,27% = 4.3427    
-e.g.: 59,00- = 0.59  
-e.g.: 123,45 = 12.345  
-e.g.: 0,00 = 0  
+e.g.: 12,34 
+e.g.: 12,34 %  
+e.g.: 434,27%    
+e.g.: 59,00-  
+e.g.: 123,45  
+e.g.: 0,00 
 
 
-| Input      | Able to convert?     | Output Excel/CSV | Output API |
-| :-------------: | :----------: | :-----------: | :-----------: |
-|  12,34 | yes   | 0.1234    | 0.1234 |
-|  12,34 % | yes   | 0.1234    | 0.1234 |
-|  434,27% | yes   | 4.3427  | 4.3427 |
-|  59,00- | yes   | 0.59  | 0.59 |
-|  123,45 | yes   | 1.2345  | 1.2345 |
-|  0,00 | yes   | 0.0    | 0 |
+| Input      | Able to convert?     | Output Excel/CSV | Output API | example no. |
+| :-------------: | :----------: | :-----------: | :-----------: |:-----------: |
+|  12,34 | yes   | 0.1234    | 0.1234 | 1 |
+|  12,34 % | yes   | 0.1234    | 0.1234 | 1 |
+|  434,27% | yes   | 4.3427  | 4.3427 | 1|
+|  59,00- | yes   | 0.59  | 0.59 | 1|
+|  123,45 | yes   | 1.2345  | 1.2345 | 1|
+|  0,00 | yes   | 0.0    | 0 | 1| 
 
 
 ### 3. Date Values
@@ -104,42 +104,42 @@ Konfuzio recognizes written months either in german or english language and tran
                               
 **To give you specific examples:**
 1) Dates where the month is posted in a written expression with the year and the day as digits can be transformed into the iso format without any problems.  
-e.g.: 1. November 2019 = 2019-11-01   
-e.g.: 13 Mar 2020 = 2020-03-13
+e.g.: 1. November 2019   
+e.g.: 13 Mar 2020
 
 2) If the year is indicated with just two digits, it will also be recognized, even if it's not separated with a sign like a dot or something similar.  
-e.g.: 23.0919 = 2019-09-23  
-e.g.: (29.03.2018) = 2018-03-29  
+e.g.: 23.0919  
+e.g.: (29.03.2018)
 
 3) Given no information for the year, Konfuzio will assume 0000 by default.  
-e.g.: /04.12. = 0000-12-04
+e.g.: /04.12.
 
 4) If there is no information about the specific day, or even day and month, our application assumes the first day either of the respective year or year and month.  
-e.g.: Oktober 2011 = 2011-10-01  
-e.g.: 2001 = 2001-01-01
+e.g.: Oktober 2011
+e.g.: 2001
 
 5) Date time values are translated into the iso format as well, but removing the time values:  
-e.g.: 1993-02-05T00:00:00 = 1993-02-05
+e.g.: 1993-02-05T00:00:00
 
 6) Some cases can't be identified correctly or uniquely. Thus, Konfuzio can't transfer it into a date format and will return "None".  
-e.g.: 14132020 = None  
-e.g.: 23.0K.2010 = None  
-e.g.: 30.07.2.90 = None
+e.g.: 14132020  
+e.g.: 23.0K.2010  
+e.g.: 30.07.2.90
    
 
-| Input      | Able to convert?     | Output Excel/CSV | Output API |
-| :-------------: | :----------: | :-----------: | :-----------: |
-|  1. November 2019 | yes   | 2019-11-01   | 2019-11-01 |
-|  13 Mar 2020 | yes   | 2020-03-13    | 2020-03-13 |
-|  23.0919 | yes   | 2019-09-23    | 2019-09-23 |
-|  (29.03.2018) | yes   | 2018-03-29    | 2018-03-29 |
-|  /04.12. | yes   | 0000-12-04    | 0000-12-04 |
-|  Oktober 2011 | yes   | 2011-10-01    | 2011-10-01 |
-|  2001 | yes   | 2001-01-01    | 2001-01-01 |
-|  1993-02-05T00:00:00| yes  | 1993-02-05  | 1993-02-05 |
-|  14132020 | no   | None    | null |
-|  23.0K.2010 | no   | None  | null |
-|  30.07.2.90 | no   | None  | null |
+| Input      | Able to convert?     | Output Excel/CSV | Output API | example no. |
+| :-------------: | :----------: | :-----------: | :-----------: | :-----------: |
+|  1. November 2019 | yes   | 2019-11-01   | 2019-11-01 | 1|
+|  13 Mar 2020 | yes   | 2020-03-13    | 2020-03-13 | 1 |
+|  23.0919 | yes   | 2019-09-23    | 2019-09-23 | 2|
+|  (29.03.2018) | yes   | 2018-03-29    | 2018-03-29 | 2|
+|  /04.12. | yes   | 0000-12-04    | 0000-12-04 | 3 |
+|  Oktober 2011 | yes   | 2011-10-01    | 2011-10-01 | 4|
+|  2001 | yes   | 2001-01-01    | 2001-01-01 |  4 |
+|  1993-02-05T00:00:00| yes  | 1993-02-05  | 1993-02-05 |5 |
+|  14132020 | no   | None    | null | 6 |
+|  23.0K.2010 | no   | None  | null | 6 |
+|  30.07.2.90 | no   | None  | null | 6 |
 
 
 ### 4. Boolean values
