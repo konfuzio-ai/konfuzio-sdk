@@ -154,38 +154,40 @@ yes_list = ['VORHANDEN', 'JA', 'MIT', 'YES']
 Given the following examples, you can recognize how certain expressions are clustered into either "False" or "True" boolean values. If the expression is including one of the "no" or "yes" words from above, Konfuzio allocates it to True or False. However, _only if yes/no word is not on last place in expression_!?
 
 **To give you specific examples:** 
-1) The word "nicht" ("no") will be assigned to "false".  
-2) The expression "ja" ("yes") will be translated into "true".
+1) The word "nicht" ("no") will be assigned to "false".    
+2) The expression "ja" ("yes") will be translated into "true".  
 3) Expressions including the no or yes signal words can be translated, but only if the expression is starting with this word:  
-e.g.: nicht versichert = false  
-e.g.: not insured = false  
-e.g.: inkludiert: ja  = None  
-e.g.: included: yes = None  
-e.g.: inkludiert ja = None  
-e.g.: included yes = None  
-e.g.: ja inkludiert = true  
-e.g.: yes included = true  
-e.g.: alleinstehend ohne Kind = None  
+e.g.: nicht versichert 
+e.g.: not insured 
+e.g.: ja inkludiert 
+e.g.: yes included
+
+4) If the expression is not starting with the signal word, it can't be translated:
+e.g.: inkludiert: ja
+e.g.: included: yes 
+e.g.: inkludiert ja 
+e.g.: included yes 
+e.g.: alleinstehend ohne Kind 
 
 5) Empty expressions, like " ", can't be translated. 
 
 
-| Input      | Able to convert?     | Output Excel/CSV | Output API |
-| :-------------: | :----------: | :-----------: | :-----------: |
-|  nicht | yes   | false    | false |
-|  no | yes   | false     | false |
-|  ja | yes   | true    | true |
-|  yes | yes   | true   | true |
-|  nicht versichert| yes   | false    | false |
-|  not insured | yes   | false     | false |
-|  inkludiert: ja | no   | None    | null |
-|  included: yes | no   | None   | null |
-|  inkludiert ja | no   | None     | null |
-|  included yes | no   | None   | null |
-|  ja inkludiert | yes   | true    | true|
-|  yes included | yes   | true  | true |
-|  alleinstehend ohne Kind | no  | None  | null |
-|   | no   |  not recognizable as annotation | not recognizable as annotation |
+| Input      | Able to convert?     | Output Excel/CSV | Output API | example no. |
+| :-------------: | :----------: | :-----------: | :-----------: |  :-----------: |
+|  nicht | yes   | false    | false | 1  |
+|  no | yes   | false     | false | 1  |
+|  ja | yes   | true    | true | 2  |
+|  yes | yes   | true   | true | 2  |
+|  nicht versichert| yes   | false    | false | 3  |
+|  not insured | yes   | false     | false | 3  |
+|  ja inkludiert | yes   | true    | true| 3  |
+|  yes included | yes   | true  | true | 3  |
+|  inkludiert: ja | no   | None    | null | 4  |
+|  included: yes | no   | None   | null | 4  |
+|  inkludiert ja | no   | None     | null | 4  |
+|  included yes | no   | None   | null | 4  |
+|  alleinstehend ohne Kind | no  | None  | null | 4  |
+|   | no   |  not recognizable as annotation | not recognizable as annotation | 5  |
 
 
 ### 5. Known Issues and remarks
