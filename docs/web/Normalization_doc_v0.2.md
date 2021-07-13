@@ -201,7 +201,7 @@ e.g.: alleinstehend ohne Kind
 4) Your excel output might differ in its format from the one defined above. This is due to the default formats from excel, e.g. the default date format which might change with the version of excel of your respective country.  
 
 
-Json data types difference floats/numbers? to check, datatype JSON
+Json data types difference floats/numbers? to check, datatype JSON, column datatype excel "string", example decimal points .0
 
 ## Support
 
