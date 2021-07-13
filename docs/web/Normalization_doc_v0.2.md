@@ -77,7 +77,7 @@ Konfuzio also handels percentage numbers of different formats and brings them in
 
 **To give you specific examples:**  
 1) Digits which are separated by commas with two decimal places will be easily converted into a uniform format, either with or without the percentage sign in its original format.  
-e.g.: 12,34 
+e.g.: 12,34   
 e.g.: 12,34 %  
 e.g.: 434,27%    
 e.g.: 59,00-  
