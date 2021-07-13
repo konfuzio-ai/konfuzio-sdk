@@ -115,7 +115,7 @@ e.g.: (29.03.2018)
 e.g.: /04.12.
 
 4) If there is no information about the specific day, or even day and month, our application assumes the first day either of the respective year or year and month.  
-e.g.: Oktober 2011
+e.g.: Oktober 2011  
 e.g.: 2001
 
 5) Date time values are translated into the iso format as well, but removing the time values:  
