@@ -151,7 +151,7 @@ The pre-specified positive and negative (hence true and false) expressions:
 no_list = ['NEIN', 'NICHT', 'KEIN', 'OHNE', 'NO']  
 yes_list = ['VORHANDEN', 'JA', 'MIT', 'YES']
 
-Given the following examples, you can recognize how certain expressions are clustered into either "False" or "True" boolean values. If the expression is including one of the "no" or "yes" words from above, Konfuzio allocates it to True or False. However, _only if yes/no word is not on last place in expression_!?
+Given the following examples, you can recognize how certain expressions are clustered into either "False" or "True" boolean values. If the expression is including one of the "no" or "yes" words from above, Konfuzio allocates it to True or False. However, normalization is only possible if the signal words are the first word of the annotaion to avoid false-positives with word combinations of words from the _no_list_ and _yes_list_, e.g. nicht vorhanden or mit ohne.
 
 **To give you specific examples:** 
 1) The word "nicht" ("no") will be assigned to "false".    
@@ -162,7 +162,7 @@ e.g.: not insured
 e.g.: ja inkludiert   
 e.g.: yes included  
 
-4) If the expression is not starting with the signal word, it can't be translated:  
+4) If the expression is not starting with the signal word, it can't be translated as there is the possibility of a combination of positive and negative connotated words:  
 e.g.: inkludiert: ja  
 e.g.: included: yes   
 e.g.: inkludiert ja   
