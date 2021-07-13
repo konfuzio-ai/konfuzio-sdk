@@ -202,6 +202,7 @@ e.g.: alleinstehend ohne Kind
 
 
 Json data types difference floats/numbers? to check, datatype JSON, column datatype excel "string", example decimal points .0
+datatype date in JSON, returns string 
 
 ## Support
 
