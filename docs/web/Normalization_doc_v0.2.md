@@ -198,8 +198,10 @@ e.g.: alleinstehend ohne Kind
 
 3) The non-normalizable values which can't be converted from Konfuzio will be marked as "not machine-readable" on the Konfuzio server and can be viewed in the smart view of the documents. 
  
-5) Your excel output might differ in its format from the one defined above. This is due to the default formats from excel, e.g. the default date format which might change with the version of excel of your respective country.  
+4) Your excel output might differ in its format from the one defined above. This is due to the default formats from excel, e.g. the default date format which might change with the version of excel of your respective country.  
 
+
+Json data types difference floats/numbers? to check, datatype JSON
 
 ## Support
 
