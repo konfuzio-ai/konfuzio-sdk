@@ -52,23 +52,23 @@ e.g.: StringThatIncludesNIL
    
 | Input      | example no.| Able to convert?     | Output Excel/CSV | Output API | Datatype Excel | Datatype JSON |
 | :-------------: | :----------: | :-----------: | :-----------: |:-----------:|:-----------:|:-----------:|
-|  -,- |1 | yes   | 0.0    | 0| string |
-|  59,00- | 2| yes   | -59.0    | -59 | string |
-|  786,71- |2| yes   | -786.71    | -786.71 | string |
-| (118.704) | 2|yes   | -118704.0    | -118704 | string |
-|  absolute no.: 59,00- |3| yes   | 59.0    | 59 | string |
-|  absolute no.: 786,71- |3| yes   | 786.71    | 786.71 | string |
-|  absolute no.: -2.759,7° |3| yes   | 2759.7    | 2759.7 | string |
-|  absolute no.: +159,;03 |3| yes   | 159.03    | 159.03 | string |
-|  :2.000, 08 |4| yes   | 2000.08    | 2000.08 | string |
-|  -2.759,7° |4| yes   | -2759.7    | -2759.7 | string |
-|  €1.010.296 | 4| yes   | 1010296.0    | 1010296 | string |
-|  7,375,009+ | 4|yes   | 7375009.0  | 7375009 | string |
-|  ein |5| yes   | 1.0   | 1 | string |
-|  eleven |5| yes   | 11.0   | 11 | string |
-| 43.34.34 | 6|no   | None    | null | string |
-|  NIL |6| yes   | 0.0   | 0  | string |
-| StringThatIncludesNIL |6| no  | None   | null  | string |
+|  -,- |1 | yes   | 0.0    | 0| string | number |
+|  59,00- | 2| yes   | -59.0    | -59 | string | number |
+|  786,71- |2| yes   | -786.71    | -786.71 | string | number |
+| (118.704) | 2|yes   | -118704.0    | -118704 | string | number |
+|  absolute no.: 59,00- |3| yes   | 59.0    | 59 | string | number |
+|  absolute no.: 786,71- |3| yes   | 786.71    | 786.71 | string | number |
+|  absolute no.: -2.759,7° |3| yes   | 2759.7    | 2759.7 | string | number |
+|  absolute no.: +159,;03 |3| yes   | 159.03    | 159.03 | string | number |
+|  :2.000, 08 |4| yes   | 2000.08    | 2000.08 | string | number |
+|  -2.759,7° |4| yes   | -2759.7    | -2759.7 | string | number |
+|  €1.010.296 | 4| yes   | 1010296.0    | 1010296 | string | number |
+|  7,375,009+ | 4|yes   | 7375009.0  | 7375009 | string | number |
+|  ein |5| yes   | 1.0   | 1 | string | number |
+|  eleven |5| yes   | 11.0   | 11 | string | number |
+| 43.34.34 | 6|no   | None    | null | - | - |
+|  NIL |6| yes   | 0.0   | 0  | - |- | 
+| StringThatIncludesNIL |6| no  | None   | null  | - | - |
 
 
 ### 2. Percentage Numbers
