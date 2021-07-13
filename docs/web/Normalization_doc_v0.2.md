@@ -50,25 +50,25 @@ e.g.: NIL
 e.g.: StringThatIncludesNIL
 
    
-| Input      | Able to convert?     | Output Excel/CSV | Output API | example no.|
+| Input      | example no.| Able to convert?     | Output Excel/CSV | Output API | 
 | :-------------: | :----------: | :-----------: | :-----------: |:-----------:|
-|  -,- | yes   | 0.0    | 0| 1 |
-|  59,00- | yes   | -59.0    | -59 |2|
-|  786,71- | yes   | -786.71    | -786.71 |2|
-| (118.704) | yes   | -118704.0    | -118704 |2|
-|  absolute no.: 59,00- | yes   | 59.0    | 59 |3|
-|  absolute no.: 786,71- | yes   | 786.71    | 786.71 |3|
-|  absolute no.: -2.759,7° | yes   | 2759.7    | 2759.7 |3|
-|  absolute no.: +159,;03 | yes   | 159.03    | 159.03 |3|
-|  :2.000, 08 | yes   | 2000.08    | 2000.08 |4|
-|  -2.759,7° | yes   | -2759.7    | -2759.7 |4|
-|  €1.010.296 | yes   | 1010296.0    | 1010296 |4|
-|  7,375,009+ | yes   | 7375009.0  | 7375009 |4|
-|  ein | yes   | 1.0   | 1 |5|
-|  eleven | yes   | 11.0   | 11 |5|
-| 43.34.34 | no   | None    | null |6|
-|  NIL | yes   | 0.0   | 0  |6|
-| StringThatIncludesNIL | no  | None   | null  |6|
+|  -,- |1 | yes   | 0.0    | 0| 
+|  59,00- | 2| yes   | -59.0    | -59 |
+|  786,71- |2| yes   | -786.71    | -786.71 |
+| (118.704) | 2|yes   | -118704.0    | -118704 |
+|  absolute no.: 59,00- |3| yes   | 59.0    | 59 |
+|  absolute no.: 786,71- |3| yes   | 786.71    | 786.71 |
+|  absolute no.: -2.759,7° |3| yes   | 2759.7    | 2759.7 |
+|  absolute no.: +159,;03 |3| yes   | 159.03    | 159.03 |
+|  :2.000, 08 |4| yes   | 2000.08    | 2000.08 |
+|  -2.759,7° |4| yes   | -2759.7    | -2759.7 |
+|  €1.010.296 | 4| yes   | 1010296.0    | 1010296 |
+|  7,375,009+ | 4|yes   | 7375009.0  | 7375009 |
+|  ein |5| yes   | 1.0   | 1 |
+|  eleven |5| yes   | 11.0   | 11 |
+| 43.34.34 | 6|no   | None    | null |
+|  NIL |6| yes   | 0.0   | 0  |
+| StringThatIncludesNIL |6| no  | None   | null  |
 
 
 ### 2. Percentage Numbers
@@ -85,14 +85,14 @@ e.g.: 123,45
 e.g.: 0,00 
 
 
-| Input      | Able to convert?     | Output Excel/CSV | Output API | example no. |
+| Input      | example no. | Able to convert?     | Output Excel/CSV | Output API | 
 | :-------------: | :----------: | :-----------: | :-----------: |:-----------: |
-|  12,34 | yes   | 0.1234    | 0.1234 | 1 |
-|  12,34 % | yes   | 0.1234    | 0.1234 | 1 |
-|  434,27% | yes   | 4.3427  | 4.3427 | 1|
-|  59,00- | yes   | 0.59  | 0.59 | 1|
-|  123,45 | yes   | 1.2345  | 1.2345 | 1|
-|  0,00 | yes   | 0.0    | 0 | 1| 
+|  12,34 |1 | yes   | 0.1234    | 0.1234 | 
+|  12,34 % |1 | yes   | 0.1234    | 0.1234 | 
+|  434,27% | 1| yes   | 4.3427  | 4.3427 |
+|  59,00- | 1| yes   | 0.59  | 0.59 |
+|  123,45 | 1| yes   | 1.2345  | 1.2345 |
+|  0,00 |  1| yes   | 0.0    | 0 |
 
 
 ### 3. Date Values
@@ -127,19 +127,19 @@ e.g.: 23.0K.2010
 e.g.: 30.07.2.90
    
 
-| Input      | Able to convert?     | Output Excel/CSV | Output API | example no. |
+| Input      | example no. | Able to convert?     | Output Excel/CSV | Output API |
 | :-------------: | :----------: | :-----------: | :-----------: | :-----------: |
-|  1. November 2019 | yes   | 2019-11-01   | 2019-11-01 | 1|
-|  13 Mar 2020 | yes   | 2020-03-13    | 2020-03-13 | 1 |
-|  23.0919 | yes   | 2019-09-23    | 2019-09-23 | 2|
-|  (29.03.2018) | yes   | 2018-03-29    | 2018-03-29 | 2|
-|  /04.12. | yes   | 0000-12-04    | 0000-12-04 | 3 |
-|  Oktober 2011 | yes   | 2011-10-01    | 2011-10-01 | 4|
-|  2001 | yes   | 2001-01-01    | 2001-01-01 |  4 |
-|  1993-02-05T00:00:00| yes  | 1993-02-05  | 1993-02-05 |5 |
-|  14132020 | no   | None    | null | 6 |
-|  23.0K.2010 | no   | None  | null | 6 |
-|  30.07.2.90 | no   | None  | null | 6 |
+|  1. November 2019 | 1| yes   | 2019-11-01   | 2019-11-01 |
+|  13 Mar 2020 | 1 | yes   | 2020-03-13    | 2020-03-13 |
+|  23.0919 | 2| yes   | 2019-09-23    | 2019-09-23 |
+|  (29.03.2018) |  2| yes   | 2018-03-29    | 2018-03-29 |
+|  /04.12. |  3 | yes   | 0000-12-04    | 0000-12-04 |
+|  Oktober 2011 | 4 | yes   | 2011-10-01    | 2011-10-01 |
+|  2001 | 4 | yes   | 2001-01-01    | 2001-01-01 | 
+|  1993-02-05T00:00:00| 5 |yes  | 1993-02-05  | 1993-02-05 |
+|  14132020 |6 | no   | None    | null | 
+|  23.0K.2010 |  6 |no   | None  | null |
+|  30.07.2.90 | 6 | no   | None  | null |
 
 
 ### 4. Boolean values
@@ -172,22 +172,22 @@ e.g.: alleinstehend ohne Kind
 5) Empty expressions, like " ", can't be translated. 
 
 
-| Input      | Able to convert?     | Output Excel/CSV | Output API | example no. |
+| Input      |example no. | Able to convert?     | Output Excel/CSV | Output API | 
 | :-------------: | :----------: | :-----------: | :-----------: |  :-----------: |
-|  nicht | yes   | false    | false | 1  |
-|  no | yes   | false     | false | 1  |
-|  ja | yes   | true    | true | 2  |
-|  yes | yes   | true   | true | 2  |
-|  nicht versichert| yes   | false    | false | 3  |
-|  not insured | yes   | false     | false | 3  |
-|  ja inkludiert | yes   | true    | true| 3  |
-|  yes included | yes   | true  | true | 3  |
-|  inkludiert: ja | no   | None    | null | 4  |
-|  included: yes | no   | None   | null | 4  |
-|  inkludiert ja | no   | None     | null | 4  |
-|  included yes | no   | None   | null | 4  |
-|  alleinstehend ohne Kind | no  | None  | null | 4  |
-|   | no   |  not recognizable as annotation | not recognizable as annotation | 5  |
+|  nicht | 1  | yes   | false    | false |
+|  no | 1  | yes   | false     | false |
+|  ja | 2  | yes   | true    | true |
+|  yes | 2  | yes   | true   | true |
+|  nicht versichert| 3  | yes   | false    | false |
+|  not insured | 3  | yes   | false     | false |
+|  ja inkludiert | 3  | yes   | true    | true|
+|  yes included | 3  | yes   | true  | true |
+|  inkludiert: ja | 4  | no   | None    | null |
+|  included: yes | 4  | no   | None   | null |
+|  inkludiert ja | 4  | no   | None     | null |
+|  included yes | 4  | no   | None   | null |
+|  alleinstehend ohne Kind | 4  | no  | None  | null |
+|   |  5  | no   |  not recognizable as annotation | not recognizable as annotation |
 
 
 ### 5. Known Issues and remarks
