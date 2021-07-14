@@ -73,7 +73,7 @@ e.g.: StringThatIncludesNIL
 
 ### 2. Percentage Numbers
 
-Konfuzio also handles percentage numbers of different formats and brings them into a machine-readable one. Percentage expressions will not be displayed in the classic percentage format with the percentage sign %. The decimal number format without the percentage sign will be used, but with a dot as a decimal separator and 4 decimal places. 
+Konfuzio also handles percentage numbers of different formats and brings them into a machine-readable one. Percentage expressions are not displayed in the classic percentage format with the percentage sign %. The decimal number format without the percentage sign is used, but with a dot as a decimal separator and 4 decimal places. 
 
 **To give you specific examples with the outputs down below in the table::**  
 1) Digits that are separated by commas with two decimal places will be easily converted into a uniform format, either with or without the percentage sign in its original format.  
