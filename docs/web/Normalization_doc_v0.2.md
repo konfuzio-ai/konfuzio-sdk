@@ -76,7 +76,7 @@ e.g.: StringThatIncludesNIL
 Konfuzio also handles percentage numbers of different formats and brings them into a machine-readable one. Percentage expressions are not displayed in the classic percentage format with the percentage sign %. The decimal number format without the percentage sign is used, but with a dot as a decimal separator and 4 decimal places. 
 
 **To give you specific examples with the outputs down below in the table::**  
-1) Digits that are separated by commas with two decimal places will be easily converted into a uniform format, either with or without the percentage sign in its original format.  
+1) Digits that are separated by commas with two decimal places will be easily converted into a uniform format, either with or without the percentage sign in its original format:  
 e.g.: 12,34   
 e.g.: 12,34 %  
 e.g.: 434,27%    
@@ -103,25 +103,25 @@ Konfuzio recognizes written months either in German or English language and tran
                          
                               
 **To give you specific examples with the outputs down below in the table::**
-1) Dates, where the month is posted in a written expression with the year and the day as digits, can be transformed into the iso format without any problems.  
+1) Dates, where the month is posted in a written expression with the year and the day as digits, can be transformed into the iso format without any problems:  
 e.g.: 1. November 2019   
 e.g.: 13 Mar 2020
 
-2) If the year is indicated with just two digits, it will also be recognized, even if it's not separated with a sign like a dot or something similar.  
+2) If the year is indicated with just two digits, it will also be recognized, even if it's not separated with a sign like a dot or something similar:  
 e.g.: 23.0919  
 e.g.: (29.03.2018)
 
-3) Given no information for the year, Konfuzio will assume 0000 by default.  
+3) Given no information for the year, Konfuzio will assume 0000 by default:  
 e.g.: /04.12.
 
-4) If there is no information about the specific day, or even day and month, our application assumes the first day either of the respective year or year and month.  
+4) If there is no information about the specific day, or even day and month, our application assumes the first day either of the respective year or year and month:  
 e.g.: Oktober 2011  
 e.g.: 2001
 
 5) Date time values are translated into the iso format as well, but removing the time values:  
 e.g.: 1993-02-05T00:00:00
 
-6) Some cases can't be identified correctly or uniquely. Thus, Konfuzio can't transfer it into a date format and will return "None".  
+6) Some cases can't be identified correctly or uniquely. Thus, Konfuzio can't transfer it into a date format and will return "None":  
 e.g.: 14132020  
 e.g.: 23.0K.2010  
 e.g.: 30.07.2.90
