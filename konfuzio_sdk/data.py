@@ -98,7 +98,10 @@ class Template(Data):
         self.name = name
         self.name_clean = name_clean
         self.is_default = is_default
-        self.default_templates = default_templates
+        if 'default_template' in kwargs:
+            self.default_templates = [kwargs['default_template']]
+        else:
+            self.default_templates = default_templates
         self.has_multiple_sections = has_multiple_sections
         self.project: Project = project
         project.add_template(self)
@@ -846,7 +849,8 @@ class Project(Data):
                 section['template'] = template_mapper_dict[section['section_label']]
                 # we only add the sections that match the category of the document
                 # (ignore ghost sections that may exist)
-                if section['template'] == document.category_template:
+                if section['template'] == document.category_template or \
+                        document.category_template in section['template'].default_templates:
                     section_instance = self.section_class(**section, document=document, annotations=annotations)
                     document_sections.append(section_instance)
             document.sections = document_sections
