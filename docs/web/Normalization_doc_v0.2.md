@@ -190,7 +190,7 @@ e.g.: alleinstehend ohne Kind
 
 ### 5. Known Issues and remarks
 
-1) Limitations to other languages besides german: Konfuzio is optimized for the german language. It may partly support English expressions but is limited in the usage in English.
+1) Limitations to other languages besides German: Konfuzio is optimized for the German language. It may partly support English expressions but is limited in the usage in English.
 
 2) Limitations to the case sensitivity of boolean values: Classifying certain expressions as true or false values is based on pre-specified expressions. Thus, it is limited to these signal words as shown above in the lists when normalizing the inputs.
 
