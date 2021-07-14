@@ -154,7 +154,7 @@ Afrikaans, Albanian, Arabic, Asturian, Basque, Bislama, Breton, Catalan, Cebuano
 
 The availability of OCR languages depends on the selected OCR engine and might differ across configurations (e.g. on-premise installation).
 
-## Supported file types
+## Supported File Types
 
 Konfuzio supports various file types:
 
