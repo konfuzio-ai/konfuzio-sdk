@@ -21,7 +21,7 @@ The uniform chosen format uses the English/American standard. Hence, dots are us
 1) Expressions only consisting of one or multiple dashes will be translated into Zero:    
 e.g.: -,-    
 
-2) For regular numbers, negative signs will be placed in front of the digits and zeros after digits will be removed; floats are displayed with two decimal places:   
+2) For regular numbers, negative signs will be placed in front of the digits; floats are displayed with two decimal places:   
 e.g.: 59,00-     
 e.g.: 786,71-    
 e.g.: (118.704)   
