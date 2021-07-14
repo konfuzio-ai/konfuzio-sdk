@@ -118,7 +118,7 @@ e.g.: /04.12.
 e.g.: Oktober 2011  
 e.g.: 2001
 
-5) Date time values are translated into the iso format as well, but removing the time values:  
+5) Date time values are translated into the iso format as well, but time values are removed:  
 e.g.: 1993-02-05T00:00:00
 
 6) Some cases can't be identified correctly or uniquely. Thus, Konfuzio can't transfer it into a date format and will return "None":  
