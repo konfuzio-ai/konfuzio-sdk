@@ -45,7 +45,7 @@ e.g.: eleven
 5) Certain cases can't be normalized from Konfuzio:  
 e.g.: 43.34.34 
 
-6) The expression "NIL" meaning "nothing" is translated into 0, however, strings including this expression can't be normalized:  
+6) The expression "NIL" meaning "nothing" is translated into 0; however, strings including this expression can't be normalized:  
 e.g.: NIL   
 e.g.: StringThatIncludesNIL
 
