@@ -1,21 +1,21 @@
 ## Supported Data Normalization
 
-Our Konfuzio application is able to normalize various data formats for different data types used in the annotations of the documents within your project.
-It translates different formats of numbers, percentages, date and boolean values into a unique and machine-readable format. Down below you find an overview of the normalizations of the different data types with specific examples.
+Our Konfuzio application can normalize various data formats for different data types used in the annotations of the documents within your project.
+It translates different formats of numbers, percentages, date, and boolean values into a unique and machine-readable format. Down below you find an overview of the normalizations of the different data types with specific examples.
 
 ### 1. Numbers
 
-Konfuzio is able to recognize numbers encoded in a written format to translate them into a data type that represents machine-readable numbers (i.e. float). Numbers from one to twelve are transformed, either from german or english language.
-Given an annotation as an offset-string, this annotation will be translated into an (absolute) number.  
+Konfuzio is able to recognize numbers encoded in a written format to translate them into a data type that represents machine-readable numbers (i.e. float). Numbers from one to twelve are transformed, either from German or English language.
+Given an annotation as an offset string, this annotation will be translated into an (absolute) number.  
 Starting with the first case, a dash or a series of dashes which also might include commas or decimal points will be recognized as Zero.   
-For the specific context not relevant signs, like quotation marks or whitespaces, are completely removed form the annotation. If the annotation contains the letter "S" or "H" after the digits, it will also be removed.  
+For the specific context not relevant signs, like quotation marks or whitespaces, are completely removed from the annotation. If the annotation contains the letter "S" or "H" after the digits, it will also be removed.  
 
-Negative expressions are recognized either by dashes in front or after the digits, the letter "S" after the digits or the number being framed into brackets.
+Negative expressions are recognized either by dashes in front or after the digits, the letter "S" after the digits, or the number being framed into brackets.
 For regular numbers, positive signs will be completely removed, while negative signs will be placed in front of the digits.
 When dealing with absolute numbers, negative or positive signs are fully removed, as well as whitespaces or quotation marks for all number formats.
 
 As there are varying ways to display float numbers, e.g. by using dots instead of commas to display the thousands mark or decimal numbers, Konfuzio also takes care of this to display it in a uniform format. 
-The uniform chosen format uses a the english/american standard. Hence, dots are used as a separation for decimal numbers and commas to mark the thousands with two decimal places. 
+The uniform chosen format uses the English/American standard. Hence, dots are used as a separation for decimal numbers and commas to mark the thousands with two decimal places. 
 
 **To give you specific examples:**  
 1) Expressions only consisting of one or multiple dashes will be translated into Zero:    
@@ -45,7 +45,7 @@ e.g.: eleven
 5) Certain cases can't be normalized from Konfuzio:  
 e.g.: 43.34.34 
 
-6) The expression "NIL" meaning "nothing" will be translated into 0, however strings including this expression can't be normalized:  
+6) The expression "NIL" meaning "nothing" will be translated into 0, however, strings including this expression can't be normalized:  
 e.g.: NIL   
 e.g.: StringThatIncludesNIL
 
@@ -73,10 +73,10 @@ e.g.: StringThatIncludesNIL
 
 ### 2. Percentage Numbers
 
-Konfuzio also handels percentage numbers of different formats and brings them into a machine-readable one. Percentage expressions will not be displayed in the classic percentage format with the percentage sign %. The decimal number format without the percentage sign will be used, but with a dot as a decimal separator and 4 decimal places. 
+Konfuzio also handles percentage numbers of different formats and brings them into a machine-readable one. Percentage expressions will not be displayed in the classic percentage format with the percentage sign %. The decimal number format without the percentage sign will be used, but with a dot as a decimal separator and 4 decimal places. 
 
 **To give you specific examples:**  
-1) Digits which are separated by commas with two decimal places will be easily converted into a uniform format, either with or without the percentage sign in its original format.  
+1) Digits that are separated by commas with two decimal places will be easily converted into a uniform format, either with or without the percentage sign in its original format.  
 e.g.: 12,34   
 e.g.: 12,34 %  
 e.g.: 434,27%    
@@ -99,11 +99,11 @@ e.g.: 0,00
 
 Konfuzio applies the so-called iso format (XXXX.XX.XX) for dates. It checks initially whether this format is already used which then won't be altered in this case. However, if another format is used, it will be adapted. In the next step, it checks if a format consisting only of a month and a year is used or even just a year without any other date information besides that.
 
-Konfuzio recognizes written months either in german or english language and translates them into the iso format. 
+Konfuzio recognizes written months either in German or English language and translates them into the iso format. 
                          
                               
 **To give you specific examples:**
-1) Dates where the month is posted in a written expression with the year and the day as digits can be transformed into the iso format without any problems.  
+1) Dates, where the month is posted in a written expression with the year and the day as digits, can be transformed into the iso format without any problems.  
 e.g.: 1. November 2019   
 e.g.: 13 Mar 2020
 
@@ -151,7 +151,7 @@ The pre-specified positive and negative (hence true and false) expressions:
 no_list = ['NEIN', 'NICHT', 'KEIN', 'OHNE', 'NO']  
 yes_list = ['VORHANDEN', 'JA', 'MIT', 'YES']
 
-Given the following examples, you can recognize how certain expressions are clustered into either "False" or "True" boolean values. If the expression is including one of the "no" or "yes" words from above, Konfuzio allocates it to True or False. However, normalization is only possible if the signal words are the first word of the annotaion to avoid false-positives with word combinations of words from the _no_list_ and _yes_list_, e.g. nicht vorhanden or mit ohne.
+Given the following examples, you can recognize how certain expressions are clustered into either "False" or "True" boolean values. If the expression is including one of the "no" or "yes" words from above, Konfuzio allocates it to True or False. However, normalization is only possible if the signal words are the first word of the annotation to avoid false positives with word combinations of words from the _no_list_ and _yes_list_, e.g. nicht vorhanden or mit ohne.
 
 **To give you specific examples:** 
 1) The word "nicht" ("no") will be assigned to "false".    
@@ -188,9 +188,9 @@ e.g.: alleinstehend ohne Kind
 
 ### 5. Known Issues and remarks
 
-1) Limitations to other languages besides german: Konfuzio is optimized for the german language. It may partly support english expressions, but is limited in the usage in english.
+1) Limitations to other languages besides german: Konfuzio is optimized for the german language. It may partly support English expressions but is limited in the usage in English.
 
-2) Limitations to case sensitivity of boolean values: Classifying certain expressions as true or false values is based on pre-specified expressions. Thus, it is limited to these signal words as shown above in the lists when normalizing the inputs.
+2) Limitations to the case sensitivity of boolean values: Classifying certain expressions as true or false values is based on pre-specified expressions. Thus, it is limited to these signal words as shown above in the lists when normalizing the inputs.
 
 3) The non-normalizable values which can't be converted from Konfuzio will be marked as "not machine-readable" on the Konfuzio server and can be viewed in the smart view of the documents. 
  
