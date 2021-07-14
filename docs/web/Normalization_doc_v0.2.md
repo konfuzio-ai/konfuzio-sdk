@@ -18,10 +18,10 @@ As there are varying ways to display float numbers, e.g. by using dots instead o
 The uniform chosen format uses the English/American standard. Hence, dots are used as a separation for decimal numbers and commas to mark the thousands with two decimal places. 
 
 **To give you specific examples with the outputs down below in the table:**  
-1) Expressions only consisting of one or multiple dashes will be translated into Zero:    
+1) Expressions only consisting of one or multiple dashes are translated into Zero:    
 e.g.: -,-    
 
-2) For regular numbers, negative signs will be placed in front of the digits; floats are displayed with two decimal places:   
+2) For regular numbers, negative signs are placed in front of the digits; floats are displayed with two decimal places:   
 e.g.: 59,00-     
 e.g.: 786,71-    
 e.g.: (118.704)   
@@ -32,20 +32,20 @@ e.g.: 786,71-
 e.g.: -2.759,7°   
 e.g.: +159,;03  
 
-4) Irrelevant signs and whitespaces will be removed and it will be transformed into the unique format with a dot instead of a comma as the decimal separator:    
+4) Irrelevant signs and whitespaces are removed and it will be transformed into the unique format with a dot instead of a comma as the decimal separator:    
 e.g.: :2.000, 08   
 e.g.: -2.759,7°    
 e.g.: €1.010.296  
 e.g.: 7,375,009+
 
-5) Written numbers will be changed into a digits number format:  
+5) Written numbers are changed into a digits number format:  
 e.g.: ein  
 e.g.: eleven 
 
 5) Certain cases can't be normalized from Konfuzio:  
 e.g.: 43.34.34 
 
-6) The expression "NIL" meaning "nothing" will be translated into 0, however, strings including this expression can't be normalized:  
+6) The expression "NIL" meaning "nothing" is translated into 0, however, strings including this expression can't be normalized:  
 e.g.: NIL   
 e.g.: StringThatIncludesNIL
 
