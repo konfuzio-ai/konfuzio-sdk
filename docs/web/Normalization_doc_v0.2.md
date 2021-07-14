@@ -17,7 +17,7 @@ When dealing with absolute numbers, negative or positive signs are fully removed
 As there are varying ways to display float numbers, e.g. by using dots instead of commas to display the thousands mark or decimal numbers, Konfuzio also takes care of this to display it in a uniform format. 
 The uniform chosen format uses the English/American standard. Hence, dots are used as a separation for decimal numbers and commas to mark the thousands with two decimal places. 
 
-**To give you specific examples:**  
+**To give you specific examples with the outputs down below in the table:**  
 1) Expressions only consisting of one or multiple dashes will be translated into Zero:    
 e.g.: -,-    
 
@@ -75,7 +75,7 @@ e.g.: StringThatIncludesNIL
 
 Konfuzio also handles percentage numbers of different formats and brings them into a machine-readable one. Percentage expressions will not be displayed in the classic percentage format with the percentage sign %. The decimal number format without the percentage sign will be used, but with a dot as a decimal separator and 4 decimal places. 
 
-**To give you specific examples:**  
+**To give you specific examples with the outputs down below in the table::**  
 1) Digits that are separated by commas with two decimal places will be easily converted into a uniform format, either with or without the percentage sign in its original format.  
 e.g.: 12,34   
 e.g.: 12,34 %  
@@ -102,7 +102,7 @@ Konfuzio applies the so-called iso format (XXXX.XX.XX) for dates. It checks init
 Konfuzio recognizes written months either in German or English language and translates them into the iso format. 
                          
                               
-**To give you specific examples:**
+**To give you specific examples with the outputs down below in the table::**
 1) Dates, where the month is posted in a written expression with the year and the day as digits, can be transformed into the iso format without any problems.  
 e.g.: 1. November 2019   
 e.g.: 13 Mar 2020
@@ -153,7 +153,7 @@ yes_list = ['VORHANDEN', 'JA', 'MIT', 'YES']
 
 Given the following examples, you can recognize how certain expressions are clustered into either "False" or "True" boolean values. If the expression is including one of the "no" or "yes" words from above, Konfuzio allocates it to True or False. However, normalization is only possible if the signal words are the first word of the annotation to avoid false positives with word combinations of words from the _no_list_ and _yes_list_, e.g. nicht vorhanden or mit ohne.
 
-**To give you specific examples:** 
+**To give you specific examples with the outputs down below in the table::** 
 1) The word "nicht" ("no") will be assigned to "false".    
 2) The expression "ja" ("yes") will be translated into "true".  
 3) Expressions including the no or yes signal words can be translated, but only if the expression is starting with this word:    
