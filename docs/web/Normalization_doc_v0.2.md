@@ -154,9 +154,9 @@ yes_list = ['VORHANDEN', 'JA', 'MIT', 'YES']
 Given the following examples, you can recognize how certain expressions are clustered into either _False_ or _True_ boolean values. If the expression is including one of the _no_ or _yes_ words from above, Konfuzio allocates it to _True_ or _False_. However, normalization is only possible if the signal words are the first word of the annotation to avoid false positives with word combinations of words from the _no_list_ and _yes_list_, e.g. nicht vorhanden or mit ohne.
 
 **To give you specific examples with the outputs down below in the table::** 
-1) The word "nicht" ("no") will be assigned to "false".    
-2) The expression "ja" ("yes") will be translated into "true".  
-3) Expressions including the no or yes signal words can be translated, but only if the expression is starting with this word:    
+1) The word _nicht_ (_no_) will be assigned to _false_.    
+3) The expression _ja_ (_yes_) will be translated into _true_.  
+4) Expressions including the no or yes signal words can be translated, but only if the expression is starting with this word:    
 e.g.: nicht versichert   
 e.g.: not insured   
 e.g.: ja versichert   
