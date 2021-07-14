@@ -66,9 +66,9 @@ e.g.: StringThatIncludesNIL
 |  7,375,009+ | 4|yes   | 7375009.0  | 7375009 | string | number |
 |  ein |5| yes   | 1.0   | 1 | string | number |
 |  eleven |5| yes   | 11.0   | 11 | string | number |
-| 43.34.34 | 6|no   | None    | null | - | - |
-|  NIL |6| yes   | 0.0   | 0  | - |- | 
-| StringThatIncludesNIL |6| no  | None   | null  | - | - |
+| 43.34.34 | 6|no   | None    | null | string | null |
+|  NIL |6| yes   | 0.0   | 0  | string |null | 
+| StringThatIncludesNIL |6| no  | None   | null  | string | null |
 
 
 ### 2. Percentage Numbers
