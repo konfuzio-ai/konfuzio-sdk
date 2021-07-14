@@ -493,8 +493,8 @@ class Document(Data):
         self.annotation_file_path = os.path.join(self.root, 'annotations.json5')
         self.txt_file_path = os.path.join(self.root, 'document.txt')
         self.hocr_file_path = os.path.join(self.root, 'document.hocr')
-        self.bbox_file_path = os.path.join(self.root, 'bbox.json5')
         self.pages_file_path = os.path.join(self.root, 'pages.json5')
+        self.bbox_file_path = None
 
         self.text = kwargs.get('text')
         self.hocr = kwargs.get('hocr')
