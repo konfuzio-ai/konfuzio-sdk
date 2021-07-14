@@ -166,7 +166,9 @@ e.g.: yes insured
 e.g.: versichert: ja  
 e.g.: insured: yes   
 e.g.: versichert ja   
-e.g.: insured yes   
+e.g.: insured yes     
+
+5) Annotations with more than 2 words can't be normalized from Konfuzio:  
 e.g.: alleinstehend ohne Kind   
 
 | Input      |Example no. | Able to convert?     | Output Excel/CSV | Output API | Datatype CSV | Datatype JSON |
@@ -183,7 +185,7 @@ e.g.: alleinstehend ohne Kind
 |  insured: yes | 4  | no   | None   | null | - | - |
 |  versichert ja | 4  | no   | None     | null | - | - |
 |  insured yes | 4  | no   | None   | null | - | - |
-|  alleinstehend ohne Kind | 4  | no  | None  | null | - | - |
+|  alleinstehend ohne Kind | 5  | no  | None  | null | - | - |
 
 
 ### 5. Known Issues and remarks
