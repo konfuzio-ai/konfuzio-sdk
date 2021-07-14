@@ -725,13 +725,11 @@ class Document(Data):
         if hasattr(self, 'project') and self.project:
             for raw_annotation in raw_annotations:
                 if not raw_annotation['custom_offset_string']:
-                    annotation = self.annotation_class(document=self, **raw_annotation)
-                    self.add_annotation(annotation)
+                    _ = self.annotation_class(document=self, **raw_annotation)
                 else:
                     real_string = self.text[raw_annotation['start_offset'] : raw_annotation['end_offset']]
                     if real_string.replace(' ', '') == raw_annotation['offset_string'].replace(' ', ''):
-                        annotation = self.annotation_class(document=self, **raw_annotation)
-                        self.add_annotation(annotation)
+                        _ = self.annotation_class(document=self, **raw_annotation)
                     else:
                         logger.warning(
                             f'Annotation {raw_annotation["id"]} is a custom string and, therefore, it will not be used '
@@ -970,21 +968,27 @@ class Project(Data):
         """
         current_status = document.dataset_status
 
-        prj_docs = [self.no_status_documents, self.preparation_documents, self.documents,
-                    self.test_documents, self.low_ocr_documents]
+        prj_docs = {0: self.no_status_documents,
+                    1: self.preparation_documents,
+                    2: self.documents,
+                    3: self.test_documents,
+                    4: self.low_ocr_documents}
+
+        # by default the status is None (even if not in the no_status_documents)
+        previous_status = 0
+        project_documents = []
 
         # get project list that contains the document
-        for project_documents in prj_docs:
-            if document in project_documents:
+        for previous_status, project_list in prj_docs.items():
+            if document in project_list:
+                project_documents = project_list
                 break
 
         # update name and category and get dataset status
-        previous_status = 0
         for doc in project_documents:
             if doc.id == document.id:
                 doc.name = document.name
                 doc.category_template = document.category_template
-                previous_status = doc.dataset_status
                 break
 
         # if the document is new to the project, just add it
