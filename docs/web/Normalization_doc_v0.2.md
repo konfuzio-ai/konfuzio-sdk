@@ -67,7 +67,7 @@ e.g.: StringThatIncludesNIL
 |  ein |5| yes   | 1.0   | 1 | string | number |
 |  eleven |5| yes   | 11.0   | 11 | string | number |
 | 43.34.34 | 6|no   | None    | null | string | null |
-|  NIL |6| yes   | 0.0   | 0  | string |null | 
+|  NIL |6| yes   | 0.0   | 0  | string |number | 
 | StringThatIncludesNIL |6| no  | None   | null  | string | null |
 
 
