@@ -179,11 +179,11 @@ e.g.: alleinstehend ohne Kind
 |  not insured | 3  | yes   | false     | false | string | boolean |
 |  ja versichert | 3  | yes   | true    | true| string | boolean |
 |  yes insured | 3  | yes   | true  | true | string | boolean |
-|  versichert: ja | 4  | no   | None    | null | string | - |
-|  insured: yes | 4  | no   | None   | null | string | - |
-|  versichert ja | 4  | no   | None     | null | string | - |
-|  insured yes | 4  | no   | None   | null | string | - |
-|  alleinstehend ohne Kind | 4  | no  | None  | null | string | - |
+|  versichert: ja | 4  | no   | None    | null | - | - |
+|  insured: yes | 4  | no   | None   | null | - | - |
+|  versichert ja | 4  | no   | None     | null | - | - |
+|  insured yes | 4  | no   | None   | null | - | - |
+|  alleinstehend ohne Kind | 4  | no  | None  | null | - | - |
 
 
 ### 5. Known Issues and remarks
