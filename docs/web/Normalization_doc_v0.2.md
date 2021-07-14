@@ -137,9 +137,9 @@ e.g.: 30.07.2.90
 |  Oktober 2011 | 4 | yes   | 2011-10-01    | 2011-10-01 |string |string | 
 |  2001 | 4 | yes   | 2001-01-01    | 2001-01-01 | string |string | 
 |  1993-02-05T00:00:00| 5 |yes  | 1993-02-05  | 1993-02-05 |string |string | 
-|  14132020 |6 | no   | None    | null | - |- | 
-|  23.0K.2010 |  6 |no   | None  | null |- |- | 
-|  30.07.2.90 | 6 | no   | None  | null |- |- | 
+|  14132020 |6 | no   | None    | null | string |null| 
+|  23.0K.2010 |  6 |no   | None  | null |string | null | 
+|  30.07.2.90 | 6 | no   | None  | null |string |null | 
 
 
 ### 4. Boolean values
@@ -181,11 +181,11 @@ e.g.: alleinstehend ohne Kind
 |  not insured | 3  | yes   | false     | false | string | boolean |
 |  ja versichert | 3  | yes   | true    | true| string | boolean |
 |  yes insured | 3  | yes   | true  | true | string | boolean |
-|  versichert: ja | 4  | no   | None    | null | - | - |
-|  insured: yes | 4  | no   | None   | null | - | - |
-|  versichert ja | 4  | no   | None     | null | - | - |
-|  insured yes | 4  | no   | None   | null | - | - |
-|  alleinstehend ohne Kind | 5  | no  | None  | null | - | - |
+|  versichert: ja | 4  | no   | None    | null | string| null|
+|  insured: yes | 4  | no   | None   | null | string | null |
+|  versichert ja | 4  | no   | None     | null | string | null |
+|  insured yes | 4  | no   | None   | null | string | null |
+|  alleinstehend ohne Kind | 5  | no  | None  | null | string | null |
 
 
 ### 5. Known Issues and remarks
