@@ -11,7 +11,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 ## 2021-07-15_17-29-25
 
 ### Added 
-- Support to reused label sets across categories
+- Support to reuse label sets across categories
 
 ### Changed
 - Allow "rerun extraction" on test and training documents
