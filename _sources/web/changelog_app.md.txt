@@ -13,8 +13,11 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 ### Added 
 - Support to reused Label Sets across categories
 
+### Changes
+- Allow "rerun rextraction" on test and training documents
+
 ### Fixed
-- Fixed a bug where the EXIT attribute orientation corrupted the bounding boxes.
+- Fixed a bug where the EXIF attribute orientation corrupted the bounding boxes images.
 - "accept top annotations" does not update human created annotations
 
 ## 2021-07-02_18-13-01
