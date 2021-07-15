@@ -28,7 +28,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setuptools.setup(
     name="konfuzio_sdk",
-    version="0.1.3",
+    version="0.1.4",
     author='Helm & Nagel GmbH',
     author_email="info@helm-nagel.com",
     description="Konfuzio Software Development Kit",
@@ -49,5 +49,5 @@ setuptools.setup(
         'tabulate',
         'tqdm',
     ],
-    extras_require={'dev': ['flake8', 'pydocstyle', 'pytest', 'pre-commit', 'sphinx', 'sphinx-reload', 'sphinx-notfound-page', 'm2r2', 'sphinx-sitemap','sphinx_rtd_theme']},
+    extras_require={'dev': ['flake8', 'pydocstyle', 'pytest', 'pre-commit', 'sphinx', 'sphinx-reload', 'sphinx-notfound-page', 'm2r2', 'sphinx-sitemap', 'sphinx_rtd_theme']},
 )
