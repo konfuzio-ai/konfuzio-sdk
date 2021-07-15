@@ -949,10 +949,8 @@ class TestKonfuzioSDKAPI:
     def test_download_file_not_available_but_without_permission(self):
         """Test to download the original version of a document."""
         document_id = 1
-        # TODO: investigate Failed: DID NOT RAISE <class 'FileNotFoundError'>
-        # with pytest.raises(FileNotFoundError):
-        #     download_file_konfuzio_api(document_id=document_id)
-        download_file_konfuzio_api(document_id=document_id)
+        with pytest.raises(FileNotFoundError):
+            download_file_konfuzio_api(document_id=document_id)
 
     def test_download_log_file_which_is_no_pdf(self):
         """Test to download the original version of a document."""
