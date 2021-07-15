@@ -4,6 +4,20 @@
 
 # Changelog
 
+## 2021-07-15 v.0.1.4
+
+### Changed
+
+- Verification of the creation of the data folder
+- Maintain original file name in ocr pdf
+- Get metadata from all documents in the project
+- Download of document bboxes optional
+- Improved documentation dev.konfuzio.com
+
+### Fixed
+
+- API endpoints usage
+
 ## 2021-06-30 v.0.1.3
 
 ### Changed
