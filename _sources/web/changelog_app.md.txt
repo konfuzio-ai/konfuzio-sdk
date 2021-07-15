@@ -13,11 +13,13 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 ### Added 
 - Support to reused Label Sets across categories
 
-### Changes
+### Changed
 - Allow "rerun rextraction" on test and training documents
+- Remove "project statistic csv export" as it is redundant to document csv export
+- Include evaluation for training data in the AI model evaluation report
 
 ### Fixed
-- Fixed a bug where the EXIF attribute orientation corrupted the bounding boxes images.
+- Fixed a bug where the EXIF attribute orientation corrupted the bounding boxes images
 - "accept top annotations" does not update human created annotations
 
 ## 2021-07-02_18-13-01
