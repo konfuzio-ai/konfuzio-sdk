@@ -11,10 +11,10 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 ## 2021-07-15_17-29-25
 
 ### Added 
-- Support to reused Label Sets across categories
+- Support to reused label sets across categories
 
 ### Changed
-- Allow "rerun rextraction" on test and training documents
+- Allow "rerun extraction" on test and training documents
 - Remove "project statistic csv export" as it is redundant to document csv export
 - Include evaluation for training data in the AI model evaluation report
 
