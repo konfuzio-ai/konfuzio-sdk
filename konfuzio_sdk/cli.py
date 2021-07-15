@@ -78,26 +78,12 @@ def init_env(project_folder):
             "[ERROR] Your credentials are not correct! Please run init again and provide the correct credentials."
         )
 
-    data_folder = input("Folder where to allocate the data (press [ENTER] for the default: 'data'): ")
-    if data_folder == "":
-        data_folder = "data"
-    if os.path.exists(f"{project_folder}/{data_folder}"):
-        if len(os.listdir(f"{project_folder}/{data_folder}")) != 0:
-            print(
-                f"The directory: {project_folder}/{data_folder} is not empty."
-                f"If you choose to continue, the old data will be deleted permanently.")
-            update_data_dir = input("Choose another folder to allocate the data? (Y/N)")
-            if update_data_dir == 'Y':
-                data_folder = input("Folder where to allocate the data: ")
-
     with open(os.path.join(project_folder, ".env"), "w") as f:
         f.write("KONFUZIO_HOST = %s" % host)
         f.write("\n")
         f.write("KONFUZIO_USER = %s" % user)
         f.write("\n")
         f.write("KONFUZIO_TOKEN = %s" % token)
-        f.write("\n")
-        f.write("KONFUZIO_DATA_FOLDER = %s" % data_folder)
         f.write("\n")
 
     project_list = json.loads(get_project_list(token).text)
@@ -124,8 +110,18 @@ def init_env(project_folder):
         print("Creating a new project...")
         project_id = create_project(token)
 
+    data_folder = input("Folder where to allocate the data (press [ENTER] for the default: 'data_<project_id>'): ")
+
+    if data_folder == "":
+        data_folder = "data_" + str(project_id)
+
+    data_folder = verify_data_folder(project_folder, data_folder)
+
     with open(os.path.join(project_folder, ".env"), "a") as f:
         f.write("KONFUZIO_PROJECT_ID = %s" % project_id)
+        f.write("\n")
+        f.write("KONFUZIO_DATA_FOLDER = %s" % data_folder)
+        f.write("\n")
 
     env_file = open(os.path.join(project_folder, ".env"), "r")
     print("[SUCCESS] SDK initialized!")
@@ -175,6 +171,31 @@ def create_project(token=None):
         return project_id
     else:
         raise Exception(f'The project {project_name} was not created.')
+
+
+def verify_data_folder(project_folder, data_folder):
+    """
+    Verify if data folder is empty.
+
+    If not empty, asks the user for a new folder name or if to use the same.
+
+    :param project_folder: Root folder of the project
+    :param data_folder: Name of the data folder
+    :return: Final name for the data folder
+    """
+    project_data_folder = f"{project_folder}/{data_folder}"
+
+    if os.path.exists(project_data_folder) and len(os.listdir(project_data_folder)) != 0:
+        print(
+            f"The directory: {project_data_folder} is not empty."
+            f"If you choose to continue, the old data can be overwritten.")
+        update_data_dir = input("Choose another folder to allocate the data? (Y[default]/ N) ")
+        # for precaution, everything different than "N" is considered "Y"
+        if update_data_dir != 'N':
+            data_folder = input("Folder where to allocate the data: ")
+            data_folder = verify_data_folder(project_folder, data_folder)
+
+    return data_folder
 
 
 def main():

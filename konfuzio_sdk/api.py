@@ -25,6 +25,7 @@ from konfuzio_sdk.urls import (
     post_project_api_document_annotations_url,
     delete_project_api_document_annotations_url,
     get_upload_document_url,
+    update_document_url,
     get_document_result_v1,
     get_document_segmentation_details_url,
     get_create_label_url,
@@ -263,15 +264,22 @@ def post_document_annotation(
     start_offset: int,
     end_offset: int,
     label_id: int,
+    template_id: int,
     accuracy: float,
     revised: bool = False,
     is_correct: bool = False,
     section=None,
-    template_id=None,
+    define_section=True,
     session=konfuzio_session(),
 ):
     """
     Add an annotation to an existing document.
+
+    For the section definition, we can:
+    - define the section id where the annotation should belong (section=x (int), define_section=True)
+    - pass it as None and a new section will be created (section=None, define_section=True)
+    - do not pass the section field and a new section will be created if does not exist any or the annotation will be
+    added to the previous section created (define_section=False)
 
     :param document_id: ID of the file
     :param start_offset: Start offset of the annotation
@@ -283,20 +291,21 @@ def post_document_annotation(
     :return: Response status.
     """
     url = post_project_api_document_annotations_url(document_id)
-    r = session.post(
-        url,
-        data={
-            'start_offset': start_offset,
-            'end_offset': end_offset,
-            'label': label_id,
-            'revised': revised,
-            'section': section,
-            'section_label_id': template_id,
-            'accuracy': accuracy,
-            'is_correct': is_correct,
-            'csrfmiddlewaretoken': get_csrf(session),
-        },
-    )
+
+    data = {
+        'start_offset': start_offset,
+        'end_offset': end_offset,
+        'label': label_id,
+        'revised': revised,
+        'section_label_id': template_id,
+        'accuracy': accuracy,
+        'is_correct': is_correct,
+        }
+
+    if define_section:
+        data['section'] = section
+
+    r = session.post(url, json=data)
     return r
 
 
@@ -345,8 +354,7 @@ def get_meta_of_files(session=konfuzio_session()) -> List[dict]:
             break
 
     sorted_documents = sorted(result, key=itemgetter('id'))
-    sorted_dataset_documents = [x for x in sorted_documents if x['dataset_status'] in [2, 3]]
-    return sorted_dataset_documents
+    return sorted_documents
 
 
 def get_project_labels(session=konfuzio_session()) -> List[dict]:
@@ -362,7 +370,7 @@ def get_project_labels(session=konfuzio_session()) -> List[dict]:
     return sorted_labels
 
 
-def create_label(project_id: int, label_name: str, templates: list, session=konfuzio_session()) -> List[dict]:
+def create_label(project_id: int, label_name: str, templates: list, session=konfuzio_session(), **kwargs) -> List[dict]:
     """
     Create a Label and associate it with templates.
 
@@ -375,7 +383,17 @@ def create_label(project_id: int, label_name: str, templates: list, session=konf
     url = get_create_label_url()
     templates_ids = [template.id for template in templates]
 
-    data = {"project": project_id, "text": label_name, "templates": templates_ids}
+    description = kwargs.get('description', None)
+    has_multiple_top_candidates = kwargs.get('has_multiple_top_candidates', False)
+    data_type = kwargs.get('data_type', 'Text')
+
+    data = {"project": project_id,
+            "text": label_name,
+            "description": description,
+            "has_multiple_top_candidates": has_multiple_top_candidates,
+            "get_data_type_display": data_type,
+            "templates": templates_ids
+            }
 
     r = session.post(url=url, json=data)
 
@@ -434,6 +452,28 @@ def delete_file_konfuzio_api(document_id: int, session=konfuzio_session()):
     r = session.delete(url=url, json=data)
     assert r.status_code == 204
     return True
+
+
+def update_file_status_konfuzio_api(document_id: int, file_name: str, dataset_status: int = 0,
+                                    session=konfuzio_session(), **kwargs):
+    """
+    Update the dataset status of an existing document via Konfuzio API.
+
+    :param document_id: ID of the document
+    :param dataset_status: New dataset status
+    :param session: Session to connect to the server
+    :return: Response status.
+    """
+    url = update_document_url(document_id)
+
+    category_template = kwargs.get('category_template', None)
+
+    data = {"data_file_name": file_name,
+            "dataset_status": dataset_status,
+            "category_template": category_template}
+
+    r = session.patch(url=url, json=data)
+    return r
 
 
 def download_file_konfuzio_api(document_id: int, ocr: bool = True, session=konfuzio_session()):

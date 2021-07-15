@@ -69,7 +69,7 @@ class TestAPIDataSetup(unittest.TestCase):
         doc.update()
         assert len(self.prj.labels[0].correct_annotations) == 26
         assert len(doc.text) == 4793
-        assert len(glob.glob(os.path.join(doc.root, '*.*'))) == 5
+        assert len(glob.glob(os.path.join(doc.root, '*.*'))) == 4
 
         # existing annotation
         assert len(doc.annotations(use_correct=False)) == 13

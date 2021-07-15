@@ -22,6 +22,7 @@ from konfuzio_sdk.api import (
     delete_document_annotation,
     upload_file_konfuzio_api,
     create_label,
+    update_file_status_konfuzio_api,
 )
 from konfuzio_sdk.utils import is_file
 
@@ -134,8 +135,9 @@ class Label(Data):
         text: str = None,
         get_data_type_display: str = None,
         text_clean: str = None,
-        description: str = [],
+        description: str = None,
         templates: List[Template] = [],
+        has_multiple_top_candidates: bool = False,
         *initial_data,
         **kwargs,
     ):
@@ -155,6 +157,7 @@ class Label(Data):
         self.name_clean = text_clean
         self.data_type = get_data_type_display
         self.description = description
+        self.has_multiple_top_candidates = has_multiple_top_candidates
 
         self.project: Project = project
         self._correct_annotations_indexed = None
@@ -219,11 +222,15 @@ class Label(Data):
             if len(self.templates) == 0:
                 prj_templates = self.project.templates
                 default_template = [t for t in prj_templates if t.is_default][0]
-                self.add_template(default_template)
+                default_template.add_label(self)
 
             response = create_label(project_id=self.project.id,
                                     label_name=self.name,
-                                    templates=self.templates)
+                                    description=self.description,
+                                    has_multiple_top_candidates=self.has_multiple_top_candidates,
+                                    data_type=self.data_type,
+                                    templates=self.templates,
+                                    )
             self.id = response
             new_label_added = True
         except Exception:
@@ -287,12 +294,15 @@ class Annotation(Data):
             self.label: Label = label
 
         self.template = None
+        self.define_section = True
         # if no template_id we check if is passed by section_label_id
         if template_id is None:
             template_id = kwargs.get('section_label_id')
 
         if isinstance(template_id, int):
             self.template: Template = self.document.project.get_template_by_id(template_id)
+            if self.template.is_default:
+                self.define_section = False
 
         self.revised = revised
         self.section = section
@@ -341,10 +351,21 @@ class Annotation(Data):
         """Get link to the annotation in the SmartView."""
         return 'https://app.konfuzio.com/a/' + str(self.id)
 
-    def save(self) -> bool:
+    def save(self, document_annotations: list = None) -> bool:
         """
         Save Annotation online.
 
+        If there is already an annotation in the same place as the current one, we will not be able to save the current
+        annotation.
+
+        In that case, we get the id of the original one to be able to track it.
+        The verification of the duplicates is done by checking if the offsets and label match with any annotations
+        online.
+        To be sure that we are comparing with the information online, we need to have the document updated.
+        The update can be done after the request (per annotation) or the updated annotations can be passed as input
+        of the function (advisable when dealing with big documents or documents with many annotations).
+
+        :param document_annotations: Annotations in the document (list)
         :return: True if new Annotation was created
         """
         new_annotation_added = False
@@ -358,6 +379,8 @@ class Annotation(Data):
                 accuracy=self.accuracy,
                 is_correct=self.is_correct,
                 revised=self.revised,
+                section=self.section,
+                define_section=self.define_section
             )
             if response.status_code == 201:
                 json_response = json.loads(response.text)
@@ -367,18 +390,23 @@ class Annotation(Data):
                 logger.error(response.text)
                 try:
                     if 'In one project you cannot label the same text twice.' in response.text:
-                        # get the annotation
-                        self.document.update()
-                        for annotation in self.document.annotations():
-                            if (
-                                annotation.start_offset == self.start_offset
-                                and annotation.end_offset == self.end_offset
-                            ):
-                                if annotation.label == self.label:
-                                    # we found a duplicate of an annotation which is already online
-                                    self.id = annotation.id
-                            else:
-                                self.is_correct = False  # conflict other annotation, we cannot handle it automatically
+                        if document_annotations is None:
+                            # get the annotation
+                            self.document.update()
+                            document_annotations = self.document.annotations()
+                        # get the id of the existing annotation
+                        is_duplicated = False
+                        for annotation in document_annotations:
+                            if annotation.start_offset == self.start_offset and \
+                                    annotation.end_offset == self.end_offset and annotation.label == self.label:
+                                logger.error(f'ID of annotation online: {annotation.id}')
+                                self.id = annotation.id
+                                is_duplicated = True
+                                break
+
+                        # if there isn't a perfect match, the current annotation is considered incorrect
+                        if not is_duplicated:
+                            self.is_correct = False
 
                         new_annotation_added = False
                     else:
@@ -468,8 +496,8 @@ class Document(Data):
         self.annotation_file_path = os.path.join(self.root, 'annotations.json5')
         self.txt_file_path = os.path.join(self.root, 'document.txt')
         self.hocr_file_path = os.path.join(self.root, 'document.hocr')
-        self.bbox_file_path = os.path.join(self.root, 'bbox.json5')
         self.pages_file_path = os.path.join(self.root, 'pages.json5')
+        self.bbox_file_path = None
 
         self.text = kwargs.get('text')
         self.hocr = kwargs.get('hocr')
@@ -599,7 +627,8 @@ class Document(Data):
         """
         if self.is_without_errors and (not self.ocr_file_path or update):
             for page_index in range(0, self.number_of_pages):
-                self.ocr_file_path = os.path.join(self.root, 'ocr.pdf')
+                filename = os.path.splitext(self.name)[0] + '_ocr.pdf'
+                self.ocr_file_path = os.path.join(self.root, filename)
                 if not is_file(self.ocr_file_path, raise_exception=False) or update:
                     pdf_content = download_file_konfuzio_api(self.id, session=self.session)
                     with open(self.ocr_file_path, 'wb') as f:
@@ -641,13 +670,11 @@ class Document(Data):
         self.section_file_path = os.path.join(self.root, 'sections.json5')
         self.txt_file_path = os.path.join(self.root, 'document.txt')
         self.hocr_file_path = os.path.join(self.root, 'document.hocr')
-        self.bbox_file_path = os.path.join(self.root, 'bbox.json5')
 
         if update or not (
             is_file(self.annotation_file_path, raise_exception=False)
             and is_file(self.section_file_path, raise_exception=False)
             and is_file(self.txt_file_path, raise_exception=False)
-            and is_file(self.bbox_file_path, raise_exception=False)
             and is_file(self.pages_file_path, raise_exception=False)
         ):
 
@@ -668,9 +695,6 @@ class Document(Data):
 
             with open(self.txt_file_path, 'w', encoding="utf-8") as f:
                 f.write(data['text'])
-
-            with open(self.bbox_file_path, 'w') as f:
-                json.dump(data['bbox'], f, indent=2, sort_keys=True)
 
             with open(self.pages_file_path, 'w') as f:
                 json.dump(data['pages'], f, indent=2, sort_keys=True)
@@ -701,13 +725,11 @@ class Document(Data):
         if hasattr(self, 'project') and self.project:
             for raw_annotation in raw_annotations:
                 if not raw_annotation['custom_offset_string']:
-                    annotation = self.annotation_class(document=self, **raw_annotation)
-                    self.add_annotation(annotation)
+                    _ = self.annotation_class(document=self, **raw_annotation)
                 else:
                     real_string = self.text[raw_annotation['start_offset'] : raw_annotation['end_offset']]
                     if real_string.replace(' ', '') == raw_annotation['offset_string'].replace(' ', ''):
-                        annotation = self.annotation_class(document=self, **raw_annotation)
-                        self.add_annotation(annotation)
+                        _ = self.annotation_class(document=self, **raw_annotation)
                     else:
                         logger.warning(
                             f'Annotation {raw_annotation["id"]} is a custom string and, therefore, it will not be used '
@@ -752,10 +774,11 @@ class Document(Data):
             return self.bbox
 
         if not self.bbox_file_path:
-            raise Exception(
-                '`Document.get_document_details` must be run before accessing the bbox, '
-                'or `Document` must be initialized with the `bbox` parameter'
-            )
+            self.bbox_file_path = os.path.join(self.root, 'bbox.json5')
+
+            with open(self.bbox_file_path, 'w') as f:
+                data = get_document_details(document_id=self.id, session=self.session)
+                json.dump(data['bbox'], f, indent=2, sort_keys=True)
 
         with open(self.bbox_file_path, 'rb') as f:
             bbox = json.loads(f.read())
@@ -764,21 +787,31 @@ class Document(Data):
 
     def save(self) -> bool:
         """
-        Save Document online.
+        Save or update Document online.
 
-        :return: true if the new document was created
+        :return: True if the new document was created or existing document was updated.
         """
-        new_document_added = False
+        document_saved = False
         if not self.is_online:
             response = upload_file_konfuzio_api(self.file_path,
                                                 project_id=self.project.id,
                                                 dataset_status=self.dataset_status)
             if response.status_code == 201:
                 self.id = json.loads(response.text)['id']
-                new_document_added = True
+                document_saved = True
             else:
                 logger.error(f'Not able to save document  {self.file_path} online: {response.text}')
-        return new_document_added
+        else:
+            response = update_file_status_konfuzio_api(document_id=self.id,
+                                                       dataset_status=self.dataset_status,
+                                                       file_name=self.name,
+                                                       category_template=self.category_template.id)
+            if response.status_code == 200:
+                document_saved = True
+                self.project.update_document(document=self)
+            else:
+                logger.error(f'Not able to update document {self.id} online: {response.text}')
+        return document_saved
 
     def update(self):
         """Update document information."""
@@ -816,8 +849,13 @@ class Project(Data):
         self.id = id
         self.templates: List[Template] = []
         self.labels: List[Label] = []
+
         self.documents: List[Document] = []
         self.test_documents: List[Document] = []
+        self.no_status_documents: List[Document] = []
+        self.preparation_documents: List[Document] = []
+        self.low_ocr_documents: List[Document] = []
+
         self.templates_file_path = None
         self.labels_file_path = None
         self.meta_file_path = None
@@ -871,7 +909,7 @@ class Project(Data):
         """
         # if not self.meta_file_path or update:
         # add the labels first, before creating documents and annotations
-        self.get_meta()
+        self.get_meta(update=update)
         self.get_labels(update=update)
         self.get_templates(update=update)
         self.clean_documents(update=update)
@@ -904,11 +942,65 @@ class Project(Data):
 
         :param document: Document to add in the project
         """
-        if document not in self.documents:
+        if document not in self.documents + self.test_documents + self.no_status_documents + \
+                self.preparation_documents + self.low_ocr_documents:
             if document.dataset_status == 2:
                 self.documents.append(document)
             elif document.dataset_status == 3:
                 self.test_documents.append(document)
+            elif document.dataset_status == 0:
+                self.no_status_documents.append(document)
+            elif document.dataset_status == 1:
+                self.preparation_documents.append(document)
+            elif document.dataset_status == 4:
+                self.low_ocr_documents.append(document)
+
+    def update_document(self, document):
+        """
+        Update document in the project.
+
+        Update can be in the dataset_status, name or category.
+        First, we need to find the document (different list accordingly with dataset_status).
+        Then, if we are just updating the name or category, we can change the fields in place.
+        If we are updating the document dataset status, we need to move the document from the project list.
+
+        :param document: Document to update in the project
+        """
+        current_status = document.dataset_status
+
+        prj_docs = {0: self.no_status_documents,
+                    1: self.preparation_documents,
+                    2: self.documents,
+                    3: self.test_documents,
+                    4: self.low_ocr_documents}
+
+        # by default the status is None (even if not in the no_status_documents)
+        previous_status = 0
+        project_documents = []
+
+        # get project list that contains the document
+        for previous_status, project_list in prj_docs.items():
+            if document in project_list:
+                project_documents = project_list
+                break
+
+        # update name and category and get dataset status
+        for doc in project_documents:
+            if doc.id == document.id:
+                doc.name = document.name
+                doc.category_template = document.category_template
+                break
+
+        # if the document is new to the project, just add it
+        if len(project_documents) == 0:
+            doc = document
+
+        # update project list if dataset status is different
+        if current_status != previous_status:
+            if doc in project_documents:
+                project_documents.remove(doc)
+            doc.dataset_status = current_status
+            self.add_document(doc)
 
     def get_meta(self, update=False):
         """
@@ -918,9 +1010,9 @@ class Project(Data):
         :return: Information of the documents in the project.
         """
         if not self.meta_data or update:
-            self.meta_file_path = os.path.join(self.data_root, 'meta.json5')
+            self.meta_file_path = os.path.join(self.data_root, 'documents_meta.json5')
 
-            if not is_file(self.meta_file_path, raise_exception=False):
+            if not is_file(self.meta_file_path, raise_exception=False) or update:
                 self.meta_data = get_meta_of_files(self.session)
                 with open(self.meta_file_path, 'w') as f:
                     json.dump(self.meta_data, f, indent=2, sort_keys=True)
@@ -1040,10 +1132,7 @@ class Project(Data):
         """
         document_list_cache = self.documents
         self.documents: List[Document] = []
-
-        for document_data in self.meta_data:
-            if document_data['dataset_status'] == 2:
-                self._init_document(document_data, document_list_cache, update)
+        self.get_documents_from_project(dataset_statuses=[2], document_list_cache=document_list_cache, update=update)
 
         return self.documents
 
@@ -1058,12 +1147,41 @@ class Project(Data):
         """
         document_list_cache = self.test_documents
         self.test_documents: List[Document] = []
-
-        for document_data in self.meta_data:
-            if document_data['dataset_status'] == 3:
-                self._init_document(document_data, document_list_cache, update)
+        self.get_documents_from_project(dataset_statuses=[3], document_list_cache=document_list_cache, update=update)
 
         return self.test_documents
+
+    def get_documents_from_project(self, dataset_statuses: List[int] = [0], document_list_cache: List[Document] = [],
+                                   update: bool = False) -> List[Document]:
+        """
+        Get a list of documents with the specified dataset status from the project.
+
+        Besides returning a list, the documents are also initialized in the project.
+        They become accessible from the attributes of the class: self.test_documents, self.none_documents,...
+
+        :param dataset_statuses: List of status of the documents to get
+        :param document_list_cache: Cache with documents in the project
+        :param update: Bool to update the meta-information from the project
+        :return: Documents with the specified dataset status
+        """
+        documents = []
+
+        for document_data in self.meta_data:
+            if document_data['dataset_status'] in dataset_statuses:
+                self._init_document(document_data, document_list_cache, update)
+
+        if 0 in dataset_statuses:
+            documents.extend(self.no_status_documents)
+        if 1 in dataset_statuses:
+            documents.extend(self.preparation_documents)
+        if 2 in dataset_statuses:
+            documents.extend(self.documents)
+        if 3 in dataset_statuses:
+            documents.extend(self.test_documents)
+        if 4 in dataset_statuses:
+            documents.extend(self.low_ocr_documents)
+
+        return documents
 
     def clean_documents(self, update):
         """
@@ -1080,6 +1198,14 @@ class Project(Data):
             for document_id in remove_document_ids:
                 document_path = os.path.join(self.data_root, 'pdf', document_id)
                 shutil.rmtree(document_path)
+
+            # to restart lists and allow changes in the dataset status
+            self.documents = []
+            self.test_documents = []
+            self.no_status_documents = []
+            self.preparation_documents = []
+            self.low_ocr_documents = []
+
 
     def get_label_by_id(self, id: int) -> Label:
         """

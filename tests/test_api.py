@@ -37,7 +37,8 @@ def test_post_document_annotation():
     start_offset = 86
     end_offset = 88
     accuracy = 0.0001
-    label_id = 867  # Refers to Label Austellungsdatum
+    label_id = 863  # Refers to Label Betrag (863)
+    template_id = 64  # Refers to Template Brutto-Bezug (allows multisections)
     # create a revised annotation, so we can verify its existence via get_document_annotations
     response = post_document_annotation(
         document_id=document_id,
@@ -45,6 +46,7 @@ def test_post_document_annotation():
         end_offset=end_offset,
         accuracy=accuracy,
         label_id=label_id,
+        template_id=template_id,
         revised=True,
     )
     annotation = json.loads(response.text)
@@ -922,7 +924,9 @@ class TestKonfuzioSDKAPI:
         logging.info(f'KONFUZIO_USER: {KONFUZIO_USER}')
         logging.info(f'KONFUZIO_HOST: {KONFUZIO_HOST}')
         logging.info(f'KONFUZIO_PROJECT_ID: {KONFUZIO_PROJECT_ID}')
-        assert len(get_meta_of_files()) == 26 + 3
+        sorted_documents = get_meta_of_files()
+        sorted_dataset_documents = [x for x in sorted_documents if x['dataset_status'] in [2, 3]]
+        assert len(sorted_dataset_documents) == 26 + 3
 
     def test_download_file_with_ocr(self):
         """Test to download the ocred version of a document."""
