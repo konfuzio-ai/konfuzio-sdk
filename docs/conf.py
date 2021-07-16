@@ -88,8 +88,8 @@ html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 html_static_path = ['_static']
 
 # -- HTML -------------------------------------------------------------------
-html_logo = '_static/docs__static_square_transparent_super_small.png'
-html_favicon = '_static/full_green_square.png'
+html_logo = 'docs__static_square_transparent_super_small.png'
+html_favicon = 'full_green_square.png'
 html_css_files = ['custom.css']
 html_show_sphinx = False
 html_baseurl = 'https://dev.konfuzio.com'
