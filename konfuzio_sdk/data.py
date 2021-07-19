@@ -778,11 +778,11 @@ class Document(Data):
         if not self.bbox_file_path:
             self.bbox_file_path = os.path.join(self.root, 'bbox.json5')
 
-            with open(self.bbox_file_path, 'w') as f:
+            with open(self.bbox_file_path, 'w', encoding="utf-8") as f:
                 data = get_document_details(document_id=self.id, session=self.session)
                 json.dump(data['bbox'], f, indent=2, sort_keys=True)
 
-        with open(self.bbox_file_path, 'rb') as f:
+        with open(self.bbox_file_path, 'r', encoding="utf-8") as f:
             bbox = json.loads(f.read())
 
         return bbox
