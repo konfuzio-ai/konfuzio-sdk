@@ -101,6 +101,8 @@ class Template(Data):
         self.is_default = is_default
         if 'default_template' in kwargs:
             self.default_templates = [kwargs['default_template']]
+        elif 'default_section_labels' in kwargs:
+            self.default_templates = [kwargs['default_section_labels']]
         else:
             self.default_templates = default_templates
         self.has_multiple_sections = has_multiple_sections
