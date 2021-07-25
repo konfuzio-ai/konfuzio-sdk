@@ -8,6 +8,12 @@ All notable changes in the server of app.konfuzio.com will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
 
+## 2021-07-23_09-33-20
+
+### Fixed
+- Usage of word-base tokenizer
+- Duplicated hints
+
 ## 2021-07-20_17-29-23
 
 ### Fixed
