@@ -1195,7 +1195,8 @@ class Project(Data):
         """
         if update:
             meta_data_document_ids = set([str(document['id']) for document in self.meta_data])
-            existing_document_ids = set([str(document['id']) for document in self.existing_meta_data])
+            existing_document_ids = set([str(document['id']) for document in self.existing_meta_data
+                                         if document['dataset_status'] == 2 or  document['dataset_status'] == 3])])
             remove_document_ids = existing_document_ids.difference(meta_data_document_ids)
             for document_id in remove_document_ids:
                 document_path = os.path.join(self.data_root, 'pdf', document_id)
