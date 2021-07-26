@@ -1,3 +1,4 @@
 ### SDK Quickstart with Pycharm 
 
-![image](https://user-images.githubusercontent.com/85744792/127024609-407df3cb-a2d0-4e20-b1bc-a692b38d3f14.png)
+## 1. Install the Python Konfuzio SDK package via pip install in the terminal:
+![image](https://user-images.githubusercontent.com/85744792/127024727-0a51303d-6e48-4692-8ece-0dea9dd9aaed.png)
