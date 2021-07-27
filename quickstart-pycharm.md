@@ -47,6 +47,7 @@ business user might be different host, which is used to log in into konfuzio
 ![image](https://user-images.githubusercontent.com/85744792/127025370-ac4f0acf-afb2-4cef-abd2-82ef0f984173.png)
 
 ##### 3.5. You successfully initialized your project!
+Now you're Konfuzio SDK package is locally installed and will enable together with the usage of the API to use the Konfuzio web interface.
 ![image](https://user-images.githubusercontent.com/85744792/127025449-80f049c8-b3e3-4e9f-8950-25ef01527c5e.png)
 
 
