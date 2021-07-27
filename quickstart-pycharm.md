@@ -12,8 +12,6 @@ To connect this virtual environment to your project, make sure that it is select
 
 After the installation of PyCharm and this setup of the virtual environment is completed, we can now start to install our Konfuzio SDK package (correct wording?). 
 
-https://www.jetbrains.com/help/pycharm/creating-virtual-environment.html#python_create_virtual_env
-
 #### 1. Install the Python Konfuzio SDK package via pip install in the terminal:  
 This will install the SDK package directly in your working directory.
 ![image](https://user-images.githubusercontent.com/85744792/127024727-0a51303d-6e48-4692-8ece-0dea9dd9aaed.png)  
