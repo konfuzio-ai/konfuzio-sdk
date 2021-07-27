@@ -1,6 +1,6 @@
 ### SDK Quickstart with PyCharm  
 
-To start off with, please download the Community version of PyCharm here for your respective operating system: https://www.jetbrains.com/de-de/pycharm/download/#section=windows.  
+To start off with, please download the Community version of PyCharm for your respective operating system here: https://www.jetbrains.com/de-de/pycharm/download/#section=windows.  
 Once it is dowloaded, create a new Project in PyCharm (File -> New Project).
 
 As we want to execute our project/main file with our Python SDK package, we need a virtual enviroment with a python version > 3.6.   
