@@ -1,6 +1,6 @@
 ### SDK Quickstart with PyCharm  
 
-To start off with, please download the Community version of PyCharm here for your respective operating system: https://www.jetbrains.com/de-de/pycharm/download/#section=windows.
+To start off with, please download the Community version of PyCharm here for your respective operating system: https://www.jetbrains.com/de-de/pycharm/download/#section=windows.  
 Once it is dowloaded, create a new Project in PyCharm (File -> New Project).
 
 As we want to execute our project/main file with our Python SDK package, we need a virtual enviroment with a python version > 3.6. To create such a virtual environment (venv), we add a new interpreter (bottom right corner: "Add Interpreter"). We choose "Virtualenv Environment" and "New Environment" and define the location to store this virtual environment. Please choose an empty folder as the location to store the environment in. If there is already a python version > 3.6 installed on your machine, we choose your local python file. If not, we can select to download the most recent python version directly over PyCharm.   
