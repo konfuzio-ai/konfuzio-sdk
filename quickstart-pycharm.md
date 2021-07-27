@@ -22,6 +22,8 @@
 ##### 3.5. You successfully initialized your project!
 ![image](https://user-images.githubusercontent.com/85744792/127025449-80f049c8-b3e3-4e9f-8950-25ef01527c5e.png)
 
+add screenshot folder structure: ls-la
+
 
 
 
