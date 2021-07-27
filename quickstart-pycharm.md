@@ -24,6 +24,8 @@
 
 add screenshot folder structure: ls-la
 
+Screenies größer, Eingaben ins markdown, Beispiel main.py
+
 
 
 
