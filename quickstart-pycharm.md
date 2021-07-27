@@ -17,6 +17,7 @@ This will install the SDK package directly in your working directory.
 ![image](https://user-images.githubusercontent.com/85744792/127024727-0a51303d-6e48-4692-8ece-0dea9dd9aaed.png)  
 
 #### 2. Define your working directory:
+Please indicate the location to store the Python SDK package by copying the desired path from your working directory:
 ![image](https://user-images.githubusercontent.com/85744792/127024911-97d8f753-d96e-41bc-a66d-22a4455dad26.png)  
 
 #### 3. Initialize the project with the required inputs:
