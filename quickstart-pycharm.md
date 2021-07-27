@@ -1,6 +1,7 @@
 ### SDK Quickstart with Pycharm 
 
 Pycharm Community Installation, Link  
+leeres Projekt initialisieren
 #### 1. Install the Python Konfuzio SDK package via pip install in the terminal:  
 Requirement Python version  
 ![image](https://user-images.githubusercontent.com/85744792/127024727-0a51303d-6e48-4692-8ece-0dea9dd9aaed.png)  
@@ -24,6 +25,7 @@ business user might be different host, which is used to log in into konfuzio
 
 ##### 3.5. You successfully initialized your project!
 ![image](https://user-images.githubusercontent.com/85744792/127025449-80f049c8-b3e3-4e9f-8950-25ef01527c5e.png)
+
 
 add screenshot folder structure: ls-la
 
