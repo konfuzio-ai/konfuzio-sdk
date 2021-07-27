@@ -12,7 +12,8 @@ Requirement Python version
 ##### 3.1. Input your login credentials from app.konfuzio:
 ![image](https://user-images.githubusercontent.com/85744792/127025052-1d37076c-1a5b-4ecc-a955-d9c8e8096dcc.png)  
 
-##### 3.2. Input the host, press enter to use the default one: 
+##### 3.2. Input the host, press enter to use the default one:   
+business user might be different host, which is used to log in into konfuzio
 ![image](https://user-images.githubusercontent.com/85744792/127025150-c7a0c1b0-3ff9-46b3-9a83-17c74a0ad33d.png)  
 
 ##### 3.3. Choose the project you want to initialize: 
@@ -26,7 +27,7 @@ Requirement Python version
 
 add screenshot folder structure: ls-la
 
-Screenies größer, Eingaben ins markdown, Beispiel main.py
+Screenies größer, Eingaben ins markdown, Beispiel main.py, Screen recording steps? 
 
 
 
