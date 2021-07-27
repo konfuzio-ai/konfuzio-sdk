@@ -13,16 +13,18 @@ To connect this virtual environment to your project, make sure that it is select
 After the installation of PyCharm and this setup of the virtual environment is completed, we can now start to install our Konfuzio SDK package (correct wording?). 
 
 #### 1. Install the Python Konfuzio SDK package via pip install in the terminal:  
-This will install the SDK package directly in your working directory.
+This will install the SDK package directly in your working directory:  
+`pip install konfuzio-sdk`
 ![image](https://user-images.githubusercontent.com/85744792/127024727-0a51303d-6e48-4692-8ece-0dea9dd9aaed.png)  
 
 #### 2. Define your working directory:
-Please indicate the location to store the Python SDK package by copying the desired path from your working directory:
+Please indicate the location to store the Python SDK package by copying the desired path from your working directory:  
+`cd <your working directory`
 ![image](https://user-images.githubusercontent.com/85744792/127024911-97d8f753-d96e-41bc-a66d-22a4455dad26.png)  
 
 #### 3. Initialize the project with the required inputs:
-After the installation, initialize the package in your working directory with:
-konfuzio_sdk init
+After the installation, initialize the package in your working directory with:  
+`konfuzio_sdk init`
 
 This will require your credentials to access the Konfuzio App and the project ID. You can check your project ID by selecting the project in the Projects tab. The id of the project is shown in the URL. It will also require a name of a folder where to allocate the data from your Konfuzio project. At the end, two files will be created in your working directory: .env and settings.py.
 
