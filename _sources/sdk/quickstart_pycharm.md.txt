@@ -2,7 +2,7 @@
    :description: Contains all necessary steps to use the sdk with pycharm.
 
 
-### SDK Quickstart with PyCharm  
+### Install SDK using PyCharm  
 
 #### 1. PyCharm Setup
 PyCharm is a widespread common Integrated Development Environment (IDE) with strong debugging functionalities, which is why we choose PyCharm as our preferred IDE in this context.  
@@ -23,14 +23,14 @@ To connect this virtual environment to your project, make sure that it is select
 
 After the installation of PyCharm and this setup of the virtual environment is completed, we can now start to install our Konfuzio SDK package.  
 
-#### 3. Install the Konfuzio SDK package:  
+#### 3. Install the Konfuzio SDK package  
 Install the Konfuzio SDK package via pip install in the terminal. This will install the SDK package directly in your working directory:  
 `pip install konfuzio-sdk`     
 
 ![image](https://user-images.githubusercontent.com/85744792/127275731-b730e743-0a90-4e5c-a454-3d74d047bd48.png)
   
 
-#### 4. Define your working directory:
+#### 4. Define your working directory
 To store the Konfuzio SDK package, indicate the location by inputting the path of your working directory. This path should be the location of the "data" folder of the PyCharm project and can be found e.g. on the top left corner.  
 
 `cd <your working directory>`   
@@ -38,7 +38,7 @@ To store the Konfuzio SDK package, indicate the location by inputting the path o
 ![image](https://user-images.githubusercontent.com/85744792/127276445-9d95cc91-871c-4d1e-98c1-8781fec39e3a.png)
 
 
-#### 5. Initialize the project with the required inputs:
+#### 5. Initialize the project with the required inputs
 After the installation, initialize the package in your working directory with:  
 `konfuzio_sdk init`
 
@@ -60,7 +60,7 @@ The settings.py file defines constant variables that will be available in the pr
 
 
 
-#### 6. Test your Setup:
+#### 6. Test your Setup
 To test whether everything is working as desired, we are going to execute a few basic commands in the main.py file.
 Therefore, please remove the current sample Python script provided by PyCharm by deleting the code.  
 We start off with initializing the project to retrieve the current version of the project from the web application. Once this is done, we count the total number of all documents allocated to the train set in the project. To run the code, press "Run" and then "Run main". As we didn't upload any documents in our project yet, the total number should be 0.  
