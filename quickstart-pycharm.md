@@ -12,6 +12,7 @@ To create such a virtual environment (venv), please refer to this documentation 
 (Tick "Inherit global site-packages" (tbc!) to include all the packages on your local machine/ do not tick it: the virtual environment will just include the basic applications. Tick "Make available to all projects" to make the virtual environment reusable for further projects.   
 
 To connect this virtual environment to your project, make sure that it is selected as the Python interpreter (see bottom right corner) and in the project setting preferences (top right corner -> Project -> Python Interpreter).  
+
 ![image](https://user-images.githubusercontent.com/85744792/127275314-e387ad14-5570-4963-b744-d2abe630ff08.png) 
 
 After the installation of PyCharm and this setup of the virtual environment is completed, we can now start to install our Konfuzio SDK package (correct wording?). 
