@@ -3,14 +3,16 @@
 #### 1. PyCharm Setup
 PyCharm is a widespread common Integrated Development Environment (IDE) with strong debugging functionalities, which is why we choose PyCharm as our preferred IDE in this context.  
 To start off with, please download the Community version of PyCharm for your respective operating system here: https://www.jetbrains.com/de-de/pycharm/download/#section=windows.  
-Once it is dowloaded, create a new Project in PyCharm (File -> New Project). Please also refer to this documentation for further explanations: https://www.jetbrains.com/help/pycharm/creating-empty-project.html.
+Once it is dowloaded, create a new Project in PyCharm (File -> New Project) and choose the location and name for it. Please also refer to this documentation for further explanations: https://www.jetbrains.com/help/pycharm/creating-empty-project.html. When creating a new project, you need to choose the Python interpreter which will be used for the project. Please move on to step 2 to check how to create a new virtual environment for the project.  
+
+![image](https://user-images.githubusercontent.com/85744792/127325540-968e916d-626a-496f-aab4-f9d8fe5e9c5e.png)
 
 
 #### 2. Create a Virtual Environment
 As we want to execute our project with our Konfuzio SDK package, we need a virtual enviroment which is based on the Python version 3.8. This Python version is the most widespread and commonly used version which still represents a good trade-off between newness and stability.  
 To create such a virtual environment, please refer to this documentation which describes the steps in detail: https://www.jetbrains.com/help/pycharm/creating-virtual-environment.html#python_create_virtual_env.  
 
-To connect this virtual environment to your project, make sure that it is selected as the Python interpreter (see bottom right corner) and in the project setting preferences (top right corner -> Project -> Python Interpreter).  We are using a local Virtual Environment in combination with the community version of PyCharm, as the users of the community version can't carry out debugging of code which is executed in Docker containers or on a remote-host SSH. 
+To connect this virtual environment to your project, make sure that it is selected as the Python interpreter (see bottom right corner) and in the project setting preferences (top right corner -> Project -> Python Interpreter) if not already specified when the project was created.  We are using a local Virtual Environment in combination with the community version of PyCharm, as the users of the community version can't carry out debugging of code which is executed in Docker containers or on a remote-host SSH. 
 
 ![image](https://user-images.githubusercontent.com/85744792/127275314-e387ad14-5570-4963-b744-d2abe630ff08.png) 
 
