@@ -3,6 +3,7 @@
 #### 1. PyCharm Setup
 PyCharm is a widespread common Integrated Development Environment (IDE) with strong debugging functionalities, which is why we choose PyCharm as our preferred IDE in this context.  
 To start off with, please download the Community version of PyCharm for your respective operating system here: https://www.jetbrains.com/de-de/pycharm/download/#section=windows.  
+
 Once it is dowloaded, create a new Project in PyCharm (File -> New Project) and choose the location and name for it. Please also refer to this documentation for further explanations: https://www.jetbrains.com/help/pycharm/creating-empty-project.html. When creating a new project, you need to choose the Python interpreter which will be used for the project. Please move on to step 2 to check how to create a new virtual environment for the project.  
 
 ![image](https://user-images.githubusercontent.com/85744792/127325540-968e916d-626a-496f-aab4-f9d8fe5e9c5e.png)
