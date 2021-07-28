@@ -42,16 +42,17 @@ As a last input, please also enter the **folder** to which the data should be al
 At the end, two files will be created in your working directory: .env and settings.py.
 The .env file contains the credentials to access the app and should not become public.
 The settings.py file defines constant variables that will be available in the project, including the ones you defined in the .env. This file should not be modified.  
+
 ![image](https://user-images.githubusercontent.com/85744792/127277914-a6a6da11-37e4-4871-9d13-e418b1740176.png)
 
 You successfully initialized your project!  
-Now you're Konfuzio SDK package is locally installed and will enable together with the usage of the API the usage of the Konfuzio web interface.
+Now you're Konfuzio SDK package is locally installed and will enable you together with the usage of the API the usage of the Konfuzio web interface.
 
 
 #### 6. Test your Setup:
-To test whether everything worked as desired, we are going to execute a few basic commands in the main.py file.
+To test whether everything is working as desired, we are going to execute a few basic commands in the main.py file.
 Therefore, please remove the current sample Python script provided by PyCharm by deleting the code.  
-We start off with initializing and updating the project, to retrieve the current version of the project from the web application. Once this is done, we define the documents as all of the documents allocated to the train (?) set in the project and count the total number of them. As we didn't upload any documents in our project yet, the total number should be 0.  
+We start off with initializing and updating the project to retrieve the current version of the project from the web application. Once this is done, we define the documents as all of the documents allocated to the train (?) set in the project and count the total number of them. To run the code, we click on "Run" and then "Run main". As we didn't upload any documents in our project yet, the total number should be 0.  
 ```
 # Test your setup with the following code:
 from konfuzio_sdk.data import Project
@@ -65,7 +66,9 @@ documents = my_project.get_documents_from_project()
 
 # Receive the total number of documents in the project:
 print("Number of documents in the project: {}.".format(len(documents)))
-```
+```  
+
+![image](https://user-images.githubusercontent.com/85744792/127278829-18f811e7-dc95-4ebc-9de8-78176a11624f.png)
 
 
 The data from the documents that you uploaded in your Konfuzio project will be downloaded to the folder that you provided in the previous step.
