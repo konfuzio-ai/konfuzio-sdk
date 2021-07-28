@@ -51,7 +51,9 @@ Now you're Konfuzio SDK package is locally installed and will enable together wi
 ![image](https://user-images.githubusercontent.com/85744792/127025449-80f049c8-b3e3-4e9f-8950-25ef01527c5e.png)
 
 
-#### 4. Update your project:
+#### 4. Test your Setup:
+To test whether everything worked as desired, we are going to execute a few commands in the main.py file.
+Therefore, please remove the current sample Python script.
 To download the data from your Konfuzio project, please execute:
 konfuzio_sdk download_data (or project.update()?)
 The data from the documents that you uploaded in your Konfuzio project will be downloaded to the folder that you provided in the previous step.
