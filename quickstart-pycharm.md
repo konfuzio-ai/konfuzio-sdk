@@ -35,34 +35,36 @@ To store the Python SDK package, indicate the location by inputting the path of 
 After the installation, initialize the package in your working directory with:  
 `konfuzio_sdk init`
 
-This will require different inputs, starting with your **login credentials** to access the Konfuzio App. It will then ask for the **host** from where to get the data. If you are a business user, this will be the server url to access the Konfuzio application. In any other case, press "enter" to use the default url as the host address. As you are new to our Konfuzio application, there are no existing projects yet. To create a new one, enter your desired name of the project and then choose this certain project by inputting the respective **project ID** from the list provided to you in the terminal. The ID of the project will also be shown in the URL. As a last input, please also enter the **folder** to which the data should be allocated to. If you have no specific preferences, you can use the proposed default folder name by pressing "enter" which will then be `data_<project_id>`. At the end, two files will be created in your working directory: .env and settings.py.
-
+This will require different inputs, starting with your **login credentials** to access the Konfuzio App.  
+It will then ask for the **host** from where to get the data. If you are a business user, this might be the server url to access the Konfuzio application and different to app.konfuzio.com. In any other case, press "enter" to use the default url as the host address.  
+As you are new to our Konfuzio application, there are no existing projects yet. To create a new one, enter your desired name of the project and then choose this certain project by inputting the respective **project ID** from the list of all available projects provided to you in the terminal. The ID of the project will also be shown in the URL.  
+As a last input, please also enter the **folder** to which the data should be allocated to. If you have no specific preferences, you can use the proposed default folder name by pressing "enter" which will then be `data_<project_id>`.   
+At the end, two files will be created in your working directory: .env and settings.py.
 The .env file contains the credentials to access the app and should not become public.
-The settings.py file defines constant variables that will be available in the project, including the ones you defined in the .env. This file should not be modified.
+The settings.py file defines constant variables that will be available in the project, including the ones you defined in the .env. This file should not be modified.  
+![image](https://user-images.githubusercontent.com/85744792/127277914-a6a6da11-37e4-4871-9d13-e418b1740176.png)
 
-##### 5.1. Input your login credentials from app.konfuzio:
-![image](https://user-images.githubusercontent.com/85744792/127025052-1d37076c-1a5b-4ecc-a955-d9c8e8096dcc.png)  
-
-##### 5.2. Input the host, press enter to use the default one:   
-business user might be different host, which is used to log in into konfuzio
-![image](https://user-images.githubusercontent.com/85744792/127025150-c7a0c1b0-3ff9-46b3-9a83-17c74a0ad33d.png)  
-
-##### 5.3. Choose the project you want to initialize: 
-![image](https://user-images.githubusercontent.com/85744792/127025273-58e55544-35c5-4831-9fa1-4581aa4b6a23.png)  
-
-##### 5.4. Set the folder to which the data should be allocated to, press enter for default:   
-![image](https://user-images.githubusercontent.com/85744792/127025370-ac4f0acf-afb2-4cef-abd2-82ef0f984173.png)
-
-##### 5.5. You successfully initialized your project!
-Now you're Konfuzio SDK package is locally installed and will enable together with the usage of the API to use the Konfuzio web interface.
-![image](https://user-images.githubusercontent.com/85744792/127025449-80f049c8-b3e3-4e9f-8950-25ef01527c5e.png)
+You successfully initialized your project!  
+Now you're Konfuzio SDK package is locally installed and will enable together with the usage of the API the usage of the Konfuzio web interface.
 
 
 #### 6. Test your Setup:
-To test whether everything worked as desired, we are going to execute a few commands in the main.py file.
-Therefore, please remove the current sample Python script.
-To download the data from your Konfuzio project, please execute:
-konfuzio_sdk download_data (or project.update()?)
+To test whether everything worked as desired, we are going to execute a few basic commands in the main.py file.
+Therefore, please remove the current sample Python script provided by PyCharm by deleting the code.  
+We start off with initializing and updating the project, to retrieve the current version of the project from the web application. Once this is done, we define the documents as all of the documents allocated to the train (?) set in the project and count the total number of them. As we didn't upload any documents in our project yet, the total number should be 0.  
+`# Import the relevant imports from the Konfuzio sdk package:
+from konfuzio_sdk.data import Project
+
+# Initialize the project:
+my_project = Project()
+my_project.update()
+
+# Retrieve the documents from your project:
+documents = my_project.get_documents_from_project()
+
+# Receive the total number of documents in the project:
+print("Number of documents in the project: {}.".format(len(documents)))`
+
 The data from the documents that you uploaded in your Konfuzio project will be downloaded to the folder that you provided in the previous step.
 Note:
 Only documents in the training or test set are downloaded.
