@@ -52,7 +52,7 @@ Two files have also been created in your working directory: .env and settings.py
 The .env file contains the credentials to access the app and should not become public.
 The settings.py file defines constant variables that will be available in the project, including the ones you defined in the .env. This file should not be modified. 
 
-![image](https://user-images.githubusercontent.com/85744792/127329662-e64b421c-b939-4ec6-9641-40d4d577af4a.png)
+![image](https://user-images.githubusercontent.com/85744792/127330960-fb343b9d-2ee9-450a-9436-e4cff608ece2.png)
 
 
 
