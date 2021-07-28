@@ -7,9 +7,10 @@ Once it is dowloaded, create a new Project in PyCharm (File -> New Project). Ple
 
 #### 2. Create a Virtual Environment
 As we want to execute our project/main file with our Konfuzio SDK package, we need a virtual enviroment with a python version > 3.6.   
-To create such a virtual environment (venv), please refer to this documentation which describes the steps in detail: https://www.jetbrains.com/help/pycharm/creating-virtual-environment.html#python_create_virtual_env.  
-(We add a new interpreter (bottom right corner: "Add Interpreter"). We choose "Virtualenv Environment" and "New Environment" and define the location to store this virtual environment. Please choose an empty folder as the location to store the environment in. If there is already a python version > 3.6 installed on your machine, choose your local python application. If not, we can select to download the most recent python version directly over PyCharm.)   
-(Tick "Inherit global site-packages" (tbc!) to include all the packages on your local machine/ do not tick it: the virtual environment will just include the basic applications. Tick "Make available to all projects" to make the virtual environment reusable for further projects.   
+To create such a virtual environment, please refer to this documentation which describes the steps in detail: https://www.jetbrains.com/help/pycharm/creating-virtual-environment.html#python_create_virtual_env.  
+
+(We add a new interpreter (bottom right corner: "Add Interpreter"). We choose "Virtualenv Environment" and "New Environment" and define the location to store this virtual environment. Please choose an empty folder as the location to store the environment in. If there is already a python version > 3.6 installed on your machine, choose your local python application. If not, select to download the most recent python version directly over PyCharm.)   
+(Tick "Inherit global site-packages" (tbc!) to include all the packages on your local machine/ do not tick it: the virtual environment will just include the basic applications. Tick "Make available to all projects" to make the virtual environment reusable for further projects.)   
 
 To connect this virtual environment to your project, make sure that it is selected as the Python interpreter (see bottom right corner) and in the project setting preferences (top right corner -> Project -> Python Interpreter).  
 
@@ -36,8 +37,8 @@ After the installation, initialize the package in your working directory with:
 `konfuzio_sdk init`
 
 This will require different inputs, starting with your **login credentials** to access the Konfuzio App.  
-It will then ask for the **host** from where to get the data. If you are a business user, this might be the server url to access the Konfuzio application and different to app.konfuzio.com. In any other case, press "enter" to use the default url as the host address.  
-As you are new to our Konfuzio application, there are no existing projects yet. To create a new one, enter your desired name of the project and then choose this certain project by inputting the respective **project ID** from the list of all available projects provided to you in the terminal. The ID of the project will also be shown in the URL.  
+It will then ask for the **host** from where to get the data. If you are a business user, this might be different to app.konfuzio.com and will be the server url to access the Konfuzio application. In any other case, press "enter" to use the default url as the host address.  
+If you are new to our Konfuzio application, there are no existing projects yet. To create a new one, enter your desired name of the project and then choose this certain project by inputting the respective **project ID** from the list of all available projects provided to you in the terminal. The ID of the project will then also be shown in the URL of the project once it is created.  
 As a last input, please also enter the **folder** to which the data should be allocated to. If you have no specific preferences, you can use the proposed default folder name by pressing "enter" which will then be `data_<project_id>`.   
 At the end, two files will be created in your working directory: .env and settings.py.
 The .env file contains the credentials to access the app and should not become public.
@@ -69,9 +70,3 @@ print("Number of documents in the project: {}.".format(len(documents)))
 ```  
 
 ![image](https://user-images.githubusercontent.com/85744792/127278829-18f811e7-dc95-4ebc-9de8-78176a11624f.png)
-
-
-
-
-
-
