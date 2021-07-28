@@ -1,3 +1,7 @@
+.. meta::
+   :description: Contains all necessary steps to use the sdk with pycharm.
+
+
 ### SDK Quickstart with PyCharm  
 
 #### 1. PyCharm Setup
