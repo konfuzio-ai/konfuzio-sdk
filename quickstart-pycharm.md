@@ -1,12 +1,13 @@
 ### SDK Quickstart with PyCharm  
 
 #### 1. PyCharm Setup
+PyCharm is a widespread common Integrated Development Environment (IDE) with strong debugging functionalities, which is why we choose PyCharm as our preferred IDE in this context.  
 To start off with, please download the Community version of PyCharm for your respective operating system here: https://www.jetbrains.com/de-de/pycharm/download/#section=windows.  
 Once it is dowloaded, create a new Project in PyCharm (File -> New Project). Please also refer to this documentation for further explanations: https://www.jetbrains.com/help/pycharm/creating-empty-project.html.
 
 
 #### 2. Create a Virtual Environment
-As we want to execute our project/main file with our Konfuzio SDK package, we need a virtual enviroment with a python version > 3.6.   
+As we want to execute our project with our Konfuzio SDK package, we need a virtual enviroment which is based on the Python version 3.8. This Python version is the most widespread and commonly used version which still represents a good trade-off between newness and stability.  
 To create such a virtual environment, please refer to this documentation which describes the steps in detail: https://www.jetbrains.com/help/pycharm/creating-virtual-environment.html#python_create_virtual_env.  
 
 To connect this virtual environment to your project, make sure that it is selected as the Python interpreter (see bottom right corner) and in the project setting preferences (top right corner -> Project -> Python Interpreter).  Nutzen lokales Venv, da Nutzer der community version kein Debugging von Containern oder SSH durchführen können.
@@ -51,7 +52,7 @@ Now you're Konfuzio SDK package is locally installed and will enable you togethe
 #### 6. Test your Setup:
 To test whether everything is working as desired, we are going to execute a few basic commands in the main.py file.
 Therefore, please remove the current sample Python script provided by PyCharm by deleting the code.  
-We start off with initializing and updating the project to retrieve the current version of the project from the web application. Once this is done, we define the documents as all of the documents allocated to the train (?) set in the project and count the total number of them. To run the code, we click on "Run" and then "Run main". As we didn't upload any documents in our project yet, the total number should be 0.  
+We start off with initializing the project to retrieve the current version of the project from the web application. Once this is done, we count the total number of all documents allocated to the train set in the project. To run the code, press "Run" and then "Run main". As we didn't upload any documents in our project yet, the total number should be 0.  
 ```
 # Test your setup with the following code:
 from konfuzio_sdk.data import Project
@@ -66,4 +67,12 @@ documents = my_project.get_documents_from_project()
 # Receive the total number of documents in the project:
 print("Number of documents in the project: {}.".format(len(documents)))
 ```  
-![image](https://user-images.githubusercontent.com/85744792/127280672-6e317a29-6731-4dbd-aca1-2cb45a68e6c9.png)
+![image](https://user-images.githubusercontent.com/85744792/127280672-6e317a29-6731-4dbd-aca1-2cb45a68e6c9.png)  
+
+#### 7. Test the Debugging
+We also include a second test to check if debugging also works. Herefore, we include a breakpoint in the last line of code at the print statement and execute "Run" and then "Debug main". This should show no bugs and will also provide you with an overview of all available variables. As you can see in the code above, we only accessed the document element - however, all other elements can be found in the Debug console under "Variables".   
+
+![image](https://user-images.githubusercontent.com/85744792/127322022-3055d3af-aefb-4412-a99a-8bd234690f0f.png)
+
+
+
