@@ -25,10 +25,11 @@ This will install the SDK package directly in your working directory:
   
 
 #### 4. Define your working directory:
-Please indicate the location to store the Python SDK package by copying the desired path from your working directory:  
-`cd <your working directory>`  
+To store the Python SDK package, indicate the location by inputting the path of your working directory. This path should be the location of the "data" folder of the PyCharm project and can be found e.g. on the top left corner.  
 
-![image](https://user-images.githubusercontent.com/85744792/127024911-97d8f753-d96e-41bc-a66d-22a4455dad26.png)  
+`cd <your working directory>`     
+![image](https://user-images.githubusercontent.com/85744792/127276445-9d95cc91-871c-4d1e-98c1-8781fec39e3a.png)
+
 
 #### 5. Initialize the project with the required inputs:
 After the installation, initialize the package in your working directory with:  
