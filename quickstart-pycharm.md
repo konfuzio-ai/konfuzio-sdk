@@ -57,17 +57,15 @@ Therefore, please remove the current sample Python script provided by PyCharm by
 We start off with initializing the project to retrieve the current version of the project from the web application. Once this is done, we count the total number of all documents allocated to the train set in the project. To run the code, press "Run" and then "Run main". As we didn't upload any documents in our project yet, the total number should be 0.  
 ```
 # Test your setup with the following code:
+
 from konfuzio_sdk.data import Project
 
 # Initialize the project:
 my_project = Project()
-my_project.update()
 
-# Retrieve the documents from your project:
-documents = my_project.get_documents_from_project()
+# Receive the total number of training documents in the project:
+print(f"Number of training documents in the project: {len(my_project.documents)}.")
 
-# Receive the total number of documents in the project:
-print("Number of documents in the project: {}.".format(len(documents)))
 ```  
 ![image](https://user-images.githubusercontent.com/85744792/127280672-6e317a29-6731-4dbd-aca1-2cb45a68e6c9.png)  
 
