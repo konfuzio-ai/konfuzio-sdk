@@ -66,8 +66,9 @@ my_project = Project()
 # Receive the total number of training documents in the project:
 print(f"Number of training documents in the project: {len(my_project.documents)}.")
 
-```  
-![image](https://user-images.githubusercontent.com/85744792/127280672-6e317a29-6731-4dbd-aca1-2cb45a68e6c9.png)  
+```   
+![image](https://user-images.githubusercontent.com/85744792/127325935-5e442366-85d9-4e48-bde2-b7905643c1f8.png)
+
 
 #### 7. Test the Debugging
 We also include a second test to check if debugging also works. Herefore, we include a breakpoint in the last line of code at the print statement and execute "Run" and then "Debug main". This should show no bugs and will also provide you with an overview of all available variables. As you can see in the code above, we only accessed the document element - however, all other elements can be found in the Debug console under "Variables".   
