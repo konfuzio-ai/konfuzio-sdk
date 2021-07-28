@@ -28,7 +28,8 @@ This will install the SDK package directly in your working directory:
 #### 4. Define your working directory:
 To store the Konfuzio SDK package, indicate the location by inputting the path of your working directory. This path should be the location of the "data" folder of the PyCharm project and can be found e.g. on the top left corner.  
 
-`cd <your working directory>`     
+`cd <your working directory>`   
+
 ![image](https://user-images.githubusercontent.com/85744792/127276445-9d95cc91-871c-4d1e-98c1-8781fec39e3a.png)
 
 
