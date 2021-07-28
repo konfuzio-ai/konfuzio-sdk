@@ -6,7 +6,7 @@ Once it is dowloaded, create a new Project in PyCharm (File -> New Project). Ple
 
 
 #### 2. Create a Virtual Environment
-As we want to execute our project/main file with our Python SDK package, we need a virtual enviroment with a python version > 3.6.   
+As we want to execute our project/main file with our Konfuzio SDK package, we need a virtual enviroment with a python version > 3.6.   
 To create such a virtual environment (venv), please refer to this documentation which describes the steps in detail: https://www.jetbrains.com/help/pycharm/creating-virtual-environment.html#python_create_virtual_env.  
 (We add a new interpreter (bottom right corner: "Add Interpreter"). We choose "Virtualenv Environment" and "New Environment" and define the location to store this virtual environment. Please choose an empty folder as the location to store the environment in. If there is already a python version > 3.6 installed on your machine, choose your local python application. If not, we can select to download the most recent python version directly over PyCharm.)   
 (Tick "Inherit global site-packages" (tbc!) to include all the packages on your local machine/ do not tick it: the virtual environment will just include the basic applications. Tick "Make available to all projects" to make the virtual environment reusable for further projects.   
@@ -15,9 +15,9 @@ To connect this virtual environment to your project, make sure that it is select
 
 ![image](https://user-images.githubusercontent.com/85744792/127275314-e387ad14-5570-4963-b744-d2abe630ff08.png) 
 
-After the installation of PyCharm and this setup of the virtual environment is completed, we can now start to install our Konfuzio SDK package (correct wording?). 
+After the installation of PyCharm and this setup of the virtual environment is completed, we can now start to install our Konfuzio SDK package.  
 
-#### 3. Install the Python Konfuzio SDK package via pip install in the terminal:  
+#### 3. Install the Konfuzio SDK package via pip install in the terminal:  
 This will install the SDK package directly in your working directory:  
 `pip install konfuzio-sdk`  
 
@@ -25,7 +25,7 @@ This will install the SDK package directly in your working directory:
   
 
 #### 4. Define your working directory:
-To store the Python SDK package, indicate the location by inputting the path of your working directory. This path should be the location of the "data" folder of the PyCharm project and can be found e.g. on the top left corner.  
+To store the Konfuzio SDK package, indicate the location by inputting the path of your working directory. This path should be the location of the "data" folder of the PyCharm project and can be found e.g. on the top left corner.  
 
 `cd <your working directory>`     
 ![image](https://user-images.githubusercontent.com/85744792/127276445-9d95cc91-871c-4d1e-98c1-8781fec39e3a.png)
