@@ -41,16 +41,19 @@ After the installation, initialize the package in your working directory with:
 This will require different inputs, starting with your **login credentials** to access the Konfuzio App.  
 It will then ask for the **host** from where to get the data. If you are a business user, this might be different to app.konfuzio.com and will be the server url to access the Konfuzio application. In any other case, press "enter" to use the default url as the host address.  
 If you are new to our Konfuzio application, there are no existing projects yet. To create a new one, enter your desired name of the project and then choose this certain project by inputting the respective **project ID** from the list of all available projects provided to you in the terminal. The ID of the project will then also be shown in the URL of the project once it is created.  
-As a last input, please also enter the **folder** to which the data should be allocated to. If you have no specific preferences, you can use the proposed default folder name by pressing "enter" which will then be `data_<project_id>`.  
-
-At the end, two files will be created in your working directory: .env and settings.py.
-The .env file contains the credentials to access the app and should not become public.
-The settings.py file defines constant variables that will be available in the project, including the ones you defined in the .env. This file should not be modified.  
+As a last input, please also enter the **folder** to which the data should be allocated to. If you have no specific preferences, you can use the proposed default folder name by pressing "enter" which will then be `data_<project_id>`.   
 
 ![image](https://user-images.githubusercontent.com/85744792/127277914-a6a6da11-37e4-4871-9d13-e418b1740176.png)
 
 You successfully initialized your project!  
-Now you're Konfuzio SDK package is locally installed and will enable you together with the usage of the API the usage of the Konfuzio web interface.
+Now you're Konfuzio SDK package is locally installed and will enable you together with the usage of the API the usage of the Konfuzio web interface.  
+
+Two files have also been created in your working directory: .env and settings.py.
+The .env file contains the credentials to access the app and should not become public.
+The settings.py file defines constant variables that will be available in the project, including the ones you defined in the .env. This file should not be modified. 
+
+![image](https://user-images.githubusercontent.com/85744792/127329662-e64b421c-b939-4ec6-9641-40d4d577af4a.png)
+
 
 
 #### 6. Test your Setup:
