@@ -63,7 +63,9 @@ my_project.update()
 documents = my_project.get_documents_from_project()
 
 # Receive the total number of documents in the project:
-print("Number of documents in the project: {}.".format(len(documents)))`
+print("Number of documents in the project: {}.".format(len(documents)))
+```
+
 
 The data from the documents that you uploaded in your Konfuzio project will be downloaded to the folder that you provided in the previous step.
 Note:
