@@ -6,7 +6,7 @@
 
 #### 1. PyCharm Setup
 PyCharm is a widespread common Integrated Development Environment (IDE) with strong debugging functionalities, which is why we choose PyCharm as our preferred IDE in this context.  
-To start off with, please download the Community version of PyCharm for your respective operating system here: https://www.jetbrains.com/de-de/pycharm/download/#section=windows.  
+To start with, please download the Community version of PyCharm for your respective operating system here: https://www.jetbrains.com/de-de/pycharm/download/#section=windows.  
 
 Once it is dowloaded, create a new Project in PyCharm (File -> New Project) and choose the location and name for it. Please also refer to this documentation for further explanations: https://www.jetbrains.com/help/pycharm/creating-empty-project.html. When creating a new project, you need to choose the Python interpreter which will be used for the project. Please move on to step 2 to check how to create a new virtual environment for the project.  
 
@@ -14,10 +14,10 @@ Once it is dowloaded, create a new Project in PyCharm (File -> New Project) and 
 
 
 #### 2. Create a Virtual Environment
-As we want to execute our project with our Konfuzio SDK package, we need a virtual enviroment which is based on the Python version 3.8. This Python version is the most widespread and commonly used version which still represents a good trade-off between newness and stability.  
+As we want to execute our project with our Konfuzio SDK package, we need a virtual environment that is based on Python version 3.8. This Python version is the most widespread and commonly used version which still represents a good trade-off between newness and stability.  
 To create such a virtual environment, please refer to this documentation which describes the steps in detail: https://www.jetbrains.com/help/pycharm/creating-virtual-environment.html#python_create_virtual_env.  
 
-To connect this virtual environment to your project, make sure that it is selected as the Python interpreter (see bottom right corner) and in the project setting preferences if not already specified when the project was created.  We are using a local virtual environment in combination with the community version of PyCharm, as the users of the community version can't carry out debugging of code which is executed in Docker containers or on a remote-host SSH. 
+To connect this virtual environment to your project, make sure that it is selected as the Python interpreter (see bottom right corner) and in the project setting preferences if not already specified when the project was created.  We are using a local virtual environment in combination with the community version of PyCharm, as the users of the community version can't carry out debugging of code that is executed in Docker containers or on a remote-host SSH. 
 
 ![image](https://user-images.githubusercontent.com/85744792/127275314-e387ad14-5570-4963-b744-d2abe630ff08.png) 
 
@@ -43,14 +43,14 @@ After the installation, initialize the package in your working directory with:
 `konfuzio_sdk init`
 
 This will require different inputs, starting with your **login credentials** to access the Konfuzio App.  
-It will then ask for the **host** from where to get the data. If you are a business user, this might be different to app.konfuzio.com and will be the server url to access the Konfuzio application. In any other case, press "enter" to use the default url as the host address.  
+It will then ask for the **host** from where to get the data. If you are a business user, this might be different from app.konfuzio.com and will be the server URL to access the Konfuzio application. In any other case, press "enter" to use the default URL as the host address.  
 If you are new to our Konfuzio application, there are no existing projects yet. To create a new one, enter your desired name of the project and then choose this certain project by inputting the respective **project ID** from the list of all available projects provided to you in the terminal. The ID of the project will then also be shown in the URL of the project once it is created.  
-As a last input, please also enter the **folder** to which the data should be allocated to. If you have no specific preferences, you can use the proposed default folder name by pressing "enter" which will then be `data_<project_id>`.   
+As the last input, please also enter the **folder** to which the data should be allocated. If you have no specific preferences, you can use the proposed default folder name by pressing "enter" which will then be `data_<project_id>`.   
 
 ![image](https://user-images.githubusercontent.com/85744792/127277914-a6a6da11-37e4-4871-9d13-e418b1740176.png)
 
 You successfully initialized your project!  
-Now you're Konfuzio SDK package is locally installed and will enable you together with the usage of the API the usage of the Konfuzio web interface.  
+Now your Konfuzio SDK package is locally installed and will enable you together with the usage of the API the usage of the Konfuzio web interface.  
 
 Two files have also been created in your working directory: .env and settings.py.
 The .env file contains the credentials to access the app and should not become public.
@@ -63,7 +63,7 @@ The settings.py file defines constant variables that will be available in the pr
 #### 6. Test your Setup
 To test whether everything is working as desired, we are going to execute a few basic commands in the main.py file.
 Therefore, please remove the current sample Python script provided by PyCharm by deleting the code.  
-We start off with initializing the project to retrieve the current version of the project from the web application. Once this is done, we count the total number of all documents allocated to the train set in the project. To run the code, press "Run" and then "Run main". As we didn't upload any documents in our project yet, the total number should be 0.  
+We start with initializing the project to retrieve the current version of the project from the web application. Once this is done, we count the total number of all documents allocated to the train set in the project. To run the code, press "Run" and then "Run main". As we didn't upload any documents to our project yet, the total number should be 0.  
 ```
 # Test your setup with the following code:
 
