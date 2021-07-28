@@ -59,6 +59,7 @@ have Konfuzio on premises and examples on how to use the API for communicate dir
 
 
    sdk/configuration_reference.md
+   sdk/quickstart_pycharm.md
    sdk/examples/examples.rst
    sdk/sourcecode.rst
    sdk/contribution.md
