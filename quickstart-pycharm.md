@@ -68,5 +68,4 @@ documents = my_project.get_documents_from_project()
 # Receive the total number of documents in the project:
 print("Number of documents in the project: {}.".format(len(documents)))
 ```  
-
-![image](https://user-images.githubusercontent.com/85744792/127278829-18f811e7-dc95-4ebc-9de8-78176a11624f.png)
+![image](https://user-images.githubusercontent.com/85744792/127280278-9bc04d0d-c098-4691-bee3-1ee5357e2aeb.png)
