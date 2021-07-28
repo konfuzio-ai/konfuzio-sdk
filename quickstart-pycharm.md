@@ -2,7 +2,7 @@
 
 #### 1. PyCharm Setup
 To start off with, please download the Community version of PyCharm for your respective operating system here: https://www.jetbrains.com/de-de/pycharm/download/#section=windows.  
-Once it is dowloaded, create a new Project in PyCharm (File -> New Project).
+Once it is dowloaded, create a new Project in PyCharm (File -> New Project). Please also refer to this documentation for further explanations: https://www.jetbrains.com/help/pycharm/creating-empty-project.html.
 
 
 #### 2. Create a Virtual Environment
@@ -69,27 +69,6 @@ print("Number of documents in the project: {}.".format(len(documents)))
 ```  
 
 ![image](https://user-images.githubusercontent.com/85744792/127278829-18f811e7-dc95-4ebc-9de8-78176a11624f.png)
-
-
-The data from the documents that you uploaded in your Konfuzio project will be downloaded to the folder that you provided in the previous step.
-Note:
-Only documents in the training or test set are downloaded.
-
-----------------------------------------------
-Create new document with 0, without any documents, project.update()
-add screenshot folder structure: ls-la
-
-Screenies größer, Eingaben ins markdown, Beispiel main.py, Screen recording steps? 
-
-(PyCharm Projekt anlegen Dokumentation in Tutorial verlinken, PyCharm Installation verlinken, PyCharm installiert aktuellste Version von Python, was ist gewünschte Version? Projekt anlegen, main file muss ausgeführt werden, venv benötigt, env muss im terminal verfügbar sein zur Initialisierung
-ab Terminalansicht, PyCharm venv aufsetzen verlinken mit Python >3.6
-
-venv mit Terminal verbinden vor Initialisierung, 
-
-Pycharm Community Installation, Link  
-leeres Projekt initialisieren
-final: 1 Command für main.py zum testen, project().documents = []) 
-
 
 
 
