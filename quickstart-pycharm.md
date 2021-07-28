@@ -9,9 +9,6 @@ Once it is dowloaded, create a new Project in PyCharm (File -> New Project). Ple
 As we want to execute our project/main file with our Konfuzio SDK package, we need a virtual enviroment with a python version > 3.6.   
 To create such a virtual environment, please refer to this documentation which describes the steps in detail: https://www.jetbrains.com/help/pycharm/creating-virtual-environment.html#python_create_virtual_env.  
 
-(We add a new interpreter (bottom right corner: "Add Interpreter"). We choose "Virtualenv Environment" and "New Environment" and define the location to store this virtual environment. Please choose an empty folder as the location to store the environment in. If there is already a python version > 3.6 installed on your machine, choose your local python application. If not, select to download the most recent python version directly over PyCharm.)   
-(Tick "Inherit global site-packages" (tbc!) to include all the packages on your local machine/ do not tick it: the virtual environment will just include the basic applications. Tick "Make available to all projects" to make the virtual environment reusable for further projects.)   
-
 To connect this virtual environment to your project, make sure that it is selected as the Python interpreter (see bottom right corner) and in the project setting preferences (top right corner -> Project -> Python Interpreter).  Nutzen lokales Venv, da Nutzer der community version kein Debugging von Containern oder SSH durchführen können.
 
 ![image](https://user-images.githubusercontent.com/85744792/127275314-e387ad14-5570-4963-b744-d2abe630ff08.png) 
