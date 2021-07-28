@@ -1,0 +1,313 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>SDK Quickstart with PyCharm &mdash; Konfuzio  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../_static/full_green_square.png"/>
+  
+
+  
+  
+
+  
+    <link rel="canonical" href="https://dev.konfuzio.com/sdk/quickstart_pycharm.html" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Konfuzio
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v.0.1.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio Python SDK</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="configuration_reference.html">Install SDK</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/examples.html">Code Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sourcecode.html">Source Code Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contribution.html">Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coordinates_system.html">Coordinates System</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Trainer</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html">LabelSectionModel Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#documentmodel-examples">DocumentModel Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#design-philosophy">Design Philosophy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#tokenizers">Tokenizers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#vocabularies">Vocabularies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#text-modules">Text Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#image-modules">Image Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#loading-pre-trained-modules">Loading Pre-trained Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#extraction">Extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#ocr">OCR</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../web/api.html">Konfuzio API Video Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api.html#konfuzio-train-ai-tutorial">Konfuzio Train AI Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api.html#how-to-make-an-api-call">How to make an API Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api.html#document-categorization-api">Document Categorization API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api.html#document-segmentation-api">Document Segmentation API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api.html#supported-ocr-languages">Supported OCR languages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api.html#supported-file-types">Supported File Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api.html#supported-data-normalization">Supported Data Normalization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api.html#support">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/on_premises.html">On-Premises Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/changelog_app.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Konfuzio</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>SDK Quickstart with PyCharm</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="sdk-quickstart-with-pycharm">
+<h1>SDK Quickstart with PyCharm<a class="headerlink" href="#sdk-quickstart-with-pycharm" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="pycharm-setup">
+<h2>1. PyCharm Setup<a class="headerlink" href="#pycharm-setup" title="Permalink to this headline">¶</a></h2>
+<p>PyCharm is a widespread common Integrated Development Environment (IDE) with strong debugging functionalities, which is why we choose PyCharm as our preferred IDE in this context.<span class="raw-html-m2r"><br></span>
+To start off with, please download the Community version of PyCharm for your respective operating system here: <a class="reference external" href="https://www.jetbrains.com/de-de/pycharm/download/#section=windows">https://www.jetbrains.com/de-de/pycharm/download/#section=windows</a>.</p>
+<p>Once it is dowloaded, create a new Project in PyCharm (File -&gt; New Project) and choose the location and name for it. Please also refer to this documentation for further explanations: <a class="reference external" href="https://www.jetbrains.com/help/pycharm/creating-empty-project.html">https://www.jetbrains.com/help/pycharm/creating-empty-project.html</a>. When creating a new project, you need to choose the Python interpreter which will be used for the project. Please move on to step 2 to check how to create a new virtual environment for the project.</p>
+<a class="reference external image-reference" href="https://user-images.githubusercontent.com/85744792/127325540-968e916d-626a-496f-aab4-f9d8fe5e9c5e.png"><img alt="image" src="https://user-images.githubusercontent.com/85744792/127325540-968e916d-626a-496f-aab4-f9d8fe5e9c5e.png" /></a>
+</div>
+<div class="section" id="create-a-virtual-environment">
+<h2>2. Create a Virtual Environment<a class="headerlink" href="#create-a-virtual-environment" title="Permalink to this headline">¶</a></h2>
+<p>As we want to execute our project with our Konfuzio SDK package, we need a virtual enviroment which is based on the Python version 3.8. This Python version is the most widespread and commonly used version which still represents a good trade-off between newness and stability.<span class="raw-html-m2r"><br></span>
+To create such a virtual environment, please refer to this documentation which describes the steps in detail: <a class="reference external" href="https://www.jetbrains.com/help/pycharm/creating-virtual-environment.html#python_create_virtual_env">https://www.jetbrains.com/help/pycharm/creating-virtual-environment.html#python_create_virtual_env</a>.</p>
+<p>To connect this virtual environment to your project, make sure that it is selected as the Python interpreter (see bottom right corner) and in the project setting preferences if not already specified when the project was created.  We are using a local virtual environment in combination with the community version of PyCharm, as the users of the community version can’t carry out debugging of code which is executed in Docker containers or on a remote-host SSH.</p>
+<a class="reference external image-reference" href="https://user-images.githubusercontent.com/85744792/127275314-e387ad14-5570-4963-b744-d2abe630ff08.png"><img alt="image" src="https://user-images.githubusercontent.com/85744792/127275314-e387ad14-5570-4963-b744-d2abe630ff08.png" /></a>
+<p>After the installation of PyCharm and this setup of the virtual environment is completed, we can now start to install our Konfuzio SDK package.</p>
+</div>
+<div class="section" id="install-the-konfuzio-sdk-package">
+<h2>3. Install the Konfuzio SDK package:<a class="headerlink" href="#install-the-konfuzio-sdk-package" title="Permalink to this headline">¶</a></h2>
+<p>Install the Konfuzio SDK package via pip install in the terminal. This will install the SDK package directly in your working directory:<span class="raw-html-m2r"><br></span>
+<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">konfuzio-sdk</span></code></p>
+<a class="reference external image-reference" href="https://user-images.githubusercontent.com/85744792/127275731-b730e743-0a90-4e5c-a454-3d74d047bd48.png"><img alt="image" src="https://user-images.githubusercontent.com/85744792/127275731-b730e743-0a90-4e5c-a454-3d74d047bd48.png" /></a>
+</div>
+<div class="section" id="define-your-working-directory">
+<h2>4. Define your working directory:<a class="headerlink" href="#define-your-working-directory" title="Permalink to this headline">¶</a></h2>
+<p>To store the Konfuzio SDK package, indicate the location by inputting the path of your working directory. This path should be the location of the “data” folder of the PyCharm project and can be found e.g. on the top left corner.</p>
+<p><code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">&lt;your</span> <span class="pre">working</span> <span class="pre">directory&gt;</span></code></p>
+<a class="reference external image-reference" href="https://user-images.githubusercontent.com/85744792/127276445-9d95cc91-871c-4d1e-98c1-8781fec39e3a.png"><img alt="image" src="https://user-images.githubusercontent.com/85744792/127276445-9d95cc91-871c-4d1e-98c1-8781fec39e3a.png" /></a>
+</div>
+<div class="section" id="initialize-the-project-with-the-required-inputs">
+<h2>5. Initialize the project with the required inputs:<a class="headerlink" href="#initialize-the-project-with-the-required-inputs" title="Permalink to this headline">¶</a></h2>
+<p>After the installation, initialize the package in your working directory with:<span class="raw-html-m2r"><br></span>
+<code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span> <span class="pre">init</span></code></p>
+<p>This will require different inputs, starting with your <strong>login credentials</strong> to access the Konfuzio App.<span class="raw-html-m2r"><br></span>
+It will then ask for the <strong>host</strong> from where to get the data. If you are a business user, this might be different to app.konfuzio.com and will be the server url to access the Konfuzio application. In any other case, press “enter” to use the default url as the host address.<span class="raw-html-m2r"><br></span>
+If you are new to our Konfuzio application, there are no existing projects yet. To create a new one, enter your desired name of the project and then choose this certain project by inputting the respective <strong>project ID</strong> from the list of all available projects provided to you in the terminal. The ID of the project will then also be shown in the URL of the project once it is created.<span class="raw-html-m2r"><br></span>
+As a last input, please also enter the <strong>folder</strong> to which the data should be allocated to. If you have no specific preferences, you can use the proposed default folder name by pressing “enter” which will then be <code class="docutils literal notranslate"><span class="pre">data_&lt;project_id&gt;</span></code>.</p>
+<a class="reference external image-reference" href="https://user-images.githubusercontent.com/85744792/127277914-a6a6da11-37e4-4871-9d13-e418b1740176.png"><img alt="image" src="https://user-images.githubusercontent.com/85744792/127277914-a6a6da11-37e4-4871-9d13-e418b1740176.png" /></a>
+<p>You successfully initialized your project!<span class="raw-html-m2r"><br></span>
+Now you’re Konfuzio SDK package is locally installed and will enable you together with the usage of the API the usage of the Konfuzio web interface.</p>
+<p>Two files have also been created in your working directory: .env and settings.py.
+The .env file contains the credentials to access the app and should not become public.
+The settings.py file defines constant variables that will be available in the project, including the ones you defined in the .env. This file should not be modified.</p>
+<a class="reference external image-reference" href="https://user-images.githubusercontent.com/85744792/127330960-fb343b9d-2ee9-450a-9436-e4cff608ece2.png"><img alt="image" src="https://user-images.githubusercontent.com/85744792/127330960-fb343b9d-2ee9-450a-9436-e4cff608ece2.png" /></a>
+</div>
+<div class="section" id="test-your-setup">
+<h2>6. Test your Setup:<a class="headerlink" href="#test-your-setup" title="Permalink to this headline">¶</a></h2>
+<p>To test whether everything is working as desired, we are going to execute a few basic commands in the main.py file.
+Therefore, please remove the current sample Python script provided by PyCharm by deleting the code.<span class="raw-html-m2r"><br></span>
+We start off with initializing the project to retrieve the current version of the project from the web application. Once this is done, we count the total number of all documents allocated to the train set in the project. To run the code, press “Run” and then “Run main”. As we didn’t upload any documents in our project yet, the total number should be 0.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Test your setup with the following code:</span>
+
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="k">import</span> <span class="n">Project</span>
+
+<span class="c1"># Initialize the project:</span>
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">()</span>
+
+<span class="c1"># Receive the total number of training documents in the project:</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Number of training documents in the project: {len(my_project.documents)}.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference external image-reference" href="https://user-images.githubusercontent.com/85744792/127325935-5e442366-85d9-4e48-bde2-b7905643c1f8.png"><img alt="image" src="https://user-images.githubusercontent.com/85744792/127325935-5e442366-85d9-4e48-bde2-b7905643c1f8.png" /></a>
+</div>
+<div class="section" id="test-the-debugging">
+<h2>7. Test the Debugging<a class="headerlink" href="#test-the-debugging" title="Permalink to this headline">¶</a></h2>
+<p>We include a second test to check if the debugging also works. Therefore, we include a breakpoint in the last line of the code in the line of the print statement and execute “Run” and then “Debug main”. This will provide you with an overview of all available variables. As you can see in the code above, we only accessed the document element - however, all other elements can be found and explored in the Debug console under “Variables”.</p>
+<a class="reference external image-reference" href="https://user-images.githubusercontent.com/85744792/127323550-61690987-b705-4a23-82c6-9ffaf2aed661.png"><img alt="image" src="https://user-images.githubusercontent.com/85744792/127323550-61690987-b705-4a23-82c6-9ffaf2aed661.png" /></a>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Helm und Nagel GmbH.
+
+    </p>
+  </div> 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+  
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-D02B3QF8Z3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-D02B3QF8Z3');
+</script>
+<script src="https://cmp.osano.com/16CVyMSbk3Iar1G3f/97ee6223-b0cb-4f8c-abd6-a25a0d6f6507/osano.js"></script>
+
+
+</body>
+</html>
