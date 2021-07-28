@@ -72,7 +72,8 @@ print("Number of documents in the project: {}.".format(len(documents)))
 #### 7. Test the Debugging
 We also include a second test to check if debugging also works. Herefore, we include a breakpoint in the last line of code at the print statement and execute "Run" and then "Debug main". This should show no bugs and will also provide you with an overview of all available variables. As you can see in the code above, we only accessed the document element - however, all other elements can be found in the Debug console under "Variables".   
 
-![image](https://user-images.githubusercontent.com/85744792/127322022-3055d3af-aefb-4412-a99a-8bd234690f0f.png)
+![image](https://user-images.githubusercontent.com/85744792/127323550-61690987-b705-4a23-82c6-9ffaf2aed661.png)
+
 
 
 
