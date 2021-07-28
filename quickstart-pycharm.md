@@ -21,7 +21,8 @@ After the installation of PyCharm and this setup of the virtual environment is c
 This will install the SDK package directly in your working directory:  
 `pip install konfuzio-sdk`  
 
-![image](https://user-images.githubusercontent.com/85744792/127024727-0a51303d-6e48-4692-8ece-0dea9dd9aaed.png)  
+![image](https://user-images.githubusercontent.com/85744792/127275731-b730e743-0a90-4e5c-a454-3d74d047bd48.png)
+  
 
 #### 4. Define your working directory:
 Please indicate the location to store the Python SDK package by copying the desired path from your working directory:  
