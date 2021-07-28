@@ -52,7 +52,8 @@ Now you're Konfuzio SDK package is locally installed and will enable together wi
 To test whether everything worked as desired, we are going to execute a few basic commands in the main.py file.
 Therefore, please remove the current sample Python script provided by PyCharm by deleting the code.  
 We start off with initializing and updating the project, to retrieve the current version of the project from the web application. Once this is done, we define the documents as all of the documents allocated to the train (?) set in the project and count the total number of them. As we didn't upload any documents in our project yet, the total number should be 0.  
-```# Import the relevant imports from the Konfuzio sdk package:
+```
+# Test your setup with the following code:
 from konfuzio_sdk.data import Project
 
 # Initialize the project:
