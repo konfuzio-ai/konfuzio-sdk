@@ -14,6 +14,8 @@ import nltk
 from PIL import Image
 from konfuzio_sdk import IMAGE_FILE, PDF_FILE, OFFICE_FILE, SUPPORTED_FILE_TYPES
 
+nltk.download('punkt')
+
 logger = logging.getLogger(__name__)
 
 
