@@ -1,8 +1,9 @@
 """Setup."""
 import sys
 import textwrap
-import setuptools
 from os import path
+
+import setuptools
 
 # check python version
 CURRENT_PYTHON = sys.version_info[:2]
@@ -49,5 +50,19 @@ setuptools.setup(
         'tabulate',
         'tqdm',
     ],
-    extras_require={'dev': ['flake8', 'pydocstyle', 'pytest', 'pre-commit', 'sphinx', 'sphinx-reload', 'sphinx-notfound-page', 'm2r2', 'sphinx-sitemap', 'sphinx_rtd_theme']},
+    extras_require={
+        'dev': [
+            'flake8',
+            'pydocstyle',
+            'pytest',
+            'pre-commit',
+            'sphinx',
+            'sphinx-reload',
+            'sphinx-notfound-page',
+            'm2r2',
+            'sphinx-sitemap',
+            'sphinx_rtd_theme',
+            'nltk',
+        ]
+    },
 )
