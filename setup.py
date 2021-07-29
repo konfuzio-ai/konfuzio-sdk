@@ -41,6 +41,7 @@ setuptools.setup(
     entry_points={'console_scripts': ['konfuzio_sdk=konfuzio_sdk.cli:main']},
     install_requires=[
         'filetype',
+        'nltk',
         'numpy',
         'pandas',
         'Pillow',
@@ -62,7 +63,6 @@ setuptools.setup(
             'm2r2',
             'sphinx-sitemap',
             'sphinx_rtd_theme',
-            'nltk',
         ]
     },
 )
