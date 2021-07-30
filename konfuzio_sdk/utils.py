@@ -7,12 +7,13 @@ import os
 import zipfile
 from contextlib import contextmanager
 from io import BytesIO
-from typing import Union
+from typing import Union, List, Tuple
 
 import filetype
 import nltk
 from PIL import Image
 from konfuzio_sdk import IMAGE_FILE, PDF_FILE, OFFICE_FILE, SUPPORTED_FILE_TYPES
+from konfuzio_sdk.data import Annotation
 
 nltk.download('punkt')
 
@@ -168,7 +169,7 @@ def does_not_raise():
     yield
 
 
-def convert_to_bio_scheme(text: str, annotations: list) -> list:
+def convert_to_bio_scheme(text: str, annotations: List[Annotation]) -> List[Tuple[str, str]]:
     """
     Mark all the entities in the text as per the BIO scheme.
 

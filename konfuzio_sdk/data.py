@@ -6,7 +6,7 @@ import os
 import pathlib
 import shutil
 from datetime import tzinfo
-from typing import Dict, Optional, List, Union
+from typing import Dict, Optional, List, Union, Tuple
 
 import dateutil.parser
 from konfuzio_sdk import KONFUZIO_HOST, DATA_ROOT, KONFUZIO_PROJECT_ID, FILE_ROOT
@@ -762,7 +762,7 @@ class Document(Data):
             self._annotations.append(annotation)
         return annotation
 
-    def get_text_in_bio_scheme(self):
+    def get_text_in_bio_scheme(self) -> List[Tuple[str, str]]:
         """
         Get the text of the document in the BIO scheme.
 
@@ -777,6 +777,7 @@ class Document(Data):
             (annotation.start_offset, annotation.end_offset, annotation.label.name) for annotation in annotations
         ]
         converted_text = convert_to_bio_scheme(self.text, annotations_in_doc)
+
         return converted_text
 
     def get_bbox(self):
