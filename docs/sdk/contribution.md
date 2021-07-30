@@ -3,8 +3,13 @@
 
 # Contribution Guide
 
-If you would like to contribute, please use the development installation (`pip install -e .[dev]`) and open a PR with your contributions.  
-Tests will automatically run for every commit you push.  
+If you would like to contribute, please use the development installation (`pip install -e .[dev]`) and open a PR with 
+your contributions.
+
+When developing, please install the pre-commit hooks (`pre-commit install`). 
+Automatic inspections will run in your commits ensuring they match the code formatting of the repository.
+
+Tests will automatically run for every commit you push to the Github project.  
 You can also run them locally by executing `pytest` in your terminal from the root of this project.
 
 The files/folders listed below are ignored when you push your changes to the repository. 
