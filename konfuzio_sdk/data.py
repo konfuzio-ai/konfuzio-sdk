@@ -226,13 +226,14 @@ class Label(Data):
                 default_template = [t for t in prj_templates if t.is_default][0]
                 default_template.add_label(self)
 
-            response = create_label(project_id=self.project.id,
-                                    label_name=self.name,
-                                    description=self.description,
-                                    has_multiple_top_candidates=self.has_multiple_top_candidates,
-                                    data_type=self.data_type,
-                                    templates=self.templates,
-                                    )
+            response = create_label(
+                project_id=self.project.id,
+                label_name=self.name,
+                description=self.description,
+                has_multiple_top_candidates=self.has_multiple_top_candidates,
+                data_type=self.data_type,
+                templates=self.templates,
+            )
             self.id = response
             new_label_added = True
         except Exception:
@@ -382,7 +383,7 @@ class Annotation(Data):
                 is_correct=self.is_correct,
                 revised=self.revised,
                 section=self.section,
-                define_section=self.define_section
+                define_section=self.define_section,
             )
             if response.status_code == 201:
                 json_response = json.loads(response.text)
@@ -399,8 +400,11 @@ class Annotation(Data):
                         # get the id of the existing annotation
                         is_duplicated = False
                         for annotation in document_annotations:
-                            if annotation.start_offset == self.start_offset and \
-                                    annotation.end_offset == self.end_offset and annotation.label == self.label:
+                            if (
+                                annotation.start_offset == self.start_offset
+                                and annotation.end_offset == self.end_offset
+                                and annotation.label == self.label
+                            ):
                                 logger.error(f'ID of annotation online: {annotation.id}')
                                 self.id = annotation.id
                                 is_duplicated = True
@@ -795,19 +799,21 @@ class Document(Data):
         """
         document_saved = False
         if not self.is_online:
-            response = upload_file_konfuzio_api(self.file_path,
-                                                project_id=self.project.id,
-                                                dataset_status=self.dataset_status)
+            response = upload_file_konfuzio_api(
+                self.file_path, project_id=self.project.id, dataset_status=self.dataset_status
+            )
             if response.status_code == 201:
                 self.id = json.loads(response.text)['id']
                 document_saved = True
             else:
                 logger.error(f'Not able to save document  {self.file_path} online: {response.text}')
         else:
-            response = update_file_status_konfuzio_api(document_id=self.id,
-                                                       dataset_status=self.dataset_status,
-                                                       file_name=self.name,
-                                                       category_template=self.category_template.id)
+            response = update_file_status_konfuzio_api(
+                document_id=self.id,
+                dataset_status=self.dataset_status,
+                file_name=self.name,
+                category_template=self.category_template.id,
+            )
             if response.status_code == 200:
                 document_saved = True
                 self.project.update_document(document=self)
@@ -889,8 +895,10 @@ class Project(Data):
                 section['template'] = template_mapper_dict[section['section_label']]
                 # we only add the sections that match the category of the document
                 # (ignore ghost sections that may exist)
-                if section['template'] == document.category_template or \
-                        document.category_template in section['template'].default_templates:
+                if (
+                    section['template'] == document.category_template
+                    or document.category_template in section['template'].default_templates
+                ):
                     section_instance = self.section_class(**section, document=document, annotations=annotations)
                     document_sections.append(section_instance)
             document.sections = document_sections
@@ -944,8 +952,14 @@ class Project(Data):
 
         :param document: Document to add in the project
         """
-        if document not in self.documents + self.test_documents + self.no_status_documents + \
-                self.preparation_documents + self.low_ocr_documents:
+        if (
+            document
+            not in self.documents
+            + self.test_documents
+            + self.no_status_documents
+            + self.preparation_documents
+            + self.low_ocr_documents
+        ):
             if document.dataset_status == 2:
                 self.documents.append(document)
             elif document.dataset_status == 3:
@@ -970,11 +984,13 @@ class Project(Data):
         """
         current_status = document.dataset_status
 
-        prj_docs = {0: self.no_status_documents,
-                    1: self.preparation_documents,
-                    2: self.documents,
-                    3: self.test_documents,
-                    4: self.low_ocr_documents}
+        prj_docs = {
+            0: self.no_status_documents,
+            1: self.preparation_documents,
+            2: self.documents,
+            3: self.test_documents,
+            4: self.low_ocr_documents,
+        }
 
         # by default the status is None (even if not in the no_status_documents)
         previous_status = 0
@@ -1134,7 +1150,7 @@ class Project(Data):
         """
         document_list_cache = self.documents
         self.documents: List[Document] = []
-        self.get_documents_from_project(dataset_statuses=[2], document_list_cache=document_list_cache, update=update)
+        self.get_documents_by_status(dataset_statuses=[2], document_list_cache=document_list_cache, update=update)
 
         return self.documents
 
@@ -1149,12 +1165,13 @@ class Project(Data):
         """
         document_list_cache = self.test_documents
         self.test_documents: List[Document] = []
-        self.get_documents_from_project(dataset_statuses=[3], document_list_cache=document_list_cache, update=update)
+        self.get_documents_by_status(dataset_statuses=[3], document_list_cache=document_list_cache, update=update)
 
         return self.test_documents
 
-    def get_documents_from_project(self, dataset_statuses: List[int] = [0], document_list_cache: List[Document] = [],
-                                   update: bool = False) -> List[Document]:
+    def get_documents_by_status(
+        self, dataset_statuses: List[int] = [0], document_list_cache: List[Document] = [], update: bool = False
+    ) -> List[Document]:
         """
         Get a list of documents with the specified dataset status from the project.
 
@@ -1195,8 +1212,13 @@ class Project(Data):
         """
         if update:
             meta_data_document_ids = set([str(document['id']) for document in self.meta_data])
-            existing_document_ids = set([str(document['id']) for document in self.existing_meta_data
-                                         if document['dataset_status'] == 2 or document['dataset_status'] == 3])
+            existing_document_ids = set(
+                [
+                    str(document['id'])
+                    for document in self.existing_meta_data
+                    if document['dataset_status'] == 2 or document['dataset_status'] == 3
+                ]
+            )
             remove_document_ids = existing_document_ids.difference(meta_data_document_ids)
             for document_id in remove_document_ids:
                 document_path = os.path.join(self.data_root, 'pdf', document_id)

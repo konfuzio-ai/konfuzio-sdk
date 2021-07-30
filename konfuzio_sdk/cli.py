@@ -63,8 +63,8 @@ def init_env(project_folder):
     :param project_folder: Root folder of the project where to place the .env file
     :return: file content
     """
-    user = input("Username you use to login to Konfuzio APP: ")
-    password = getpass.getpass("Password you use to login to Konfuzio APP: ")
+    user = input("Username you use to login to Konfuzio Server: ")
+    password = getpass.getpass("Password you use to login to Konfuzio Server: ")
     host = input("Host from where to get the data (press [ENTER] for the default: https://app.konfuzio.com): ")
 
     if host == "":
@@ -102,9 +102,7 @@ def init_env(project_folder):
     project_id = input("ID of the project you want to connect: ")
 
     if project_id not in [str(row[0]) for row in rows]:
-        raise ValueError(
-            "[ERROR] The ID that you provided is not valid. Please run init again."
-        )
+        raise ValueError("[ERROR] The ID that you provided is not valid. Please run init again.")
 
     if int(project_id) == 0:
         print("Creating a new project...")
@@ -166,8 +164,10 @@ def create_project(token=None):
     response = create_new_project(project_name, token)
     if response.status_code == 201:
         project_id = json.loads(response.text)["id"]
-        print(f"Project {project_name} (ID {project_id}) was created successfully!"
-              f"Initializing the environment with the project that was created.")
+        print(
+            f"Project {project_name} (ID {project_id}) was created successfully!"
+            f"Initializing the environment with the project that was created."
+        )
         return project_id
     else:
         raise Exception(f'The project {project_name} was not created.')
@@ -188,7 +188,8 @@ def verify_data_folder(project_folder, data_folder):
     if os.path.exists(project_data_folder) and len(os.listdir(project_data_folder)) != 0:
         print(
             f"The directory: {project_data_folder} is not empty."
-            f"If you choose to continue, the old data can be overwritten.")
+            f"If you choose to continue, the old data can be overwritten."
+        )
         update_data_dir = input("Choose another folder to allocate the data? (Y[default]/ N) ")
         # for precaution, everything different than "N" is considered "Y"
         if update_data_dir != 'N':

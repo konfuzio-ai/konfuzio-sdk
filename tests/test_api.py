@@ -50,9 +50,7 @@ def test_post_document_annotation():
         revised=True,
     )
     annotation = json.loads(response.text)
-    annotation_ids = [
-        annot['id'] for annot in get_document_annotations(document_id, include_extractions=True)
-    ]
+    annotation_ids = [annot['id'] for annot in get_document_annotations(document_id, include_extractions=True)]
     assert annotation['id'] in annotation_ids
     assert delete_document_annotation(document_id, annotation['id'])
 
@@ -95,7 +93,7 @@ def test_load_annotations_from_api():
                 'top': 35.369,
                 'bottom': 44.369,
                 'line_index': 1,
-                'page_index': 0
+                'page_index': 0,
             },
             'bboxes': [
                 {
@@ -110,7 +108,7 @@ def test_load_annotations_from_api():
                     'line_number': 2,
                     'start_offset': 159,
                     'offset_string': '22.05.2018',
-                    'offset_string_original': '22.05.2018'
+                    'offset_string_original': '22.05.2018',
                 }
             ],
             'selection_bbox': {
@@ -121,11 +119,11 @@ def test_load_annotations_from_api():
                 'top': 35.369,
                 'bottom': 44.369,
                 'line_index': 1,
-                'page_index': 0
+                'page_index': 0,
             },
             'custom_offset_string': False,
             'get_created_by': 'ana@konfuzio.com',
-            'get_revised_by': 'n/a'
+            'get_revised_by': 'n/a',
         },
         {
             'id': 4420022,
@@ -155,7 +153,7 @@ def test_load_annotations_from_api():
                 'top': 58.091,
                 'bottom': 69.091,
                 'line_index': 1,
-                'page_index': 0
+                'page_index': 0,
             },
             'bboxes': [
                 {
@@ -170,7 +168,7 @@ def test_load_annotations_from_api():
                     'line_number': 5,
                     'start_offset': 365,
                     'offset_string': '1',
-                    'offset_string_original': '1'
+                    'offset_string_original': '1',
                 }
             ],
             'selection_bbox': {
@@ -181,11 +179,11 @@ def test_load_annotations_from_api():
                 'top': 58.091,
                 'bottom': 69.091,
                 'line_index': 1,
-                'page_index': 0
+                'page_index': 0,
             },
             'custom_offset_string': False,
             'get_created_by': 'ana@konfuzio.com',
-            'get_revised_by': 'n/a'
+            'get_revised_by': 'n/a',
         },
         {
             'id': 4420057,
@@ -215,7 +213,7 @@ def test_load_annotations_from_api():
                 'top': 204.848,
                 'bottom': 212.848,
                 'line_index': 1,
-                'page_index': 0
+                'page_index': 0,
             },
             'bboxes': [
                 {
@@ -230,7 +228,7 @@ def test_load_annotations_from_api():
                     'line_number': 24,
                     'start_offset': 1507,
                     'offset_string': 'Erna-Muster',
-                    'offset_string_original': 'Erna-Muster'
+                    'offset_string_original': 'Erna-Muster',
                 }
             ],
             'selection_bbox': {
@@ -241,11 +239,11 @@ def test_load_annotations_from_api():
                 'top': 204.848,
                 'bottom': 212.848,
                 'line_index': 1,
-                'page_index': 0
+                'page_index': 0,
             },
             'custom_offset_string': False,
             'get_created_by': 'ana@konfuzio.com',
-            'get_revised_by': 'n/a'
+            'get_revised_by': 'n/a',
         },
         {
             'id': 4420245,
@@ -275,7 +273,7 @@ def test_load_annotations_from_api():
                 'top': 204.848,
                 'bottom': 212.848,
                 'line_index': 1,
-                'page_index': 0
+                'page_index': 0,
             },
             'bboxes': [
                 {
@@ -290,7 +288,7 @@ def test_load_annotations_from_api():
                     'line_number': 24,
                     'start_offset': 1519,
                     'offset_string': 'Eiermann',
-                    'offset_string_original': 'Eiermann'
+                    'offset_string_original': 'Eiermann',
                 }
             ],
             'selection_bbox': {
@@ -301,11 +299,11 @@ def test_load_annotations_from_api():
                 'top': 204.848,
                 'bottom': 212.848,
                 'line_index': 1,
-                'page_index': 0
+                'page_index': 0,
             },
             'custom_offset_string': False,
             'get_created_by': 'ana@konfuzio.com',
-            'get_revised_by': 'n/a'
+            'get_revised_by': 'n/a',
         },
         {
             'id': 4420346,
@@ -335,7 +333,7 @@ def test_load_annotations_from_api():
                 'top': 301.088,
                 'bottom': 309.088,
                 'line_index': 1,
-                'page_index': 0
+                'page_index': 0,
             },
             'bboxes': [
                 {
@@ -350,7 +348,7 @@ def test_load_annotations_from_api():
                     'line_number': 30,
                     'start_offset': 1758,
                     'offset_string': '2000',
-                    'offset_string_original': '2000'
+                    'offset_string_original': '2000',
                 }
             ],
             'selection_bbox': {
@@ -361,11 +359,11 @@ def test_load_annotations_from_api():
                 'top': 301.088,
                 'bottom': 309.088,
                 'line_index': 1,
-                'page_index': 0
+                'page_index': 0,
             },
             'custom_offset_string': False,
             'get_created_by': 'ana@konfuzio.com',
-            'get_revised_by': 'n/a'
+            'get_revised_by': 'n/a',
         },
         {
             'id': 4420348,
@@ -395,7 +393,7 @@ def test_load_annotations_from_api():
                 'top': 301.088,
                 'bottom': 309.088,
                 'line_index': 1,
-                'page_index': 0
+                'page_index': 0,
             },
             'bboxes': [
                 {
@@ -410,7 +408,7 @@ def test_load_annotations_from_api():
                     'line_number': 30,
                     'start_offset': 1763,
                     'offset_string': 'Gehalt',
-                    'offset_string_original': 'Gehalt'
+                    'offset_string_original': 'Gehalt',
                 }
             ],
             'selection_bbox': {
@@ -421,11 +419,11 @@ def test_load_annotations_from_api():
                 'top': 301.088,
                 'bottom': 309.088,
                 'line_index': 1,
-                'page_index': 0
+                'page_index': 0,
             },
             'custom_offset_string': False,
             'get_created_by': 'ana@konfuzio.com',
-            'get_revised_by': 'n/a'
+            'get_revised_by': 'n/a',
         },
         {
             'id': 4420349,
@@ -455,7 +453,7 @@ def test_load_annotations_from_api():
                 'top': 301.088,
                 'bottom': 309.088,
                 'line_index': 1,
-                'page_index': 0
+                'page_index': 0,
             },
             'bboxes': [
                 {
@@ -470,7 +468,7 @@ def test_load_annotations_from_api():
                     'line_number': 30,
                     'start_offset': 1831,
                     'offset_string': '3.120,00',
-                    'offset_string_original': '3.120,00'
+                    'offset_string_original': '3.120,00',
                 }
             ],
             'selection_bbox': {
@@ -481,11 +479,11 @@ def test_load_annotations_from_api():
                 'top': 301.088,
                 'bottom': 309.088,
                 'line_index': 1,
-                'page_index': 0
+                'page_index': 0,
             },
             'custom_offset_string': False,
             'get_created_by': 'ana@konfuzio.com',
-            'get_revised_by': 'n/a'
+            'get_revised_by': 'n/a',
         },
         {
             'id': 4420363,
@@ -515,7 +513,7 @@ def test_load_annotations_from_api():
                 'top': 468.608,
                 'bottom': 476.608,
                 'line_index': 1,
-                'page_index': 0
+                'page_index': 0,
             },
             'bboxes': [
                 {
@@ -530,7 +528,7 @@ def test_load_annotations_from_api():
                     'line_number': 34,
                     'start_offset': 2111,
                     'offset_string': '3.120,00',
-                    'offset_string_original': '3.120,00'
+                    'offset_string_original': '3.120,00',
                 }
             ],
             'selection_bbox': {
@@ -541,11 +539,11 @@ def test_load_annotations_from_api():
                 'top': 468.608,
                 'bottom': 476.608,
                 'line_index': 1,
-                'page_index': 0
+                'page_index': 0,
             },
             'custom_offset_string': False,
             'get_created_by': 'ana@konfuzio.com',
-            'get_revised_by': 'n/a'
+            'get_revised_by': 'n/a',
         },
         {
             'id': 4420350,
@@ -575,7 +573,7 @@ def test_load_annotations_from_api():
                 'top': 589.607,
                 'bottom': 596.607,
                 'line_index': 1,
-                'page_index': 0
+                'page_index': 0,
             },
             'bboxes': [
                 {
@@ -590,7 +588,7 @@ def test_load_annotations_from_api():
                     'line_number': 47,
                     'start_offset': 3004,
                     'offset_string': '2.189,07',
-                    'offset_string_original': '2.189,07'
+                    'offset_string_original': '2.189,07',
                 }
             ],
             'selection_bbox': {
@@ -601,11 +599,11 @@ def test_load_annotations_from_api():
                 'top': 589.607,
                 'bottom': 596.607,
                 'line_index': 1,
-                'page_index': 0
+                'page_index': 0,
             },
             'custom_offset_string': False,
             'get_created_by': 'ana@konfuzio.com',
-            'get_revised_by': 'n/a'
+            'get_revised_by': 'n/a',
         },
         {
             'id': 4420351,
@@ -635,7 +633,7 @@ def test_load_annotations_from_api():
                 'top': 753.851,
                 'bottom': 764.851,
                 'line_index': 1,
-                'page_index': 0
+                'page_index': 0,
             },
             'bboxes': [
                 {
@@ -650,7 +648,7 @@ def test_load_annotations_from_api():
                     'line_number': 63,
                     'start_offset': 3777,
                     'offset_string': '2.189,07',
-                    'offset_string_original': '2.189,07'
+                    'offset_string_original': '2.189,07',
                 }
             ],
             'selection_bbox': {
@@ -661,12 +659,12 @@ def test_load_annotations_from_api():
                 'top': 753.851,
                 'bottom': 764.851,
                 'line_index': 1,
-                'page_index': 0
+                'page_index': 0,
             },
             'custom_offset_string': False,
             'get_created_by': 'ana@konfuzio.com',
-            'get_revised_by': 'n/a'
-        }
+            'get_revised_by': 'n/a',
+        },
     ]
 
     test_annotations.sort(key=lambda x: x['id'] or 0)
@@ -892,7 +890,7 @@ def test_download_images(url, expected_result, expected_error):
 
 @pytest.mark.serial
 def test_get_csrf_token_valid_user():
-    """Test session in konfuzio app."""
+    """Test session in Konfuzio Server."""
     konfuzio_session()
 
 

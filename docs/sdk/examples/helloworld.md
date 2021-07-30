@@ -1,4 +1,4 @@
-## Hello World Tutorial
+## Create Regex-based Annotations
 
 Let's see a simple example of how can we use the `konfuzio_sdk` package to get information on a project and to post annotations.
 
