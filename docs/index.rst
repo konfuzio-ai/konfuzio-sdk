@@ -32,8 +32,7 @@ The `Changelog of app.konfuzio.com Server <./web/changelog_app.html>`_ provides 
 Konfuzio Python SDK
 ###################
 
-The Konfuzio Software Development Kit (SDK) provides the tools to work with the data layer used by the Konfuzio Web
-Server (App). Using the SDK you can communicate with the Konfuzio App and use the data structure in your projects.
+The Konfuzio Software Development Kit (Konfuzio SDK) provides a Python API to interact with the Konfuzio Server.
 Find in this section the documentation of the package, the installation instructions and code examples that will help
 you in starting using it.
 

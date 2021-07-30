@@ -158,8 +158,10 @@ def get_document_details(document_id, session=konfuzio_session()):
     if text is None:
         logger.warning(f'Document with ID {document_id} does not contain any text, check OCR status.')
     else:
-        logger.info(f'Document with ID {document_id} contains {len(text)} characters '
-                    f'and {len(annotations)} annotations in {len(sections)} sections.')
+        logger.info(
+            f'Document with ID {document_id} contains {len(text)} characters '
+            f'and {len(annotations)} annotations in {len(sections)} sections.'
+        )
 
     return data
 
@@ -300,7 +302,7 @@ def post_document_annotation(
         'section_label_id': template_id,
         'accuracy': accuracy,
         'is_correct': is_correct,
-        }
+    }
 
     if define_section:
         data['section'] = section
@@ -378,7 +380,7 @@ def create_label(project_id: int, label_name: str, templates: list, session=konf
     :param label_name: Name for the label
     :param templates: Templates that use the label
     :param session: Session to connect to the server
-    :return: Label ID in the Konfuzio APP.
+    :return: Label ID in the Konfuzio Server.
     """
     url = get_create_label_url()
     templates_ids = [template.id for template in templates]
@@ -387,13 +389,14 @@ def create_label(project_id: int, label_name: str, templates: list, session=konf
     has_multiple_top_candidates = kwargs.get('has_multiple_top_candidates', False)
     data_type = kwargs.get('data_type', 'Text')
 
-    data = {"project": project_id,
-            "text": label_name,
-            "description": description,
-            "has_multiple_top_candidates": has_multiple_top_candidates,
-            "get_data_type_display": data_type,
-            "templates": templates_ids
-            }
+    data = {
+        "project": project_id,
+        "text": label_name,
+        "description": description,
+        "has_multiple_top_candidates": has_multiple_top_candidates,
+        "get_data_type_display": data_type,
+        "templates": templates_ids,
+    }
 
     r = session.post(url=url, json=data)
 
@@ -444,7 +447,7 @@ def delete_file_konfuzio_api(document_id: int, session=konfuzio_session()):
 
     :param document_id: ID of the document
     :param session: Session to connect to the server
-    :return: File id in Konfuzio APP.
+    :return: File id in Konfuzio Server.
     """
     url = get_document_result_v1(document_id)
     data = {'id': document_id}
@@ -454,8 +457,9 @@ def delete_file_konfuzio_api(document_id: int, session=konfuzio_session()):
     return True
 
 
-def update_file_status_konfuzio_api(document_id: int, file_name: str, dataset_status: int = 0,
-                                    session=konfuzio_session(), **kwargs):
+def update_file_status_konfuzio_api(
+    document_id: int, file_name: str, dataset_status: int = 0, session=konfuzio_session(), **kwargs
+):
     """
     Update the dataset status of an existing document via Konfuzio API.
 
@@ -468,9 +472,7 @@ def update_file_status_konfuzio_api(document_id: int, file_name: str, dataset_st
 
     category_template = kwargs.get('category_template', None)
 
-    data = {"data_file_name": file_name,
-            "dataset_status": dataset_status,
-            "category_template": category_template}
+    data = {"data_file_name": file_name, "dataset_status": dataset_status, "category_template": category_template}
 
     r = session.patch(url=url, json=data)
     return r

@@ -1168,7 +1168,7 @@ class Project(Data):
         """
         document_list_cache = self.documents
         self.documents: List[Document] = []
-        self.get_documents_from_project(dataset_statuses=[2], document_list_cache=document_list_cache, update=update)
+        self.get_documents_by_status(dataset_statuses=[2], document_list_cache=document_list_cache, update=update)
 
         return self.documents
 
@@ -1183,11 +1183,11 @@ class Project(Data):
         """
         document_list_cache = self.test_documents
         self.test_documents: List[Document] = []
-        self.get_documents_from_project(dataset_statuses=[3], document_list_cache=document_list_cache, update=update)
+        self.get_documents_by_status(dataset_statuses=[3], document_list_cache=document_list_cache, update=update)
 
         return self.test_documents
 
-    def get_documents_from_project(
+    def get_documents_by_status(
         self, dataset_statuses: List[int] = [0], document_list_cache: List[Document] = [], update: bool = False
     ) -> List[Document]:
         """
