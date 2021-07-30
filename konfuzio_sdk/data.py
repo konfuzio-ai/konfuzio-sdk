@@ -79,7 +79,7 @@ class Template(Data):
         name_clean: str,
         labels: List[int],
         is_default=False,
-        default_templates: ["Template"] = [],
+        default_templates: List["Template"] = [],
         has_multiple_sections=False,
         **kwargs,
     ):
