@@ -757,7 +757,7 @@ added to the previous section created (define_section=False)</p>
 <h3>Template Class<a class="headerlink" href="#template-class" title="Permalink to this headline">¶</a></h3>
 <dl class="py class">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.data.</span></span><span class="sig-name descname"><span class="pre">Template</span></span></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.data.</span></span><span class="sig-name descname"><span class="pre">Template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name_clean</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_templates</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Template</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_multiple_sections</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>A template is a set of labels.</p>
 <dl class="py method">
 <dt class="sig sig-object py">
@@ -1000,6 +1000,17 @@ get_document_details and then retrieved from that file when accessing it.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Path to OCR file.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">get_text_in_bio_scheme</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></dt>
+<dd><p>Get the text of the document in the BIO scheme.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>list of tuples with each word in the text an the respective label</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1517,6 +1528,33 @@ If we are updating the document dataset status, we need to move the document fro
 <h2>Utils<a class="headerlink" href="#utils" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/utils.py">[source]</a></p>
 <span class="target" id="module-konfuzio_sdk.utils"></span><p>Utils for the konfuzio sdk package.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="konfuzio_sdk.utils.convert_to_bio_scheme">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.utils.</span></span><span class="sig-name descname"><span class="pre">convert_to_bio_scheme</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#konfuzio_sdk.utils.convert_to_bio_scheme" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mark all the entities in the text as per the BIO scheme.</p>
+<p>The splitting is using the sequence of words, expecting some characters like “.” a separate token.</p>
+<p>Hello O
+, O
+it O
+‘s O
+Konfuzio B-ORG
+. O</p>
+<p>The start and end offsets are considered having the origin in the begining of the input text.
+If only part of the text of the document is passed, the start and end offsets of the annotations must be
+adapted first.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>text</strong> – text to be annotated in the bio scheme</p></li>
+<li><p><strong>annotations</strong> – annotations in the document with start and end offset and label name</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of tuples with each word in the text an the respective label</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="konfuzio_sdk.utils.does_not_raise">
 <span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.utils.</span></span><span class="sig-name descname"><span class="pre">does_not_raise</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.utils.does_not_raise" title="Permalink to this definition">¶</a></dt>
