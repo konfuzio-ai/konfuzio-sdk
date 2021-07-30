@@ -504,6 +504,7 @@ class Document(Data):
         self.hocr_file_path = os.path.join(self.root, 'document.hocr')
         self.pages_file_path = os.path.join(self.root, 'pages.json5')
         self.bbox_file_path = None
+        self.bio_scheme_file_path = None
 
         self.text = kwargs.get('text')
         self.hocr = kwargs.get('hocr')
@@ -778,7 +779,24 @@ class Document(Data):
         ]
         converted_text = convert_to_bio_scheme(self.text, annotations_in_doc)
 
-        return converted_text
+        if not self.bio_scheme_file_path:
+            self.bio_scheme_file_path = os.path.join(self.root, 'bio_scheme.txt')
+
+            with open(self.bio_scheme_file_path, 'w', encoding="utf-8") as f:
+                for word, tag in converted_text:
+                    f.writelines(word + ' ' + tag + '\n')
+                f.writelines('\n')
+
+        bio_annotations = []
+
+        with open(self.bio_scheme_file_path, 'r', encoding="utf-8") as f:
+            for line in f.readlines():
+                if line == '\n':
+                    continue
+                word, tag = line.replace('\n', '').split(' ')
+                bio_annotations.append((word, tag))
+
+        return bio_annotations
 
     def get_bbox(self):
         """
