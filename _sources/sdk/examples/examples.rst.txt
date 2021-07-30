@@ -4,6 +4,8 @@
 Code Examples
 =============
 
+.. mdinclude:: intro.md
+
 .. mdinclude:: helloworld.md
 
 Human in the loop of machine learning

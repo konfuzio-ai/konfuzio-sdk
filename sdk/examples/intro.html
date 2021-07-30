@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Create Regex-based Annotations &mdash; Konfuzio  documentation</title>
+  <title>Example Usage &mdash; Konfuzio  documentation</title>
   
 
   
@@ -26,7 +26,7 @@
   
 
   
-    <link rel="canonical" href="https://dev.konfuzio.com/sdk/examples/helloworld.html" />
+    <link rel="canonical" href="https://dev.konfuzio.com/sdk/examples/intro.html" />
 
   
   <!--[if lt IE 9]>
@@ -177,7 +177,7 @@
     
       <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>Create Regex-based Annotations</li>
+      <li>Example Usage</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -194,56 +194,75 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="create-regex-based-annotations">
-<h1>Create Regex-based Annotations<a class="headerlink" href="#create-regex-based-annotations" title="Permalink to this headline">¶</a></h1>
-<p>Let’s see a simple example of how can we use the <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> package to get information on a project and to post annotations.</p>
-<p>You can follow the example below to post annotations of a certain word or expression in the first document uploaded.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">re</span>
-
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Annotation</span><span class="p">,</span> <span class="n">Label</span>
-
-<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">()</span>
-
-<span class="c1"># Word/expression to annotate in the document</span>
-<span class="c1"># should match an existing one in your document</span>
-<span class="n">input_expression</span> <span class="o">=</span> <span class="s2">&quot;John Smith&quot;</span>
-
-<span class="c1"># Label for the annotation</span>
-<span class="n">label_name</span> <span class="o">=</span> <span class="s2">&quot;Name&quot;</span>
-<span class="c1"># Creation of the Label in the project default template</span>
-<span class="n">my_label</span> <span class="o">=</span> <span class="n">Label</span><span class="p">(</span><span class="n">my_project</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">label_name</span><span class="p">)</span>
-<span class="c1"># Saving it online</span>
-<span class="n">my_label</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
-
-<span class="c1"># Template where label belongs</span>
-<span class="n">template_id</span> <span class="o">=</span> <span class="n">my_label</span><span class="o">.</span><span class="n">templates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">id</span>
-
-<span class="c1"># First document in the project</span>
-<span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-<span class="c1"># Matches of the word/expression in the document</span>
-<span class="n">matches_locations</span> <span class="o">=</span> <span class="p">[(</span><span class="n">m</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">m</span><span class="o">.</span><span class="n">end</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">input_expression</span><span class="p">,</span> <span class="n">document</span><span class="o">.</span><span class="n">text</span><span class="p">)]</span>
-
-<span class="c1"># List to save the links to the annotations created</span>
-<span class="n">new_annotations_links</span> <span class="o">=</span> <span class="p">[]</span>
-
-<span class="c1"># Create annotation for each match</span>
-<span class="k">for</span> <span class="n">offsets</span> <span class="ow">in</span> <span class="n">matches_locations</span><span class="p">:</span>
-    <span class="n">annotation_obj</span> <span class="o">=</span> <span class="n">Annotation</span><span class="p">(</span>
-        <span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">,</span>
-        <span class="n">document_id</span><span class="o">=</span><span class="n">document</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
-        <span class="n">start_offset</span><span class="o">=</span><span class="n">offsets</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-        <span class="n">end_offset</span><span class="o">=</span><span class="n">offsets</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-        <span class="n">label</span><span class="o">=</span><span class="n">my_label</span><span class="p">,</span>
-        <span class="n">template_id</span><span class="o">=</span><span class="n">template_id</span><span class="p">,</span>
-        <span class="n">accuracy</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">new_annotation_added</span> <span class="o">=</span> <span class="n">annotation_obj</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">new_annotation_added</span><span class="p">:</span>
-        <span class="n">new_annotations_links</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">annotation_obj</span><span class="o">.</span><span class="n">get_link</span><span class="p">())</span>
-
-<span class="k">print</span><span class="p">(</span><span class="n">new_annotations_links</span><span class="p">)</span>
+  <div class="section" id="example-usage">
+<h1>Example Usage<a class="headerlink" href="#example-usage" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="project">
+<h2>Project<a class="headerlink" href="#project" title="Permalink to this headline">¶</a></h2>
+<p>Retrieve all information available for your project:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">()</span>
 </pre></div>
+</div>
+<p>Every time that there are changes in the project in the Konfuzio App, the local project can be updated with:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="documents">
+<h2>Documents<a class="headerlink" href="#documents" title="Permalink to this headline">¶</a></h2>
+<p>To access the documents in the project you can use:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">documents</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_documents_by_status</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>By default, it will get the documents without dataset status (dataset_status = 0 (None)).
+You can specify another dataset status with the argument ‘dataset_statuses’. The code for the status is:</p>
+<p>None: 0
+Preparation: 1
+Training: 2
+Test: 3
+Low OCR Quality: 4</p>
+<p>For example, to get all documents in the project, you can do:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">documents</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_documents_by_status</span><span class="p">(</span><span class="n">dataset_statuses</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>The training and test documents can be accessed directly by:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">training_documents</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span>
+<span class="n">test_documents</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">test_documents</span>
+</pre></div>
+</div>
+<p>By default, you get 4 files for each document that contain information of the text, pages, sections and annotations.</p>
+<p>document.txt
+pages.json5
+sections.json5
+annotations.json5</p>
+<p>To get the pdfs of the documents, you can use <strong>get_file()</strong>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
+    <span class="n">document</span><span class="o">.</span><span class="n">get_file</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This will download the sandwich file which, besides the document itself, it contains the bounding boxes information of
+the characters.</p>
+<p>In the document folder, you will see a new file with the original name followed by “_ocr”.</p>
+<p>To get the pages of the document as png images, you can use <strong>get_images()</strong>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
+    <span class="n">document</span><span class="o">.</span><span class="n">get_images</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>You will get one png image named “<a href="#id1"><span class="problematic" id="id2">page_</span></a><span class="raw-html-m2r"><number_of_page></span>.png” for each page in the document.</p>
+<p>To get the bounding boxes information of the characters, you can use <strong>get_bbox()</strong>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
+    <span class="n">document</span><span class="o">.</span><span class="n">get_bbox</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>You will get a file named “bbox.json5”.</p>
+<p>After downloading these files, the paths to them will also become available in the project instance.
+For example, you can get the path to the file with the document text with:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span><span class="o">.</span><span class="n">txt_file_path</span>
+</pre></div>
+</div>
+<p>If there are changes in the document in the Konfuzio App, you can update the document with:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+</pre></div>
+</div>
 </div>
 </div>
 

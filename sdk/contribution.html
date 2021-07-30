@@ -214,8 +214,31 @@
             
   <div class="section" id="contribution-guide">
 <h1>Contribution Guide<a class="headerlink" href="#contribution-guide" title="Permalink to this headline">¶</a></h1>
-<p>If you would like to contribute, please use the development installation (<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.[dev]</span></code>) and open a PR with your contributions.<span class="raw-html-m2r"><br></span>
-Tests will automatically run for every commit you push.<span class="raw-html-m2r"><br></span>
+<p>If you would like to contribute, please use the development installation and open a PR with your contributions.</p>
+<ul>
+<li><p>clone the project in your working directory</p>
+<p><code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/konfuzio-ai/document-ai-python-sdk.git</span></code></p>
+</li>
+<li><p>go inside the project folder</p>
+<p><code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">document-ai-python-sdk</span></code></p>
+</li>
+<li><p>install it</p>
+<p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.[dev]</span></code></p>
+</li>
+<li><p>use pre-commit</p>
+<p><code class="docutils literal notranslate"><span class="pre">pre-commit</span> <span class="pre">install</span></code></p>
+<p>Automatic inspections will run in your commits ensuring they match the code formatting of the repository.</p>
+</li>
+<li><p>commit your changes</p>
+<p><code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">commit</span> <span class="pre">-m</span> <span class="pre">&quot;message&quot;</span></code></p>
+</li>
+<li><p>push your changes to your remote branch</p>
+<p><code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">push</span></code></p>
+</li>
+<li><p>open a PR with your contributions. You can do it on the
+<a class="reference external" href="https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request">GitHub interface</a>.</p></li>
+</ul>
+<p>Tests will automatically run for every commit you push to the GitHub project.
 You can also run them locally by executing <code class="docutils literal notranslate"><span class="pre">pytest</span></code> in your terminal from the root of this project.</p>
 <p>The files/folders listed below are ignored when you push your changes to the repository.</p>
 <ul class="simple">
@@ -227,7 +250,7 @@ You can also run them locally by executing <code class="docutils literal notrans
 <li><p>docs/build/ folder</p></li>
 <li><p><a href="#id1"><span class="problematic" id="id2">*</span></a>.pyc files</p></li>
 </ul>
-<p><em>Note</em>:<span class="raw-html-m2r"><br></span>
+<p><em>Note</em>:
 If you choose another name for the folder where you want to store the data being downloaded, please add
 the folder to <em>.gitignore</em>.</p>
 <div class="section" id="directory-structure">
@@ -238,7 +261,7 @@ the folder to <em>.gitignore</em>.</p>
 │   │
 │   ├── konfuzio_sdk            &lt;- Source code of Konfuzio SDK
 │   │  ├── __init__.py          &lt;- Makes konfuzio_sdk a Python module
-│   │  ├── api.py               &lt;- Functions to interact with the Konfuzio App
+│   │  ├── api.py               &lt;- Functions to interact with the Konfuzio Server
 │   │  ├── cli.py               &lt;- Command Line interface to the konfuzio_sdk package
 │   │  ├── data.py              &lt;- Functions to handle data from the API
 │   │  ├── settings_importer.py &lt;- Meta settings loaded from the project
