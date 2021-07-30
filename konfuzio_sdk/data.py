@@ -6,7 +6,7 @@ import os
 import pathlib
 import shutil
 from datetime import tzinfo
-from typing import Dict, Optional, List, Union
+from typing import Dict, Optional, List, Union, Tuple
 
 import dateutil.parser
 from konfuzio_sdk import KONFUZIO_HOST, DATA_ROOT, KONFUZIO_PROJECT_ID, FILE_ROOT
@@ -24,7 +24,7 @@ from konfuzio_sdk.api import (
     create_label,
     update_file_status_konfuzio_api,
 )
-from konfuzio_sdk.utils import is_file
+from konfuzio_sdk.utils import is_file, convert_to_bio_scheme
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +79,7 @@ class Template(Data):
         name_clean: str,
         labels: List[int],
         is_default=False,
-        default_templates: ["Template"] = [],
+        default_templates: List["Template"] = [],
         has_multiple_sections=False,
         **kwargs,
     ):
@@ -504,6 +504,7 @@ class Document(Data):
         self.hocr_file_path = os.path.join(self.root, 'document.hocr')
         self.pages_file_path = os.path.join(self.root, 'pages.json5')
         self.bbox_file_path = None
+        self.bio_scheme_file_path = None
 
         self.text = kwargs.get('text')
         self.hocr = kwargs.get('hocr')
@@ -761,6 +762,41 @@ class Document(Data):
         else:
             self._annotations.append(annotation)
         return annotation
+
+    def get_text_in_bio_scheme(self) -> List[Tuple[str, str]]:
+        """
+        Get the text of the document in the BIO scheme.
+
+        :return: list of tuples with each word in the text an the respective label
+        """
+        annotations = self.annotations()
+
+        if len(annotations) == 0:
+            return None
+
+        annotations_in_doc = [
+            (annotation.start_offset, annotation.end_offset, annotation.label.name) for annotation in annotations
+        ]
+        converted_text = convert_to_bio_scheme(self.text, annotations_in_doc)
+
+        if not self.bio_scheme_file_path:
+            self.bio_scheme_file_path = os.path.join(self.root, 'bio_scheme.txt')
+
+            with open(self.bio_scheme_file_path, 'w', encoding="utf-8") as f:
+                for word, tag in converted_text:
+                    f.writelines(word + ' ' + tag + '\n')
+                f.writelines('\n')
+
+        bio_annotations = []
+
+        with open(self.bio_scheme_file_path, 'r', encoding="utf-8") as f:
+            for line in f.readlines():
+                if line == '\n':
+                    continue
+                word, tag = line.replace('\n', '').split(' ')
+                bio_annotations.append((word, tag))
+
+        return bio_annotations
 
     def get_bbox(self):
         """

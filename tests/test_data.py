@@ -5,7 +5,6 @@ import os
 import unittest
 
 import pytest
-
 from konfuzio_sdk.data import Project, Annotation
 from konfuzio_sdk.utils import is_file
 
@@ -98,6 +97,7 @@ class TestAPIDataSetup(unittest.TestCase):
                 assert len(doc.annotations(self.prj.get_label_by_id(579))) == 1
 
     def test_annotation_start_offset_zero_filter(self):
+        """Test annotations with start offset equal to zero."""
         doc = self.prj.labels[0].documents[5]  # one doc before doc without annotations
         assert len(doc.annotations()) == 13
         doc.annotations()[0].start_offset = 0
@@ -161,6 +161,14 @@ class TestAPIDataSetup(unittest.TestCase):
         assert new_anno.id is None
         assert len(doc.annotations(use_correct=False)) == 13
         assert len(self.prj.labels[0].correct_annotations) == 26
+
+    def test_get_text_in_bio_scheme(self):
+        """Test getting document in the BIO scheme."""
+        doc = self.prj.documents[0]
+        bio_annotations = doc.get_text_in_bio_scheme()
+        assert len(bio_annotations) == 391
+        assert bio_annotations[8][0] == '22.05.2018'
+        assert bio_annotations[8][1] == 'B-Austellungsdatum'
 
     @classmethod
     def tearDownClass(cls) -> None:

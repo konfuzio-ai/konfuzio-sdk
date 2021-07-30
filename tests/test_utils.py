@@ -1,10 +1,10 @@
+"""Validate utils functions."""
 import os
 import unittest
 
 import pytest
-
 from konfuzio_sdk import IMAGE_FILE, PDF_FILE, OFFICE_FILE
-from konfuzio_sdk.utils import get_id, get_timestamp, is_file, get_file_type, load_image
+from konfuzio_sdk.utils import get_id, get_timestamp, is_file, get_file_type, load_image, convert_to_bio_scheme
 
 TEST_STRING = "sample string"
 FOLDER_ROOT = os.path.dirname(os.path.realpath(__file__))
@@ -42,3 +42,32 @@ class TestUtils(unittest.TestCase):
     def test_load_image(self):
         """Test if the image is read correctly."""
         assert load_image(TEST_IMAGE_FILE) is not None
+
+    def test_convert_to_bio_scheme(self):
+        """Test convertion to BIO scheme."""
+        text = "Hello, it's Konfuzio."
+        annotations = [(12, 20, 'Organization')]
+        converted_text = convert_to_bio_scheme(text=text, annotations=annotations)
+        assert converted_text == [
+            ('Hello', 'O'),
+            (',', 'O'),
+            ('it', 'O'),
+            ("'s", 'O'),
+            ('Konfuzio', 'B-Organization'),
+            ('.', 'O'),
+        ]
+
+    def test_convert_to_bio_scheme_no_annotations(self):
+        """Test convertion to BIO scheme without annotations."""
+        text = "Hello, it's Konfuzio."
+        annotations = []
+        converted_text = convert_to_bio_scheme(text=text, annotations=annotations)
+        assert len(converted_text) == 6
+        assert all([annot[1] == 'O' for annot in converted_text])
+
+    def test_convert_to_bio_scheme_no_text(self):
+        """Test convertion to BIO scheme without text."""
+        text = ''
+        annotations = [(12, 20, 'Organization')]
+        converted_text = convert_to_bio_scheme(text=text, annotations=annotations)
+        self.assertIsNone(converted_text)

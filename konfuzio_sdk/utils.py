@@ -7,12 +7,14 @@ import os
 import zipfile
 from contextlib import contextmanager
 from io import BytesIO
-from typing import Union
+from typing import Union, List, Tuple
 
 import filetype
+import nltk
 from PIL import Image
-
 from konfuzio_sdk import IMAGE_FILE, PDF_FILE, OFFICE_FILE, SUPPORTED_FILE_TYPES
+
+nltk.download('punkt')
 
 logger = logging.getLogger(__name__)
 
@@ -164,3 +166,64 @@ def does_not_raise():
     docs.pytest.org/en/latest/example/parametrize.html#parametrizing-conditional-raising
     """
     yield
+
+
+def convert_to_bio_scheme(text: str, annotations: List) -> List[Tuple[str, str]]:
+    """
+    Mark all the entities in the text as per the BIO scheme.
+
+    The splitting is using the sequence of words, expecting some characters like "." a separate token.
+
+    Hello O
+    , O
+    it O
+    's O
+    Konfuzio B-ORG
+    . O
+
+    The start and end offsets are considered having the origin in the begining of the input text.
+    If only part of the text of the document is passed, the start and end offsets of the annotations must be
+    adapted first.
+
+    :param text: text to be annotated in the bio scheme
+    :param annotations: annotations in the document with start and end offset and label name
+    :return: list of tuples with each word in the text an the respective label
+    """
+    if len(text) == 0:
+        logger.error('No text to be converted to the BIO-scheme.')
+        return None
+
+    tagged_entities = []
+    annotations.sort(key=lambda x: x[0])
+
+    if len(annotations) == 0:
+        logger.info('No annotations in the converstion to the BIO-scheme.')
+        for word in nltk.word_tokenize(text):
+            tagged_entities.append((word, 'O'))
+        return tagged_entities
+
+    previous_start = 0
+
+    for start, end, label_name in annotations:
+        prev_text = text[previous_start:start]
+        for word in nltk.word_tokenize(prev_text):
+            tagged_entities.append((word, 'O'))
+
+        temp_str = text[start:end]
+        tmp_list = nltk.word_tokenize(temp_str)
+
+        if len(tmp_list) > 1:
+            tagged_entities.append((tmp_list[0], 'B-' + label_name))
+            for w in tmp_list[1:]:
+                tagged_entities.append((w, 'I-' + label_name))
+        else:
+            tagged_entities.append((tmp_list[0], 'B-' + label_name))
+
+        previous_start = start
+
+    if end < len(text):
+        pos_text = text[end:]
+        for word in nltk.word_tokenize(pos_text):
+            tagged_entities.append((word, 'O'))
+
+    return tagged_entities
