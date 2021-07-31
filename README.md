@@ -1,6 +1,6 @@
 # Konfuzio SDK
 
-The Konfuzio Software Development Kit (Konfuzio SDK) provides a [Python API](https://konfuzio-ai.github.io/document-ai-python-sdk/) to interact with the 
+The Konfuzio Software Development Kit (Konfuzio SDK) provides a [Python API](https://dev.konfuzio.com/sdk/sourcecode.html) to interact with the 
 [Konfuzio Server](https://dev.konfuzio.com/index.html#konfuzio-server).
 
 ## Quickstart
