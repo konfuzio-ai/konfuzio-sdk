@@ -202,7 +202,7 @@
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>Every time that there are changes in the project in the Konfuzio App, the local project can be updated with:</p>
+<p>Every time that there are changes in the project in the Konfuzio Server, the local project can be updated with:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -215,10 +215,10 @@
 </div>
 <p>By default, it will get the documents without dataset status (dataset_status = 0 (None)).
 You can specify another dataset status with the argument ‘dataset_statuses’. The code for the status is:</p>
-<p>None: 0
-Preparation: 1
-Training: 2
-Test: 3
+<p>None: 0<span class="raw-html-m2r"><br></span>
+Preparation: 1<span class="raw-html-m2r"><br></span>
+Training: 2<span class="raw-html-m2r"><br></span>
+Test: 3<span class="raw-html-m2r"><br></span>
 Low OCR Quality: 4</p>
 <p>For example, to get all documents in the project, you can do:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">documents</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_documents_by_status</span><span class="p">(</span><span class="n">dataset_statuses</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
@@ -230,9 +230,9 @@ Low OCR Quality: 4</p>
 </pre></div>
 </div>
 <p>By default, you get 4 files for each document that contain information of the text, pages, sections and annotations.</p>
-<p>document.txt
-pages.json5
-sections.json5
+<p>document.txt<span class="raw-html-m2r"><br></span>
+pages.json5<span class="raw-html-m2r"><br></span>
+sections.json5<span class="raw-html-m2r"><br></span>
 annotations.json5</p>
 <p>To get the pdfs of the documents, you can use <strong>get_file()</strong>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
