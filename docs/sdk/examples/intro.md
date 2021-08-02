@@ -8,7 +8,7 @@ Retrieve all information available for your project:
 my_project = Project()
 ```
 
-Every time that there are changes in the project in the Konfuzio App, the local project can be updated with:
+Every time that there are changes in the project in the Konfuzio Server, the local project can be updated with:
 
 ```python
 my_project.update()
@@ -25,11 +25,11 @@ documents = my_project.get_documents_by_status()
 By default, it will get the documents without dataset status (dataset_status = 0 (None)).
 You can specify another dataset status with the argument 'dataset_statuses'. The code for the status is:
 
-None: 0
-Preparation: 1
-Training: 2
-Test: 3
-Low OCR Quality: 4
+None: 0  
+Preparation: 1  
+Training: 2  
+Test: 3  
+Low OCR Quality: 4  
 
 For example, to get all documents in the project, you can do:
 
@@ -46,10 +46,10 @@ test_documents = my_project.test_documents
 
 By default, you get 4 files for each document that contain information of the text, pages, sections and annotations.
 
-document.txt
-pages.json5
-sections.json5
-annotations.json5
+document.txt  
+pages.json5  
+sections.json5  
+annotations.json5  
 
 To get the pdfs of the documents, you can use **get_file()**.
 
