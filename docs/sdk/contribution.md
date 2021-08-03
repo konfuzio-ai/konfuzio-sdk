@@ -79,7 +79,7 @@ the folder to *.gitignore*.
 
 ## Running tests locally
 
-Some tests do not require access to the Konfuzio App. Those are marked as "local".
+Some tests do not require access to the Konfuzio Server. Those are marked as "local".
 
 To run all tests, do:
 
