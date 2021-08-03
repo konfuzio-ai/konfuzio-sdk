@@ -28,7 +28,7 @@ or setup PyCharm as described [here](https://dev.konfuzio.com/sdk/quickstart_pyc
 
 ## References
 
-- [Konfuzio SDK Python API - Source Code](https://konfuzio-ai.github.io/document-ai-python-sdk/)
+- [Konfuzio SDK Python API - Source Code](https://dev.konfuzio.com/sdk/sourcecode.html)
 - [Konfuzio Server REST API](https://app.konfuzio.com/v2/swagger/)
 - [How to Contribute](https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/contribution.md)
 - [Issue Tracker](https://github.com/konfuzio-ai/document-ai-python-sdk/issues)
