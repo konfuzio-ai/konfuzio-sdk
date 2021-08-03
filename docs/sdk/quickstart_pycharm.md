@@ -41,7 +41,7 @@ To store the Konfuzio SDK package, indicate the location by inputting the path o
 After the installation, initialize the package in your working directory with:  
 `konfuzio_sdk init`
 
-This will require different inputs, starting with your **login credentials** to access the Konfuzio App.  
+This will require different inputs, starting with your **login credentials** to access the Konfuzio Server.  
 It will then ask for the **host** from where to get the data. If you are a business user, this might be different from app.konfuzio.com and will be the server URL to access the Konfuzio application. In any other case, press "enter" to use the default URL as the host address.  
 If you are new to our Konfuzio application, there are no existing projects yet. To create a new one, enter your desired name of the project and then choose this certain project by inputting the respective **project ID** from the list of all available projects provided to you in the terminal. The ID of the project will then also be shown in the URL of the project once it is created.  
 As the last input, please also enter the **folder** to which the data should be allocated. If you have no specific preferences, you can use the proposed default folder name by pressing "enter" which will then be `data_<project_id>`.   
