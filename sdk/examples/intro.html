@@ -202,6 +202,8 @@
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">()</span>
 </pre></div>
 </div>
+<p>The information will be stored in the folder that you defined to allocate the data in the package initialization.
+A subfolder will be created for each document in the project.</p>
 <p>Every time that there are changes in the project in the Konfuzio Server, the local project can be updated with:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
 </pre></div>
@@ -229,25 +231,151 @@ Low OCR Quality: 4</p>
 <span class="n">test_documents</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">test_documents</span>
 </pre></div>
 </div>
-<p>By default, you get 4 files for each document that contain information of the text, pages, sections and annotations.</p>
-<p>document.txt<span class="raw-html-m2r"><br></span>
-pages.json5<span class="raw-html-m2r"><br></span>
-sections.json5<span class="raw-html-m2r"><br></span>
-annotations.json5</p>
+<p>By default, you get 4 files for each document that contain information of the text, pages, sections and annotations.
+You can see these files inside the document folder.</p>
+<p><strong>document.txt</strong> - Contains the text of the document. If OCR was used, it will correspond to the result from the OCR.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>                                                            x02   328927/10103/00104
+Abrechnung  der Brutto/Netto-Bezüge   für Dezember 2018                   22.05.2018 Bat:  1
+
+Personal-Nr.  Geburtsdatum ski Faktor  Ki,Frbtr.Konfession  ‚Freibetragjährl.! |Freibetrag mt! |DBA  iGleitzone  &#39;St.-Tg.  VJuUr. üb. |Url. Anspr. Url.Tg.gen.  |Resturlaub
+00104 150356 1  |     ‚ev                              30     400  3000       3400
+
+SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  jum.SV-Tg. Anw. Tage |UrlaubTage Krankh. Tg. Fehlz. Tage
+
+50150356B581 AOK  Bayern Die Gesundheitskas 157 101 1111 1 30
+
+                                             Eintritt   ‚Austritt     Anw.Std.  Urlaub Std.  |Krankh. Std. |Fehlz. Std.
+
+                                             170299  L L       l     L     l     l
+ -                                       +  Steuer-ID       IMrB?       Zeitlohn Sta.|Überstd.  |Bez. Sta.
+  Teststraße123
+   12345 Testort                                   12345678911           ı     ı     \
+                               B/N
+               Pers.-Nr.  00104        x02
+               Abt.-Nr. A12         10103          HinweisezurAbrechnung
+</pre></div>
+</div>
+<p><strong>pages.json5</strong> - Contains information of each page of the document (for example, their ids and sizes).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+  <span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1923</span><span class="p">,</span>
+    <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="s2">&quot;/page/show/1923/&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;number&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;original_size&quot;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="mf">595.2</span><span class="p">,</span>
+      <span class="mf">841.68</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="mi">1414</span><span class="p">,</span>
+      <span class="mi">2000</span>
+    <span class="p">]</span>
+  <span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>sections.json5</strong> - Contains information of each section in the document (for example, their ids and templates).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+  <span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">78730</span><span class="p">,</span>
+    <span class="s2">&quot;position&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;section_label&quot;</span><span class="p">:</span> <span class="mi">63</span>
+  <span class="p">},</span>
+  <span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">292092</span><span class="p">,</span>
+    <span class="s2">&quot;position&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;section_label&quot;</span><span class="p">:</span> <span class="mi">64</span>
+  <span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>annotations.json5</strong> - Contains information of each annotation in the document (for example, their labels and bounding boxes).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+  <span class="p">{</span>
+    <span class="s2">&quot;accuracy&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+    <span class="s2">&quot;bbox&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s2">&quot;bottom&quot;</span><span class="p">:</span> <span class="mf">44.369</span><span class="p">,</span>
+      <span class="s2">&quot;line_index&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+      <span class="s2">&quot;page_index&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+      <span class="s2">&quot;top&quot;</span><span class="p">:</span> <span class="mf">35.369</span><span class="p">,</span>
+      <span class="s2">&quot;x0&quot;</span><span class="p">:</span> <span class="mf">468.48</span><span class="p">,</span>
+      <span class="s2">&quot;x1&quot;</span><span class="p">:</span> <span class="mf">527.04</span><span class="p">,</span>
+      <span class="s2">&quot;y0&quot;</span><span class="p">:</span> <span class="mf">797.311</span><span class="p">,</span>
+      <span class="s2">&quot;y1&quot;</span><span class="p">:</span> <span class="mf">806.311</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;bboxes&quot;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span>
+        <span class="s2">&quot;bottom&quot;</span><span class="p">:</span> <span class="mf">44.369</span><span class="p">,</span>
+        <span class="s2">&quot;end_offset&quot;</span><span class="p">:</span> <span class="mi">169</span><span class="p">,</span>
+        <span class="s2">&quot;line_number&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="s2">&quot;offset_string&quot;</span><span class="p">:</span> <span class="s2">&quot;22.05.2018&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;offset_string_original&quot;</span><span class="p">:</span> <span class="s2">&quot;22.05.2018&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;page_index&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;start_offset&quot;</span><span class="p">:</span> <span class="mi">159</span><span class="p">,</span>
+        <span class="s2">&quot;top&quot;</span><span class="p">:</span> <span class="mf">35.369</span><span class="p">,</span>
+        <span class="s2">&quot;x0&quot;</span><span class="p">:</span> <span class="mf">468.48</span><span class="p">,</span>
+        <span class="s2">&quot;x1&quot;</span><span class="p">:</span> <span class="mf">527.04</span><span class="p">,</span>
+        <span class="s2">&quot;y0&quot;</span><span class="p">:</span> <span class="mf">797.311</span><span class="p">,</span>
+        <span class="s2">&quot;y1&quot;</span><span class="p">:</span> <span class="mf">806.311</span>
+      <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;created_by&quot;</span><span class="p">:</span> <span class="mi">59</span><span class="p">,</span>
+    <span class="s2">&quot;custom_offset_string&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+    <span class="s2">&quot;end_offset&quot;</span><span class="p">:</span> <span class="mi">169</span><span class="p">,</span>
+    <span class="s2">&quot;get_created_by&quot;</span><span class="p">:</span> <span class="s2">&quot;user@konfuzio.com&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_revised_by&quot;</span><span class="p">:</span> <span class="s2">&quot;n/a&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">4419937</span><span class="p">,</span>
+    <span class="s2">&quot;is_correct&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="mi">867</span><span class="p">,</span>
+    <span class="s2">&quot;label_data_type&quot;</span><span class="p">:</span> <span class="s2">&quot;Date&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;label_text&quot;</span><span class="p">:</span> <span class="s2">&quot;Austellungsdatum&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;label_threshold&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span><span class="o">--</span>
+    <span class="s2">&quot;normalized&quot;</span><span class="p">:</span> <span class="s2">&quot;2018-05-22&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;offset_string&quot;</span><span class="p">:</span> <span class="s2">&quot;22.05.2018&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;offset_string_original&quot;</span><span class="p">:</span> <span class="s2">&quot;22.05.2018&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;revised&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+    <span class="s2">&quot;revised_by&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+    <span class="s2">&quot;section&quot;</span><span class="p">:</span> <span class="mi">78730</span><span class="p">,</span>
+    <span class="s2">&quot;section_label_id&quot;</span><span class="p">:</span> <span class="mi">63</span><span class="p">,</span>
+    <span class="s2">&quot;section_label_text&quot;</span><span class="p">:</span> <span class="s2">&quot;Lohnabrechnung&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;selection_bbox&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s2">&quot;bottom&quot;</span><span class="p">:</span> <span class="mf">44.369</span><span class="p">,</span>
+      <span class="s2">&quot;line_index&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+      <span class="s2">&quot;page_index&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+      <span class="s2">&quot;top&quot;</span><span class="p">:</span> <span class="mf">35.369</span><span class="p">,</span>
+      <span class="s2">&quot;x0&quot;</span><span class="p">:</span> <span class="mf">468.48</span><span class="p">,</span>
+      <span class="s2">&quot;x1&quot;</span><span class="p">:</span> <span class="mf">527.04</span><span class="p">,</span>
+      <span class="s2">&quot;y0&quot;</span><span class="p">:</span> <span class="mf">797.311</span><span class="p">,</span>
+      <span class="s2">&quot;y1&quot;</span><span class="p">:</span> <span class="mf">806.311</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;start_offset&quot;</span><span class="p">:</span> <span class="mi">159</span><span class="p">,</span>
+    <span class="s2">&quot;translated_string&quot;</span><span class="p">:</span> <span class="n">null</span>
+  <span class="p">},</span>
+<span class="o">...</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<div class="section" id="download-pdfs">
+<h3>Download PDFs<a class="headerlink" href="#download-pdfs" title="Permalink to this headline">¶</a></h3>
 <p>To get the pdfs of the documents, you can use <strong>get_file()</strong>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
     <span class="n">document</span><span class="o">.</span><span class="n">get_file</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>This will download the sandwich file which, besides the document itself, it contains the bounding boxes information of
-the characters.</p>
+<p>This will download the ocr version of the document which contains the text, the bounding boxes
+information of the characters and the image of the document.</p>
 <p>In the document folder, you will see a new file with the original name followed by “_ocr”.</p>
+</div>
+<div class="section" id="download-pages-as-images">
+<h3>Download pages as images<a class="headerlink" href="#download-pages-as-images" title="Permalink to this headline">¶</a></h3>
 <p>To get the pages of the document as png images, you can use <strong>get_images()</strong>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
     <span class="n">document</span><span class="o">.</span><span class="n">get_images</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>You will get one png image named “<a href="#id1"><span class="problematic" id="id2">page_</span></a><span class="raw-html-m2r"><number_of_page></span>.png” for each page in the document.</p>
+<p>You will get one png image named “page_number_of_page.png” for each page in the document.</p>
+</div>
+<div class="section" id="download-bounding-boxes-of-the-characters">
+<h3>Download bounding boxes of the characters<a class="headerlink" href="#download-bounding-boxes-of-the-characters" title="Permalink to this headline">¶</a></h3>
 <p>To get the bounding boxes information of the characters, you can use <strong>get_bbox()</strong>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
     <span class="n">document</span><span class="o">.</span><span class="n">get_bbox</span><span class="p">()</span>
@@ -259,9 +387,15 @@ For example, you can get the path to the file with the document text with:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span><span class="o">.</span><span class="n">txt_file_path</span>
 </pre></div>
 </div>
-<p>If there are changes in the document in the Konfuzio App, you can update the document with:</p>
+</div>
+<div class="section" id="update-document">
+<h3>Update Document<a class="headerlink" href="#update-document" title="Permalink to this headline">¶</a></h3>
+<p>If there are changes in the document in the Konfuzio Server, you can update the document with:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
 </pre></div>
+</div>
+<p>You can also do it by updating the entire project. However, for projects with many documents is preferable to update the
+specific documents that you are interested in to be time-efficient.</p>
 </div>
 </div>
 </div>
