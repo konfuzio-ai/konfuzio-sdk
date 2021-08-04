@@ -267,7 +267,7 @@ e.g.: 0,00
 
 ### 3. Date Values
 
-Konfuzio applies the so-called iso format (XXXX.XX.XX) for dates. It checks initially whether this format is already used which then won't be altered in this case. However, if another format is used, it will be adapted. In the next step, it checks if a format consisting only of a month and a year is used or even just a year without any other date information besides that.
+Konfuzio applies the so-called ISO 8601 format (YYYY-MM-DD) for dates. It checks initially whether this format is already used which then won't be altered in this case. However, if another format is used, it will be adapted. In the next step, it checks if a format consisting only of a month and a year is used or even just a year without any other date information besides that.
 
 Konfuzio recognizes written months either in German or English language and translates them into the iso format. 
                          
