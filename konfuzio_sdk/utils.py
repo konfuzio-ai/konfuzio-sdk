@@ -14,7 +14,6 @@ import nltk
 from PIL import Image
 from konfuzio_sdk import IMAGE_FILE, PDF_FILE, OFFICE_FILE, SUPPORTED_FILE_TYPES
 
-nltk.download('punkt')
 
 logger = logging.getLogger(__name__)
 
@@ -193,12 +192,14 @@ def convert_to_bio_scheme(text: str, annotations: List) -> List[Tuple[str, str]]
         logger.error('No text to be converted to the BIO-scheme.')
         return None
 
+    nltk.download('punkt')
     tagged_entities = []
     annotations.sort(key=lambda x: x[0])
 
     if len(annotations) == 0:
         logger.info('No annotations in the converstion to the BIO-scheme.')
-        for word in nltk.word_tokenize(text):
+        for word in 
+        .word_tokenize(text):
             tagged_entities.append((word, 'O'))
         return tagged_entities
 
@@ -206,7 +207,8 @@ def convert_to_bio_scheme(text: str, annotations: List) -> List[Tuple[str, str]]
 
     for start, end, label_name in annotations:
         prev_text = text[previous_start:start]
-        for word in nltk.word_tokenize(prev_text):
+        for word in 
+        .word_tokenize(prev_text):
             tagged_entities.append((word, 'O'))
 
         temp_str = text[start:end]
