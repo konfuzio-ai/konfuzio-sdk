@@ -198,8 +198,7 @@ def convert_to_bio_scheme(text: str, annotations: List) -> List[Tuple[str, str]]
 
     if len(annotations) == 0:
         logger.info('No annotations in the converstion to the BIO-scheme.')
-        for word in 
-        .word_tokenize(text):
+        for word in nltk.word_tokenize(text):
             tagged_entities.append((word, 'O'))
         return tagged_entities
 
@@ -207,8 +206,7 @@ def convert_to_bio_scheme(text: str, annotations: List) -> List[Tuple[str, str]]
 
     for start, end, label_name in annotations:
         prev_text = text[previous_start:start]
-        for word in 
-        .word_tokenize(prev_text):
+        for word in nltk.word_tokenize(text):
             tagged_entities.append((word, 'O'))
 
         temp_str = text[start:end]
