@@ -22,3 +22,17 @@ and try it by yourself.
 
 .. |OpenInColab| image:: https://colab.research.google.com/assets/colab-badge.svg
 .. _OpenInColab: https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/human_in_the_loop.ipynb
+
+Count Pre-specified Expressions in Annual Reports
+-------------------------------------------------
+
+The tutorial *Count Pre-specified Expressions in Annual Reports* aims to show you how to use the Konfuzio SDK package to
+retrieve structured and organized information that can be used for a deeper analysis and understanding of your data.
+It will show you how to identify and count pre-specified expressions in documents and how to collect that information.
+
+You can |OpenInColab|_ or download it from
+`here <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/word_count.ipynb>`_
+and try it by yourself.
+
+.. |OpenInColab| image:: https://colab.research.google.com/assets/colab-badge.svg
+.. _OpenInColab: https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/word_count.ipynb
