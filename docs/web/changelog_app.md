@@ -8,6 +8,11 @@ All notable changes in the server of app.konfuzio.com will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
 
+## 2021-08-10_17-08-11
+
+### Changed
+- Deactive adoption of Template settings according to AI model if not explicitly allowed.
+
 ## 2021-08-10_11-19-33
 
 ### Added
