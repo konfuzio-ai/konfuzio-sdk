@@ -8,6 +8,14 @@ All notable changes in the server of app.konfuzio.com will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
 
+## 2021-08-10_11-19-33
+
+### Added
+- Maximum number of pages per document
+
+### Fixed
+- Slow processing of extraction tasks
+- Evaluation when multiple Annotations are present
 
 ## 2021-07-28_18-53-12
 
