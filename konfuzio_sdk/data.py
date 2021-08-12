@@ -739,8 +739,8 @@ class Document(Data):
                         _ = self.annotation_class(document=self, **raw_annotation)
                     else:
                         logger.warning(
-                            f'Annotation {raw_annotation["id"]} is a custom string and, therefore, it will not be used '
-                            f'in training {KONFUZIO_HOST}/a/{raw_annotation["id"]}.'
+                            f'Annotation {raw_annotation["id"]} is a custom string and, therefore, it will not be added'
+                            f' to the document annotations {KONFUZIO_HOST}/a/{raw_annotation["id"]}.'
                         )
 
         return self
