@@ -91,7 +91,7 @@ label_training_config = {'valid_ratio': 0.15,  # what percentage of training dat
 
 section_training_config = {'valid_ratio': 0.2,
                            'batch_size': 128,
-                           'max_length': 100,  # maximum tokens per line to consider
+                           'max_len': 100,  # maximum tokens per line to consider
                            'n_epochs': 50,
                            'patience': 3,
                            'optimizer': {'name': 'RMSprop', 'lr': 1e-3, 'momentum': 0.9},
@@ -146,7 +146,7 @@ label_training_config = {'valid_ratio': 0.15,  # what percentage of training dat
 
 section_training_config = {'valid_ratio': 0.2,
                            'batch_size': 128,
-                           'max_length': 100,  # maximum tokens per line to consider
+                           'max_len': 100,  # maximum tokens per line to consider
                            'n_epochs': 50,
                            'patience': 3,
                            'optimizer': {'name': 'RMSprop', 'lr': 1e-3, 'momentum': 0.9},
@@ -423,7 +423,7 @@ model = DocumentModel(projects)
 # define the custom training hyperparameters
 document_training_config = {'valid_ratio': 0.2,
                             'batch_size': 128,
-                            'max_length': 100,  # maximum tokens per page to consider, will do nothing if no text_module used
+                            'max_len': 100,  # maximum tokens per page to consider, will do nothing if no text_module used
                             'n_epochs': 50,
                             'patience': 3,
                             'optimizer': {'name': 'RMSprop', 'lr': 1e-3, 'momentum': 0.9},
