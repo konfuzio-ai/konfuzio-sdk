@@ -91,7 +91,7 @@ label_training_config = {'valid_ratio': 0.15,  # what percentage of training dat
 
 section_training_config = {'valid_ratio': 0.2,
                            'batch_size': 128,
-                           'max_length': 100,  # maximum tokens per line to consider
+                           'max_len': 100,  # maximum tokens per line to consider
                            'n_epochs': 50,
                            'patience': 3,
                            'optimizer': {'name': 'RMSprop', 'lr': 1e-3, 'momentum': 0.9},
@@ -146,7 +146,7 @@ label_training_config = {'valid_ratio': 0.15,  # what percentage of training dat
 
 section_training_config = {'valid_ratio': 0.2,
                            'batch_size': 128,
-                           'max_length': 100,  # maximum tokens per line to consider
+                           'max_len': 100,  # maximum tokens per line to consider
                            'n_epochs': 50,
                            'patience': 3,
                            'optimizer': {'name': 'RMSprop', 'lr': 1e-3, 'momentum': 0.9},
@@ -194,7 +194,7 @@ model.save()
 
 ### Implementing a custom LabelSectionModel classifier training loop
 
-By default, both classifiers use the same generic `fit_classifier` function. If we want each to have their own custom `fit_classifier` function then we can do so by overwriting the `build_label_classifier`/`build_section_classifier` functions and implementing a custom `fit_label_classifier`/`fit_section_classifier` function within them. 
+By default, both classifiers use the same generic `fit_classifier` function. If we want each to have their own custom `fit_classifier` function then we can do so by overwriting the `build_label_classifier`/`build_section_classifier` functions and implementing a custom `fit_label_classifier`/`fit_section_classifier` function within them.
 
 We can use existing functions to get the data iterators and then using our custom `fit_label_classifier`/`fit_section_classifier` functions in place of the generic `fit_classifier` function.
 
@@ -423,7 +423,7 @@ model = DocumentModel(projects)
 # define the custom training hyperparameters
 document_training_config = {'valid_ratio': 0.2,
                             'batch_size': 128,
-                            'max_length': 100,  # maximum tokens per page to consider, will do nothing if no text_module used
+                            'max_len': 100,  # maximum tokens per page to consider, will do nothing if no text_module used
                             'n_epochs': 50,
                             'patience': 3,
                             'optimizer': {'name': 'RMSprop', 'lr': 1e-3, 'momentum': 0.9},
@@ -737,7 +737,7 @@ model = LabelSectionModel(project,
 
 Each model has an `extract` method that gets the predictions from that model.
 
-## OCR 
+## OCR
 
 The ability to do OCR tasks in bundled into the FileScanner class. The FileScanner supports multuple OCR solution and takes text embeddings into account.
 
