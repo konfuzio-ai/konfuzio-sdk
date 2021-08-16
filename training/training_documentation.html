@@ -71,7 +71,7 @@
             
             
               <div class="version">
-                v.0.1.2
+                v.0.1.5
               </div>
             
           
@@ -319,7 +319,7 @@
 
 <span class="n">section_training_config</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;valid_ratio&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>
                            <span class="s1">&#39;batch_size&#39;</span><span class="p">:</span> <span class="mi">128</span><span class="p">,</span>
-                           <span class="s1">&#39;max_length&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>  <span class="c1"># maximum tokens per line to consider</span>
+                           <span class="s1">&#39;max_len&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>  <span class="c1"># maximum tokens per line to consider</span>
                            <span class="s1">&#39;n_epochs&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
                            <span class="s1">&#39;patience&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
                            <span class="s1">&#39;optimizer&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;RMSprop&#39;</span><span class="p">,</span> <span class="s1">&#39;lr&#39;</span><span class="p">:</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="s1">&#39;momentum&#39;</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">},</span>
@@ -373,7 +373,7 @@
 
 <span class="n">section_training_config</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;valid_ratio&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>
                            <span class="s1">&#39;batch_size&#39;</span><span class="p">:</span> <span class="mi">128</span><span class="p">,</span>
-                           <span class="s1">&#39;max_length&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>  <span class="c1"># maximum tokens per line to consider</span>
+                           <span class="s1">&#39;max_len&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>  <span class="c1"># maximum tokens per line to consider</span>
                            <span class="s1">&#39;n_epochs&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
                            <span class="s1">&#39;patience&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
                            <span class="s1">&#39;optimizer&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;RMSprop&#39;</span><span class="p">,</span> <span class="s1">&#39;lr&#39;</span><span class="p">:</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="s1">&#39;momentum&#39;</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">},</span>
@@ -639,7 +639,7 @@
 <span class="c1"># define the custom training hyperparameters</span>
 <span class="n">document_training_config</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;valid_ratio&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>
                             <span class="s1">&#39;batch_size&#39;</span><span class="p">:</span> <span class="mi">128</span><span class="p">,</span>
-                            <span class="s1">&#39;max_length&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>  <span class="c1"># maximum tokens per page to consider, will do nothing if no text_module used</span>
+                            <span class="s1">&#39;max_len&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>  <span class="c1"># maximum tokens per page to consider, will do nothing if no text_module used</span>
                             <span class="s1">&#39;n_epochs&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
                             <span class="s1">&#39;patience&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
                             <span class="s1">&#39;optimizer&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;RMSprop&#39;</span><span class="p">,</span> <span class="s1">&#39;lr&#39;</span><span class="p">:</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="s1">&#39;momentum&#39;</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">},</span>

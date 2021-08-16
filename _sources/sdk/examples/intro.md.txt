@@ -226,5 +226,5 @@ If there are changes in the document in the Konfuzio Server, you can update the 
 document.update()
 ```
 
-You can also do it by updating the entire project. However, for projects with many documents is preferable to update the
-specific documents that you are interested in to be time-efficient.
+You can also update a document by updating the entire project via project.update().
+However, for projects with many documents it can be faster to update only the relevant documents.

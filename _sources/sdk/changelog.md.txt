@@ -4,6 +4,16 @@
 
 # Changelog
 
+## 2021-08-16 v.0.1.5
+
+### Changed
+
+- Improved documentation dev.konfuzio.com
+
+### Added
+
+- Method to get the document text in the BIO scheme
+
 ## 2021-07-15 v.0.1.4
 
 ### Changed
