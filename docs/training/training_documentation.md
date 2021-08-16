@@ -194,7 +194,7 @@ model.save()
 
 ### Implementing a custom LabelSectionModel classifier training loop
 
-By default, both classifiers use the same generic `fit_classifier` function. If we want each to have their own custom `fit_classifier` function then we can do so by overwriting the `build_label_classifier`/`build_section_classifier` functions and implementing a custom `fit_label_classifier`/`fit_section_classifier` function within them. 
+By default, both classifiers use the same generic `fit_classifier` function. If we want each to have their own custom `fit_classifier` function then we can do so by overwriting the `build_label_classifier`/`build_section_classifier` functions and implementing a custom `fit_label_classifier`/`fit_section_classifier` function within them.
 
 We can use existing functions to get the data iterators and then using our custom `fit_label_classifier`/`fit_section_classifier` functions in place of the generic `fit_classifier` function.
 
@@ -737,7 +737,7 @@ model = LabelSectionModel(project,
 
 Each model has an `extract` method that gets the predictions from that model.
 
-## OCR 
+## OCR
 
 The ability to do OCR tasks in bundled into the FileScanner class. The FileScanner supports multuple OCR solution and takes text embeddings into account.
 
