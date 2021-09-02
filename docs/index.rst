@@ -16,15 +16,13 @@ Konfuzio is a cloud and on-premises B2B platform used thousands of times a day t
 SMEs and large companies train their AI to understand and process documents, e-mails and texts like human beings.
 Find out more on our `Homepage <https://konfuzio.com>`_.
 
-Our **API Documentation** is available online via https://app.konfuzio.com/api. Have a look at our
-`YouTube API Tutorial <https://www.youtube.com/watch?v=NZKUrKyFVA8>`_ too.
+This Developer's Guide compiles the resources that can be used to expand Konfuzio.
 
 The documentation for the Konfuzio Software Development Kit, the **Konfuzio SDK**, can be found in the SDK section.
-You can also consult the source code on `GitHub <https://github.com/konfuzio-ai/document-ai-python-sdk>`_.
 
-In addition, enterprise clients do have access to our `Python Konfuzio Trainer Module <./training/training_documentation.html>`_.
+The documentation for the **Trainer** module, only available for enterprise clients, can be found in the Trainer section.
 
-The `Changelog of app.konfuzio.com Server <./web/changelog_app.html>`_ provides you with insights about any (future) release.
+In addition, the **Server** section provides documentation and examples for the Konfuzio REST API and Konfuzio on premises.
 
 **This technical documentation is updated frequently. Please feel free to share your feedback via info@konfuzio.com**.
 

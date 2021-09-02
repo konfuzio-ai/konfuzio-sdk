@@ -12,7 +12,7 @@
 
 ## How to make an API Call
 
-The API documentation is available at: https://app.konfuzio.com/swagger.
+The API documentation is available at https://app.konfuzio.com/api.
 
 The API supports Password Authentication and Token Authentication.
 An API Token can be obtained here: https://app.konfuzio.com/v2/swagger/#/token-auth/token_auth_create
@@ -148,7 +148,7 @@ plt.show()
 
 ## Supported OCR languages
 
-The default OCR engine for https://app.konfuzio.com supports the following languages:
+The default OCR engine for [Konfuzio Server](https://app.konfuzio.com) supports the following languages:
 
 Afrikaans, Albanian, Arabic, Asturian, Basque, Bislama, Breton, Catalan, Cebuano, Chamorro, Chinese Simplified, Chinese Traditional, Cornish, Corsican, Crimean Tatar Latin, Czech, Danish, Dutch, English (incl. handwritten), Estonian, Fijian, Filipino, Finnish, French, Friulian, Galician, German, Gilbertese, Greek, Greenlandic, Haitian Creole, Hani, Hmong Daw Latin, Hungarian, Indonesian, Interlingua, Inuktitut Latin, Irish, Italian, Japanese, Javanese, K'iche', Kabuverdianu, Kachin Latin, Kara-Kalpak, Kashubian, Khasi, Korean, Kurdish Latin, Luxembourgish, Malay Latin, Manx, Neapolitan, Norwegian, Norwegian, Occitan, Polish, Portuguese, Romanian, Romansh, Russian, Scots, Scottish Gaelic, Serbian Cyrillic, Serbian Latin, Slovak, Slovenian, Spanish, Swahili Latin, Swedish, Tatar Latin, Tetum, Turkish, Upper Sorbian, Uzbek Latin, Volapük, Walser, Western Frisian, Yucatec Maya, Zhuang, Zulu.
 
