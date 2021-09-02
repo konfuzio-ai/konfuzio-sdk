@@ -327,6 +327,8 @@ class Annotation(Data):
             self.y0 = bbox.get('y0')
             self.y1 = bbox.get('y1')
 
+        self.bboxes = kwargs.get('bboxes', None)
+
         # if no template_text we check if is passed by section_label_text
         if template_text is None:
             template_text = kwargs.get('section_label_text')
@@ -503,12 +505,15 @@ class Document(Data):
         self.txt_file_path = os.path.join(self.root, 'document.txt')
         self.hocr_file_path = os.path.join(self.root, 'document.hocr')
         self.pages_file_path = os.path.join(self.root, 'pages.json5')
+
         self.bbox_file_path = None
+        if os.path.exists(os.path.join(self.root, 'bbox.json5')):
+            self.bbox_file_path = os.path.join(self.root, 'bbox.json5')
+
         self.bio_scheme_file_path = None
 
         self.text = kwargs.get('text')
         self.hocr = kwargs.get('hocr')
-        self.txt_file_path = None  # path to local text file containing the document text
 
         # prepare local setup for document
         pathlib.Path(self.root).mkdir(parents=True, exist_ok=True)
