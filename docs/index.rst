@@ -18,12 +18,6 @@ Find out more on our `Homepage <https://konfuzio.com>`_.
 
 This Developer's Guide compiles the resources that can be used to expand Konfuzio.
 
-The documentation for the Konfuzio Software Development Kit, the **Konfuzio SDK**, can be found in the SDK section.
-
-The documentation for the **Trainer** module, only available for enterprise clients, can be found in the Trainer section.
-
-In addition, the **Server** section provides documentation and examples for the Konfuzio REST API and Konfuzio on premises.
-
 **This technical documentation is updated frequently. Please feel free to share your feedback via info@konfuzio.com**.
 
 
@@ -37,7 +31,7 @@ you in starting using it.
 Konfuzio Trainer
 ################
 
-The Trainer module allows to define, train and run custom Document AI.
+The Trainer module, only available for enterprise clients, allows to define, train and run custom Document AI.
 In the Trainer section you find the documentation of the features of this module, including the contents structure
 and examples of how to use it.
 
