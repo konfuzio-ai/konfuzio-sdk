@@ -8,6 +8,24 @@ All notable changes in the server of app.konfuzio.com will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
 
+## 2021-09-05_20-57-31
+
+### Added
+
+- Autosave for any change on the Document List Page
+- German Language support
+- Finetuning of Exctraction AIs via parameters
+- New fields AI quality and data quality
+- More detailed evaluation
+- Description Field for Extraction AI, Label Sets, Categorization AI, Category
+
+### Changed
+
+- Rename Project Inviations to Members
+- Rename the dataset status form "OCR Error" to "Excluded"
+- Start Training per Extraction AI
+- Get more insights via the Document Detail Page
+
 ## 2021-08-10_17-08-11
 
 ### Changed
