@@ -94,7 +94,7 @@ SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  jum.SV-Tg. 
 ]
 ```
 
-**sections.json5** - Contains information of each section in the document (for example, their ids and templates).   
+**sections.json5** - Contains information of each section in the document (for example, their ids and label sets).   
 
 ```
 [

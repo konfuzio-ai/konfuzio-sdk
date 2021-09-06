@@ -17,13 +17,13 @@ input_expression = "John Smith"
 
 # Label for the annotation
 label_name = "Name"
-# Creation of the Label in the project default template
+# Creation of the Label in the project default label set
 my_label = Label(my_project, text=label_name)
 # Saving it online
 my_label.save()
 
-# Template where label belongs
-template_id = my_label.templates[0].id
+# Label Set where label belongs
+label_set_id = my_label.label_sets[0].id
 
 # First document in the project
 document = my_project.documents[0]
@@ -42,7 +42,7 @@ for offsets in matches_locations:
         start_offset=offsets[0],
         end_offset=offsets[1],
         label=my_label,
-        template_id=template_id,
+        label_set_id=label_set_id,
         accuracy=1.0,
     )
     new_annotation_added = annotation_obj.save()
