@@ -56,6 +56,7 @@ have Konfuzio on premises and examples on how to use the API for communicate dir
    sdk/contribution.md
    sdk/coordinates_system.md
    sdk/changelog.md
+   sdk/faq.md
 
 
 .. toctree::
