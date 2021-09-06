@@ -38,15 +38,15 @@ Data Class
    :members:
    :noindex:
 
-Section Class
-~~~~~~~~~~~~~~~
-.. autoclass:: Section
+Annotation Set Class
+~~~~~~~~~~~~~~~~~~~~
+.. autoclass:: AnnotationSet
    :members:
    :noindex:
 
-Template Class
+Label Set Class
 ~~~~~~~~~~~~~~~
-.. autoclass:: Template
+.. autoclass:: LabelSet
    :members:
    :noindex:
 
