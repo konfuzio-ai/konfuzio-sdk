@@ -86,9 +86,9 @@ class TestAPIDataSetup(unittest.TestCase):
 
     def test_sections(self):
         """Test section labels in the test project."""
-        assert self.prj.templates.__len__() == 2
-        assert self.prj.templates[0].labels.__len__() == 8
-        assert self.prj.templates[1].labels.__len__() == 3
+        assert self.prj.label_sets.__len__() == 2
+        assert self.prj.label_sets[0].labels.__len__() == 8
+        assert self.prj.label_sets[1].labels.__len__() == 3
 
     def test_correct_annotations(self):
         """Test correct annotations of a certain label in a specific document."""
@@ -145,7 +145,7 @@ class TestAPIDataSetup(unittest.TestCase):
             start_offset=225,
             end_offset=237,
             label=label.id,
-            template_id=label.templates[0].id,  # hand selected document section label
+            label_set_id=label.label_sets[0].id,  # hand selected document section label
             revised=True,
             is_correct=True,
             accuracy=0.98765431,

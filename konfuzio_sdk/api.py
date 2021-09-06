@@ -228,24 +228,6 @@ def get_document_annotations(document_id, include_extractions=False, session=kon
     return sorted_annotations
 
 
-def get_document_sections(document_id, session=konfuzio_session()):
-    """
-    Use the text-extraction server to retrieve templates, which are instances of the Template Class.
-
-    :param document_id: ID of the file
-    :param session: Session to connect to the server
-    :return: Sorted annotations.
-    """
-    url = get_document_api_details_url(document_id)
-    r = retry_get(session, url)
-    annotations = r.json()['annotations']
-    revised_annotations = [
-        annotation for annotation in annotations if annotation['revised'] or annotation['is_correct']
-    ]
-    sorted_annotations = sorted(revised_annotations, key=itemgetter("start_offset"))
-    return sorted_annotations
-
-
 def post_document_bulk_annotation(document_id: int, annotation_list, session=konfuzio_session()):
     """
     Add a list of annotations to an existing document.
@@ -266,7 +248,7 @@ def post_document_annotation(
     start_offset: int,
     end_offset: int,
     label_id: int,
-    template_id: int,
+    label_set_id: int,
     accuracy: float,
     revised: bool = False,
     is_correct: bool = False,
@@ -287,6 +269,7 @@ def post_document_annotation(
     :param start_offset: Start offset of the annotation
     :param end_offset: End offset of the annotation
     :param label_id: ID of the label.
+    :param label_set_id: ID of the label set where the annotation belongs
     :param accuracy: Accuracy of the annotation
     :param revised: If the annotations are revised or not (bool)
     :param session: Session to connect to the server
@@ -299,7 +282,7 @@ def post_document_annotation(
         'end_offset': end_offset,
         'label': label_id,
         'revised': revised,
-        'section_label_id': template_id,
+        'section_label_id': label_set_id,
         'accuracy': accuracy,
         'is_correct': is_correct,
     }
@@ -372,18 +355,20 @@ def get_project_labels(session=konfuzio_session()) -> List[dict]:
     return sorted_labels
 
 
-def create_label(project_id: int, label_name: str, templates: list, session=konfuzio_session(), **kwargs) -> List[dict]:
+def create_label(
+    project_id: int, label_name: str, label_sets: list, session=konfuzio_session(), **kwargs
+) -> List[dict]:
     """
-    Create a Label and associate it with templates.
+    Create a Label and associate it with labels sets.
 
     :param project_id: Project ID where to create the label
     :param label_name: Name for the label
-    :param templates: Templates that use the label
+    :param label_sets: Label sets that use the label
     :param session: Session to connect to the server
     :return: Label ID in the Konfuzio Server.
     """
     url = get_create_label_url()
-    templates_ids = [template.id for template in templates]
+    label_sets_ids = [label_set.id for label_set in label_sets]
 
     description = kwargs.get('description', None)
     has_multiple_top_candidates = kwargs.get('has_multiple_top_candidates', False)
@@ -395,7 +380,7 @@ def create_label(project_id: int, label_name: str, templates: list, session=konf
         "description": description,
         "has_multiple_top_candidates": has_multiple_top_candidates,
         "get_data_type_display": data_type,
-        "templates": templates_ids,
+        "templates": label_sets_ids,
     }
 
     r = session.post(url=url, json=data)
@@ -405,18 +390,18 @@ def create_label(project_id: int, label_name: str, templates: list, session=konf
     return label_id
 
 
-def get_project_templates(session=konfuzio_session()) -> List[dict]:
+def get_project_label_sets(session=konfuzio_session()) -> List[dict]:
     """
-    Get templates available in project.
+    Get Label Sets available in project.
 
     :param session: Session to connect to the server
-    :return: Sorted templates.
+    :return: Sorted Label Sets.
     """
     url = get_project_url()
     r = session.get(url=url)
     r.raise_for_status()
-    sorted_templates = sorted(r.json()['section_labels'], key=itemgetter('id'))
-    return sorted_templates
+    sorted_label_sets = sorted(r.json()['section_labels'], key=itemgetter('id'))
+    return sorted_label_sets
 
 
 def upload_file_konfuzio_api(filepath: str, project_id: int, session=konfuzio_session(), dataset_status: int = 0):
