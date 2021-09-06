@@ -43,17 +43,17 @@ class Data(object):
         return hash(str(self.id))
 
 
-class Section(Data):
-    """Represent a Section - group of annotations."""
+class AnnotationSet(Data):
+    """Represent an Annotation Set - group of annotations."""
 
     def __init__(self, id, document, label_set, annotations, **kwargs):
         """
-        Create a section.
+        Create an Annotation Set.
 
-        :param id: ID of the section
-        :param document: Document where the section belongs
-        :param label_set: Label set
-        :param annotations: Annotations of the section
+        :param id: ID of the annotation set
+        :param document: Document where the annotation set belongs
+        :param label_set: Label set where the annotation set belongs
+        :param annotations: Annotations of the annotation set
         """
         self.id = id
         self.document = document
@@ -80,7 +80,7 @@ class LabelSet(Data):
         labels: List[int],
         is_default=False,
         default_label_sets: List["LabelSet"] = [],
-        has_multiple_sections=False,
+        has_multiple_annotation_sets=False,
         **kwargs,
     ):
         """
@@ -93,7 +93,7 @@ class LabelSet(Data):
         :param labels: Labels that belong to the Label Set (IDs)
         :param is_default: Bool for the Label Set to be the default one in the project
         :param default_label_sets: Default Label Set to which belongs
-        :param has_multiple_sections: Bool to allow the Label Set to have different sections in a document
+        :param has_multiple_annotation_sets: Bool to allow the Label Set to have different annotation sets in a document
         """
         self.id = id
         self.name = name
@@ -105,7 +105,7 @@ class LabelSet(Data):
             self.default_label_sets = kwargs['default_section_labels']
         else:
             self.default_label_sets = default_label_sets
-        self.has_multiple_sections = has_multiple_sections
+        self.has_multiple_annotation_sets = has_multiple_annotation_sets
         self.project: Project = project
         project.add_label_set(self)
         self.labels: List[Label] = []
@@ -259,7 +259,7 @@ class Annotation(Data):
         id: int = None,
         accuracy: float = None,
         document=None,
-        section=None,
+        annotation_set=None,
         label_set_text=None,
         translated_string=None,
         label_set_id=None,
@@ -277,7 +277,7 @@ class Annotation(Data):
         :param id: ID of the annotation (int)
         :param accuracy: Accuracy of the annotation (float)
         :param document: Document to annotate
-        :param section: Section of the document where the label belongs
+        :param annotation_set: Annotation set of the document where the label belongs
         :param label_set_text: Name of the label set where the label belongs
         :param translated_string: Translated string
         :param label_set_id: ID of the label set where the label belongs
@@ -297,7 +297,7 @@ class Annotation(Data):
             self.label: Label = label
 
         self.label_set = None
-        self.define_section = True
+        self.define_annotation_set = True
         # if no label_set_id we check if is passed by section_label_id
         if label_set_id is None:
             label_set_id = kwargs.get('section_label_id')
@@ -305,10 +305,10 @@ class Annotation(Data):
         if isinstance(label_set_id, int):
             self.label_set: LabelSet = self.document.project.get_label_set_by_id(label_set_id)
             if self.label_set.is_default:
-                self.define_section = False
+                self.define_annotation_set = False
 
         self.revised = revised
-        self.section = section
+        self.annotation_set = annotation_set
         self.start_offset = start_offset
         self.normalized = None
         self.translated_string = translated_string
@@ -333,7 +333,7 @@ class Annotation(Data):
         if label_set_text is None:
             label_set_text = kwargs.get('section_label_text')
 
-        self.section_text = label_set_text
+        self.annotation_set_text = label_set_text
 
     def __repr__(self):
         """Return string representation."""
@@ -384,8 +384,8 @@ class Annotation(Data):
                 accuracy=self.accuracy,
                 is_correct=self.is_correct,
                 revised=self.revised,
-                section=self.section,
-                define_section=self.define_section,
+                annotation_set=self.annotation_set,
+                define_annotation_set=self.define_annotation_set,
             )
             if response.status_code == 201:
                 json_response = json.loads(response.text)
@@ -476,7 +476,7 @@ class Document(Data):
         """
         self.file_path = file_path
         self.annotation_file_path = None  # path to json containing the Annotations of a Document
-        self.section_file_path = None  # path to json containing the Sections of a Document
+        self.annotation_set_file_path = None  # path to json containing the Annotation Sets of a Document
         self._annotations: List[Annotation] = []
         # Bounding box information per character in the PDF
         # Only access this via self.get_bbox
@@ -679,13 +679,13 @@ class Document(Data):
         :param update: Update the downloaded information even it is already available
         """
         self.annotation_file_path = os.path.join(self.root, 'annotations.json5')
-        self.section_file_path = os.path.join(self.root, 'sections.json5')
+        self.annotation_set_file_path = os.path.join(self.root, 'annotation_sets.json5')
         self.txt_file_path = os.path.join(self.root, 'document.txt')
         self.hocr_file_path = os.path.join(self.root, 'document.hocr')
 
         if update or not (
             is_file(self.annotation_file_path, raise_exception=False)
-            and is_file(self.section_file_path, raise_exception=False)
+            and is_file(self.annotation_set_file_path, raise_exception=False)
             and is_file(self.txt_file_path, raise_exception=False)
             and is_file(self.pages_file_path, raise_exception=False)
         ):
@@ -696,13 +696,13 @@ class Document(Data):
             self.text = data['text']
             self.hocr = data['hocr'] or ''
             self.pages = data['pages']
-            self._sections = data['sections']
+            self._annotation_sets = data['sections']
 
             # write a file, even there are no annotations to support offline work
             with open(self.annotation_file_path, 'w') as f:
                 json.dump(raw_annotations, f, indent=2, sort_keys=True)
 
-            with open(self.section_file_path, 'w') as f:
+            with open(self.annotation_set_file_path, 'w') as f:
                 json.dump(data['sections'], f, indent=2, sort_keys=True)
 
             with open(self.txt_file_path, 'w', encoding="utf-8") as f:
@@ -722,8 +722,8 @@ class Document(Data):
             with open(self.annotation_file_path, 'rb') as f:
                 raw_annotations = json.loads(f.read())
 
-            with open(self.section_file_path, 'rb') as f:
-                self._sections = json.loads(f.read())
+            with open(self.annotation_set_file_path, 'rb') as f:
+                self._annotation_sets = json.loads(f.read())
 
             with open(self.pages_file_path, 'rb') as f:
                 self.pages = json.loads(f.read())
@@ -881,7 +881,7 @@ class Project(Data):
     session = konfuzio_session()
     # classes are defined here to be able to redefine them if needed
     label_class = Label
-    section_class = Section
+    annotation_set_class = AnnotationSet
     label_set_class = LabelSet
     document_class = Document
     annotation_class = Annotation
@@ -915,34 +915,36 @@ class Project(Data):
         if not offline:
             self.make_paths()
             self.get()  # keep update to False, so once you have downloaded the data, don't do it again.
-        self.load_sections()
+        self.load_annotation_sets()
 
     def __repr__(self):
         """Return string representation."""
         return f'Project {self.id}'
 
-    def load_sections(self):
-        """Load document sections for all training and test documents."""
+    def load_annotation_sets(self):
+        """Load document annotation sets for all training and test documents."""
         label_set_mapper_dict = dict((x.id, x) for x in self.label_sets)
         for document in self.documents + self.test_documents:
-            annotations = [(x.section, x) for x in document.annotations()]
+            annotations = [(x.annotation_set, x) for x in document.annotations()]
             annotations_dict = {}
-            for section_id, annotation in annotations:
-                annotations_dict.setdefault(section_id, []).append(annotation)
+            for annotation_set_id, annotation in annotations:
+                annotations_dict.setdefault(annotation_set_id, []).append(annotation)
 
-            document_sections = []
-            for section in document._sections:
-                annotations = annotations_dict[section['id']] if section['id'] in annotations_dict else []
-                section['label_set'] = label_set_mapper_dict[section['section_label']]
-                # we only add the sections that match the category of the document
-                # (ignore ghost sections that may exist)
+            document_annotation_sets = []
+            for annotation_set in document._annotation_sets:
+                annotations = annotations_dict[annotation_set['id']] if annotation_set['id'] in annotations_dict else []
+                annotation_set['label_set'] = label_set_mapper_dict[annotation_set['section_label']]
+                # we only add the annotation_sets that match the category of the document
+                # (ignore ghost annotation_sets that may exist)
                 if (
-                    section['label_set'] == document.category
-                    or document.category in section['label_set'].default_label_sets
+                    annotation_set['label_set'] == document.category
+                    or document.category in annotation_set['label_set'].default_label_sets
                 ):
-                    section_instance = self.section_class(**section, document=document, annotations=annotations)
-                    document_sections.append(section_instance)
-            document.sections = document_sections
+                    annotation_set_instance = self.annotation_set_class(
+                        **annotation_set, document=document, annotations=annotations
+                    )
+                    document_annotation_sets.append(annotation_set_instance)
+            document.annotation_sets = document_annotation_sets
 
     def make_paths(self):
         """Create paths needed to store the project."""
@@ -1318,6 +1320,6 @@ class Project(Data):
         self.existing_meta_data = self.meta_data  # get meta data of what currently exists locally
         self.clean_meta()
         self.get(update=True)
-        self.load_sections()
+        self.load_annotation_sets()
 
         return self

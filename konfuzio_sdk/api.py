@@ -154,13 +154,13 @@ def get_document_details(document_id, session=konfuzio_session()):
     data = r.json()
     text = data["text"]
     annotations = data["annotations"]
-    sections = data["sections"]
+    annotations_sets = data["sections"]
     if text is None:
         logger.warning(f'Document with ID {document_id} does not contain any text, check OCR status.')
     else:
         logger.info(
             f'Document with ID {document_id} contains {len(text)} characters '
-            f'and {len(annotations)} annotations in {len(sections)} sections.'
+            f'and {len(annotations)} annotations in {len(annotations_sets)} annotation sets.'
         )
 
     return data
@@ -252,18 +252,20 @@ def post_document_annotation(
     accuracy: float,
     revised: bool = False,
     is_correct: bool = False,
-    section=None,
-    define_section=True,
+    annotation_set=None,
+    define_annotation_set=True,
     session=konfuzio_session(),
 ):
     """
     Add an annotation to an existing document.
 
-    For the section definition, we can:
-    - define the section id where the annotation should belong (section=x (int), define_section=True)
-    - pass it as None and a new section will be created (section=None, define_section=True)
-    - do not pass the section field and a new section will be created if does not exist any or the annotation will be
-    added to the previous section created (define_section=False)
+    For the annotation set definition, we can:
+    - define the annotation set id where the annotation should belong
+    (annotation_set=x (int), define_annotation_set=True)
+    - pass it as None and a new annotation set will be created
+    (annotation_set=None, define_annotation_set=True)
+    - do not pass the annotation set field and a new annotation set will be created if does not exist any or the
+    annotation will be added to the previous annotation set created (define_annotation_set=False)
 
     :param document_id: ID of the file
     :param start_offset: Start offset of the annotation
@@ -271,8 +273,10 @@ def post_document_annotation(
     :param label_id: ID of the label.
     :param label_set_id: ID of the label set where the annotation belongs
     :param accuracy: Accuracy of the annotation
-    :param revised: If the annotations are revised or not (bool)
-    :param session: Session to connect to the server
+    :param revised: If the annotation is revised or not (bool)
+    :param is_correct: If the annotation is corrected or not (bool)
+    :param annotation_set: Annotation set to connect to the server
+    :param define_annotation_set: If to define the annotation set (bool)
     :return: Response status.
     """
     url = post_project_api_document_annotations_url(document_id)
@@ -287,8 +291,8 @@ def post_document_annotation(
         'is_correct': is_correct,
     }
 
-    if define_section:
-        data['section'] = section
+    if define_annotation_set:
+        data['section'] = annotation_set
 
     r = session.post(url, json=data)
     return r
