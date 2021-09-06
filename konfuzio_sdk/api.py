@@ -105,8 +105,16 @@ def retry_get(session, url):
         except Exception:
             if 401 <= r.status_code <= 403:
                 raise ConnectionError(f'Problem with credentials: {json.loads(r.text)["detail"]}')
+
+            elif r.status_code == 404:
+                if not is_file(os.getcwd() + '/.env', raise_exception=False):
+                    raise ConnectionError('.env file does not exist! Run "konfuzio_sdk init" to create it.')
+                else:
+                    raise ConnectionError(f'Unknown issue: {json.loads(r.text)["detail"]}')
+
             elif r.status_code == 500:
                 raise TimeoutError(f'Problem with server: {json.loads(r.text)["detail"]} even after 10 retries')
+
             else:
                 logger.warning(f'Retry to get url >>{url}<<')
                 retry_count += 1
