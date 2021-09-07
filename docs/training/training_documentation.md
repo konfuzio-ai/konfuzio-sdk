@@ -1,7 +1,7 @@
 .. meta::
    :description: Documentation of the features of the trainer package including the contents structure and examples of how to use it.
 
-The functionalites of the Trainer module are not yet available in the SDK.
+The functionalities of the Trainer module are not yet available in the SDK.
 
 ## LabelSectionModel Examples
 

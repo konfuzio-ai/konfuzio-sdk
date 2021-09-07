@@ -38,7 +38,7 @@ def test_post_document_annotation():
     end_offset = 88
     accuracy = 0.0001
     label_id = 863  # Refers to Label Betrag (863)
-    template_id = 64  # Refers to Template Brutto-Bezug (allows multisections)
+    label_set_id = 64  # Refers to LabelSet Brutto-Bezug (allows multisections)
     # create a revised annotation, so we can verify its existence via get_document_annotations
     response = post_document_annotation(
         document_id=document_id,
@@ -46,7 +46,7 @@ def test_post_document_annotation():
         end_offset=end_offset,
         accuracy=accuracy,
         label_id=label_id,
-        template_id=template_id,
+        label_set_id=label_set_id,
         revised=True,
     )
     annotation = json.loads(response.text)

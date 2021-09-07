@@ -17,7 +17,7 @@ from konfuzio_sdk.api import (
     get_meta_of_files,
     get_project_labels,
     post_document_annotation,
-    get_project_templates,
+    get_project_label_sets,
     retry_get,
     delete_document_annotation,
     upload_file_konfuzio_api,
@@ -43,21 +43,21 @@ class Data(object):
         return hash(str(self.id))
 
 
-class Section(Data):
-    """Represent a Section - group of annotations."""
+class AnnotationSet(Data):
+    """Represent an Annotation Set - group of annotations."""
 
-    def __init__(self, id, document, template, annotations, **kwargs):
+    def __init__(self, id, document, label_set, annotations, **kwargs):
         """
-        Create a section.
+        Create an Annotation Set.
 
-        :param id: ID of the section
-        :param document: Document where the section belongs
-        :param template: Template
-        :param annotations: Annotations of the section
+        :param id: ID of the annotation set
+        :param document: Document where the annotation set belongs
+        :param label_set: Label set where the annotation set belongs
+        :param annotations: Annotations of the annotation set
         """
         self.id = id
         self.document = document
-        self.template = template
+        self.label_set = label_set
         self.annotations = annotations
         _annotations = [x for x in annotations if x.start_offset and x.end_offset]
         if len(_annotations) > 0:
@@ -68,8 +68,8 @@ class Section(Data):
             self.end_offset = None
 
 
-class Template(Data):
-    """A template is a set of labels."""
+class LabelSet(Data):
+    """A Label Set is a set of labels."""
 
     def __init__(
         self,
@@ -79,47 +79,47 @@ class Template(Data):
         name_clean: str,
         labels: List[int],
         is_default=False,
-        default_templates: List["Template"] = [],
-        has_multiple_sections=False,
+        default_label_sets: List["LabelSet"] = [],
+        has_multiple_annotation_sets=False,
         **kwargs,
     ):
         """
-        Create a named template.
+        Create a named Label Set.
 
-        :param project: Project where the template belongs
-        :param id: ID of the template
-        :param name: Name of the template
-        :param name_clean: Normalized name of the template
-        :param labels: Labels that belong to the template (IDs)
-        :param is_default: Bool for template to be the default one in the project
-        :param default_templates: Default templates to which belongs
-        :param has_multiple_sections: Bool to allow the template to have different sections in a document
+        :param project: Project where the Label Set belongs
+        :param id: ID of the Label Set
+        :param name: Name of Label Set
+        :param name_clean: Normalized name of the Label Set
+        :param labels: Labels that belong to the Label Set (IDs)
+        :param is_default: Bool for the Label Set to be the default one in the project
+        :param default_label_sets: Default Label Set to which belongs
+        :param has_multiple_annotation_sets: Bool to allow the Label Set to have different annotation sets in a document
         """
         self.id = id
         self.name = name
         self.name_clean = name_clean
         self.is_default = is_default
-        if 'default_template' in kwargs:
-            self.default_templates = [kwargs['default_template']]
+        if 'default_label_sets' in kwargs:
+            self.default_label_sets = [kwargs['default_label_sets']]
         elif 'default_section_labels' in kwargs:
-            self.default_templates = kwargs['default_section_labels']
+            self.default_label_sets = kwargs['default_section_labels']
         else:
-            self.default_templates = default_templates
-        self.has_multiple_sections = has_multiple_sections
+            self.default_label_sets = default_label_sets
+        self.has_multiple_annotation_sets = has_multiple_annotation_sets
         self.project: Project = project
-        project.add_template(self)
+        project.add_label_set(self)
         self.labels: List[Label] = []
         for label_id in labels:
             label = self.project.get_label_by_id(id=label_id)
             self.add_label(label)
 
     def __repr__(self):
-        """Return string representation of the template."""
+        """Return string representation of the Label Set."""
         return f'{self.name} ({self.id})'
 
     def add_label(self, label):
         """
-        Add label to template, if it does not exist.
+        Add label to Label Set, if it does not exist.
 
         :param label: Label ID to be added
         """
@@ -138,7 +138,7 @@ class Label(Data):
         get_data_type_display: str = None,
         text_clean: str = None,
         description: str = None,
-        templates: List[Template] = [],
+        label_sets: List[LabelSet] = [],
         has_multiple_top_candidates: bool = False,
         *initial_data,
         **kwargs,
@@ -152,7 +152,7 @@ class Label(Data):
         :param get_data_type_display: Data type of the label
         :param text_clean: Normalized name of the label
         :param description: Description of the label
-        :param templates: Templates that use this label
+        :param label_sets: Label sets that use this label
         """
         self.id = id
         self.name = text
@@ -165,18 +165,18 @@ class Label(Data):
         self._correct_annotations_indexed = None
 
         project.add_label(self)
-        if templates:
-            [x.add_label(self) for x in templates]
+        if label_sets:
+            [x.add_label(self) for x in label_sets]
 
     def __repr__(self):
         """Return string representation."""
         return self.name
 
     @property
-    def templates(self):
-        """Get the templates in which this label is used."""
-        templates = [x for x in self.project.templates if self in x.labels]
-        return templates
+    def label_sets(self):
+        """Get the label sets in which this label is used."""
+        label_sets = [x for x in self.project.label_sets if self in x.labels]
+        return label_sets
 
     @property
     def annotations(self):
@@ -190,14 +190,14 @@ class Label(Data):
             annotations += document.annotations(label=self)
         return annotations
 
-    def add_template(self, template):
+    def add_label_set(self, label_set: 'LabelSet'):
         """
-        Add template to label, if it does not exist.
+        Add label set to label, if it does not exist.
 
-        :param template: Template to add
+        :param label_set: Label set to add
         """
-        if template not in self.templates:
-            self.templates.append(template)
+        if label_set not in self.label_sets:
+            self.label_sets.append(label_set)
         return self
 
     @property
@@ -215,16 +215,16 @@ class Label(Data):
         """
         Save Label online.
 
-        If no templates are specified, the label is associated with the first default template of the project.
+        If no label sets are specified, the label is associated with the first default label set of the project.
 
         :return: True if the new label was created.
         """
         new_label_added = False
         try:
-            if len(self.templates) == 0:
-                prj_templates = self.project.templates
-                default_template = [t for t in prj_templates if t.is_default][0]
-                default_template.add_label(self)
+            if len(self.label_sets) == 0:
+                prj_label_sets = self.project.label_sets
+                default_label_set = [t for t in prj_label_sets if t.is_default][0]
+                default_label_set.add_label(self)
 
             response = create_label(
                 project_id=self.project.id,
@@ -232,7 +232,7 @@ class Label(Data):
                 description=self.description,
                 has_multiple_top_candidates=self.has_multiple_top_candidates,
                 data_type=self.data_type,
-                templates=self.templates,
+                label_sets=self.label_sets,
             )
             self.id = response
             new_label_added = True
@@ -259,10 +259,10 @@ class Annotation(Data):
         id: int = None,
         accuracy: float = None,
         document=None,
-        section=None,
-        template_text=None,
+        annotation_set=None,
+        label_set_text=None,
         translated_string=None,
-        template_id=None,
+        label_set_id=None,
         *initial_data,
         **kwargs,
     ):
@@ -277,10 +277,10 @@ class Annotation(Data):
         :param id: ID of the annotation (int)
         :param accuracy: Accuracy of the annotation (float)
         :param document: Document to annotate
-        :param section: Section of the document where the label belongs
-        :param template_text: Name of the template where the label belongs
+        :param annotation_set: Annotation set of the document where the label belongs
+        :param label_set_text: Name of the label set where the label belongs
         :param translated_string: Translated string
-        :param template_id: ID of the template where the label belongs
+        :param label_set_id: ID of the label set where the label belongs
         """
         self.bottom = None  # Information about BoundingBox of text sequence
         self.document = document
@@ -296,19 +296,19 @@ class Annotation(Data):
         else:
             self.label: Label = label
 
-        self.template = None
-        self.define_section = True
-        # if no template_id we check if is passed by section_label_id
-        if template_id is None:
-            template_id = kwargs.get('section_label_id')
+        self.label_set = None
+        self.define_annotation_set = True
+        # if no label_set_id we check if is passed by section_label_id
+        if label_set_id is None:
+            label_set_id = kwargs.get('section_label_id')
 
-        if isinstance(template_id, int):
-            self.template: Template = self.document.project.get_template_by_id(template_id)
-            if self.template.is_default:
-                self.define_section = False
+        if isinstance(label_set_id, int):
+            self.label_set: LabelSet = self.document.project.get_label_set_by_id(label_set_id)
+            if self.label_set.is_default:
+                self.define_annotation_set = False
 
         self.revised = revised
-        self.section = section
+        self.annotation_set = annotation_set
         self.start_offset = start_offset
         self.normalized = None
         self.translated_string = translated_string
@@ -327,11 +327,13 @@ class Annotation(Data):
             self.y0 = bbox.get('y0')
             self.y1 = bbox.get('y1')
 
-        # if no template_text we check if is passed by section_label_text
-        if template_text is None:
-            template_text = kwargs.get('section_label_text')
+        self.bboxes = kwargs.get('bboxes', None)
 
-        self.section_text = template_text
+        # if no label_set_text we check if is passed by section_label_text
+        if label_set_text is None:
+            label_set_text = kwargs.get('section_label_text')
+
+        self.annotation_set_text = label_set_text
 
     def __repr__(self):
         """Return string representation."""
@@ -378,12 +380,12 @@ class Annotation(Data):
                 start_offset=self.start_offset,
                 end_offset=self.end_offset,
                 label_id=self.label.id,
-                template_id=self.template.id,
+                label_set_id=self.label_set.id,
                 accuracy=self.accuracy,
                 is_correct=self.is_correct,
                 revised=self.revised,
-                section=self.section,
-                define_section=self.define_section,
+                annotation_set=self.annotation_set,
+                define_annotation_set=self.define_annotation_set,
             )
             if response.status_code == 201:
                 json_response = json.loads(response.text)
@@ -474,7 +476,7 @@ class Document(Data):
         """
         self.file_path = file_path
         self.annotation_file_path = None  # path to json containing the Annotations of a Document
-        self.section_file_path = None  # path to json containing the Sections of a Document
+        self.annotation_set_file_path = None  # path to json containing the Annotation Sets of a Document
         self._annotations: List[Annotation] = []
         # Bounding box information per character in the PDF
         # Only access this via self.get_bbox
@@ -484,7 +486,7 @@ class Document(Data):
         self.dataset_status = dataset_status
         self.number_of_pages = number_of_pages
         if project:
-            self.category_template = project.get_template_by_id(kwargs.get('category_template', None))
+            self.category = project.get_label_set_by_id(kwargs.get('category_template', None))
         self.id = id
         self.updated_at = None
         if updated_at:
@@ -503,12 +505,15 @@ class Document(Data):
         self.txt_file_path = os.path.join(self.root, 'document.txt')
         self.hocr_file_path = os.path.join(self.root, 'document.hocr')
         self.pages_file_path = os.path.join(self.root, 'pages.json5')
+
         self.bbox_file_path = None
+        if os.path.exists(os.path.join(self.root, 'bbox.json5')):
+            self.bbox_file_path = os.path.join(self.root, 'bbox.json5')
+
         self.bio_scheme_file_path = None
 
         self.text = kwargs.get('text')
         self.hocr = kwargs.get('hocr')
-        self.txt_file_path = None  # path to local text file containing the document text
 
         # prepare local setup for document
         pathlib.Path(self.root).mkdir(parents=True, exist_ok=True)
@@ -674,13 +679,13 @@ class Document(Data):
         :param update: Update the downloaded information even it is already available
         """
         self.annotation_file_path = os.path.join(self.root, 'annotations.json5')
-        self.section_file_path = os.path.join(self.root, 'sections.json5')
+        self.annotation_set_file_path = os.path.join(self.root, 'annotation_sets.json5')
         self.txt_file_path = os.path.join(self.root, 'document.txt')
         self.hocr_file_path = os.path.join(self.root, 'document.hocr')
 
         if update or not (
             is_file(self.annotation_file_path, raise_exception=False)
-            and is_file(self.section_file_path, raise_exception=False)
+            and is_file(self.annotation_set_file_path, raise_exception=False)
             and is_file(self.txt_file_path, raise_exception=False)
             and is_file(self.pages_file_path, raise_exception=False)
         ):
@@ -691,13 +696,13 @@ class Document(Data):
             self.text = data['text']
             self.hocr = data['hocr'] or ''
             self.pages = data['pages']
-            self._sections = data['sections']
+            self._annotation_sets = data['sections']
 
             # write a file, even there are no annotations to support offline work
             with open(self.annotation_file_path, 'w') as f:
                 json.dump(raw_annotations, f, indent=2, sort_keys=True)
 
-            with open(self.section_file_path, 'w') as f:
+            with open(self.annotation_set_file_path, 'w') as f:
                 json.dump(data['sections'], f, indent=2, sort_keys=True)
 
             with open(self.txt_file_path, 'w', encoding="utf-8") as f:
@@ -717,8 +722,8 @@ class Document(Data):
             with open(self.annotation_file_path, 'rb') as f:
                 raw_annotations = json.loads(f.read())
 
-            with open(self.section_file_path, 'rb') as f:
-                self._sections = json.loads(f.read())
+            with open(self.annotation_set_file_path, 'rb') as f:
+                self._annotation_sets = json.loads(f.read())
 
             with open(self.pages_file_path, 'rb') as f:
                 self.pages = json.loads(f.read())
@@ -848,7 +853,7 @@ class Document(Data):
                 document_id=self.id,
                 dataset_status=self.dataset_status,
                 file_name=self.name,
-                category_template=self.category_template.id,
+                category_template=self.category.id,
             )
             if response.status_code == 200:
                 document_saved = True
@@ -876,8 +881,8 @@ class Project(Data):
     session = konfuzio_session()
     # classes are defined here to be able to redefine them if needed
     label_class = Label
-    section_class = Section
-    template_class = Template
+    annotation_set_class = AnnotationSet
+    label_set_class = LabelSet
     document_class = Document
     annotation_class = Annotation
 
@@ -891,7 +896,7 @@ class Project(Data):
         by default.
         """
         self.id = id
-        self.templates: List[Template] = []
+        self.label_sets: List[LabelSet] = []
         self.labels: List[Label] = []
 
         self.documents: List[Document] = []
@@ -900,7 +905,7 @@ class Project(Data):
         self.preparation_documents: List[Document] = []
         self.low_ocr_documents: List[Document] = []
 
-        self.templates_file_path = None
+        self.label_sets_file_path = None
         self.labels_file_path = None
         self.meta_file_path = None
         self.meta_data = None
@@ -910,34 +915,36 @@ class Project(Data):
         if not offline:
             self.make_paths()
             self.get()  # keep update to False, so once you have downloaded the data, don't do it again.
-        self.load_sections()
+        self.load_annotation_sets()
 
     def __repr__(self):
         """Return string representation."""
         return f'Project {self.id}'
 
-    def load_sections(self):
-        """Load document sections for all training and test documents."""
-        template_mapper_dict = dict((x.id, x) for x in self.templates)
+    def load_annotation_sets(self):
+        """Load document annotation sets for all training and test documents."""
+        label_set_mapper_dict = dict((x.id, x) for x in self.label_sets)
         for document in self.documents + self.test_documents:
-            annotations = [(x.section, x) for x in document.annotations()]
+            annotations = [(x.annotation_set, x) for x in document.annotations()]
             annotations_dict = {}
-            for section_id, annotation in annotations:
-                annotations_dict.setdefault(section_id, []).append(annotation)
+            for annotation_set_id, annotation in annotations:
+                annotations_dict.setdefault(annotation_set_id, []).append(annotation)
 
-            document_sections = []
-            for section in document._sections:
-                annotations = annotations_dict[section['id']] if section['id'] in annotations_dict else []
-                section['template'] = template_mapper_dict[section['section_label']]
-                # we only add the sections that match the category of the document
-                # (ignore ghost sections that may exist)
+            document_annotation_sets = []
+            for annotation_set in document._annotation_sets:
+                annotations = annotations_dict[annotation_set['id']] if annotation_set['id'] in annotations_dict else []
+                annotation_set['label_set'] = label_set_mapper_dict[annotation_set['section_label']]
+                # we only add the annotation_sets that match the category of the document
+                # (ignore ghost annotation_sets that may exist)
                 if (
-                    section['template'] == document.category_template
-                    or document.category_template in section['template'].default_templates
+                    annotation_set['label_set'] == document.category
+                    or document.category in annotation_set['label_set'].default_label_sets
                 ):
-                    section_instance = self.section_class(**section, document=document, annotations=annotations)
-                    document_sections.append(section_instance)
-            document.sections = document_sections
+                    annotation_set_instance = self.annotation_set_class(
+                        **annotation_set, document=document, annotations=annotations
+                    )
+                    document_annotation_sets.append(annotation_set_instance)
+            document.annotation_sets = document_annotation_sets
 
     def make_paths(self):
         """Create paths needed to store the project."""
@@ -957,21 +964,21 @@ class Project(Data):
         # add the labels first, before creating documents and annotations
         self.get_meta(update=update)
         self.get_labels(update=update)
-        self.get_templates(update=update)
+        self.get_label_sets(update=update)
         self.clean_documents(update=update)
         self.get_documents(update=update)
         self.get_test_documents(update=update)
 
         return self
 
-    def add_template(self, template: Template):
+    def add_label_set(self, label_set: LabelSet):
         """
-        Add template to project, if it does not exist.
+        Add label set to project, if it does not exist.
 
-        :param template: Template to add in the project
+        :param label_set: Label Set to add in the project
         """
-        if template not in self.templates:
-            self.templates.append(template)
+        if label_set not in self.label_sets:
+            self.label_sets.append(label_set)
 
     def add_label(self, label: Label):
         """
@@ -1042,7 +1049,7 @@ class Project(Data):
         for doc in project_documents:
             if doc.id == document.id:
                 doc.name = document.name
-                doc.category_template = document.category_template
+                doc.category = document.category
                 break
 
         # if the document is new to the project, just add it
@@ -1076,38 +1083,38 @@ class Project(Data):
 
         return self.meta_data
 
-    def get_templates(self, update=False):
+    def get_label_sets(self, update=False):
         """
-        Get ID and name of any Template in the project.
+        Get ID and name of any Label Set in the project.
 
         :param update: Update the downloaded information even it is already available
-        :return: Templates in the project.
+        :return: Label Sets in the project.
         """
-        if not self.templates or update:
-            self.templates_file_path = os.path.join(self.data_root, 'templates.json5')
-            if not is_file(self.templates_file_path, raise_exception=False) or update:
-                templates_data = get_project_templates(session=self.session)
-                if templates_data:
+        if not self.label_sets or update:
+            self.label_sets_file_path = os.path.join(self.data_root, 'label_sets.json5')
+            if not is_file(self.label_sets_file_path, raise_exception=False) or update:
+                label_sets_data = get_project_label_sets(session=self.session)
+                if label_sets_data:
                     # the text of a document can be None
-                    with open(self.templates_file_path, 'w') as f:
-                        json.dump(templates_data, f, indent=2, sort_keys=True)
+                    with open(self.label_sets_file_path, 'w') as f:
+                        json.dump(label_sets_data, f, indent=2, sort_keys=True)
             else:
-                with open(self.templates_file_path, 'r') as f:
-                    templates_data = json.load(f)
+                with open(self.label_sets_file_path, 'r') as f:
+                    label_sets_data = json.load(f)
 
-            for template_data in templates_data:
-                self.template_class(project=self, **template_data)
+            for label_set_data in label_sets_data:
+                self.label_set_class(project=self, **label_set_data)
 
-        # Make default_template an Template instance
-        for template in self.templates:
+        # Make default_label_set an LabelSet instance
+        for label_set in self.label_sets:
             updated_list = []
-            for default_template in template.default_templates:
-                if isinstance(default_template, int):
-                    updated_list.append(self.get_template_by_id(default_template))
+            for default_label_set in label_set.default_label_sets:
+                if isinstance(default_label_set, int):
+                    updated_list.append(self.get_label_set_by_id(default_label_set))
                 else:
-                    updated_list.append(default_template)
-            template.default_templates = updated_list
-        return self.templates
+                    updated_list.append(default_label_set)
+            label_set.default_label_sets = updated_list
+        return self.label_sets
 
     def get_labels(self, update=False):
         """
@@ -1277,18 +1284,18 @@ class Project(Data):
             if label.id == id:
                 return label
 
-    def get_template_by_id(self, id: int) -> Template:
+    def get_label_set_by_id(self, id: int) -> LabelSet:
         """
-        Return a section label by ID.
+        Return a Label Set by ID.
 
-        :param id: ID of the section label to get.
+        :param id: ID of the Label Set to get.
         """
-        for template in self.templates:
-            if template.id == id:
-                return template
+        for label_set in self.label_sets:
+            if label_set.id == id:
+                return label_set
 
     def clean_meta(self):
-        """Clean the meta-information about the Project, Labels, and Templates."""
+        """Clean the meta-information about the Project, Labels, and Label Sets."""
         if self.meta_file_path:
             os.remove(self.meta_file_path)
         assert not is_file(self.meta_file_path, raise_exception=False)
@@ -1301,11 +1308,11 @@ class Project(Data):
         self.labels_file_path = None
         self.labels: List[Label] = []
 
-        if self.templates_file_path:
-            os.remove(self.templates_file_path)
-        assert not is_file(self.templates_file_path, raise_exception=False)
-        self.templates_file_path = None
-        self.templates: List[Template] = []
+        if self.label_sets_file_path:
+            os.remove(self.label_sets_file_path)
+        assert not is_file(self.label_sets_file_path, raise_exception=False)
+        self.label_sets_file_path = None
+        self.label_sets: List[LabelSet] = []
 
     def update(self):
         """Update the project and all documents by downloading them from the host. Note : It will not work offline."""
@@ -1313,6 +1320,6 @@ class Project(Data):
         self.existing_meta_data = self.meta_data  # get meta data of what currently exists locally
         self.clean_meta()
         self.get(update=True)
-        self.load_sections()
+        self.load_annotation_sets()
 
         return self
