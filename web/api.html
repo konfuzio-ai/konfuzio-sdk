@@ -105,6 +105,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../sdk/contribution.html">Contribution Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sdk/coordinates_system.html">Coordinates System</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sdk/changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/faq.html">FAQ</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Konfuzio Trainer</span></p>
 <ul>
@@ -223,7 +224,7 @@
 </div>
 <div class="section" id="how-to-make-an-api-call">
 <h1>How to make an API Call<a class="headerlink" href="#how-to-make-an-api-call" title="Permalink to this headline">¶</a></h1>
-<p>The API documentation is available at: <a class="reference external" href="https://app.konfuzio.com/swagger">https://app.konfuzio.com/swagger</a>.</p>
+<p>The API documentation is available at <a class="reference external" href="https://app.konfuzio.com/api">https://app.konfuzio.com/api</a>.</p>
 <p>The API supports Password Authentication and Token Authentication.
 An API Token can be obtained here: <a class="reference external" href="https://app.konfuzio.com/v2/swagger/#/token-auth/token_auth_create">https://app.konfuzio.com/v2/swagger/#/token-auth/token_auth_create</a></p>
 <p>“ENDPOINT” needs to be replaced with the respective API endpoint. Username, password, and token are randomized examples.</p>
@@ -341,13 +342,13 @@ list, and figure. For each element, it is possible to get a classification and b
 </pre></div>
 </div>
 <a class="reference external image-reference" href="../_static/img/segmentation.png"><img alt="segmentation_endpoint" src="../_images/segmentation.png" /></a>
-<p>[1] Kaming H. et al., “Mask R-CNN”, 2018<span class="raw-html-m2r"><br></span>
-[2] Zhong, X. et al., “PubLayNet: largest dataset ever for document layout analysis”, 2019<span class="raw-html-m2r"><br></span>
+<p>[1] Kaming H. et al., “Mask R-CNN”, 2018
+[2] Zhong, X. et al., “PubLayNet: largest dataset ever for document layout analysis”, 2019
 [3] Yuxin, W. et al., Detectron2, GitHub repository, <a class="reference external" href="https://github.com/facebookresearch/detectron2">https://github.com/facebookresearch/detectron2</a>, 2019</p>
 </div>
 <div class="section" id="supported-ocr-languages">
 <h1>Supported OCR languages<a class="headerlink" href="#supported-ocr-languages" title="Permalink to this headline">¶</a></h1>
-<p>The default OCR engine for <a class="reference external" href="https://app.konfuzio.com">https://app.konfuzio.com</a> supports the following languages:</p>
+<p>The default OCR engine for <a class="reference external" href="https://app.konfuzio.com">Konfuzio Server</a> supports the following languages:</p>
 <p>Afrikaans, Albanian, Arabic, Asturian, Basque, Bislama, Breton, Catalan, Cebuano, Chamorro, Chinese Simplified, Chinese Traditional, Cornish, Corsican, Crimean Tatar Latin, Czech, Danish, Dutch, English (incl. handwritten), Estonian, Fijian, Filipino, Finnish, French, Friulian, Galician, German, Gilbertese, Greek, Greenlandic, Haitian Creole, Hani, Hmong Daw Latin, Hungarian, Indonesian, Interlingua, Inuktitut Latin, Irish, Italian, Japanese, Javanese, K’iche’, Kabuverdianu, Kachin Latin, Kara-Kalpak, Kashubian, Khasi, Korean, Kurdish Latin, Luxembourgish, Malay Latin, Manx, Neapolitan, Norwegian, Norwegian, Occitan, Polish, Portuguese, Romanian, Romansh, Russian, Scots, Scottish Gaelic, Serbian Cyrillic, Serbian Latin, Slovak, Slovenian, Spanish, Swahili Latin, Swedish, Tatar Latin, Tetum, Turkish, Upper Sorbian, Uzbek Latin, Volapük, Walser, Western Frisian, Yucatec Maya, Zhuang, Zulu.</p>
 <p>The availability of OCR languages depends on the selected OCR engine and might differ across configurations (e.g. on-premise installation).</p>
 </div>
@@ -370,18 +371,29 @@ list, and figure. For each element, it is possible to get a classification and b
 <div class="section" id="supported-data-normalization">
 <h1>Supported Data Normalization<a class="headerlink" href="#supported-data-normalization" title="Permalink to this headline">¶</a></h1>
 <p>Our Konfuzio application can normalize various data formats for different data types used in the annotations of the documents within your project.
-It translates different formats of numbers, percentages, date, and boolean values into a unique and machine-readable format. Down below you find an overview of the normalizations of the different data types with specific examples.</p>
+It translates different formats of numbers, percentages, date, and boolean values into a unique and machine-readable format.
+Down below, you find an overview of the normalizations of the different data types with specific examples.</p>
+<p>Note:</p>
+<p><strong>It is necessary to train a new AI after a change in the data type of a label.</strong></p>
 <div class="section" id="numbers">
 <h2>1. Numbers<a class="headerlink" href="#numbers" title="Permalink to this headline">¶</a></h2>
-<p>Konfuzio is able to recognize numbers encoded in a written format to translate them into a data type that represents machine-readable numbers (i.e. float). Numbers from one to twelve are transformed, either from German or English language.
-Given an annotation as an offset string, this annotation will be translated into an (absolute) number.<span class="raw-html-m2r"><br></span>
-Starting with the first case, a dash or a series of dashes which also might include commas or decimal points will be recognized as Zero.<span class="raw-html-m2r"><br></span>
-For the specific context not relevant signs, like quotation marks or whitespaces, are completely removed from the annotation. If the annotation contains the letter “S” or “H” after the digits, it will also be removed.</p>
+<p>Konfuzio is able to recognize numbers encoded in a written format to translate them into a data type that represents machine-readable numbers (i.e. float).
+Numbers from one to twelve are transformed, either from German or English language.
+Given an annotation as an offset string, this annotation will be translated into an (absolute) number.</p>
+<p>Starting with the first case, a dash or a series of dashes which also might include commas or decimal points will be recognized as Zero.
+For the specific context not relevant signs, like quotation marks or whitespaces, are completely removed from the annotation.
+If the annotation contains the letter “S” or “H” after the digits, it will also be removed.</p>
 <p>Negative expressions are recognized either by dashes in front or after the digits, the letter “S” after the digits, or the number being framed into brackets.
 For regular numbers, positive signs will be completely removed, while negative signs will be placed in front of the digits.
 When dealing with absolute numbers, negative or positive signs are fully removed, as well as whitespaces or quotation marks for all number formats.</p>
-<p>As there are varying ways to display float numbers, e.g. by using dots instead of commas to display the thousands mark or decimal numbers, Konfuzio also takes care of this to display it in a uniform format.
-The uniform chosen format uses the English/American standard. Hence, dots are used as a separation for decimal numbers and commas to mark the thousands with two decimal places.</p>
+<p>As there are varying ways to display float numbers, e.g. by using dots instead of commas to display the thousands mark or
+decimal numbers, Konfuzio also takes care of this to display it in a uniform format.
+The uniform chosen format uses the English/American standard.
+Hence, dots are used as a separation for decimal numbers and commas to mark the thousands with two decimal places.</p>
+<p>Note:</p>
+<p>The data type <strong>number should be used for annotations that are meant to be used as mathematical numbers</strong>.<span class="raw-html-m2r"><br></span>
+For example, phone numbers, house numbers and product numbers should have the data type text as they can contain
+alphabetical characters, leading zeros (that will be removed otherwise) and no mathematical operation should be applied to it (e.g. sum).</p>
 <p><strong>To give you specific examples with the outputs down below in the table:</strong><span class="raw-html-m2r"><br></span>
 1) Expressions only consisting of one or multiple dashes are translated into Zero:<span class="raw-html-m2r"><br></span>
 e.g.: -,-</p>
@@ -569,9 +581,12 @@ e.g.: StringThatIncludesNIL</p>
 </div>
 <div class="section" id="percentage-numbers">
 <h2>2. Percentage Numbers<a class="headerlink" href="#percentage-numbers" title="Permalink to this headline">¶</a></h2>
-<p>Konfuzio also handles percentage numbers of different formats and brings them into a machine-readable one. Percentage expressions are not displayed in the classic percentage format with the percentage sign %. The decimal number format without the percentage sign is used, but with a dot as a decimal separator and 4 decimal places.</p>
+<p>Konfuzio also handles percentage numbers of different formats and brings them into a machine-readable one.
+Percentage expressions are not displayed in the classic percentage format with the percentage sign %.
+The decimal number format without the percentage sign is used, but with a dot as a decimal separator and 4 decimal places.</p>
 <p><strong>To give you specific examples with the outputs down below in the table:</strong><span class="raw-html-m2r"><br></span>
-1) Digits that are separated by commas with two decimal places will be easily converted into a uniform format, either with or without the percentage sign in its original format:<span class="raw-html-m2r"><br></span>
+1) Digits that are separated by commas with two decimal places will be easily converted into a uniform format,
+either with or without the percentage sign in its original format:<span class="raw-html-m2r"><br></span>
 e.g.: 12,34<span class="raw-html-m2r"><br></span>
 e.g.: 12,34 %<span class="raw-html-m2r"><br></span>
 e.g.: 434,27%<span class="raw-html-m2r"><br></span>
@@ -652,10 +667,13 @@ e.g.: 0,00</p>
 </div>
 <div class="section" id="date-values">
 <h2>3. Date Values<a class="headerlink" href="#date-values" title="Permalink to this headline">¶</a></h2>
-<p>Konfuzio applies the so-called ISO 8601 format (YYYY-MM-DD) for dates. It checks initially whether this format is already used which then won’t be altered in this case. However, if another format is used, it will be adapted. In the next step, it checks if a format consisting only of a month and a year is used or even just a year without any other date information besides that.</p>
-<p>Konfuzio recognizes written months either in German or English language and translates them into the iso format.</p>
-<p><strong>To give you specific examples with the outputs down below in the table:</strong>
-1) Dates, where the month is posted in a written expression with the year and the day as digits, can be transformed into the iso format without any problems:<span class="raw-html-m2r"><br></span>
+<p>Konfuzio applies the ISO 8601 format (YYYY-MM-DD) for dates. It checks initially whether this format is already used
+which then won’t be altered in this case. However, if another format is used, it will be adapted.</p>
+<p>In the next step, it checks if a format consisting only of a month and a year is used or even just a year without any
+other date information besides that.</p>
+<p>Konfuzio recognizes written months either in German or English language and translates them into the ISO format.</p>
+<p><strong>To give you specific examples with the outputs down below in the table:</strong><span class="raw-html-m2r"><br></span>
+1) Dates, where the month is posted in a written expression with the year and the day as digits, can be transformed into the ISO format:<span class="raw-html-m2r"><br></span>
 e.g.: 1. November 2019<span class="raw-html-m2r"><br></span>
 e.g.: 13 Mar 2020</p>
 <p>2) If the year is indicated with just two digits, it will also be recognized, even if it’s not separated with a sign like a dot or something similar:<span class="raw-html-m2r"><br></span>
@@ -789,15 +807,23 @@ e.g.: 30.07.2.90</p>
 </div>
 <div class="section" id="boolean-values">
 <h2>4. Boolean values<a class="headerlink" href="#boolean-values" title="Permalink to this headline">¶</a></h2>
-<p>Our application is also able to translate certain expressions into so-called boolean values, representing true or false values. This is based on certain pre-specified words. These words are representing positive or negative connotated responses with certain signal words which can be found down below in the _no<em>list</em> and _yes<em>list</em>.</p>
+<p>Our application is also able to translate certain expressions into boolean values, representing true or false values.
+This is based on certain pre-specified words. These words are representing positive or negative connoted responses
+with certain signal words which can be found down below in the _no<em>list</em> and _yes<em>list</em>.</p>
 <p>The pre-specified positive and negative (hence true and false) expressions:<span class="raw-html-m2r"><br></span>
 no_list = [‘NEIN’, ‘NICHT’, ‘KEIN’, ‘OHNE’, ‘NO’]<span class="raw-html-m2r"><br></span>
 yes_list = [‘VORHANDEN’, ‘JA’, ‘MIT’, ‘YES’]</p>
-<p>Given the following examples, you can recognize how certain expressions are clustered into either <em>False</em> or <em>True</em> boolean values. If the expression is including one of the <em>no</em> or <em>yes</em> words from above, Konfuzio allocates it to <em>True</em> or <em>False</em>. However, normalization is only possible if the signal words are the first word of the annotation to avoid false positives with word combinations of words from the _no<em>list</em> and _yes<em>list</em>, e.g. nicht vorhanden or mit ohne.</p>
-<p><strong>To give you specific examples with the outputs down below in the table:</strong>
-1) The word <em>nicht</em> (<em>no</em>) will be assigned to <em>false</em>.<span class="raw-html-m2r"><br></span>
-3) The expression <em>ja</em> (<em>yes</em>) will be translated into <em>true</em>.<span class="raw-html-m2r"><br></span>
-4) Expressions including the no or yes signal words can be translated, but only if the expression is starting with this word:<span class="raw-html-m2r"><br></span>
+<p>Given the following examples, you can recognize how certain expressions are clustered into either <em>False</em> or <em>True</em>
+boolean values. If the expression is including one of the <em>no</em> or <em>yes</em> words from above, Konfuzio allocates it
+to <em>True</em> or <em>False</em>.</p>
+<p>However, normalization is only possible if the signal words are the first word of the annotation to avoid false
+positives with word combinations of words from the _no<em>list</em> and _yes<em>list</em>, e.g. nicht vorhanden or mit ohne.</p>
+<p><strong>To give you specific examples with the outputs down below in the table:</strong><span class="raw-html-m2r"><br></span>
+1) The word <em>nicht</em> (<em>no</em>) will be assigned to <em>false</em>.</p>
+<ol class="arabic simple" start="2">
+<li><p>The expression <em>ja</em> (<em>yes</em>) will be translated into <em>true</em>.</p></li>
+</ol>
+<p>3) Expressions including the no or yes signal words can be translated, but only if the expression is starting with this word:<span class="raw-html-m2r"><br></span>
 e.g.: nicht versichert<span class="raw-html-m2r"><br></span>
 e.g.: not insured<span class="raw-html-m2r"><br></span>
 e.g.: ja versichert<span class="raw-html-m2r"><br></span>
@@ -939,12 +965,16 @@ e.g.: alleinstehend ohne Kind</p>
 </div>
 <div class="section" id="known-issues-and-remarks">
 <h2>5. Known Issues and remarks<a class="headerlink" href="#known-issues-and-remarks" title="Permalink to this headline">¶</a></h2>
-<ol class="arabic simple">
-<li><p>Limitations to other languages besides German: Konfuzio is optimized for the German language. It may partly support English expressions but is limited in the usage in English.</p></li>
-<li><p>Limitations to the case sensitivity of boolean values: Classifying certain expressions as true or false values is based on pre-specified expressions. Thus, it is limited to these signal words as shown above in the lists when normalizing the inputs.</p></li>
-<li><p>The non-normalizable values which can’t be converted from Konfuzio will be marked as “not machine-readable” on the Konfuzio server and can be viewed in the smart view of the documents.</p></li>
-<li><p>Your excel output might differ in its format from the one defined above. This is due to the default formats from excel, e.g. the default date format which might change with the version of excel of your respective country.</p></li>
-</ol>
+<p>1) Limitations to other languages besides German: Konfuzio is optimized for the German language.
+It may partly support English expressions but is limited in the usage in English.</p>
+<p>2) Limitations to the case sensitivity of boolean values: Classifying certain expressions as true or false values is
+based on pre-specified expressions. Thus, it is limited to these signal words as shown above in the lists when
+normalizing the inputs.</p>
+<p>3) The non-normalizable values which can’t be converted from Konfuzio will be marked as “not machine-readable” on the
+Konfuzio server and can be viewed in the SmartView of the documents.</p>
+<p>4) Your excel output might differ in its format from the one defined above.
+This is due to the default formats from excel, e.g. the default date format which might change with the version of
+excel of your respective country.</p>
 </div>
 </div>
 <div class="section" id="support">

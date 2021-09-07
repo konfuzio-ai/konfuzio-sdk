@@ -17,8 +17,8 @@ The data structure of a project in Konfuzio Server includes:
 * Labels
 A label is the name of a group of individual pieces of information found in a type of document.
 
-* Templates
-A template is a set of labels.
+* Label Set
+A Label Set combines labels.
 
 * Training and Test documents
 Based on the data from the training documents the AI learns what to do. These newly acquired capabilities are then applied to the test documents to sample check the quality of the AI model.

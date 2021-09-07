@@ -106,8 +106,8 @@
 <li class="toctree-l2"><a class="reference internal" href="#cli">CLI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#data">Data</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#data-class">Data Class</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#section-class">Section Class</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#template-class">Template Class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#annotation-set-class">Annotation Set Class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#label-set-class">Label Set Class</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#label-class">Label Class</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#annotation-class">Annotation Class</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#document-class">Document Class</a></li>
@@ -121,6 +121,7 @@
 <li class="toctree-l1"><a class="reference internal" href="contribution.html">Contribution Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="coordinates_system.html">Coordinates System</a></li>
 <li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Konfuzio Trainer</span></p>
 <ul>
@@ -221,14 +222,14 @@
 <span class="target" id="module-konfuzio_sdk.api"></span><p>Connect to the Konfuzio Server to receive or send data.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="konfuzio_sdk.api.create_label">
-<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">create_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">project_id:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">label_name:</span> <span class="pre">str</span></em>, <em class="sig-param"><span class="pre">templates:</span> <span class="pre">list</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em>, <em class="sig-param"><span class="pre">**kwargs</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#konfuzio_sdk.api.create_label" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a Label and associate it with templates.</p>
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">create_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">project_id:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">label_name:</span> <span class="pre">str</span></em>, <em class="sig-param"><span class="pre">label_sets:</span> <span class="pre">list</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em>, <em class="sig-param"><span class="pre">**kwargs</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#konfuzio_sdk.api.create_label" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a Label and associate it with labels sets.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>project_id</strong> – Project ID where to create the label</p></li>
 <li><p><strong>label_name</strong> – Name for the label</p></li>
-<li><p><strong>templates</strong> – Templates that use the label</p></li>
+<li><p><strong>label_sets</strong> – Label sets that use the label</p></li>
 <li><p><strong>session</strong> – Session to connect to the server</p></li>
 </ul>
 </dd>
@@ -395,23 +396,6 @@
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="konfuzio_sdk.api.get_document_sections">
-<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">get_document_sections</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">document_id</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.get_document_sections" title="Permalink to this definition">¶</a></dt>
-<dd><p>Use the text-extraction server to retrieve templates, which are instances of the Template Class.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>document_id</strong> – ID of the file</p></li>
-<li><p><strong>session</strong> – Session to connect to the server</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Sorted annotations.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="konfuzio_sdk.api.get_document_text">
 <span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">get_document_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">document_id</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.get_document_text" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use the text-extraction server to retrieve the text found in the document.</p>
@@ -444,6 +428,20 @@ LOW_OCR_QUALITY = 4</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Sorted documents names in the format {id: ‘pdf_name’}.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="konfuzio_sdk.api.get_project_label_sets">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">get_project_label_sets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#konfuzio_sdk.api.get_project_label_sets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get Label Sets available in project.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>session</strong> – Session to connect to the server</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Sorted Label Sets.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -483,20 +481,6 @@ LOW_OCR_QUALITY = 4</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Name of the project in JSON format.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="konfuzio_sdk.api.get_project_templates">
-<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">get_project_templates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#konfuzio_sdk.api.get_project_templates" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get templates available in project.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>session</strong> – Session to connect to the server</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Sorted templates.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -556,13 +540,15 @@ LOW_OCR_QUALITY = 4</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="konfuzio_sdk.api.post_document_annotation">
-<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">post_document_annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">document_id:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">start_offset:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">end_offset:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">label_id:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">template_id:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">accuracy:</span> <span class="pre">float</span></em>, <em class="sig-param"><span class="pre">revised:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em>, <em class="sig-param"><span class="pre">is_correct:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em>, <em class="sig-param"><span class="pre">section=None</span></em>, <em class="sig-param"><span class="pre">define_section=True</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.post_document_annotation" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">post_document_annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">document_id:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">start_offset:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">end_offset:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">label_id:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">label_set_id:</span> <span class="pre">int</span></em>, <em class="sig-param"><span class="pre">accuracy:</span> <span class="pre">float</span></em>, <em class="sig-param"><span class="pre">revised:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em>, <em class="sig-param"><span class="pre">is_correct:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em>, <em class="sig-param"><span class="pre">annotation_set=None</span></em>, <em class="sig-param"><span class="pre">define_annotation_set=True</span></em>, <em class="sig-param"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.post_document_annotation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add an annotation to an existing document.</p>
-<p>For the section definition, we can:
-- define the section id where the annotation should belong (section=x (int), define_section=True)
-- pass it as None and a new section will be created (section=None, define_section=True)
-- do not pass the section field and a new section will be created if does not exist any or the annotation will be
-added to the previous section created (define_section=False)</p>
+<p>For the annotation set definition, we can:
+- define the annotation set id where the annotation should belong
+(annotation_set=x (int), define_annotation_set=True)
+- pass it as None and a new annotation set will be created
+(annotation_set=None, define_annotation_set=True)
+- do not pass the annotation set field and a new annotation set will be created if does not exist any or the
+annotation will be added to the previous annotation set created (define_annotation_set=False)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -570,9 +556,12 @@ added to the previous section created (define_section=False)</p>
 <li><p><strong>start_offset</strong> – Start offset of the annotation</p></li>
 <li><p><strong>end_offset</strong> – End offset of the annotation</p></li>
 <li><p><strong>label_id</strong> – ID of the label.</p></li>
+<li><p><strong>label_set_id</strong> – ID of the label set where the annotation belongs</p></li>
 <li><p><strong>accuracy</strong> – Accuracy of the annotation</p></li>
-<li><p><strong>revised</strong> – If the annotations are revised or not (bool)</p></li>
-<li><p><strong>session</strong> – Session to connect to the server</p></li>
+<li><p><strong>revised</strong> – If the annotation is revised or not (bool)</p></li>
+<li><p><strong>is_correct</strong> – If the annotation is corrected or not (bool)</p></li>
+<li><p><strong>annotation_set</strong> – Annotation set to connect to the server</p></li>
+<li><p><strong>define_annotation_set</strong> – If to define the annotation set (bool)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -744,25 +733,25 @@ added to the previous section created (define_section=False)</p>
 </dd></dl>
 
 </div>
-<div class="section" id="section-class">
-<h3>Section Class<a class="headerlink" href="#section-class" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="annotation-set-class">
+<h3>Annotation Set Class<a class="headerlink" href="#annotation-set-class" title="Permalink to this headline">¶</a></h3>
 <dl class="py class">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.data.</span></span><span class="sig-name descname"><span class="pre">Section</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">document</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotations</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Represent a Section - group of annotations.</p>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.data.</span></span><span class="sig-name descname"><span class="pre">AnnotationSet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">document</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_set</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotations</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Represent an Annotation Set - group of annotations.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="template-class">
-<h3>Template Class<a class="headerlink" href="#template-class" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="label-set-class">
+<h3>Label Set Class<a class="headerlink" href="#label-set-class" title="Permalink to this headline">¶</a></h3>
 <dl class="py class">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.data.</span></span><span class="sig-name descname"><span class="pre">Template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name_clean</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_templates</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Template</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_multiple_sections</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>A template is a set of labels.</p>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.data.</span></span><span class="sig-name descname"><span class="pre">LabelSet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name_clean</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_label_sets</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.LabelSet</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_multiple_annotation_sets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>A Label Set is a set of labels.</p>
 <dl class="py method">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">add_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Add label to template, if it does not exist.</p>
+<dd><p>Add label to Label Set, if it does not exist.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>label</strong> – Label ID to be added</p>
@@ -777,15 +766,15 @@ added to the previous section created (define_section=False)</p>
 <h3>Label Class<a class="headerlink" href="#label-class" title="Permalink to this headline">¶</a></h3>
 <dl class="py class">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.data.</span></span><span class="sig-name descname"><span class="pre">Label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_data_type_display</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text_clean</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">templates</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Template</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_multiple_top_candidates</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">initial_data</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.data.</span></span><span class="sig-name descname"><span class="pre">Label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_data_type_display</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text_clean</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_sets</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.LabelSet</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_multiple_top_candidates</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">initial_data</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>A label is the name of a group of individual pieces of information annotated in a type of document.</p>
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">add_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Add template to label, if it does not exist.</p>
+<span class="sig-name descname"><span class="pre">add_label_set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_set</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">konfuzio_sdk.data.LabelSet</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Add label set to label, if it does not exist.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>template</strong> – Template to add</p>
+<dd class="field-odd"><p><strong>label_set</strong> – Label set to add</p>
 </dd>
 </dl>
 </dd></dl>
@@ -813,22 +802,22 @@ added to the previous section created (define_section=False)</p>
 <dd><p>Return all documents which contain annotations of this label.</p>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">label_sets</span></span></dt>
+<dd><p>Get the label sets in which this label is used.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span></dt>
 <dd><p>Save Label online.</p>
-<p>If no templates are specified, the label is associated with the first default template of the project.</p>
+<p>If no label sets are specified, the label is associated with the first default label set of the project.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>True if the new label was created.</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">templates</span></span></dt>
-<dd><p>Get the templates in which this label is used.</p>
 </dd></dl>
 
 </dd></dl>
@@ -838,7 +827,7 @@ added to the previous section created (define_section=False)</p>
 <h3>Annotation Class<a class="headerlink" href="#annotation-class" title="Permalink to this headline">¶</a></h3>
 <dl class="py class">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.data.</span></span><span class="sig-name descname"><span class="pre">Annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_offset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_offset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_correct</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">revised</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">accuracy</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">document</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template_text</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">translated_string</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">initial_data</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.data.</span></span><span class="sig-name descname"><span class="pre">Annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_offset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_offset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_correct</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">revised</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">accuracy</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">document</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotation_set</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_set_text</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">translated_string</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_set_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">initial_data</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>An annotation is ~a single piece~ of a set of characters and/or bounding boxes that a label has been assigned to.</p>
 <p>One annotation can have mul. chr., words, lines, areas.</p>
 <dl class="py method">
@@ -1100,11 +1089,11 @@ get_document_details and then retrieved from that file when accessing it.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">add_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">konfuzio_sdk.data.Template</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Add template to project, if it does not exist.</p>
+<span class="sig-name descname"><span class="pre">add_label_set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_set</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">konfuzio_sdk.data.LabelSet</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Add label set to project, if it does not exist.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>template</strong> – Template to add in the project</p>
+<dd class="field-odd"><p><strong>label_set</strong> – Label Set to add in the project</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1113,6 +1102,12 @@ get_document_details and then retrieved from that file when accessing it.</p>
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">annotation_class</span></span></dt>
 <dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">konfuzio_sdk.data.Annotation</span></code></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">annotation_set_class</span></span></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">konfuzio_sdk.data.AnnotationSet</span></code></p>
 </dd></dl>
 
 <dl class="py method">
@@ -1130,7 +1125,7 @@ get_document_details and then retrieved from that file when accessing it.</p>
 <dl class="py method">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">clean_meta</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Clean the meta-information about the Project, Labels, and Templates.</p>
+<dd><p>Clean the meta-information about the Project, Labels, and Label Sets.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1198,6 +1193,31 @@ They become accessible from the attributes of the class: self.test_documents, se
 
 <dl class="py method">
 <dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">get_label_set_by_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.data.LabelSet</span></span></span></dt>
+<dd><p>Return a Label Set by ID.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>id</strong> – ID of the Label Set to get.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">get_label_sets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Get ID and name of any Label Set in the project.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>update</strong> – Update the downloaded information even it is already available</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Label Sets in the project.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">get_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Get ID and name of any label in the project.</p>
 <dl class="field-list simple">
@@ -1226,31 +1246,6 @@ They become accessible from the attributes of the class: self.test_documents, se
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">get_template_by_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.data.Template</span></span></span></dt>
-<dd><p>Return a section label by ID.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>id</strong> – ID of the section label to get.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">get_templates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Get ID and name of any Template in the project.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>update</strong> – Update the downloaded information even it is already available</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Templates in the project.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">get_test_documents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Get all documents in a project which have been marked as available in the test dataset.</p>
 <p>Dataset status: test = 3</p>
@@ -1270,28 +1265,22 @@ They become accessible from the attributes of the class: self.test_documents, se
 <dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">konfuzio_sdk.data.Label</span></code></p>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">label_set_class</span></span></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">konfuzio_sdk.data.LabelSet</span></code></p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">load_sections</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Load document sections for all training and test documents.</p>
+<span class="sig-name descname"><span class="pre">load_annotation_sets</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Load document annotation sets for all training and test documents.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">make_paths</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
 <dd><p>Create paths needed to store the project.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">section_class</span></span></dt>
-<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">konfuzio_sdk.data.Section</span></code></p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">template_class</span></span></dt>
-<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">konfuzio_sdk.data.Template</span></code></p>
 </dd></dl>
 
 <dl class="py method">

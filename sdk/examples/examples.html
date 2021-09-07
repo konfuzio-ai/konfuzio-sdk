@@ -121,6 +121,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../contribution.html">Contribution Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../coordinates_system.html">Coordinates System</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">FAQ</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Konfuzio Trainer</span></p>
 <ul>
@@ -294,7 +295,7 @@ SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  jum.SV-Tg. 
 <span class="p">]</span>
 </pre></div>
 </div>
-<p><strong>sections.json5</strong> - Contains information of each section in the document (for example, their ids and templates).</p>
+<p><strong>sections.json5</strong> - Contains information of each section in the document (for example, their ids and label sets).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
   <span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">78730</span><span class="p">,</span>
@@ -436,13 +437,13 @@ However, for projects with many documents it can be faster to update only the re
 
 <span class="c1"># Label for the annotation</span>
 <span class="n">label_name</span> <span class="o">=</span> <span class="s2">&quot;Name&quot;</span>
-<span class="c1"># Creation of the Label in the project default template</span>
+<span class="c1"># Creation of the Label in the project default label set</span>
 <span class="n">my_label</span> <span class="o">=</span> <span class="n">Label</span><span class="p">(</span><span class="n">my_project</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">label_name</span><span class="p">)</span>
 <span class="c1"># Saving it online</span>
 <span class="n">my_label</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 
-<span class="c1"># Template where label belongs</span>
-<span class="n">template_id</span> <span class="o">=</span> <span class="n">my_label</span><span class="o">.</span><span class="n">templates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">id</span>
+<span class="c1"># Label Set where label belongs</span>
+<span class="n">label_set_id</span> <span class="o">=</span> <span class="n">my_label</span><span class="o">.</span><span class="n">label_sets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">id</span>
 
 <span class="c1"># First document in the project</span>
 <span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -461,7 +462,7 @@ However, for projects with many documents it can be faster to update only the re
         <span class="n">start_offset</span><span class="o">=</span><span class="n">offsets</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
         <span class="n">end_offset</span><span class="o">=</span><span class="n">offsets</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
         <span class="n">label</span><span class="o">=</span><span class="n">my_label</span><span class="p">,</span>
-        <span class="n">template_id</span><span class="o">=</span><span class="n">template_id</span><span class="p">,</span>
+        <span class="n">label_set_id</span><span class="o">=</span><span class="n">label_set_id</span><span class="p">,</span>
         <span class="n">accuracy</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">new_annotation_added</span> <span class="o">=</span> <span class="n">annotation_obj</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
