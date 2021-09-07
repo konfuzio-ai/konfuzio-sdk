@@ -8,6 +8,14 @@ All notable changes in the server of app.konfuzio.com will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
 
+## :2021-09-07_12-24-26
+
+### Added
+- Support for SMTP E-Mail Backends via environment variables
+
+### Fixed
+- DOS protection prevents start of Konfuzio Server
+
 ## 2021-09-05_20-57-31
 
 ### Added
