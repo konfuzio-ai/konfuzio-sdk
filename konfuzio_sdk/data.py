@@ -307,8 +307,11 @@ class Annotation(Data):
             if self.label_set.is_default:
                 self.define_annotation_set = False
 
-        self.revised = revised
+        if annotation_set is None:
+            annotation_set = kwargs.get('section')
         self.annotation_set = annotation_set
+
+        self.revised = revised
         self.start_offset = start_offset
         self.normalized = None
         self.translated_string = translated_string
