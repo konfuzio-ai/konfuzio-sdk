@@ -8,7 +8,7 @@ The FAQ section includes some of the most frequently asked questions regarding t
 
 If you don't find what you are looking for, please add your question to the [Issue Tracker](https://github.com/konfuzio-ai/document-ai-python-sdk/issues).
 
-## 1. How to switch project
+## How to switch project?
 
 If you have initialized your code with a project and now you want to switch to a different project, you have to rerun
 `konfuzio_sdk init` in your working directory.
