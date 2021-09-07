@@ -109,8 +109,9 @@ class LabelSet(Data):
         self.project: Project = project
         project.add_label_set(self)
         self.labels: List[Label] = []
-        for label_id in labels:
-            label = self.project.get_label_by_id(id=label_id)
+        for label in labels:
+            if isinstance(label, int):
+                label = self.project.get_label_by_id(id=label)
             self.add_label(label)
 
     def __repr__(self):
