@@ -24,11 +24,11 @@ project data.
 
 Let's say that you are running Konfuzio SDK with project A and you want to run a test with project B.
 
-You need to:
-- initialize the SDK with project B
-- download the project data (`konfuzio_sdk download_data`)
-- initialize the SDK with project A
-- get project B with:
+You need to:  
+1) initialize the SDK with project B  
+2) download the project data (`konfuzio_sdk download_data`)  
+3) initialize the SDK with project A  
+4) get project B with:  
 
 ```python
 from konfuzio_sdk.data import Project
