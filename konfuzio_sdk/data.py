@@ -69,7 +69,7 @@ class AnnotationSet(Data):
 
 
 class LabelSet(Data):
-    """A Label Set is a set of labels."""
+    """A Label Set is a group of labels."""
 
     def __init__(
         self,
@@ -79,7 +79,7 @@ class LabelSet(Data):
         name_clean: str,
         labels: List[int],
         is_default=False,
-        default_label_sets: List["LabelSet"] = [],
+        categories: List["Category"] = [],
         has_multiple_annotation_sets=False,
         **kwargs,
     ):
@@ -92,7 +92,7 @@ class LabelSet(Data):
         :param name_clean: Normalized name of the Label Set
         :param labels: Labels that belong to the Label Set (IDs)
         :param is_default: Bool for the Label Set to be the default one in the project
-        :param default_label_sets: Default Label Set to which belongs
+        :param categories: Categories to which the LabelSet belongs
         :param has_multiple_annotation_sets: Bool to allow the Label Set to have different annotation sets in a document
         """
         self.id = id
@@ -100,14 +100,17 @@ class LabelSet(Data):
         self.name_clean = name_clean
         self.is_default = is_default
         if 'default_label_sets' in kwargs:
-            self.default_label_sets = [kwargs['default_label_sets']]
+            self.categories = [kwargs['default_label_sets']]
         elif 'default_section_labels' in kwargs:
-            self.default_label_sets = kwargs['default_section_labels']
+            self.categories = kwargs['default_section_labels']
         else:
-            self.default_label_sets = default_label_sets
+            self.categories = categories
         self.has_multiple_annotation_sets = has_multiple_annotation_sets
         self.project: Project = project
-        project.add_label_set(self)
+
+        if not self.is_default:
+            project.add_label_set(self)
+
         self.labels: List[Label] = []
         for label in labels:
             if isinstance(label, int):
@@ -126,6 +129,19 @@ class LabelSet(Data):
         """
         if label not in self.labels:
             self.labels.append(label)
+
+
+class Category(LabelSet):
+    """A Category is a Label Set with special conditions and is used to group documents."""
+
+    def __init__(self, *args, **kwargs):
+        """Create a named Category."""
+        LabelSet.__init__(self, *args, **kwargs)
+
+        self.is_default = True
+        self.has_multiple_annotation_sets = False
+        self.categories = []
+        self.project.add_category(self)
 
 
 class Label(Data):
@@ -223,9 +239,9 @@ class Label(Data):
         new_label_added = False
         try:
             if len(self.label_sets) == 0:
-                prj_label_sets = self.project.label_sets
-                default_label_set = [t for t in prj_label_sets if t.is_default][0]
-                default_label_set.add_label(self)
+                prj_categories = self.project.categories
+                category = [t for t in prj_categories if t.is_default][0]
+                category.add_label(self)
 
             response = create_label(
                 project_id=self.project.id,
@@ -490,7 +506,7 @@ class Document(Data):
         self.dataset_status = dataset_status
         self.number_of_pages = number_of_pages
         if project:
-            self.category = project.get_label_set_by_id(kwargs.get('category_template', None))
+            self.category = project.get_category_by_id(kwargs.get('category_template', None))
         self.id = id
         self.updated_at = None
         if updated_at:
@@ -887,6 +903,7 @@ class Project(Data):
     label_class = Label
     annotation_set_class = AnnotationSet
     label_set_class = LabelSet
+    category_class = Category
     document_class = Document
     annotation_class = Annotation
 
@@ -900,6 +917,7 @@ class Project(Data):
         by default.
         """
         self.id = id
+        self.categories: List[Category] = []
         self.label_sets: List[LabelSet] = []
         self.labels: List[Label] = []
 
@@ -942,7 +960,7 @@ class Project(Data):
                 # (ignore ghost annotation_sets that may exist)
                 if (
                     annotation_set['label_set'] == document.category
-                    or document.category in annotation_set['label_set'].default_label_sets
+                    or document.category in annotation_set['label_set'].categories
                 ):
                     annotation_set_instance = self.annotation_set_class(
                         **annotation_set, document=document, annotations=annotations
@@ -968,6 +986,7 @@ class Project(Data):
         # add the labels first, before creating documents and annotations
         self.get_meta(update=update)
         self.get_labels(update=update)
+        self.get_categories(update=update)
         self.get_label_sets(update=update)
         self.clean_documents(update=update)
         self.get_documents(update=update)
@@ -983,6 +1002,15 @@ class Project(Data):
         """
         if label_set not in self.label_sets:
             self.label_sets.append(label_set)
+
+    def add_category(self, category: Category):
+        """
+        Add category to project, if it does not exist.
+
+        :param category: Category to add in the project
+        """
+        if category not in self.categories:
+            self.categories.append(category)
 
     def add_label(self, label: Label):
         """
@@ -1087,9 +1115,35 @@ class Project(Data):
 
         return self.meta_data
 
+    def get_categories(self, update=False):
+        """
+        Get Categories in the project.
+
+        :param update: Update the downloaded information even it is already available
+        :return: Categories in the project.
+        """
+        if not self.categories or update:
+            self.label_sets_file_path = os.path.join(self.data_root, 'label_sets.json5')
+            if not is_file(self.label_sets_file_path, raise_exception=False) or update:
+                label_sets_data = get_project_label_sets(session=self.session)
+                if label_sets_data:
+                    # the text of a document can be None
+                    with open(self.label_sets_file_path, 'w') as f:
+                        json.dump(label_sets_data, f, indent=2, sort_keys=True)
+            else:
+                with open(self.label_sets_file_path, 'r') as f:
+                    label_sets_data = json.load(f)
+
+            categories_data = [category for category in label_sets_data if category["is_default"]]
+
+            for category_data in categories_data:
+                self.category_class(project=self, **category_data)
+
+        return self.categories
+
     def get_label_sets(self, update=False):
         """
-        Get ID and name of any Label Set in the project.
+        Get Label Sets in the project.
 
         :param update: Update the downloaded information even it is already available
         :return: Label Sets in the project.
@@ -1106,18 +1160,20 @@ class Project(Data):
                 with open(self.label_sets_file_path, 'r') as f:
                     label_sets_data = json.load(f)
 
+            label_sets_data = [label_set for label_set in label_sets_data if not label_set["is_default"]]
+
             for label_set_data in label_sets_data:
                 self.label_set_class(project=self, **label_set_data)
 
         # Make default_label_set an LabelSet instance
         for label_set in self.label_sets:
             updated_list = []
-            for default_label_set in label_set.default_label_sets:
-                if isinstance(default_label_set, int):
-                    updated_list.append(self.get_label_set_by_id(default_label_set))
+            for category in label_set.categories:
+                if isinstance(category, int):
+                    updated_list.append(self.get_category_by_id(category))
                 else:
-                    updated_list.append(default_label_set)
-            label_set.default_label_sets = updated_list
+                    updated_list.append(category)
+            label_set.categories = updated_list
         return self.label_sets
 
     def get_labels(self, update=False):
@@ -1297,6 +1353,16 @@ class Project(Data):
         for label_set in self.label_sets:
             if label_set.id == id:
                 return label_set
+
+    def get_category_by_id(self, id: int) -> Category:
+        """
+        Return a Category by ID.
+
+        :param id: ID of the Category to get.
+        """
+        for category in self.categories:
+            if category.id == id:
+                return category
 
     def clean_meta(self):
         """Clean the meta-information about the Project, Labels, and Label Sets."""
