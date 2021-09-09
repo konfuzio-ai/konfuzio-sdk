@@ -7,6 +7,7 @@ import pathlib
 import shutil
 from datetime import tzinfo
 from typing import Dict, Optional, List, Union, Tuple
+from copy import deepcopy
 
 import dateutil.parser
 from konfuzio_sdk import KONFUZIO_HOST, DATA_ROOT, KONFUZIO_PROJECT_ID, FILE_ROOT
@@ -108,10 +109,9 @@ class LabelSet(Data):
         self.has_multiple_annotation_sets = has_multiple_annotation_sets
         self.project: Project = project
 
-        if not self.is_default:
-            project.add_label_set(self)
-
         self.labels: List[Label] = []
+        project.add_label_set(self)
+
         for label in labels:
             if isinstance(label, int):
                 label = self.project.get_label_by_id(id=label)
@@ -319,6 +319,7 @@ class Annotation(Data):
         if label_set_id is None:
             label_set_id = kwargs.get('section_label_id')
 
+        # handles association to an annotation set if the annotation belongs to a category
         if isinstance(label_set_id, int):
             self.label_set: LabelSet = self.document.project.get_label_set_by_id(label_set_id)
             if self.label_set.is_default:
@@ -986,8 +987,8 @@ class Project(Data):
         # add the labels first, before creating documents and annotations
         self.get_meta(update=update)
         self.get_labels(update=update)
-        self.get_categories(update=update)
         self.get_label_sets(update=update)
+        self.get_categories(update=update)
         self.clean_documents(update=update)
         self.get_documents(update=update)
         self.get_test_documents(update=update)
@@ -1122,22 +1123,11 @@ class Project(Data):
         :param update: Update the downloaded information even it is already available
         :return: Categories in the project.
         """
-        if not self.categories or update:
-            self.label_sets_file_path = os.path.join(self.data_root, 'label_sets.json5')
-            if not is_file(self.label_sets_file_path, raise_exception=False) or update:
-                label_sets_data = get_project_label_sets(session=self.session)
-                if label_sets_data:
-                    # the text of a document can be None
-                    with open(self.label_sets_file_path, 'w') as f:
-                        json.dump(label_sets_data, f, indent=2, sort_keys=True)
-            else:
-                with open(self.label_sets_file_path, 'r') as f:
-                    label_sets_data = json.load(f)
-
-            categories_data = [category for category in label_sets_data if category["is_default"]]
-
-            for category_data in categories_data:
-                self.category_class(project=self, **category_data)
+        for label_set in self.label_sets:
+            if label_set.is_default:
+                temp_label_set = deepcopy(label_set)
+                temp_label_set.__dict__.pop('project', None)
+                self.category_class(project=self, **temp_label_set.__dict__)
 
         return self.categories
 
@@ -1159,8 +1149,6 @@ class Project(Data):
             else:
                 with open(self.label_sets_file_path, 'r') as f:
                     label_sets_data = json.load(f)
-
-            label_sets_data = [label_set for label_set in label_sets_data if not label_set["is_default"]]
 
             for label_set_data in label_sets_data:
                 self.label_set_class(project=self, **label_set_data)
