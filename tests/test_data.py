@@ -27,6 +27,24 @@ class TestAPIDataSetup(unittest.TestCase):
         assert len(cls.prj.test_documents) == cls.test_document_count
         assert len(cls.prj.labels[0].correct_annotations) == cls.correct_document_count
 
+    def test_label_sets(self):
+        """Test label sets in the test project."""
+        assert self.prj.label_sets.__len__() == 2
+        assert self.prj.label_sets[0].name == 'Lohnabrechnung'
+        assert self.prj.label_sets[0].categories.__len__() == 0
+        assert self.prj.label_sets[0].labels.__len__() == 8
+        assert self.prj.label_sets[1].name == 'Brutto-Bezug'
+        assert self.prj.label_sets[1].categories.__len__() == 1
+        assert self.prj.label_sets[1].categories[0].name == 'Lohnabrechnung'
+        assert self.prj.label_sets[1].labels.__len__() == 3
+
+    def test_categories(self):
+        """Test get labels in the project."""
+        assert self.prj.categories.__len__() == 1
+        assert self.prj.categories[0].name == 'Lohnabrechnung'
+        assert self.prj.categories[0].is_default
+        assert not self.prj.categories[0].has_multiple_annotation_sets
+
     def test_get_images(self):
         """Test get paths to the images of the first training document."""
         self.prj.documents[0].get_images()
@@ -64,6 +82,7 @@ class TestAPIDataSetup(unittest.TestCase):
         """Test properties of a specific documents in the test project."""
         doc = self.prj.labels[0].documents[5]  # one doc before doc without annotations
         assert doc.id == 44842
+        assert doc.category.name == 'Lohnabrechnung'
         assert len(self.prj.labels[0].correct_annotations) == self.correct_document_count
         doc.update()
         assert len(self.prj.labels[0].correct_annotations) == 26
@@ -83,12 +102,6 @@ class TestAPIDataSetup(unittest.TestCase):
         assert len(self.prj.documents) == self.document_count
         self.prj.add_document(old_doc)
         assert len(self.prj.documents) == self.document_count
-
-    def test_sections(self):
-        """Test section labels in the test project."""
-        assert self.prj.label_sets.__len__() == 2
-        assert self.prj.label_sets[0].labels.__len__() == 8
-        assert self.prj.label_sets[1].labels.__len__() == 3
 
     def test_correct_annotations(self):
         """Test correct annotations of a certain label in a specific document."""
