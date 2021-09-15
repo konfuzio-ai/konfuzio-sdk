@@ -974,6 +974,17 @@ class Project(Data):
                     document_annotation_sets.append(annotation_set_instance)
             document.annotation_sets = document_annotation_sets
 
+    def load_categories(self):
+        """Load categories for all label sets in the project."""
+        for label_set in self.label_sets:
+            updated_list = []
+            for category in label_set.categories:
+                if isinstance(category, int):
+                    updated_list.append(self.get_category_by_id(category))
+                else:
+                    updated_list.append(category)
+            label_set.categories = updated_list
+
     def make_paths(self):
         """Create paths needed to store the project."""
         # create folders if not available
@@ -994,6 +1005,7 @@ class Project(Data):
         self.get_labels(update=update)
         self.get_label_sets(update=update)
         self.get_categories(update=update)
+        self.load_categories()
         self.clean_documents(update=update)
         self.get_documents(update=update)
         self.get_test_documents(update=update)
@@ -1158,15 +1170,6 @@ class Project(Data):
             for label_set_data in label_sets_data:
                 self.label_set_class(project=self, **label_set_data)
 
-        # Make default_label_set an LabelSet instance
-        for label_set in self.label_sets:
-            updated_list = []
-            for category in label_set.categories:
-                if isinstance(category, int):
-                    updated_list.append(self.get_category_by_id(category))
-                else:
-                    updated_list.append(category)
-            label_set.categories = updated_list
         return self.label_sets
 
     def get_labels(self, update=False):
