@@ -1,82 +1,41 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
-  <meta content="Documentation of the features of the trainer package including the contents structure and examples of how to use it." name="description" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+<meta content="Documentation of the features of the trainer package including the contents structure and examples of how to use it." name="description" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
   <title>LabelSectionModel Examples &mdash; Konfuzio  documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
-
-  
-  
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../_static/full_green_square.png"/>
-  
-
-  
-  
-
-  
     <link rel="canonical" href="https://dev.konfuzio.com/training/training_documentation.html" />
-
-  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-    
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-
-    
+    <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Konfuzio API Video Tutorial" href="../web/api.html" />
     <link rel="prev" title="FAQ" href="../sdk/faq.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
             <a href="../index.html" class="icon icon-home"> Konfuzio
-          
-
-          
           </a>
-
-          
-            
-            
               <div class="version">
                 v.0.1.5
               </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -84,18 +43,7 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Konfuzio Python SDK</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../sdk/configuration_reference.html">Install SDK</a></li>
@@ -174,75 +122,35 @@
 <li class="toctree-l1"><a class="reference internal" href="../web/changelog_app.html">Changelog</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">Konfuzio</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-        
       <li>LabelSectionModel Examples</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
+             
   <p>The functionalities of the Trainer module are not yet available in the SDK.</p>
-<div class="section" id="labelsectionmodel-examples">
+<section id="labelsectionmodel-examples">
 <h1>LabelSectionModel Examples<a class="headerlink" href="#labelsectionmodel-examples" title="Permalink to this headline">¶</a></h1>
 <a class="reference external image-reference" href="../_static/img/label_section_model.png"><img alt="LabelSectionModel diagram" src="../_images/label_section_model.png" /></a>
 <p>A <code class="docutils literal notranslate"><span class="pre">LabelSectionModel</span></code> is a model that takes in a <code class="docutils literal notranslate"><span class="pre">Document</span></code> and predicts a <code class="docutils literal notranslate"><span class="pre">Label</span></code> per token and a <code class="docutils literal notranslate"><span class="pre">SectionLabel</span></code> for each line in the document.</p>
-<div class="section" id="training-our-first-labelsectionmodel">
+<section id="training-our-first-labelsectionmodel">
 <h2>Training our first LabelSectionModel<a class="headerlink" href="#training-our-first-labelsectionmodel" title="Permalink to this headline">¶</a></h2>
 <p>A <code class="docutils literal notranslate"><span class="pre">LabelSectionModel</span></code> contains both a <code class="docutils literal notranslate"><span class="pre">LabelClassifier</span></code> and <code class="docutils literal notranslate"><span class="pre">SectionClassifier</span></code>. Both classifiers have set default modules and training is performed with a set of default hyperparameters. The <code class="docutils literal notranslate"><span class="pre">build</span></code> method returns metrics for each classifier, a dictionary of lists with the loss and accuracy values per batch for training/evaluation, which can be used e.g. visualization.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio.data</span> <span class="kn">import</span> <span class="n">Project</span>
@@ -261,8 +169,8 @@
 <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="customizing-the-labelsectionmodel">
+</section>
+<section id="customizing-the-labelsectionmodel">
 <h2>Customizing the LabelSectionModel<a class="headerlink" href="#customizing-the-labelsectionmodel" title="Permalink to this headline">¶</a></h2>
 <p>We can also control the tokenization method and the hyperparameters of the <code class="docutils literal notranslate"><span class="pre">LabelSectionModel</span></code>. We change the tokenization from the default whitespace tokenization to BPE (byte-pair encoding) tokenization. The <code class="docutils literal notranslate"><span class="pre">LabelClassifier</span></code> now has a dropout of 0.25 and contains a 2-layer unidirectional LSTM module. The <code class="docutils literal notranslate"><span class="pre">SectionClassifier</span></code> now has a dropout of 0.5 and contains an NBOW module with a 64-dimensional embedding layer. Training both classifiers is still performed with the default training hyperparameters.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio.data</span> <span class="kn">import</span> <span class="n">Project</span>
@@ -298,8 +206,8 @@
 <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="setting-the-labelsectionmodel-training-hyperparameters">
+</section>
+<section id="setting-the-labelsectionmodel-training-hyperparameters">
 <h2>Setting the LabelSectionModel training hyperparameters<a class="headerlink" href="#setting-the-labelsectionmodel-training-hyperparameters" title="Permalink to this headline">¶</a></h2>
 <p>We’ll now use the default classifier hyperparameters but customize the training hyperparameters. An example of hyperparameters that can be changed: validation ratio, batch size, number of epochs, patience, optimizer, learning rate decay.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio.data</span> <span class="kn">import</span> <span class="n">Project</span>
@@ -334,8 +242,8 @@
 <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="customizing-the-labelsectionmodel-model-and-training-hyperparameters">
+</section>
+<section id="customizing-the-labelsectionmodel-model-and-training-hyperparameters">
 <h2>Customizing the LabelSectionModel model and training hyperparameters<a class="headerlink" href="#customizing-the-labelsectionmodel-model-and-training-hyperparameters" title="Permalink to this headline">¶</a></h2>
 <p>Customizing both the <code class="docutils literal notranslate"><span class="pre">LabelSectionModel</span></code> hyperparameters and the training hyperparameters. This example combines the two above examples.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio.data</span> <span class="kn">import</span> <span class="n">Project</span>
@@ -388,8 +296,8 @@
 <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="implementing-a-custom-labelsectionmodel-training-loop">
+</section>
+<section id="implementing-a-custom-labelsectionmodel-training-loop">
 <h2>Implementing a custom LabelSectionModel training loop<a class="headerlink" href="#implementing-a-custom-labelsectionmodel-training-loop" title="Permalink to this headline">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">build</span></code> method of <code class="docutils literal notranslate"><span class="pre">LabelSectionModel</span></code> calls <code class="docutils literal notranslate"><span class="pre">self.build_label_classifier</span></code> and <code class="docutils literal notranslate"><span class="pre">self.build_section_classifier</span></code>. Both of which call a generic <code class="docutils literal notranslate"><span class="pre">self.fit_classifier</span></code> for both the label and section classifiers. If we want to customize the <code class="docutils literal notranslate"><span class="pre">fit_classifier</span></code> method - e.g. change the way the classifiers are trained based on some specific criteria, such as using custom loss function - then we can override the <code class="docutils literal notranslate"><span class="pre">fit_classifier</span></code> method. The custom <code class="docutils literal notranslate"><span class="pre">fit_classifier</span></code> method should take in the train, valid and test examples, the classifier, and any configuration arguments.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio.data</span> <span class="kn">import</span> <span class="n">Project</span>
@@ -419,8 +327,8 @@
 <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="implementing-a-custom-labelsectionmodel-classifier-training-loop">
+</section>
+<section id="implementing-a-custom-labelsectionmodel-classifier-training-loop">
 <h2>Implementing a custom LabelSectionModel classifier training loop<a class="headerlink" href="#implementing-a-custom-labelsectionmodel-classifier-training-loop" title="Permalink to this headline">¶</a></h2>
 <p>By default, both classifiers use the same generic <code class="docutils literal notranslate"><span class="pre">fit_classifier</span></code> function. If we want each to have their own custom <code class="docutils literal notranslate"><span class="pre">fit_classifier</span></code> function then we can do so by overwriting the <code class="docutils literal notranslate"><span class="pre">build_label_classifier</span></code>/<code class="docutils literal notranslate"><span class="pre">build_section_classifier</span></code> functions and implementing a custom <code class="docutils literal notranslate"><span class="pre">fit_label_classifier</span></code>/<code class="docutils literal notranslate"><span class="pre">fit_section_classifier</span></code> function within them.</p>
 <p>We can use existing functions to get the data iterators and then using our custom <code class="docutils literal notranslate"><span class="pre">fit_label_classifier</span></code>/<code class="docutils literal notranslate"><span class="pre">fit_section_classifier</span></code> functions in place of the generic <code class="docutils literal notranslate"><span class="pre">fit_classifier</span></code> function.</p>
@@ -480,13 +388,13 @@
 <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 </pre></div>
 </div>
-</div>
-</div>
-<div class="section" id="documentmodel-examples">
+</section>
+</section>
+<section id="documentmodel-examples">
 <h1>DocumentModel Examples<a class="headerlink" href="#documentmodel-examples" title="Permalink to this headline">¶</a></h1>
 <a class="reference external image-reference" href="../_static/img/document_model.png"><img alt="DocumentModel Diagram" src="../_images/document_model.png" /></a>
 <p>A <code class="docutils literal notranslate"><span class="pre">DocumentModel</span></code> takes pages as input and predicts the “category” (the project ID) for that page. It can use both image features (from a .png image of the page) and text features (from the OCR text from the page).</p>
-<div class="section" id="training-our-first-documentmodel">
+<section id="training-our-first-documentmodel">
 <h2>Training our first DocumentModel<a class="headerlink" href="#training-our-first-documentmodel" title="Permalink to this headline">¶</a></h2>
 <p>A <code class="docutils literal notranslate"><span class="pre">DocumentModel</span></code> contains a <code class="docutils literal notranslate"><span class="pre">DocumentClassifier</span></code>. Similar to the <code class="docutils literal notranslate"><span class="pre">LabelSectionModel</span></code>, it has a set of default model hyperparameters and default training hyperparameters.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio.data</span> <span class="kn">import</span> <span class="n">Project</span>
@@ -505,8 +413,8 @@
 <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="customizing-the-documentmodel">
+</section>
+<section id="customizing-the-documentmodel">
 <h2>Customizing the DocumentModel<a class="headerlink" href="#customizing-the-documentmodel" title="Permalink to this headline">¶</a></h2>
 <p>Below we show how to implement a custom tokenizer, image preprocessing, image augmentation, and classifier. Image preprocessing is applied to images for training, evaluation, and inference. Image augmentation is only applied during training. We only need a <code class="docutils literal notranslate"><span class="pre">multimodal_module</span></code> when we use both text and image modules.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio.data</span> <span class="kn">import</span> <span class="n">Project</span>
@@ -549,8 +457,8 @@
 <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="classifying-documents-using-image-features-only">
+</section>
+<section id="classifying-documents-using-image-features-only">
 <h2>Classifying documents using image features only<a class="headerlink" href="#classifying-documents-using-image-features-only" title="Permalink to this headline">¶</a></h2>
 <p>To use a <code class="docutils literal notranslate"><span class="pre">DocumentModel</span></code> that only uses the image of the document, simply do not include a <code class="docutils literal notranslate"><span class="pre">text_module</span></code> or <code class="docutils literal notranslate"><span class="pre">multimodal_module</span></code> in the classifier config. Passing a tokenizer when we have no <code class="docutils literal notranslate"><span class="pre">text_module</span></code> will throw an error, as there should be no text to tokenizer, so we make sure to pass <code class="docutils literal notranslate"><span class="pre">None</span></code> to the <code class="docutils literal notranslate"><span class="pre">tokenizer</span></code> argument like so:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio.data</span> <span class="kn">import</span> <span class="n">Project</span>
@@ -588,8 +496,8 @@
 <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="classifying-documents-using-text-features-only">
+</section>
+<section id="classifying-documents-using-text-features-only">
 <h2>Classifying documents using text features only<a class="headerlink" href="#classifying-documents-using-text-features-only" title="Permalink to this headline">¶</a></h2>
 <p>To use a <code class="docutils literal notranslate"><span class="pre">DocumentModel</span></code> that only uses the image of the document, simply do not include an <code class="docutils literal notranslate"><span class="pre">image_module</span></code> or <code class="docutils literal notranslate"><span class="pre">multimodal_module</span></code> in the classifier config. Passing an <code class="docutils literal notranslate"><span class="pre">image_preprocessing</span></code> or <code class="docutils literal notranslate"><span class="pre">image_augmentation</span></code> argument when we have no <code class="docutils literal notranslate"><span class="pre">image_module</span></code> will throw an error so we need to ensure we pass <code class="docutils literal notranslate"><span class="pre">None</span></code> to the <code class="docutils literal notranslate"><span class="pre">image_preprocessing</span></code> and <code class="docutils literal notranslate"><span class="pre">image_augmentation</span></code> arguments like so:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio.data</span> <span class="kn">import</span> <span class="n">Project</span>
@@ -624,8 +532,8 @@
 <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="setting-the-documentmodel-training-hyperparameters">
+</section>
+<section id="setting-the-documentmodel-training-hyperparameters">
 <h2>Setting the DocumentModel training hyperparameters<a class="headerlink" href="#setting-the-documentmodel-training-hyperparameters" title="Permalink to this headline">¶</a></h2>
 <p>Similar to the <code class="docutils literal notranslate"><span class="pre">LabelSectionModel</span></code> we can customize the training config which will work with ANY classifier/module combination:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio.data</span> <span class="kn">import</span> <span class="n">Project</span>
@@ -653,8 +561,8 @@
 <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="implementing-a-custom-documentmodel-training-loop">
+</section>
+<section id="implementing-a-custom-documentmodel-training-loop">
 <h2>Implementing a custom DocumentModel training loop<a class="headerlink" href="#implementing-a-custom-documentmodel-training-loop" title="Permalink to this headline">¶</a></h2>
 <p>We can also override the <code class="docutils literal notranslate"><span class="pre">fit_classifier</span></code> method to define our method of training the document classifier. We can do a similar thing with overwriting <code class="docutils literal notranslate"><span class="pre">build</span></code> to define our own custom data processing.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio.data</span> <span class="kn">import</span> <span class="n">Project</span>
@@ -682,9 +590,9 @@
 <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 </pre></div>
 </div>
-</div>
-</div>
-<div class="section" id="design-philosophy">
+</section>
+</section>
+<section id="design-philosophy">
 <h1>Design Philosophy<a class="headerlink" href="#design-philosophy" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
 <li><p>A “model” encapsulates everything we need for training on a labeled dataset and then performing extraction (inference) on some real data.</p></li>
@@ -727,8 +635,8 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">image_preprocessing</span></code> - a dictionary that states how images should be pre-processed before being classified (only in DocumentModel)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">image_augmentation</span></code> - a dictionary that states how images should be augmented during the training of the classifier (only in DocumentModel)</p></li>
 </ul>
-</div>
-<div class="section" id="tokenizers">
+</section>
+<section id="tokenizers">
 <h1>Tokenizers<a class="headerlink" href="#tokenizers" title="Permalink to this headline">¶</a></h1>
 <p>A tokenizer is a function that defines how a string should be separated into tokens (a list of strings), e.g.:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tokenizer</span><span class="o">.</span><span class="n">get_tokens</span><span class="p">(</span><span class="s1">&#39;hello world&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="s1">&#39;world&#39;</span><span class="p">]</span>
@@ -748,7 +656,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">get_annotations</span></code>, same as <code class="docutils literal notranslate"><span class="pre">get_entities</span></code> but converts each entity to an <code class="docutils literal notranslate"><span class="pre">Annotation</span></code> object and returns a list of annotations.</p></li>
 </ul>
 <p>Currently available tokenizers:</p>
-<div class="section" id="whitespacetokenizer">
+<section id="whitespacetokenizer">
 <h2>WhitespaceTokenizer<a class="headerlink" href="#whitespacetokenizer" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio.tokenizers</span> <span class="kn">import</span> <span class="n">WhitespaceTokenizer</span>
 <span class="kn">from</span> <span class="nn">konfuzio.tokenizers</span> <span class="kn">import</span> <span class="n">get_tokenizer</span>
@@ -756,8 +664,8 @@
 </pre></div>
 </div>
 <p>Uses regular expressions to split a string based on whitespace. Very fast but naive method of tokenization.</p>
-</div>
-<div class="section" id="spacytokenizer">
+</section>
+<section id="spacytokenizer">
 <h2>SpacyTokenizer<a class="headerlink" href="#spacytokenizer" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio.tokenizers</span> <span class="kn">import</span> <span class="n">SpacyTokenizer</span>
 <span class="kn">from</span> <span class="nn">konfuzio.tokenizers</span> <span class="kn">import</span> <span class="n">get_tokenizer</span>
@@ -765,8 +673,8 @@
 </pre></div>
 </div>
 <p>Tokenizes using the <code class="docutils literal notranslate"><span class="pre">de_core_news_sm</span></code> spaCy model. Relatively slow.</p>
-</div>
-<div class="section" id="phrasematchertokenizer">
+</section>
+<section id="phrasematchertokenizer">
 <h2>PhraseMatcherTokenizer<a class="headerlink" href="#phrasematchertokenizer" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio.data</span> <span class="kn">import</span> <span class="n">Project</span>
 <span class="kn">from</span> <span class="nn">konfuzio.tokenizers</span> <span class="kn">import</span> <span class="n">PhraseMatcherTokenizer</span>
@@ -777,8 +685,8 @@
 </div>
 <p>Note, this tokenizer also has to take in a <code class="docutils literal notranslate"><span class="pre">Project</span></code>, or list of <code class="docutils literal notranslate"><span class="pre">Project</span></code>, to build the <code class="docutils literal notranslate"><span class="pre">PhraseMatcher</span></code>.</p>
 <p>This builds a spaCy <code class="docutils literal notranslate"><span class="pre">de_core_news_sm</span></code> phrase matcher using the annotation labels for each project and then uses this learned matching to tokenize data. We can think of this as learning a simple regex pattern matcher from the data. This is relatively slow, especially when the dataset is large.</p>
-</div>
-<div class="section" id="bpetokenizer">
+</section>
+<section id="bpetokenizer">
 <h2>BPETokenizer<a class="headerlink" href="#bpetokenizer" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio.data</span> <span class="kn">import</span> <span class="n">Project</span>
 <span class="kn">from</span> <span class="nn">konfuzio.tokenizers</span> <span class="kn">import</span> <span class="n">BPETokenizer</span>
@@ -800,9 +708,9 @@
 </pre></div>
 </div>
 <p>These tokenizers are special as they have their own custom vocabulary - accessed via <code class="docutils literal notranslate"><span class="pre">tokenizer.vocab</span></code> - which is because they are designed to be used with a pre-trained Transformer model that must use the vocabulary it was trained with. Initializing a model with a <code class="docutils literal notranslate"><span class="pre">BPETokenizer</span></code> automatically sets the <code class="docutils literal notranslate"><span class="pre">text_vocab</span></code> to the <code class="docutils literal notranslate"><span class="pre">tokenizer.vocab</span></code> when using a BPE tokenizer. These tokenizers still perform very well with non-Transformer models and are also the fastest tokenizers.</p>
-</div>
-</div>
-<div class="section" id="vocabularies">
+</section>
+</section>
+<section id="vocabularies">
 <h1>Vocabularies<a class="headerlink" href="#vocabularies" title="Permalink to this headline">¶</a></h1>
 <p>A vocabulary is a mapping between tokens and integers.</p>
 <p>A vocab is usually initialized with <code class="docutils literal notranslate"><span class="pre">collections.Counter</span></code> - a dictionary where the keys are the tokens and the values are how many times that token appears in the training set. It can also be initialized with a <code class="docutils literal notranslate"><span class="pre">dict</span></code> that has the keys being the tokens and the values being the integer representations, this is used to create a <code class="docutils literal notranslate"><span class="pre">Vocab</span></code> object from an existing vocabulary already represented as a dictionary.</p>
@@ -817,11 +725,11 @@
 <li><p>the tokenizer used has a <code class="docutils literal notranslate"><span class="pre">vocab</span></code>, where we also use that vocab and do not create one. Usually, the case when using a BPE tokenizer.</p></li>
 </ul>
 <p>For the <code class="docutils literal notranslate"><span class="pre">label_vocab</span></code>, <code class="docutils literal notranslate"><span class="pre">section_vocab</span></code>, and <code class="docutils literal notranslate"><span class="pre">category_vocab</span></code>, one is created from the data unless one is provided. Again, a provided vocab usually means we are loading a saved model.</p>
-</div>
-<div class="section" id="text-modules">
+</section>
+<section id="text-modules">
 <h1>Text Modules<a class="headerlink" href="#text-modules" title="Permalink to this headline">¶</a></h1>
 <p>There are currently four text modules available. Each module takes a sequence of tokens as input and outputs a sequence of “hidden states”, i.e. one vector per input token. The size of each of the hidden states can be found with the module’s <code class="docutils literal notranslate"><span class="pre">n_features</span></code> parameter.</p>
-<div class="section" id="nbow">
+<section id="nbow">
 <h2>NBOW<a class="headerlink" href="#nbow" title="Permalink to this headline">¶</a></h2>
 <p>The neural bag-of-words (NBOW) model is the simplest of models, it simply passes each token through an embedding layer. As shown in the <a class="reference external" href="https://arxiv.org/abs/1607.01759">fastText</a> paper this model is still able to achieve comparable performance to some deep learning models whilst being considerably faster.</p>
 <p>One downside of this model is that tokens are embedded without regards to the surrounding context in which they appear, e.g. the embedding for “May” in the two sentences “May I speak to you?” and “I am leaving on the 1st of May” are identical, even though they have different semantics.</p>
@@ -830,8 +738,8 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">emb_dim</span></code> the dimensions of the embedding vector</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">dropout_rate</span></code> the amount of dropout applied to the embedding vectors</p></li>
 </ul>
-</div>
-<div class="section" id="nbowselfattention">
+</section>
+<section id="nbowselfattention">
 <h2>NBOWSelfAttention<a class="headerlink" href="#nbowselfattention" title="Permalink to this headline">¶</a></h2>
 <p>This is an NBOW model with a multi-headed self-attention layer, detailed <a class="reference external" href="https://arxiv.org/abs/1706.03762">here</a>, added after the embedding layer. This effectively contextualizes the output as now each hidden state is now calculated from the embedding vector of a token and the embedding vector of all other tokens within the sequence.</p>
 <p>Important arguments:</p>
@@ -840,8 +748,8 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">dropout_rate</span></code> the amount of dropout applied to the embedding vectors</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">n_heads</span></code> the number of attention heads to use in the multi-headed self-attention layer. Note that <code class="docutils literal notranslate"><span class="pre">n_heads</span></code> must be a factor of <code class="docutils literal notranslate"><span class="pre">emb_dim</span></code>, i.e. <code class="docutils literal notranslate"><span class="pre">emb_dim</span> <span class="pre">%</span> <span class="pre">n_heads</span> <span class="pre">==</span> <span class="pre">0</span></code>.</p></li>
 </ul>
-</div>
-<div class="section" id="lstm">
+</section>
+<section id="lstm">
 <h2>LSTM<a class="headerlink" href="#lstm" title="Permalink to this headline">¶</a></h2>
 <p>The <a class="reference external" href="https://en.wikipedia.org/wiki/Long_short-term_memory">LSTM</a> (long short-term memory) is a variant of a <a class="reference external" href="https://en.wikipedia.org/wiki/Recurrent_neural_network">RNN</a> (recurrent neural network). It feeds the input tokens through an embedding layer and then processes them sequentially with the LSTM, outputting a hidden state for each token. If the LSTM is bi-directional then it trains a forward and backward LSTM per layer and concatenates the forward and backward hidden states for each token.</p>
 <p>Important arguments:</p>
@@ -852,8 +760,8 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">bidirectional</span></code> if the LSTM should be bidirectional</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">dropout_rate</span></code> the amount of dropout applied to the embedding vectors and between LSTM layers if <code class="docutils literal notranslate"><span class="pre">n_layers</span> <span class="pre">&gt;</span> <span class="pre">1</span></code></p></li>
 </ul>
-</div>
-<div class="section" id="bert">
+</section>
+<section id="bert">
 <h2>BERT<a class="headerlink" href="#bert" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference external" href="https://arxiv.org/abs/1810.04805">BERT</a> (bi-directional encoder representations from Transformers) is a family of large <a class="reference external" href="https://arxiv.org/abs/1706.03762">Transformer</a> models. The available BERT variants are all pre-trained models provided by the <a class="reference external" href="https://github.com/huggingface/transformers">transformers library</a>. It is usually infeasible to train a BERT model from scratch due to the significant amount of computation required. However, the pre-trained models can be easily fine-tuned on desired data.</p>
 <p>Important arguments:</p>
@@ -869,12 +777,12 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">'distilbert-base-german-cased'</span></code></p></li>
 </ul>
 <p>In theory, all variants beginning with <code class="docutils literal notranslate"><span class="pre">bert-base-*</span></code> and <code class="docutils literal notranslate"><span class="pre">distilbert-*</span></code> should work out of the box. Other BERT variants come with no guarantees.</p>
-</div>
-</div>
-<div class="section" id="image-modules">
+</section>
+</section>
+<section id="image-modules">
 <h1>Image Modules<a class="headerlink" href="#image-modules" title="Permalink to this headline">¶</a></h1>
 <p>We currently have two image modules available, each have several variants. The image models each have their classification heads removed and generally, they return the output of the final pooling layer within the model which has been flattened to a <code class="docutils literal notranslate"><span class="pre">[batch_size,</span> <span class="pre">n_features]</span></code> tensor, where <code class="docutils literal notranslate"><span class="pre">n_features</span></code> is an attribute of the model.</p>
-<div class="section" id="vgg">
+<section id="vgg">
 <h2>VGG<a class="headerlink" href="#vgg" title="Permalink to this headline">¶</a></h2>
 <p>The <a class="reference external" href="https://arxiv.org/abs/1409.1556">VGG</a> family of models are image classification models designed for the <a class="reference external" href="http://www.image-net.org/">ImageNet</a>. They are usually used as a baseline in image classification tasks, however are considerably larger - in terms of the number of parameters - than modern architectures.</p>
 <p>Important arguments:</p>
@@ -890,8 +798,8 @@
                                  <span class="n">std</span><span class="o">=</span><span class="p">[</span><span class="mf">0.229</span><span class="p">,</span> <span class="mf">0.224</span><span class="p">,</span> <span class="mf">0.225</span><span class="p">])</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="efficientnet">
+</section>
+<section id="efficientnet">
 <h2>EfficientNet<a class="headerlink" href="#efficientnet" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference external" href="https://arxiv.org/abs/1905.11946">EfficientNet</a> is a family of convolutional neural network based models that are designed to be more efficient - in terms of the number of parameters and FLOPS - than previous computer vision models whilst maintaining equivalent image classification performance.</p>
 <p>Important arguments:</p>
@@ -902,9 +810,9 @@
 </ul>
 <p>Available variants are: <code class="docutils literal notranslate"><span class="pre">efficientnet_b0</span></code>, <code class="docutils literal notranslate"><span class="pre">efficientnet_b1</span></code>, …, <code class="docutils literal notranslate"><span class="pre">efficienet_b7</span></code>. With <code class="docutils literal notranslate"><span class="pre">b0</span></code> having the least amount of parameters and <code class="docutils literal notranslate"><span class="pre">b7</span></code> having the most.</p>
 <p>The pre-trained weights are taken from the <a class="reference external" href="https://github.com/rwightman/pytorch-image-models">timm</a> library and have been trained on ImageNet, thus the same tips, i.e. normalization, that apply to the VGG models also apply here.</p>
-</div>
-</div>
-<div class="section" id="loading-pre-trained-modules">
+</section>
+</section>
+<section id="loading-pre-trained-modules">
 <h1>Loading Pre-trained Modules<a class="headerlink" href="#loading-pre-trained-modules" title="Permalink to this headline">¶</a></h1>
 <p>All modules - not classifiers - can load parameters from a saved state using the <code class="docutils literal notranslate"><span class="pre">load</span></code> argument, which can either be a path to a saved PyTorch <code class="docutils literal notranslate"><span class="pre">nn.Module</span></code> <code class="docutils literal notranslate"><span class="pre">state_dict</span></code> or the <code class="docutils literal notranslate"><span class="pre">state_dict</span></code> itself, e.g.:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio.data</span> <span class="kn">import</span> <span class="n">Project</span>
@@ -936,12 +844,12 @@
                           <span class="n">section_classifier_config</span><span class="o">=</span><span class="n">section_classifier_config</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="extraction">
+</section>
+<section id="extraction">
 <h1>Extraction<a class="headerlink" href="#extraction" title="Permalink to this headline">¶</a></h1>
 <p>Each model has an <code class="docutils literal notranslate"><span class="pre">extract</span></code> method that gets the predictions from that model.</p>
-</div>
-<div class="section" id="ocr">
+</section>
+<section id="ocr">
 <h1>OCR<a class="headerlink" href="#ocr" title="Permalink to this headline">¶</a></h1>
 <p>The ability to do OCR tasks in bundled into the FileScanner class. The FileScanner supports multuple OCR solution and takes text embeddings into account.</p>
 <p>The following example runs OCR on a PDF with the default settings.</p>
@@ -956,7 +864,7 @@
 <p>In a first step the FileScanner checks if the file has some text embeddings and whether if its likely that the detected text embeddings cover the whole document. This is done by checking the frequency of specific characters like ‘e’, the ratio  of ASCII characters, and the amount of character on the pages and the overall document.</p>
 <p>If its likely that some characters are missing in the embeddings, the OCR process is started. The OCR text is then returned, except if the amount of OCR characters is less then the amount of text embeddings characters, in this case the text embeddings are used.</p>
 <p>The default OCR process is based on tesseract with presets for images and scans. In case the document contains some text embeddings the scan preset is always used. If there are no text embeddings present the FileScanner uses a blurryness score to decide which preset should be used.</p>
-<div class="section" id="ocr-with-the-azure-read-api">
+<section id="ocr-with-the-azure-read-api">
 <h2>OCR with the Azure Read API<a class="headerlink" href="#ocr-with-the-azure-read-api" title="Permalink to this headline">¶</a></h2>
 <p>In order to use the Azure Read API you need to set the credentials of an appropriate azure accunt via environment variables or the .env file.</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>AZURE_OCR_BASE_URL = https://****.api.cognitive.microsoft.com
@@ -973,8 +881,8 @@ AZURE_OCR_KEY = **********************
 </div>
 <p>The way text embeddings are used does not differ from the default OCR, however no blurriness score is calculated for the Azure Read API.</p>
 <p>The Azure Read API has some limititation regarding file size, page numbers, and rate limits. These lmites are updated over time and can be found here: <a class="reference external" href="https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/concept-recognizing-text">https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/concept-recognizing-text</a></p>
-</div>
-<div class="section" id="additional-filescanner-ocr-results">
+</section>
+<section id="additional-filescanner-ocr-results">
 <h2>Additional FileScanner OCR results<a class="headerlink" href="#additional-filescanner-ocr-results" title="Permalink to this headline">¶</a></h2>
 <p>The FileScanner provides the ocr results in text, bounding bboxes and sandwich PDF (PDF with text embeddings).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio.ocr</span> <span class="kn">import</span> <span class="n">FileScanner</span>
@@ -989,13 +897,13 @@ AZURE_OCR_KEY = **********************
 <span class="n">f_scanner</span><span class="o">.</span><span class="n">used_ocr_method</span>  <span class="c1"># str: the OCR method used.</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="further-usages-of-the-filescanner">
+</section>
+<section id="further-usages-of-the-filescanner">
 <h2>Further usages of the FileScanner<a class="headerlink" href="#further-usages-of-the-filescanner" title="Permalink to this headline">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">use_text_embedding_only</span></code>: In order to rely on text embeddings only, you can pass <code class="docutils literal notranslate"><span class="pre">use_text_embedding_only=True</span></code> to the ocr() method call.</p>
 <p><code class="docutils literal notranslate"><span class="pre">file</span></code>: A file like objects can be used to initialize the FileScanner (instead of the <code class="docutils literal notranslate"><span class="pre">path</span></code> argument.)</p>
-</div>
-<div class="section" id="labelsectionmodel-extraction">
+</section>
+<section id="labelsectionmodel-extraction">
 <h2>LabelSectionModel extraction<a class="headerlink" href="#labelsectionmodel-extraction" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio.data</span> <span class="kn">import</span> <span class="n">Project</span>
 <span class="kn">from</span> <span class="nn">konfuzio.default_models</span> <span class="kn">import</span> <span class="n">LabelSectionModel</span>
@@ -1028,8 +936,8 @@ AZURE_OCR_KEY = **********************
 <p>Each element of results is a <code class="docutils literal notranslate"><span class="pre">Dict[str,</span> <span class="pre">Union[List[Dict[str,</span> <span class="pre">pd.DataFrame]],</span> <span class="pre">pd.DataFrame]]</span></code>, where the keys are the label and section names.</p>
 <p>If the key is a label then the value is a DataFrame with columns <code class="docutils literal notranslate"><span class="pre">Label</span></code>, <code class="docutils literal notranslate"><span class="pre">Accuracy</span></code>, <code class="docutils literal notranslate"><span class="pre">Candidate</span></code>, <code class="docutils literal notranslate"><span class="pre">Translated</span> <span class="pre">Candidate</span></code>, <code class="docutils literal notranslate"><span class="pre">Start</span></code>, and <code class="docutils literal notranslate"><span class="pre">End</span></code>. <code class="docutils literal notranslate"><span class="pre">Label</span></code> is the name of the label, <code class="docutils literal notranslate"><span class="pre">Accuracy</span></code> is the confidence, <code class="docutils literal notranslate"><span class="pre">Candidate</span></code> and <code class="docutils literal notranslate"><span class="pre">Translated</span> <span class="pre">Candidate</span></code> are the actual token string, <code class="docutils literal notranslate"><span class="pre">Start</span></code>, and <code class="docutils literal notranslate"><span class="pre">End</span></code> are the start and end offsets (number of characters from the beginning of a document).</p>
 <p>If the key is a section, the value is a list, one element for each detected instance of that section. Each element is a dictionary with the same format as the <code class="docutils literal notranslate"><span class="pre">results</span></code> dictionary - i.e. keys are either labels or sections, values are DataFrames or list of dictionaries - with information about the labels and sections within that section. This recursive format allows nested sections.</p>
-</div>
-<div class="section" id="documentmodel-extraction">
+</section>
+<section id="documentmodel-extraction">
 <h2>DocumentModel extraction<a class="headerlink" href="#documentmodel-extraction" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio.data</span> <span class="kn">import</span> <span class="n">Project</span>
 <span class="kn">from</span> <span class="nn">konfuzio.default_models</span> <span class="kn">import</span> <span class="n">DocumentModel</span>
@@ -1062,47 +970,35 @@ AZURE_OCR_KEY = **********************
 </div>
 <p>Each element of results is a <code class="docutils literal notranslate"><span class="pre">Tuple[str,</span> <span class="pre">float],</span> <span class="pre">pandas.DataFrame</span></code>. The first element of the tuple is the predicted label as a string, the second element is the confidence of that prediction, i.e. <code class="docutils literal notranslate"><span class="pre">('insurance_contract',</span> <span class="pre">0.6)</span></code>. The DataFrame has a <code class="docutils literal notranslate"><span class="pre">category</span></code> and a <code class="docutils literal notranslate"><span class="pre">confidence</span></code> column. <code class="docutils literal notranslate"><span class="pre">category</span></code> is the predicted label as a string for each class and <code class="docutils literal notranslate"><span class="pre">confidence</span></code> is the confidence of each of the predictions.</p>
 <p>Note: when a pdf has multiple pages the <code class="docutils literal notranslate"><span class="pre">DocumentModel</span></code> makes a prediction on each page individually and then averages the predictions together.</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="../web/api.html" class="btn btn-neutral float-right" title="Konfuzio API Video Tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../sdk/faq.html" class="btn btn-neutral float-left" title="FAQ" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../web/api.html" class="btn btn-neutral float-right" title="Konfuzio API Video Tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright 2021, Helm und Nagel GmbH.
+    <p>&#169; Copyright 2021, Helm und Nagel GmbH.</p>
+  </div>
 
-    </p>
-  </div> 
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
   </script>
-
-  
-  
-    
-  
  
 <!-- Global site tag (gtag.js) - Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-D02B3QF8Z3"></script>

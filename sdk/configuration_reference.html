@@ -1,82 +1,41 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
-  <meta content="Basic configurations necessary to use the sdk: have a project in the Konfuzio Web App with some basic settings and initialize the konfuzio-sdk correctly." name="description" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+<meta content="Basic configurations necessary to use the sdk: have a project in the Konfuzio Web App with some basic settings and initialize the konfuzio-sdk correctly." name="description" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
   <title>Install SDK &mdash; Konfuzio  documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
-
-  
-  
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../_static/full_green_square.png"/>
-  
-
-  
-  
-
-  
     <link rel="canonical" href="https://dev.konfuzio.com/sdk/configuration_reference.html" />
-
-  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-    
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-
-    
+    <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Install SDK using PyCharm" href="quickstart_pycharm.html" />
     <link rel="prev" title="Konfuzio Developer’s Guide" href="../index.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
             <a href="../index.html" class="icon icon-home"> Konfuzio
-          
-
-          
           </a>
-
-          
-            
-            
               <div class="version">
                 v.0.1.5
               </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -84,18 +43,7 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Konfuzio Python SDK</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Install SDK</a><ul>
@@ -147,76 +95,36 @@
 <li class="toctree-l1"><a class="reference internal" href="../web/changelog_app.html">Changelog</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">Konfuzio</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-        
       <li>Install SDK</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="install-sdk">
+             
+  <section id="install-sdk">
 <h1>Install SDK<a class="headerlink" href="#install-sdk" title="Permalink to this headline">¶</a></h1>
 <p>To test our SDK you need to have an account in the Konfuzio Server and initialize the package before using it. Just follow the instructions below to set yourself ready for the SDK.</p>
-<div class="section" id="sign-up-in-konfuzio-server">
+<section id="sign-up-in-konfuzio-server">
 <h2>1. Sign up in Konfuzio Server<a class="headerlink" href="#sign-up-in-konfuzio-server" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference external" href="https://app.konfuzio.com/accounts/signup/">Register for free</a> in the Konfuzio Server.</p>
-<div class="section" id="some-words-about-the-data-structure">
+<section id="some-words-about-the-data-structure">
 <h3>Some words about the data structure<a class="headerlink" href="#some-words-about-the-data-structure" title="Permalink to this headline">¶</a></h3>
 <p>The data structure of a project in Konfuzio Server includes:</p>
 <ul class="simple">
@@ -229,12 +137,12 @@ Based on the data from the training documents the AI learns what to do. These ne
 <li><p>Annotations for documents
 An annotation is a single piece of information that a label has been assigned to.</p></li>
 </ul>
-</div>
-</div>
-<div class="section" id="install-konfuzio-sdk-package">
+</section>
+</section>
+<section id="install-konfuzio-sdk-package">
 <h2>2. Install <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> package<a class="headerlink" href="#install-konfuzio-sdk-package" title="Permalink to this headline">¶</a></h2>
 <p>To use <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> on your machine you can install it via:</p>
-<div class="section" id="option-1">
+<section id="option-1">
 <h3>Option 1<a class="headerlink" href="#option-1" title="Permalink to this headline">¶</a></h3>
 <ul>
 <li><p>Install the Python package directly in your working directory with:</p>
@@ -246,9 +154,9 @@ An annotation is a single piece of information that a label has been assigned to
 <li><p>Your coding environment should have a Python version &gt;= 3.6.</p></li>
 <li><p>If you are not using a virtual environment, you may need to add the installation directory to your PATH.</p></li>
 </ul>
-</div>
-</div>
-<div class="section" id="initialize-the-package">
+</section>
+</section>
+<section id="initialize-the-package">
 <h2>3. Initialize the package<a class="headerlink" href="#initialize-the-package" title="Permalink to this headline">¶</a></h2>
 <p>After the installation, initialize the package in your working directory with:</p>
 <p><code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span> <span class="pre">init</span></code></p>
@@ -258,55 +166,43 @@ It will also require a name of a folder where to allocate the data from your Kon
 At the end, two files will be created in your working directory: <code class="docutils literal notranslate"><span class="pre">.env</span></code> and <code class="docutils literal notranslate"><span class="pre">settings.py</span></code>.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">.env</span></code> file contains the credentials to access the app and should not become public.
 The <code class="docutils literal notranslate"><span class="pre">settings.py</span></code> file defines constant variables that will be available in the project, including the ones you defined in the <code class="docutils literal notranslate"><span class="pre">.env</span></code>. This file should not be modified.</p>
-</div>
-<div class="section" id="download-the-data">
+</section>
+<section id="download-the-data">
 <h2>4. Download the data<a class="headerlink" href="#download-the-data" title="Permalink to this headline">¶</a></h2>
 <p>To download the data from your Konfuzio project, you can execute:</p>
 <p><code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span> <span class="pre">download_data</span></code></p>
 <p>The data from the documents that you uploaded in your Konfuzio project will be downloaded to the folder that you provided in the previous step.</p>
 <p><em>Note</em>:
 Only documents in the training or test set are downloaded.</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="quickstart_pycharm.html" class="btn btn-neutral float-right" title="Install SDK using PyCharm" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../index.html" class="btn btn-neutral float-left" title="Konfuzio Developer’s Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="quickstart_pycharm.html" class="btn btn-neutral float-right" title="Install SDK using PyCharm" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright 2021, Helm und Nagel GmbH.
+    <p>&#169; Copyright 2021, Helm und Nagel GmbH.</p>
+  </div>
 
-    </p>
-  </div> 
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
   </script>
-
-  
-  
-    
-  
  
 <!-- Global site tag (gtag.js) - Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-D02B3QF8Z3"></script>

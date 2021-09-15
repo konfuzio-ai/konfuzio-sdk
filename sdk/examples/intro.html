@@ -1,79 +1,38 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
   <title>Example Usage &mdash; Konfuzio  documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
-
-  
-  
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../../_static/full_green_square.png"/>
-  
-
-  
-  
-
-  
     <link rel="canonical" href="https://dev.konfuzio.com/sdk/examples/intro.html" />
-
-  
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
         <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
-    
-    <script type="text/javascript" src="../../_static/js/theme.js"></script>
-
-    
+    <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
             <a href="../../index.html" class="icon icon-home"> Konfuzio
-          
-
-          
           </a>
-
-          
-            
-            
               <div class="version">
                 v.0.1.5
               </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -81,18 +40,7 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Konfuzio Python SDK</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_reference.html">Install SDK</a></li>
@@ -132,72 +80,32 @@
 <li class="toctree-l1"><a class="reference internal" href="../../web/changelog_app.html">Changelog</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../index.html">Konfuzio</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-        
       <li>Example Usage</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="example-usage">
+             
+  <section id="example-usage">
 <h1>Example Usage<a class="headerlink" href="#example-usage" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="project">
+<section id="project">
 <h2>Project<a class="headerlink" href="#project" title="Permalink to this headline">¶</a></h2>
 <p>Retrieve all information available for your project:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">()</span>
@@ -209,8 +117,8 @@ A subfolder will be created for each document in the project.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="documents">
+</section>
+<section id="documents">
 <h2>Documents<a class="headerlink" href="#documents" title="Permalink to this headline">¶</a></h2>
 <p>To access the documents in the project you can use:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">documents</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_documents_by_status</span><span class="p">()</span>
@@ -355,7 +263,7 @@ SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  jum.SV-Tg. 
 <span class="p">]</span>
 </pre></div>
 </div>
-<div class="section" id="download-pdfs">
+<section id="download-pdfs">
 <h3>Download PDFs<a class="headerlink" href="#download-pdfs" title="Permalink to this headline">¶</a></h3>
 <p>To get the pdfs of the documents, you can use <strong>get_file()</strong>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
@@ -365,8 +273,8 @@ SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  jum.SV-Tg. 
 <p>This will download the ocr version of the document which contains the text, the bounding boxes
 information of the characters and the image of the document.</p>
 <p>In the document folder, you will see a new file with the original name followed by “_ocr”.</p>
-</div>
-<div class="section" id="download-pages-as-images">
+</section>
+<section id="download-pages-as-images">
 <h3>Download pages as images<a class="headerlink" href="#download-pages-as-images" title="Permalink to this headline">¶</a></h3>
 <p>To get the pages of the document as png images, you can use <strong>get_images()</strong>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
@@ -374,8 +282,8 @@ information of the characters and the image of the document.</p>
 </pre></div>
 </div>
 <p>You will get one png image named “page_number_of_page.png” for each page in the document.</p>
-</div>
-<div class="section" id="download-bounding-boxes-of-the-characters">
+</section>
+<section id="download-bounding-boxes-of-the-characters">
 <h3>Download bounding boxes of the characters<a class="headerlink" href="#download-bounding-boxes-of-the-characters" title="Permalink to this headline">¶</a></h3>
 <p>To get the bounding boxes information of the characters, you can use <strong>get_bbox()</strong>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
@@ -388,8 +296,8 @@ For example, you can get the path to the file with the document text with:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span><span class="o">.</span><span class="n">txt_file_path</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="update-document">
+</section>
+<section id="update-document">
 <h3>Update Document<a class="headerlink" href="#update-document" title="Permalink to this headline">¶</a></h3>
 <p>If there are changes in the document in the Konfuzio Server, you can update the document with:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
@@ -397,44 +305,33 @@ For example, you can get the path to the file with the document text with:</p>
 </div>
 <p>You can also update a document by updating the entire project via project.update().
 However, for projects with many documents it can be faster to update only the relevant documents.</p>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
            </div>
-           
           </div>
           <footer>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright 2021, Helm und Nagel GmbH.
+    <p>&#169; Copyright 2021, Helm und Nagel GmbH.</p>
+  </div>
 
-    </p>
-  </div> 
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
   </script>
-
-  
-  
-    
-  
  
 <!-- Global site tag (gtag.js) - Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-D02B3QF8Z3"></script>
