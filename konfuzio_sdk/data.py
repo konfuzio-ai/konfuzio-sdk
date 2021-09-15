@@ -181,6 +181,7 @@ class Label(Data):
         self.data_type = get_data_type_display
         self.description = description
         self.has_multiple_top_candidates = has_multiple_top_candidates
+        self.threshold = kwargs.get('threshold', None)
 
         self.project: Project = project
         self._correct_annotations_indexed = None
