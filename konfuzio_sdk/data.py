@@ -132,10 +132,14 @@ class LabelSet(Data):
 
 
 class Category(LabelSet):
-    """A Category is a Label Set with special conditions and is used to group documents."""
+    """A Category is used to group documents."""
 
     def __init__(self, *args, **kwargs):
-        """Create a named Category."""
+        """
+        Create a named Category.
+
+        A Category is also a Label Set but cannot have other categories associated to it.
+        """
         LabelSet.__init__(self, *args, **kwargs)
 
         self.is_default = True
