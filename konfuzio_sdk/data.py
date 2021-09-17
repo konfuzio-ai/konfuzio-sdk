@@ -244,9 +244,9 @@ class Label(Data):
         new_label_added = False
         try:
             if len(self.label_sets) == 0:
-                prj_categories = self.project.categories
-                category = [t for t in prj_categories if t.is_default][0]
-                category.add_label(self)
+                prj_label_sets = self.project.label_sets
+                label_set = [t for t in prj_label_sets if t.is_default][0]
+                label_set.add_label(self)
 
             response = create_label(
                 project_id=self.project.id,
