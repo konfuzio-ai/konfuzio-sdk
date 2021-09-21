@@ -29,7 +29,7 @@ copyright = '2021, Helm und Nagel GmbH'
 author = 'Helm und Nagel GmbH'
 
 # The short X.Y version
-version = 'v.0.1.5'
+version = 'v.0.1.6'
 
 
 # -- General configuration ---------------------------------------------------
