@@ -4,6 +4,18 @@
 
 # Changelog
 
+## 2021-09-21 v.0.1.6
+
+### Changed
+
+- Renaming of classes to new Konfuzio version
+- Improved documentation dev.konfuzio.com
+
+### Added
+
+- Category class
+- Error message for missing .env
+
 ## 2021-08-16 v.0.1.5
 
 ### Changed
@@ -33,7 +45,7 @@
 ### Changed
 
 - Improved documentation dev.konfuzio.com
-- Definition of the section class in the Project 
+- Definition of the section class in the Project
 
 ## 2021-06-15 v.0.1.2
 
@@ -85,11 +97,11 @@
 
 ### Changed
 
-- Removed config directory from setup.py. 
-- Delete config directory. 
+- Removed config directory from setup.py.
+- Delete config directory.
 - Reset the version of package in setup.py to 0.0.1
 
-  
+
 
 ## 2021-03-26
 
@@ -99,7 +111,7 @@
 - Quick code clean.
 - Small fix flake8.
 
-  
+
 
 ## 2021-03-25
 
@@ -111,7 +123,7 @@
 
 ### Changed
 
-- Split in pipeline 
+- Split in pipeline
 - Mark tests as local and split in pipeline.
 - Replace test docs for zip.
 - Clean definition of classes.
@@ -120,7 +132,7 @@
 
 - Fix *test_get_file_type* method in *test_utils.py* .
 
-  
+
 
 ## 2021-03-24
 
@@ -134,7 +146,7 @@
 - Removed functions from urls.py that are not being used.
 - Allow to overwrite of classes in Project.
 
-  
+
 
 ## 2021-03-18
 
@@ -142,7 +154,7 @@
 
 - Remove creation of releases folder.
 
-  
+
 
 ## 2021-03-17
 
@@ -154,7 +166,7 @@
 
 - New changes in the konfuzio_sdk package.
 
-  
+
 
 ## 2021-03-15
 
@@ -166,7 +178,7 @@
 
 - Code clean.
 
-  
+
 
 ## 2021-03-11
 
@@ -190,7 +202,7 @@
 
 - Clean tests for API.
 
-  
+
 
 ## 2021-03-10_
 
@@ -202,7 +214,7 @@
 
 - Update setup.py.
 
-  
+
 
 ## 2021-03-3_
 
@@ -210,7 +222,7 @@
 
 - Added new file for ReadMe.
 
-  
+
 
 ## 2021-03-2_
 
@@ -218,7 +230,7 @@
 
 - Add labels description to Label.
 
-  
+
 
 ## 2021-02-23_
 
@@ -226,7 +238,7 @@
 
 - Update README.md.
 
-  
+
 
 ## 2021-02-17_
 
@@ -234,15 +246,15 @@
 
 - Added **get_bbox()** method to Document class.
 
-  
+
 
 ## 2021-02-16_
 
 ### Changed
 
-- Removed methods from each class in data.py that are not used for data downloading. 
+- Removed methods from each class in data.py that are not used for data downloading.
 
-  
+
 
 ## 2021-02-15_
 
@@ -252,10 +264,10 @@
 
 ### Changed
 
-- Update README.md. 
+- Update README.md.
 - Remove commented is_file function inside data.py.
 
-  
+
 
 ## 2021-02-12_
 
