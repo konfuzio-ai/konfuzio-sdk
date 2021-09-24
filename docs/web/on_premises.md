@@ -237,7 +237,8 @@ required. In this setup Konfuzio is running in the context of the Docker executo
 therefore there are no strict requirements for the VMs operating systems. However, we
 recommend a Linux VM with Debian, Ubuntu, CentOS,or Redhat Linux.
 
-1. Download Docker Image
+#### 1. Download Docker Image
+
 The Konfuzio docker image can be downloaded via “docker pull”. We will provide you
 with the credentials. This action requires an internet connection.
 
@@ -254,15 +255,13 @@ Password: {PROVIDED_BY_KONFUZIO}
 
 The Tag "latest" should be replaced with an actual version. A list of available tags can be found here: https://dev.konfuzio.com/web/changelog_app.html.
 
-2. Setup PostgreSQL, Redis, BlobStorage/FileSystemStorage
+#### 2. Setup PostgreSQL, Redis, BlobStorage/FileSystemStorage
 The database credentials are needed in the next step. You may want to use psql and redis-cli to check if database credentials are working.
 
-3. Setup environment variable file
+#### 3. Setup environment variable file
 Copy the /code/.env.example file from the container and adapt it to your settings. The .env file can be saved anywhere on the host VM. In this example we use "/konfuzio-vm/text-annotation.env".
 
-(I also attached this file to this e-mail).
-
-4. Init the database, create first superuser via cli and prefill e-mail templates
+#### 4. Init the database, create first superuser via cli and prefill e-mail templates
 In this example we store the files on the host VM and mount the directory "/konfuzio-vm/text-annotation/data" into the container. In the first step we create a container with a shell to then start the initialization scripts within the container.
 The container needs to be able to access IP addresses and hostnames used in the .env. This can be ensured using --add.host. In the example we make the host IP 10.0.0.1 available.
 
@@ -277,7 +276,7 @@ After completing these steps you can exit and remove the container.
 
 Note: The username used during the createsuperuser dialog must have the format of a valid e-mail in order to be able to login later.
 
-5. Start the container
+#### 5. Start the container
 In this example we start three containers, the first one to serve the Konfuzio web application. The second and third are used to process tasks in the background without blocking the web application.
 
 docker run -p 80:8000 -name web -d --add-host:10.0.0.1 --env-file /konfuzio-vm/text-annotation.env  --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data registry.gitlab.com/konfuzio/text-annotation/master:latest
