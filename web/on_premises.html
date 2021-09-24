@@ -95,7 +95,14 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#docker">Docker</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id2">Single VM setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Single VM setup</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#download-docker-image">1. Download Docker Image</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#setup-postgresql-redis-blobstorage-filesystemstorage">2. Setup PostgreSQL, Redis, BlobStorage/FileSystemStorage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#setup-environment-variable-file">3. Setup environment variable file</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#init-the-database-create-first-superuser-via-cli-and-prefill-e-mail-templates">4. Init the database, create first superuser via cli and prefill e-mail templates</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#start-the-container">5. Start the container</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#alternative-deployment-options">Alternative deployment options</a><ul>
@@ -343,11 +350,10 @@ container orchestration tool of your choice.</p>
 required. In this setup Konfuzio is running in the context of the Docker executor,
 therefore there are no strict requirements for the VMs operating systems. However, we
 recommend a Linux VM with Debian, Ubuntu, CentOS,or Redhat Linux.</p>
-<ol class="arabic simple">
-<li><p>Download Docker Image
-The Konfuzio docker image can be downloaded via “docker pull”. We will provide you
-with the credentials. This action requires an internet connection.</p></li>
-</ol>
+<section id="download-docker-image">
+<h4>1. Download Docker Image<a class="headerlink" href="#download-docker-image" title="Permalink to this headline">¶</a></h4>
+<p>The Konfuzio docker image can be downloaded via “docker pull”. We will provide you
+with the credentials. This action requires an internet connection.</p>
 <p>The internet connection can be turned off once the download is complete. In case there is
 no internet connection available during setup, the container must be transferred with an
 alternative method as a file to the virtual machine.</p>
@@ -357,18 +363,19 @@ Password: {PROVIDED_BY_KONFUZIO}</p>
 <p><code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">docker</span> <span class="pre">login</span> <span class="pre">registry.gitlab.com</span></code>
 <code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">docker</span> <span class="pre">pull</span> <span class="pre">registry.gitlab.com/konfuzio/text-annotation/master:latest</span></code></p>
 <p>The Tag “latest” should be replaced with an actual version. A list of available tags can be found here: <a class="reference external" href="https://dev.konfuzio.com/web/changelog_app.html">https://dev.konfuzio.com/web/changelog_app.html</a>.</p>
-<ol class="arabic simple">
-<li><p>Setup PostgreSQL, Redis, BlobStorage/FileSystemStorage
-The database credentials are needed in the next step. You may want to use psql and redis-cli to check if database credentials are working.</p></li>
-<li><p>Setup environment variable file
-Copy the /code/.env.example file from the container and adapt it to your settings. The .env file can be saved anywhere on the host VM. In this example we use “/konfuzio-vm/text-annotation.env”.</p></li>
-</ol>
-<p>(I also attached this file to this e-mail).</p>
-<ol class="arabic simple">
-<li><p>Init the database, create first superuser via cli and prefill e-mail templates
-In this example we store the files on the host VM and mount the directory “/konfuzio-vm/text-annotation/data” into the container. In the first step we create a container with a shell to then start the initialization scripts within the container.
-The container needs to be able to access IP addresses and hostnames used in the .env. This can be ensured using –add.host. In the example we make the host IP 10.0.0.1 available.</p></li>
-</ol>
+</section>
+<section id="setup-postgresql-redis-blobstorage-filesystemstorage">
+<h4>2. Setup PostgreSQL, Redis, BlobStorage/FileSystemStorage<a class="headerlink" href="#setup-postgresql-redis-blobstorage-filesystemstorage" title="Permalink to this headline">¶</a></h4>
+<p>The database credentials are needed in the next step. You may want to use psql and redis-cli to check if database credentials are working.</p>
+</section>
+<section id="setup-environment-variable-file">
+<h4>3. Setup environment variable file<a class="headerlink" href="#setup-environment-variable-file" title="Permalink to this headline">¶</a></h4>
+<p>Copy the /code/.env.example file from the container and adapt it to your settings. The .env file can be saved anywhere on the host VM. In this example we use “/konfuzio-vm/text-annotation.env”.</p>
+</section>
+<section id="init-the-database-create-first-superuser-via-cli-and-prefill-e-mail-templates">
+<h4>4. Init the database, create first superuser via cli and prefill e-mail templates<a class="headerlink" href="#init-the-database-create-first-superuser-via-cli-and-prefill-e-mail-templates" title="Permalink to this headline">¶</a></h4>
+<p>In this example we store the files on the host VM and mount the directory “/konfuzio-vm/text-annotation/data” into the container. In the first step we create a container with a shell to then start the initialization scripts within the container.
+The container needs to be able to access IP addresses and hostnames used in the .env. This can be ensured using –add.host. In the example we make the host IP 10.0.0.1 available.</p>
 <p>docker run -it –add-host:10.0.0.1 –env-file /konfuzio-vm/text-annotation.env –mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data registry.gitlab.com/konfuzio/text-annotation/master:latest bash</p>
 <p>python manage.py migrate
 python manage.py createsuperuser
@@ -376,13 +383,14 @@ python manage.py init_email_templates
 python manage.py init_user_permissions</p>
 <p>After completing these steps you can exit and remove the container.</p>
 <p>Note: The username used during the createsuperuser dialog must have the format of a valid e-mail in order to be able to login later.</p>
-<ol class="arabic simple">
-<li><p>Start the container
-In this example we start three containers, the first one to serve the Konfuzio web application. The second and third are used to process tasks in the background without blocking the web application.</p></li>
-</ol>
+</section>
+<section id="start-the-container">
+<h4>5. Start the container<a class="headerlink" href="#start-the-container" title="Permalink to this headline">¶</a></h4>
+<p>In this example we start three containers, the first one to serve the Konfuzio web application. The second and third are used to process tasks in the background without blocking the web application.</p>
 <p>docker run -p 80:8000 -name web -d –add-host:10.0.0.1 –env-file /konfuzio-vm/text-annotation.env  –mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data registry.gitlab.com/konfuzio/text-annotation/master:latest
 docker run –name worker1 -d –add-host:10.0.0.1 –env-file /konfuzio-vm/text-annotation.env –mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data registry.gitlab.com/konfuzio/text-annotation/master:latest celery -A app worker -l INFO –concurrency 1 -Q celery,priority_ocr,ocr,priority_extract,extract,processing,priority_local_ocr,local_ocr,training,finalize,categorize
 docker run –name worker2 -d –add-host:10.0.0.1 –env-file /konfuzio-vm/text-annotation.env –mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data registry.gitlab.com/konfuzio/text-annotation/master:latest celery -A app worker -l INFO –concurrency 1 -Q celery,priority_ocr,ocr,priority_extract,extract,processing,priority_local_ocr,local_ocr,training,finalize,categorize</p>
+</section>
 </section>
 </section>
 <section id="alternative-deployment-options">
