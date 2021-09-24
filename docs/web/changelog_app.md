@@ -8,6 +8,12 @@ All notable changes in the server of app.konfuzio.com will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
 
+## 2021-09-24_13-53-32
+
+### Fixed
+- Incompleted evaluation
+- Formatting of the "Check your browser" page for logged out users.
+
 ## 2021-09-16_12-25-23
 
 ### Fixed
