@@ -279,8 +279,17 @@ Note: The username used during the createsuperuser dialog must have the format o
 #### 5. Start the container
 In this example we start three containers, the first one to serve the Konfuzio web application. The second and third are used to process tasks in the background without blocking the web application.
 
-`docker run -p 80:8000 --name web -d --add-host:10.0.0.1 --env-file /konfuzio-vm/text-annotation.env  --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data registry.gitlab.com/konfuzio/text-annotation/master:latest`
-`docker run --name worker1 -d --add-host:10.0.0.1 --env-file /konfuzio-vm/text-annotation.env --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data registry.gitlab.com/konfuzio/text-annotation/master:latest celery -A app worker -l INFO --concurrency 1 -Q celery,priority_ocr,ocr,priority_extract,extract,processing,priority_local_ocr,local_ocr,training,finalize,categorize`
+`docker run -p 80:8000 --name web -d --add-host:10.0.0.1 \` 
+`--env-file /konfuzio-vm/text-annotation.env \`
+`--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \`
+`registry.gitlab.com/konfuzio/text-annotation/master:latest`
+
+`docker run --name worker1 -d --add-host:10.0.0.1 \`
+`--env-file /konfuzio-vm/text-annotation.env `
+`--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data`
+`registry.gitlab.com/konfuzio/text-annotation/master:latest `
+`celery -A app worker -l INFO --concurrency 1 -Q celery,priority_ocr,ocr,priority_extract,extract,processing,priority_local_ocr,local_ocr,training,finalize,categorize`
+
 `docker run --name worker2 -d --add-host:10.0.0.1 --env-file /konfuzio-vm/text-annotation.env --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data registry.gitlab.com/konfuzio/text-annotation/master:latest celery -A app worker -l INFO --concurrency 1 -Q celery,priority_ocr,ocr,priority_extract,extract,processing,priority_local_ocr,local_ocr,training,finalize,categorize`
 
 
