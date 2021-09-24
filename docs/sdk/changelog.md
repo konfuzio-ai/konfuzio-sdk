@@ -8,7 +8,7 @@
 
 ### Changed
 
-- Renaming of classes to new Konfuzio version
+- Renaming of classes to new Konfuzio Server version
 - Improved documentation dev.konfuzio.com
 
 ### Added
