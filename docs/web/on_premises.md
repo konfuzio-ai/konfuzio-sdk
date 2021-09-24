@@ -13,7 +13,7 @@ Before deploying Konfuzio to your Kubernetes cluster, there are some tools you m
 
 #### kubectl
 
-kubectl is the tool that talks to the Kubernetes API.kubectl 1.15 or higher is required and it needs to be compatible 
+kubectl is the tool that talks to the Kubernetes API. kubectl 1.15 or higher is required and it needs to be compatible 
 with your cluster ([+/-1 minor release from your cluster](https://kubernetes.io/docs/tasks/tools/#before-you-begin)).
 
 [> Install kubectl locally by following the Kubernetes documentation](https://kubernetes.io/docs/tasks/tools/#install-kubectl).
