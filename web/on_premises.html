@@ -360,7 +360,7 @@ alternative method as a file to the virtual machine.</p>
 <p>Registry URL: registry.gitlab.com<span class="raw-html-m2r"><br></span>
 Username: {PROVIDED_BY_KONFUZIO}<span class="raw-html-m2r"><br></span>
 Password: {PROVIDED_BY_KONFUZIO}</p>
-<p><code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">docker</span> <span class="pre">login</span> <span class="pre">registry.gitlab.com</span> <span class="pre">\</span></code>
+<p><code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">docker</span> <span class="pre">login</span> <span class="pre">registry.gitlab.com</span></code><span class="raw-html-m2r"><br></span>
 <code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">docker</span> <span class="pre">pull</span> <span class="pre">registry.gitlab.com/konfuzio/text-annotation/master:latest</span></code></p>
 <p>The Tag “latest” should be replaced with an actual version. A list of available tags can be found here: <a class="reference external" href="https://dev.konfuzio.com/web/changelog_app.html">https://dev.konfuzio.com/web/changelog_app.html</a>.</p>
 </section>
@@ -377,9 +377,9 @@ Password: {PROVIDED_BY_KONFUZIO}</p>
 <p>In this example we store the files on the host VM and mount the directory “/konfuzio-vm/text-annotation/data” into the container. In the first step we create a container with a shell to then start the initialization scripts within the container.
 The container needs to be able to access IP addresses and hostnames used in the .env. This can be ensured using –add.host. In the example we make the host IP 10.0.0.1 available.</p>
 <p>docker run -it –add-host:10.0.0.1 –env-file /konfuzio-vm/text-annotation.env –mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data registry.gitlab.com/konfuzio/text-annotation/master:latest bash</p>
-<p><code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">migrate</span> <span class="pre">\</span></code>
-<code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">createsuperuser</span> <span class="pre">\</span></code>
-<code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">init_email_templates</span> <span class="pre">\</span></code>
+<p><code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">migrate</span></code><span class="raw-html-m2r"><br></span>
+<code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">createsuperuser</span></code><span class="raw-html-m2r"><br></span>
+<code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">init_email_templates</span></code><span class="raw-html-m2r"><br></span>
 <code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">init_user_permissions</span></code></p>
 <p>After completing these steps you can exit and remove the container.</p>
 <p>Note: The username used during the createsuperuser dialog must have the format of a valid e-mail in order to be able to login later.</p>
