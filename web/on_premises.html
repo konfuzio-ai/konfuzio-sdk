@@ -94,8 +94,11 @@
 <li class="toctree-l3"><a class="reference internal" href="#upgrade">Upgrade</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#alternative-deployment-options">Alternative deployment options</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#docker">Docker</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id2">Single VM setup</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#alternative-deployment-options">Alternative deployment options</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#custom-ai-model-training-via-ci-pipelines">Custom AI model training via CI pipelines</a></li>
 </ul>
 </li>
@@ -328,17 +331,17 @@ step. Without a backup, Konfuzio data might be lost if the upgrade fails.</p></l
 <code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">...</span></code></p>
 </section>
 </section>
-<section id="alternative-deployment-options">
-<h2>Alternative deployment options<a class="headerlink" href="#alternative-deployment-options" title="Permalink to this headline">¶</a></h2>
+<section id="docker">
+<h2>Docker<a class="headerlink" href="#docker" title="Permalink to this headline">¶</a></h2>
 <section id="id2">
 <h3>Single VM setup<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <p>Konfuzio can be configured to run on a single virtual machine, without relying on
 Kubernetes. In this scenario, all necessary containers are started manually or with a
 container orchestration tool of your choice.</p>
-<p>We recommend a virtual machine with a minimum of 12vCPU (incl. AVX2 support) and
-64GB of RAM and an installed Docker runtime. A NvidiaGPU is recommended but not
+<p>We recommend a virtual machine with a minimum of 12 vCPU (incl. AVX2 support) and
+64GB of RAM and an installed Docker runtime. A Nvidia GPU is recommended but not
 required. In this setup Konfuzio is running in the context of the Docker executor,
-therefore there are no strict requirements for theVMs operating systems. However, we
+therefore there are no strict requirements for the VMs operating systems. However, we
 recommend a Linux VM with Debian, Ubuntu, CentOS,or Redhat Linux.</p>
 <p>The Konfuzio docker image can be downloaded via “docker pull”. We will provide you
 with the credentials. This action requires an internet connection.</p>
@@ -353,6 +356,9 @@ by passing these settings as environment variables.</p>
 <code class="docutils literal notranslate"><span class="pre">registry.gitlab.com/konfuzio/text-annotation/master:latest</span></code></p>
 <p>We will support you in defining reasonable deploymentsettings for your scenario.</p>
 </section>
+</section>
+<section id="alternative-deployment-options">
+<h2>Alternative deployment options<a class="headerlink" href="#alternative-deployment-options" title="Permalink to this headline">¶</a></h2>
 <section id="custom-ai-model-training-via-ci-pipelines">
 <h3>Custom AI model training via CI pipelines<a class="headerlink" href="#custom-ai-model-training-via-ci-pipelines" title="Permalink to this headline">¶</a></h3>
 <p>Konfuzio uses CI pipelines to allow users to run customAI model code securely. In case

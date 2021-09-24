@@ -223,7 +223,7 @@ _Action 2_
 `--set konfuzio.migrations.enabled=true \`  
 `--set ...`  
 
-## Alternative deployment options
+## Docker
 
 ### Single VM setup
 
@@ -231,10 +231,10 @@ Konfuzio can be configured to run on a single virtual machine, without relying o
 Kubernetes. In this scenario, all necessary containers are started manually or with a
 container orchestration tool of your choice.
 
-We recommend a virtual machine with a minimum of 12vCPU (incl. AVX2 support) and
-64GB of RAM and an installed Docker runtime. A NvidiaGPU is recommended but not
+We recommend a virtual machine with a minimum of 12 vCPU (incl. AVX2 support) and
+64GB of RAM and an installed Docker runtime. A Nvidia GPU is recommended but not
 required. In this setup Konfuzio is running in the context of the Docker executor,
-therefore there are no strict requirements for theVMs operating systems. However, we
+therefore there are no strict requirements for the VMs operating systems. However, we
 recommend a Linux VM with Debian, Ubuntu, CentOS,or Redhat Linux.
 
 The Konfuzio docker image can be downloaded via “docker pull”. We will provide you
@@ -254,6 +254,8 @@ by passing these settings as environment variables.
 `registry.gitlab.com/konfuzio/text-annotation/master:latest`  
 
 We will support you in defining reasonable deploymentsettings for your scenario.
+
+## Alternative deployment options
 
 ### Custom AI model training via CI pipelines
 
