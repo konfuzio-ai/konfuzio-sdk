@@ -298,6 +298,14 @@ In this example we start three containers, the first one to serve the Konfuzio w
 `celery -A app worker -l INFO --concurrency 1 -Q celery,priority_ocr,ocr,\`  
 `priority_extract,extract,processing,priority_local_ocr,local_ocr,training,finalize,categorize`   
 
+#### [Optional] 6. Use Flower to monitor tasks
+
+#### [Optional] 7. Use Azure Read API on-premise
+
+The [Azure Read API](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2) can be installed on-premise and used togehter with Konfuzio.
+
+Please install the Read API Container according to the current [manual](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2)
+
 
 ## Alternative deployment options
 

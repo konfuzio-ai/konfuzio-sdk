@@ -101,6 +101,8 @@
 <li class="toctree-l4"><a class="reference internal" href="#setup-environment-variable-file">3. Setup environment variable file</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#init-the-database-create-first-superuser-via-cli-and-prefill-e-mail-templates">4. Init the database, create first superuser via cli and prefill e-mail templates</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#start-the-container">5. Start the container</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#optional-6-use-flower-to-monitor-tasks">[Optional] 6. Use Flower to monitor tasks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#optional-7-use-azure-read-api-on-premise">[Optional] 7. Use Azure Read API on-premise</a></li>
 </ul>
 </li>
 </ul>
@@ -403,6 +405,14 @@ The container needs to be able to access IP addresses and hostnames used in the 
 <code class="docutils literal notranslate"><span class="pre">registry.gitlab.com/konfuzio/text-annotation/master:latest</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
 <code class="docutils literal notranslate"><span class="pre">celery</span> <span class="pre">-A</span> <span class="pre">app</span> <span class="pre">worker</span> <span class="pre">-l</span> <span class="pre">INFO</span> <span class="pre">--concurrency</span> <span class="pre">1</span> <span class="pre">-Q</span> <span class="pre">celery,priority_ocr,ocr,\</span></code><span class="raw-html-m2r"><br></span>
 <code class="docutils literal notranslate"><span class="pre">priority_extract,extract,processing,priority_local_ocr,local_ocr,training,finalize,categorize</span></code></p>
+</section>
+<section id="optional-6-use-flower-to-monitor-tasks">
+<h4>[Optional] 6. Use Flower to monitor tasks<a class="headerlink" href="#optional-6-use-flower-to-monitor-tasks" title="Permalink to this headline">¶</a></h4>
+</section>
+<section id="optional-7-use-azure-read-api-on-premise">
+<h4>[Optional] 7. Use Azure Read API on-premise<a class="headerlink" href="#optional-7-use-azure-read-api-on-premise" title="Permalink to this headline">¶</a></h4>
+<p>The <a class="reference external" href="https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2">Azure Read API</a> can be installed on-premise and used togehter with Konfuzio.</p>
+<p>Please install the Read API Container according to the current <a class="reference external" href="https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2">manual</a></p>
 </section>
 </section>
 </section>
