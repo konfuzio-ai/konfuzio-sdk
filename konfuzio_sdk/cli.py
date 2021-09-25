@@ -154,6 +154,7 @@ def data():
 
     for document in tqdm(training_prj.documents + training_prj.test_documents):
         document.get_file()
+        document.get_bbox()
         document.get_images()
     print("[SUCCESS] Data downloading finished successfully!")
 
