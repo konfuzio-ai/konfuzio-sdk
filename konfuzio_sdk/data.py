@@ -1321,7 +1321,10 @@ class Project(Data):
             remove_document_ids = existing_document_ids.difference(meta_data_document_ids)
             for document_id in remove_document_ids:
                 document_path = os.path.join(self.data_root, 'pdf', document_id)
-                shutil.rmtree(document_path)
+                try:
+                    shutil.rmtree(document_path)
+                 except FileNotFoundError:
+                    pass
 
             # to restart lists and allow changes in the dataset status
             self.documents = []
