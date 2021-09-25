@@ -300,7 +300,7 @@ In this example we start three containers, the first one to serve the Konfuzio w
 
 #### [Optional] 6. Use Flower to monitor tasks
 
-[Flower]() can be used a task monitoring tool. Flower will be only accessible for Konfuzio superusers.
+[Flower](https://flower.readthedocs.io/en/latest/screenshots.html) can be used a task monitoring tool. Flower will be only accessible for Konfuzio superusers.
 
 ```
 docker pull mher/flower:0.9.7 
