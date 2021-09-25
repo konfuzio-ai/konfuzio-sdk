@@ -1323,7 +1323,7 @@ class Project(Data):
                 document_path = os.path.join(self.data_root, 'pdf', document_id)
                 try:
                     shutil.rmtree(document_path)
-                 except FileNotFoundError:
+                except FileNotFoundError:
                     pass
 
             # to restart lists and allow changes in the dataset status
