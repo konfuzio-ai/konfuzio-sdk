@@ -298,18 +298,6 @@ In this example we start three containers, the first one to serve the Konfuzio w
 `celery -A app worker -l INFO --concurrency 1 -Q celery,priority_ocr,ocr,\`  
 `priority_extract,extract,processing,priority_local_ocr,local_ocr,training,finalize,categorize`   
 
-Azure Read API:
-Folgende Zugangsdaten haben ich für die Azure Read API eingerichtet:
-API_KEY=3e8e43849c18479b988e1b64e0a32c1aBILLING_ENDPOINT=https://ocr-dsv.cognitiveservices.azure.com/
-Daraus folgende diese Befehle:
-docker pull mcr.microsoft.com/azure-cognitive-services/vision/read:3.2
-
-docker run --rm -it -d --name=azure -p 5000:5000 --memory 64g --cpus 8 mcr.microsoft.com/azure-cognitive-services/vision/read:3.2 Eula=accept Billing=https://ocr-dsv.cognitiveservices.azure.com ApiKey=3e8e43849c18479b988e1b64e0a32c1a
-Anpassungen in der .env:
-AZURE_OCR_KEY=9fa0f715540442b89e596e702ef3083f
-AZURE_OCR_BASE_URL=http://host:5000
-AZURE_OCR_VERSION=v3.2
-
 #### [Optional] 6. Use Flower to monitor tasks
 
 [Flower](https://flower.readthedocs.io/en/latest/screenshots.html) can be used a task monitoring tool. Flower will be only accessible for Konfuzio superusers.
