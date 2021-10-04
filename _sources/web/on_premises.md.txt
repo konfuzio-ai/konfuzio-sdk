@@ -320,6 +320,29 @@ Once the Azure Read API container is running you need to set the following varia
 `AZURE_OCR_BASE_URL=http://host:5000 # The URL of the READ API`  
 `AZURE_OCR_VERSION=v3.2 # The version of the READ API`
 
+#### [Optional] 7. Install document segmentation container
+
+Download the container with the credentials provided by Konfuzio
+
+Registry URL: registry.gitlab.com  
+Username: {PROVIDED_BY_KONFUZIO}  
+Password: {PROVIDED_BY_KONFUZIO}  
+
+`> docker login registry.gitlab.com`  
+`> docker pull registry.gitlab.com/konfuzio/detectron2:2021-06-02`  
+`> docker run -it registry.gitlab.com/konfuzio/detectron2:2021-06-02`  
+
+The segmentation container needs to be started with the following environment variables
+```
+GPU=True  # If GPU is present
+C_FORCE_ROOT=True
+BROKER_URL=  # See the konfuzio container
+RESULT_BACKEND=  # See the konfuzio container
+SENTRY_ENVIRONMENT=  # Optional
+SENTRY_RELEASE=  # Optional
+SENTRY_DSN=  # Optional
+```
+
 ## Alternative deployment options
 
 ### Custom AI model training via CI pipelines
