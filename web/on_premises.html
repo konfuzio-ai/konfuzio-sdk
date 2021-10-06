@@ -433,8 +433,8 @@ Username: {PROVIDED_BY_KONFUZIO}<span class="raw-html-m2r"><br></span>
 Password: {PROVIDED_BY_KONFUZIO}</p>
 <p><code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">docker</span> <span class="pre">login</span> <span class="pre">registry.gitlab.com</span></code><span class="raw-html-m2r"><br></span>
 <code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">docker</span> <span class="pre">pull</span> <span class="pre">registry.gitlab.com/konfuzio/detectron2:2021-06-02</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">docker</span> <span class="pre">run</span> <span class="pre">-it</span> <span class="pre">registry.gitlab.com/konfuzio/detectron2:2021-06-02</span></code></p>
-<p>The segmentation container needs to be started with the following environment variables</p>
+<a href="#id3"><span class="problematic" id="id4">`</span></a>&gt; docker run –env-file /path_to_env_file.env registry.gitlab.com/konfuzio/detectron2:2021-06-02 bash -c “export LC_ALL=C.UTF-8; export LANG=C.UTF-8; ./docker_entrypoint.sh; ./run_celery.sh¸</p>
+<p>The segmentation container needs to be started with the following environment variables which you can enter into your .env file</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GPU</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># If GPU is present</span>
 <span class="n">C_FORCE_ROOT</span><span class="o">=</span><span class="kc">True</span>
 <span class="n">BROKER_URL</span><span class="o">=</span>  <span class="c1"># See the konfuzio container</span>
