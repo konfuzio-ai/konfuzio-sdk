@@ -103,7 +103,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#start-the-container">5. Start the container</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#optional-6-use-flower-to-monitor-tasks">[Optional] 6. Use Flower to monitor tasks</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#optional-7-use-azure-read-api-on-premise">[Optional] 7. Use Azure Read API on-premise</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#optional-7-install-document-segmentation-container">[Optional] 7. Install document segmentation container</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#optional-8-install-document-segmentation-container">[Optional] 8. Install document segmentation container</a></li>
 </ul>
 </li>
 </ul>
@@ -425,15 +425,15 @@ The container needs to be able to access IP addresses and hostnames used in the 
 <code class="docutils literal notranslate"><span class="pre">AZURE_OCR_BASE_URL=http://host:5000</span> <span class="pre">#</span> <span class="pre">The</span> <span class="pre">URL</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">READ</span> <span class="pre">API</span></code><span class="raw-html-m2r"><br></span>
 <code class="docutils literal notranslate"><span class="pre">AZURE_OCR_VERSION=v3.2</span> <span class="pre">#</span> <span class="pre">The</span> <span class="pre">version</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">READ</span> <span class="pre">API</span></code></p>
 </section>
-<section id="optional-7-install-document-segmentation-container">
-<h4>[Optional] 7. Install document segmentation container<a class="headerlink" href="#optional-7-install-document-segmentation-container" title="Permalink to this headline">¶</a></h4>
+<section id="optional-8-install-document-segmentation-container">
+<h4>[Optional] 8. Install document segmentation container<a class="headerlink" href="#optional-8-install-document-segmentation-container" title="Permalink to this headline">¶</a></h4>
 <p>Download the container with the credentials provided by Konfuzio</p>
 <p>Registry URL: registry.gitlab.com<span class="raw-html-m2r"><br></span>
 Username: {PROVIDED_BY_KONFUZIO}<span class="raw-html-m2r"><br></span>
 Password: {PROVIDED_BY_KONFUZIO}</p>
 <p><code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">docker</span> <span class="pre">login</span> <span class="pre">registry.gitlab.com</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">docker</span> <span class="pre">pull</span> <span class="pre">registry.gitlab.com/konfuzio/detectron2:2021-06-02</span></code><span class="raw-html-m2r"><br></span>
-<a href="#id3"><span class="problematic" id="id4">`</span></a>&gt; docker run –env-file /path_to_env_file.env registry.gitlab.com/konfuzio/detectron2:2021-10-06 bash -c “export LC_ALL=C.UTF-8; export LANG=C.UTF-8; ./run_celery.sh¸</p>
+<code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">docker</span> <span class="pre">pull</span> <span class="pre">registry.gitlab.com/konfuzio/detectron2:2021-10-06</span></code><span class="raw-html-m2r"><br></span>
+<code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">docker</span> <span class="pre">run</span> <span class="pre">--env-file</span> <span class="pre">/path_to_env_file.env</span> <span class="pre">registry.gitlab.com/konfuzio/detectron2:2021-10-06</span> <span class="pre">bash</span> <span class="pre">-c</span> <span class="pre">&quot;export</span> <span class="pre">LC_ALL=C.UTF-8;</span> <span class="pre">export</span> <span class="pre">LANG=C.UTF-8;</span> <span class="pre">./run_celery.sh¸&quot;</span></code></p>
 <p>The segmentation container needs to be started with the following environment variables which you can enter into your .env file</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GPU</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># If GPU is present</span>
 <span class="n">C_FORCE_ROOT</span><span class="o">=</span><span class="kc">True</span>
