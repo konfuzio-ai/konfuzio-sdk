@@ -330,7 +330,7 @@ Password: {PROVIDED_BY_KONFUZIO}
 
 `> docker login registry.gitlab.com`  
 `> docker pull registry.gitlab.com/konfuzio/detectron2:2021-06-02`  
-`> docker run --env-file /path_to_env_file.env registry.gitlab.com/konfuzio/detectron2:2021-06-02 bash -c "export LC_ALL=C.UTF-8; export LANG=C.UTF-8; ./docker_entrypoint.sh; ./run_celery.sh¸
+`> docker run --env-file /path_to_env_file.env registry.gitlab.com/konfuzio/detectron2:2021-10-06 bash -c "export LC_ALL=C.UTF-8; export LANG=C.UTF-8; ./run_celery.sh¸
 
 The segmentation container needs to be started with the following environment variables which you can enter into your .env file
 ```
