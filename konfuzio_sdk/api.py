@@ -263,6 +263,7 @@ def post_document_annotation(
     annotation_set=None,
     define_annotation_set=True,
     session=konfuzio_session(),
+    **kwargs,
 ):
     """
     Add an annotation to an existing document.
@@ -289,6 +290,12 @@ def post_document_annotation(
     """
     url = post_project_api_document_annotations_url(document_id)
 
+    bbox = kwargs.get('bbox', None)
+    custom_bboxes = kwargs.get('bboxes', None)
+    selection_bbox = kwargs.get('selection_bbox', None)
+    page_number = kwargs.get('page_number', None)
+    offset_string = kwargs.get('offset_string', None)
+
     data = {
         'start_offset': start_offset,
         'end_offset': end_offset,
@@ -301,6 +308,21 @@ def post_document_annotation(
 
     if define_annotation_set:
         data['section'] = annotation_set
+
+    if page_number is not None:
+        data['page_number'] = page_number
+
+    if offset_string is not None:
+        data['offset_string'] = offset_string
+
+    if bbox is not None:
+        data['bbox'] = bbox
+
+    if custom_bboxes is not None:
+        data['custom_bboxes'] = custom_bboxes
+
+    if selection_bbox is not None:
+        data['selection_bbox'] = selection_bbox
 
     r = session.post(url, json=data)
     return r

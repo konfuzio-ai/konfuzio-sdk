@@ -56,6 +56,68 @@ def test_post_document_annotation():
 
 
 @pytest.mark.serial
+def test_post_document_annotation_multiline():
+    """Create a multiline Annotation via API."""
+    document_id = 44823
+    label_id = 862  # just for testing
+    label_set_id = 64  # just for testing
+
+    bboxes = [
+        {
+            "x0": 65.5128,
+            "x1": 154.3248,
+            "y0": 620.2008000000001,
+            "y1": 626.6591999999999,
+            "top": 214.344,
+            "bottom": 220.8024,
+            "end_offset": 2458,
+            "page_index": 0,
+            "line_number": 21,
+            "start_offset": 2441,
+        },
+        {
+            "x0": 66.2976,
+            "x1": 148.8672,
+            "y0": 610.02,
+            "y1": 617.7816,
+            "top": 223.2216,
+            "bottom": 230.9832,
+            "end_offset": 2493,
+            "page_index": 0,
+            "line_number": 22,
+            "start_offset": 2479,
+        },
+    ]
+
+    selection_bbox = {
+        "x0": min([b['x0'] for b in bboxes]),
+        "x1": max([b['x1'] for b in bboxes]),
+        "y0": min([b['y0'] for b in bboxes]),
+        "y1": max([b['y1'] for b in bboxes]),
+        "top": min([b['top'] for b in bboxes]),
+        "bottom": max([b['bottom'] for b in bboxes]),
+        "page_index": bboxes[0]['page_index'],
+    }
+
+    response = post_document_annotation(
+        document_id=document_id,
+        start_offset=2441,
+        end_offset=2493,
+        accuracy=None,
+        label_id=label_id,
+        label_set_id=label_set_id,
+        revised=False,
+        is_correct=False,
+        bboxes=bboxes,
+        selection_bbox=selection_bbox,
+    )
+
+    assert response.status_code == 201
+    annotation = json.loads(response.text)
+    assert delete_document_annotation(document_id, annotation['id'])
+
+
+@pytest.mark.serial
 def test_load_annotations_from_api():
     """Download Annotations from API for a Document."""
     text = get_document_text(TEST_DOCUMENT)
