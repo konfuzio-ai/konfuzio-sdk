@@ -8,6 +8,12 @@ All notable changes in the server of app.konfuzio.com will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
 
+## 2021-10-07_11-42-29
+
+### Added
+- More advanced task priorities and improved worker ressource usage
+- Auto-reload of new uploaded documents
+
 ## 2021-09-28_09-29-43
 
 ### Fixed
