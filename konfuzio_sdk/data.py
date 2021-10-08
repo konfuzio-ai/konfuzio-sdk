@@ -354,6 +354,8 @@ class Annotation(Data):
             self.y1 = bbox.get('y1')
 
         self.bboxes = kwargs.get('bboxes', None)
+        self.selection_bbox = kwargs.get('selection_bbox', None)
+        self.page_number = kwargs.get('page_number', None)
 
         # if no label_set_text we check if is passed by section_label_text
         if label_set_text is None:
@@ -412,6 +414,9 @@ class Annotation(Data):
                 revised=self.revised,
                 annotation_set=self.annotation_set,
                 define_annotation_set=self.define_annotation_set,
+                bboxes=self.bboxes,
+                selection_bbox=self.selection_bbox,
+                page_number=self.page_number,
             )
             if response.status_code == 201:
                 json_response = json.loads(response.text)
