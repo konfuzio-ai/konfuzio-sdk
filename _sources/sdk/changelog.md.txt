@@ -4,6 +4,16 @@
 
 # Changelog
 
+## 2021-10-12 v.0.1.7
+
+### Changed
+
+- Possibility of creating a multiline annotation
+
+### Added
+
+- Utils functions for handling bounding boxes
+
 ## 2021-09-21 v.0.1.6
 
 ### Changed
