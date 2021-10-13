@@ -304,7 +304,7 @@ In this example we start three containers, the first one to serve the Konfuzio w
 
 ```
 docker pull mher/flower:0.9.7 
-docker run --rm --name flower -d -p 5555:5555  mher/flower:0.9.7 --adress 0.0.0.0 --url_prefix=flower --broker=redis://:@172.25.51.191:6379/0
+docker run --rm --name flower -d -p 5555:5555  mher/flower:0.9.7 --adress 0.0.0.0 --url_prefix=flower --broker=redis://:@10.0.0.1:6379/0
 ```
 
 The Konfuzio Server application acts as a reverse proxy an servers the flower application. Therefore, django needs to know the flower url. `FLOWER_URL=http://host:5555/flower`
