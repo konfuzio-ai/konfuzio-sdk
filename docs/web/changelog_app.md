@@ -8,6 +8,15 @@ All notable changes in the server of app.konfuzio.com will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
 
+
+#### Added
+- Improve detection of annotations which consist of multiple words
+- Filtering of labels and label sets according to the category of a document (in the SmartView)
+
+### Fixed
+- Selection of characters in SmartView incomplete when editing an annotation
+
+
 ## 2021-10-07_11-42-29
 
 ### Added
@@ -28,12 +37,12 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 ## 2021-09-16_12-25-23
 
 ### Fixed
-- Adding of Categories to existing Label Sets
+- Adding of categories to existing label sets
 
 ## 2021-09-08_16-01-46
 
 ### Added
-- Migration scripts for user permissions and e-Mail templates
+- Migration scripts for user permissions and e-mail templates
 
 ## 2021-09-07_12-24-26
 
@@ -41,30 +50,30 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 - Support for SMTP e-Mail backends via environment variables
 
 ### Fixed
-- DOS protection prevents start of Konfuzio Server
+- DOS protection prevents start of Konfuzio server
 
 ## 2021-09-05_20-57-31
 
 ### Added
 
-- Autosave for any change on the Document List Page
-- German Language support
-- Finetuning of Exctraction AIs via parameters
+- Autosave for any change on the document list page
+- German language support
+- Finetuning of exctraction AIs via parameters
 - New fields AI quality and data quality
 - More detailed evaluation
-- Description Field for Extraction AI, Label Sets, Categorization AI, Category
+- Description Field for extraction AI, label sets, categorization AI, categories
 
 ### Changed
 
-- Rename Project Inviations to Members
+- Rename project inviations to members
 - Rename the dataset status form "OCR Error" to "Excluded"
-- Start Training per Extraction AI
-- Get more insights via the Document Detail Page
+- Start training per extraction AI
+- Get more insights via the document detail page
 
 ## 2021-08-10_17-08-11
 
 ### Changed
-- Deactive adoption of Template settings according to AI model if not explicitly allowed.
+- Deactive adoption of template settings according to AI model if not explicitly allowed.
 
 ## 2021-08-10_11-19-33
 
@@ -73,7 +82,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 
 ### Fixed
 - Slow processing of extraction tasks
-- Evaluation when multiple Annotations are present
+- Evaluation when multiple annotations are present
 
 ## 2021-07-28_18-53-12
 
@@ -128,16 +137,16 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 ### Fixed
 - Failed retraninings for some projects
 - Increased disk usage due to an cache deletion issue
-- Filtering of ProjectInvitation according to currently selected project
+- Filtering of project invotations according to currently selected project
 - Clarify return types in API documentation
 
 ## 2021-05-26_20-16-02
 
 ### Added
 - Show confidence for categorization results
-- Show evaluation of Categorization Ai models
+- Show evaluation of categorization Ai models
 - Track version (number of retrainings) for all Ai models
-- Track Project and Template origin of AiModel
+- Track project and template origin of AiModel
 
 ## 2021-05-24_13-42-45
 
@@ -171,7 +180,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 ## 2021-05-04_12-37-16
 
 ### Fixed
-- Calculation of True Negative when using multiple templates.
+- Calculation of true negative when using multiple templates.
 
 ## 2021-04-28_12-27-19
 
@@ -184,7 +193,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 ## 2021-04-25_20-09-04
 
 ### Added
-- Protect Signup with captcha
+- Protect signup with captcha
 
 ### Fixed
 - Editing of annotation if there are already declined annotations.
@@ -192,13 +201,13 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 ## 2021-04-19_22-32-19
 
 ### Added 
-- Add label creation Endpoint
+- Add label creation endpoint
 - Token-based authentication for the API
 
 ## 2021-04-03_09-46-56
 
 ### Added 
-- Show Django sidebar in Smartview and Template view.
+- Show Django sidebar in Smartview and template view.
 
 ### Changed
 - Save extraction results in a more efficient way.
@@ -359,7 +368,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 - Search for Smartview
 
 ### Fixed
-- TemplateCreationForm does not allow to select parent Template
+- TemplateCreationForm does not allow to select parent template
 
 ## 2020-12-16_09-44-30
 
