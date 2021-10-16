@@ -35,13 +35,13 @@ from konfuzio_sdk.utils import is_file, load_image
 logger = logging.getLogger(__name__)
 
 
-def get_auth_token(username, password):
+def get_auth_token(username, password, host):
     """
     Generate the authentication token for the user.
 
     :return: The new generated token.
     """
-    url = get_auth_token_url()
+    url = get_auth_token_url(host)
     user_credentials = {"username": username, "password": password}
     r = requests.post(url, json=user_credentials)
     return r

@@ -70,7 +70,10 @@ def init_env(project_folder):
     if host == "":
         host = "https://app.konfuzio.com"
 
-    response = get_auth_token(user, password)
+    import konfuzio_sdk
+    konfuzio_sdk.KONFUZIO_HOST = host
+
+    response = get_auth_token(user, password, host)
     if response.status_code == 200:
         token = json.loads(response.text)['token']
     else:

@@ -903,7 +903,10 @@ class Document(Data):
 
     def delete(self):
         """Delete all local information for the document."""
-        shutil.rmtree(self.root)
+        try:
+            shutil.rmtree(self.root)
+        except FileNotFoundError:
+            pass
 
 
 class Project(Data):

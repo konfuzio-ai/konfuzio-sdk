@@ -7,13 +7,13 @@ from konfuzio_sdk import KONFUZIO_HOST, KONFUZIO_PROJECT_ID
 logger = logging.getLogger(__name__)
 
 
-def get_auth_token_url() -> str:
+def get_auth_token_url(host: str) -> str:
     """
     Generate URL that creates an authentication token for the user.
 
     :return: URL to generate the token.
     """
-    return f"{KONFUZIO_HOST}/api/token-auth/"
+    return f"{host}/api/token-auth/"
 
 
 def get_project_list_url() -> str:
