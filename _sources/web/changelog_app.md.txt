@@ -8,14 +8,16 @@ All notable changes in the server of app.konfuzio.com will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
 
+## 2021-10-16_13-20-12
 
-#### Added
+### Added
 - Improve detection of annotations which consist of multiple words
 - Filtering of labels and label sets according to the category of a document (in the SmartView)
 
 ### Fixed
 - Selection of characters in SmartView incomplete when editing an annotation
-
+- Dark Mode setting of browser not compatible with Konfuzio Server
+- Some case where the document list was not reloaded automatically
 
 ## 2021-10-07_11-42-29
 
