@@ -12,6 +12,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 
 ### Added
 - Improve detection of annotations which consist of multiple words
+- Date filtering for project documents API endpoint
 - Filtering of labels and label sets according to the category of a document (in the SmartView)
 
 ### Fixed
