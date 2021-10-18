@@ -4,6 +4,12 @@
 
 # Changelog
 
+## 2021-10-18 v.0.1.8
+
+### Changed
+
+- Check for document being fully processed by the server
+
 ## 2021-10-12 v.0.1.7
 
 ### Changed
