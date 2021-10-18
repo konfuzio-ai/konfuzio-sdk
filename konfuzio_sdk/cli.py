@@ -9,7 +9,7 @@ import sys
 import tabulate
 from tqdm import tqdm
 
-from konfuzio_sdk import KONFUZIO_HOST
+import konfuzio_sdk
 from konfuzio_sdk.api import get_auth_token, get_project_list, create_new_project
 
 sys.tracebacklimit = 0
@@ -69,7 +69,9 @@ def init_env(project_folder):
     host = input("Host from where to get the data (press [ENTER] for the default: https://app.konfuzio.com): ")
 
     if host == "":
-        host = KONFUZIO_HOST
+        host = konfuzio_sdk.KONFUZIO_HOST
+
+    konfuzio_sdk.KONFUZIO_HOST = host
 
     response = get_auth_token(user, password, host)
     if response.status_code == 200:
