@@ -951,7 +951,7 @@ class Project(Data):
         if not offline:
             self.make_paths()
             self.get()  # keep update to False, so once you have downloaded the data, don't do it again.
-        self.load_annotation_sets()
+            self.load_annotation_sets()
 
     def __repr__(self):
         """Return string representation."""
