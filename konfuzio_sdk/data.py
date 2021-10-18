@@ -5,6 +5,7 @@ import logging
 import os
 import pathlib
 import shutil
+import time
 from datetime import tzinfo
 from typing import Dict, Optional, List, Union, Tuple
 from copy import deepcopy
@@ -724,6 +725,16 @@ class Document(Data):
             data = get_document_details(document_id=self.id, session=self.session)
             raw_annotations = data['annotations']
             self.number_of_pages = data['number_of_pages']
+
+            if data['text'] is None:
+                # try get data again
+                time.sleep(15)
+                data = get_document_details(document_id=self.id, session=self.session)
+                if data['text'] is None:
+                    message = f'Document {self.id} is not fully processed yet. Please try again in some minutes.'
+                    logger.error(message)
+                    raise ValueError(message)
+
             self.text = data['text']
             self.hocr = data['hocr'] or ''
             self.pages = data['pages']

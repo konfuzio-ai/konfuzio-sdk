@@ -1,14 +1,15 @@
 """Command Line interface to the konfuzio_sdk package."""
 
-import os
-import sys
+import getpass
 import json
 import logging
-import getpass
-import tabulate
+import os
+import sys
 
+import tabulate
 from tqdm import tqdm
 
+import konfuzio_sdk
 from konfuzio_sdk.api import get_auth_token, get_project_list, create_new_project
 
 sys.tracebacklimit = 0
@@ -68,9 +69,8 @@ def init_env(project_folder):
     host = input("Host from where to get the data (press [ENTER] for the default: https://app.konfuzio.com): ")
 
     if host == "":
-        host = "https://app.konfuzio.com"
+        host = konfuzio_sdk.KONFUZIO_HOST
 
-    import konfuzio_sdk
     konfuzio_sdk.KONFUZIO_HOST = host
 
     response = get_auth_token(user, password, host)
