@@ -4,6 +4,12 @@
 
 # Changelog
 
+## 2021-10-19 v.0.1.9
+
+### Changed
+
+- Option to define host in URLs
+
 ## 2021-10-18 v.0.1.8
 
 ### Changed
