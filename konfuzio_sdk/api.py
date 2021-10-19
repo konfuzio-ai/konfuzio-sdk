@@ -47,7 +47,7 @@ def get_auth_token(username, password, host):
     return r
 
 
-def get_project_list(token):
+def get_project_list(token, host):
     """
     Get the list of all projects for the user.
 
@@ -55,25 +55,25 @@ def get_project_list(token):
     """
     session = requests.Session()
     session.headers.update({'Authorization': f'Token {token}'})
-    url = get_project_list_url()
+    url = get_project_list_url(host)
     r = session.get(url=url)
     return r
 
 
-def create_new_project(project_name, token=None):
+def create_new_project(project_name, token=None, host=None):
     """
     Create a new project for the user.
 
     :return: Response object
     """
     session = konfuzio_session(token)
-    url = create_new_project_url()
+    url = create_new_project_url(host)
     new_project_data = {"name": project_name}
     r = session.post(url=url, json=new_project_data)
     return r
 
 
-def get_project_name_from_id(project_id: int) -> str:
+def get_project_name_from_id(project_id: int, host: str) -> str:
     """
     Get the project name given the project_id.
 
@@ -81,7 +81,7 @@ def get_project_name_from_id(project_id: int) -> str:
     :return: Name of the project in JSON format.
     """
     session = konfuzio_session()
-    url = get_project_url(project_id)
+    url = get_project_url(project_id, host)
     r = session.get(url=url)
     return r.json()['name']
 

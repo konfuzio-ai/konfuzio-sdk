@@ -71,8 +71,6 @@ def init_env(project_folder):
     if host == "":
         host = konfuzio_sdk.KONFUZIO_HOST
 
-    konfuzio_sdk.KONFUZIO_HOST = host
-
     response = get_auth_token(user, password, host)
     if response.status_code == 200:
         token = json.loads(response.text)['token']
@@ -89,12 +87,16 @@ def init_env(project_folder):
         f.write("KONFUZIO_TOKEN = %s" % token)
         f.write("\n")
 
-    project_list = json.loads(get_project_list(token).text)
+    konfuzio_sdk.KONFUZIO_HOST = host
+    konfuzio_sdk.KONFUZIO_USER = user
+    konfuzio_sdk.KONFUZIO_TOKEN = token
+
+    project_list = json.loads(get_project_list(token, host=host).text)
 
     if len(project_list) == 0:
         print("There are no available projects. Creating a new project now...")
-        _ = create_project(token)
-        project_list = json.loads(get_project_list(token).text)
+        _ = create_project(token, host)
+        project_list = json.loads(get_project_list(token, host).text)
 
     print(f"List with all the available projects for {user}:")
     header = ["Project ID", "Project name"]
@@ -109,7 +111,7 @@ def init_env(project_folder):
 
     if int(project_id) == 0:
         print("Creating a new project...")
-        project_id = create_project(token)
+        project_id = create_project(token, host=host)
 
     data_folder = input("Folder where to allocate the data (press [ENTER] for the default: 'data_<project_id>'): ")
 
@@ -162,10 +164,10 @@ def data():
     print("[SUCCESS] Data downloading finished successfully!")
 
 
-def create_project(token=None):
+def create_project(token=None, host=None):
     """Create a new project."""
     project_name = input("Name of the project: ")
-    response = create_new_project(project_name, token)
+    response = create_new_project(project_name, token, host)
     if response.status_code == 201:
         project_id = json.loads(response.text)["id"]
         print(
