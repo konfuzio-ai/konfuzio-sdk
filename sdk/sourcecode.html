@@ -146,7 +146,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="konfuzio_sdk.api.create_new_project">
-<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">create_new_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.create_new_project" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">create_new_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.create_new_project" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new project for the user.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -367,7 +367,7 @@ LOW_OCR_QUALITY = 4</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="konfuzio_sdk.api.get_project_list">
-<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">get_project_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.get_project_list" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">get_project_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.get_project_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the list of all projects for the user.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -378,7 +378,7 @@ LOW_OCR_QUALITY = 4</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="konfuzio_sdk.api.get_project_name_from_id">
-<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">get_project_name_from_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.api.get_project_name_from_id" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">get_project_name_from_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.api.get_project_name_from_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the project name given the project_id.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -553,7 +553,7 @@ annotation will be added to the previous annotation set created (define_annotati
 <span class="target" id="module-konfuzio_sdk.cli"></span><p>Command Line interface to the konfuzio_sdk package.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="konfuzio_sdk.cli.create_project">
-<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.cli.</span></span><span class="sig-name descname"><span class="pre">create_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.cli.create_project" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.cli.</span></span><span class="sig-name descname"><span class="pre">create_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.cli.create_project" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new project.</p>
 </dd></dl>
 
@@ -1267,24 +1267,29 @@ If we are updating the document dataset status, we need to move the document fro
 <span class="target" id="module-konfuzio_sdk.urls"></span><p>Endpoints of the Konfuzio Host.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="konfuzio_sdk.urls.create_new_project_url">
-<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">create_new_project_url</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.urls.create_new_project_url" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">create_new_project_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'https://app.konfuzio.com'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.urls.create_new_project_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate URL to create a new project.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>URL to create a new project.</p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>host</strong> – Konfuzio host</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>URL to create a new project.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="konfuzio_sdk.urls.delete_project_api_document_annotations_url">
-<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">delete_project_api_document_annotations_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotation_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.urls.delete_project_api_document_annotations_url" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">delete_project_api_document_annotations_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotation_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'https://app.konfuzio.com'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.urls.delete_project_api_document_annotations_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete the annotation of a document.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>document_id</strong> – ID of the document as integer</p></li>
 <li><p><strong>annotation_id</strong> – ID of the annotation as integer</p></li>
+<li><p><strong>host</strong> – Konfuzio host</p></li>
+<li><p><strong>project_id</strong> – ID of the project</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1306,23 +1311,28 @@ If we are updating the document dataset status, we need to move the document fro
 
 <dl class="py function">
 <dt class="sig sig-object py" id="konfuzio_sdk.urls.get_create_label_url">
-<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_create_label_url</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.urls.get_create_label_url" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_create_label_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'https://app.konfuzio.com'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.urls.get_create_label_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate URL to create a label.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>URL to create a label.</p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>host</strong> – Konfuzio host</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>URL to create a label.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="konfuzio_sdk.urls.get_document_api_details_url">
-<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_document_api_details_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_extractions</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_fields</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bbox'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.urls.get_document_api_details_url" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_document_api_details_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'https://app.konfuzio.com'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_extractions</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_fields</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bbox'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.urls.get_document_api_details_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate URL to access document details of one document in a project.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>document_id</strong> – ID of the document as integer</p></li>
+<li><p><strong>host</strong> – Konfuzio host</p></li>
+<li><p><strong>project_id</strong> – ID of the project</p></li>
 <li><p><strong>include_extractions</strong> – Bool to include extractions</p></li>
 <li><p><strong>extra_fields</strong> – Extra information to include in the response</p></li>
 </ul>
@@ -1335,11 +1345,14 @@ If we are updating the document dataset status, we need to move the document fro
 
 <dl class="py function">
 <dt class="sig sig-object py" id="konfuzio_sdk.urls.get_document_ocr_file_url">
-<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_document_ocr_file_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.urls.get_document_ocr_file_url" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_document_ocr_file_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'https://app.konfuzio.com'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.urls.get_document_ocr_file_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate URL to access OCR version of document.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>document_id</strong> – ID of the document as integer</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>document_id</strong> – ID of the document as integer</p></li>
+<li><p><strong>host</strong> – Konfuzio host</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>URL to get OCR document file.</p>
@@ -1349,11 +1362,14 @@ If we are updating the document dataset status, we need to move the document fro
 
 <dl class="py function">
 <dt class="sig sig-object py" id="konfuzio_sdk.urls.get_document_original_file_url">
-<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_document_original_file_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.urls.get_document_original_file_url" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_document_original_file_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'https://app.konfuzio.com'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.urls.get_document_original_file_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate URL to access original version of the document.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>document_id</strong> – ID of the document as integer</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>document_id</strong> – ID of the document as integer</p></li>
+<li><p><strong>host</strong> – Konfuzio host</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>URL to get the original document</p>
@@ -1363,11 +1379,14 @@ If we are updating the document dataset status, we need to move the document fro
 
 <dl class="py function">
 <dt class="sig sig-object py" id="konfuzio_sdk.urls.get_document_result_v1">
-<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_document_result_v1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.urls.get_document_result_v1" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_document_result_v1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'https://app.konfuzio.com'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.urls.get_document_result_v1" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate URL to access web interface for labeling of this project.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>document_id</strong> – ID of the document as integer</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>document_id</strong> – ID of the document as integer</p></li>
+<li><p><strong>host</strong> – Konfuzio host</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>URL for labeling of the project.</p>
@@ -1377,13 +1396,14 @@ If we are updating the document dataset status, we need to move the document fro
 
 <dl class="py function">
 <dt class="sig sig-object py" id="konfuzio_sdk.urls.get_document_segmentation_details_url">
-<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_document_segmentation_details_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'segmentation'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.urls.get_document_segmentation_details_url" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_document_segmentation_details_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'https://app.konfuzio.com'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'segmentation'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.urls.get_document_segmentation_details_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate URL to get the segmentation results of a document.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>document_id</strong> – ID of the document as integer</p></li>
 <li><p><strong>project_id</strong> – ID of the project</p></li>
+<li><p><strong>host</strong> – Konfuzio host</p></li>
 <li><p><strong>action</strong> – Action from where to get the results</p></li>
 </ul>
 </dd>
@@ -1395,18 +1415,24 @@ If we are updating the document dataset status, we need to move the document fro
 
 <dl class="py function">
 <dt class="sig sig-object py" id="konfuzio_sdk.urls.get_documents_meta_url">
-<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_documents_meta_url</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.urls.get_documents_meta_url" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_documents_meta_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'https://app.konfuzio.com'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.urls.get_documents_meta_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate URL to load meta information about documents.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>URL to get all the documents details.</p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>host</strong> – Konfuzio host</p></li>
+<li><p><strong>project_id</strong> – ID of the project</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>URL to get all the documents details.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="konfuzio_sdk.urls.get_project_list_url">
-<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_project_list_url</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.urls.get_project_list_url" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_project_list_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'https://app.konfuzio.com'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.urls.get_project_list_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate URL to load all the projects available for the user.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1417,11 +1443,14 @@ If we are updating the document dataset status, we need to move the document fro
 
 <dl class="py function">
 <dt class="sig sig-object py" id="konfuzio_sdk.urls.get_project_url">
-<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_project_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.urls.get_project_url" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_project_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'https://app.konfuzio.com'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.urls.get_project_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate URL to get project details.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>project_id</strong> – ID of the project</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>project_id</strong> – ID of the project</p></li>
+<li><p><strong>host</strong> – Konfuzio host</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>URL to get project details.</p>
@@ -1431,22 +1460,29 @@ If we are updating the document dataset status, we need to move the document fro
 
 <dl class="py function">
 <dt class="sig sig-object py" id="konfuzio_sdk.urls.get_upload_document_url">
-<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_upload_document_url</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.urls.get_upload_document_url" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">get_upload_document_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'https://app.konfuzio.com'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.urls.get_upload_document_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate URL to upload a document.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>URL to upload a document</p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>host</strong> – Konfuzio host</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>URL to upload a document</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="konfuzio_sdk.urls.post_project_api_document_annotations_url">
-<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">post_project_api_document_annotations_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.urls.post_project_api_document_annotations_url" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">post_project_api_document_annotations_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'https://app.konfuzio.com'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.urls.post_project_api_document_annotations_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add new annotations to a document.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>document_id</strong> – ID of the document as integer</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>document_id</strong> – ID of the document as integer</p></li>
+<li><p><strong>host</strong> – Konfuzio host</p></li>
+<li><p><strong>project_id</strong> – ID of the project</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>URL for adding annotations to a document</p>
@@ -1456,11 +1492,17 @@ If we are updating the document dataset status, we need to move the document fro
 
 <dl class="py function">
 <dt class="sig sig-object py" id="konfuzio_sdk.urls.update_document_url">
-<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">update_document_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.urls.update_document_url" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.urls.</span></span><span class="sig-name descname"><span class="pre">update_document_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'https://app.konfuzio.com'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.urls.update_document_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate URL to update a document.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>URL to update a document</p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>document_id</strong> – ID of the document as integer</p></li>
+<li><p><strong>host</strong> – Konfuzio host</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>URL to update a document</p>
 </dd>
 </dl>
 </dd></dl>
