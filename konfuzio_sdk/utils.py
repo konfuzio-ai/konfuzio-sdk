@@ -99,6 +99,10 @@ def load_image(input_file: Union[str, BytesIO]):
 
 
 def get_file_type(input_file: Union[str, BytesIO, bytes] = None) -> str:
+    return get_file_type_and_extension(input_file=input_file)[0]
+
+
+def get_file_type_and_extension(input_file: Union[str, BytesIO, bytes] = None) -> Tuple[str, str]:
     """
     Get the type of a file via the filetype library, which checks the magic bytes to see the internal format.
 
@@ -154,7 +158,7 @@ def get_file_type(input_file: Union[str, BytesIO, bytes] = None) -> str:
         raise NotImplementedError(error_message)
 
     logger.debug(f'File {file_path} is of file type {SUPPORTED_FILE_TYPES[file_type]}')
-    return file_type
+    return file_type, extension
 
 
 @contextmanager
