@@ -128,6 +128,10 @@ def get_file_type_and_extension(input_file: Union[str, BytesIO, bytes] = None) -
         """Check zip file namelist."""
         return any(x.startswith("%s/" % name.rstrip("/")) for x in z.namelist())
 
+    def isfile(z, name):
+        """Check zip file namelist."""
+        return any(x.endswith(name) for x in r.namelist())
+
     if extension is None:
         if isinstance(input_file, str):
             with open(input_file, 'rb') as f:
@@ -150,6 +154,9 @@ def get_file_type_and_extension(input_file: Union[str, BytesIO, bytes] = None) -
         r = zipfile.ZipFile(input_file, "r")
         # check for office files
         if isdir(r, "docProps") or isdir(r, "_rels"):
+            file_type = OFFICE_FILE
+        # check for open office files
+        if isdir(r, "META-INF") and isfile(r, 'meta.xml') and isfile(r, 'settings.xml'):
             file_type = OFFICE_FILE
 
     if file_type not in [PDF_FILE, IMAGE_FILE, OFFICE_FILE]:
