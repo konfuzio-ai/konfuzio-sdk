@@ -99,7 +99,7 @@ def retry_get(session, url):
 
     while True:
         try:
-            r = session.get(url=url)
+            r = session.get(url=url, timeout=10.0)
             r.raise_for_status()
             break
         except Exception:
@@ -159,7 +159,7 @@ def get_document_details(document_id, session=konfuzio_session()):
     """
     url = get_document_api_details_url(document_id, include_extractions=False, extra_fields='bbox,hocr')
     r = retry_get(session, url)
-    data = json.loads(r)
+    data = json.loads(r.text)
     # data = r.json()
     text = data["text"]
     annotations = data["annotations"]
