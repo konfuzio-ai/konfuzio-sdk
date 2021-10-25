@@ -383,7 +383,7 @@ class Annotation(Data):
 
     def get_link(self):
         """Get link to the annotation in the SmartView."""
-        return 'https://app.konfuzio.com/a/' + str(self.id)
+        return KONFUZIO_HOST + '/a/' + str(self.id)
 
     def save(self, document_annotations: list = None) -> bool:
         """
