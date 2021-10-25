@@ -102,7 +102,7 @@ class LabelSet(Data):
         self.name_clean = name_clean
         self.is_default = is_default
         if 'default_label_sets' in kwargs:
-            self.categories = [kwargs['default_label_sets']]
+            self.categories = kwargs['default_label_sets']
         elif 'default_section_labels' in kwargs:
             self.categories = kwargs['default_section_labels']
         else:
