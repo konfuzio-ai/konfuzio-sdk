@@ -8,6 +8,11 @@ All notable changes in the server of app.konfuzio.com will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
 
+## 2021-10-25_20-12-18
+
+### Added
+- ProRis csv export
+
 ## 2021-10-16_13-20-12
 
 ### Added
