@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+<meta content="All notable changes in the Konfuzio trainer package." name="description" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Changelog &mdash; Konfuzio  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/full_green_square.png"/>
+    <link rel="canonical" href="https://dev.konfuzio.com/training/changelog.html" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Konfuzio API Video Tutorial" href="../web/api.html" />
+    <link rel="prev" title="LabelSectionModel Examples" href="training_documentation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Konfuzio
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio Python SDK</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/configuration_reference.html">Install SDK</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/quickstart_pycharm.html">Install SDK using PyCharm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/examples/examples.html">Code Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/sourcecode.html">Source Code Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/contribution.html">Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/coordinates_system.html">Coordinates System</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/faq.html">FAQ</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Trainer</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="training_documentation.html">LabelSectionModel Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training_documentation.html#documentmodel-examples">DocumentModel Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training_documentation.html#design-philosophy">Design Philosophy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training_documentation.html#tokenizers">Tokenizers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training_documentation.html#vocabularies">Vocabularies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training_documentation.html#text-modules">Text Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training_documentation.html#image-modules">Image Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training_documentation.html#loading-pre-trained-modules">Loading Pre-trained Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training_documentation.html#extraction">Extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training_documentation.html#ocr">OCR</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Changelog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id1">2021-10-20_18-29-25</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#added">Added</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../web/api.html">Konfuzio API Video Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api.html#konfuzio-train-ai-tutorial">Konfuzio Train AI Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api.html#how-to-make-an-api-call">How to make an API Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api.html#document-categorization-api">Document Categorization API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api.html#document-segmentation-api">Document Segmentation API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api.html#supported-ocr-languages">Supported OCR languages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api.html#supported-file-types">Supported File Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api.html#supported-data-normalization">Supported Data Normalization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api.html#support">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/on_premises.html">On-Premises Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/changelog_app.html">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Konfuzio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Changelog</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="changelog">
+<h1>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline">¶</a></h1>
+<p>All notable changes in the Konfuzio trainer package.</p>
+<p>The format is based on <a class="reference external" href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>,
+and this project adheres to <a class="reference external" href="https://calver.org/overview.html">Calendar Versioning</a>.</p>
+<section id="id1">
+<h2>2021-10-20_18-29-25<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<section id="added">
+<h3>Added<a class="headerlink" href="#added" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Start public changelog for Konfuzio trainer package</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="training_documentation.html" class="btn btn-neutral float-left" title="LabelSectionModel Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../web/api.html" class="btn btn-neutral float-right" title="Konfuzio API Video Tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Helm und Nagel GmbH.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-D02B3QF8Z3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-D02B3QF8Z3');
+</script>
+<script src="https://cmp.osano.com/16CVyMSbk3Iar1G3f/97ee6223-b0cb-4f8c-abd6-a25a0d6f6507/osano.js"></script>
+
+
+</body>
+</html>
