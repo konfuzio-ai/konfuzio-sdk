@@ -160,7 +160,6 @@ def get_document_details(document_id, session=konfuzio_session()):
     url = get_document_api_details_url(document_id, include_extractions=False, extra_fields='bbox,hocr')
     r = retry_get(session, url)
     data = json.loads(r.text)
-    # data = r.json()
     text = data["text"]
     annotations = data["annotations"]
     annotations_sets = data["sections"]
