@@ -65,6 +65,7 @@ have Konfuzio on premises and examples on how to use the API for communicate dir
    :caption: Konfuzio Trainer
 
    training/training_documentation.md
+   training/changelog.md
 
 .. toctree::
    :caption: Konfuzio Server
