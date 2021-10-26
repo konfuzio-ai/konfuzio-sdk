@@ -102,12 +102,16 @@ class LabelSet(Data):
         self.name_clean = name_clean
         self.is_default = is_default
         if 'default_label_sets' in kwargs:
-            self.categories = [kwargs['default_label_sets']]
+            self.categories = kwargs['default_label_sets']
         elif 'default_section_labels' in kwargs:
             self.categories = kwargs['default_section_labels']
         else:
             self.categories = categories
         self.has_multiple_annotation_sets = has_multiple_annotation_sets
+
+        if 'has_multiple_sections' in kwargs:
+            self.has_multiple_annotation_sets = kwargs['has_multiple_sections']
+
         self.project: Project = project
 
         self.labels: List[Label] = []
@@ -383,7 +387,7 @@ class Annotation(Data):
 
     def get_link(self):
         """Get link to the annotation in the SmartView."""
-        return 'https://app.konfuzio.com/a/' + str(self.id)
+        return KONFUZIO_HOST + '/a/' + str(self.id)
 
     def save(self, document_annotations: list = None) -> bool:
         """

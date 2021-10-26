@@ -33,10 +33,12 @@ class TestAPIDataSetup(unittest.TestCase):
         assert self.prj.label_sets[0].name == 'Lohnabrechnung'
         assert self.prj.label_sets[0].categories.__len__() == 0
         assert self.prj.label_sets[0].labels.__len__() == 8
+        assert not self.prj.label_sets[0].has_multiple_annotation_sets
         assert self.prj.label_sets[1].name == 'Brutto-Bezug'
         assert self.prj.label_sets[1].categories.__len__() == 1
         assert self.prj.label_sets[1].categories[0].name == 'Lohnabrechnung'
         assert self.prj.label_sets[1].labels.__len__() == 3
+        assert self.prj.label_sets[1].has_multiple_annotation_sets
 
     def test_categories(self):
         """Test get labels in the project."""
@@ -59,6 +61,7 @@ class TestAPIDataSetup(unittest.TestCase):
         """Test get labels in the project."""
         assert len(self.prj.labels) == 11
         assert self.prj.labels[0].name == 'Auszahlungsbetrag'
+        assert not self.prj.labels[0].has_multiple_top_candidates
 
     def test_project(self):
         """Test basic properties of the project object."""

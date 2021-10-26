@@ -99,6 +99,12 @@ def load_image(input_file: Union[str, BytesIO]):
 
 
 def get_file_type(input_file: Union[str, BytesIO, bytes] = None) -> str:
+    """
+    Get the type of a file.
+
+    :param input_file: Path to the file or file in bytes format
+    :return: Name of file type
+    """
     return get_file_type_and_extension(input_file=input_file)[0]
 
 
