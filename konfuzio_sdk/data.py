@@ -108,6 +108,10 @@ class LabelSet(Data):
         else:
             self.categories = categories
         self.has_multiple_annotation_sets = has_multiple_annotation_sets
+
+        if 'has_multiple_sections' in kwargs:
+            self.has_multiple_annotation_sets = kwargs['has_multiple_sections']
+
         self.project: Project = project
 
         self.labels: List[Label] = []
