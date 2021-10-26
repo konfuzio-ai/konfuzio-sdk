@@ -4,6 +4,18 @@
 
 # Changelog
 
+## 2021-10-26 v.0.1.10
+
+### Changed
+
+- Endpoints in api with option for custom host
+- Increase timeout in get response
+- Update tests
+
+### Fixed
+
+- Reading has_multiple_sections
+
 ## 2021-10-19 v.0.1.9
 
 ### Changed
