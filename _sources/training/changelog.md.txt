@@ -1,9 +1,9 @@
 .. meta::
-   :description: All notable changes in the Konfuzio trainer package.
+   :description: All notable changes in the Konfuzio Trainer.
 
 # Changelog
 
-All notable changes in the Konfuzio trainer package.
+All notable changes in the Konfuzio Trainer.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
@@ -11,4 +11,4 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 ## 2021-10-20_18-29-25
 
 ### Added
-- Start public changelog for Konfuzio trainer package
+- Start public changelog for Konfuzio Trainer
