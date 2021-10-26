@@ -8,7 +8,7 @@
 
 ### Changed
 
-- Endpoints in api with option for custom host
+- Endpoints in API with option for custom host
 - Increase timeout in get response
 - Update tests
 
