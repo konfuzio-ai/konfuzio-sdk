@@ -36,7 +36,7 @@
 
 ### Added
 
-- Utils functions for handling bounding boxes
+- Utilities functions for handling bounding boxes
 
 ## 2021-09-21 v.0.1.6
 
