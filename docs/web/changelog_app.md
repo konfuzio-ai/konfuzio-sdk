@@ -10,6 +10,8 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 
 ## 2021-10-25_20-12-18
 
+This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.konfuzio.com/training/changelog.html#id1). We recommend to use the Konfuzio Python SDK in version [0.1.10](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-10)
+
 ### Added
 - CSV export compatible with [ProRis](https://www.inveos.com/proris-blue) by Inveos
 
