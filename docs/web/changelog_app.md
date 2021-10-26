@@ -11,7 +11,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 ## 2021-10-25_20-12-18
 
 ### Added
-- ProRis csv export
+- CSV export compatible with [ProRis](https://www.inveos.com/proris-blue) by Inveos
 
 ## 2021-10-16_13-20-12
 
