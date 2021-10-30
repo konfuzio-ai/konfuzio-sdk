@@ -996,6 +996,11 @@ class Project(Data):
                     )
                     document_annotation_sets.append(annotation_set_instance)
             document.annotation_sets = document_annotation_sets
+            
+            # Put legacy naming in place.
+            document.sections = document.annotation_sets
+            for section in document.sections:
+                section.section_label = section.label_set       
 
     def load_categories(self):
         """Load categories for all label sets in the project."""
