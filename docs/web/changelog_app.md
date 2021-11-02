@@ -8,6 +8,14 @@ All notable changes in the server of app.konfuzio.com will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
 
+## 2021-11-01_23-19-58
+
+### Added
+- An option to specify the category of a document when uploading it via API (and thereby skipping the categorization)
+
+### Changed
+- The GET document API endpoint now returns the annotation displayed in the SmartView (instead of only showing the extraction AI results)
+
 ## 2021-10-25_20-12-18
 
 This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.konfuzio.com/training/changelog.html#id1). We recommend to use the Konfuzio Python SDK in version [0.1.10](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-10)
