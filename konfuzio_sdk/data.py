@@ -666,21 +666,26 @@ class Document(Data):
         else:
             return os.path.join(FILE_ROOT, str(self.id))
 
-    def get_file(self, update: bool = False):
+    def get_file(self, ocr_version: bool = True, update: bool = False):
         """
         Get OCR version of the original file.
 
+        :param ocr_version: Bool to get the ocr version of the pdf
         :param update: Update the downloaded file even if it is already available
-        :return: Path to OCR file.
+        :return: Path to OCR or original file.
         """
         if self.is_without_errors and (not self.ocr_file_path or update):
-            for page_index in range(0, self.number_of_pages):
-                filename = os.path.splitext(self.name)[0] + '_ocr.pdf'
-                self.ocr_file_path = os.path.join(self.root, filename)
-                if not is_file(self.ocr_file_path, raise_exception=False) or update:
-                    pdf_content = download_file_konfuzio_api(self.id, session=self.session)
-                    with open(self.ocr_file_path, 'wb') as f:
-                        f.write(pdf_content)
+            # for page_index in range(0, self.number_of_pages):
+            filename = os.path.splitext(self.name)[0]
+            if ocr_version:
+                filename += '_ocr'
+
+            filename += '.pdf'
+            self.ocr_file_path = os.path.join(self.root, filename)
+            if not is_file(self.ocr_file_path, raise_exception=False) or update:
+                pdf_content = download_file_konfuzio_api(self.id, ocr=ocr_version, session=self.session)
+                with open(self.ocr_file_path, 'wb') as f:
+                    f.write(pdf_content)
 
         return self.ocr_file_path
 
@@ -996,11 +1001,11 @@ class Project(Data):
                     )
                     document_annotation_sets.append(annotation_set_instance)
             document.annotation_sets = document_annotation_sets
-            
+
             # Put legacy naming in place.
             document.sections = document.annotation_sets
             for section in document.sections:
-                section.section_label = section.label_set       
+                section.section_label = section.label_set
 
     def load_categories(self):
         """Load categories for all label sets in the project."""
