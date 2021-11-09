@@ -466,6 +466,99 @@ custom_document_classifier_metrics = model.build(document_training_config=custom
 model.save()
 ```
 
+## **ParagraphModel** Examples
+
+![ParagraphModel Diagram](../_static/img/paragraph_model.png)
+
+A `ParagraphModel` takes the text of the pages as input and predicts the "category" for each paragraph in that text.
+It uses text features (from the OCR text from the page).
+
+### Training our first ParagraphModel
+
+A `ParagraphModel` contains a `ParagraphClassifier`.
+Similar to the `DocumentModel`, it has a set of default model hyperparameters and default training hyperparameters.
+
+```python
+from konfuzio.data import Project
+from konfuzio.default_models import ParagraphModel
+
+# need to write `get_project` ourselves
+projects = [get_project(project_id) for project_id in project_ids]
+
+# create default paragraph model from a list of projects
+model = ParagraphModel(projects)
+
+# build (i.e. train) the paragraph model
+paragraph_classifier_metrics = model.build()
+
+# save the paragraph model
+model.save()
+```
+
+### Customizing the ParagraphModel
+
+Below we show how to implement a custom tokenizer and classifier.
+We only need a `multimodal_module` when we use both text and image modules.
+
+```python
+from konfuzio.data import Project
+from konfuzio.default_models import DocumentModel
+from konfuzio.tokenizers import BPETokenizer
+
+# need to write `get_project` ourselves
+projects = [get_project(project_id) for project_id in project_ids]
+
+# specify a custom tokenizer
+tokenizer = BPETokenizer()
+
+# configuration dict for the paragraph classifier
+paragraph_classifier_config = {'text_module': {'name': 'lstm',
+                                               'n_layers': 2}}
+
+# create document model with chosen tokenizer and classifier configs
+model = ParagraphModel(projects,
+                       tokenizer=tokenizer,
+                       document_classifier_config=document_classifier_config)
+
+# build (i.e. train) the paragraph model
+paragraph_classifier_metrics = model.build()
+
+# save the paragraph model
+model.save()
+```
+
+### Setting the ParagraphModel training hyperparameters
+
+Similar to the `DocumentModel` we can customize the training config which will work with ANY classifier/module combination:
+
+```python
+from konfuzio.data import Project
+from konfuzio.default_models import ParagraphModel
+
+# need to write `get_project` ourselves
+projects = [get_project(project_id) for project_id in project_ids]
+
+# create a default document model
+model = ParagraphModel(projects)
+
+# define the custom training hyperparameters
+paragraph_training_config = {'valid_ratio': 0.2,
+                             'batch_size': 128,
+                             'max_len': 100,  # maximum tokens per page to consider, will do nothing if no text_module used
+                             'n_epochs': 50,
+                             'patience': 3,
+                             'optimizer': {'name': 'RMSprop', 'lr': 1e-3, 'momentum': 0.9},
+                             'lr_decay': 0.9
+                             'no_label_limit': 10}
+
+# build (i.e. train) the paragraph model with custom training hyperparameters
+paragraph_classifier_metrics = model.build(paragraph_training_config=paragraph_training_config)
+
+# save the paragraph model
+model.save()
+```
+
+
 ## Design Philosophy
 
 - A "model" encapsulates everything we need for training on a labeled dataset and then performing extraction (inference) on some real data.

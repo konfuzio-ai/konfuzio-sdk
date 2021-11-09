@@ -4,6 +4,24 @@
 
 # Changelog
 
+## 2021-11-09 v.0.1.12
+
+### Changed
+
+- Option to download the original version of a file.
+
+### Added
+
+- Function to split text into paragraphs.
+- Category class in the documentation for the source code.
+- Add documentation for ParagraphModel in Konfuzio Trainer.
+
+## 2021-11-02 v.0.1.11
+
+### Changed
+
+- Add legacy naming to Document class.
+
 ## 2021-10-26 v.0.1.10
 
 ### Changed

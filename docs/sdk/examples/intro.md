@@ -28,11 +28,11 @@ documents = my_project.get_documents_by_status()
 By default, it will get the documents without dataset status (dataset_status = 0 (None)).
 You can specify another dataset status with the argument 'dataset_statuses'. The code for the status is:
 
-None: 0  
-Preparation: 1  
-Training: 2  
-Test: 3  
-Low OCR Quality: 4  
+None: 0
+Preparation: 1
+Training: 2
+Test: 3
+Low OCR Quality: 4
 
 For example, to get all documents in the project, you can do:
 
@@ -50,21 +50,21 @@ test_documents = my_project.test_documents
 By default, you get 4 files for each document that contain information of the text, pages, sections and annotations.
 You can see these files inside the document folder.
 
-**document.txt** - Contains the text of the document. If OCR was used, it will correspond to the result from the OCR.  
+**document.txt** - Contains the text of the document. If OCR was used, it will correspond to the result from the OCR.
 
 ```
                                                             x02   328927/10103/00104
 Abrechnung  der Brutto/Netto-Bezüge   für Dezember 2018                   22.05.2018 Bat:  1
- 
+
 Personal-Nr.  Geburtsdatum ski Faktor  Ki,Frbtr.Konfession  ‚Freibetragjährl.! |Freibetrag mt! |DBA  iGleitzone  'St.-Tg.  VJuUr. üb. |Url. Anspr. Url.Tg.gen.  |Resturlaub
 00104 150356 1  |     ‚ev                              30     400  3000       3400
- 
+
 SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  jum.SV-Tg. Anw. Tage |UrlaubTage Krankh. Tg. Fehlz. Tage
-                                             
+
 50150356B581 AOK  Bayern Die Gesundheitskas 157 101 1111 1 30
- 
+
                                              Eintritt   ‚Austritt     Anw.Std.  Urlaub Std.  |Krankh. Std. |Fehlz. Std.
-                                             
+
                                              170299  L L       l     L     l     l
  -                                       +  Steuer-ID       IMrB?       Zeitlohn Sta.|Überstd.  |Bez. Sta.
   Teststraße123
@@ -74,7 +74,7 @@ SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  jum.SV-Tg. 
                Abt.-Nr. A12         10103          HinweisezurAbrechnung
 ```
 
-**pages.json5** - Contains information of each page of the document (for example, their ids and sizes).  
+**pages.json5** - Contains information of each page of the document (for example, their ids and sizes).
 
 ```
 [
@@ -94,7 +94,7 @@ SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  jum.SV-Tg. 
 ]
 ```
 
-**sections.json5** - Contains information of each section in the document (for example, their ids and label sets).   
+**sections.json5** - Contains information of each section in the document (for example, their ids and label sets).
 
 ```
 [
@@ -187,10 +187,19 @@ for document in my_project.documents:
     document.get_file()
 ```
 
-This will download the ocr version of the document which contains the text, the bounding boxes 
+This will download the ocr version of the document which contains the text, the bounding boxes
 information of the characters and the image of the document.
 
 In the document folder, you will see a new file with the original name followed by "_ocr".
+
+If you want to original version of the document (without ocr) you can use **ocr_version=False**.
+
+```python
+for document in my_project.documents:
+    document.get_file(ocr_version=False)
+```
+
+In the document folder, you will see a new file with the original name.
 
 #### Download pages as images
 To get the pages of the document as png images, you can use **get_images()**.
