@@ -8,6 +8,11 @@ All notable changes in the server of app.konfuzio.com will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
 
+## 2021-11-05_09-55-10
+
+### Added
+- Allow deletion of characters of an annotation without excluding it from the training process
+
 ## 2021-11-01_23-19-58
 
 ### Added
