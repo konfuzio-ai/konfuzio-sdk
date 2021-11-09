@@ -53,6 +53,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#data-class">Data Class</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#annotation-set-class">Annotation Set Class</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#label-set-class">Label Set Class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#category-class">Category Class</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#label-class">Label Class</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#annotation-class">Annotation Class</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#document-class">Document Class</a></li>
@@ -72,6 +73,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html">LabelSectionModel Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#documentmodel-examples">DocumentModel Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#paragraphmodel-examples"><strong>ParagraphModel</strong> Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#design-philosophy">Design Philosophy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#tokenizers">Tokenizers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#vocabularies">Vocabularies</a></li>
@@ -668,6 +670,15 @@ annotation will be added to the previous annotation set created (define_annotati
 </dd></dl>
 
 </section>
+<section id="category-class">
+<h3>Category Class<a class="headerlink" href="#category-class" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.data.</span></span><span class="sig-name descname"><span class="pre">Category</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>A Category is used to group documents.</p>
+</dd></dl>
+
+</section>
 <section id="label-class">
 <h3>Label Class<a class="headerlink" href="#label-class" title="Permalink to this headline">¶</a></h3>
 <dl class="py class">
@@ -873,14 +884,17 @@ get_document_details and then retrieved from that file when accessing it.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">get_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">get_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ocr_version</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Get OCR version of the original file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>update</strong> – Update the downloaded file even if it is already available</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ocr_version</strong> – Bool to get the ocr version of the pdf</p></li>
+<li><p><strong>update</strong> – Update the downloaded file even if it is already available</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Path to OCR file.</p>
+<dd class="field-even"><p>Path to OCR or original file.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1588,6 +1602,27 @@ adapted first.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Unique ID</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="konfuzio_sdk.utils.get_paragraphs_by_line_space">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.utils.</span></span><span class="sig-name descname"><span class="pre">get_paragraphs_by_line_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bbox</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_dataframe</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_height_ration</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.8</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#konfuzio_sdk.utils.get_paragraphs_by_line_space" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split a text into paragraphs considering the space between the lines.</p>
+<p>A paragraph consists in a list of lines. Each line corresponds to a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bbox</strong> – Bounding boxes of the characters in the document</p></li>
+<li><p><strong>text</strong> – Text of the document</p></li>
+<li><p><strong>height</strong> – Threshold value for the distance between lines</p></li>
+<li><p><strong>return_dataframe</strong> – If to return a dataframe with the paragraph text and page number</p></li>
+<li><p><strong>line_height_ration</strong> – Ratio of the result of median of the distance between lines to be considered as threshold</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of with the paragraph information per page of the document.</p>
 </dd>
 </dl>
 </dd></dl>

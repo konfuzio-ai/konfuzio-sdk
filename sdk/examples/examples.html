@@ -72,6 +72,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html">LabelSectionModel Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#documentmodel-examples">DocumentModel Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#paragraphmodel-examples"><strong>ParagraphModel</strong> Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#design-philosophy">Design Philosophy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#tokenizers">Tokenizers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#vocabularies">Vocabularies</a></li>
@@ -145,10 +146,10 @@ A subfolder will be created for each document in the project.</p>
 </div>
 <p>By default, it will get the documents without dataset status (dataset_status = 0 (None)).
 You can specify another dataset status with the argument ‘dataset_statuses’. The code for the status is:</p>
-<p>None: 0<span class="raw-html-m2r"><br></span>
-Preparation: 1<span class="raw-html-m2r"><br></span>
-Training: 2<span class="raw-html-m2r"><br></span>
-Test: 3<span class="raw-html-m2r"><br></span>
+<p>None: 0
+Preparation: 1
+Training: 2
+Test: 3
 Low OCR Quality: 4</p>
 <p>For example, to get all documents in the project, you can do:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">documents</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_documents_by_status</span><span class="p">(</span><span class="n">dataset_statuses</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
@@ -292,6 +293,12 @@ SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  jum.SV-Tg. 
 <p>This will download the ocr version of the document which contains the text, the bounding boxes
 information of the characters and the image of the document.</p>
 <p>In the document folder, you will see a new file with the original name followed by “_ocr”.</p>
+<p>If you want to original version of the document (without ocr) you can use <strong>ocr_version=False</strong>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
+    <span class="n">document</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span><span class="n">ocr_version</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In the document folder, you will see a new file with the original name.</p>
 </section>
 <section id="download-pages-as-images">
 <h4>Download pages as images<a class="headerlink" href="#download-pages-as-images" title="Permalink to this headline">¶</a></h4>

@@ -72,6 +72,12 @@
 <li class="toctree-l2"><a class="reference internal" href="#implementing-a-custom-documentmodel-training-loop">Implementing a custom DocumentModel training loop</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="#paragraphmodel-examples"><strong>ParagraphModel</strong> Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#training-our-first-paragraphmodel">Training our first ParagraphModel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#customizing-the-paragraphmodel">Customizing the ParagraphModel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#setting-the-paragraphmodel-training-hyperparameters">Setting the ParagraphModel training hyperparameters</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="#design-philosophy">Design Philosophy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#tokenizers">Tokenizers</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#whitespacetokenizer">WhitespaceTokenizer</a></li>
@@ -585,6 +591,94 @@
 <span class="n">custom_document_classifier_metrics</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">document_training_config</span><span class="o">=</span><span class="n">custom_document_training_config</span><span class="p">)</span>
 
 <span class="c1"># save a trained model</span>
+<span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="paragraphmodel-examples">
+<h1><strong>ParagraphModel</strong> Examples<a class="headerlink" href="#paragraphmodel-examples" title="Permalink to this headline">¶</a></h1>
+<a class="reference external image-reference" href="../_static/img/paragraph_model.png"><img alt="ParagraphModel Diagram" src="../_images/paragraph_model.png" /></a>
+<p>A <code class="docutils literal notranslate"><span class="pre">ParagraphModel</span></code> takes the text of the pages as input and predicts the “category” for each paragraph in that text.
+It uses text features (from the OCR text from the page).</p>
+<section id="training-our-first-paragraphmodel">
+<h2>Training our first ParagraphModel<a class="headerlink" href="#training-our-first-paragraphmodel" title="Permalink to this headline">¶</a></h2>
+<p>A <code class="docutils literal notranslate"><span class="pre">ParagraphModel</span></code> contains a <code class="docutils literal notranslate"><span class="pre">ParagraphClassifier</span></code>.
+Similar to the <code class="docutils literal notranslate"><span class="pre">DocumentModel</span></code>, it has a set of default model hyperparameters and default training hyperparameters.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">konfuzio.default_models</span> <span class="kn">import</span> <span class="n">ParagraphModel</span>
+
+<span class="c1"># need to write `get_project` ourselves</span>
+<span class="n">projects</span> <span class="o">=</span> <span class="p">[</span><span class="n">get_project</span><span class="p">(</span><span class="n">project_id</span><span class="p">)</span> <span class="k">for</span> <span class="n">project_id</span> <span class="ow">in</span> <span class="n">project_ids</span><span class="p">]</span>
+
+<span class="c1"># create default paragraph model from a list of projects</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">ParagraphModel</span><span class="p">(</span><span class="n">projects</span><span class="p">)</span>
+
+<span class="c1"># build (i.e. train) the paragraph model</span>
+<span class="n">paragraph_classifier_metrics</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+
+<span class="c1"># save the paragraph model</span>
+<span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="customizing-the-paragraphmodel">
+<h2>Customizing the ParagraphModel<a class="headerlink" href="#customizing-the-paragraphmodel" title="Permalink to this headline">¶</a></h2>
+<p>Below we show how to implement a custom tokenizer and classifier.
+We only need a <code class="docutils literal notranslate"><span class="pre">multimodal_module</span></code> when we use both text and image modules.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">konfuzio.default_models</span> <span class="kn">import</span> <span class="n">DocumentModel</span>
+<span class="kn">from</span> <span class="nn">konfuzio.tokenizers</span> <span class="kn">import</span> <span class="n">BPETokenizer</span>
+
+<span class="c1"># need to write `get_project` ourselves</span>
+<span class="n">projects</span> <span class="o">=</span> <span class="p">[</span><span class="n">get_project</span><span class="p">(</span><span class="n">project_id</span><span class="p">)</span> <span class="k">for</span> <span class="n">project_id</span> <span class="ow">in</span> <span class="n">project_ids</span><span class="p">]</span>
+
+<span class="c1"># specify a custom tokenizer</span>
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">BPETokenizer</span><span class="p">()</span>
+
+<span class="c1"># configuration dict for the paragraph classifier</span>
+<span class="n">paragraph_classifier_config</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;text_module&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;lstm&#39;</span><span class="p">,</span>
+                                               <span class="s1">&#39;n_layers&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}}</span>
+
+<span class="c1"># create document model with chosen tokenizer and classifier configs</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">ParagraphModel</span><span class="p">(</span><span class="n">projects</span><span class="p">,</span>
+                       <span class="n">tokenizer</span><span class="o">=</span><span class="n">tokenizer</span><span class="p">,</span>
+                       <span class="n">document_classifier_config</span><span class="o">=</span><span class="n">document_classifier_config</span><span class="p">)</span>
+
+<span class="c1"># build (i.e. train) the paragraph model</span>
+<span class="n">paragraph_classifier_metrics</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+
+<span class="c1"># save the paragraph model</span>
+<span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="setting-the-paragraphmodel-training-hyperparameters">
+<h2>Setting the ParagraphModel training hyperparameters<a class="headerlink" href="#setting-the-paragraphmodel-training-hyperparameters" title="Permalink to this headline">¶</a></h2>
+<p>Similar to the <code class="docutils literal notranslate"><span class="pre">DocumentModel</span></code> we can customize the training config which will work with ANY classifier/module combination:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">konfuzio.default_models</span> <span class="kn">import</span> <span class="n">ParagraphModel</span>
+
+<span class="c1"># need to write `get_project` ourselves</span>
+<span class="n">projects</span> <span class="o">=</span> <span class="p">[</span><span class="n">get_project</span><span class="p">(</span><span class="n">project_id</span><span class="p">)</span> <span class="k">for</span> <span class="n">project_id</span> <span class="ow">in</span> <span class="n">project_ids</span><span class="p">]</span>
+
+<span class="c1"># create a default document model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">ParagraphModel</span><span class="p">(</span><span class="n">projects</span><span class="p">)</span>
+
+<span class="c1"># define the custom training hyperparameters</span>
+<span class="n">paragraph_training_config</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;valid_ratio&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>
+                             <span class="s1">&#39;batch_size&#39;</span><span class="p">:</span> <span class="mi">128</span><span class="p">,</span>
+                             <span class="s1">&#39;max_len&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>  <span class="c1"># maximum tokens per page to consider, will do nothing if no text_module used</span>
+                             <span class="s1">&#39;n_epochs&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
+                             <span class="s1">&#39;patience&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+                             <span class="s1">&#39;optimizer&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;RMSprop&#39;</span><span class="p">,</span> <span class="s1">&#39;lr&#39;</span><span class="p">:</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="s1">&#39;momentum&#39;</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">},</span>
+                             <span class="s1">&#39;lr_decay&#39;</span><span class="p">:</span> <span class="mf">0.9</span>
+                             <span class="s1">&#39;no_label_limit&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">}</span>
+
+<span class="c1"># build (i.e. train) the paragraph model with custom training hyperparameters</span>
+<span class="n">paragraph_classifier_metrics</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">paragraph_training_config</span><span class="o">=</span><span class="n">paragraph_training_config</span><span class="p">)</span>
+
+<span class="c1"># save the paragraph model</span>
 <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 </pre></div>
 </div>

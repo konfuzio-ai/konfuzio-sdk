@@ -50,6 +50,12 @@ Label Set Class
    :members:
    :noindex:
 
+Category Class
+~~~~~~~~~~~~~~~
+.. autoclass:: Category
+   :members:
+   :noindex:
+
 Label Class
 ~~~~~~~~~~~~~~~
 
