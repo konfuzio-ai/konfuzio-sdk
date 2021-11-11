@@ -674,7 +674,7 @@ class Document(Data):
         :param update: Update the downloaded file even if it is already available
         :return: Path to OCR or original file.
         """
-        if self.is_without_errors and (not self.ocr_file_path or update):
+        if self.is_without_errors and (not self.ocr_file_path or not is_file(self.ocr_file_path) or update):
             # for page_index in range(0, self.number_of_pages):
             filename = os.path.splitext(self.name)[0]
             if ocr_version:
@@ -730,19 +730,19 @@ class Document(Data):
             and is_file(self.txt_file_path, raise_exception=False)
             and is_file(self.pages_file_path, raise_exception=False)
         ):
-
-            data = get_document_details(document_id=self.id, session=self.session)
-            raw_annotations = data['annotations']
-            self.number_of_pages = data['number_of_pages']
+            data = get_document_details(document_id=self.id, session=self.session, extra_fields='hocr')
 
             if data['text'] is None:
                 # try get data again
                 time.sleep(15)
-                data = get_document_details(document_id=self.id, session=self.session)
+                data = get_document_details(document_id=self.id, session=self.session, extra_fields='hocr')
                 if data['text'] is None:
                     message = f'Document {self.id} is not fully processed yet. Please try again in some minutes.'
                     logger.error(message)
                     raise ValueError(message)
+
+            raw_annotations = data['annotations']
+            self.number_of_pages = data['number_of_pages']
 
             self.text = data['text']
             self.hocr = data['hocr'] or ''
@@ -819,23 +819,24 @@ class Document(Data):
             self._annotations.append(annotation)
         return annotation
 
-    def get_text_in_bio_scheme(self) -> List[Tuple[str, str]]:
+    def get_text_in_bio_scheme(self, update=False) -> List[Tuple[str, str]]:
         """
         Get the text of the document in the BIO scheme.
 
+        :param update: Update the bio annotations even they are already available
         :return: list of tuples with each word in the text an the respective label
         """
-        annotations = self.annotations()
+        if not self.bio_scheme_file_path or not is_file(self.bio_scheme_file_path, raise_exception=False) or update:
+            annotations = self.annotations()
+            converted_text = []
 
-        if len(annotations) == 0:
-            return None
+            if len(annotations) > 0:
+                annotations_in_doc = [
+                    (annotation.start_offset, annotation.end_offset, annotation.label.name)
+                    for annotation in annotations
+                ]
+                converted_text = convert_to_bio_scheme(self.text, annotations_in_doc)
 
-        annotations_in_doc = [
-            (annotation.start_offset, annotation.end_offset, annotation.label.name) for annotation in annotations
-        ]
-        converted_text = convert_to_bio_scheme(self.text, annotations_in_doc)
-
-        if not self.bio_scheme_file_path:
             self.bio_scheme_file_path = os.path.join(self.root, 'bio_scheme.txt')
 
             with open(self.bio_scheme_file_path, 'w', encoding="utf-8") as f:
@@ -854,7 +855,7 @@ class Document(Data):
 
         return bio_annotations
 
-    def get_bbox(self):
+    def get_bbox(self, update=False):
         """
         Get bbox information per character of file.
 
@@ -866,16 +867,17 @@ class Document(Data):
         documents this quickly fills the available memory. So it is first written to a file by
         get_document_details and then retrieved from that file when accessing it.
 
+        :param update: Update the bbox information even if it's are already available
         :return: Bounding box information per character in the document.
         """
         if self.bbox is not None:
             return self.bbox
 
-        if not self.bbox_file_path:
+        if not self.bbox_file_path or not is_file(self.bbox_file_path, raise_exception=False) or update:
             self.bbox_file_path = os.path.join(self.root, 'bbox.json5')
 
             with open(self.bbox_file_path, 'w', encoding="utf-8") as f:
-                data = get_document_details(document_id=self.id, session=self.session)
+                data = get_document_details(document_id=self.id, session=self.session, extra_fields='bbox')
                 json.dump(data['bbox'], f, indent=2, sort_keys=True)
 
         with open(self.bbox_file_path, 'r', encoding="utf-8") as f:
@@ -1173,11 +1175,17 @@ class Project(Data):
         :param update: Update the downloaded information even it is already available
         :return: Categories in the project.
         """
-        for label_set in self.label_sets:
-            if label_set.is_default:
-                temp_label_set = deepcopy(label_set)
-                temp_label_set.__dict__.pop('project', None)
-                self.category_class(project=self, **temp_label_set.__dict__)
+        if not self.categories or update:
+            if not self.label_sets:
+                error_message = 'You need to get the label sets before getting the categories of the project.'
+                logger.error(error_message)
+                raise ValueError(error_message)
+
+            for label_set in self.label_sets:
+                if label_set.is_default:
+                    temp_label_set = deepcopy(label_set)
+                    temp_label_set.__dict__.pop('project', None)
+                    self.category_class(project=self, **temp_label_set.__dict__)
 
         return self.categories
 
