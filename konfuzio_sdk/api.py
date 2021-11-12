@@ -6,7 +6,7 @@ import logging
 import os
 import time
 from operator import itemgetter
-from typing import List
+from typing import List, Union
 from urllib.parse import urlparse
 
 import requests
@@ -434,7 +434,13 @@ def get_project_label_sets(session=konfuzio_session()) -> List[dict]:
     return sorted_label_sets
 
 
-def upload_file_konfuzio_api(filepath: str, project_id: int, session=konfuzio_session(), dataset_status: int = 0):
+def upload_file_konfuzio_api(
+    filepath: str,
+    project_id: int,
+    session=konfuzio_session(),
+    dataset_status: int = 0,
+    category_template_id: Union[None, int] = None,
+):
     """
     Upload file to Konfuzio API.
 
@@ -450,7 +456,7 @@ def upload_file_konfuzio_api(filepath: str, project_id: int, session=konfuzio_se
         file_data = f.read()
 
     files = {"data_file": (os.path.basename(filepath), file_data, "multipart/form-data")}
-    data = {"project": project_id, "dataset_status": dataset_status}
+    data = {"project": project_id, "dataset_status": dataset_status, "category_template": category_template_id}
 
     r = session.post(url=url, files=files, data=data)
     return r
@@ -472,7 +478,7 @@ def delete_file_konfuzio_api(document_id: int, session=konfuzio_session()):
     return True
 
 
-def update_file_status_konfuzio_api(
+def update_file_konfuzio_api(
     document_id: int, file_name: str, dataset_status: int = 0, session=konfuzio_session(), **kwargs
 ):
     """
@@ -485,9 +491,9 @@ def update_file_status_konfuzio_api(
     """
     url = get_document_url(document_id)
 
-    category_template = kwargs.get('category_template', None)
+    category_template_id = kwargs.get('category_template_id', None)
 
-    data = {"data_file_name": file_name, "dataset_status": dataset_status, "category_template": category_template}
+    data = {"data_file_name": file_name, "dataset_status": dataset_status, "category_template": category_template_id}
 
     r = session.patch(url=url, json=data)
     return r

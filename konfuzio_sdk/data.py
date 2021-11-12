@@ -6,9 +6,9 @@ import os
 import pathlib
 import shutil
 import time
+from copy import deepcopy
 from datetime import tzinfo
 from typing import Dict, Optional, List, Union, Tuple
-from copy import deepcopy
 
 import dateutil.parser
 from konfuzio_sdk import KONFUZIO_HOST, DATA_ROOT, KONFUZIO_PROJECT_ID, FILE_ROOT
@@ -24,7 +24,7 @@ from konfuzio_sdk.api import (
     delete_document_annotation,
     upload_file_konfuzio_api,
     create_label,
-    update_file_status_konfuzio_api,
+    update_file_konfuzio_api,
 )
 from konfuzio_sdk.utils import is_file, convert_to_bio_scheme
 
@@ -887,32 +887,41 @@ class Document(Data):
 
     def save(self) -> bool:
         """
-        Save or update Document online.
+        Save or edit Document online.
 
         :return: True if the new document was created or existing document was updated.
         """
         document_saved = False
+        category_template_id = None
+
+        if hasattr(self, 'category') and self.category is not None:
+            category_template_id = self.category.id
+
         if not self.is_online:
             response = upload_file_konfuzio_api(
-                self.file_path, project_id=self.project.id, dataset_status=self.dataset_status
+                filepath=self.file_path,
+                project_id=self.project.id,
+                dataset_status=self.dataset_status,
+                category_template_id=category_template_id,
             )
             if response.status_code == 201:
                 self.id = json.loads(response.text)['id']
                 document_saved = True
             else:
-                logger.error(f'Not able to save document  {self.file_path} online: {response.text}')
+                logger.error(f'Not able to save document {self.file_path} online: {response.text}')
         else:
-            response = update_file_status_konfuzio_api(
+            response = update_file_konfuzio_api(
                 document_id=self.id,
-                dataset_status=self.dataset_status,
                 file_name=self.name,
-                category_template=self.category.id,
+                dataset_status=self.dataset_status,
+                category_template_id=category_template_id,
             )
             if response.status_code == 200:
-                document_saved = True
                 self.project.update_document(document=self)
+                document_saved = True
             else:
                 logger.error(f'Not able to update document {self.id} online: {response.text}')
+
         return document_saved
 
     def update(self):
