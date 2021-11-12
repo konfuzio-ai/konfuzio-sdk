@@ -106,6 +106,7 @@ def retry_get(session, url):
 
         try:
             r.raise_for_status()
+            break
         except requests.exceptions.HTTPError:
             if 401 <= r.status_code <= 403:
                 raise ConnectionError(f'Problem with credentials: {json.loads(r.text)["detail"]}')

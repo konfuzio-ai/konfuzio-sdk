@@ -1284,6 +1284,7 @@ class Project(Data):
         if (new_in_dataset and update) or (needs_update and update):
             doc = self.document_class(project=self, **document_data)
             doc.get_document_details(update=update)
+            self.update_document(doc)
         else:
             doc = self.document_class(project=self, **document_data)
             doc.get_document_details(update=False)
@@ -1375,13 +1376,6 @@ class Project(Data):
                     shutil.rmtree(document_path)
                 except FileNotFoundError:
                     pass
-
-            # to restart lists and allow changes in the dataset status
-            self.documents = []
-            self.test_documents = []
-            self.no_status_documents = []
-            self.preparation_documents = []
-            self.low_ocr_documents = []
 
     def get_label_by_id(self, id: int) -> Label:
         """
