@@ -96,9 +96,17 @@ def retry_get(session, url):
     while True:
         try:
             r = session.get(url=url, timeout=10.0)
+        except requests.RequestException:
+            logger.warning(f'Retry to get url >>{url}<<')
+            retry_count += 1
+            if retry_count >= 10:
+                raise
+            time.sleep(15)
+            continue
+
+        try:
             r.raise_for_status()
-            break
-        except Exception:
+        except requests.exceptions.HTTPError:
             if 401 <= r.status_code <= 403:
                 raise ConnectionError(f'Problem with credentials: {json.loads(r.text)["detail"]}')
 
