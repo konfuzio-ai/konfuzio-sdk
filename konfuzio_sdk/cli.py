@@ -22,8 +22,6 @@ Please enter a valid command line option.
 Valid options:
 konfuzio_sdk init: inits the konfuzio Package by setting the necessary files
 konfuzio_sdk download_data: downloads the data from the project
-konfuzio_sdk download_data include_extra: adds extra data for each document
-    (ocr pdf, bounding boxes information and images of the pages)
 
 These commands should be run inside of your working directory.
 """
@@ -144,7 +142,7 @@ def init(project_folder="./"):
     init_env(project_folder)
 
 
-def data(include_extra: bool = False):
+def data():
     """
     Download the data from the project.
 
@@ -161,13 +159,10 @@ def data(include_extra: bool = False):
     if len(training_prj.documents + training_prj.test_documents) == 0:
         raise ValueError("No documents in the training or test set. Please add them.")
 
-    if include_extra:
-        print("Downloading the ocr pdf, bounding box information and images of the documents.")
-
-        for document in tqdm(training_prj.documents + training_prj.test_documents):
-            document.get_file()
-            document.get_bbox()
-            document.get_images()
+    for document in tqdm(training_prj.documents + training_prj.test_documents):
+        document.get_file()
+        document.get_bbox()
+        document.get_images()
 
     print("[SUCCESS] Data downloading finished successfully!")
 
@@ -228,15 +223,7 @@ def main():
         init()
 
     elif first_arg == 'download_data':
-        include_extra = False
-
-        if len(cli_options) > 0:
-            second_arg = cli_options.pop(0)
-
-            if second_arg == 'include_extra':
-                include_extra = True
-
-        data(include_extra=include_extra)
+        data()
 
     else:
         print(CLI_ERROR)
