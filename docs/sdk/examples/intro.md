@@ -235,8 +235,8 @@ If there are changes in the document in the Konfuzio Server, you can update the 
 document.update()
 ```
 
-You can also update a document by updating the entire project via project.update().
-However, for projects with many documents it can be faster to update only the relevant documents.
+If a document is part of the training or test set, you can also update it by updating the entire project via
+project.update(). However, for projects with many documents it can be faster to update only the relevant documents.
 
 #### Upload Document
 You can upload a document via SDK. Create a Document instance and save it.
