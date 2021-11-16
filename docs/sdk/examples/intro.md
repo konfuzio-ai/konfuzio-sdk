@@ -47,7 +47,7 @@ training_documents = my_project.documents
 test_documents = my_project.test_documents
 ```
 
-By default, you get 4 files for each document that contain information of the text, pages, sections and annotations.
+By default, you get 4 files for each document that contain information of the text, pages, annotation sets and annotations.
 You can see these files inside the document folder.
 
 **document.txt** - Contains the text of the document. If OCR was used, it will correspond to the result from the OCR.
@@ -94,7 +94,7 @@ SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  jum.SV-Tg. 
 ]
 ```
 
-**sections.json5** - Contains information of each section in the document (for example, their ids and label sets).
+**annotation_sets.json5** - Contains information of each section in the document (for example, their ids and label sets).
 
 ```
 [
