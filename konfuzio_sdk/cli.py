@@ -161,6 +161,7 @@ def data():
 
     for document in tqdm(training_prj.documents + training_prj.test_documents):
         document.get_file()
+        document.get_file(ocr_version=False)
         document.get_bbox()
         document.get_images()
 
