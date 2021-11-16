@@ -32,7 +32,7 @@ You can specify another dataset status with the argument 'dataset_statuses'. The
 - Preparation: 1
 - Training: 2
 - Test: 3
-- Low OCR Quality: 4
+- Excluded: 4
 
 For example, to get all documents in the project, you can do:
 
