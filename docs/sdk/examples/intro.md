@@ -28,11 +28,11 @@ documents = my_project.get_documents_by_status()
 By default, it will get the documents without dataset status (dataset_status = 0 (None)).
 You can specify another dataset status with the argument 'dataset_statuses'. The code for the status is:
 
-None: 0
-Preparation: 1
-Training: 2
-Test: 3
-Low OCR Quality: 4
+- None: 0
+- Preparation: 1
+- Training: 2
+- Test: 3
+- Low OCR Quality: 4
 
 For example, to get all documents in the project, you can do:
 
@@ -180,19 +180,19 @@ SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  jum.SV-Tg. 
 ```
 
 #### Download PDFs
-To get the pdfs of the documents, you can use **get_file()**.
+To get the PDFs of the documents, you can use **get_file()**.
 
 ```python
 for document in my_project.documents:
     document.get_file()
 ```
 
-This will download the ocr version of the document which contains the text, the bounding boxes
+This will download the OCR version of the document which contains the text, the bounding boxes
 information of the characters and the image of the document.
 
 In the document folder, you will see a new file with the original name followed by "_ocr".
 
-If you want to original version of the document (without ocr) you can use **ocr_version=False**.
+If you want to original version of the document (without OCR) you can use **ocr_version=False**.
 
 ```python
 for document in my_project.documents:
