@@ -6,9 +6,9 @@ import os
 import pathlib
 import shutil
 import time
+from copy import deepcopy
 from datetime import tzinfo
 from typing import Dict, Optional, List, Union, Tuple
-from copy import deepcopy
 
 import dateutil.parser
 from konfuzio_sdk import KONFUZIO_HOST, DATA_ROOT, KONFUZIO_PROJECT_ID, FILE_ROOT
@@ -24,7 +24,7 @@ from konfuzio_sdk.api import (
     delete_document_annotation,
     upload_file_konfuzio_api,
     create_label,
-    update_file_status_konfuzio_api,
+    update_file_konfuzio_api,
 )
 from konfuzio_sdk.utils import is_file, convert_to_bio_scheme
 
@@ -674,7 +674,7 @@ class Document(Data):
         :param update: Update the downloaded file even if it is already available
         :return: Path to OCR or original file.
         """
-        if self.is_without_errors and (not self.ocr_file_path or update):
+        if self.is_without_errors and (not self.ocr_file_path or not is_file(self.ocr_file_path) or update):
             # for page_index in range(0, self.number_of_pages):
             filename = os.path.splitext(self.name)[0]
             if ocr_version:
@@ -730,19 +730,19 @@ class Document(Data):
             and is_file(self.txt_file_path, raise_exception=False)
             and is_file(self.pages_file_path, raise_exception=False)
         ):
-
-            data = get_document_details(document_id=self.id, session=self.session)
-            raw_annotations = data['annotations']
-            self.number_of_pages = data['number_of_pages']
+            data = get_document_details(document_id=self.id, session=self.session, extra_fields='hocr')
 
             if data['text'] is None:
                 # try get data again
                 time.sleep(15)
-                data = get_document_details(document_id=self.id, session=self.session)
+                data = get_document_details(document_id=self.id, session=self.session, extra_fields='hocr')
                 if data['text'] is None:
                     message = f'Document {self.id} is not fully processed yet. Please try again in some minutes.'
                     logger.error(message)
                     raise ValueError(message)
+
+            raw_annotations = data['annotations']
+            self.number_of_pages = data['number_of_pages']
 
             self.text = data['text']
             self.hocr = data['hocr'] or ''
@@ -819,23 +819,24 @@ class Document(Data):
             self._annotations.append(annotation)
         return annotation
 
-    def get_text_in_bio_scheme(self) -> List[Tuple[str, str]]:
+    def get_text_in_bio_scheme(self, update=False) -> List[Tuple[str, str]]:
         """
         Get the text of the document in the BIO scheme.
 
+        :param update: Update the bio annotations even they are already available
         :return: list of tuples with each word in the text an the respective label
         """
-        annotations = self.annotations()
+        if not self.bio_scheme_file_path or not is_file(self.bio_scheme_file_path, raise_exception=False) or update:
+            annotations = self.annotations()
+            converted_text = []
 
-        if len(annotations) == 0:
-            return None
+            if len(annotations) > 0:
+                annotations_in_doc = [
+                    (annotation.start_offset, annotation.end_offset, annotation.label.name)
+                    for annotation in annotations
+                ]
+                converted_text = convert_to_bio_scheme(self.text, annotations_in_doc)
 
-        annotations_in_doc = [
-            (annotation.start_offset, annotation.end_offset, annotation.label.name) for annotation in annotations
-        ]
-        converted_text = convert_to_bio_scheme(self.text, annotations_in_doc)
-
-        if not self.bio_scheme_file_path:
             self.bio_scheme_file_path = os.path.join(self.root, 'bio_scheme.txt')
 
             with open(self.bio_scheme_file_path, 'w', encoding="utf-8") as f:
@@ -854,7 +855,7 @@ class Document(Data):
 
         return bio_annotations
 
-    def get_bbox(self):
+    def get_bbox(self, update=False):
         """
         Get bbox information per character of file.
 
@@ -866,16 +867,17 @@ class Document(Data):
         documents this quickly fills the available memory. So it is first written to a file by
         get_document_details and then retrieved from that file when accessing it.
 
+        :param update: Update the bbox information even if it's are already available
         :return: Bounding box information per character in the document.
         """
         if self.bbox is not None:
             return self.bbox
 
-        if not self.bbox_file_path:
+        if not self.bbox_file_path or not is_file(self.bbox_file_path, raise_exception=False) or update:
             self.bbox_file_path = os.path.join(self.root, 'bbox.json5')
 
             with open(self.bbox_file_path, 'w', encoding="utf-8") as f:
-                data = get_document_details(document_id=self.id, session=self.session)
+                data = get_document_details(document_id=self.id, session=self.session, extra_fields='bbox')
                 json.dump(data['bbox'], f, indent=2, sort_keys=True)
 
         with open(self.bbox_file_path, 'r', encoding="utf-8") as f:
@@ -885,32 +887,41 @@ class Document(Data):
 
     def save(self) -> bool:
         """
-        Save or update Document online.
+        Save or edit Document online.
 
         :return: True if the new document was created or existing document was updated.
         """
         document_saved = False
+        category_template_id = None
+
+        if hasattr(self, 'category') and self.category is not None:
+            category_template_id = self.category.id
+
         if not self.is_online:
             response = upload_file_konfuzio_api(
-                self.file_path, project_id=self.project.id, dataset_status=self.dataset_status
+                filepath=self.file_path,
+                project_id=self.project.id,
+                dataset_status=self.dataset_status,
+                category_template_id=category_template_id,
             )
             if response.status_code == 201:
                 self.id = json.loads(response.text)['id']
                 document_saved = True
             else:
-                logger.error(f'Not able to save document  {self.file_path} online: {response.text}')
+                logger.error(f'Not able to save document {self.file_path} online: {response.text}')
         else:
-            response = update_file_status_konfuzio_api(
+            response = update_file_konfuzio_api(
                 document_id=self.id,
-                dataset_status=self.dataset_status,
                 file_name=self.name,
-                category_template=self.category.id,
+                dataset_status=self.dataset_status,
+                category_template_id=category_template_id,
             )
             if response.status_code == 200:
-                document_saved = True
                 self.project.update_document(document=self)
+                document_saved = True
             else:
                 logger.error(f'Not able to update document {self.id} online: {response.text}')
+
         return document_saved
 
     def update(self):
@@ -1173,11 +1184,17 @@ class Project(Data):
         :param update: Update the downloaded information even it is already available
         :return: Categories in the project.
         """
-        for label_set in self.label_sets:
-            if label_set.is_default:
-                temp_label_set = deepcopy(label_set)
-                temp_label_set.__dict__.pop('project', None)
-                self.category_class(project=self, **temp_label_set.__dict__)
+        if not self.categories or update:
+            if not self.label_sets:
+                error_message = 'You need to get the label sets before getting the categories of the project.'
+                logger.error(error_message)
+                raise ValueError(error_message)
+
+            for label_set in self.label_sets:
+                if label_set.is_default:
+                    temp_label_set = deepcopy(label_set)
+                    temp_label_set.__dict__.pop('project', None)
+                    self.category_class(project=self, **temp_label_set.__dict__)
 
         return self.categories
 
@@ -1267,6 +1284,7 @@ class Project(Data):
         if (new_in_dataset and update) or (needs_update and update):
             doc = self.document_class(project=self, **document_data)
             doc.get_document_details(update=update)
+            self.update_document(doc)
         else:
             doc = self.document_class(project=self, **document_data)
             doc.get_document_details(update=False)
@@ -1358,13 +1376,6 @@ class Project(Data):
                     shutil.rmtree(document_path)
                 except FileNotFoundError:
                     pass
-
-            # to restart lists and allow changes in the dataset status
-            self.documents = []
-            self.test_documents = []
-            self.no_status_documents = []
-            self.preparation_documents = []
-            self.low_ocr_documents = []
 
     def get_label_by_id(self, id: int) -> Label:
         """

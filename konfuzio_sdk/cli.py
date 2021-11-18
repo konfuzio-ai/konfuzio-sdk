@@ -21,7 +21,7 @@ Please enter a valid command line option.
 ----------------------------------------
 Valid options:
 konfuzio_sdk init: inits the konfuzio Package by setting the necessary files
-konfuzio_sdk download_data: downloads the data from an example project
+konfuzio_sdk download_data: downloads the data from the project
 
 These commands should be run inside of your working directory.
 """
@@ -144,11 +144,13 @@ def init(project_folder="./"):
 
 def data():
     """
-    Download the data from the example project.
+    Download the data from the project.
 
-    It has to be run after having the .env and settings.py files.
+    It has to run after having the .env and settings.py files.
+
+    :param include_extra: if to download also the pdf, bounding boxes information and page images of the documents
     """
-    print("Starting the download. Please wait until the data download is finished..")
+    print("Starting the download. Please wait until the data download is finished...")
     from konfuzio_sdk.data import Project
 
     training_prj = Project()
@@ -159,8 +161,10 @@ def data():
 
     for document in tqdm(training_prj.documents + training_prj.test_documents):
         document.get_file()
+        document.get_file(ocr_version=False)
         document.get_bbox()
         document.get_images()
+
     print("[SUCCESS] Data downloading finished successfully!")
 
 
@@ -216,10 +220,10 @@ def main():
         print(CLI_ERROR)
         return -1
 
-    if first_arg == "init":
+    if first_arg == 'init':
         init()
 
-    elif first_arg == "download_data":
+    elif first_arg == 'download_data':
         data()
 
     else:

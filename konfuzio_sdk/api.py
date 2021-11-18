@@ -1,34 +1,30 @@
 """Connect to the Konfuzio Server to receive or send data."""
 
-import json
-import os
 import io
+import json
 import logging
+import os
 import time
 from operator import itemgetter
-from typing import List
-
-import requests
-
+from typing import List, Union
 from urllib.parse import urlparse
 
+import requests
 from konfuzio_sdk import KONFUZIO_HOST, KONFUZIO_TOKEN
 from konfuzio_sdk.urls import (
     get_auth_token_url,
-    get_project_list_url,
-    create_new_project_url,
+    get_projects_list_url,
     get_document_api_details_url,
     get_project_url,
     get_document_ocr_file_url,
     get_document_original_file_url,
     get_documents_meta_url,
-    post_project_api_document_annotations_url,
-    delete_project_api_document_annotations_url,
+    get_document_annotations_url,
+    get_annotation_url,
     get_upload_document_url,
-    update_document_url,
-    get_document_result_v1,
+    get_document_url,
     get_document_segmentation_details_url,
-    get_create_label_url,
+    get_labels_url,
 )
 from konfuzio_sdk.utils import is_file, load_image
 
@@ -55,7 +51,7 @@ def get_project_list(token, host):
     """
     session = requests.Session()
     session.headers.update({'Authorization': f'Token {token}'})
-    url = get_project_list_url(host)
+    url = get_projects_list_url(host)
     r = session.get(url=url)
     return r
 
@@ -67,7 +63,7 @@ def create_new_project(project_name, token=None, host=None):
     :return: Response object
     """
     session = konfuzio_session(token)
-    url = create_new_project_url(host)
+    url = get_projects_list_url(host)
     new_project_data = {"name": project_name}
     r = session.post(url=url, json=new_project_data)
     return r
@@ -100,9 +96,18 @@ def retry_get(session, url):
     while True:
         try:
             r = session.get(url=url, timeout=10.0)
+        except requests.RequestException:
+            logger.warning(f'Retry to get url >>{url}<<')
+            retry_count += 1
+            if retry_count >= 10:
+                raise
+            time.sleep(15)
+            continue
+
+        try:
             r.raise_for_status()
             break
-        except Exception:
+        except requests.exceptions.HTTPError:
             if 401 <= r.status_code <= 403:
                 raise ConnectionError(f'Problem with credentials: {json.loads(r.text)["detail"]}')
 
@@ -149,7 +154,7 @@ def konfuzio_session(token=None):
     return session
 
 
-def get_document_details(document_id, session=konfuzio_session()):
+def get_document_details(document_id, session=konfuzio_session(), extra_fields: str = 'bbox,hocr'):
     """
     Use the text-extraction server to retrieve the data from a document.
 
@@ -157,7 +162,7 @@ def get_document_details(document_id, session=konfuzio_session()):
     :param session: Session to connect to the server
     :return: Data of the document.
     """
-    url = get_document_api_details_url(document_id, include_extractions=False, extra_fields='bbox,hocr')
+    url = get_document_api_details_url(document_id, include_extractions=False, extra_fields=extra_fields)
     r = retry_get(session, url)
     data = json.loads(r.text)
     text = data["text"]
@@ -245,7 +250,7 @@ def post_document_bulk_annotation(document_id: int, annotation_list, session=kon
     :param session: Session to connect to the server
     :return: Response status.
     """
-    url = post_project_api_document_annotations_url(document_id)
+    url = get_document_annotations_url(document_id)
     r = session.post(url, json=annotation_list)
     r.raise_for_status()
     return r
@@ -288,7 +293,7 @@ def post_document_annotation(
     :param define_annotation_set: If to define the annotation set (bool)
     :return: Response status.
     """
-    url = post_project_api_document_annotations_url(document_id)
+    url = get_document_annotations_url(document_id)
 
     bbox = kwargs.get('bbox', None)
     custom_bboxes = kwargs.get('bboxes', None)
@@ -337,7 +342,7 @@ def delete_document_annotation(document_id: int, annotation_id: int, session=kon
     :param session: Session to connect to the server.
     :return: Response status.
     """
-    url = delete_project_api_document_annotations_url(document_id, annotation_id)
+    url = get_annotation_url(document_id=document_id, annotation_id=annotation_id)
     r = session.delete(url)
     return r
 
@@ -401,7 +406,7 @@ def create_label(
     :param session: Session to connect to the server
     :return: Label ID in the Konfuzio Server.
     """
-    url = get_create_label_url()
+    url = get_labels_url()
     label_sets_ids = [label_set.id for label_set in label_sets]
 
     description = kwargs.get('description', None)
@@ -438,7 +443,13 @@ def get_project_label_sets(session=konfuzio_session()) -> List[dict]:
     return sorted_label_sets
 
 
-def upload_file_konfuzio_api(filepath: str, project_id: int, session=konfuzio_session(), dataset_status: int = 0):
+def upload_file_konfuzio_api(
+    filepath: str,
+    project_id: int,
+    session=konfuzio_session(),
+    dataset_status: int = 0,
+    category_template_id: Union[None, int] = None,
+):
     """
     Upload file to Konfuzio API.
 
@@ -454,7 +465,7 @@ def upload_file_konfuzio_api(filepath: str, project_id: int, session=konfuzio_se
         file_data = f.read()
 
     files = {"data_file": (os.path.basename(filepath), file_data, "multipart/form-data")}
-    data = {"project": project_id, "dataset_status": dataset_status}
+    data = {"project": project_id, "dataset_status": dataset_status, "category_template": category_template_id}
 
     r = session.post(url=url, files=files, data=data)
     return r
@@ -468,7 +479,7 @@ def delete_file_konfuzio_api(document_id: int, session=konfuzio_session()):
     :param session: Session to connect to the server
     :return: File id in Konfuzio Server.
     """
-    url = get_document_result_v1(document_id)
+    url = get_document_url(document_id)
     data = {'id': document_id}
 
     r = session.delete(url=url, json=data)
@@ -476,7 +487,7 @@ def delete_file_konfuzio_api(document_id: int, session=konfuzio_session()):
     return True
 
 
-def update_file_status_konfuzio_api(
+def update_file_konfuzio_api(
     document_id: int, file_name: str, dataset_status: int = 0, session=konfuzio_session(), **kwargs
 ):
     """
@@ -487,11 +498,11 @@ def update_file_status_konfuzio_api(
     :param session: Session to connect to the server
     :return: Response status.
     """
-    url = update_document_url(document_id)
+    url = get_document_url(document_id)
 
-    category_template = kwargs.get('category_template', None)
+    category_template_id = kwargs.get('category_template_id', None)
 
-    data = {"data_file_name": file_name, "dataset_status": dataset_status, "category_template": category_template}
+    data = {"data_file_name": file_name, "dataset_status": dataset_status, "category_template": category_template_id}
 
     r = session.patch(url=url, json=data)
     return r

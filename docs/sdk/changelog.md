@@ -4,6 +4,19 @@
 
 # Changelog
 
+## 2021-11-18 v.0.1.13
+
+### Changed
+- Improve verification of the document files.
+- Update URLs and API endpoints.
+- Possibility to specify the category of a document when uploading it.
+- Improve update of a project.
+- Update documentation.
+
+### Added
+- Download original pdf version in download_data (cli)
+- Function to split text into sentences
+
 ## 2021-11-09 v.0.1.12
 
 ### Changed
