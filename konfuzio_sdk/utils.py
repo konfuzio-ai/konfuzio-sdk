@@ -4,6 +4,7 @@ import datetime
 import hashlib
 import logging
 import os
+import re
 import zipfile
 from contextlib import contextmanager
 from io import BytesIO
@@ -15,6 +16,7 @@ import nltk
 import pandas as pd
 from PIL import Image
 from konfuzio_sdk import IMAGE_FILE, PDF_FILE, OFFICE_FILE, SUPPORTED_FILE_TYPES
+from nltk.tokenize import sent_tokenize
 
 logger = logging.getLogger(__name__)
 
@@ -360,3 +362,75 @@ def get_paragraphs_by_line_space(
 
     else:
         return document_structure
+
+
+def get_sentences(text: str, offsets_map: Union[dict, None] = None, language: str = 'german') -> List[dict]:
+    """
+    Split a text into sentences using the sentence tokenizer from the package nltk.
+
+    :param text: Text to split into sentences
+    :param offsets_map: mapping between the position of the character in the input text and the offset in the text
+    of the document
+    :param language: language of the text
+    :return: List with a dict per sentence with its text and its start and end offsets in the text of the document.
+    """
+    sentences = set()
+    tokens = sent_tokenize(text, language=language)
+
+    for token_txt in tokens:
+        try:
+            matches = [(m.start(0), m.end(0)) for m in re.finditer(token_txt, text)]
+        except:  # NOQA
+            logger.warning(f'Not possible to find a match with sent_tokenize for token {token_txt}.')
+            continue
+
+        if len(matches) > 0:
+            if offsets_map is not None:
+                # get start and end offsets from the text in the document
+                start_char = offsets_map[matches[0][0]]
+                try:
+                    end_char = offsets_map[matches[0][1]]
+                except:  # NOQA
+                    last_key_value = list(offsets_map.keys())[-1]
+                    if matches[0][1] - last_key_value <= 1:
+                        end_char = offsets_map[last_key_value]
+                    else:
+                        logger.warning('Not able to find matches due to mismatch between text and OCR.')
+                        continue
+            else:
+                start_char = matches[0][0]
+                end_char = matches[0][1]
+
+            sentences.add((text[matches[0][0] : matches[0][1]], start_char, end_char))
+
+    sentences = sorted(sentences, key=lambda x: x[1])  # sort by their start offsets
+
+    # convert to list of dictionaries
+    sentences = [{'offset_string': text, 'start_offset': start, 'end_offset': end} for text, start, end in sentences]
+
+    return sentences
+
+
+def map_offsets(characters_bboxes: list) -> dict:
+    """
+    Map the position of the character to its offset.
+
+    E.g.:
+    characters: x, y, z, w
+    characters offsets: 2, 3, 20, 22
+
+    The first character (x) has the offset 2.
+    The fourth character (w) has the offset 22.
+    ...
+
+    offsets_map: {0: 2, 1: 3, 2: 20, 3: 22}
+
+    :param characters_bboxes: Bounding boxes information of the characters.
+    :returns: Mapping of the position of the characters and its offsets.
+    """
+    for character_bbox in characters_bboxes:
+        character_bbox['string_offset'] = int(character_bbox['string_offset'])
+    characters_bboxes.sort(key=lambda k: k['string_offset'])
+    offsets_map = dict((i, x['string_offset']) for i, x in enumerate(characters_bboxes))
+
+    return offsets_map
