@@ -466,7 +466,7 @@ custom_document_classifier_metrics = model.build(document_training_config=custom
 model.save()
 ```
 
-## **ParagraphModel** Examples
+## ParagraphModel Examples
 
 ![ParagraphModel Diagram](../_static/img/paragraph_model.png)
 

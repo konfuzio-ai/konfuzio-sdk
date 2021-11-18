@@ -52,7 +52,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="training/training_documentation.html">LabelSectionModel Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="training/training_documentation.html#documentmodel-examples">DocumentModel Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="training/training_documentation.html#paragraphmodel-examples"><strong>ParagraphModel</strong> Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training/training_documentation.html#paragraphmodel-examples">ParagraphModel Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="training/training_documentation.html#design-philosophy">Design Philosophy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="training/training_documentation.html#tokenizers">Tokenizers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="training/training_documentation.html#vocabularies">Vocabularies</a></li>
@@ -129,8 +129,6 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="sdk/sourcecode.html#konfuzio_sdk.api.create_new_project">create_new_project() (in module konfuzio_sdk.api)</a>
 </li>
-      <li><a href="sdk/sourcecode.html#konfuzio_sdk.urls.create_new_project_url">create_new_project_url() (in module konfuzio_sdk.urls)</a>
-</li>
       <li><a href="sdk/sourcecode.html#konfuzio_sdk.cli.create_project">create_project() (in module konfuzio_sdk.cli)</a>
 </li>
   </ul></td>
@@ -147,8 +145,6 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="sdk/sourcecode.html#konfuzio_sdk.urls.delete_project_api_document_annotations_url">delete_project_api_document_annotations_url() (in module konfuzio_sdk.urls)</a>
-</li>
       <li><a href="sdk/sourcecode.html#konfuzio_sdk.utils.does_not_raise">does_not_raise() (in module konfuzio_sdk.utils)</a>
 </li>
       <li><a href="sdk/sourcecode.html#konfuzio_sdk.api.download_file_konfuzio_api">download_file_konfuzio_api() (in module konfuzio_sdk.api)</a>
@@ -161,15 +157,17 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="sdk/sourcecode.html#konfuzio_sdk.urls.get_annotation_url">get_annotation_url() (in module konfuzio_sdk.urls)</a>
+</li>
       <li><a href="sdk/sourcecode.html#konfuzio_sdk.api.get_auth_token">get_auth_token() (in module konfuzio_sdk.api)</a>
 </li>
       <li><a href="sdk/sourcecode.html#konfuzio_sdk.urls.get_auth_token_url">get_auth_token_url() (in module konfuzio_sdk.urls)</a>
 </li>
-      <li><a href="sdk/sourcecode.html#konfuzio_sdk.urls.get_create_label_url">get_create_label_url() (in module konfuzio_sdk.urls)</a>
-</li>
       <li><a href="sdk/sourcecode.html#konfuzio_sdk.api.get_csrf">get_csrf() (in module konfuzio_sdk.api)</a>
 </li>
       <li><a href="sdk/sourcecode.html#konfuzio_sdk.api.get_document_annotations">get_document_annotations() (in module konfuzio_sdk.api)</a>
+</li>
+      <li><a href="sdk/sourcecode.html#konfuzio_sdk.urls.get_document_annotations_url">get_document_annotations_url() (in module konfuzio_sdk.urls)</a>
 </li>
       <li><a href="sdk/sourcecode.html#konfuzio_sdk.urls.get_document_api_details_url">get_document_api_details_url() (in module konfuzio_sdk.urls)</a>
 </li>
@@ -181,21 +179,25 @@
 </li>
       <li><a href="sdk/sourcecode.html#konfuzio_sdk.urls.get_document_original_file_url">get_document_original_file_url() (in module konfuzio_sdk.urls)</a>
 </li>
-      <li><a href="sdk/sourcecode.html#konfuzio_sdk.urls.get_document_result_v1">get_document_result_v1() (in module konfuzio_sdk.urls)</a>
-</li>
       <li><a href="sdk/sourcecode.html#konfuzio_sdk.urls.get_document_segmentation_details_url">get_document_segmentation_details_url() (in module konfuzio_sdk.urls)</a>
 </li>
       <li><a href="sdk/sourcecode.html#konfuzio_sdk.api.get_document_text">get_document_text() (in module konfuzio_sdk.api)</a>
 </li>
+      <li><a href="sdk/sourcecode.html#konfuzio_sdk.urls.get_document_url">get_document_url() (in module konfuzio_sdk.urls)</a>
+</li>
       <li><a href="sdk/sourcecode.html#konfuzio_sdk.urls.get_documents_meta_url">get_documents_meta_url() (in module konfuzio_sdk.urls)</a>
+</li>
+      <li><a href="sdk/sourcecode.html#konfuzio_sdk.utils.get_file_type">get_file_type() (in module konfuzio_sdk.utils)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="sdk/sourcecode.html#konfuzio_sdk.utils.get_file_type">get_file_type() (in module konfuzio_sdk.utils)</a>
-</li>
       <li><a href="sdk/sourcecode.html#konfuzio_sdk.utils.get_file_type_and_extension">get_file_type_and_extension() (in module konfuzio_sdk.utils)</a>
 </li>
       <li><a href="sdk/sourcecode.html#konfuzio_sdk.utils.get_id">get_id() (in module konfuzio_sdk.utils)</a>
+</li>
+      <li><a href="sdk/sourcecode.html#konfuzio_sdk.urls.get_label_url">get_label_url() (in module konfuzio_sdk.urls)</a>
+</li>
+      <li><a href="sdk/sourcecode.html#konfuzio_sdk.urls.get_labels_url">get_labels_url() (in module konfuzio_sdk.urls)</a>
 </li>
       <li><a href="sdk/sourcecode.html#konfuzio_sdk.api.get_meta_of_files">get_meta_of_files() (in module konfuzio_sdk.api)</a>
 </li>
@@ -207,13 +209,15 @@
 </li>
       <li><a href="sdk/sourcecode.html#konfuzio_sdk.api.get_project_list">get_project_list() (in module konfuzio_sdk.api)</a>
 </li>
-      <li><a href="sdk/sourcecode.html#konfuzio_sdk.urls.get_project_list_url">get_project_list_url() (in module konfuzio_sdk.urls)</a>
-</li>
       <li><a href="sdk/sourcecode.html#konfuzio_sdk.api.get_project_name_from_id">get_project_name_from_id() (in module konfuzio_sdk.api)</a>
 </li>
       <li><a href="sdk/sourcecode.html#konfuzio_sdk.urls.get_project_url">get_project_url() (in module konfuzio_sdk.urls)</a>
 </li>
+      <li><a href="sdk/sourcecode.html#konfuzio_sdk.urls.get_projects_list_url">get_projects_list_url() (in module konfuzio_sdk.urls)</a>
+</li>
       <li><a href="sdk/sourcecode.html#konfuzio_sdk.api.get_results_from_segmentation">get_results_from_segmentation() (in module konfuzio_sdk.api)</a>
+</li>
+      <li><a href="sdk/sourcecode.html#konfuzio_sdk.utils.get_sentences">get_sentences() (in module konfuzio_sdk.utils)</a>
 </li>
       <li><a href="sdk/sourcecode.html#konfuzio_sdk.utils.get_timestamp">get_timestamp() (in module konfuzio_sdk.utils)</a>
 </li>
@@ -300,6 +304,8 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="sdk/sourcecode.html#konfuzio_sdk.cli.main">main() (in module konfuzio_sdk.cli)</a>
 </li>
+      <li><a href="sdk/sourcecode.html#konfuzio_sdk.utils.map_offsets">map_offsets() (in module konfuzio_sdk.utils)</a>
+</li>
       <li>
     module
 
@@ -327,8 +333,6 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="sdk/sourcecode.html#konfuzio_sdk.api.post_document_bulk_annotation">post_document_bulk_annotation() (in module konfuzio_sdk.api)</a>
 </li>
-      <li><a href="sdk/sourcecode.html#konfuzio_sdk.urls.post_project_api_document_annotations_url">post_project_api_document_annotations_url() (in module konfuzio_sdk.urls)</a>
-</li>
   </ul></td>
 </tr></table>
 
@@ -343,12 +347,10 @@
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="sdk/sourcecode.html#konfuzio_sdk.urls.update_document_url">update_document_url() (in module konfuzio_sdk.urls)</a>
+      <li><a href="sdk/sourcecode.html#konfuzio_sdk.api.update_file_konfuzio_api">update_file_konfuzio_api() (in module konfuzio_sdk.api)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="sdk/sourcecode.html#konfuzio_sdk.api.update_file_status_konfuzio_api">update_file_status_konfuzio_api() (in module konfuzio_sdk.api)</a>
-</li>
       <li><a href="sdk/sourcecode.html#konfuzio_sdk.api.upload_file_konfuzio_api">upload_file_konfuzio_api() (in module konfuzio_sdk.api)</a>
 </li>
   </ul></td>

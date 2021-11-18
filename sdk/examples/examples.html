@@ -53,6 +53,9 @@
 <li class="toctree-l4"><a class="reference internal" href="#download-pages-as-images">Download pages as images</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#download-bounding-boxes-of-the-characters">Download bounding boxes of the characters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#update-document">Update Document</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#upload-document">Upload Document</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#modify-document">Modify Document</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#delete-document">Delete Document</a></li>
 </ul>
 </li>
 </ul>
@@ -72,7 +75,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html">LabelSectionModel Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#documentmodel-examples">DocumentModel Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#paragraphmodel-examples"><strong>ParagraphModel</strong> Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#paragraphmodel-examples">ParagraphModel Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#design-philosophy">Design Philosophy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#tokenizers">Tokenizers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#vocabularies">Vocabularies</a></li>
@@ -146,11 +149,13 @@ A subfolder will be created for each document in the project.</p>
 </div>
 <p>By default, it will get the documents without dataset status (dataset_status = 0 (None)).
 You can specify another dataset status with the argument ‘dataset_statuses’. The code for the status is:</p>
-<p>None: 0
-Preparation: 1
-Training: 2
-Test: 3
-Low OCR Quality: 4</p>
+<ul class="simple">
+<li><p>None: 0</p></li>
+<li><p>Preparation: 1</p></li>
+<li><p>Training: 2</p></li>
+<li><p>Test: 3</p></li>
+<li><p>Excluded: 4</p></li>
+</ul>
 <p>For example, to get all documents in the project, you can do:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">documents</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_documents_by_status</span><span class="p">(</span><span class="n">dataset_statuses</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
 </pre></div>
@@ -160,7 +165,7 @@ Low OCR Quality: 4</p>
 <span class="n">test_documents</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">test_documents</span>
 </pre></div>
 </div>
-<p>By default, you get 4 files for each document that contain information of the text, pages, sections and annotations.
+<p>By default, you get 4 files for each document that contain information of the text, pages, annotation sets and annotations.
 You can see these files inside the document folder.</p>
 <p><strong>document.txt</strong> - Contains the text of the document. If OCR was used, it will correspond to the result from the OCR.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>                                                            x02   328927/10103/00104
@@ -202,7 +207,7 @@ SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  jum.SV-Tg. 
 <span class="p">]</span>
 </pre></div>
 </div>
-<p><strong>sections.json5</strong> - Contains information of each section in the document (for example, their ids and label sets).</p>
+<p><strong>annotation_sets.json5</strong> - Contains information of each section in the document (for example, their ids and label sets).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
   <span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">78730</span><span class="p">,</span>
@@ -285,15 +290,15 @@ SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  jum.SV-Tg. 
 </div>
 <section id="download-pdfs">
 <h4>Download PDFs<a class="headerlink" href="#download-pdfs" title="Permalink to this headline">¶</a></h4>
-<p>To get the pdfs of the documents, you can use <strong>get_file()</strong>.</p>
+<p>To get the PDFs of the documents, you can use <strong>get_file()</strong>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
     <span class="n">document</span><span class="o">.</span><span class="n">get_file</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>This will download the ocr version of the document which contains the text, the bounding boxes
+<p>This will download the OCR version of the document which contains the text, the bounding boxes
 information of the characters and the image of the document.</p>
 <p>In the document folder, you will see a new file with the original name followed by “_ocr”.</p>
-<p>If you want to original version of the document (without ocr) you can use <strong>ocr_version=False</strong>.</p>
+<p>If you want to original version of the document (without OCR) you can use <strong>ocr_version=False</strong>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
     <span class="n">document</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span><span class="n">ocr_version</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 </pre></div>
@@ -329,8 +334,49 @@ For example, you can get the path to the file with the document text with:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>You can also update a document by updating the entire project via project.update().
-However, for projects with many documents it can be faster to update only the relevant documents.</p>
+<p>If a document is part of the training or test set, you can also update it by updating the entire project via
+project.update(). However, for projects with many documents it can be faster to update only the relevant documents.</p>
+</section>
+<section id="upload-document">
+<h4>Upload Document<a class="headerlink" href="#upload-document" title="Permalink to this headline">¶</a></h4>
+<p>You can upload a document via SDK. Create a Document instance and save it.
+The document will be uploaded to the Konfuzio Server.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">file_path</span><span class="o">=&lt;</span><span class="n">path_to_the_file</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">my_project</span><span class="p">)</span>
+<span class="n">document</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>By default, the document is uploaded with the dataset status “None”. If there is only one category in the project, the
+document will assume that category. If there is more than one category in the project, the document is uploaded without
+a category.</p>
+<p>You can specify both these parameters when you upload the document by passing the correspondent code for the dataset
+status (see code <a class="reference external" href="https://app.konfuzio.com/v2/swagger/#/docs/docs_create">here</a>) and the ID of the category.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">file_path</span><span class="o">=&lt;</span><span class="n">path_to_the_file</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">my_project</span><span class="p">,</span>
+                    <span class="n">dataset_status</span><span class="o">=&lt;</span><span class="n">dataset_status_code</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">category_template</span><span class="o">=&lt;</span><span class="n">category_id</span><span class="o">&gt;</span><span class="p">)</span>
+<span class="n">document</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="modify-document">
+<h4>Modify Document<a class="headerlink" href="#modify-document" title="Permalink to this headline">¶</a></h4>
+<p>The dataset status and the category of a document can be modified after the document is uploaded.
+To change the category, you can select the category that you desire from the project based on its ID and attribute it
+to the document.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">category</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_category_by_id</span><span class="p">(</span><span class="o">&lt;</span><span class="n">category_id</span><span class="o">&gt;</span><span class="p">)</span>
+
+<span class="n">document</span><span class="o">.</span><span class="n">category</span> <span class="o">=</span> <span class="n">category</span>
+<span class="n">document</span><span class="o">.</span><span class="n">dataset_status</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">document</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="delete-document">
+<h4>Delete Document<a class="headerlink" href="#delete-document" title="Permalink to this headline">¶</a></h4>
+<p>To locally delete a document, you can use:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The document will be deleted from your local data folder but it will remain in the Konfuzio Server.
+If you want to get it again you can update the project.</p>
 </section>
 </section>
 </section>

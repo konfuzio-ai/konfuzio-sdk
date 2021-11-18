@@ -28,11 +28,11 @@ documents = my_project.get_documents_by_status()
 By default, it will get the documents without dataset status (dataset_status = 0 (None)).
 You can specify another dataset status with the argument 'dataset_statuses'. The code for the status is:
 
-None: 0
-Preparation: 1
-Training: 2
-Test: 3
-Low OCR Quality: 4
+- None: 0
+- Preparation: 1
+- Training: 2
+- Test: 3
+- Excluded: 4
 
 For example, to get all documents in the project, you can do:
 
@@ -47,7 +47,7 @@ training_documents = my_project.documents
 test_documents = my_project.test_documents
 ```
 
-By default, you get 4 files for each document that contain information of the text, pages, sections and annotations.
+By default, you get 4 files for each document that contain information of the text, pages, annotation sets and annotations.
 You can see these files inside the document folder.
 
 **document.txt** - Contains the text of the document. If OCR was used, it will correspond to the result from the OCR.
@@ -94,7 +94,7 @@ SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  jum.SV-Tg. 
 ]
 ```
 
-**sections.json5** - Contains information of each section in the document (for example, their ids and label sets).
+**annotation_sets.json5** - Contains information of each section in the document (for example, their ids and label sets).
 
 ```
 [
@@ -180,19 +180,19 @@ SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  jum.SV-Tg. 
 ```
 
 #### Download PDFs
-To get the pdfs of the documents, you can use **get_file()**.
+To get the PDFs of the documents, you can use **get_file()**.
 
 ```python
 for document in my_project.documents:
     document.get_file()
 ```
 
-This will download the ocr version of the document which contains the text, the bounding boxes
+This will download the OCR version of the document which contains the text, the bounding boxes
 information of the characters and the image of the document.
 
 In the document folder, you will see a new file with the original name followed by "_ocr".
 
-If you want to original version of the document (without ocr) you can use **ocr_version=False**.
+If you want to original version of the document (without OCR) you can use **ocr_version=False**.
 
 ```python
 for document in my_project.documents:
@@ -235,5 +235,50 @@ If there are changes in the document in the Konfuzio Server, you can update the 
 document.update()
 ```
 
-You can also update a document by updating the entire project via project.update().
-However, for projects with many documents it can be faster to update only the relevant documents.
+If a document is part of the training or test set, you can also update it by updating the entire project via
+project.update(). However, for projects with many documents it can be faster to update only the relevant documents.
+
+#### Upload Document
+You can upload a document via SDK. Create a Document instance and save it.
+The document will be uploaded to the Konfuzio Server.
+
+```python
+document = Document(file_path=<path_to_the_file>, project=my_project)
+document.save()
+```
+
+By default, the document is uploaded with the dataset status "None". If there is only one category in the project, the
+document will assume that category. If there is more than one category in the project, the document is uploaded without
+a category.
+
+You can specify both these parameters when you upload the document by passing the correspondent code for the dataset
+status (see code [here](https://app.konfuzio.com/v2/swagger/#/docs/docs_create)) and the ID of the category.
+
+```python
+document = Document(file_path=<path_to_the_file>, project=my_project,
+                    dataset_status=<dataset_status_code>, category_template=<category_id>)
+document.save()
+```
+
+#### Modify Document
+The dataset status and the category of a document can be modified after the document is uploaded.
+To change the category, you can select the category that you desire from the project based on its ID and attribute it
+to the document.
+
+```python
+category = my_project.get_category_by_id(<category_id>)
+
+document.category = category
+document.dataset_status = 2
+document.save()
+```
+
+#### Delete Document
+To locally delete a document, you can use:
+
+```python
+document.delete()
+```
+
+The document will be deleted from your local data folder but it will remain in the Konfuzio Server.
+If you want to get it again you can update the project.
