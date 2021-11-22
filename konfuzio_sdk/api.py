@@ -592,7 +592,7 @@ def get_results_from_segmentation(doc_id: int, project_id: int, host: Union[str,
     session = konfuzio_session()
 
     segmentation_url = get_document_segmentation_details_url(doc_id, project_id, host=host, action='segmentation')
-    segmentation_result = retry_get(session, segmentation_url)
-    segmentation_result = segmentation_result.json()
+    response = retry_get(session, segmentation_url)
+    segmentation_result = response.json()
 
     return segmentation_result
