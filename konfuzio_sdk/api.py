@@ -583,7 +583,7 @@ def is_url(url: str) -> bool:
     return all([result.scheme, result.netloc])
 
 
-def get_results_from_segmentation(doc_id: int, project_id: int) -> List[dict]:
+def get_results_from_segmentation(doc_id: int, project_id: int, host: Union[str, None] = None) -> List[dict]:
     """Get bbox results from segmentation endpoint.
 
     :param doc_id: ID of the document
@@ -591,8 +591,8 @@ def get_results_from_segmentation(doc_id: int, project_id: int) -> List[dict]:
     """
     session = konfuzio_session()
 
-    segmentation_url = get_document_segmentation_details_url(doc_id, project_id, action='segmentation')
-    segmentation_result = retry_get(session, segmentation_url)
-    segmentation_result = segmentation_result.json()
+    segmentation_url = get_document_segmentation_details_url(doc_id, project_id, host=host, action='segmentation')
+    response = retry_get(session, segmentation_url)
+    segmentation_result = response.json()
 
     return segmentation_result
