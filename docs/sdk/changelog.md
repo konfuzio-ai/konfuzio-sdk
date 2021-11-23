@@ -4,6 +4,11 @@
 
 # Changelog
 
+## 2021-11-23 v.0.1.14
+
+### Changed
+- Option to pass the Konfuzio Host to the segmentation endpoint
+
 ## 2021-11-18 v.0.1.13
 
 ### Changed
