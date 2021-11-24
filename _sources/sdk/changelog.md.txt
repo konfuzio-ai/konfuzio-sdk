@@ -4,6 +4,11 @@
 
 # Changelog
 
+## 2021-11-24 v.0.1.15
+
+### Fixed
+- Issue when getting original file and ocr version of file.
+
 ## 2021-11-23 v.0.1.14
 
 ### Changed
