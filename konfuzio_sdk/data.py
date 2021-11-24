@@ -26,7 +26,7 @@ from konfuzio_sdk.api import (
     create_label,
     update_file_konfuzio_api,
 )
-from konfuzio_sdk.utils import is_file, convert_to_bio_scheme
+from konfuzio_sdk.utils import is_file, convert_to_bio_scheme, amend_file_name
 
 logger = logging.getLogger(__name__)
 
@@ -670,21 +670,20 @@ class Document(Data):
         """
         Get OCR version of the original file.
 
-        :param ocr_version: Bool to get the ocr version of the pdf
+        :param ocr_version: Bool to get the ocr version of the original file
         :param update: Update the downloaded file even if it is already available
-        :return: Path to OCR or original file.
+        :return: Path to the selected file.
         """
-        if self.is_without_errors and (not self.ocr_file_path or not is_file(self.ocr_file_path) or update):
-            # for page_index in range(0, self.number_of_pages):
-            filename = os.path.splitext(self.name)[0]
-            if ocr_version:
-                filename += '_ocr'
-
-            filename += '.pdf'
+        filename = self.name
+        if ocr_version:
+            filename = amend_file_name(filename, append_text='ocr', new_extension='.pdf')
             self.ocr_file_path = os.path.join(self.root, filename)
-            if not is_file(self.ocr_file_path, raise_exception=False) or update:
+
+        file_path = os.path.join(self.root, filename)
+        if self.is_without_errors and (not file_path or not is_file(file_path) or update):
+            if not is_file(file_path, raise_exception=False) or update:
                 pdf_content = download_file_konfuzio_api(self.id, ocr=ocr_version, session=self.session)
-                with open(self.ocr_file_path, 'wb') as f:
+                with open(file_path, 'wb') as f:
                     f.write(pdf_content)
 
         return self.ocr_file_path

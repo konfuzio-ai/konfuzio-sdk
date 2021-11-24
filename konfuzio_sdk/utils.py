@@ -249,6 +249,35 @@ def convert_to_bio_scheme(text: str, annotations: List) -> List[Tuple[str, str]]
     return tagged_entities
 
 
+def amend_file_name(file_path: str, append_text: str = '', new_extension: str = None) -> str:
+    """
+    Append text to a filename in front of extension.
+
+    example found here: https://stackoverflow.com/a/37487898
+
+    :param new_extension: Change the file extension
+    :param file_path: Name of a file, e.g. file.pdf
+    :param append_text: Text you you want to append between file name ane extension
+    :return: extended path to file
+    """
+    if len(os.path.basename(file_path) + append_text) >= 255:
+        raise OSError('The name of the file you want to generate is too long.')
+    if file_path.strip():
+        path, extension = os.path.splitext(file_path)
+
+        if new_extension == '':
+            extension = ''
+        elif new_extension:
+            extension = new_extension
+
+        if append_text:
+            append_text = f'_{append_text}'
+
+        return f'{path}{append_text}{extension}'
+    else:
+        raise ValueError(f'Name of file cannot be: {file_path}')
+
+
 def get_paragraphs_by_line_space(
     bbox: dict,
     text: str,
