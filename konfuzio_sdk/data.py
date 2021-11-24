@@ -680,7 +680,7 @@ class Document(Data):
             self.ocr_file_path = os.path.join(self.root, filename)
 
         file_path = os.path.join(self.root, filename)
-        if self.is_without_errors and (not file_path or not is_file(file_path) or update):
+        if self.is_without_errors and (not file_path or not is_file(file_path, raise_exception=False) or update):
             if not is_file(file_path, raise_exception=False) or update:
                 pdf_content = download_file_konfuzio_api(self.id, ocr=ocr_version, session=self.session)
                 with open(file_path, 'wb') as f:
