@@ -897,12 +897,12 @@ get_document_details and then retrieved from that file when accessing it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ocr_version</strong> – Bool to get the ocr version of the pdf</p></li>
+<li><p><strong>ocr_version</strong> – Bool to get the ocr version of the original file</p></li>
 <li><p><strong>update</strong> – Update the downloaded file even if it is already available</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Path to OCR or original file.</p>
+<dd class="field-even"><p>Path to the selected file.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1524,6 +1524,25 @@ If we are updating the document dataset status, we need to move the document fro
 <h2>Utils<a class="headerlink" href="#utils" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/utils.py">[source]</a></p>
 <span class="target" id="module-konfuzio_sdk.utils"></span><p>Utils for the konfuzio sdk package.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="konfuzio_sdk.utils.amend_file_name">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.utils.</span></span><span class="sig-name descname"><span class="pre">amend_file_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">append_text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_extension</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#konfuzio_sdk.utils.amend_file_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Append text to a filename in front of extension.</p>
+<p>example found here: <a class="reference external" href="https://stackoverflow.com/a/37487898">https://stackoverflow.com/a/37487898</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>new_extension</strong> – Change the file extension</p></li>
+<li><p><strong>file_path</strong> – Name of a file, e.g. file.pdf</p></li>
+<li><p><strong>append_text</strong> – Text you you want to append between file name ane extension</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>extended path to file</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="konfuzio_sdk.utils.convert_to_bio_scheme">
 <span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.utils.</span></span><span class="sig-name descname"><span class="pre">convert_to_bio_scheme</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#konfuzio_sdk.utils.convert_to_bio_scheme" title="Permalink to this definition">¶</a></dt>
