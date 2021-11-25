@@ -5,11 +5,6 @@
 
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/NZKUrKyFVA8/0.jpg)](https://www.youtube.com/watch?v=NZKUrKyFVA8)
 
-## Konfuzio Train AI Tutorial
-
-[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/fMiK1xRsNzY/0.jpg)](https://youtu.be/p7P964DJmCc)
-
-
 ## How to make an API Call
 
 The API documentation is available at https://app.konfuzio.com/api.
