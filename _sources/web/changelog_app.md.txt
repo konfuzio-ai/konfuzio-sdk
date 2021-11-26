@@ -11,7 +11,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 ## 2021-11-26_08-11-36
 
 ### Fixed
-- An error where a invalid date stoppped the training process
+- An error where an invalid date in the document text stoppped the training process
 
 ## 2021-11-23_18-14-28
 
