@@ -158,7 +158,8 @@ The availability of OCR languages depends on the selected OCR engine and might d
 Konfuzio supports various file types:
 
 ### PDFs
-Konfuzio supports PDF/A-1a, PDF/A-1b, PDF/A-2a, PDF/A-2b, PDF/A-3a, PDF/A-3b, PDF/X-1a, PDF/1.7, PDF/2.0. An attempt will be made to repair corrupted PDFs.
+Konfuzio supports PDF/A-1a, PDF/A-1b, PDF/A-2a, PDF/A-2b, PDF/A-3a, PDF/A-3b, PDF/X-1a, PDF/1.7, PDF/2.0. An attempt will be made to repair corrupted PDFs. Konfuzio does not support AcroForms and AEM (Adobe Experience Manager) form content.
+PDF forms)
 
 ### Images
 Konfuzio supports JPEG and PNG (including support for alpha channel). _Support for TIFF is experimental._
