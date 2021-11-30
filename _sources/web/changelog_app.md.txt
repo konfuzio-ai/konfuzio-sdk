@@ -10,7 +10,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 
 ## 2021-11-26_08-11-36
 
-This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.konfuzio.com/training/changelog.html#id1). We recommend to use the Konfuzio Python SDK in version [0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15)
+This version uses Konfuzio Trainer in version [2021-11-09_12-18-21](https://dev.konfuzio.com/training/changelog.html). We recommend to use the Konfuzio Python SDK in version [0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15)
 
 ### Added
 - "Sentence" option to the available detection modes
