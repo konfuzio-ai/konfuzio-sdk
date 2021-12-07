@@ -8,6 +8,12 @@ All notable changes in the server of app.konfuzio.com will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
 
+## 2021-11-21_19-14-19
+
+### Added
+- Text summarization endpoint.
+- Categorization AI parameters in the Project view
+
 ## 2021-11-26_08-11-36
 
 This version uses Konfuzio Trainer in version [2021-11-09_12-18-21](https://dev.konfuzio.com/training/changelog.html). We recommend to use the Konfuzio Python SDK in version [0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15)
