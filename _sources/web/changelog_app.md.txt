@@ -13,6 +13,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 ### Added
 - For on-premise installations, the OCR method for new Project is choosen based on the available OCR solutions.
 - For on-premise installations, the project import considers now declined annotations
+- For on-premise installations, Superusers can see the Konfuzio Server version and how many pages, documents have been processed.
 
 ## 2021-11-21_19-14-19
 
