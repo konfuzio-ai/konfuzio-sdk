@@ -8,6 +8,12 @@ All notable changes in the server of app.konfuzio.com will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
 
+## 2021-12-11_14-33-57
+
+### Added
+- For on-premise installations, the OCR method for new Project is choosen based on the available OCR solutions.
+- For on-premise installations, the project import considers now declined annotations
+
 ## 2021-11-21_19-14-19
 
 ### Added
