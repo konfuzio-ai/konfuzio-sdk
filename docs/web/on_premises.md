@@ -289,14 +289,14 @@ In this example we start three containers, the first one to serve the Konfuzio w
 `--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \`  
 `registry.gitlab.com/konfuzio/text-annotation/master:latest \`  
 `celery -A app worker -l INFO --concurrency 1 -Q celery,priority_ocr,ocr,\`  
-`priority_extract,extract,processing,priority_local_ocr,local_ocr,training,finalize,categorize`
+`priority_extract,extract,processing,priority_local_ocr,local_ocr,training,finalize,training_heavy,categorize`
 
 `docker run --name worker2 -d --add-host=host:10.0.0.1 \`  
 `--env-file /konfuzio-vm/text-annotation.env \`  
 `--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \`  
 `registry.gitlab.com/konfuzio/text-annotation/master:latest \`  
 `celery -A app worker -l INFO --concurrency 1 -Q celery,priority_ocr,ocr,\`  
-`priority_extract,extract,processing,priority_local_ocr,local_ocr,training,finalize,categorize`   
+`priority_extract,extract,processing,priority_local_ocr,local_ocr,training,finalize,training_heavy,categorize`
 
 #### [Optional] 6. Use Flower to monitor tasks
 
