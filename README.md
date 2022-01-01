@@ -1,5 +1,7 @@
 # Konfuzio SDK
 
+[![Downloads](https://pepy.tech/badge/konfuzio-sdk)](https://pepy.tech/project/konfuzio-sdk)
+
 The Konfuzio Software Development Kit (Konfuzio SDK) provides a [Python API](https://dev.konfuzio.com/sdk/sourcecode.html) to interact with the 
 [Konfuzio Server](https://dev.konfuzio.com/index.html#konfuzio-server).
 
