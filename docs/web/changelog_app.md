@@ -8,6 +8,16 @@ All notable changes in the server of app.konfuzio.com will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
 
+## 2022-01-18_11-08-24
+
+### Added
+- Added api_name to Label API
+
+### Fixed
+- Link to documentation pag
+- Missing translation on document list page
+- Evaluation did not complete for AIs with a large amount of training data.
+
 ## 2021-12-11_14-33-57
 
 ### Added
