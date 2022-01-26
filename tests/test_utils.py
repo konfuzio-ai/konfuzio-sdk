@@ -53,7 +53,7 @@ class TestUtils(unittest.TestCase):
         assert load_image(TEST_IMAGE_FILE) is not None
 
     def test_convert_to_bio_scheme(self):
-        """Test convertion to BIO scheme."""
+        """Test conversion to BIO scheme."""
         text = "Hello, it's Konfuzio."
         annotations = [(12, 20, 'Organization')]
         converted_text = convert_to_bio_scheme(text=text, annotations=annotations)
@@ -67,7 +67,7 @@ class TestUtils(unittest.TestCase):
         ]
 
     def test_convert_to_bio_scheme_no_annotations(self):
-        """Test convertion to BIO scheme without annotations."""
+        """Test conversion to BIO scheme without annotations."""
         text = "Hello, it's Konfuzio."
         annotations = []
         converted_text = convert_to_bio_scheme(text=text, annotations=annotations)
@@ -75,7 +75,7 @@ class TestUtils(unittest.TestCase):
         assert all([annot[1] == 'O' for annot in converted_text])
 
     def test_convert_to_bio_scheme_no_text(self):
-        """Test convertion to BIO scheme without text."""
+        """Test conversion to BIO scheme without text."""
         text = ''
         annotations = [(12, 20, 'Organization')]
         converted_text = convert_to_bio_scheme(text=text, annotations=annotations)

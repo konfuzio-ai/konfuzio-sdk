@@ -1,4 +1,4 @@
-"""Validate api functions."""
+"""Validate API functions."""
 import logging
 import os
 import json
