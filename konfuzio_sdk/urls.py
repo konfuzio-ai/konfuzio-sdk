@@ -55,20 +55,6 @@ def get_documents_meta_url(host: str = KONFUZIO_HOST, project_id: int = KONFUZIO
     return f"{host}/api/projects/{project_id}/docs/"
 
 
-def get_document_annotations_url(
-    document_id: int, host: str = KONFUZIO_HOST, project_id: int = KONFUZIO_PROJECT_ID
-) -> str:
-    """
-    Access annotations of a document.
-
-    :param document_id: ID of the document as integer
-    :param host: Konfuzio host
-    :param project_id: ID of the project
-    :return: URL to access the annotations of a document
-    """
-    return f'{host}/api/projects/{project_id}/docs/{document_id}/annotations/'
-
-
 def get_document_segmentation_details_url(
     document_id: int, project_id: int = KONFUZIO_PROJECT_ID, host: str = KONFUZIO_HOST, action='segmentation'
 ) -> str:
@@ -178,6 +164,20 @@ def get_label_url(label_id: int, host: str = KONFUZIO_HOST) -> str:
 
 
 # ANNOTATIONS
+
+
+def get_document_annotations_url(
+    document_id: int, host: str = KONFUZIO_HOST, project_id: int = KONFUZIO_PROJECT_ID
+) -> str:
+    """
+    Access annotations of a document.
+
+    :param document_id: ID of the document as integer
+    :param host: Konfuzio host
+    :param project_id: ID of the project
+    :return: URL to access the annotations of a document
+    """
+    return f'{host}/api/projects/{project_id}/docs/{document_id}/annotations/'
 
 
 def get_annotation_url(

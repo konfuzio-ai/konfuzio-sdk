@@ -1,13 +1,11 @@
 """Connect to the Konfuzio Server to receive or send data."""
 
-import io
 import json
 import logging
 import os
 import time
 from operator import itemgetter
 from typing import List, Union
-from urllib.parse import urlparse
 
 import requests
 from konfuzio_sdk import KONFUZIO_HOST, KONFUZIO_TOKEN
@@ -26,7 +24,7 @@ from konfuzio_sdk.urls import (
     get_document_segmentation_details_url,
     get_labels_url,
 )
-from konfuzio_sdk.utils import is_file, load_image
+from konfuzio_sdk.utils import is_file
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +51,7 @@ def get_project_list(token, host):
     session.headers.update({'Authorization': f'Token {token}'})
     url = get_projects_list_url(host)
     r = session.get(url=url)
-    return r
+    return json.loads(r.text)
 
 
 def create_new_project(project_name, token=None, host=None):
@@ -69,19 +67,6 @@ def create_new_project(project_name, token=None, host=None):
     return r
 
 
-def get_project_name_from_id(project_id: int, host: str) -> str:
-    """
-    Get the project name given the project_id.
-
-    :param project_id: ID of the project
-    :return: Name of the project in JSON format.
-    """
-    session = konfuzio_session()
-    url = get_project_url(project_id, host)
-    r = session.get(url=url)
-    return r.json()['name']
-
-
 def retry_get(session, url):
     """
     Workaround to avoid exceptions in case the server does not respond.
@@ -90,12 +75,13 @@ def retry_get(session, url):
     :param url: Url of the endpoint
     :return: Response.
     """
-    # Retry if server is down.
-    retry_count = 0
+    # todo if thre is no KONFUZIO_TOKEN raise ConnectionError('Make sure to have a token in your environment, '
+    #    'see https://dev.konfuzio.com/sdk/configuration_reference.html.')
 
+    retry_count = 0
     while True:
         try:
-            r = session.get(url=url, timeout=10.0)
+            r = session.get(url=url, timeout=60.0)
         except requests.RequestException:
             logger.warning(f'Retry to get url >>{url}<<')
             retry_count += 1
@@ -127,18 +113,6 @@ def retry_get(session, url):
                     raise TimeoutError(f'Unknown issue even after 10 retries {json.loads(r.text)["detail"]}')
                 time.sleep(15)
     return r
-
-
-def get_csrf(session):
-    """
-    Get new CSRF from the host.
-
-    :param session: Working session
-    :return: New CSRF token.
-    """
-    login = session.get(KONFUZIO_HOST)
-    csrf_token = login.cookies['csrftoken']
-    return csrf_token
 
 
 def konfuzio_session(token=None):
@@ -258,8 +232,6 @@ def post_document_bulk_annotation(document_id: int, annotation_list, session=kon
 
 def post_document_annotation(
     document_id: int,
-    start_offset: int,
-    end_offset: int,
     label_id: int,
     label_set_id: int,
     accuracy: float,
@@ -300,6 +272,8 @@ def post_document_annotation(
     selection_bbox = kwargs.get('selection_bbox', None)
     page_number = kwargs.get('page_number', None)
     offset_string = kwargs.get('offset_string', None)
+    start_offset = kwargs.get('start_offset', None)
+    end_offset = kwargs.get('end_offset', None)
 
     data = {
         'start_offset': start_offset,
@@ -310,6 +284,12 @@ def post_document_annotation(
         'accuracy': accuracy,
         'is_correct': is_correct,
     }
+
+    if end_offset:
+        data['end_offset'] = end_offset
+
+    if start_offset is not None:
+        data['start_offset'] = start_offset
 
     if define_annotation_set:
         data['section'] = annotation_set
@@ -505,7 +485,7 @@ def update_file_konfuzio_api(
     data = {"data_file_name": file_name, "dataset_status": dataset_status, "category_template": category_template_id}
 
     r = session.patch(url=url, json=data)
-    return r
+    return json.loads(r.text)
 
 
 def download_file_konfuzio_api(document_id: int, ocr: bool = True, session=konfuzio_session()):
@@ -541,49 +521,7 @@ def download_file_konfuzio_api(document_id: int, ocr: bool = True, session=konfu
     return r.content
 
 
-def is_url_image(image_url):
-    """
-    Check if the URL will return an image.
-
-    :param image_url: URL of the image
-    :return: If the URL returns an image
-    """
-    image_formats = ("image/png", "image/jpeg", "image/jpg")
-    r = requests.head(image_url)
-    logger.info(f'{image_url} has content type {r.headers["content-type"]}')
-    if r.headers["content-type"] in image_formats:
-        return True
-    return False
-
-
-def download_images(urls: List[str] = None):
-    """
-    Download images by a list of urls.
-
-    :param urls: URLs of the images
-    :return: Downloaded images.
-    """
-    are_images = [is_url_image(url) for url in urls]
-    if not are_images[: sum(are_images)]:
-        raise NotImplementedError('Only images are supported')
-    downloads = [requests.get(url) for url in urls]
-    images = [load_image(io.BytesIO(download.content)) for download in downloads]
-    return images
-
-
-def is_url(url: str) -> bool:
-    """
-    Return true if the string is a valid URL.
-
-    :param url: String URL
-    :return: True if is a valid URL.
-    """
-    logger.info(url)
-    result = urlparse(url)
-    return all([result.scheme, result.netloc])
-
-
-def get_results_from_segmentation(doc_id: int, project_id: int, host: Union[str, None] = None) -> List[dict]:
+def get_results_from_segmentation(doc_id: int, project_id: int) -> List[List[dict]]:
     """Get bbox results from segmentation endpoint.
 
     :param doc_id: ID of the document
@@ -591,7 +529,7 @@ def get_results_from_segmentation(doc_id: int, project_id: int, host: Union[str,
     """
     session = konfuzio_session()
 
-    segmentation_url = get_document_segmentation_details_url(doc_id, project_id, host=host, action='segmentation')
+    segmentation_url = get_document_segmentation_details_url(doc_id, project_id, action='segmentation')
     response = retry_get(session, segmentation_url)
     segmentation_result = response.json()
 
