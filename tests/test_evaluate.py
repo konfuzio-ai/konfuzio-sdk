@@ -24,11 +24,8 @@ class TestEvaluation(unittest.TestCase):
         - multiline annotations with multiple not connected offsets
         - multiple annotation sets in 1 line
         - any possible grouping of annotations into annotation-set(s)
-
-    Unsupported:
-        - if two offsets are correctly grouped into a correct number of Annotations
-            todo: this would be needed to evaluate how well a horizontal and vertical merging is working
-                the approach would be quite similar to grouping Annotations (mult.=T) into Annotation-Sets
+        - if two offsets are correctly grouped into a correct number of Annotations, to evaluate horizontal and vertical
+            merging
 
     Reasoning on how to evaluate them before implementation needed:
         - prediction with incorrect offsets but with correct offset string are no longer possible
