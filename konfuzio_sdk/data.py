@@ -5,7 +5,6 @@ import logging
 import os
 import pathlib
 import shutil
-import time
 from copy import deepcopy
 from datetime import tzinfo
 from typing import Dict, Optional, List, Union, Tuple
@@ -908,20 +907,11 @@ class Document(Data):
         ):
             data = get_document_details(document_id=self.id, session=self.session, extra_fields="hocr")
 
-            if data["text"] is None:
-                # try get data again
-                time.sleep(15)
-                data = get_document_details(document_id=self.id, session=self.session, extra_fields="hocr")
-                if data["text"] is None:
-                    message = f"Document {self.id} is not fully processed yet. Please try again in some minutes."
-                    logger.error(message)
-                    raise ValueError(message)
-
             raw_annotations = data["annotations"]
             self.number_of_pages = data["number_of_pages"]
 
             self.text = data["text"]
-            self.hocr = data["hocr"] or ""
+            self.hocr = data["hocr"] or None
             self.pages = data["pages"]
             self._annotation_sets = data["sections"]
 
@@ -938,7 +928,7 @@ class Document(Data):
             with open(self.pages_file_path, "w") as f:
                 json.dump(data["pages"], f, indent=2, sort_keys=True)
 
-            if self.hocr != "":
+            if self.hocr is not None:
                 with open(self.hocr_file_path, "w", encoding="utf-8") as f:
                     f.write(data["hocr"])
 
