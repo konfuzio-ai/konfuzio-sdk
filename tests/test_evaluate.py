@@ -1,11 +1,11 @@
 """Test the evaluation."""
-import unittest
 import os
+import unittest
+from copy import deepcopy
 
 from konfuzio_sdk.data import Project, Document
 from konfuzio_sdk.evaluate import compare
 from konfuzio_sdk.urls import get_document_api_details_url
-
 from settings import BASE_DIR
 
 
@@ -39,61 +39,125 @@ class TestEvaluation(unittest.TestCase):
         """Test if a document is 100 % equivalent even it has unrevised Annotations."""
         prj = Project()
         doc_a = prj.documents[0]
-        doc_b = prj.documents[0]
+        doc_b = prj.documents[0]  # predicted
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 13  # 2 annotations are false
+        assert len(evaluation) == 18  # 2 annotations are is_correct false
         # for an annotation which is human made, it is nan, so that above threshold is False
-        assert evaluation["true_positive"].sum() == 11
+        # doc_a 17 + 1
+        assert evaluation["true_positive"].sum() == 18  # 1 multiline with 2 lines = 2 annotations
         assert evaluation["false_positive"].sum() == 0
         # due to the fact that Konfuzio Server does not save confidence = 100 % if annotation was not created by a human
         assert evaluation["false_negative"].sum() == 0
 
-    def test_doc_on_a_doc_where_first_annotation_was_skipped(self):
-        """Test if a document is 100 % equivalent even it has unrevised Annotations."""
-        prj = Project()
-        doc_a = prj.documents[0]
-        doc_b = prj.documents[0]
-        doc_b._annotations.pop(0)  # pop an annotation that is correct
-        evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 11  # 2 annotations are false
-        assert evaluation["true_positive"].sum() == 9
-        assert evaluation["false_positive"].sum() == 0
-        assert evaluation["false_negative"].sum() == 0
-
     def test_doc_where_first_annotation_was_skipped(self):
-        """Test if a document is 100 % equivalent even it has unrevised Annotations."""
+        """Test if a document is 100 % equivalent with first annotation not existing for a certain label."""
         prj = Project()
         doc_a = prj.documents[0]
-        doc_b = prj.documents[0]
-        doc_a._annotations.pop(0)  # pop an annotaiton that is correct
+        doc_b = prj.documents[0]  # predicted
+        doc_b._annotations.pop(0)  # pop an annotation that is correct in BOTH documents
+        assert doc_a._annotations == doc_b._annotations  # first annotation is removed in both documents
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 11  # 2 annotations are false
-        assert evaluation["true_positive"].sum() == 9  # todo check
-        assert evaluation["false_positive"].sum() == 0
-        assert evaluation["false_negative"].sum() == 0
-
-    def test_doc_on_a_doc_where_last_annotation_was_skipped(self):
-        """Test if a document is 100 % equivalent even it has unrevised Annotations."""
-        prj = Project()
-        doc_a = prj.documents[0]
-        doc_b = prj.documents[0]
-        doc_b._annotations.pop(11)  # pop an annotation that is correct
-        evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 12  # 2 annotations are false
-        assert evaluation["true_positive"].sum() == 10  # due to the fact that we find both offsets of the multiline
+        assert len(evaluation) == 16  # 2 annotations are is_correct false
+        # doc_a 16 (multiline removed)
+        assert evaluation["true_positive"].sum() == 16
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 0
 
     def test_doc_where_last_annotation_was_skipped(self):
-        """Test if a document is 100 % equivalent even it has unrevised Annotations."""
+        """Test if a document is 100 % equivalent with last annotation not existing for a certain label."""
         prj = Project()
         doc_a = prj.documents[0]
-        doc_b = prj.documents[0]
-        doc_a._annotations.pop(11)  # pop an annotaiton that is correct
+        doc_b = prj.documents[0]  # predicted
+        doc_b._annotations.pop(11)  # pop an annotation that is correct in BOTH documents
+        assert doc_a._annotations == doc_b._annotations  # last annotation is removed in both documents
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 12  # 2 annotations are false
-        assert evaluation["true_positive"].sum() == 10  # due to the fact that we find both offsets of the multiline
+        assert len(evaluation) == 17  # 2 annotations are is_correct false
+        # doc_a 16 + 1
+        assert evaluation["true_positive"].sum() == 17
         assert evaluation["false_positive"].sum() == 0
+        assert evaluation["false_negative"].sum() == 0
+
+    def test_doc_where_first_annotation_is_missing_in_b(self):
+        """Test if a document is equivalent if first annotation is missing."""
+        prj = Project()
+        doc_a = prj.documents[0]
+        doc_b = Document()
+        for annotation in doc_a.annotations()[1:]:
+            doc_b.add_annotation(annotation)
+
+        assert len(doc_b.annotations()) == len(doc_a.annotations()) - 1
+        evaluation = compare(doc_a, doc_b)
+        assert len(evaluation) == 18  # 2 annotations are false
+        # doc a 17 + 1
+        assert evaluation["true_positive"].sum() == 16  # 1 multiline with 2 lines = 2 annotations
+        assert evaluation["false_positive"].sum() == 0
+        assert evaluation["false_negative"].sum() == 2
+
+    def test_doc_where_first_annotation_is_missing_in_a(self):
+        """Test if a document is equivalent if first annotation is not present."""
+        prj = Project()
+        doc_b = prj.documents[0]
+        doc_a = Document()
+        # use only correct annotations
+        for annotation in doc_b.annotations()[1:]:
+            doc_a.add_annotation(annotation)
+
+        assert len(doc_a.annotations()) == len(doc_b.annotations()) - 1
+        evaluation = compare(doc_a, doc_b)
+        assert len(evaluation) == 18  # 2 annotations are false
+        # doc a 16
+        # TODO: add feedback required again
+        assert evaluation["true_positive"].sum() == 16
+        assert evaluation["false_positive"].sum() == 4  # 1 multiline (2 lines == 2 annotations) + 2 feedback required
+        assert evaluation["false_negative"].sum() == 0
+
+    def test_doc_where_first_annotation_from_all_is_missing_in_a(self):
+        """Test if a document is equivalent if first annotation is not present and feedback required are included."""
+        prj = Project()
+        doc_b = prj.documents[0]
+        doc_a = Document()
+        # use correct annotations and feedback required ones
+        for annotation in doc_b.annotations(use_correct=False)[1:]:
+            doc_a.add_annotation(annotation)
+
+        assert len(doc_a.annotations()) == len(doc_b.annotations()) - 1
+        evaluation = compare(doc_a, doc_b)
+        assert len(evaluation) == 18  # 2 annotations are false
+        # doc a 17 + 1
+        assert evaluation["true_positive"].sum() == 16
+        assert evaluation["false_positive"].sum() == 2  # 1 multiline (2 lines == 2 annotations)
+        assert evaluation["false_negative"].sum() == 0
+
+    def test_doc_where_last_annotation_is_missing_in_b(self):
+        """Test if a document is equivalent if last annotation is missing."""
+        prj = Project()
+        doc_a = prj.documents[0]
+        doc_b = Document()
+        # use correct annotations and feedback required ones
+        for annotation in doc_a.annotations(use_correct=False)[:-1]:
+            doc_b.add_annotation(annotation)
+
+        evaluation = compare(doc_a, doc_b)
+        assert len(evaluation) == 18  # 2 annotations are false
+        # doc a 17 + 1
+        assert evaluation["true_positive"].sum() == 17  # due to the fact that we find both offsets of the multiline
+        assert evaluation["false_positive"].sum() == 0
+        assert evaluation["false_negative"].sum() == 1
+
+    def test_doc_where_last_annotation_is_missing_in_a(self):
+        """Test if a document is equivalent if last annotation is not present."""
+        prj = Project()
+        doc_b = prj.documents[0]
+        doc_a = Document()
+        # use correct annotations and feedback required ones
+        for annotation in doc_b.annotations(use_correct=False)[:-1]:
+            doc_a.add_annotation(annotation)
+
+        evaluation = compare(doc_a, doc_b)
+        assert len(evaluation) == 18  # 2 annotations are false
+        # doc a 16 + 1
+        assert evaluation["true_positive"].sum() == 17  # due to the fact that we find both offsets of the multiline
+        assert evaluation["false_positive"].sum() == 1
         assert evaluation["false_negative"].sum() == 0
 
     def test_nothing_should_be_predicted(self):
@@ -102,11 +166,11 @@ class TestEvaluation(unittest.TestCase):
         doc_a = Document()
         doc_b = prj.documents[0]
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 14
+        assert len(evaluation) == 18
         assert evaluation["true_positive"].sum() == 0
         # any annotation above threshold is a false positive independent if it's correct or revised
         assert len([an for an in doc_b.annotations(use_correct=False) if an.accuracy > an.label.threshold]) == 12
-        assert evaluation["false_positive"].sum() == 13
+        assert evaluation["false_positive"].sum() == 18
         assert evaluation["false_negative"].sum() == 0
 
     def test_nothing_can_be_predicted(self):
@@ -115,28 +179,419 @@ class TestEvaluation(unittest.TestCase):
         doc_a = prj.documents[0]
         doc_b = Document()
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 14
+        assert len(evaluation) == 18
         assert evaluation["true_positive"].sum() == 0
         assert evaluation["false_positive"].sum() == 0
-        assert evaluation["false_negative"].sum() == 11
+        assert evaluation["false_negative"].sum() == 18
 
     def test_doc_with_overruled_top_annotations(self):
-        """Support to evaluate only one of x Annotations of one Label (mult.=F) in one Annotation-Set."""
+        """
+        Test if a document is equivalent if prediction follows the top annotation logic.
+
+        The top annotation logic considers only 1 annotation for labels with multiple=False.
+        For example, the "Personalausweis" has multiple=False but several annotations exist in the document.
+        Only 1 is in the prediction.
+        """
         # todo: this logic is a view logic on the document: shouldn't this go into the annotations function
         prj = Project()
         doc_a = prj.documents[0]
-        doc_b = prj.documents[0]
+        doc_b = Document()
+
+        found = False
+        for annotation in doc_a.annotations(use_correct=False):
+            if annotation.label.id == 12444:
+                if found:
+                    continue
+                found = True
+
+            doc_b.add_annotation(annotation)
+
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 13  # 2 annotations are false
-        assert evaluation["true_positive"].sum() == 11  # due to the fact that we find both offsets of the multiline
+        assert len(evaluation) == 18
+        # Evaluation as it is now: everything needs to be find even if multiple=False
+        assert evaluation["true_positive"].sum() == 17
         assert evaluation["false_positive"].sum() == 0
-        assert evaluation["false_negative"].sum() == 0
-        return False
+        assert evaluation["false_negative"].sum() == 1
 
     @unittest.skip(reason='Add support for doc.annotations(top_candidates=True) filter.')
     def test_doc_with_multiple_top_Annotations(self):
         """Support to evaluate all Annotations of one Label (mult.=T) in one Annotation-Set."""
+        # TODO: the test to be skipped should be the one with multiple False because we assume everything behaves
+        #  as multiple True
         raise NotImplementedError
+
+    def test_doc_with_missing_annotation_set(self):
+        """
+        Test if a document is equivalent if an annotation set is missing.
+
+        All annotations expected for that annotation set will be counted as false negatives.
+        """
+        from konfuzio_sdk.data import AnnotationSet, Annotation
+
+        prj = Project()
+        doc_a = prj.documents[20]  # doc ID 44859
+        doc_b = Document()
+
+        annotation_sets = []
+        for annotation_set in doc_a.annotation_sets[:-1]:
+            # TODO: add function "add_annotation_set"
+            annotation_set_dict = annotation_set.__dict__.copy()
+            annotation_set_dict.pop('document')
+            new_annotation_set = AnnotationSet(**annotation_set_dict, document=doc_b)
+            annotation_sets.append(new_annotation_set)
+
+            for annotation in new_annotation_set.annotations:
+                annotation_dict = annotation.__dict__.copy()
+                annotation_dict.pop('document')
+                _ = Annotation(document=doc_b, **annotation_dict)
+
+        doc_b.annotation_sets = annotation_sets
+
+        evaluation = compare(doc_a, doc_b)
+        assert len(evaluation) == 29
+        assert evaluation["true_positive"].sum() == 24
+        assert evaluation["false_positive"].sum() == 0
+        assert evaluation["false_negative"].sum() == 5
+
+    def test_doc_with_extra_annotation_set(self):
+        """
+        Test if a document is equivalent if there is one more annotation set than the correct ones.
+
+        The annotations in the extra annotation set will be counted as false positives.
+        """
+        from konfuzio_sdk.data import AnnotationSet, Annotation
+
+        prj = Project()
+        doc_online = prj.documents[20]  # doc ID 44859
+        doc_a = Document()
+        doc_b = Document()
+
+        annotation_sets_b = []
+        for annotation_set in doc_online.annotation_sets:
+            # TODO: add function "add_annotation_set"
+            annotation_set_dict = annotation_set.__dict__.copy()
+            annotation_set_dict.pop('document')
+            new_annotation_set = AnnotationSet(**annotation_set_dict, document=doc_b)
+            annotation_sets_b.append(new_annotation_set)
+
+            for annotation in new_annotation_set.annotations:
+                annotation_dict = annotation.__dict__.copy()
+                annotation_dict.pop('document')
+                _ = Annotation(document=doc_b, **annotation_dict)
+
+        doc_b.annotation_sets = annotation_sets_b
+
+        annotation_sets_a = []
+        # Last annotation set from Brutto Bezug removed
+        for annotation_set in doc_online.annotation_sets[:-2] + [doc_online.annotation_sets[-1]]:
+            # TODO: add function "add_annotation_set"
+            annotation_set_dict = annotation_set.__dict__.copy()
+            annotation_set_dict.pop('document')
+            new_annotation_set = AnnotationSet(**annotation_set_dict, document=doc_a)
+            annotation_sets_a.append(new_annotation_set)
+
+            for annotation in new_annotation_set.annotations:
+                annotation_dict = annotation.__dict__.copy()
+                annotation_dict.pop('document')
+                _ = Annotation(document=doc_a, **annotation_dict)
+
+        doc_a.annotation_sets = annotation_sets_a
+
+        # TODO:
+        #  add "delete" to AnnotationSet that also deletes the annotations that belong to that annotation set
+        #  add "delete" where the AnnotationSet can be specified by ID
+
+        assert len(doc_a.annotation_sets) == len(doc_b.annotation_sets) - 1
+        assert len(doc_b.annotation_sets[-2].annotations) > 0
+
+        evaluation = compare(doc_a, doc_b)
+        assert len(evaluation) == 29
+        assert evaluation["true_positive"].sum() == 26
+        assert evaluation["false_positive"].sum() == 3
+        assert evaluation["false_negative"].sum() == 0
+
+    def test_doc_with_annotation_set_with_multiple_label_that_should_be_split(self):
+        """
+        Test if a document is equivalent if one annotation set is predicted instead of two.
+
+        Annotations that should be from different annotation sets, with the same Label Set, are predicted into a single
+        one. In this test case, the annotations considered are from a label with multiple=True.
+
+        Those annotations predicted with the wrong annotation set are considered false positives.
+        """
+        prj = Project()
+        doc_a = prj.documents[4]  # doc ID 44841
+        doc_b = Document()
+
+        for annotation in doc_a.annotations(use_correct=False):
+            # replace 1st Steuer annotation set (ID 679457) with 2nd (ID 679458)
+            new_annotation = deepcopy(annotation)
+            if annotation.annotation_set == 679457:
+                new_annotation.annotation_set = 679458
+
+            doc_b.add_annotation(new_annotation)
+
+        assert len(doc_b.annotations(use_correct=False)) == len(doc_a.annotations(use_correct=False))
+
+        evaluation = compare(doc_a, doc_b)
+        assert len(evaluation) == 32
+        assert evaluation["true_positive"].sum() == 27
+        assert evaluation["false_positive"].sum() == 5
+        # We don't count the annotations for the annotation set missing because we would be duplicating the penalization
+        # and the user only needs 5 actions to correct it
+        assert evaluation["false_negative"].sum() == 0
+
+    def test_doc_with_annotation_set_with_multiple_label_that_should_be_split_and_one_annotation_missing(self):
+        """
+        Test if a document is equivalent if 1 annotation set is predicted instead of 2 and 1 annotation is missing.
+
+        Annotations that should be from different annotation sets, with the same Label Set, are predicted into a single
+        one. In this test case, the annotations considered are from a label with multiple=True and one of them is
+        not predicted.
+
+        Those annotations predicted with the wrong annotation set are considered false positives and the missing
+        annotation is predicted as false negative.
+        """
+        prj = Project()
+        doc_a = prj.documents[4]  # doc ID 44841
+        doc_b = Document()
+
+        # skip last multiple annotation from Steuer
+        for annotation in doc_a.annotations(use_correct=False)[:-7] + doc_a.annotations(use_correct=False)[-6:]:
+            # replace 1st Steuer annotation set (ID 679457) with 2nd (ID 679458)
+            new_annotation = deepcopy(annotation)
+            if annotation.annotation_set == 679457:
+                new_annotation.annotation_set = 679458
+
+            doc_b.add_annotation(new_annotation)
+
+        assert len(doc_b.annotations()) == len(doc_a.annotations()) - 1
+
+        evaluation = compare(doc_a, doc_b)
+        assert len(evaluation) == 32
+        assert evaluation["true_positive"].sum() == 27
+        assert evaluation["false_positive"].sum() == 4
+        assert evaluation["false_negative"].sum() == 1
+
+    def test_doc_with_annotation_with_wrong_offsets(self):
+        """
+        Test a document with an annotation that has the correct offset string and classification but the wrong offsets.
+
+        This means that the AI got it from the wrong position in the document.
+        The offset string, annotation set, label and label set are correct but the start and end offsets are wrong.
+
+        It is counted as FP because does not match any correct annotation and as FN because there was no correct
+        prediction for the annotation in the document.
+
+        We are double penalizing the AI, however to correct this, the user needs to reject the predicted annotation and
+        create a new one (2 actions).
+        TODO: review
+        """
+        from konfuzio_sdk.data import Annotation
+
+        prj = Project()
+        doc_a = prj.documents[4]  # doc ID 44841
+        doc_b = Document()
+
+        new_annotation = deepcopy(doc_a.annotations(use_correct=False)[1])
+        # keep the offset string but change the start and end offsets
+        assert new_annotation.offset_string == '00600'
+        new_annot_dict = new_annotation.__dict__
+        # TODO: change offsets in Span
+        new_annot_dict['bboxes'][0]['start_offset'] = 79
+        new_annot_dict['bboxes'][0]['end_offset'] = 84
+        new_annot_dict.pop('document')
+        new_annotation = Annotation(document=doc_b, **new_annot_dict)
+
+        doc_b.add_annotation(new_annotation)
+
+        for annotation in [doc_a.annotations(use_correct=False)[0]] + doc_a.annotations(use_correct=False)[2:]:
+            doc_b.add_annotation(annotation)
+
+        assert len(doc_b.annotations()) == len(doc_a.annotations())
+
+        evaluation = compare(doc_a, doc_b)
+        assert len(evaluation) == 33
+        assert evaluation["true_positive"].sum() == 31
+        assert evaluation["false_positive"].sum() == 1
+        # We get 1 false negative. However, it's already counted as FP. Nevertheless, the user needs to reject the
+        # the predicted one and create a new one even if the label, label set and annotation set are correct
+        assert evaluation["false_negative"].sum() == 1
+
+    def test_doc_with_annotation_with_incomplete_offsets(self):
+        """
+        Test a document with an annotation that has incomplete offsets (last character missing).
+
+        It is counted as FP because does not match any correct annotation and as FN because there was no correct
+        prediction for the annotation in the document.
+
+        We are double penalizing the AI, however to correct this, the user only needs to adjust the offsets.
+        TODO: review
+        """
+        from konfuzio_sdk.data import Annotation
+
+        prj = Project()
+        doc_a = prj.documents[4]  # doc ID 44841
+        doc_b = Document()
+
+        new_annotation = deepcopy(doc_a.annotations(use_correct=False)[0])
+        # keep the offset string but change the start and end offsets
+        assert new_annotation.offset_string == '03.01.2018'
+        new_annot_dict = new_annotation.__dict__
+        # TODO: change offsets in Span
+        new_annot_dict['bboxes'][0]['end_offset'] = new_annot_dict['bboxes'][0]['end_offset'] - 1
+        new_annot_dict.pop('document')
+        new_annotation = Annotation(document=doc_b, **new_annot_dict)
+
+        doc_b.add_annotation(new_annotation)
+
+        for annotation in doc_a.annotations(use_correct=False)[1:]:
+            doc_b.add_annotation(annotation)
+
+        assert len(doc_b.annotations()) == len(doc_a.annotations())
+
+        evaluation = compare(doc_a, doc_b)
+        assert len(evaluation) == 33
+        assert evaluation["true_positive"].sum() == 31
+        assert evaluation["false_positive"].sum() == 1
+        # We get 1 false negative. However, it's already counted as FP. Nevertheless, the user needs to adjust the
+        # offsets
+        assert evaluation["false_negative"].sum() == 1
+
+    def test_doc_with_annotation_with_wrong_offsets_and_wrong_classification(self):
+        """
+        Test a document with a wrong annotation (wrong offsets + wrong classification).
+
+        It is counted as FP because does not match any correct annotation and as FN because there was no correct
+        prediction for the annotation in the document.
+
+        We are double penalizing the AI, however to correct this, the user needs to reject the predicted annotation and
+        create a new one (2 actions).
+        TODO: review
+        """
+        from konfuzio_sdk.data import Annotation
+
+        prj = Project()
+        doc_a = prj.documents[4]  # doc ID 44841
+        doc_b = Document()
+
+        # TODO: add function to edit annotation?
+        new_annotation = deepcopy(doc_a.annotations(use_correct=False)[0])
+        # keep the offset string but change the start and end offsets
+        assert new_annotation.offset_string == '03.01.2018'
+        new_annot_dict = new_annotation.__dict__
+        # TODO: change offsets in Span
+        new_annot_dict['bboxes'][0]['offset_string'] = '00600'
+        new_annot_dict['bboxes'][0]['start_offset'] = 79
+        new_annot_dict['bboxes'][0]['end_offset'] = 84
+        new_annot_dict.pop('document')
+        new_annotation = Annotation(document=doc_b, **new_annot_dict)
+
+        doc_b.add_annotation(new_annotation)
+
+        for annotation in doc_a.annotations(use_correct=False)[1:]:
+            doc_b.add_annotation(annotation)
+
+        assert len(doc_b.annotations()) == len(doc_a.annotations())
+
+        evaluation = compare(doc_a, doc_b)
+        assert len(evaluation) == 33
+        assert evaluation["true_positive"].sum() == 31
+        assert evaluation["false_positive"].sum() == 1
+        # We get 1 false negative. However, it's already counted as FP. Nevertheless, the user needs to adjust the
+        # offsets
+        assert evaluation["false_negative"].sum() == 1
+
+    def test_doc_with_annotation_set_with_each_annotation_belonging_to_different_annotation_sets(self):
+        """
+        Test a document where each annotation from a certain annotation set is predicted with different annotation sets.
+
+        Each annotation in a certain annotation set is predicted as belonging to a different annotation set.
+        The annotation set cannot be determined by the mode of the annotation set IDs.
+        """
+        from konfuzio_sdk.data import Annotation
+
+        prj = Project()
+        doc_a = prj.documents[4]  # doc ID 44841
+        doc_b = Document()
+
+        # 1st annotation from 1st annotation set Brutto-Bezug belonging to the 2nd annotation set
+        new_annotation_1 = deepcopy(doc_a.annotations(use_correct=False)[6])
+        # keep the annotation but change the annotation set ID
+        assert new_annotation_1.offset_string == '2020'
+        new_annot_dict_1 = new_annotation_1.__dict__
+        new_annot_dict_1['annotation_set'] = 79165 + 10
+        new_annot_dict_1.pop('document')
+        new_annotation_1 = Annotation(document=doc_b, **new_annot_dict_1)
+
+        doc_b.add_annotation(new_annotation_1)
+
+        # 3rd annotation from 1st annotation set Brutto-Bezug belonging to the 3rd annotation set
+        new_annotation_2 = deepcopy(doc_a.annotations(use_correct=False)[8])
+        # keep the annotation but change the annotation set ID
+        assert new_annotation_2.offset_string == '2.285,50'
+        new_annot_dict_2 = new_annotation_2.__dict__
+        new_annot_dict_2['annotation_set'] = 79166 + 10
+        new_annot_dict_2.pop('document')
+        new_annotation_2 = Annotation(document=doc_b, **new_annot_dict_2)
+
+        doc_b.add_annotation(new_annotation_2)
+
+        for annotation in (
+            doc_a.annotations(use_correct=False)[:6]
+            + [doc_a.annotations(use_correct=False)[7]]
+            + doc_a.annotations(use_correct=False)[9:]
+        ):
+            new_annotation = deepcopy(annotation)
+            new_annot_dict = new_annotation.__dict__
+            new_annot_dict['annotation_set'] = new_annot_dict['annotation_set'] + 10
+            new_annot_dict.pop('document')
+            new_annotation = Annotation(document=doc_b, **new_annot_dict)
+            doc_b.add_annotation(new_annotation)
+
+        assert len(doc_b.annotations()) == len(doc_a.annotations())
+
+        evaluation = compare(doc_a, doc_b)
+        assert len(evaluation) == 32
+        assert evaluation["true_positive"].sum() == 30
+        assert evaluation["false_positive"].sum() == 2
+        assert evaluation["false_negative"].sum() == 0
+
+    def test_doc_with_missing_annotation_in_a_line_with_multiple_annotation_sets(self):
+        """
+        Test is a document is equivalent if an annotation is missing in a line where exists another annotation set.
+
+        In this test case, there are two annotations where each one belongs to an annotation set from a different Label
+        Set.
+        """
+        prj = Project()
+        doc_a = prj.documents[4]  # doc ID 44841
+        doc_b = Document()
+
+        # skip 1 annotation from an annotation set that is in the same line as other annotation set
+        for annotation in doc_a.annotations(use_correct=False)[:28] + doc_a.annotations(use_correct=False)[29:]:
+            doc_b.add_annotation(annotation)
+
+        assert len(doc_b.annotations()) == len(doc_a.annotations()) - 1
+
+        evaluation = compare(doc_a, doc_b)
+        assert len(evaluation) == 32
+        assert evaluation["true_positive"].sum() == 31
+        assert evaluation["false_positive"].sum() == 0
+        assert evaluation["false_negative"].sum() == 1
+
+    @unittest.skip(reason="Cannot load project with custom strings with current changes.")
+    def test_doc_with_custom_offset_string(self):
+        """
+        Test a document with an annotation that has a custom offset string.
+
+        These annotations are not used for training so they should not be counted for evaluation.
+        How would they be handled in the evaluation?
+        TODO: review
+        """
+        prj = Project()
+        _ = prj.documents[0]
+        _ = Document()
 
     @unittest.skip(reason='Waiting to be able toe specify the Extraction AI model version.')
     def test_compare_extractions_available_online_to_the_current_version(self):
