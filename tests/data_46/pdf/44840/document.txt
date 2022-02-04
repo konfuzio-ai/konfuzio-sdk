@@ -1,0 +1,67 @@
+                                                            915   328927/10102/00800
+Abrechnung  der Brutto/Netto-Bezüge
+                               für  April 2018                      24.05.2018 Biatt:  1
+
+Personal-Nr.  Geburtsdatum sıK! Faktor  Ki.Frbtr.|Konfession  ‚Freibetragjährl.! |Freibetrag mtl! IDBA |Gleitzone  St-Tg.  Vyun.üb. Ur. Anspr. Url.Tg.gen.  |Resturlaub
+00800 240284 1  _                                        30
+
+SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  JUm.ISv-Tg. Anw. Tage ‚UrlaubTage|Krankh.Tg.  |Fehiz. Tage
+
+21240284M032 EK_ DAK Gesundheit           161 102 1111 1 30
+
+                                             Eintritt   |Austritt     Anw. Std. |Urlaub Std.  IKrankh. Std. |Fehlz. Std.
+                                             010904   un
+                                         4   Steuer-ID       IMFB?       Zeitlohn Sta.|Überstd.  |Bez. Sta.
+  Testmandant
+  Testsnentone                                  23456678918       Ä     Ä     Ä     Ä
+
+                               B/N
+               A  da        10102          HinweisezurAbrechnung
+
+                                            Wöch.Arb.Zt. 39,00   Kostenst.  2000
+  Herrn
+  Max-Muster Schlosser
+  Mustergweg 101
+  90471 Nürnberg
+Brutto-Bezüge
+ Lohnart Bezeichnung                        Einheit?   Menge?     Faktor® |Prozentsatz jst? sv?  |GB®          Betrag
+2010 Ausbildungsvergütung, kf£fm.                               L  Log        540,00
+4810 Betriebl.AV, 1fd, S$10a EStG                              LULN         10,00
+*%*%%* DATEV-Mustermandant mit 5 Arbeitnehmern und SKRO3
+                                                                            Gesamt-Brutio
+Steuer/Sozialversicherung                                                                 540,00
+
+st®      Steuer-Brutto       Lohnsteuer     Kirchensteuer   Solidaritätszuschlag                       Steuerrechtliche Abzüge
+L       55000                                                                 0,00
+           ı            I           ı           ı
+
+sv® |   KV-Brutto    RV-Brutto    Av-Brutto    PV-Brutto  |   KV-Beitrag    RV-Beitrag  |  AV-Beitrag  |   PV-Beitrag®    SV-rechtliche Abzüge
+L   55000    55000    55000    55000     4840     5115     825 2    839       116,19
+       I        I        I        ı        ı        ı       ı        !
+
+                        |        |                                          Netto-Verdienst
+Verdiensibescheinigung                              Netto-Bezüge/Netto-Abzüge                        423,81
+
+Gesamt-Brutto      2.16000 Sv-Brutto      2.20000   Lohnart |Bezeichnung                            Betrag
+Steuer-Brutto      2.20000 xKYV-Beitrag       19360
+Lohnsteuer               RV-Beitrag       20460
+Kirchensteuer              AV-Beitrag        3300
+Solidaritätszuschlag            PV-Beitrag        3356
+
+Steuerfreie Bezüge         \   VWL gesamt         \
+P. verst. Zuk.sich.         \   Kug-Auszahlung        \
+                 ı                  ı
+Pfändung Rest          ı                  \
+Darlehen Rest           \                  ı
+
+
+Bak PSD Bank Nürnberg                      SV-AG-Anteil Zus. AG-Kosten      Gesamtkosten     Auszahlungsbetrag
+Konto DE38 7609 0900 0001 2XXX XX             10656                            423,81
+
+14-Hinzurechnungsbetrag              4}=LaufenderBezug, S=SonstigerBezug, F=Frei,    5 3 =Bestandteildes Gesamt-Bruttos
+2 Std=Stunden,T=Tage, Km=Kilometer, St=Stuck     E =Einmalbezug, P=Pauschalierung,A=Abfindung,    & 2-Einschl. BeitragszuschlagzurPVfürKinderlose
+  EUR =Euro,Tsd=TausendEuro, Mio =MillionEuro     M =mehrjährige Versteuerung, N=Nachberechnung    7 MFB=Mehrfachbeschäftigung
+3 Gegebenenfalls Netto-Lohn/Netto-Stundenlohn       V=Vorjahr,W =Entgeltguthaben           8 MaßgeblicherBeitragssatzzurKVinkl Zusatzbeitrag
+                      -Dies isteine Entgelibescheinigungnach$ 108Abs 3 Satz1 derGewerbeordnung-                         DATEV
+AFP Form-Nr LNGN13
+

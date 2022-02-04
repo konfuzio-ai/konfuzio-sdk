@@ -319,8 +319,8 @@ class Annotation(Data):
 
     def __init__(
         self,
+        label: Union[int, Label],
         label_set_id: Union[None, int] = None,
-        label=None,
         label_set: Union[None, LabelSet] = None,
         is_correct: bool = False,
         revised: bool = False,
@@ -328,7 +328,7 @@ class Annotation(Data):
         id: int = None,
         accuracy: float = None,
         document=None,
-        annotation_set=None,
+        annotation_set: Optional[int] = None,
         label_set_text=None,
         translated_string=None,
         *initial_data,
@@ -351,11 +351,15 @@ class Annotation(Data):
         :param label_set_id: ID of the label set where the label belongs
         """
         self.id_local = next(Data.id_iter)
+
+        if document is None:
+            raise AttributeError(f'{self.__class__.__name__} {self.id_local} has document {document}.')
+        else:
+            self.document = document
+
         self.bottom = None  # Information about BoundingBox of text sequence
-        self.document = document
         self._spans: List[Span] = []
-        if document:
-            document.add_annotation(self)
+
         self.id = id  # Annotations can have None id, if they are not saved online and are only available locally
         self.is_correct = is_correct
 
@@ -371,27 +375,37 @@ class Annotation(Data):
         elif isinstance(label, Label):
             self.label: Label = label
         else:
-            self.label = None  # todo why can a Annotation have no label
-        self.define_annotation_set = True
+            raise AttributeError(f'{self.__class__.__name__} {self.id_local} has no label.')
+
         # if no label_set_id we check if is passed by section_label_id
         if label_set_id is None and kwargs.get("section_label_id") is not None:
             label_set_id = kwargs.get("section_label_id")
 
         # handles association to an annotation set if the annotation belongs to a category
-        self.label_set = label_set
-        if isinstance(label_set_id, int):
+        if label_set is None and label_set_id is None:
+            pass
+        elif label_set:
+            self.label_set = label_set
+        elif label_set_id:
+            # if self.document.project is None:
+            #     raise AttributeError(f'{self.__class__.__name__} {self.id_local} has no project for
+            #     document {self.document}.')
             self.label_set: LabelSet = self.document.project.get_label_set_by_id(label_set_id)
-            if self.label_set.is_default:
-                self.define_annotation_set = False
+
         # elif label_set is not None:
         #     self.label_set = l
         # elif label_set_id is None:
         #     logger.error("the fallback on kwargs is not None safe")  # todo
 
+        if document:
+            document.add_annotation(self)
+
+        # The annotation set is named "section" in the server
         if annotation_set is None:
             annotation_set = kwargs.get("section")
             if annotation_set is None:
                 logger.error("the fallback on kwargs is not None safe")  # todo
+
         self.annotation_set = annotation_set
 
         self.revised = revised
@@ -436,6 +450,7 @@ class Annotation(Data):
             )
             self.add_span(sa)
         elif label is None and id is None and annotation_set is None and label_set_id is None:
+            # TODO: do we need to check the label?
             sa = Span(start_offset=0, end_offset=0, x0=None, x1=None, y0=None, y1=None, page_index=None)
             self.add_span(sa)
 
@@ -463,7 +478,20 @@ class Annotation(Data):
         self.bboxes = kwargs.get('bboxes', None)  # todo: smoothen implementation of multiple bboxes
         self.selection_bbox = kwargs.get('selection_bbox', None)
         self.page_number = kwargs.get('page_number', None)
+        if not hasattr(self, 'label'):
+            raise
         # TODO END LEGACY -
+
+    # def __eq__(self, other) -> bool:
+    #     """Compare any point of data with their ID, overwrite if needed."""
+    #     TODO: atm we are comparing the annotation instances (which are the same). Compare the relevant arguments.
+    #
+    #     try:
+    #         return self.label
+    #     except:
+    #         print(self.label)
+    #
+    #     return self.label is not None and other.label is not None and self.label == other.label
 
     def __repr__(self):
         """Return string representation."""
@@ -591,8 +619,7 @@ class Annotation(Data):
                 accuracy=self.accuracy,
                 is_correct=self.is_correct,
                 revised=self.revised,
-                annotation_set=self.annotation_set,
-                define_annotation_set=self.define_annotation_set,
+                annotation_set=self.annotation_set,  # TODO: rename to annotation_set_id
                 # bboxes=self.bboxes,
                 # selection_bbox=self.selection_bbox,
                 page_number=self.page_number,
@@ -958,6 +985,7 @@ class Document(Data):
                     _ = self.annotation_class(document=self, **raw_annotation)
                 else:
                     raise NotImplementedError  # todo add multiple offset strings per annotation, see Span
+                    # TODO: shouldn't the verification for multiple offset strings happen inside the annotation class?
                     real_string = self.text[raw_annotation["start_offset"] : raw_annotation["end_offset"]]
                     if real_string.replace(" ", "") == raw_annotation["offset_string"].replace(" ", ""):
                         _ = self.annotation_class(document=self, **raw_annotation)

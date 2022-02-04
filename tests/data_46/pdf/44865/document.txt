@@ -1,0 +1,68 @@
+                                                            x02   228586/  100/01111
+Abrechnung  der Brutto/Netto-Bezüge   für Dezember 2018                   21.12.2017 Bat:  1
+
+Personal-Nr. | Geburtsdatum sıK! Faktor  Ki.Frbtr.Konfession  ‚Freibetragjährl.! |Freibetrag mtl! |DBA  |Gleitzone  st.-Tg.  Vyun.üb. Ur. Anspr. jUrl.Tg.gen. |Resturlaub
+01111 010563 3  _    10 ev                              30
+
+SV-Nummer       [Krankenkasse                       KK%®|PGRS Bars  JUm.|sv-Tg. Anw. Tage ‚UrlaubTage Krankh. Tg. |Fehlz. Tage
+
+570105638723 EK_ BARMER (vormals Barmer GE     101 0110 ı 30
+
+                                             Eintritt   |Austritt     Anw. Std.  Urlaub Std.  |Krankh. Std. |Fehlz. Std.
+                                             010116  un
+                                         4   Steuer-ID       FB?       Zeitlohn Std.jÜberstd.  Bez. Std.
+ " Testmandant
+  12545"Testore                                  14510236977                  280   280
+
+                               B/N
+               ABenedoor        00200          HinweisezurAbrechnung
+
+                                             Std.lohn 1   24,40
+  Frau
+  Karla-Muster Klar
+  Auf der Beispielstr. 78
+  90329 Nürnberg
+Brutto-Bezüge
+
+Lohnart Bezeichnung                       |Einheit®   Menge? |     Faktor® ‚Prozentsatz jst sv®  ‚@B$          Betrag
+1200 Überstundenzuschlag, 25%      Std   2,80    24,40  25,00 L  L  _J         17,08
+1300 Überstd.grundverg.+ FLA (25%)  Std   2,80    24,40       L  Lg         68,32
+2000 Gehalt                                                  LLJ      4.230,00
+3100 AG-Anteil VWL,1fd                                        L  LG         40,00
+                                                                            Gesamt-Brutio
+Steuer/Sozialversicherung                                                               4.355,40
+
+st®      Steuer-Brutto       Lohnsteuer     Kirchensteuer   Solidaritätszuschlag                       Steuerrechtliche Abzüge
+L     4.35540       51800       2814       1935                           565,49
+           ı            I           ı           ı
+
+sv® |   KV-Brutto    RV-Brutto    Av-Brutto    PV-Brutto  |   KV-Beitrag    RV-Beitrag  |  AV-Beitrag  |   PV-Beitrag®    SV-rechtliche Abzüge
+L          4.35540  4.35540               f     40505    6533                410,38
+       I        !        !        ı        ı        ı       ı        !
+
+                        |        |                                          Netto-Verdienst
+Verdiensibescheinigung                              Netto-Bezüge/Netto-Abzüge                      3.319,53
+
+Gesamt-Brutto     57.83558 |SV-Brutto     57.83558   Lohnart |Bezeichnung                            Betrag
+Steuer-Brutto      57.83558 KV-Beitrag               9840 VWL                             40,00-
+Lohnsteuer       7.69097 RV-Beitrag     5.37870   9852 AG-Ant. priv.Krankenvers.        280,00
+Kirchensteuer        45416 AY-Beitrag       86752   9858 AG-Ant. priv. Pflegevers.         17,00
+Solidaritätszuschlag      31222 PYv-Beitrag          f
+
+Steuerfreie Bezüge            VWL gesamt      48000
+P. verst. Zuk.sich.         \   Kug-Auszahlung        \
+                 ı                  I
+Pfändung Rest          ı                  ı
+Darlehen Rest           \                  ı
+
+
+Bank Deutsche Bank PGK  Nürnbe               SV-AG-Anteil Zus. AG-Kosten      Gesamtkosten     Auszahlungsbetrag
+Konto DE33 7607 0024 0012 3456 78             76738                           3.576,53
+
+14.Hinzurechnungsbetrag              @=LaufenderBezug, S=SonstigerBezug, F=Frei,    5 ) =Bestandteildes Gesamt-Bruttos
+2 Std=Stunden,T=Tage, Km=Kilometer, St=Stück     E =Einmalbezug, P=Pauschalierung,A=Abfindung,    & 2-Einschl. BeitragszuschlagzurPVfürKinderlose
+  EUR =Euro,Tsd=TausendEuro, Mio =MillionEuro     M =mehrjährige Versteuerung, N=Nachberechnung    7 MFB=Mehrfachbeschäftigung
+3 Gegebenenfalls Netto-Lohn/Netto-Stundenlohn       V=Vorjahr,W =Entgeltguthaben           8 MaßgeblicherBeitragssatzzurKVinkl Zusatzbeitrag
+                      -Dies isteine Entgelibescheinigungnach$ 108Abs 3 Satz1 derGewerbeordnung-                         DATEV
+AFP Form-Nr LNGN13
+

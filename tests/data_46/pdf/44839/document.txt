@@ -1,0 +1,68 @@
+                                                            915   328927/10102/00100
+Abrechnung  der Brutto/Netto-Bezüge   für  April 2018                      24.05.2018 Bat:  1
+
+Personal-Nr. | Geburtsdatum sıK! Faktor  Ki.Frotr.Konfession  ‚Freibetragjährl.! |Freibetrag mtl! |DBA  |Gleitzone  st.-Tg.  Vyun.üb. Ur. Anspr. jUrl.Tg.gen. |Resturlaub
+00100 151162 4  _    10 ev                              30
+
+SV-Nummer       [Krankenkasse                       KK%®|PGRS Bars  jum.|SV-Tg. Anw. Tage |UrlaubTage |Krankh. Tg. |Fehlz. Tage
+
+57151162B729 AOK  Bayern Die Gesundheitskas 157 101 1111 1 30
+                                                               L     l     L     l
+
+                                             Eintritt   |Austritt     Anw.Std.  Urlaub Std.  |Krankh. Std. |Fehlz. Std.
+                                             179299  L L       l     L     l     l
+ -                                       4   Steuer-ID       FB?       Zeitiohn Std.jÜberstd.  Bez. Std.
+  Testmandant
+  12545"Testore                                  56789123450
+
+                     0          B/N
+               Bee  dor        1dıo2          HinweisezurAbrechnung
+
+                                            Wöch.Arb.Zt. 39,00   Kostenst.  1000
+  Frau                                       Durchschn.1  16,53   Std.lohn 1   16,53
+  Inge-Muster Schmidt
+  Musterstraße 78
+  90453 Nürnberg
+Brutto-Bezüge
+
+Lohnart Bezeichnung                       |Einheit2   Menge? |     Faktor® ‚Prozentsatz |ste ısv®  |GB5          Betrag
+1000 Stundenlohn                   Std  156,00    16,53       LLoJV      2.578,68
+1012 Feiertagslohn                 Std   8,50    16,53       L  Lg        140,51
+3100 AG-Anteil VWL,1fd                                        L  LG         40,00
+**<*%* DATEV-Mustermandant mit 5 Arbeitnehmern und SKRO3
+                                                                            Gesamt-Brutto
+Steuer/Sozialversicherung                                                               2.759,19
+
+st®      Steuer-Brutto       Lohnsteuer     Kirchensteuer   Solidaritätszuschlag                       Steuerrechtliche Abzüge
+L     2.75919       36366       2196       1510                           400,72
+           ı            I           ı           ı
+
+sv® |   KV-Brutto    RV-Brutto    AV-Brutto    PV-Brutto  |   KV-Beitrag    RV-Beitrag  |  AV-Beitrag  |   PV-Beitrag®    SV-rechtliche Abzüge
+L  2.75919  2.75919  2.75919  2.75919    23177    25660    4139     3518       564,94
+       I        I        I        I        I        I       I        I
+
+                                                                           Netto-Verdienst
+Verdiensibescheinigung                              Netto-Bezüge/Netto-Abzüge                       1.793,53
+
+Gesamt-Brutto     11.25991 |SV-Brutto     11.25991   Lohnart |Bezeichnung                            Betrag
+Steuer-Brutto      11.25991 KV-Beitrag       94582   9840 VWL                             40,00-
+Lohnsteuer       1.51206 RV-Beitrag     1.04717
+Kirchensteuer         9221 |AV-Beitrag       16890
+Solidaritätszuschlag       6339 |PV-Beitrag       14356
+
+Steuerfreie Bezüge            VWL gesamt      16000
+P. verst. Zuk.sich.         \   Kug-Auszahlung        \
+                 ı                  I
+Pfändung Rest          ı                  \
+Darlehen Rest           \                  ı
+
+ Baık Deutsche Pfandbriefbank                SV-AG-Anteil Zus. AG-Kosten      Gesamtkosten     Auszahlungsbeirag
+Konto DE47 7001 0500 0000 2XxXX XX             53459                           1.753,53
+
+14.Hinzurechnungsbetrag              @=LaufenderBezug, S=SonstigerBezug, F=Frei,    5 ) =Bestandteildes Gesamt-Bruttos
+2 Std=Stunden,T=Tage, Km=Kilometer, St=Stück     E =Einmalbezug, P=Pauschalierung,A=Abfindung,    & 2-Einschl. BeitragszuschlagzurPVfürKinderlose
+  EUR =Euro,Tsd=TausendEuro, Mio =MillionEuro     M =mehrjährige Versteuerung, N=Nachberechnung    7 MFB=Mehrfachbeschäftigung
+3 Gegebenenfalls Netto-Lohn/Netto-Stundenlohn       V=Vorjahr,W =Entgeltguthaben           8 MaßgeblicherBeitragssatzzurKVinkl Zusatzbeitrag
+                      -Dies isteine Entgelibescheinigungnach$ 108Abs 3 Satz1 derGewerbeordnung-                         DATEV
+AFP Form-Nr LNGN13
+

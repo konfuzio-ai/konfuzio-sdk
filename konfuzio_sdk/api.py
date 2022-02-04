@@ -238,7 +238,6 @@ def post_document_annotation(
     revised: bool = False,
     is_correct: bool = False,
     annotation_set=None,
-    define_annotation_set=True,
     session=konfuzio_session(),
     **kwargs,
 ):
@@ -291,8 +290,10 @@ def post_document_annotation(
     if start_offset is not None:
         data['start_offset'] = start_offset
 
-    if define_annotation_set:
+    if annotation_set:
         data['section'] = annotation_set
+    else:
+        data['section'] = None
 
     if page_number is not None:
         data['page_number'] = page_number
