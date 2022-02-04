@@ -14,7 +14,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 - Added api_name to Label API
 
 ### Fixed
-- Link to documentation pag
+- Link to documentation page
 - Missing translation on document list page
 - Evaluation did not complete for AIs with a large amount of training data.
 
