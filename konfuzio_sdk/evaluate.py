@@ -62,11 +62,14 @@ def compare(doc_a, doc_b):
     #  This should be an option in the project for the user. (could be confusing)
 
     # TODO: we cannot add annotations without label therefore we cannot add an "empty" Annotation
+    # TODO: the Annotation structure needs to be redefined
     if not doc_a.annotations(use_correct=False):
-        doc_a.add_annotation(Annotation(label=Label(project=Project()), document=Document()))
+        # TODO: define Annotation (Label? Document? Offsets?)
+        # TODO: this adds an entry in the offsets dataframe
+        doc_a.add_annotation(Annotation(label=Label(project=Project()), document=Document(text='')))
 
     if not doc_b.annotations(use_correct=False):
-        doc_b.add_annotation(Annotation(label=Label(project=Project()), document=Document()))
+        doc_b.add_annotation(Annotation(label=Label(project=Project()), document=Document(text='')))
 
     # As one Annotation could have more than one **offset**, we unpack the list per annotation with itertools
     # We can encapsulate this code more, however the aim was to present any transformation in a very transparent way
