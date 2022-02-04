@@ -1,0 +1,66 @@
+                                                            x02   228586/  100/01026
+Abrechnung  der Brutto/Netto-Bezüge   für Dezember 2018                   21.12.2017 Bat:  1
+
+Personal-Nr. ‚ Geburtsdatum SKI Faktor  Ki.Frotr.Konfession  ‚Freibetragjährl.! |Freibetrag mtl! |DBA  |Gleitzone  St-Tg.  Vyun.üb. Ur. Anspr. Ur.Tg.gen.  |Resturlaub
+01026 130862 3  _    10 ev                              30
+
+SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  jum.SV-Tg. Anw. Tage |UrlaubTage‚Krankh. Tg. Fehlz. Tage
+
+571308621161 AOK  Bayern Die Gesundheitskas 157 101 1111 1 30
+
+                                             Eintritt   ;Austritt     Anw. Std. |Urlaub Std.  IKrankh. Std. |Fehlz. Std.
+                                             010116  un
+
+                                         4  Steuer-ID       FB?       Zeitiohn Std.Überstd.  Bez. Std.
+ " Testmandant
+  12545"Tastore                                  31109456871                  240   240
+                               B/N
+               Pers.-Nr.  01026        x02            , j
+               Abt.-Nr. 1800         00100          HinweisezurAbrechnung
+
+                                             Std.lohn 1   17,88
+  Herrn
+  Karl-Muster Sinner
+  Hintere Mustergasse 3
+  90329 Nürnberg
+Brutto-Bezüge
+ Lohnart |Bezeichnung                       |Einheit?   Menge?     Faktor® |Prozentsatz st* |sv#®  |GB®          Betrag
+1200 Überstundenzuschlag, 25%      Std   2,40    17,88  25,00 L  L  _J         10,73
+1300 Überstd.grundverg.+ FLA (25%)  Std   2,40    17,88       L  Lg         42,91
+2000 Gehalt                                                  LL  J      3.100,00
+                                                                            Gesamt-Brutio
+Steuer/Sozialversicherung                                                               3.153,64
+
+st®      Steuer-Brutto       Lohnsteuer     Kirchensteuer   Solidaritätszuschlag                       Steuerrechtliche Abzüge
+L     3.15364       21333        586                                       219,19
+           ı            I           ı           ı
+           ı            ı           ı           ı
+
+sv® |   KV-Brutto    RYV-Brutto    AV-Brutto    PV-Brutto  |   KV-Beitrag    RV-Beitrag  |  AY-Beitrag  |   PV-Beitrag®    SV-rechtliche Abzüge
+L  3.15364  3.15364  3.15364  3.15364    26491    29329    4730     4021       645,71
+       I        I        I        ı        ı        ı       ı        !
+
+                                                                           Netto-Verdienst
+Verdiensibescheinigung                              Netto-Bezüge/Netto-Abzüge                      2.288,74
+
+Gesamt-Brutto     41.92441 SV-Beuitto     41.92441   Lohnart |Bezeichnung                            Betrag
+Steuer-Brutto      41.92441 KV-Beitrag     3.52170   9810 gewöhnliche Pfändung             67,21-
+Lohnsteuer       3.41529 RV-Beitrag     3.898398
+Kirchensteuer        135/79 AV-Beitrag       62886
+Solidaritätszuschlag       3586 PV-Beitrag       53454
+
+Steuerfreie Bezüge         \   VWLgesamt         \
+P. verst. Zuk.sich.         ı   Kug-Auszahlung        \
+                 ı                  ı
+Pfändung Rest    115.82159                f
+Dariehen Rest           ı                  ı
+
+
+Bank Deutsche Bank PGK  Nürnbe               SV-AG-Anteil Zus. AG-Kosten      Gesamtkosten     Auszahlungsbetrag
+Konto DE33 7607 0024 0012 3456 78             61102      ,            ,       2.221,53
+ 1 4=Hinzurechnungsbetrag              4=LaufenderBezug, $=SonstigerBezug, F=Frei,    5 ) =Bestandteildes Gesamt-Bruttos
+® Std=Stunden,T=Tage, Km=Kilometer, St=Stuck     E =Einmalbezug, P =Pauschalierung,A=Abfindung,    6 2=Einschl. BeitragszuschlagzurPVfürKinderlose
+  EUR =Euro,Tsd=TausendEuro, Mio =MillionEuro     M =mehrjahrige Versteuerung, N=Nachberechnung    7 MFB=Mehrfachbeschäftigung
+3 Gegebenenfalls Netto-Lohn/Netto-Stundenlohn       V=Vorjahr,W =Entgeliguthaben           ® MaßgeblicherBeitragssatzzurKVinkl Zusatzbeitrag           ZZ—
+AFP Form-Nr LNGN13              -Dies isteine Entgeltbescheinigungnach& 108Abs 3 Satz1 derGewerbeordnung-                         DATEV
+

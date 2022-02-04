@@ -1,0 +1,65 @@
+                                                            x02   228586/  100/00002
+Abrechnung  der Brutto/Netto-Bezüge   für Dezember 2018                   21.12.2017 Bat:  1
+
+Personal-Nr. ‚ Geburtsdatum SKI Faktor  Ki.Frotr.Konfession  ‚Freibetragjährl.! |Freibetrag mtl! |DBA  |Gleitzone  St-Tg.  Vyurn.üb. Ur. Anspr. Url.Tg.gen.  |Resturlaub
+00002 260199 3  _    05 rk                              30
+
+SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  jum.SV-Tg. Anw. Tage |UrlaubTage‚Krankh. Tg. Fehlz. Tage
+
+132601995035 EK_ BARMER (vormals Barmer GE 157 101 1111 1 30
+
+                                             Eintritt   ;Austritt     Anw. Std. |Urlaub Std.  IKrankh. Std. |Fehlz. Std.
+                                             010116  un
+
+                                         4  Steuer-ID       FB?       Zeitiohn Std.Überstd.  Bez. Std.
+ " Testmandant
+  12545"Testore                                  14510236985                  110   110
+                               B/N
+               Pers.-Nr.  00002        x02            , j
+               Abt.-Nr. 1900         00100          HinweisezurAbrechnung
+                                             Std.lohn 1   13,85
+  Herrn
+  Max-Muster Schlosser
+  Im  Musterweg 101
+  90329 Nürnberg
+Brutto-Bezüge
+ Lohnart |Bezeichnung                       |Einheit?   Menge?     Faktor® |Prozentsatz st* |sv#®  |GB®          Betrag
+1200 Überstundenzuschlag, 25%      Std   1,10    13,85  25,00 L  L  _J          3,81
+1300 Überstd.grundverg.+ FLA (25%)  Std   1,10    13,85       L  Lg         15,24
+2000 Gehalt                                                  LL  J      2.400,00
+                                                                            Gesamt-Brutio
+Steuer/Sozialversicherung                                                               2.419,05
+
+st®      Steuer-Brutto       Lohnsteuer     Kirchensteuer   Solidaritätszuschlag                       Steuerrechtliche Abzüge
+L     2.41905        6933        129                                        70,62
+           ı            I           ı           ı
+           ı            ı           ı           ı
+
+sv® |   KV-Brutto    RYV-Brutto    AV-Brutto    PV-Brutto  |   KV-Beitrag    RV-Beitrag  |  AV-Beitrag  |   PV-Beitrag®    SV-rechtliche Abzüge
+L  2.41905  2.41905  2.41905  2.41905    20320    22497    3629     3084       495,30
+       I        I        I        ı        ı        ı       ı        !
+
+                        |        |                                          Netto-Verdienst
+Verdiensibescheinigung                              Netto-Bezüge/Netto-Abzüge                       1.853,13
+
+Gesamt-Brutto     32.18375 |SV-Beutto     32.183,75   Lohnart |Bezeichnung                            Betrag
+Steuer-Brutto      32.183,75 KV-Beitrag     2.702343   9811 Unterhaltspfändung              150,00-
+Lohnsteuer       1.43963 RV-Beitrag     2.99307
+Kirchensteuer         6203 jAV-Beitrag       48275
+Solidaritätszuschlag       2574 PV-Beitrag       41034
+
+Steuerfreie Bezüge         \   VWLgesamt         \
+P. verst. Zuk.sich.         ı   Kug-Auszahlung        \
+                 ı                  ı
+Pfändung Rest          \                  \
+Dariehen Rest           \                  ı
+
+
+Bak Commerzbank Nürnberg                   SV-AG-Anteil Zus. AG-Kosten      Gesamtkosten     Auszahlungsbetrag
+Konto DE94 7604 0061 0524 3712 00             46869                           1.703,13
+ 1 4=Hinzurechnungsbetrag              4=LaufenderBezug, $=SonstigerBezug, F=Frei,    5 ) =Bestandteildes Gesamt-Bruttos
+® Std=Stunden,T=Tage, Km=Kilometer, St=Stuck     E =Einmalbezug, P =Pauschalierung,A=Abfindung,    6 2-Einschl. BeitragszuschlagzurPVfürKinderlose
+  EUR =Euro,Tsd=TausendEuro, Mio =MillionEuro     M =mehrjahrige Versteuerung, N=Nachberechnung    7 MFB=Mehrfachbeschäftigung
+3 Gegebenenfalls Netto-Lohn/Netto-Stundenlohn       V=Vorjahr,W =Entgeliguthaben           ® MaßgeblicherBeitragssatzzurKVinkl Zusatzbeitrag           m
+AFP Form-Nr LNGN13              -Dies isteine Entgeltbescheinigungnach& 108Abs 3 Satz1 derGewerbeordnung-                         DATEV
+

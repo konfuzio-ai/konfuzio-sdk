@@ -1,0 +1,89 @@
+
+
+
+                                                                                                                           X02      228586/     100/01028
+              Abrechnung der Brutto/Netto-Bezüge      für Dezember   2018                                    21.12.2017   Blatt:     1
+               Personal-Nr.  Geburtsdatum StKl Faktor     Ki.Frbtr. Konfession   Freibetrag jährl. 1    Freibetrag mtl. 1   DBA    Gleitzone     St.-Tg.    VJ Url. üb.    Url. Anspr.   Url.Tg.gen.   Resturlaub
+               01028   301085   5                  ev                                                        30
+              SV-Nummer              Krankenkasse                                          KK % 8 PGRS   BGRS     Um. SV-Tg.    Anw. Tage   Urlaub Tage Krankh. Tg. Fehlz. Tage
+               54301085M528   EK    BARMER   (vormals Barmer GE 157 101 1111 1 30
+                                                                                                Eintritt        Austritt          Anw. Std.    Urlaub Std.  Krankh. Std. Fehlz. Std.
+                                                                                                010116
+                                                                                                Steuer-ID                 7              Zeitlohn Std. Überstd.
+                                                                                                                     MFB                                   Bez. Std.
+                   Testmandant
+                   Teststraße 123                                                               19902346872                                  250      250
+                   12345 Testort
+
+                                                                        B/N
+                                          Pers.-Nr.  01028                X02
+                                          Abt.-Nr.   1700                 00100                   Hinweise zur Abrechnung
+                                                                                                Std.lohn 1      19,62
+                   Frau
+
+
+                   Marie-Muster Wald
+                   Musterallee   1a
+                    90329 Nürnberg
+
+
+
+
+
+               Brutto-Bezüge
+                                                                                   2             3               3              St 4     4     5                    Betrag
+               Lohnart    Bezeichnung                                            Einheit         Menge           Faktor   Prozentsatz         SV    GB
+               1200 Überstundenzuschlag, 25%             Std        2,50        19,62     25,00 L    L    J                  12,26
+               1300 Überstd.grundverg.+ FLA (25%)     Std        2,50        19,62               L    L    J                  49,05
+               2000   Gehalt                                                                                            L    L    J             1.700,00
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                                                                                                        Gesamt-Brutto
+              Steuer/Sozialversicherung                                                                                                                    1.761,31
+              St 4            Steuer-Brutto              Lohnsteuer           Kirchensteuer      Solidaritätszuschlag                                           Steuerrechtliche Abzüge
+              L           1.76131               33900               2712               1864                                                   384,76
+
+
+
+              SV4        KV-Brutto         RV-Brutto         AV-Brutto         PV-Brutto        KV-Beitrag        RV-Beitrag      AV-Beitrag        PV-Beitrag6        SV-rechtliche Abzüge
+              L    1.76131    1.76131    1.76131    1.76131        14795        16380        2642   Z      2686               365,03
+
+
+
+                                                                                                                                                       Netto-Verdienst
+              Verdienstbescheinigung                                                       Netto-Bezüge/Netto-Abzüge                                          1.011,52
+              Gesamt-Brutto          23.91242   SV-Brutto          23.91242      Lohnart    Bezeichnung                                                     Betrag
+              Steuer-Brutto           23.91242   KV-Beitrag           2.00867
+               Lohnsteuer               4.92088   RV-Beitrag           2.22387
+               Kirchensteuer                39364   AV-Beitrag               35870
+              Solidaritätszuschlag            27061   PV-Beitrag               36467
+              Steuerfreie Bezüge                       VWL gesamt
+               P. verst. Zuk.sich.                        Kug-Auszahlung
+
+
+               Pfändung Rest            3.00000
+               Darlehen Rest
+
+
+
+               Bank    Deutsche Bank PGK Nürnbe                             SV-AG-Anteil    Zus. AG-Kosten            Gesamtkosten          Auszahlungsbetrag
+               Konto   DE73   7607   0024   0568   9745   11                         34126                                                 1.011,52
+               1 H = Hinzurechnungsbetrag                          4 L = Laufender Bezug, S = Sonstiger Bezug, F = Frei,        5 J = Bestandteil des Gesamt-Bruttos
+              2 Std = Stunden, T = Tage, Km = Kilometer, St = Stück          E = Einmalbezug, P = Pauschalierung, A = Abfindung,        6 Z = Einschl. Beitragszuschlag zur PV für Kinderlose
+                EUR = Euro, Tsd = Tausend Euro, Mio = Million Euro          M = mehrjährige Versteuerung, N = Nachberechnung         7 MFB = Mehrfachbeschäftigung
+              3 Gegebenenfalls Netto-Lohn/Netto-Stundenlohn              V = Vorjahr, W = Entgeltguthaben                     8 Maßgeblicher Beitragssatz zur KV inkl. Zusatzbeitrag
+              AFP Form.-Nr. LNGN13                          - Dies ist eine Entgeltbescheinigung nach § 108 Abs. 3 Satz 1 der Gewerbeordnung -                                               DATEV

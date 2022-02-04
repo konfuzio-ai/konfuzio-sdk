@@ -1,0 +1,73 @@
+                                                            915   328927/10102/00200
+Abrechnung  der Brutto/Netto-Bezüge
+                               für  April 2018                      24.05.2018 Blatt:  1
+
+Personal-Nr.  Geburtsdatum StKi Faktor  Ki.Frotr.Konfession  ‚Freibetragjährl.! ‚Freibetrag mtl! |DBA  iGleitzone  St-Tg.  VyuUn.üb. Un. Anspr. Ur.Tg.gen.  |Resturlaub
+00200 150256 3  |                                         1
+
+SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  |um.ISv-Tg. Anw. Tage ‚UrlaubTage Krankh. Tg.  |Fehiz. Tage
+
+50150256W493 EK_PBARMER (vormals Barmer GE 157 101 91111  1
+                                                               L     l     l     l
+ Eintritt   |Austritt
+                                                            Anw.Std.  Urlaub Std.  |Krankh. Std. |Fehlz. Std.
+                                             070199 010418
+                                         4   Steuer-iD       MFB’       Zeitiohn Std.\Überstd.  Bez. Std.
+ " Testmandant
+  12345Testore                                  12345678911
+
+                               B/N
+               Bene29200        10102          HinweisezurAbrechnung
+
+                                            Wöch.Arb.Zt. 39,00   Kostenst.  2000
+  Herrn
+  Heinz-Muster  Wichtig
+  Mustergasse 20
+  90427 Nürnberg
+Brutto-Bezüge
+
+Lohnart [Bezeichnung                        Einheit2   Menge? |     Faktor® ‚Prozentsatz jst sv®  ‚@B$          Betrag
+2000 Gehalt                                                  LLoJÜG        146,83
+2005 Gehaltsverzicht                                          L  Log)        100,00-
+2410 Privatfahrten                                            L  L  JYJ        245,00
+2420 Fahrten Wohnung/Arbeit                                   L  LJ         65,55
+2440 Fahrten Wohnung/Arbeit, p. St.                            PrF  Jg        103,50
+4700 Betriebl.AV,AG,1fd,$3Nr.63EStG                           FFN        125,00
+***%* DATEV-Mustermandant mit 5 Arbeitnehmern und SKRO3
+                                                                            Gesamt-Brutio
+Steuer/Sozialversicherung                                                                 460,88
+
+st®      Steuer-Brutto       Lohnsteuer     Kirchensteuer   Solidaritätszuschlag                       Steuerrechtliche Abzüge
+L       35738        8908                    489                            93,97
+           ı            I           ı           ı
+
+sv® |   KV-Brutto    RV-Brutto    Av-Brutto    PV-Brutto  |   KV-Beitrag    RV-Beitrag  |  AV-Beitrag    PY-Beitrag®    SV-rechtliche Abzüge
+L      ı     21667    21667      ı        f      2015     325      ı          23,40
+       I        !        !        ı        ı        ı       ı        !
+
+       |                         |                                          Netto-Verdienst
+Verdiensibescheinigung                              Netto-Bezüge/Netto-Abzüge                        343,51
+
+Gesamt-Brutto     14.91803 |SV-Brutto     14.36332   Lohnart Bezeichnung                            Betrag
+Steuer-Brutto      14.50403 KV-Beitrag               9020 Firmenwagen Privatnutzung       414,05-
+Lohnsteuer       1.78606 RV-Beitrag     1.33580   9850 AG-Ant. freiw.Krankenvers.         10,77
+Kirchensteuer              AV-Beitrag       21544   9851 Gesamtb.freiw.Krankenvers        23,16-
+Solidaritätszuschlag       9822 |PV-Beitrag               9856 AG-Ant.Pflegev.b.freiw.KV         1,88
+
+Steuerfreie Bezüge      50000 VWL gesamt              9857 Gesamt .Pflegev.b.freiw.KV         3,76-
+P. verst. Zuk.sich.         \   Kug-Auszahlung        \
+                 ı                  I
+Pfändung Rest          ı                  ı
+Darlehen Rest           \                  ı
+
+
+Bank Überzahlung                            SV-AG-Anteil Zus. AG-Kosten      Gesamtkosten     Auszahlungsbetrag
+Konto                                         3605                             84, 81-
+
+14Hinzurechnungsbetrag              @=LaufenderBezug, S=SonstigerBezug, F=Frei,    5 3 =Bestandteildes Gesamt-Bruttos
+2 Std=Stunden,T=Tage, Km=Kilometer, $t=Stück     E =Einmalbezug, P =Pauschalierung,A=Abfindung,    6 2-Einschl. BeitragszuschlagzurPVfürKinderlose
+  EUR =Euro,Tsd=TausendEuro, Mio =MillionEuro     M =mehrjährige Versteuerung, N=Nachberechnung    7 MFB=Mehrtachbeschäftigung
+3 Gegebenenfalls Netto-Lohn/Netto-Stundenlohn       V=Vorjahr,W =Entgeltguthaben           & MaßgeblicherBeitragssatzzurKVinkl Zusatzbeitrag
+                      -Dies isteine Entgelibescheinigungnach$ 108Abs 3 Satz1 derGewerbeordnung-                         DATEV
+AFPForm-Nr LNGN13
+

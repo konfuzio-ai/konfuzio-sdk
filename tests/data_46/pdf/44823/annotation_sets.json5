@@ -1,0 +1,20 @@
+[
+  {
+    "id": 78730,
+    "parent": null,
+    "position": 1,
+    "section_label": 63
+  },
+  {
+    "id": 292092,
+    "parent": 78730,
+    "position": 1,
+    "section_label": 64
+  },
+  {
+    "id": 681346,
+    "parent": 78730,
+    "position": 1,
+    "section_label": 3686
+  }
+]

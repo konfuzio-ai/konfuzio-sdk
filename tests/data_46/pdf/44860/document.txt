@@ -1,0 +1,68 @@
+                                                            x02   228586/  100/01006
+Abrechnung  der Brutto/Netto-Bezüge   für Dezember 2018                   21.12.2017 Bat:  1
+
+Personal-Nr.  Geburtsdatum Stk Faktor  Ki.Frbtr.Konfession  ‚Freibetragjährl.! |Freibetrag mtl! |DBA  |Gleitzone  St-Tg.  Vyun.üb. Ur. Anspr. Url.Tg.gen.  |Resturlaub
+01006 090862 3  _    10 ev                              30
+
+SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  Jum.'sv-Tg. Anw. Tage ‚UrlaubTage‚Krankh. Tg.  |Fehiz. Tage
+
+570908621162 AOK  Bayern Die Gesundheitskas 157 101 1111 1 30
+
+                                             Eintritt   ;Austritt     Anw. Std.  Urlaub Std.  |Krankh. Std. |Fehlz. Std.
+                                             010116  un
+
+                                         4  Steuer-ID       IMFB?       Zeitlohn Sta.|Überstd.  |Bez. Sta.
+ " Testmandant
+  12545"Testore                                  29901346781                  210   210
+
+               Pers.-Nr.  01006        x2
+               Abt.-Nr. 1810         00100          HinweisezurAbrechnung
+
+                                             Std.lohn 1    9,58
+  Herrn
+  Leo-Muster  Winzig
+  Hintere Mustergasse 3
+  90329 Nürnberg
+Brutto-Bezüge
+ Lohnart |Bezeichnung                       |Einheit2   Menge?     Faktor® |Prozentsatz jst? sv?  |GB®          Betrag
+1200 Überstundenzuschlag, 25%      Std   2,10     9,58  25,00 L  L  _J          5,03
+1300 Überstd.grundverg.+ FLA (25%)  Std   2,10     9,58       L  Lg         20,12
+2000 Gehalt                                                  LL  J      1.660,00
+2032 Tarifzulage                                              L  L  Y         30,00
+                                                                            Gesamt-Brutio
+Steuer/Sozialversicherung                                                               1.715,15
+
+st®      Steuer-Brutto       Lohnsteuer     Kirchensteuer   Solidaritätszuschlag                       Steuerrechtliche Abzüge
+L     1.71515          f                      ı                               0,00
+           ı            I           ı           ı
+
+sv®   KV-Brutto    RYV-Brutto    Av-Brutto    PV-Brutto  |   KV-Beitrag    RV-Beitrag  |  AV-Beitrag  |   PV-Beitrag®    SV-rechtliche Abzüge
+L  1.71515  1.71515  1.71515  21.71515    14408    15951    2573     2187       351,19
+       I        I        I        ı        ı        ı       ı        !
+
+       |                         |                                          Netto-Verdienst
+Verdiensibescheinigung                              Netto-Bezüge/Netto-Abzüge                       1.363,96
+
+Gesamt-Brutio     22.79658 |SV-Beutto     22.79658   Lohnart |Bezeichnung                            Betrag
+Steuer-Brutto      22.719658 KV-Beitrag     1.91492
+Lohnsteuer               RV-Beitrag     2.12009
+Kirchensteuer              AV-Beitrag       34195
+Solidaritätszuschlag            PV-Beitrag       29067
+
+Steuerfreie Bezüge         \   VWL gesamt         \
+P. verst. Zuk.sich.         ı   Kug-Auszahlung        \
+                 ı                  ı
+Pfändung Rest    118.40000                f
+Dariehen Rest           \                  ı
+
+
+Bank Deutsche Bank PGK  Nürnbe               SV-AG-Anteil Zus. AG-Kosten      Gesamtkosten     Auszahlungsbeirag
+Kono DE33 7607 0024 0012 3456 78             33232                           1.363,96
+
+14Hinzurechnungsbetrag              4=LaufenderBezug, S=SonstigerBezug, F=Frei,    5 3 =Bestandteildes Gesamt-Bruttos
+2 Std=Stunden,T=Tage, Km=Kilometer, St=Stuck     E =Einmalbezug, P =Pauschalierung,A=Abfindung,    6 2=Einschl. BeitragszuschlagzurPVfürKinderlose
+  EUR =Euro,Tsd=TausendEuro, Mio =MillionEuro     M =mehrjährige Versteuerung, N=Nachberechnung    7 MFB=Mehrfachbeschäftigung
+3 Gegebenenfalls Netto-Lohn/Netto-Stundenlohn       V=Vorjahr,W =Entgeltguthaben           & MaßgeblicherBeitragssatzzurKVinkl Zusatzbeitrag
+                      +Dies isteine Entgelibescheinigungnach$ 108Abs 3 Satz1 derGewerbeordnung-                         DATEV
+AFP Form-Nr LNGN13
+

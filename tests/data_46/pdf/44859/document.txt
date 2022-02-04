@@ -1,0 +1,67 @@
+                                                            x02   228586/  100/01007
+Abrechnung  der Brutto/Netto-Bezüge   für Dezember 2018                   21.12.2017 Bat:  1
+
+Personal-Nr. ‚ Geburtsdatum SKI Faktor  Ki.Frotr.Konfession  ‚Freibetragjährl.! |Freibetrag mtl! |DBA  |Gleitzone  St-Tg.  Vyun.üb. Ur. Anspr. Ur.Tg.gen.  |Resturlaub
+01007 270674 1  _     ‚_ rk                              30
+
+SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  jum.SV-Tg. Anw. Tage |UrlaubTage‚Krankh. Tg. Fehlz. Tage
+
+232706744024 EK BARMER (vormals Barmer GE 157 101 1111 1 30
+
+                                             Eintritt   ;Austritt     Anw.Std. |Urlaub Std.  |Krankh. Std. |Fehlz. Std.
+                                             010116  un
+
+                                         4  Steuer-ID       FB?       Zeitiohn Std.Überstd.  Bez. Std.
+ " Testmandant
+  12gasTatort”                                  18802349672                  220   220
+
+                               B/N
+               Pers.-Nr.  01007        x02            , j
+               Abt.-Nr. 1600         00100          HinweisezurAbrechnung
+
+                                             Std.lohn 1   14,13
+  Herrn
+  Hugo-Muster Baltus
+  Exampleweg 2
+  90329 Nürnberg
+Brutto-Bezüge
+ Lohnart |Bezeichnung                       |Einheit?   Menge?     Faktor® |Prozentsatz st* |sv#*  |GB®          Betrag
+1200 Überstundenzuschlag, 25%      Std   2,20    14,13  25,00 L  L  _J          7,717
+1300 Überstd.grundverg.+ FLA (25%)  Std   2,20    14,13       L  Lg         31,09
+2000 Gehalt                                                  LL  J      2.450,00
+                                                                            Gesamt-Brutio
+Steuer/Sozialversicherung                                                               2.488,86
+
+st®      Steuer-Brutto       Lohnsteuer     Kirchensteuer   Solidaritätszuschlag                       Steuerrechtliche Abzüge
+L     2.48886       29791       2383       1638                           338,12
+           ı            I           ı           ı
+           ı            ı           ı           ı
+
+sv® |   KV-Brutto    RYV-Brutto    AV-Brutto    PV-Brutto  |   KV-Beitrag    RV-Beitrag  |  AY-Beitrag  |   PV-Beitrag®    SV-rechtliche Abzüge
+L  2.488386  2.488386  2.488386  2.488386    20907    23146    3733     3173       509,59
+       I        I        I        ı        ı        ı       ı        !
+
+                        |        |                                          Netto-Verdienst
+Verdiensibescheinigung                              Netto-Bezüge/Netto-Abzüge                       1.641,15
+
+Gesamt-Brutio     33.09065 |SV-Beutto     33.090865   Lohnart |Bezeichnung                            Betrag
+Steuer-Brutto      33.090,65 KV-Beitrag     2.771965   9811 Unterhaltspfändung              200,00-
+Lohnsteuer       4.361,78 RV-Beitrag     3.07742
+Kirchensteuer        34890 |AV-Beitrag       49636
+Solidaritätszuschlag      23984 |PV-Beitrag       42189
+
+Steuerfreie Bezüge         \   VWL gesamt         \
+P. verst. Zuk.sich.         ı   Kug-Auszahlung        \
+                 ı                  ı
+Pfändung Rest          ı                  ı
+Darlehen Rest           \                  ı
+
+
+Bank Deutsche Bank PGK  Nürnbe               SV-AG-Anteil Zus. AG-Kosten      Gesamtkosten     Auszahlungsbetrag
+Konto DE34 7607 0024 0569 8745 00             48221                           1.441,15
+ 1 4=Hinzurechnungsbetrag              4=LaufenderBezug, $=SonstigerBezug, F=Frei,    5 ) =Bestandteildes Gesamt-Bruttos
+® Std=Stunden,T=Tage,Km=Kilometer, St=Stuck     E =Einmalbezug, P =Pauschalierung,A=Abfindung,    6 2-Einschl. BeitragszuschlagzurPVfürKinderlose
+  EUR =Euro,Tsd=TausendEuro, Mio =MillionEuro     M =mehrjahrige Versteuerung, N=Nachberechnung    7 MFB=Mehrfachbeschäftigung
+3 Gegebenenfalls Netto-Lohn/Netto-Stundenlohn       V=Vorjahr,W =Entgeliguthaben           ® MaßgeblicherBeitragssatzzurKVinkl Zusatzbeitrag
+AFP Form-Nr LNGN13              -Dies isteine Entgeltbescheinigungnach& 108Abs 3 Satz1 derGewerbeordnung-                         DATEV
+
