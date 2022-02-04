@@ -5,7 +5,7 @@ import os
 import unittest
 
 import pytest
-from konfuzio_sdk.data import Project, Annotation
+from konfuzio_sdk.data import Project, Annotation, Document
 from konfuzio_sdk.utils import is_file
 
 logger = logging.getLogger(__name__)
@@ -217,6 +217,53 @@ class TestAPIDataSetup(unittest.TestCase):
         assert new_anno.id is None
         assert len(doc.annotations(use_correct=False)) == 13
         self.assertEqual(self.document_count, len(self.prj.labels[0].correct_annotations))
+
+    def test_document_add_new_annotation_without_label(self):
+        """Test adding a new annotation."""
+        with self.assertRaises(AttributeError) as _:
+            _ = Annotation(
+                start_offset=225,
+                end_offset=237,
+                label=None,
+                label_set_id=0,  # hand selected document section label
+                revised=True,
+                is_correct=True,
+                accuracy=0.98765431,
+                document=Document(),
+            )
+        # TODO: expand assert to check for specific error message
+
+    def test_init_annotation_without_document(self):
+        """Test adding a new annotation."""
+        with self.assertRaises(AttributeError) as _:
+            _ = Annotation(
+                start_offset=225,
+                end_offset=237,
+                label=None,
+                label_set_id=0,
+                revised=True,
+                is_correct=True,
+                accuracy=0.98765431,
+                document=None,
+            )
+
+        # TODO: expand assert to check for specific error message
+
+    def test_init_annotation_with_default_annotation_set(self):
+        """Test adding a new annotation."""
+        annotation = Annotation(
+            start_offset=225,
+            end_offset=237,
+            label=None,
+            label_set_id=0,
+            revised=True,
+            is_correct=True,
+            accuracy=0.98765431,
+            document=Document(),
+            annotation_set=78730,
+        )
+
+        assert annotation.annotation_set == 78730
 
     @unittest.skip(reason="Issue https://gitlab.com/konfuzio/objectives/-/issues/8664.")
     def test_get_text_in_bio_scheme(self):
