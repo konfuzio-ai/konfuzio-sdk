@@ -30,6 +30,20 @@ from konfuzio_sdk.utils import is_file, convert_to_bio_scheme, amend_file_name
 
 logger = logging.getLogger(__name__)
 
+EMPTY_SPAN_EVALUATION = {
+    "id_local": None,
+    "id": None,
+    "accuracy": None,
+    "start_offset": 0,  # to support compare function to evaluate True and False
+    "end_offset": 0,  # to support compare function to evaluate True and False
+    "is_correct": None,
+    "revised": None,
+    "label_threshold": None,
+    "label_id": None,
+    "label_set_id": None,
+    "annotation_set_id": 0,  # to allow grouping to compare boolean
+}
+
 
 class Data(object):
     """Collect general functionality to work with data from API."""
@@ -319,7 +333,7 @@ class Annotation(Data):
 
     def __init__(
         self,
-        label: Union[int, Label],
+        label: Union[int, Label, None] = None,
         label_set_id: Union[None, int] = None,
         label_set: Union[None, LabelSet] = None,
         is_correct: bool = False,
@@ -351,17 +365,20 @@ class Annotation(Data):
         :param label_set_id: ID of the label set where the label belongs
         """
         self.id_local = next(Data.id_iter)
-
-        if document is None:
-            raise AttributeError(f'{self.__class__.__name__} {self.id_local} has document {document}.')
-        else:
-            self.document = document
-
-        self.bottom = None  # Information about BoundingBox of text sequence
+        self.revised = revised
+        self.normalized = normalized
+        self.translated_string = translated_string
         self._spans: List[Span] = []
-
         self.id = id  # Annotations can have None id, if they are not saved online and are only available locally
         self.is_correct = is_correct
+
+        if document is None:
+            # todo None required by trainer
+            #  raise AttributeError(f'{self.__class__.__name__} {self.id_local} has document {document}.')
+            self.document = None
+        else:
+            self.document = document
+            document.add_annotation(self)
 
         if accuracy:  # its a confidence
             self.accuracy = accuracy  # todo rename to confidence
@@ -374,8 +391,9 @@ class Annotation(Data):
             self.label: Label = self.document.project.get_label_by_id(label)
         elif isinstance(label, Label):
             self.label: Label = label
-        else:
-            raise AttributeError(f'{self.__class__.__name__} {self.id_local} has no label.')
+        elif label is None:
+            self.label = None
+            # todo: raise AttributeError(f'{self.__class__.__name__} {self.id_local} has no label.')
 
         # if no label_set_id we check if is passed by section_label_id
         if label_set_id is None and kwargs.get("section_label_id") is not None:
@@ -383,22 +401,11 @@ class Annotation(Data):
 
         # handles association to an annotation set if the annotation belongs to a category
         if label_set is None and label_set_id is None:
-            pass
+            self.label_set = None
         elif label_set:
             self.label_set = label_set
         elif label_set_id:
-            # if self.document.project is None:
-            #     raise AttributeError(f'{self.__class__.__name__} {self.id_local} has no project for
-            #     document {self.document}.')
             self.label_set: LabelSet = self.document.project.get_label_set_by_id(label_set_id)
-
-        # elif label_set is not None:
-        #     self.label_set = l
-        # elif label_set_id is None:
-        #     logger.error("the fallback on kwargs is not None safe")  # todo
-
-        if document:
-            document.add_annotation(self)
 
         # The annotation set is named "section" in the server
         if annotation_set is None:
@@ -408,9 +415,6 @@ class Annotation(Data):
 
         self.annotation_set = annotation_set
 
-        self.revised = revised
-        self.normalized = normalized
-        self.translated_string = translated_string
         self.selection_bbox = kwargs.get("selection_bbox", None)
         self.page_number = kwargs.get("page_number", None)
         # if no label_set_text we check if is passed by section_label_text
@@ -503,25 +507,41 @@ class Annotation(Data):
             return f"{self.__class__.__name__} without Label ({self.start_offset}, {self.end_offset})"
 
     @property
-    def eval_dict(self) -> dict:
-        """Use this dict to evaluate Annotations. The speciality: For ever Span we create one."""
+    def start_offset(self) -> int:
+        """Legacy: One Annotations can have multiple start offsets."""
+        if len(self._spans) == 1:
+            return min([sa.start_offset for sa in self._spans])
+        else:
+            return None
+
+    @property
+    def end_offset(self) -> int:
+        """Legacy: One Annotations can have multiple end offsets."""
+        if len(self._spans) == 1:
+            return max([sa.end_offset for sa in self._spans])
+        else:
+            return None
+
+    @property
+    def is_online(self) -> Optional[int]:
+        """Define if the Annotation is saved to the server."""
+        return self.id is not None
+
+    @property
+    def offset_string(self) -> str:
+        """View the string representation of the Annotation."""
+        if self._spans and len(self._spans) == 1:
+            return self.document.text[self.start_offset : self.end_offset]
+        else:
+            # todo this offset string is wrong: # an Annotation has not **one** offset string
+            raise NotImplementedError
+
+    @property
+    def eval_dict(self) -> List[dict]:
+        """Calculate the span information to evaluate the Annotation."""
         result = []
         if self.label is None or self.label_set is None or self.annotation_set is None:
-            result.append(
-                {
-                    "id_local": self.id_local,
-                    "id": None,
-                    "accuracy": None,
-                    "start_offset": 0,  # to support compare function to evaluate True and False
-                    "end_offset": 0,  # to support compare function to evaluate True and False
-                    "is_correct": None,
-                    "revised": None,
-                    "label_threshold": None,
-                    "label_id": None,
-                    "label_set_id": None,
-                    "annotation_set_id": 0,  # to allow grouping to compare bools
-                }
-            )
+            result.append(EMPTY_SPAN_EVALUATION)
         else:
             for sa in self._spans:
                 if sa.start_offset is None or sa.end_offset is None:
@@ -544,30 +564,6 @@ class Annotation(Data):
                         }
                     )
         return result
-
-    @property
-    def start_offset(self) -> int:
-        """Legacy: One Annotations can have multiple start offsets."""
-        return min([sa.start_offset for sa in self._spans])
-
-    @property
-    def end_offset(self) -> int:
-        """Legacy: One Annotations can have multiple end offsets."""
-        return max([sa.end_offset for sa in self._spans])
-
-    @property
-    def is_online(self) -> Optional[int]:
-        """Define if the Annotation is saved to the server."""
-        return self.id is not None
-
-    @property
-    def offset_string(self) -> str:
-        """View the string representation of the Annotation."""
-        if self._spans and len(self._spans) == 1:
-            return self.document.text[self.start_offset : self.end_offset]
-        else:
-            # todo this offset string is wrong: # an Annotation has not **one** offset string
-            raise NotImplementedError
 
     def add_span(self, span: Span, check_duplicate=True):
         """Add an span to a document.
@@ -609,13 +605,17 @@ class Annotation(Data):
         :return: True if new Annotation was created
         """
         new_annotation_added = False
+        if not self.label_set:
+            label_set_id = None
+        else:
+            label_set_id = self.label_set.id
         if not self.is_online:
             response = post_document_annotation(
                 document_id=self.document.id,
                 start_offset=self.start_offset,
                 end_offset=self.end_offset,
                 label_id=self.label.id,
-                label_set_id=self.label_set.id,
+                label_set_id=label_set_id,
                 accuracy=self.accuracy,
                 is_correct=self.is_correct,
                 revised=self.revised,
@@ -812,6 +812,18 @@ class Document(Data):
                         )
         return compare(self, virtual_doc)
 
+    def eval_dict(self, use_correct=False) -> dict:
+        """Use this dict to evaluate Documents. The speciality: For ever Span of an Annotation create one entry."""
+        result = []
+        annotations = self.annotations(use_correct=use_correct)
+        if not annotations:  # if there are no annotations in this documents
+            result.append(EMPTY_SPAN_EVALUATION)
+        else:
+            for annotation in annotations:
+                result += annotation.eval_dict
+
+        return result
+
     @property
     def is_online(self) -> Optional[int]:
         """Define if the Document is saved to the server."""
@@ -819,9 +831,7 @@ class Document(Data):
 
     def annotations(self, label: Label = None, use_correct: bool = True) -> List[Annotation]:
         """
-        Filter available annotations. Exclude custom_offset_string annotations.
-
-        You can specific an offset of a document, to filter the annotations by.
+        Filter available annotations.
 
         :param label: Label for which to filter the annotations
         :param use_correct: If to filter by correct annotations
@@ -829,19 +839,7 @@ class Document(Data):
         """
         annotations = []
         for annotation in self._annotations:
-            if annotation.start_offset is None or annotation.end_offset is None:
-                continue
-
-            # filter by correct information
             if (use_correct and annotation.is_correct) or not use_correct:
-                # # filter by start and end offset, be aware that this approach to filter annotations will include the
-                # if start_offset and end_offset:  # if the start and end offset are specified
-                #     latest_start = max(annotation.start_offset, start_offset)
-                #     earliest_end = min(annotation.end_offset, end_offset)
-                #     is_overlapping = latest_start - earliest_end <= 0
-                # else:
-                #     is_overlapping = True
-
                 # filter by label
                 if label is not None and annotation.label == label:
                     annotations.append(annotation)

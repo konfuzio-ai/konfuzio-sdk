@@ -115,14 +115,12 @@ def retry_get(session, url):
     return r
 
 
-def konfuzio_session(token=None):
+def konfuzio_session(token=KONFUZIO_TOKEN):
     """
     Create a session incl. base auth to the KONFUZIO_HOST.
 
     :return: Request session.
     """
-    if not token:
-        token = KONFUZIO_TOKEN
     session = requests.Session()
     session.headers.update({'Authorization': f'Token {token}'})
     return session

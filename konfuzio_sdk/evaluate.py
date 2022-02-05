@@ -1,11 +1,10 @@
 """Calculate the accuracy on any level in a document."""
-import itertools
 
 import pandas as pd
 
 RELEVANT_FOR_EVALUATION = [
-    "id_local",  # needed to group offsets in annotations
-    "id",  # even we don't care of the id, as the ID is defined by the start and end offset
+    "id_local",  # needed to group spans in annotations
+    "id",  # even we don't care of the id, as the ID is defined by the start and end span
     # "accuracy", we don't care about the accuracy of doc_a  # todo rename to confidence
     "start_offset",  # only relevant for the merge but allows to track multiple sequences per annotation
     "end_offset",  # only relevant for the merge but allows to track multiple sequences per annotation
@@ -52,93 +51,59 @@ def grouped(group, target: str):
     return group
 
 
-def compare(doc_a, doc_b):
-    """Compare the annotations of two potentially empty documents wrt. to **all** annotations."""
-    from konfuzio_sdk.data import Annotation, Label, Project, Document  # prevent circular reference
+def compare(doc_a, doc_b, only_use_correct=False) -> pd.DataFrame:
+    """Compare the annotations of two potentially empty documents wrt. to **all** annotations.
 
-    # TODO:
-    #  make use_correct a variable because if we have feedback required annotations in the document,
-    #  we ignore them if predicted
-    #  This should be an option in the project for the user. (could be confusing)
+    :param doc_a: Document which is assumed to be correct
+    :param doc_b: Document which needs to be evaluated
+    :param only_use_correct: Unrevised feedback in doc_a is assumed to be correct.
+    :return: Evaluation DataFrame
+    """
+    df_a = pd.DataFrame(doc_a.eval_dict(use_correct=only_use_correct))
+    df_b = pd.DataFrame(doc_b.eval_dict(use_correct=False))
 
-    # TODO: we cannot add annotations without label therefore we cannot add an "empty" Annotation
-    # TODO: the Annotation structure needs to be redefined
-    if not doc_a.annotations(use_correct=False):
-        # TODO: define Annotation (Label? Document? Offsets?)
-        # TODO: this adds an entry in the offsets dataframe
-        doc_a.add_annotation(Annotation(label=Label(project=Project()), document=Document(text='')))
+    # many to many inner join to keep all **spans** of doc_a and doc_b
+    spans = pd.merge(df_a, df_b, how="outer", on=["start_offset", "end_offset"], suffixes=('', '_predicted'))
+    spans = spans[RELEVANT_FOR_EVALUATION]
 
-    if not doc_b.annotations(use_correct=False):
-        doc_b.add_annotation(Annotation(label=Label(project=Project()), document=Document(text='')))
-
-    # As one Annotation could have more than one **offset**, we unpack the list per annotation with itertools
-    # We can encapsulate this code more, however the aim was to present any transformation in a very transparent way
-    doc_a = pd.DataFrame(list(itertools.chain(*[anno.eval_dict for anno in doc_a.annotations(use_correct=False)])))
-    doc_b = pd.DataFrame(list(itertools.chain(*[anno.eval_dict for anno in doc_b.annotations(use_correct=False)])))
-
-    # many to many inner join to keep all **offsets** of doc_a and doc_b
-    offsets = pd.merge(doc_a, doc_b, how="outer", on=["start_offset", "end_offset"], suffixes=('', '_predicted'))
-    offsets = offsets[RELEVANT_FOR_EVALUATION]
-
-    # add criteria to evaluate **offsets**
-    offsets["above_threshold"] = offsets["accuracy_predicted"] > offsets["label_threshold_predicted"]
-    offsets["is_correct_label"] = offsets["label_id"] == offsets["label_id_predicted"]
-    offsets["is_correct_label_set"] = offsets["label_set_id"] == offsets["label_set_id_predicted"]
+    # add criteria to evaluate **spans**
+    spans["above_predicted_threshold"] = spans["accuracy_predicted"] > spans["label_threshold_predicted"]
+    spans["is_correct_label"] = spans["label_id"] == spans["label_id_predicted"]
+    spans["is_correct_label_set"] = spans["label_set_id"] == spans["label_set_id_predicted"]
     # add check to evaluate multiline Annotations
-    offsets = offsets.groupby("id_local", dropna=False).apply(lambda group: grouped(group, "id"))
+    spans = spans.groupby("id_local", dropna=False).apply(lambda group: grouped(group, "id"))
     # add check to evaluate annotation sets
-    offsets = offsets.groupby("annotation_set_id_predicted", dropna=False).apply(
+    spans = spans.groupby("annotation_set_id_predicted", dropna=False).apply(
         lambda group: grouped(group, "annotation_set_id")
     )
 
-    assert not offsets.empty  # this function must be able to evaluate any two docs even without annotations
+    assert not spans.empty  # this function must be able to evaluate any two docs even without annotations
 
-    # Evaluate which **offsets** are TN, TP, FP and keep RELEVANT_FOR_MAPPING to allow grouping of accuracy measures
-    # TODO: exclude feedback required already in the document
-    offsets["true_positive"] = 1 * (
-        (offsets["is_correct"])
-        & (offsets["above_threshold"])
+    # Evaluate which **spans** are TN, TP, FP and keep RELEVANT_FOR_MAPPING to allow grouping of accuracy measures
+    spans["true_positive"] = 1 * (
+        (spans["is_correct"])
+        & (spans["above_predicted_threshold"])
         & (  # Everything is correct
-            (offsets["is_correct_label"])
-            & (offsets["is_correct_label_set"])
-            & (offsets["is_correct_annotation_set_id"])
-            & (offsets["is_correct_id"])
+            (spans["is_correct_label"])
+            & (spans["is_correct_label_set"])
+            & (spans["is_correct_annotation_set_id"])
+            & (spans["is_correct_id"])
         )
     )
 
-    offsets["false_positive"] = 1 * (  # commented out on purpose (offsets["is_correct"]) &
-        offsets["above_threshold"]
+    spans["false_positive"] = 1 * (  # commented out on purpose (spans["is_correct"]) &
+        spans["above_predicted_threshold"]
         & (  # Something is wrong
-            (~offsets["is_correct_label"])
-            | (~offsets["is_correct_label_set"])
-            | (~offsets["is_correct_annotation_set_id"])
-            | (~offsets["is_correct_id"])
+            (~spans["is_correct_label"])
+            | (~spans["is_correct_label_set"])
+            | (~spans["is_correct_annotation_set_id"])
+            | (~spans["is_correct_id"])
         )
     )
 
-    offsets["false_negative"] = 1 * ((offsets["is_correct"]) & (~offsets["above_threshold"]))
+    spans["false_negative"] = 1 * ((spans["is_correct"]) & (~spans["above_predicted_threshold"]))
 
-    # TODO: consider feedback required
-    # To calculate f1 score range:
-    # f1 score min with all feedback required considered as fp and f1 score max with all feedback requires as tp
-    # offsets["is_correct"].fillna(False)
-    # offsets["revised"].fillna(False)
-
-    # feedback required already existing in the document (from previous AI)
-    # filter out annotations that are not mapped (not existing in the document)
-    # offsets["feedback_required"] = 1 * (
-    #     (~offsets["is_correct"])
-    #     & (~offsets["revised"])
-    #     & (offsets["above_threshold"])
-    #     & (  # Everything is correct
-    #         (offsets["is_correct_label"])
-    #         & (offsets["is_correct_label_set"])
-    #         & (offsets["is_correct_annotation_set_id"])
-    #         & (offsets["is_correct_id"])
-    #     )
-    # )
-
-    # one **offset** cannot be assigned to more than one group, however can be a True Negative
-    quality = (offsets[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) <= 1).all()
+    # one **span** cannot be assigned to more than one group, however can be a True Negative
+    quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) <= 1).all()
     assert quality
-    return offsets
+    return spans

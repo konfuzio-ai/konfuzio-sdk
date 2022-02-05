@@ -5,7 +5,7 @@ import os
 import unittest
 
 import pytest
-from konfuzio_sdk.data import Project, Annotation, Document
+from konfuzio_sdk.data import Project, Annotation, Document, Label
 from konfuzio_sdk.utils import is_file
 
 logger = logging.getLogger(__name__)
@@ -29,15 +29,24 @@ class TestAPIDataSetup(unittest.TestCase):
 
     def test_label_sets(self):
         """Test label sets in the test project."""
-        assert self.prj.label_sets.__len__() == 2
+        assert self.prj.label_sets.__len__() == 5
         assert self.prj.label_sets[0].name == 'Lohnabrechnung'
-        assert self.prj.label_sets[0].categories.__len__() == 0
-        assert self.prj.label_sets[0].labels.__len__() == 8
         assert not self.prj.label_sets[0].has_multiple_annotation_sets
+
+    def test_default_label_set(self):
+        """Test the main label set incl. it's labels."""
+        assert self.prj.label_sets[0].labels.__len__() == 10
+
+    def test_categories_default_labelset(self):
+        """Test if category of main label set is initialized correctly."""
+        assert self.prj.label_sets[0].categories == [None, None, None]  # todo: Why?
+
+    def test_label_set_multiple(self):
+        """Test label set config that is set to multiple."""
         assert self.prj.label_sets[1].name == 'Brutto-Bezug'
         assert self.prj.label_sets[1].categories.__len__() == 1
         assert self.prj.label_sets[1].categories[0].name == 'Lohnabrechnung'
-        assert self.prj.label_sets[1].labels.__len__() == 3
+        assert self.prj.label_sets[1].labels.__len__() == 5
         assert self.prj.label_sets[1].has_multiple_annotation_sets
 
     def test_categories(self):
@@ -59,7 +68,7 @@ class TestAPIDataSetup(unittest.TestCase):
 
     def test_labels(self):
         """Test get labels in the project."""
-        assert len(self.prj.labels) == 11
+        assert len(self.prj.labels) == 18
         assert self.prj.labels[0].name == 'Auszahlungsbetrag'
         assert not self.prj.labels[0].has_multiple_top_candidates
 
@@ -93,9 +102,9 @@ class TestAPIDataSetup(unittest.TestCase):
         assert len(glob.glob(os.path.join(doc.root, '*.*'))) == 4
 
         # existing annotation
-        assert len(doc.annotations(use_correct=False)) == 13
+        assert len(doc.annotations(use_correct=False)) == 23
         assert doc.annotations()[0].offset_string == '22.05.2018'  # start_offset=465, start_offset=466
-        assert len(doc.annotations()) == 13
+        assert len(doc.annotations()) == 23
         assert doc.annotations()[0].is_online
         assert not doc.annotations()[0].save()  # Save returns False because Annotation is already online.
 
@@ -111,14 +120,15 @@ class TestAPIDataSetup(unittest.TestCase):
         self.assertEqual(len(glob.glob(os.path.join(doc.root, '*.*'))), 4)
 
         # existing annotation
-        self.assertEqual(len(doc.annotations(use_correct=False)), 12)
+        # https://app.konfuzio.com/admin/server/sequenceannotation/?document_id=44823&project=46
+        self.assertEqual(len(doc.annotations(use_correct=False)), 17)
         # a multiline annotation in the top right corner, see https://app.konfuzio.com/a/4419937
         # todo improve multiline support
         self.assertEqual(66, doc.annotations()[0]._spans[0].start_offset)
         self.assertEqual(78, doc.annotations()[0]._spans[0].end_offset)
         self.assertEqual(159, doc.annotations()[0]._spans[1].start_offset)
         self.assertEqual(169, doc.annotations()[0]._spans[1].end_offset)
-        self.assertEqual(len(doc.annotations()), 10)
+        self.assertEqual(len(doc.annotations()), 17)
         self.assertTrue(doc.annotations()[0].is_online)
         self.assertTrue(not doc.annotations()[0].save())  # Save returns False because Annotation is already online.
 
@@ -138,18 +148,23 @@ class TestAPIDataSetup(unittest.TestCase):
     def test_annotation_start_offset_zero_filter(self):
         """Test annotations with start offset equal to zero."""
         doc = self.prj.labels[0].documents[5]  # one doc before doc without annotations
-        assert len(doc.annotations()) == 13
+        assert doc.id == 44842
+        assert len(doc.annotations()) == 23
         assert doc.annotations()[0].start_offset == 188
-        assert len(doc.annotations()) == 13
+        assert len(doc.annotations()) == 23
 
     def test_multiline_annotation(self):
         """Test to convert a multiline span Annotation to a dict."""
-        assert len(self.prj.documents[0].annotations()[0].eval_dict) == 2
+        for doc in self.prj.documents:
+            if doc.id == 44823:
+                assert len(doc.annotations()[0].eval_dict) == 2
 
     def test_annotation_to_dict(self):
         """Test to convert a Annotation to a dict."""
-        anno = self.prj.documents[0].annotations()[1].eval_dict[0]
-        assert anno["id"] == 4420022
+        for annotation in self.prj.documents[0].annotations():
+            if annotation.id == 4420022:
+                anno = annotation.eval_dict[0]
+
         assert anno["accuracy"] == 1.0
         # assert anno["created_by"] ==  todo: support this variable provided via API in the Annotation
         # assert anno["custom_offset_string"] ==   todo: support this variable provided via API in the Annotation
@@ -175,9 +190,9 @@ class TestAPIDataSetup(unittest.TestCase):
     def test_document_annotations_filter(self):
         """Test annotations filter."""
         doc = self.prj.labels[0].documents[5]  # one doc before doc without annotations
-        self.assertEqual(len(doc.annotations()), 13)
+        self.assertEqual(len(doc.annotations()), 23)
         assert len(doc.annotations(label=self.prj.labels[0])) == 1
-        assert len(doc.annotations(use_correct=False)) == 13
+        assert len(doc.annotations(use_correct=False)) == 23
 
     def test_document_offset(self):
         """Test document offsets."""
@@ -186,29 +201,30 @@ class TestAPIDataSetup(unittest.TestCase):
         assert doc.text[395:396] == '4'
         annotations = doc.annotations()
 
-        self.assertEqual(13, len(annotations))
-        assert annotations[1].offset_string == '4'
+        self.assertEqual(23, len(annotations))
+        assert annotations[2].offset_string == '4'
 
+    @unittest.skip(reason='Waiting for API to support to add to default annotation set')
     def test_document_add_new_annotation(self):
         """Test adding a new annotation."""
         doc = self.prj.labels[0].documents[5]  # the latest document
         # we create a revised annotations, as only revised annotation can be deleted
         # if we would delete an unrevised annotation, we would provide feedback and thereby keep the
         # annotation as "wrong" but "revised"
-        assert len(doc.annotations(use_correct=False)) == 13
+        assert len(doc.annotations(use_correct=False)) == 23
         label = self.prj.labels[0]
         new_anno = Annotation(
             start_offset=225,
             end_offset=237,
             label=label.id,
-            label_set_id=label.label_sets[0].id,  # hand selected document section label
+            label_set_id=None,  # hand selected document section label
             revised=True,
             is_correct=True,
             accuracy=0.98765431,
             document=doc,
         )
         # make sure document annotations are updated too
-        assert len(doc.annotations(use_correct=False)) == 14
+        assert len(doc.annotations(use_correct=False)) == 24
         self.assertEqual(self.document_count + 1, len(self.prj.labels[0].correct_annotations))
         assert new_anno.id is None
         new_anno.save()
@@ -218,6 +234,7 @@ class TestAPIDataSetup(unittest.TestCase):
         assert len(doc.annotations(use_correct=False)) == 13
         self.assertEqual(self.document_count, len(self.prj.labels[0].correct_annotations))
 
+    @unittest.skip(reason="Skip: Changes in Trainer Annotation needed to require a Label for every Annotation init.")
     def test_document_add_new_annotation_without_label(self):
         """Test adding a new annotation."""
         with self.assertRaises(AttributeError) as _:
@@ -233,6 +250,7 @@ class TestAPIDataSetup(unittest.TestCase):
             )
         # TODO: expand assert to check for specific error message
 
+    @unittest.skip(reason="Skip: Changes in Trainer Annotation needed to require a Document for every Annotation init.")
     def test_init_annotation_without_document(self):
         """Test adding a new annotation."""
         with self.assertRaises(AttributeError) as _:
@@ -251,10 +269,11 @@ class TestAPIDataSetup(unittest.TestCase):
 
     def test_init_annotation_with_default_annotation_set(self):
         """Test adding a new annotation."""
+        prj = Project()
         annotation = Annotation(
             start_offset=225,
             end_offset=237,
-            label=None,
+            label=prj.labels[0],
             label_set_id=0,
             revised=True,
             is_correct=True,
@@ -271,11 +290,15 @@ class TestAPIDataSetup(unittest.TestCase):
         doc = self.prj.documents[0]
         bio_annotations = doc.get_text_in_bio_scheme()
         assert len(bio_annotations) == 398
-        # check for multiline support in bio shema
+        # check for multiline support in bio schema
         assert bio_annotations[1][0] == '328927/10103/00104'
         assert bio_annotations[1][1] == 'B-Austellungsdatum'
         assert bio_annotations[8][0] == '22.05.2018'
         assert bio_annotations[8][1] == 'B-Austellungsdatum'
+
+    def test_create_empty_annotation(self):
+        """Create an empty Annotation and get the start offset."""
+        Annotation(label=Label(project=Project()), document=Document(text='')).start_offset
 
     @classmethod
     def tearDownClass(cls) -> None:

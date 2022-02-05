@@ -77,7 +77,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         """Download Annotations and the Text from API for a Document and check their offset alignment."""
         text = get_document_text(TEST_DOCUMENT_ID)
         annotations = get_document_annotations(TEST_DOCUMENT_ID)
-        assert len(annotations) == 10
+        assert len(annotations) == 17
         # check the text to be in line with the annotations offsets
         for i in range(0, len(annotations)):
             assert (
@@ -162,16 +162,34 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_get_project_labels(self):
         """Download Labels from API for a Project."""
-        assert set([label["id"] for label in get_project_labels()]) == set(
-            [858, 859, 860, 861, 862, 863, 864, 865, 866, 867, 964]
-        )
+        label_ids = [label["id"] for label in get_project_labels()]
+        assert set(label_ids) == {
+            858,
+            859,
+            860,
+            861,
+            862,
+            863,
+            864,
+            865,
+            866,
+            867,
+            964,
+            12444,
+            12453,
+            12470,
+            12482,
+            12483,
+            12484,
+            12503,
+        }
 
     def test_get_results_from_segmentation(self):
         """Download segmentation results."""
         prj = Project()
         result = get_results_from_segmentation(doc_id=prj.documents[0].id, project_id=prj.id)
         assert len(result[0]) == 5  # on the first page 5 elements can be found
-        assert set([box["label"] for box in result[0]]) == set(["text", "figure", "table", "title"])
+        assert set([box["label"] for box in result[0]]) == {"text", "figure", "table", "title"}
 
     def test_update_file_konfuzio_api(self):
         """Update the name of a document."""

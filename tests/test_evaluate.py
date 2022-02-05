@@ -41,7 +41,7 @@ class TestEvaluation(unittest.TestCase):
         doc_a = prj.documents[0]
         doc_b = prj.documents[0]  # predicted
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 18  # 2 annotations are is_correct false
+        assert len(evaluation) == 18
         # for an annotation which is human made, it is nan, so that above threshold is False
         # doc_a 17 + 1
         assert evaluation["true_positive"].sum() == 18  # 1 multiline with 2 lines = 2 annotations
@@ -77,7 +77,7 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 0
 
-    def test_doc_where_first_annotation_is_missing_in_b(self):
+    def test_if_first_multiline_annotation_is_missing_in_b(self):
         """Test if a document is equivalent if first annotation is missing."""
         prj = Project()
         doc_a = prj.documents[0]
@@ -102,17 +102,34 @@ class TestEvaluation(unittest.TestCase):
         for annotation in doc_b.annotations()[1:]:
             doc_a.add_annotation(annotation)
 
+        # evaluate on doc_b and assume the feedback required ones are correct
         assert len(doc_a.annotations()) == len(doc_b.annotations()) - 1
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 18  # 2 annotations are false
-        # doc a 16
+        assert len(evaluation) == 18  # 2 annotations are false and two have feedback required
         # TODO: add feedback required again
         assert evaluation["true_positive"].sum() == 16
-        assert evaluation["false_positive"].sum() == 4  # 1 multiline (2 lines == 2 annotations) + 2 feedback required
+        assert evaluation["false_positive"].sum() == 2  # 1 multiline (2 lines == 2 annotations) + 2 feedback required
+        assert evaluation["false_negative"].sum() == 0
+
+    def test_only_unrevised_annotations(self):
+        """Test to evaluate on a document that has only unrevised annotations."""
+        prj = Project()
+        for document in prj.get_documents_by_status(dataset_statuses=[1]):
+            if document.id == 137234:
+                doc_a = document
+
+        doc_b = Document()
+
+        assert len(doc_a.annotations()) == len(doc_b.annotations()) == 0
+        evaluation = compare(doc_a, doc_b, only_use_correct=True)
+        assert len(evaluation) == 1  # placeholder
+        # TODO: add feedback required again
+        assert evaluation["true_positive"].sum() == 0
+        assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 0
 
     def test_doc_where_first_annotation_from_all_is_missing_in_a(self):
-        """Test if a document is equivalent if first annotation is not present and feedback required are included."""
+        """Test if a document is equivalent if all annotation are not present and feedback required are included."""
         prj = Project()
         doc_b = prj.documents[0]
         doc_a = Document()
@@ -166,11 +183,11 @@ class TestEvaluation(unittest.TestCase):
         doc_a = Document()
         doc_b = prj.documents[0]
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 18
+        assert len(evaluation) == 19
         assert evaluation["true_positive"].sum() == 0
         # any annotation above threshold is a false positive independent if it's correct or revised
-        assert len([an for an in doc_b.annotations(use_correct=False) if an.accuracy > an.label.threshold]) == 12
-        assert evaluation["false_positive"].sum() == 18
+        assert len([an for an in doc_b.annotations(use_correct=False) if an.accuracy > an.label.threshold]) == 17
+        assert evaluation["false_positive"].sum() == 18  # but one annotation is multiline
         assert evaluation["false_negative"].sum() == 0
 
     def test_nothing_can_be_predicted(self):
@@ -179,7 +196,7 @@ class TestEvaluation(unittest.TestCase):
         doc_a = prj.documents[0]
         doc_b = Document()
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 18
+        assert len(evaluation) == 19  # we evaluate on span level an one annotation is multiline
         assert evaluation["true_positive"].sum() == 0
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 18
@@ -603,7 +620,6 @@ class TestEvaluation(unittest.TestCase):
         doc_online = doc_online.get_from_online(online)
         compare(doc_human, doc_online)
 
-    @unittest.skip(reason="Request access via info@konfuzio.com to run this test.")
     def test_compare_extractions_to_a_real_doc(self):
         """Test to compare the results of an extraction model to the human annotations."""
         prj = Project()
@@ -613,6 +629,6 @@ class TestEvaluation(unittest.TestCase):
         evaluation = human_doc.evaluate_extraction_model(path_to_model)
         self.assertEqual(10, evaluation["true_positive"].sum())
         self.assertEqual(1, evaluation["false_positive"].sum())
-        self.assertEqual(1, evaluation["false_negative"].sum())
-        self.assertEqual(1519, evaluation['start_offset'][5])
-        self.assertEqual(1552, evaluation['end_offset'][13])
+        self.assertEqual(8, evaluation["false_negative"].sum())
+        self.assertEqual(1519, evaluation['start_offset'][6])
+        self.assertEqual(1552, evaluation['end_offset'][18])
