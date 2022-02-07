@@ -44,7 +44,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         """Get meta information from documents in the project."""
         sorted_documents = get_meta_of_files()
         sorted_dataset_documents = [x for x in sorted_documents if x['dataset_status'] in [2, 3]]
-        self.assertEqual(24 + 4, len(sorted_dataset_documents))
+        self.assertEqual(26 + 3, len(sorted_dataset_documents))
 
     @unittest.skip(reason="Will change to project setup.")
     def test_upload_file_konfuzio_api(self):
@@ -77,7 +77,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         """Download Annotations and the Text from API for a Document and check their offset alignment."""
         text = get_document_text(TEST_DOCUMENT_ID)
         annotations = get_document_annotations(TEST_DOCUMENT_ID)
-        assert len(annotations) == 17
+        assert len(annotations) == 18
         # check the text to be in line with the annotations offsets
         for i in range(0, len(annotations)):
             assert (

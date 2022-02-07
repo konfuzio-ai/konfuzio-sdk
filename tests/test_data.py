@@ -15,9 +15,9 @@ logger = logging.getLogger(__name__)
 class TestAPIDataSetup(unittest.TestCase):
     """Test handle data."""
 
-    document_count = 24
-    test_document_count = 4
-    correct_document_count = 24
+    document_count = 26
+    test_document_count = 3
+    correct_document_count = 26
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -102,9 +102,9 @@ class TestAPIDataSetup(unittest.TestCase):
         assert len(glob.glob(os.path.join(doc.root, '*.*'))) == 4
 
         # existing annotation
-        assert len(doc.annotations(use_correct=False)) == 23
+        assert len(doc.annotations(use_correct=False)) == 24
         assert doc.annotations()[0].offset_string == '22.05.2018'  # start_offset=465, start_offset=466
-        assert len(doc.annotations()) == 23
+        assert len(doc.annotations()) == 24
         assert doc.annotations()[0].is_online
         assert not doc.annotations()[0].save()  # Save returns False because Annotation is already online.
 
@@ -121,14 +121,14 @@ class TestAPIDataSetup(unittest.TestCase):
 
         # existing annotation
         # https://app.konfuzio.com/admin/server/sequenceannotation/?document_id=44823&project=46
-        self.assertEqual(len(doc.annotations(use_correct=False)), 17)
+        self.assertEqual(len(doc.annotations(use_correct=False)), 19)
         # a multiline annotation in the top right corner, see https://app.konfuzio.com/a/4419937
         # todo improve multiline support
         self.assertEqual(66, doc.annotations()[0]._spans[0].start_offset)
         self.assertEqual(78, doc.annotations()[0]._spans[0].end_offset)
         self.assertEqual(159, doc.annotations()[0]._spans[1].start_offset)
         self.assertEqual(169, doc.annotations()[0]._spans[1].end_offset)
-        self.assertEqual(len(doc.annotations()), 17)
+        self.assertEqual(len(doc.annotations()), 18)
         self.assertTrue(doc.annotations()[0].is_online)
         self.assertTrue(not doc.annotations()[0].save())  # Save returns False because Annotation is already online.
 
@@ -149,9 +149,9 @@ class TestAPIDataSetup(unittest.TestCase):
         """Test annotations with start offset equal to zero."""
         doc = self.prj.labels[0].documents[5]  # one doc before doc without annotations
         assert doc.id == 44842
-        assert len(doc.annotations()) == 23
+        assert len(doc.annotations()) == 24
         assert doc.annotations()[0].start_offset == 188
-        assert len(doc.annotations()) == 23
+        assert len(doc.annotations()) == 24
 
     def test_multiline_annotation(self):
         """Test to convert a multiline span Annotation to a dict."""
@@ -190,9 +190,9 @@ class TestAPIDataSetup(unittest.TestCase):
     def test_document_annotations_filter(self):
         """Test annotations filter."""
         doc = self.prj.labels[0].documents[5]  # one doc before doc without annotations
-        self.assertEqual(len(doc.annotations()), 23)
+        self.assertEqual(len(doc.annotations()), 24)
         assert len(doc.annotations(label=self.prj.labels[0])) == 1
-        assert len(doc.annotations(use_correct=False)) == 23
+        assert len(doc.annotations(use_correct=False)) == 24
 
     def test_document_offset(self):
         """Test document offsets."""
@@ -201,7 +201,7 @@ class TestAPIDataSetup(unittest.TestCase):
         assert doc.text[395:396] == '4'
         annotations = doc.annotations()
 
-        self.assertEqual(23, len(annotations))
+        self.assertEqual(24, len(annotations))
         assert annotations[2].offset_string == '4'
 
     @unittest.skip(reason='Waiting for API to support to add to default annotation set')
