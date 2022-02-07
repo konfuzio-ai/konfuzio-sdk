@@ -10,19 +10,21 @@ from konfuzio_sdk.utils import is_file
 
 logger = logging.getLogger(__name__)
 
+TEST_PROJECT_ID = 46
+
 
 @pytest.mark.serial
 class TestAPIDataSetup(unittest.TestCase):
     """Test handle data."""
 
-    document_count = 24
-    test_document_count = 4
-    correct_document_count = 24
+    document_count = 26
+    test_document_count = 3
+    correct_document_count = 26
 
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the test project."""
-        cls.prj = Project()
+        cls.prj = Project(id=46)
         assert len(cls.prj.documents) == cls.document_count
         assert len(cls.prj.test_documents) == cls.test_document_count
         assert len(cls.prj.labels[0].correct_annotations) == cls.correct_document_count
@@ -66,6 +68,11 @@ class TestAPIDataSetup(unittest.TestCase):
         self.prj.documents[0].get_file()
         assert self.prj.documents[0].ocr_file_path
 
+    def test_get_file_with_white_colon_name(self):
+        """Test to download a file which includes a whitespace in the name."""
+        doc = Project(id=46).get_document_by_id(44860)
+        doc.get_file()
+
     def test_labels(self):
         """Test get labels in the project."""
         assert len(self.prj.labels) == 18
@@ -79,7 +86,7 @@ class TestAPIDataSetup(unittest.TestCase):
         assert len(self.prj.documents)
         # check if we can initialize a new project object, which will use the same data
         assert len(self.prj.documents) == self.document_count
-        new_project = Project()
+        new_project = Project(id=TEST_PROJECT_ID)
         assert len(new_project.documents) == self.correct_document_count
         assert new_project.meta_file_path == self.prj.meta_file_path
 
@@ -102,9 +109,9 @@ class TestAPIDataSetup(unittest.TestCase):
         assert len(glob.glob(os.path.join(doc.root, '*.*'))) == 4
 
         # existing annotation
-        assert len(doc.annotations(use_correct=False)) == 23
+        assert len(doc.annotations(use_correct=False)) == 24
         assert doc.annotations()[0].offset_string == '22.05.2018'  # start_offset=465, start_offset=466
-        assert len(doc.annotations()) == 23
+        assert len(doc.annotations()) == 24
         assert doc.annotations()[0].is_online
         assert not doc.annotations()[0].save()  # Save returns False because Annotation is already online.
 
@@ -121,14 +128,14 @@ class TestAPIDataSetup(unittest.TestCase):
 
         # existing annotation
         # https://app.konfuzio.com/admin/server/sequenceannotation/?document_id=44823&project=46
-        self.assertEqual(len(doc.annotations(use_correct=False)), 17)
+        self.assertEqual(len(doc.annotations(use_correct=False)), 20)
         # a multiline annotation in the top right corner, see https://app.konfuzio.com/a/4419937
         # todo improve multiline support
         self.assertEqual(66, doc.annotations()[0]._spans[0].start_offset)
         self.assertEqual(78, doc.annotations()[0]._spans[0].end_offset)
         self.assertEqual(159, doc.annotations()[0]._spans[1].start_offset)
         self.assertEqual(169, doc.annotations()[0]._spans[1].end_offset)
-        self.assertEqual(len(doc.annotations()), 17)
+        self.assertEqual(len(doc.annotations()), 18)
         self.assertTrue(doc.annotations()[0].is_online)
         self.assertTrue(not doc.annotations()[0].save())  # Save returns False because Annotation is already online.
 
@@ -149,9 +156,9 @@ class TestAPIDataSetup(unittest.TestCase):
         """Test annotations with start offset equal to zero."""
         doc = self.prj.labels[0].documents[5]  # one doc before doc without annotations
         assert doc.id == 44842
-        assert len(doc.annotations()) == 23
+        assert len(doc.annotations()) == 24
         assert doc.annotations()[0].start_offset == 188
-        assert len(doc.annotations()) == 23
+        assert len(doc.annotations()) == 24
 
     def test_multiline_annotation(self):
         """Test to convert a multiline span Annotation to a dict."""
@@ -190,9 +197,9 @@ class TestAPIDataSetup(unittest.TestCase):
     def test_document_annotations_filter(self):
         """Test annotations filter."""
         doc = self.prj.labels[0].documents[5]  # one doc before doc without annotations
-        self.assertEqual(len(doc.annotations()), 23)
+        self.assertEqual(len(doc.annotations()), 24)
         assert len(doc.annotations(label=self.prj.labels[0])) == 1
-        assert len(doc.annotations(use_correct=False)) == 23
+        assert len(doc.annotations(use_correct=False)) == 24
 
     def test_document_offset(self):
         """Test document offsets."""
@@ -201,7 +208,7 @@ class TestAPIDataSetup(unittest.TestCase):
         assert doc.text[395:396] == '4'
         annotations = doc.annotations()
 
-        self.assertEqual(23, len(annotations))
+        self.assertEqual(24, len(annotations))
         assert annotations[2].offset_string == '4'
 
     @unittest.skip(reason='Waiting for API to support to add to default annotation set')
@@ -269,7 +276,7 @@ class TestAPIDataSetup(unittest.TestCase):
 
     def test_init_annotation_with_default_annotation_set(self):
         """Test adding a new annotation."""
-        prj = Project()
+        prj = Project(id=TEST_PROJECT_ID)
         annotation = Annotation(
             start_offset=225,
             end_offset=237,
@@ -278,7 +285,7 @@ class TestAPIDataSetup(unittest.TestCase):
             revised=True,
             is_correct=True,
             accuracy=0.98765431,
-            document=Document(),
+            document=Document(project=prj),
             annotation_set=78730,
         )
 
@@ -298,7 +305,8 @@ class TestAPIDataSetup(unittest.TestCase):
 
     def test_create_empty_annotation(self):
         """Create an empty Annotation and get the start offset."""
-        Annotation(label=Label(project=Project()), document=Document(text='')).start_offset
+        prj = Project(id=TEST_PROJECT_ID)
+        Annotation(label=Label(project=prj), document=Document(text='', project=prj)).start_offset
 
     @classmethod
     def tearDownClass(cls) -> None:

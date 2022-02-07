@@ -10,7 +10,7 @@ from datetime import tzinfo
 from typing import Dict, Optional, List, Union, Tuple
 
 import dateutil.parser
-from konfuzio_sdk import KONFUZIO_HOST, DATA_ROOT, KONFUZIO_PROJECT_ID, FILE_ROOT
+from konfuzio_sdk import KONFUZIO_HOST
 from konfuzio_sdk.api import (
     get_document_details,
     konfuzio_session,
@@ -684,12 +684,12 @@ class Document(Data):
 
     def __init__(
         self,
+        project,
         id: Union[int, None] = None,
         file_path: str = None,
         file_url: str = None,
         status=None,
         data_file_name: str = None,
-        project=None,
         is_dataset: bool = None,
         dataset_status: int = None,
         updated_at: tzinfo = None,
@@ -702,11 +702,11 @@ class Document(Data):
         Check if the document root is available, otherwise create it.
 
         :param id: ID of the Document
+        :param project: Project where the document belongs to
         :param file_path: Path to a local file from which generate the Document object
         :param file_url: URL of the document
         :param status: Status of the document
         :param data_file_name: File name of the document
-        :param project: Project where the document belongs
         :param is_dataset: Is dataset or not. (bool)
         :param dataset_status: Dataset status of the document (e.g. training)
         :param updated_at: Updated information
@@ -864,10 +864,7 @@ class Document(Data):
     @property
     def root(self):
         """Get the path to the folder where all the document information is cached locally."""
-        if self.project:
-            return os.path.join(self.project.data_root, "pdf", str(self.id))
-        else:
-            return os.path.join(FILE_ROOT, str(self.id))
+        return os.path.join(self.project.data_root, "pdf", str(self.id))
 
     def get_file(self, ocr_version: bool = True, update: bool = False):
         """
@@ -877,7 +874,7 @@ class Document(Data):
         :param update: Update the downloaded file even if it is already available
         :return: Path to the selected file.
         """
-        filename = self.name
+        filename = self.name.replace(":", "-")
         if ocr_version:
             filename = amend_file_name(filename, append_text="ocr", new_extension=".pdf")
             self.ocr_file_path = os.path.join(self.root, filename)
@@ -932,7 +929,9 @@ class Document(Data):
             and is_file(self.txt_file_path, raise_exception=False)
             and is_file(self.pages_file_path, raise_exception=False)
         ):
-            data = get_document_details(document_id=self.id, session=self.session, extra_fields="hocr")
+            data = get_document_details(
+                document_id=self.id, project_id=self.project.id, session=self.session, extra_fields="hocr"
+            )
 
             raw_annotations = data["annotations"]
             self.number_of_pages = data["number_of_pages"]
@@ -1073,7 +1072,9 @@ class Document(Data):
             self.bbox_file_path = os.path.join(self.root, "bbox.json5")
 
             with open(self.bbox_file_path, "w", encoding="utf-8") as f:
-                data = get_document_details(document_id=self.id, session=self.session, extra_fields="bbox")
+                data = get_document_details(
+                    document_id=self.id, project_id=self.project.id, session=self.session, extra_fields="bbox"
+                )
                 json.dump(data["bbox"], f, indent=2, sort_keys=True)
 
         with open(self.bbox_file_path, "r", encoding="utf-8") as f:
@@ -1148,7 +1149,8 @@ class Project(Data):
     document_class = Document
     annotation_class = Annotation
 
-    def __init__(self, id: int = KONFUZIO_PROJECT_ID, offline=False, data_root=False, **kwargs):
+    # todo calculate data root
+    def __init__(self, id: int, offline=False, **kwargs):
         """
         Set up the data using the Konfuzio Host.
 
@@ -1175,7 +1177,6 @@ class Project(Data):
         self.meta_data = None
         self._textcorpus = None
         self._correct_annotations_indexed = {}
-        self.data_root = data_root if data_root else DATA_ROOT
         if not offline:
             self.make_paths()
             self.get()  # keep update to False, so once you have downloaded the data, don't do it again.
@@ -1184,6 +1185,11 @@ class Project(Data):
     def __repr__(self):
         """Return string representation."""
         return f"Project {self.id}"
+
+    @property
+    def data_root(self) -> str:
+        """Calculate the data root of the project."""
+        return f"data_{self.id}"
 
     def load_annotation_sets(self):
         """Load document annotation sets for all training and test documents."""
@@ -1365,7 +1371,7 @@ class Project(Data):
             self.meta_file_path = os.path.join(self.data_root, "documents_meta.json5")
 
             if not is_file(self.meta_file_path, raise_exception=False) or update:
-                self.meta_data = get_meta_of_files(self.session)
+                self.meta_data = get_meta_of_files(project_id=self.id, session=self.session)
                 with open(self.meta_file_path, "w") as f:
                     json.dump(self.meta_data, f, indent=2, sort_keys=True)
             else:
@@ -1405,7 +1411,7 @@ class Project(Data):
         if not self.label_sets or update:
             self.label_sets_file_path = os.path.join(self.data_root, "label_sets.json5")
             if not is_file(self.label_sets_file_path, raise_exception=False) or update:
-                label_sets_data = get_project_label_sets(session=self.session)
+                label_sets_data = get_project_label_sets(project_id=self.id, session=self.session)
                 if label_sets_data:
                     # the text of a document can be None
                     with open(self.label_sets_file_path, "w") as f:
@@ -1429,7 +1435,7 @@ class Project(Data):
         if not self.labels or update:
             self.labels_file_path = os.path.join(self.data_root, "labels.json5")
             if not is_file(self.labels_file_path, raise_exception=False) or update:
-                labels_data = get_project_labels(session=self.session)
+                labels_data = get_project_labels(project_id=self.id, session=self.session)
                 with open(self.labels_file_path, "w") as f:
                     json.dump(labels_data, f, indent=2, sort_keys=True)
             else:
@@ -1485,6 +1491,13 @@ class Project(Data):
         else:
             doc = self.document_class(project=self, **document_data)
             doc.get_document_details(update=False)
+
+    def get_document_by_id(self, document_id: int) -> Document:
+        """Return document by it's ID."""
+        for document in self.documents:
+            if document.id == document_id:
+                return document
+        raise IndexError
 
     def get_documents(self, update=False):
         """

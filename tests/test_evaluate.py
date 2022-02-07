@@ -6,7 +6,8 @@ from copy import deepcopy
 from konfuzio_sdk.data import Project, Document
 from konfuzio_sdk.evaluate import compare
 from konfuzio_sdk.urls import get_document_api_details_url
-from settings import BASE_DIR
+
+TEST_PROJECT_ID = 46
 
 
 class TestEvaluation(unittest.TestCase):
@@ -37,67 +38,67 @@ class TestEvaluation(unittest.TestCase):
 
     def test_doc_on_doc_incl_multiline_annotation(self):
         """Test if a document is 100 % equivalent even it has unrevised Annotations."""
-        prj = Project()
+        prj = Project(id=TEST_PROJECT_ID)
         doc_a = prj.documents[0]
         doc_b = prj.documents[0]  # predicted
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 18
+        assert len(evaluation) == 21
         # for an annotation which is human made, it is nan, so that above threshold is False
         # doc_a 17 + 1
-        assert evaluation["true_positive"].sum() == 18  # 1 multiline with 2 lines = 2 annotations
+        assert evaluation["true_positive"].sum() == 19  # 1 multiline with 2 lines = 2 annotations
         assert evaluation["false_positive"].sum() == 0
         # due to the fact that Konfuzio Server does not save confidence = 100 % if annotation was not created by a human
         assert evaluation["false_negative"].sum() == 0
 
     def test_doc_where_first_annotation_was_skipped(self):
         """Test if a document is 100 % equivalent with first annotation not existing for a certain label."""
-        prj = Project()
+        prj = Project(id=TEST_PROJECT_ID)
         doc_a = prj.documents[0]
         doc_b = prj.documents[0]  # predicted
         doc_b._annotations.pop(0)  # pop an annotation that is correct in BOTH documents
         assert doc_a._annotations == doc_b._annotations  # first annotation is removed in both documents
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 16  # 2 annotations are is_correct false
+        assert len(evaluation) == 19  # 2 annotations are is_correct false
         # doc_a 16 (multiline removed)
-        assert evaluation["true_positive"].sum() == 16
+        assert evaluation["true_positive"].sum() == 17
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 0
 
     def test_doc_where_last_annotation_was_skipped(self):
         """Test if a document is 100 % equivalent with last annotation not existing for a certain label."""
-        prj = Project()
+        prj = Project(id=TEST_PROJECT_ID)
         doc_a = prj.documents[0]
         doc_b = prj.documents[0]  # predicted
         doc_b._annotations.pop(11)  # pop an annotation that is correct in BOTH documents
         assert doc_a._annotations == doc_b._annotations  # last annotation is removed in both documents
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 17  # 2 annotations are is_correct false
+        assert len(evaluation) == 20  # 2 annotations are is_correct false
         # doc_a 16 + 1
-        assert evaluation["true_positive"].sum() == 17
+        assert evaluation["true_positive"].sum() == 18
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 0
 
     def test_if_first_multiline_annotation_is_missing_in_b(self):
         """Test if a document is equivalent if first annotation is missing."""
-        prj = Project()
+        prj = Project(id=TEST_PROJECT_ID)
         doc_a = prj.documents[0]
-        doc_b = Document()
+        doc_b = Document(project=prj)
         for annotation in doc_a.annotations()[1:]:
             doc_b.add_annotation(annotation)
 
         assert len(doc_b.annotations()) == len(doc_a.annotations()) - 1
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 18  # 2 annotations are false
+        assert len(evaluation) == 21  # 2 annotations are false
         # doc a 17 + 1
-        assert evaluation["true_positive"].sum() == 16  # 1 multiline with 2 lines = 2 annotations
+        assert evaluation["true_positive"].sum() == 17  # 1 multiline with 2 lines = 2 annotations
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 2
 
     def test_doc_where_first_annotation_is_missing_in_a(self):
         """Test if a document is equivalent if first annotation is not present."""
-        prj = Project()
+        prj = Project(id=TEST_PROJECT_ID)
         doc_b = prj.documents[0]
-        doc_a = Document()
+        doc_a = Document(project=prj)
         # use only correct annotations
         for annotation in doc_b.annotations()[1:]:
             doc_a.add_annotation(annotation)
@@ -105,20 +106,20 @@ class TestEvaluation(unittest.TestCase):
         # evaluate on doc_b and assume the feedback required ones are correct
         assert len(doc_a.annotations()) == len(doc_b.annotations()) - 1
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 18  # 2 annotations are false and two have feedback required
+        assert len(evaluation) == 21  # 2 annotations are false and two have feedback required
         # TODO: add feedback required again
-        assert evaluation["true_positive"].sum() == 16
-        assert evaluation["false_positive"].sum() == 2  # 1 multiline (2 lines == 2 annotations) + 2 feedback required
+        assert evaluation["true_positive"].sum() == 17
+        assert evaluation["false_positive"].sum() == 3  # 1 multiline (2 lines == 2 annotations) + 2 feedback required
         assert evaluation["false_negative"].sum() == 0
 
     def test_only_unrevised_annotations(self):
         """Test to evaluate on a document that has only unrevised annotations."""
-        prj = Project()
-        for document in prj.get_documents_by_status(dataset_statuses=[1]):
+        prj = Project(id=TEST_PROJECT_ID)
+        for document in prj.get_documents_by_status(dataset_statuses=[0]):
             if document.id == 137234:
                 doc_a = document
 
-        doc_b = Document()
+        doc_b = Document(project=prj)
 
         assert len(doc_a.annotations()) == len(doc_b.annotations()) == 0
         evaluation = compare(doc_a, doc_b, only_use_correct=True)
@@ -130,76 +131,76 @@ class TestEvaluation(unittest.TestCase):
 
     def test_doc_where_first_annotation_from_all_is_missing_in_a(self):
         """Test if a document is equivalent if all annotation are not present and feedback required are included."""
-        prj = Project()
+        prj = Project(id=TEST_PROJECT_ID)
         doc_b = prj.documents[0]
-        doc_a = Document()
+        doc_a = Document(project=prj)
         # use correct annotations and feedback required ones
         for annotation in doc_b.annotations(use_correct=False)[1:]:
             doc_a.add_annotation(annotation)
 
         assert len(doc_a.annotations()) == len(doc_b.annotations()) - 1
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 18  # 2 annotations are false
+        assert len(evaluation) == 21  # 2 annotations are false
         # doc a 17 + 1
-        assert evaluation["true_positive"].sum() == 16
+        assert evaluation["true_positive"].sum() == 17
         assert evaluation["false_positive"].sum() == 2  # 1 multiline (2 lines == 2 annotations)
         assert evaluation["false_negative"].sum() == 0
 
     def test_doc_where_last_annotation_is_missing_in_b(self):
         """Test if a document is equivalent if last annotation is missing."""
-        prj = Project()
+        prj = Project(id=TEST_PROJECT_ID)
         doc_a = prj.documents[0]
-        doc_b = Document()
+        doc_b = Document(project=prj)
         # use correct annotations and feedback required ones
         for annotation in doc_a.annotations(use_correct=False)[:-1]:
             doc_b.add_annotation(annotation)
 
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 18  # 2 annotations are false
+        assert len(evaluation) == 21  # 2 annotations are false
         # doc a 17 + 1
-        assert evaluation["true_positive"].sum() == 17  # due to the fact that we find both offsets of the multiline
+        assert evaluation["true_positive"].sum() == 18  # due to the fact that we find both offsets of the multiline
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 1
 
     def test_doc_where_last_annotation_is_missing_in_a(self):
         """Test if a document is equivalent if last annotation is not present."""
-        prj = Project()
+        prj = Project(id=TEST_PROJECT_ID)
         doc_b = prj.documents[0]
-        doc_a = Document()
+        doc_a = Document(project=prj)
         # use correct annotations and feedback required ones
         for annotation in doc_b.annotations(use_correct=False)[:-1]:
             doc_a.add_annotation(annotation)
 
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 18  # 2 annotations are false
+        assert len(evaluation) == 21  # 2 annotations are false
         # doc a 16 + 1
-        assert evaluation["true_positive"].sum() == 17  # due to the fact that we find both offsets of the multiline
+        assert evaluation["true_positive"].sum() == 18  # due to the fact that we find both offsets of the multiline
         assert evaluation["false_positive"].sum() == 1
         assert evaluation["false_negative"].sum() == 0
 
     def test_nothing_should_be_predicted(self):
         """Support to evaluate that nothing is found in a document."""
-        prj = Project()
-        doc_a = Document()
+        prj = Project(id=TEST_PROJECT_ID)
+        doc_a = Document(project=prj)
         doc_b = prj.documents[0]
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 19
+        assert len(evaluation) == 22
         assert evaluation["true_positive"].sum() == 0
         # any annotation above threshold is a false positive independent if it's correct or revised
-        assert len([an for an in doc_b.annotations(use_correct=False) if an.accuracy > an.label.threshold]) == 17
-        assert evaluation["false_positive"].sum() == 18  # but one annotation is multiline
+        assert len([an for an in doc_b.annotations(use_correct=False) if an.accuracy > an.label.threshold]) == 19
+        assert evaluation["false_positive"].sum() == 20  # but one annotation is multiline
         assert evaluation["false_negative"].sum() == 0
 
     def test_nothing_can_be_predicted(self):
         """Support to evaluate that nothing must be found in a document."""
-        prj = Project()
+        prj = Project(id=TEST_PROJECT_ID)
         doc_a = prj.documents[0]
-        doc_b = Document()
+        doc_b = Document(project=prj)
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 19  # we evaluate on span level an one annotation is multiline
+        assert len(evaluation) == 22  # we evaluate on span level an one annotation is multiline
         assert evaluation["true_positive"].sum() == 0
         assert evaluation["false_positive"].sum() == 0
-        assert evaluation["false_negative"].sum() == 18
+        assert evaluation["false_negative"].sum() == 19
 
     def test_doc_with_overruled_top_annotations(self):
         """
@@ -210,9 +211,9 @@ class TestEvaluation(unittest.TestCase):
         Only 1 is in the prediction.
         """
         # todo: this logic is a view logic on the document: shouldn't this go into the annotations function
-        prj = Project()
+        prj = Project(id=TEST_PROJECT_ID)
         doc_a = prj.documents[0]
-        doc_b = Document()
+        doc_b = Document(project=prj)
 
         found = False
         for annotation in doc_a.annotations(use_correct=False):
@@ -224,9 +225,9 @@ class TestEvaluation(unittest.TestCase):
             doc_b.add_annotation(annotation)
 
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 18
+        assert len(evaluation) == 21
         # Evaluation as it is now: everything needs to be find even if multiple=False
-        assert evaluation["true_positive"].sum() == 17
+        assert evaluation["true_positive"].sum() == 18
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 1
 
@@ -245,9 +246,9 @@ class TestEvaluation(unittest.TestCase):
         """
         from konfuzio_sdk.data import AnnotationSet, Annotation
 
-        prj = Project()
+        prj = Project(id=TEST_PROJECT_ID)
         doc_a = prj.documents[20]  # doc ID 44859
-        doc_b = Document()
+        doc_b = Document(project=prj)
 
         annotation_sets = []
         for annotation_set in doc_a.annotation_sets[:-1]:
@@ -265,10 +266,10 @@ class TestEvaluation(unittest.TestCase):
         doc_b.annotation_sets = annotation_sets
 
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 29
-        assert evaluation["true_positive"].sum() == 24
+        assert len(evaluation) == 31
+        assert evaluation["true_positive"].sum() == 30
         assert evaluation["false_positive"].sum() == 0
-        assert evaluation["false_negative"].sum() == 5
+        assert evaluation["false_negative"].sum() == 1
 
     def test_doc_with_extra_annotation_set(self):
         """
@@ -278,10 +279,10 @@ class TestEvaluation(unittest.TestCase):
         """
         from konfuzio_sdk.data import AnnotationSet, Annotation
 
-        prj = Project()
+        prj = Project(id=TEST_PROJECT_ID)
         doc_online = prj.documents[20]  # doc ID 44859
-        doc_a = Document()
-        doc_b = Document()
+        doc_a = Document(project=prj)
+        doc_b = Document(project=prj)
 
         annotation_sets_b = []
         for annotation_set in doc_online.annotation_sets:
@@ -322,9 +323,9 @@ class TestEvaluation(unittest.TestCase):
         assert len(doc_b.annotation_sets[-2].annotations) > 0
 
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 29
+        assert len(evaluation) == 31
         assert evaluation["true_positive"].sum() == 26
-        assert evaluation["false_positive"].sum() == 3
+        assert evaluation["false_positive"].sum() == 5
         assert evaluation["false_negative"].sum() == 0
 
     def test_doc_with_annotation_set_with_multiple_label_that_should_be_split(self):
@@ -336,9 +337,9 @@ class TestEvaluation(unittest.TestCase):
 
         Those annotations predicted with the wrong annotation set are considered false positives.
         """
-        prj = Project()
+        prj = Project(id=TEST_PROJECT_ID)
         doc_a = prj.documents[4]  # doc ID 44841
-        doc_b = Document()
+        doc_b = Document(project=prj)
 
         for annotation in doc_a.annotations(use_correct=False):
             # replace 1st Steuer annotation set (ID 679457) with 2nd (ID 679458)
@@ -369,9 +370,9 @@ class TestEvaluation(unittest.TestCase):
         Those annotations predicted with the wrong annotation set are considered false positives and the missing
         annotation is predicted as false negative.
         """
-        prj = Project()
+        prj = Project(id=TEST_PROJECT_ID)
         doc_a = prj.documents[4]  # doc ID 44841
-        doc_b = Document()
+        doc_b = Document(project=prj)
 
         # skip last multiple annotation from Steuer
         for annotation in doc_a.annotations(use_correct=False)[:-7] + doc_a.annotations(use_correct=False)[-6:]:
@@ -406,9 +407,9 @@ class TestEvaluation(unittest.TestCase):
         """
         from konfuzio_sdk.data import Annotation
 
-        prj = Project()
+        prj = Project(id=TEST_PROJECT_ID)
         doc_a = prj.documents[4]  # doc ID 44841
-        doc_b = Document()
+        doc_b = Document(project=prj)
 
         new_annotation = deepcopy(doc_a.annotations(use_correct=False)[1])
         # keep the offset string but change the start and end offsets
@@ -447,9 +448,9 @@ class TestEvaluation(unittest.TestCase):
         """
         from konfuzio_sdk.data import Annotation
 
-        prj = Project()
+        prj = Project(id=TEST_PROJECT_ID)
         doc_a = prj.documents[4]  # doc ID 44841
-        doc_b = Document()
+        doc_b = Document(project=prj)
 
         new_annotation = deepcopy(doc_a.annotations(use_correct=False)[0])
         # keep the offset string but change the start and end offsets
@@ -488,9 +489,9 @@ class TestEvaluation(unittest.TestCase):
         """
         from konfuzio_sdk.data import Annotation
 
-        prj = Project()
+        prj = Project(id=TEST_PROJECT_ID)
         doc_a = prj.documents[4]  # doc ID 44841
-        doc_b = Document()
+        doc_b = Document(project=prj)
 
         # TODO: add function to edit annotation?
         new_annotation = deepcopy(doc_a.annotations(use_correct=False)[0])
@@ -528,9 +529,9 @@ class TestEvaluation(unittest.TestCase):
         """
         from konfuzio_sdk.data import Annotation
 
-        prj = Project()
+        prj = Project(id=TEST_PROJECT_ID)
         doc_a = prj.documents[4]  # doc ID 44841
-        doc_b = Document()
+        doc_b = Document(project=prj)
 
         # 1st annotation from 1st annotation set Brutto-Bezug belonging to the 2nd annotation set
         new_annotation_1 = deepcopy(doc_a.annotations(use_correct=False)[6])
@@ -581,9 +582,9 @@ class TestEvaluation(unittest.TestCase):
         In this test case, there are two annotations where each one belongs to an annotation set from a different Label
         Set.
         """
-        prj = Project()
+        prj = Project(id=TEST_PROJECT_ID)
         doc_a = prj.documents[4]  # doc ID 44841
-        doc_b = Document()
+        doc_b = Document(project=prj)
 
         # skip 1 annotation from an annotation set that is in the same line as other annotation set
         for annotation in doc_a.annotations(use_correct=False)[:28] + doc_a.annotations(use_correct=False)[29:]:
@@ -606,26 +607,26 @@ class TestEvaluation(unittest.TestCase):
         How would they be handled in the evaluation?
         TODO: review
         """
-        prj = Project()
+        prj = Project(id=TEST_PROJECT_ID)
         _ = prj.documents[0]
-        _ = Document()
+        _ = Document(project=prj)
 
     @unittest.skip(reason='Waiting to be able toe specify the Extraction AI model version.')
     def test_compare_extractions_available_online_to_the_current_version(self):
         """Compare a version of the online available extraction to the status quo of the human doc."""
-        prj = Project()
+        prj = Project(id=TEST_PROJECT_ID)
         doc_human = prj.documents[-1]
         online = get_document_api_details_url(doc_human.id, include_extractions=True)
-        doc_online = Document()
+        doc_online = Document(project=prj)
         doc_online = doc_online.get_from_online(online)
         compare(doc_human, doc_online)
 
     def test_compare_extractions_to_a_real_doc(self):
         """Test to compare the results of an extraction model to the human annotations."""
-        prj = Project()
+        prj = Project(id=TEST_PROJECT_ID)
         human_doc = prj.documents[0]
         self.assertEqual(44823, human_doc.id)
-        path_to_model = os.path.join(BASE_DIR, "lohnabrechnung.pkl")
+        path_to_model = os.path.join("./", "lohnabrechnung.pkl")
         evaluation = human_doc.evaluate_extraction_model(path_to_model)
         self.assertEqual(10, evaluation["true_positive"].sum())
         self.assertEqual(1, evaluation["false_positive"].sum())

@@ -8,3 +8,4 @@ venv
 settings.py
 *.pkl
 *.tar.gz
+*data_*

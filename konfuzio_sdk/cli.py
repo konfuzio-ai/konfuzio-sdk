@@ -6,11 +6,10 @@ import logging
 import os
 import sys
 
-import tabulate
 from tqdm import tqdm
 
 import konfuzio_sdk
-from konfuzio_sdk.api import get_auth_token, get_project_list, create_new_project
+from konfuzio_sdk.api import get_auth_token, create_new_project
 
 sys.tracebacklimit = 0
 
@@ -21,7 +20,7 @@ Please enter a valid command line option.
 ----------------------------------------
 Valid options:
 konfuzio_sdk init: inits the konfuzio Package by setting the necessary files
-konfuzio_sdk download_data: downloads the data from the project
+konfuzio_sdk download_data 123: downloads the data from the project, use the ID of the project, e.g. 123
 
 These commands should be run inside of your working directory.
 """
@@ -36,11 +35,9 @@ from decouple import config
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
-KONFUZIO_PROJECT_ID = config('KONFUZIO_PROJECT_ID', default=-1, cast=int)
 KONFUZIO_HOST = config('KONFUZIO_HOST', default="https://app.konfuzio.com")
 KONFUZIO_USER = config('KONFUZIO_USER', default=None)
 KONFUZIO_TOKEN = config('KONFUZIO_TOKEN', default=None)
-KONFUZIO_DATA_FOLDER = config('KONFUZIO_DATA_FOLDER', default=None)
 '''
 
 
@@ -54,6 +51,8 @@ def init_settings(project_folder):
 
     with open(os.path.join(project_folder, settings_file), "w", encoding="utf-8") as f:
         f.write(SETTINGS_FILE_CONTENT)
+
+    return True
 
 
 def init_env(project_folder):
@@ -73,58 +72,13 @@ def init_env(project_folder):
     token = get_auth_token(user, password, host)
 
     with open(os.path.join(project_folder, ".env"), "w") as f:
-        f.write("KONFUZIO_HOST = %s" % host)
-        f.write("\n")
-        f.write("KONFUZIO_USER = %s" % user)
-        f.write("\n")
-        f.write("KONFUZIO_TOKEN = %s" % token)
-        f.write("\n")
+        f.write(f"KONFUZIO_HOST = {host}\n")
+        f.write(f"KONFUZIO_USER = {user}\n")
+        f.write(f"KONFUZIO_TOKEN = {token}\n")
 
-    konfuzio_sdk.KONFUZIO_HOST = host
-    konfuzio_sdk.KONFUZIO_USER = user
-    konfuzio_sdk.KONFUZIO_TOKEN = token
-
-    print(f'Connect to {host} to retrieve projects...')
-
-    project_list = get_project_list(token, host=host)
-
-    if len(project_list) == 0:
-        print("There are no available projects. Creating a new project now...")
-        _ = create_project(token, host)
-        project_list = get_project_list(token, host)
-
-    print(f"List with all the available projects for {user}:")
-    header = ["Project ID", "Project name"]
-    rows = [list(x.values())[:2] for x in project_list]
-    rows.append([0, '[TO CREATE A NEW PROJECT]'])
-    print(f"{tabulate.tabulate(rows, header)}\n")
-
-    project_id = input("ID of the project you want to connect: ")
-
-    if project_id not in [str(row[0]) for row in rows]:
-        raise ValueError("[ERROR] The ID that you provided is not valid. Please run init again.")
-
-    if int(project_id) == 0:
-        print("Creating a new project...")
-        project_id = create_project(token, host=host)
-
-    data_folder = input("Folder where to allocate the data (press [ENTER] for the default: 'data_<project_id>'): ")
-
-    if data_folder == "":
-        data_folder = "data_" + str(project_id)
-
-    data_folder = verify_data_folder(project_folder, data_folder)
-
-    with open(os.path.join(project_folder, ".env"), "a") as f:
-        f.write("KONFUZIO_PROJECT_ID = %s" % project_id)
-        f.write("\n")
-        f.write("KONFUZIO_DATA_FOLDER = %s" % data_folder)
-        f.write("\n")
-
-    env_file = open(os.path.join(project_folder, ".env"), "r")
     print("[SUCCESS] SDK initialized!")
 
-    return env_file.read()
+    return True
 
 
 def init(project_folder="./"):
@@ -133,11 +87,11 @@ def init(project_folder="./"):
 
     :param project_folder: Root folder of the project
     """
-    init_settings(project_folder)
-    init_env(project_folder)
+    assert init_settings(project_folder)
+    assert init_env(project_folder)
 
 
-def data():
+def data(id: int):
     """
     Download the data from the project.
 
@@ -148,7 +102,7 @@ def data():
     print("Starting the download. Please wait until the data download is finished...")
     from konfuzio_sdk.data import Project
 
-    training_prj = Project()
+    training_prj = Project(id=id)
     training_prj.update()
 
     if len(training_prj.documents + training_prj.test_documents) == 0:
@@ -219,7 +173,11 @@ def main():
         init()
 
     elif first_arg == 'download_data':
-        data()
+        try:
+            id = cli_options[0]
+        except IndexError:
+            raise IndexError("Please define a project ID, e.g. 'konfuzio_sdk download_data 123'")
+        data(id=int(id))
 
     else:
         print(CLI_ERROR)

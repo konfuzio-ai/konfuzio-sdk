@@ -6,11 +6,6 @@ repos:
     -   id: trailing-whitespace
         exclude: ^README.md
 
--   repo: https://gitlab.com/pycqa/flake8
-    rev: 3.9.0
-    hooks:
-    -   id: flake8
-
 -   repo: https://github.com/pycqa/pydocstyle
     rev: 4.0.0
     hooks:
@@ -23,3 +18,8 @@ repos:
     -   id: black
         args: [--line-length, "120", --skip-string-normalization]
         exclude: ^README.md
+
+-   repo: https://gitlab.com/pycqa/flake8
+    rev: 3.9.0
+    hooks:
+    -   id: flake8

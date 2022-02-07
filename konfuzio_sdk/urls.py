@@ -2,7 +2,7 @@
 
 import logging
 
-from konfuzio_sdk import KONFUZIO_HOST, KONFUZIO_PROJECT_ID
+from konfuzio_sdk import KONFUZIO_HOST
 from typing import Union
 
 logger = logging.getLogger(__name__)
@@ -32,7 +32,7 @@ def get_projects_list_url(host: str = KONFUZIO_HOST) -> str:
     return f"{host}/api/projects/"
 
 
-def get_project_url(project_id: Union[int, None] = None, host: str = KONFUZIO_HOST) -> str:
+def get_project_url(project_id: Union[int, None], host: str = KONFUZIO_HOST) -> str:
     """
     Generate URL to access the project details.
 
@@ -40,11 +40,10 @@ def get_project_url(project_id: Union[int, None] = None, host: str = KONFUZIO_HO
     :param host: Konfuzio host
     :return: URL to access the project details.
     """
-    project_id = project_id if project_id else KONFUZIO_PROJECT_ID
     return f'{host}/api/projects/{project_id}/'
 
 
-def get_documents_meta_url(host: str = KONFUZIO_HOST, project_id: int = KONFUZIO_PROJECT_ID) -> str:
+def get_documents_meta_url(project_id: int, host: str = KONFUZIO_HOST) -> str:
     """
     Generate URL to load meta information about the documents in the project.
 
@@ -56,7 +55,7 @@ def get_documents_meta_url(host: str = KONFUZIO_HOST, project_id: int = KONFUZIO
 
 
 def get_document_segmentation_details_url(
-    document_id: int, project_id: int = KONFUZIO_PROJECT_ID, host: str = KONFUZIO_HOST, action='segmentation'
+    document_id: int, project_id: int, host: str = KONFUZIO_HOST, action='segmentation'
 ) -> str:
     """
     Generate URL to get the segmentation results of a document.
@@ -117,11 +116,7 @@ def get_document_original_file_url(document_id: int, host: str = KONFUZIO_HOST) 
 
 
 def get_document_api_details_url(
-    document_id: int,
-    host: str = KONFUZIO_HOST,
-    project_id: int = KONFUZIO_PROJECT_ID,
-    include_extractions: bool = False,
-    extra_fields='bbox',
+    document_id: int, project_id: int, host: str = KONFUZIO_HOST, include_extractions: bool = False, extra_fields='bbox'
 ) -> str:
     """
     Generate URL to access the details of a document in a project.
@@ -166,9 +161,7 @@ def get_label_url(label_id: int, host: str = KONFUZIO_HOST) -> str:
 # ANNOTATIONS
 
 
-def get_document_annotations_url(
-    document_id: int, host: str = KONFUZIO_HOST, project_id: int = KONFUZIO_PROJECT_ID
-) -> str:
+def get_document_annotations_url(document_id: int, project_id: int, host: str = KONFUZIO_HOST) -> str:
     """
     Access annotations of a document.
 
@@ -180,9 +173,7 @@ def get_document_annotations_url(
     return f'{host}/api/projects/{project_id}/docs/{document_id}/annotations/'
 
 
-def get_annotation_url(
-    document_id: int, annotation_id: int, host: str = KONFUZIO_HOST, project_id: int = KONFUZIO_PROJECT_ID
-) -> str:
+def get_annotation_url(document_id: int, annotation_id: int, project_id: int, host: str = KONFUZIO_HOST) -> str:
     """
     Generate URL to access an annotation.
 
