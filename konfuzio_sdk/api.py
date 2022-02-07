@@ -29,7 +29,7 @@ from konfuzio_sdk.utils import is_file
 logger = logging.getLogger(__name__)
 
 
-def get_auth_token(username, password, host):
+def get_auth_token(username, password, host) -> str:
     """
     Generate the authentication token for the user.
 
@@ -38,7 +38,13 @@ def get_auth_token(username, password, host):
     url = get_auth_token_url(host)
     user_credentials = {"username": username, "password": password}
     r = requests.post(url, json=user_credentials)
-    return r
+    if r.status_code == 200:
+        token = json.loads(r.text)['token']
+    else:
+        raise ValueError(
+            "[ERROR] Your credentials are not correct! Please run init again and provide the correct credentials."
+        )
+    return token
 
 
 def get_project_list(token, host):

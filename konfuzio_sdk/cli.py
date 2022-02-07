@@ -70,13 +70,7 @@ def init_env(project_folder):
     if host == "":
         host = konfuzio_sdk.KONFUZIO_HOST
 
-    response = get_auth_token(user, password, host)
-    if response.status_code == 200:
-        token = json.loads(response.text)['token']
-    else:
-        raise ValueError(
-            "[ERROR] Your credentials are not correct! Please run init again and provide the correct credentials."
-        )
+    token = get_auth_token(user, password, host)
 
     with open(os.path.join(project_folder, ".env"), "w") as f:
         f.write("KONFUZIO_HOST = %s" % host)
@@ -90,7 +84,7 @@ def init_env(project_folder):
     konfuzio_sdk.KONFUZIO_USER = user
     konfuzio_sdk.KONFUZIO_TOKEN = token
 
-    project_list = json.loads(get_project_list(token, host=host).text)
+    project_list = get_project_list(token, host=host)
 
     if len(project_list) == 0:
         print("There are no available projects. Creating a new project now...")

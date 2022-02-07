@@ -9,17 +9,20 @@ sys.path.append(os.getcwd())
 KONFUZIO_PROJECT_ID = None
 KONFUZIO_USER = None
 KONFUZIO_TOKEN = None
-KONFUZIO_HOST = None
+KONFUZIO_HOST = "https://app.konfuzio.com"
 KONFUZIO_DATA_FOLDER = None
+DATA_ROOT = None
+FILE_ROOT = None
+BASE_DIR = os.getcwd()
 
 try:
     from settings import *  # NOQA
 except ImportError:
     pass  # if there is no settings.py in the working directory
 
-BASE_DIR = os.getcwd()
-DATA_ROOT = os.path.join(BASE_DIR, KONFUZIO_DATA_FOLDER)
-FILE_ROOT = os.path.join(DATA_ROOT, 'pdf')
+if KONFUZIO_DATA_FOLDER:
+    DATA_ROOT = os.path.join(BASE_DIR, KONFUZIO_DATA_FOLDER)
+    FILE_ROOT = os.path.join(DATA_ROOT, 'pdf')
 
 # Supported File Types in OCR
 

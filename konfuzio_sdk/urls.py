@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 # TOKEN-AUTH
 
 
-def get_auth_token_url(host: str) -> str:
+def get_auth_token_url(host: str = KONFUZIO_HOST) -> str:
     """
     Generate URL that creates an authentication token for the user.
 

@@ -532,9 +532,11 @@ class Annotation(Data):
         """View the string representation of the Annotation."""
         if self._spans and len(self._spans) == 1:
             return self.document.text[self.start_offset : self.end_offset]
-        else:
-            # todo this offset string is wrong: # an Annotation has not **one** offset string
-            raise NotImplementedError
+        elif self._spans and len(self._spans) > 1:
+            raise ValueError(
+                f'{self.__class__.__name__} has multiple offsets and thereby not one offset string,'
+                f' please calculate the offset strings using the Spans of the Annotation.'
+            )
 
     @property
     def eval_dict(self) -> List[dict]:
