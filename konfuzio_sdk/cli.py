@@ -84,6 +84,8 @@ def init_env(project_folder):
     konfuzio_sdk.KONFUZIO_USER = user
     konfuzio_sdk.KONFUZIO_TOKEN = token
 
+    print(f'Connect to {host} to retrieve projects...')
+
     project_list = get_project_list(token, host=host)
 
     if len(project_list) == 0:

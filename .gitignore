@@ -5,6 +5,6 @@ konfuzio_sdk.egg-info
 docs/build/
 *.pyc
 venv
-*/settings.py
+settings.py
 *.pkl
 *.tar.gz
