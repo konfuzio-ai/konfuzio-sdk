@@ -47,21 +47,21 @@ After the installation, initialize the package in your working directory with:
 
 `konfuzio_sdk init`
 
-This will require your credentials to access the Konfuzio Server and the project ID.
-You can check your project ID by selecting the project in the Projects tab. The id of the project is shown in the URL.
-It will also require a name of a folder where to allocate the data from your Konfuzio project.
-At the end, two files will be created in your working directory: `.env` and `settings.py`.
+This will require your credentials to access the Konfuzio Server.
+At the end, one file will be created in your working directory: `.env.
 
 The `.env` file contains the credentials to access the app and should not become public.
-The `settings.py` file defines constant variables that will be available in the project, including the ones you defined in the `.env`. This file should not be modified.
 
 ## 4. Download the data
 
-To download the data from your Konfuzio project, you can execute:
+To download the data from your Konfuzio project you need to specify the project ID.:
+You can check your project ID by selecting the project in the Projects tab in the Web App.
+The ID of the project is shown in the URL.
 
-`konfuzio_sdk download_data`
+`konfuzio_sdk download_data 123`
 
-The data from the documents that you uploaded in your Konfuzio project will be downloaded to the folder that you provided in the previous step.
+The data from the documents that you uploaded in your Konfuzio project will be downloaded to a folder called "data_" 
+followed by the ID of the project.
 
 *Note*:
 Only documents in the training or test set are downloaded.
