@@ -131,7 +131,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             label_id=label_id,
             label_set_id=label_set_id,
             revised=False,
-            is_correct=True,
+            is_correct=False,
             bboxes=bboxes,
         )
 
@@ -141,30 +141,36 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_post_document_annotation(self):
         """Create an Annotation via API."""
-        document_id = TEST_DOCUMENT_ID
         start_offset = 60
         end_offset = 63
         accuracy = 0.0001
         label_id = 863  # Refers to Label Betrag (863)
-        label_set_id = 64  # Refers to LabelSet Brutto-Bezug (allows multisections)
+        label_set_id = 64  # Refers to LabelSet Brutto-Bezug (allows multiple annotation sets)
         # create a revised annotation, so we can verify its existence via get_document_annotations
         response = post_document_annotation(
-            document_id=document_id,
+            document_id=TEST_DOCUMENT_ID,
             project_id=TEST_PROJECT_ID,
             start_offset=start_offset,
             end_offset=end_offset,
             accuracy=accuracy,
             label_id=label_id,
             label_set_id=label_set_id,
-            revised=True,
+            revised=False,
+            is_correct=False,
         )
         annotation = json.loads(response.text)
-        annotation_ids = [
-            annot['id']
-            for annot in get_document_annotations(document_id, project_id=TEST_PROJECT_ID, include_extractions=True)
-        ]
+        # check if the update has been received by the server
+        annotations = get_document_annotations(TEST_DOCUMENT_ID, project_id=TEST_PROJECT_ID)
+        annotation_ids = [annot['id'] for annot in annotations]
         assert annotation['id'] in annotation_ids
-        assert delete_document_annotation(document_id, annotation['id'], project_id=TEST_PROJECT_ID)
+        # check if the SDK can be updated with the new annotation
+        doc = Project(id=46).get_document_by_id(TEST_DOCUMENT_ID)
+        doc.update()
+        assert annotation['id'] in [an.id for an in doc.annotations(use_correct=False)]
+        # delete the annotation, i.e. change it's status from feedback required to negative
+        negative_id = delete_document_annotation(TEST_DOCUMENT_ID, annotation['id'], project_id=TEST_PROJECT_ID)
+        # delete it a second time to remove this annotation from the feedback stored as negative
+        assert delete_document_annotation(TEST_DOCUMENT_ID, negative_id, project_id=TEST_PROJECT_ID)
 
     def test_get_project_labels(self):
         """Download Labels from API for a Project."""

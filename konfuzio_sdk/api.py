@@ -81,9 +81,6 @@ def retry_get(session, url):
     :param url: Url of the endpoint
     :return: Response.
     """
-    # todo if thre is no KONFUZIO_TOKEN raise ConnectionError('Make sure to have a token in your environment, '
-    #    'see https://dev.konfuzio.com/sdk/configuration_reference.html.')
-
     retry_count = 0
     while True:
         try:
@@ -211,13 +208,7 @@ def get_document_annotations(document_id, project_id, include_extractions=False,
     url = get_document_api_details_url(document_id, project_id=project_id, include_extractions=include_extractions)
     r = retry_get(session, url)
     annotations = r.json()['annotations']
-    not_custom_annotations = annotations
-    revised_annotations_and_extractions = [
-        x for x in not_custom_annotations if x['revised'] or x['is_correct'] or not x['id']
-    ]
-    sorted_annotations = sorted(
-        revised_annotations_and_extractions, key=lambda x: (x.get('start_offset') is None, x.get('start_offset'))
-    )
+    sorted_annotations = sorted(annotations, key=lambda x: (x.get('start_offset') is None, x.get('start_offset')))
     logger.info(f'Document with ID {document_id} contains {len(sorted_annotations)} annotations.')
 
     return sorted_annotations
@@ -331,7 +322,11 @@ def delete_document_annotation(document_id: int, annotation_id: int, project_id:
     """
     url = get_annotation_url(document_id=document_id, annotation_id=annotation_id, project_id=project_id)
     r = session.delete(url)
-    return r
+    if r.status_code == 200:
+        # the text annotation received negative feedback and copied the annotation and created a new one
+        return json.loads(r.text)['id']
+    elif r.status_code == 204:
+        return r
 
 
 def get_meta_of_files(project_id: int, session=konfuzio_session()) -> List[dict]:
