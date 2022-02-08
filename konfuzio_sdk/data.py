@@ -528,9 +528,9 @@ class Annotation(Data):
     def offset_string(self) -> Union[List[str], str]:
         """View the string representation of the Annotation."""
         if self._spans and len(self._spans) == 1:
-            logger.warning('Depreciation warning: One Annotation will have one to many offsets.')
             return self.document.text[self._spans[0].start_offset : self._spans[0].end_offset]
         elif self._spans and len(self._spans) > 1:
+            logger.warning('Depreciation warning: One Annotation will have one to many offsets.')
             return [self.document.text[span.start_offset : span.end_offset] for span in self._spans]
 
     @property
