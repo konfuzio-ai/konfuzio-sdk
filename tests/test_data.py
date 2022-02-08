@@ -172,7 +172,7 @@ class TestAPIDataSetup(unittest.TestCase):
             if annotation.id == 4420022:
                 anno = annotation.eval_dict[0]
 
-        assert anno["accuracy"] == 1.0
+        assert anno["confidence"] == 1.0
         # assert anno["created_by"] ==  todo: support this variable provided via API in the Annotation
         # assert anno["custom_offset_string"] ==   todo: support this variable provided via API in the Annotation
         assert anno["end_offset"] == 366  # todo support multiline Annotations

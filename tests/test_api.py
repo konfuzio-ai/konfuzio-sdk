@@ -78,7 +78,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         """Download Annotations and the Text from API for a Document and check their offset alignment."""
         text = get_document_text(TEST_DOCUMENT_ID, project_id=TEST_PROJECT_ID)
         annotations = get_document_annotations(TEST_DOCUMENT_ID, project_id=TEST_PROJECT_ID)
-        assert len(annotations) == 19
+        assert len(annotations) == 20
         # check the text to be in line with the annotations offsets
         for i in range(0, len(annotations)):
             assert (
@@ -100,7 +100,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             project_id=TEST_PROJECT_ID,
             start_offset=24,
             end_offset=1000,
-            accuracy=None,
+            confidence=None,
             label_id=label_id,
             label_set_id=label_set_id,
             revised=False,
@@ -143,7 +143,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         """Create an Annotation via API."""
         start_offset = 60
         end_offset = 63
-        accuracy = 0.0001
+        confidence = 0.0001
         label_id = 863  # Refers to Label Betrag (863)
         label_set_id = 64  # Refers to LabelSet Brutto-Bezug (allows multiple annotation sets)
         # create a revised annotation, so we can verify its existence via get_document_annotations
@@ -152,7 +152,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             project_id=TEST_PROJECT_ID,
             start_offset=start_offset,
             end_offset=end_offset,
-            accuracy=accuracy,
+            confidence=confidence,
             label_id=label_id,
             label_set_id=label_set_id,
             revised=False,

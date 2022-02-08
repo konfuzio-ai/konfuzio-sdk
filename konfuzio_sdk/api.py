@@ -234,7 +234,7 @@ def post_document_annotation(
     project_id: int,
     label_id: int,
     label_set_id: int,
-    accuracy: float,
+    confidence: float,
     revised: bool = False,
     is_correct: bool = False,
     annotation_set=None,
@@ -255,7 +255,7 @@ def post_document_annotation(
     :param document_id: ID of the file
     :param label_id: ID of the label.
     :param label_set_id: ID of the label set where the annotation belongs
-    :param accuracy: Accuracy of the annotation
+    :param confidence: Confidence of the Annotation still called Accuracy by text-annotation
     :param revised: If the annotation is revised or not (bool)
     :param is_correct: If the annotation is corrected or not (bool)
     :param annotation_set: Annotation set to connect to the server
@@ -277,7 +277,7 @@ def post_document_annotation(
         'label': label_id,
         'revised': revised,
         'section_label_id': label_set_id,
-        'accuracy': accuracy,
+        'accuracy': confidence,
         'is_correct': is_correct,
     }
 

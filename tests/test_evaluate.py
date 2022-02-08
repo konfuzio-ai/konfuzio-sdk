@@ -187,7 +187,7 @@ class TestEvaluation(unittest.TestCase):
         assert len(evaluation) == 22
         assert evaluation["true_positive"].sum() == 0
         # any annotation above threshold is a false positive independent if it's correct or revised
-        assert len([an for an in doc_b.annotations(use_correct=False) if an.accuracy > an.label.threshold]) == 19
+        assert len([an for an in doc_b.annotations(use_correct=False) if an.confidence > an.label.threshold]) == 19
         assert evaluation["false_positive"].sum() == 20  # but one annotation is multiline
         assert evaluation["false_negative"].sum() == 0
 

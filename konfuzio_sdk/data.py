@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 EMPTY_SPAN_EVALUATION = {
     "id_local": None,
     "id": None,
-    "accuracy": None,
+    "confidence": None,
     "start_offset": 0,  # to support compare function to evaluate True and False
     "end_offset": 0,  # to support compare function to evaluate True and False
     "is_correct": None,
@@ -307,7 +307,6 @@ class Span(Data):
 
         :param start_offset: Start of the offset string (int)
         :param end_offset: Ending of the offset string (int)
-        todo: do we need bottom and top
         """
         self.id_local = next(Data.id_iter)
         self.start_offset = start_offset
@@ -351,13 +350,11 @@ class Annotation(Data):
         """
         Initialize the Annotation.
 
-        todo: check if it is a good idea that the group carries the label not the Sequence.
-
         :param label: ID of the label or Label object
         :param is_correct: If the annotation is correct or not (bool)
         :param revised: If the annotation is revised or not (bool)
         :param id: ID of the annotation (int)
-        :param accuracy: Accuracy of the annotation (float)
+        :param accuracy: Accuracy of the annotation (float) which is the confidence
         :param document: Document to annotate
         :param annotation_set: Annotation set of the document where the label belongs
         :param label_set_text: Name of the label set where the label belongs
@@ -365,12 +362,12 @@ class Annotation(Data):
         :param label_set_id: ID of the label set where the label belongs
         """
         self.id_local = next(Data.id_iter)
+        self.is_correct = is_correct
         self.revised = revised
         self.normalized = normalized
         self.translated_string = translated_string
         self._spans: List[Span] = []
         self.id = id  # Annotations can have None id, if they are not saved online and are only available locally
-        self.is_correct = is_correct
 
         if document is None:
             # todo None required by trainer
@@ -381,11 +378,11 @@ class Annotation(Data):
             document.add_annotation(self)
 
         if accuracy:  # its a confidence
-            self.accuracy = accuracy  # todo rename to confidence
+            self.confidence = accuracy
         elif self.id is not None and accuracy is None:  # todo hotfix: it's an online annotation crated by a human
-            self.accuracy = 1
+            self.confidence = 1
         else:
-            self.accuracy = None
+            self.confidence = None
 
         if isinstance(label, int):
             self.label: Label = self.document.project.get_label_by_id(label)
@@ -528,15 +525,13 @@ class Annotation(Data):
         return self.id is not None
 
     @property
-    def offset_string(self) -> str:
+    def offset_string(self) -> Union[List[str], str]:
         """View the string representation of the Annotation."""
         if self._spans and len(self._spans) == 1:
-            return self.document.text[self.start_offset : self.end_offset]
+            logger.warning('Depreciation warning: One Annotation will have one to many offsets.')
+            return self.document.text[self._spans[0].start_offset : self._spans[0].end_offset]
         elif self._spans and len(self._spans) > 1:
-            raise ValueError(
-                f'{self.__class__.__name__} has multiple offsets and thereby not one offset string,'
-                f' please calculate the offset strings using the Spans of the Annotation.'
-            )
+            return [self.document.text[span.start_offset : span.end_offset] for span in self._spans]
 
     @property
     def eval_dict(self) -> List[dict]:
@@ -553,7 +548,7 @@ class Annotation(Data):
                         {
                             "id_local": self.id_local,
                             "id": self.id,
-                            "accuracy": self.accuracy,
+                            "confidence": self.confidence,
                             "start_offset": sa.start_offset,  # to support multiline
                             "end_offset": sa.end_offset,  # to support multiline
                             "is_correct": self.is_correct,
@@ -618,7 +613,7 @@ class Annotation(Data):
                 end_offset=self.end_offset,
                 label_id=self.label.id,
                 label_set_id=label_set_id,
-                accuracy=self.accuracy,
+                accuracy=self.confidence,
                 is_correct=self.is_correct,
                 revised=self.revised,
                 annotation_set=self.annotation_set,  # TODO: rename to annotation_set_id
