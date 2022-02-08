@@ -87,7 +87,7 @@ def init(project_folder="./"):
 
     :param project_folder: Root folder of the project
     """
-    assert init_settings(project_folder)
+    # assert init_settings(project_folder)
     assert init_env(project_folder)
 
 

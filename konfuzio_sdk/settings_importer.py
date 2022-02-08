@@ -13,11 +13,6 @@ KONFUZIO_HOST = config('KONFUZIO_HOST', default="https://app.konfuzio.com")
 KONFUZIO_USER = config('KONFUZIO_USER', default=None)
 KONFUZIO_TOKEN = config('KONFUZIO_TOKEN', default=None)
 
-try:
-    from settings import *  # NOQA
-except ImportError:
-    pass  # if there is no settings.py in the working directory
-
 PDF_FILE = 1
 IMAGE_FILE = 2
 OFFICE_FILE = 3
