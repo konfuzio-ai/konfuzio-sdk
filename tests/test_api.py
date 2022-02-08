@@ -7,7 +7,7 @@ import sys
 import unittest
 
 import pytest
-from konfuzio_sdk import KONFUZIO_PROJECT_ID, KONFUZIO_TOKEN, KONFUZIO_HOST
+from konfuzio_sdk import KONFUZIO_TOKEN, KONFUZIO_HOST
 from konfuzio_sdk.api import (
     get_document_text,
     get_meta_of_files,
@@ -30,6 +30,7 @@ from konfuzio_sdk.data import Project
 FOLDER_ROOT = os.path.dirname(os.path.realpath(__file__))
 
 TEST_DOCUMENT_ID = 44823
+TEST_PROJECT_ID = 46
 
 
 @pytest.mark.serial
@@ -38,11 +39,11 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_download_text(self):
         """Test get text for a document."""
-        assert get_document_text(document_id=TEST_DOCUMENT_ID) is not None
+        assert get_document_text(document_id=TEST_DOCUMENT_ID, project_id=TEST_PROJECT_ID) is not None
 
     def test_get_list_of_files(self):
         """Get meta information from documents in the project."""
-        sorted_documents = get_meta_of_files()
+        sorted_documents = get_meta_of_files(project_id=TEST_PROJECT_ID)
         sorted_dataset_documents = [x for x in sorted_documents if x['dataset_status'] in [2, 3]]
         self.assertEqual(26 + 3, len(sorted_dataset_documents))
 
@@ -50,7 +51,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
     def test_upload_file_konfuzio_api(self):
         """Test upload of a file through API and its removal."""
         file_path = os.path.join(FOLDER_ROOT, 'test_data/pdf/1_test.pdf')
-        doc = upload_file_konfuzio_api(file_path, project_id=KONFUZIO_PROJECT_ID)
+        doc = upload_file_konfuzio_api(file_path, project_id=TEST_PROJECT_ID)
         assert doc.status_code == 201
         document_id = json.loads(doc.text)['id']
         assert delete_file_konfuzio_api(document_id)
@@ -75,9 +76,9 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_load_annotations_and_text_from_api(self):
         """Download Annotations and the Text from API for a Document and check their offset alignment."""
-        text = get_document_text(TEST_DOCUMENT_ID)
-        annotations = get_document_annotations(TEST_DOCUMENT_ID)
-        assert len(annotations) == 18
+        text = get_document_text(TEST_DOCUMENT_ID, project_id=TEST_PROJECT_ID)
+        annotations = get_document_annotations(TEST_DOCUMENT_ID, project_id=TEST_PROJECT_ID)
+        assert len(annotations) == 20
         # check the text to be in line with the annotations offsets
         for i in range(0, len(annotations)):
             assert (
@@ -96,9 +97,10 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
         response = post_document_annotation(
             document_id=TEST_DOCUMENT_ID,
+            project_id=TEST_PROJECT_ID,
             start_offset=24,
             end_offset=1000,
-            accuracy=None,
+            confidence=None,
             label_id=label_id,
             label_set_id=label_set_id,
             revised=False,
@@ -108,7 +110,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
         assert response.status_code == 201
         annotation = json.loads(response.text)
-        assert delete_document_annotation(TEST_DOCUMENT_ID, annotation['id'])
+        assert delete_document_annotation(TEST_DOCUMENT_ID, annotation['id'], project_id=TEST_PROJECT_ID)
 
     @unittest.skip(reason='Not supported by Server: https://gitlab.com/konfuzio/objectives/-/issues/8663')
     def test_post_document_annotation_multiline_as_offsets(self):
@@ -129,7 +131,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             label_id=label_id,
             label_set_id=label_set_id,
             revised=False,
-            is_correct=True,
+            is_correct=False,
             bboxes=bboxes,
         )
 
@@ -139,30 +141,40 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_post_document_annotation(self):
         """Create an Annotation via API."""
-        document_id = TEST_DOCUMENT_ID
-        start_offset = 86
-        end_offset = 88
-        accuracy = 0.0001
+        start_offset = 60
+        end_offset = 63
+        confidence = 0.0001
         label_id = 863  # Refers to Label Betrag (863)
-        label_set_id = 64  # Refers to LabelSet Brutto-Bezug (allows multisections)
+        label_set_id = 64  # Refers to LabelSet Brutto-Bezug (allows multiple annotation sets)
         # create a revised annotation, so we can verify its existence via get_document_annotations
         response = post_document_annotation(
-            document_id=document_id,
+            document_id=TEST_DOCUMENT_ID,
+            project_id=TEST_PROJECT_ID,
             start_offset=start_offset,
             end_offset=end_offset,
-            accuracy=accuracy,
+            confidence=confidence,
             label_id=label_id,
             label_set_id=label_set_id,
-            revised=True,
+            revised=False,
+            is_correct=False,
         )
         annotation = json.loads(response.text)
-        annotation_ids = [annot['id'] for annot in get_document_annotations(document_id, include_extractions=True)]
+        # check if the update has been received by the server
+        annotations = get_document_annotations(TEST_DOCUMENT_ID, project_id=TEST_PROJECT_ID)
+        annotation_ids = [annot['id'] for annot in annotations]
         assert annotation['id'] in annotation_ids
-        assert delete_document_annotation(document_id, annotation['id'])
+        # check if the SDK can be updated with the new annotation
+        doc = Project(id=46).get_document_by_id(TEST_DOCUMENT_ID)
+        doc.update()
+        assert annotation['id'] in [an.id for an in doc.annotations(use_correct=False)]
+        # delete the annotation, i.e. change it's status from feedback required to negative
+        negative_id = delete_document_annotation(TEST_DOCUMENT_ID, annotation['id'], project_id=TEST_PROJECT_ID)
+        # delete it a second time to remove this annotation from the feedback stored as negative
+        assert delete_document_annotation(TEST_DOCUMENT_ID, negative_id, project_id=TEST_PROJECT_ID)
 
     def test_get_project_labels(self):
         """Download Labels from API for a Project."""
-        label_ids = [label["id"] for label in get_project_labels()]
+        label_ids = [label["id"] for label in get_project_labels(project_id=TEST_PROJECT_ID)]
         assert set(label_ids) == {
             858,
             859,
@@ -186,14 +198,14 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_get_results_from_segmentation(self):
         """Download segmentation results."""
-        prj = Project()
+        prj = Project(id=TEST_PROJECT_ID)
         result = get_results_from_segmentation(doc_id=prj.documents[0].id, project_id=prj.id)
         assert len(result[0]) == 5  # on the first page 5 elements can be found
         assert set([box["label"] for box in result[0]]) == {"text", "figure", "table", "title"}
 
     def test_update_file_konfuzio_api(self):
         """Update the name of a document."""
-        prj = Project()
+        prj = Project(id=TEST_PROJECT_ID)
         timestamp = str(datetime.datetime.now())
         doc = prj.documents[-1]
         # keep the dataset status
@@ -202,8 +214,8 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_get_document_hocr(self):
         """Get the HOCR of a file."""
-        prj = Project()
-        result = get_document_hocr(document_id=prj.documents[-1].id)
+        prj = Project(id=TEST_PROJECT_ID)
+        result = get_document_hocr(document_id=prj.documents[-1].id, project_id=TEST_PROJECT_ID)
         assert result is None
 
     @unittest.skip(reason="Skip to test to create label, as there is no option to delete it again.")
@@ -224,5 +236,9 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
     def test_get_project_list(self):
         """Test to get the projects of the user."""
         result = get_project_list(KONFUZIO_TOKEN, KONFUZIO_HOST)
-        prj = Project()
+        prj = Project(id=TEST_PROJECT_ID)
         assert prj.id in [prj["id"] for prj in result]
+
+    def test_download_file_konfuzio_api_with_whitespace_name_file(self):
+        """Test to download a file which includes a whitespace in the name."""
+        download_file_konfuzio_api(document_id=44860)

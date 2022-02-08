@@ -10,6 +10,8 @@ from konfuzio_sdk.utils import is_file
 
 logger = logging.getLogger(__name__)
 
+TEST_PROJECT_ID = 46
+
 
 @pytest.mark.serial
 class TestAPIDataSetup(unittest.TestCase):
@@ -22,7 +24,7 @@ class TestAPIDataSetup(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the test project."""
-        cls.prj = Project()
+        cls.prj = Project(id=46)
         assert len(cls.prj.documents) == cls.document_count
         assert len(cls.prj.test_documents) == cls.test_document_count
         assert len(cls.prj.labels[0].correct_annotations) == cls.correct_document_count
@@ -66,6 +68,11 @@ class TestAPIDataSetup(unittest.TestCase):
         self.prj.documents[0].get_file()
         assert self.prj.documents[0].ocr_file_path
 
+    def test_get_file_with_white_colon_name(self):
+        """Test to download a file which includes a whitespace in the name."""
+        doc = Project(id=46).get_document_by_id(44860)
+        doc.get_file()
+
     def test_labels(self):
         """Test get labels in the project."""
         assert len(self.prj.labels) == 18
@@ -79,7 +86,7 @@ class TestAPIDataSetup(unittest.TestCase):
         assert len(self.prj.documents)
         # check if we can initialize a new project object, which will use the same data
         assert len(self.prj.documents) == self.document_count
-        new_project = Project()
+        new_project = Project(id=TEST_PROJECT_ID)
         assert len(new_project.documents) == self.correct_document_count
         assert new_project.meta_file_path == self.prj.meta_file_path
 
@@ -121,7 +128,7 @@ class TestAPIDataSetup(unittest.TestCase):
 
         # existing annotation
         # https://app.konfuzio.com/admin/server/sequenceannotation/?document_id=44823&project=46
-        self.assertEqual(len(doc.annotations(use_correct=False)), 19)
+        self.assertEqual(len(doc.annotations(use_correct=False)), 20)
         # a multiline annotation in the top right corner, see https://app.konfuzio.com/a/4419937
         # todo improve multiline support
         self.assertEqual(66, doc.annotations()[0]._spans[0].start_offset)
@@ -165,7 +172,7 @@ class TestAPIDataSetup(unittest.TestCase):
             if annotation.id == 4420022:
                 anno = annotation.eval_dict[0]
 
-        assert anno["accuracy"] == 1.0
+        assert anno["confidence"] == 1.0
         # assert anno["created_by"] ==  todo: support this variable provided via API in the Annotation
         # assert anno["custom_offset_string"] ==   todo: support this variable provided via API in the Annotation
         assert anno["end_offset"] == 366  # todo support multiline Annotations
@@ -269,7 +276,7 @@ class TestAPIDataSetup(unittest.TestCase):
 
     def test_init_annotation_with_default_annotation_set(self):
         """Test adding a new annotation."""
-        prj = Project()
+        prj = Project(id=TEST_PROJECT_ID)
         annotation = Annotation(
             start_offset=225,
             end_offset=237,
@@ -278,7 +285,7 @@ class TestAPIDataSetup(unittest.TestCase):
             revised=True,
             is_correct=True,
             accuracy=0.98765431,
-            document=Document(),
+            document=Document(project=prj),
             annotation_set=78730,
         )
 
@@ -298,7 +305,8 @@ class TestAPIDataSetup(unittest.TestCase):
 
     def test_create_empty_annotation(self):
         """Create an empty Annotation and get the start offset."""
-        Annotation(label=Label(project=Project()), document=Document(text='')).start_offset
+        prj = Project(id=TEST_PROJECT_ID)
+        Annotation(label=Label(project=prj), document=Document(text='', project=prj)).start_offset
 
     @classmethod
     def tearDownClass(cls) -> None:

@@ -18,7 +18,7 @@ from konfuzio.data import Project
 from konfuzio.default_models import LabelSectionModel
 
 # load the project
-project = Project()
+project = Project(id=YOUR_PROJECT_ID)
 
 # create a default label section model from the project
 model = LabelSectionModel(project)
@@ -39,7 +39,7 @@ from konfuzio.data import Project
 from konfuzio.default_models import LabelSectionModel
 from konfuzio.tokenizers import BPETokenizer
 
-project = Project()
+project = Project(id=YOUR_PROJECT_ID)
 
 # specify a different tokenizer
 tokenizer = BPETokenizer()
@@ -77,7 +77,7 @@ from konfuzio.data import Project
 from konfuzio.default_models import LabelSectionModel
 
 # load the project
-project = Project()
+project = Project(id=YOUR_PROJECT_ID)
 
 # create a default label section model from the project
 model = LabelSectionModel(project)
@@ -115,7 +115,7 @@ from konfuzio.default_models import LabelSectionModel
 from konfuzio.tokenizers import BPETokenizer
 
 # load the project
-project = Project()
+project = Project(id=YOUR_PROJECT_ID)
 
 # specify a different tokenizer
 tokenizer = BPETokenizer()
@@ -175,7 +175,7 @@ class CustomerSpecificModel(LabelSectionModel):
         return metrics
 
 # load the project
-project = Project()
+project = Project(id=YOUR_PROJECT_ID)
 
 # can also use a custom tokenizer and model config here
 model = CustomerSpecificModel(project)
@@ -241,7 +241,7 @@ class CustomerSpecificModel(LabelSectionModel):
         return label_classifier_metrics
 
 # load the project
-project = Project()
+project = Project(id=YOUR_PROJECT_ID)
 
 # define model with custom build_label_classifier function
 model = CustomerSpecificModel(project)
@@ -640,7 +640,7 @@ Tokenizes using the `de_core_news_sm` spaCy model. Relatively slow.
 from konfuzio.data import Project
 from konfuzio.tokenizers import PhraseMatcherTokenizer
 from konfuzio.tokenizers import get_tokenizer
-project = Project()
+project = Project(id=YOUR_PROJECT_ID)
 tokenizer = get_tokenizer('phrasematcher', project)
 ```
 
@@ -801,7 +801,7 @@ from konfuzio.data import Project
 from konfuzio.default_models import LabelSectionModel
 
 # load a project
-project = Project()
+project = Project(id=YOUR_PROJECT_ID)
 
 # load the label classifier text module parameters from a given path
 label_classifier_config = {'dropout_rate': 0.25,
@@ -900,7 +900,7 @@ from konfuzio.data import Project
 from konfuzio.default_models import LabelSectionModel
 
 # load the project
-project = Project()
+project = Project(id=YOUR_PROJECT_ID)
 
 # create a default label section model from the project
 model = LabelSectionModel(project)

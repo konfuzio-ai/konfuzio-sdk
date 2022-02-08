@@ -9,7 +9,7 @@ import re
 
 from konfuzio_sdk.data import Project, Annotation, Label
 
-my_project = Project()
+my_project = Project(id=YOUR_PROJECT_ID)
 
 # Word/expression to annotate in the document
 # should match an existing one in your document

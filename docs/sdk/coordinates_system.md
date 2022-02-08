@@ -12,12 +12,12 @@ The format is [width, height].
 
 'size' is the dimension of the image representation of a document page. These representations are used for computer vision tasks and the SmartView.
   E.g.: size = [1552, 1932]
-  
+
 
 ```python
 from konfuzio_sdk.data import Project
 
-my_project = Project()
+my_project = Project(id=YOUR_PROJECT_ID)
 # first document uploaded
 document = my_project.documents[0]
 # index of the page to test
@@ -43,7 +43,7 @@ import numpy as np
 from PIL import Image
 from konfuzio_sdk.data import Project
 
-my_project = Project()
+my_project = Project(id=YOUR_PROJECT_ID)
 # first document uploaded
 document = my_project.documents[0]
 # index of the page to test
@@ -53,7 +53,7 @@ doc_bbox = document.get_bbox()
 document.get_images()
 image_path = document.image_paths[page_index]
 
-size = document.pages[page_index]['size']  
+size = document.pages[page_index]['size']
 original_size = document.pages[page_index]['original_size']
 
 factor_x = original_size[0] / size[0]
@@ -80,7 +80,7 @@ plt.show()
 ![characters_bboxes](../_static/img/bboxes_characters.png)
 
 The coordinates obtained from the segmentation endpoint of the API are based on the image array shape.
-To visualize the segmentation bounding boxes of a page on an image opened with the python library PIL, for example, 
+To visualize the segmentation bounding boxes of a page on an image opened with the python library PIL, for example,
 we can overlap them directly.
 
 ```python
@@ -91,7 +91,7 @@ from PIL import Image
 from konfuzio_sdk.data import Project
 from konfuzio_sdk.api import get_results_from_segmentation
 
-my_project = Project()
+my_project = Project(id=YOUR_PROJECT_ID)
 # first document uploaded
 document = my_project.documents[0]
 # index of the page to test
@@ -125,7 +125,7 @@ from PIL import Image
 from konfuzio_sdk.data import Project
 from konfuzio_sdk.api import get_results_from_segmentation
 
-my_project = Project()
+my_project = Project(id=YOUR_PROJECT_ID)
 # first document uploaded
 document = my_project.documents[0]
 # index of the page to test
@@ -153,7 +153,7 @@ for bbox in image_characters_bbox:
     pp1 = (int(bbox["x0"]), int((height - bbox["y0"])))
     pp2 = (int(bbox["x1"]), int((height - bbox["y1"])))
     image = cv2.rectangle(np.array(image), pp1, pp2, (0, 255, 0), 1)
-    
+
 image_segmentation_bboxes = get_results_from_segmentation(document.id, my_project.id)
 
 for bbox in image_segmentation_bboxes[page_index]:
