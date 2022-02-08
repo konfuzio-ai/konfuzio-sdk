@@ -2,14 +2,16 @@
 
 import os
 import sys
+from decouple import config
 
 # This settings file will search for the settings file in the project in which konfuzio_sdk is imported
 sys.path.append(os.getcwd())
 
-KONFUZIO_USER = None
-KONFUZIO_TOKEN = None
-KONFUZIO_HOST = "https://app.konfuzio.com"
-BASE_DIR = os.getcwd()
+BASE_DIR = os.path.dirname(os.path.realpath(__file__))
+
+KONFUZIO_HOST = config('KONFUZIO_HOST', default="https://app.konfuzio.com")
+KONFUZIO_USER = config('KONFUZIO_USER', default=None)
+KONFUZIO_TOKEN = config('KONFUZIO_TOKEN', default=None)
 
 try:
     from settings import *  # NOQA
