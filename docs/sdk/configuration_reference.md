@@ -54,7 +54,7 @@ The `.env` file contains the credentials to access the app and should not become
 
 ## 4. Download the data
 
-To download the data from your Konfuzio project you need to specify the project ID.:
+To download the data from your Konfuzio project you need to specify the project ID.
 You can check your project ID by selecting the project in the Projects tab in the Web App.
 The ID of the project is shown in the URL.
 
