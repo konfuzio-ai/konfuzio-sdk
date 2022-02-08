@@ -14,16 +14,16 @@ To test our SDK you need to have an account in the Konfuzio Server and initializ
 
 The data structure of a project in Konfuzio Server includes:
 
-* Labels
+* Labels  
 A label is the name of a group of individual pieces of information found in a type of document.
 
-* Label Set
+* Label Set  
 A Label Set combines labels.
 
-* Training and Test documents
+* Training and Test documents  
 Based on the data from the training documents the AI learns what to do. These newly acquired capabilities are then applied to the test documents to sample check the quality of the AI model.
 
-* Annotations for documents
+* Annotations for documents  
 An annotation is a single piece of information that a label has been assigned to.
 
 
