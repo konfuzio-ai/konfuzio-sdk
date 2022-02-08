@@ -5,17 +5,17 @@ import pandas as pd
 RELEVANT_FOR_EVALUATION = [
     "id_local",  # needed to group spans in annotations
     "id",  # even we don't care of the id, as the ID is defined by the start and end span
-    # "accuracy", we don't care about the accuracy of doc_a  # todo rename to confidence
+    # "confidence", we don't care about the confidence of doc_a  # todo rename to confidence
     "start_offset",  # only relevant for the merge but allows to track multiple sequences per annotation
     "end_offset",  # only relevant for the merge but allows to track multiple sequences per annotation
-    "is_correct",  # we care if it is correct, humans create annotations without accuracy
+    "is_correct",  # we care if it is correct, humans create annotations without confidence
     "label_id",
     "label_threshold",
     "revised",  # we need it to filter feedback required annotations
     "annotation_set_id",
     "label_set_id",
     # "id_predicted", we don't care of the id see "id"
-    "accuracy_predicted",  # we care about the accuracy of the prediction # todo rename to confidence
+    "confidence_predicted",  # we care about the confidence of the prediction # todo rename to confidence
     # "start_offset_predicted", only relevant for the merge
     # "end_offset_predicted", only relevant for the merge
     # "is_correct_predicted", # it's a prediction so we don't know if it is correct
@@ -67,7 +67,7 @@ def compare(doc_a, doc_b, only_use_correct=False) -> pd.DataFrame:
     spans = spans[RELEVANT_FOR_EVALUATION]
 
     # add criteria to evaluate **spans**
-    spans["above_predicted_threshold"] = spans["accuracy_predicted"] > spans["label_threshold_predicted"]
+    spans["above_predicted_threshold"] = spans["confidence_predicted"] > spans["label_threshold_predicted"]
     spans["is_correct_label"] = spans["label_id"] == spans["label_id_predicted"]
     spans["is_correct_label_set"] = spans["label_set_id"] == spans["label_set_id_predicted"]
     # add check to evaluate multiline Annotations
@@ -79,7 +79,7 @@ def compare(doc_a, doc_b, only_use_correct=False) -> pd.DataFrame:
 
     assert not spans.empty  # this function must be able to evaluate any two docs even without annotations
 
-    # Evaluate which **spans** are TN, TP, FP and keep RELEVANT_FOR_MAPPING to allow grouping of accuracy measures
+    # Evaluate which **spans** are TN, TP, FP and keep RELEVANT_FOR_MAPPING to allow grouping of confidence measures
     spans["true_positive"] = 1 * (
         (spans["is_correct"])
         & (spans["above_predicted_threshold"])

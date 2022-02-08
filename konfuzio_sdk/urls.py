@@ -2,7 +2,7 @@
 
 import logging
 
-from konfuzio_sdk import KONFUZIO_HOST, KONFUZIO_PROJECT_ID
+from konfuzio_sdk import KONFUZIO_HOST
 from typing import Union
 
 logger = logging.getLogger(__name__)
@@ -15,6 +15,7 @@ def get_auth_token_url(host: str = KONFUZIO_HOST) -> str:
     """
     Generate URL that creates an authentication token for the user.
 
+    :param host: Konfuzio host
     :return: URL to generate the token.
     """
     return f"{host}/api/token-auth/"
@@ -27,36 +28,36 @@ def get_projects_list_url(host: str = KONFUZIO_HOST) -> str:
     """
     Generate URL to list all the projects available for the user.
 
+    :param host: Konfuzio host
     :return: URL to get all the projects for the user.
     """
     return f"{host}/api/projects/"
 
 
-def get_project_url(project_id: Union[int, None] = None, host: str = KONFUZIO_HOST) -> str:
+def get_project_url(project_id: Union[int, None], host: str = KONFUZIO_HOST) -> str:
     """
     Generate URL to access the project details.
 
-    :param project_id: ID of the project
     :param host: Konfuzio host
+    :param project_id: ID of the project
     :return: URL to access the project details.
     """
-    project_id = project_id if project_id else KONFUZIO_PROJECT_ID
     return f'{host}/api/projects/{project_id}/'
 
 
-def get_documents_meta_url(host: str = KONFUZIO_HOST, project_id: int = KONFUZIO_PROJECT_ID) -> str:
+def get_documents_meta_url(project_id: int, host: str = KONFUZIO_HOST) -> str:
     """
     Generate URL to load meta information about the documents in the project.
 
-    :param host: Konfuzio host
     :param project_id: ID of the project
+    :param host: Konfuzio host
     :return: URL to get all the documents details.
     """
     return f"{host}/api/projects/{project_id}/docs/"
 
 
 def get_document_segmentation_details_url(
-    document_id: int, project_id: int = KONFUZIO_PROJECT_ID, host: str = KONFUZIO_HOST, action='segmentation'
+    document_id: int, project_id: int, host: str = KONFUZIO_HOST, action='segmentation'
 ) -> str:
     """
     Generate URL to get the segmentation results of a document.
@@ -117,18 +118,14 @@ def get_document_original_file_url(document_id: int, host: str = KONFUZIO_HOST) 
 
 
 def get_document_api_details_url(
-    document_id: int,
-    host: str = KONFUZIO_HOST,
-    project_id: int = KONFUZIO_PROJECT_ID,
-    include_extractions: bool = False,
-    extra_fields='bbox',
+    document_id: int, project_id: int, host: str = KONFUZIO_HOST, include_extractions: bool = False, extra_fields='bbox'
 ) -> str:
     """
     Generate URL to access the details of a document in a project.
 
     :param document_id: ID of the document as integer
-    :param host: Konfuzio host
     :param project_id: ID of the project
+    :param host: Konfuzio host
     :param include_extractions: Bool to include extractions
     :param extra_fields: Extra information to include in the response
     :return: URL to get document details
@@ -166,30 +163,26 @@ def get_label_url(label_id: int, host: str = KONFUZIO_HOST) -> str:
 # ANNOTATIONS
 
 
-def get_document_annotations_url(
-    document_id: int, host: str = KONFUZIO_HOST, project_id: int = KONFUZIO_PROJECT_ID
-) -> str:
+def get_document_annotations_url(document_id: int, project_id: int, host: str = KONFUZIO_HOST) -> str:
     """
     Access annotations of a document.
 
     :param document_id: ID of the document as integer
-    :param host: Konfuzio host
     :param project_id: ID of the project
+    :param host: Konfuzio host
     :return: URL to access the annotations of a document
     """
     return f'{host}/api/projects/{project_id}/docs/{document_id}/annotations/'
 
 
-def get_annotation_url(
-    document_id: int, annotation_id: int, host: str = KONFUZIO_HOST, project_id: int = KONFUZIO_PROJECT_ID
-) -> str:
+def get_annotation_url(document_id: int, annotation_id: int, project_id: int, host: str = KONFUZIO_HOST) -> str:
     """
     Generate URL to access an annotation.
 
     :param document_id: ID of the document as integer
     :param annotation_id: ID of the annotation as integer
-    :param host: Konfuzio host
     :param project_id: ID of the project
+    :param host: Konfuzio host
     :return: URL to access an annotation of a document
     """
     return f'{host}/api/projects/{project_id}/docs/{document_id}/annotations/{annotation_id}/'

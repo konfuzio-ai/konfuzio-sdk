@@ -81,9 +81,6 @@ def retry_get(session, url):
     :param url: Url of the endpoint
     :return: Response.
     """
-    # todo if thre is no KONFUZIO_TOKEN raise ConnectionError('Make sure to have a token in your environment, '
-    #    'see https://dev.konfuzio.com/sdk/configuration_reference.html.')
-
     retry_count = 0
     while True:
         try:
@@ -132,7 +129,9 @@ def konfuzio_session(token=KONFUZIO_TOKEN):
     return session
 
 
-def get_document_details(document_id, session=konfuzio_session(), extra_fields: str = 'bbox,hocr'):
+def get_document_details(
+    document_id: int, project_id: int, session=konfuzio_session(), extra_fields: str = 'bbox,hocr'
+):
     """
     Use the text-extraction server to retrieve the data from a document.
 
@@ -140,7 +139,9 @@ def get_document_details(document_id, session=konfuzio_session(), extra_fields: 
     :param session: Session to connect to the server
     :return: Data of the document.
     """
-    url = get_document_api_details_url(document_id, include_extractions=False, extra_fields=extra_fields)
+    url = get_document_api_details_url(
+        document_id=document_id, project_id=project_id, include_extractions=False, extra_fields=extra_fields
+    )
     r = retry_get(session, url)
     data = json.loads(r.text)
     text = data["text"]
@@ -157,7 +158,7 @@ def get_document_details(document_id, session=konfuzio_session(), extra_fields: 
     return data
 
 
-def get_document_text(document_id, session=konfuzio_session()):
+def get_document_text(document_id: int, project_id: int, session=konfuzio_session()):
     """
     Use the text-extraction server to retrieve the text found in the document.
 
@@ -165,7 +166,7 @@ def get_document_text(document_id, session=konfuzio_session()):
     :param session: Session to connect to the server
     :return: Document text.
     """
-    url = get_document_api_details_url(document_id)
+    url = get_document_api_details_url(document_id, project_id=project_id)
     r = retry_get(session, url)
     text = r.json()['text']
     if text is None:
@@ -176,7 +177,7 @@ def get_document_text(document_id, session=konfuzio_session()):
     return text
 
 
-def get_document_hocr(document_id, session=konfuzio_session()):
+def get_document_hocr(document_id: int, project_id: int, session=konfuzio_session()):
     """
     Use the text-extraction server to retrieve the hOCR data.
 
@@ -184,7 +185,7 @@ def get_document_hocr(document_id, session=konfuzio_session()):
     :param session: Session to connect to the server
     :return: hOCR data of the document.
     """
-    url = get_document_api_details_url(document_id, extra_fields='bbox,hocr')
+    url = get_document_api_details_url(document_id, project_id=project_id, extra_fields='bbox,hocr')
     r = retry_get(session, url)
     hocr = r.json()['hocr']
     if hocr is None:
@@ -195,7 +196,7 @@ def get_document_hocr(document_id, session=konfuzio_session()):
     return hocr
 
 
-def get_document_annotations(document_id, include_extractions=False, session=konfuzio_session()):
+def get_document_annotations(document_id, project_id, include_extractions=False, session=konfuzio_session()):
     """
     Use the text-extraction server to retrieve human revised annotations.
 
@@ -204,16 +205,10 @@ def get_document_annotations(document_id, include_extractions=False, session=kon
     :param session: Session to connect to the server
     :return: Sorted annotations.
     """
-    url = get_document_api_details_url(document_id, include_extractions=include_extractions)
+    url = get_document_api_details_url(document_id, project_id=project_id, include_extractions=include_extractions)
     r = retry_get(session, url)
     annotations = r.json()['annotations']
-    not_custom_annotations = annotations
-    revised_annotations_and_extractions = [
-        x for x in not_custom_annotations if x['revised'] or x['is_correct'] or not x['id']
-    ]
-    sorted_annotations = sorted(
-        revised_annotations_and_extractions, key=lambda x: (x.get('start_offset') is None, x.get('start_offset'))
-    )
+    sorted_annotations = sorted(annotations, key=lambda x: (x.get('start_offset') is None, x.get('start_offset')))
     logger.info(f'Document with ID {document_id} contains {len(sorted_annotations)} annotations.')
 
     return sorted_annotations
@@ -236,9 +231,10 @@ def post_document_bulk_annotation(document_id: int, annotation_list, session=kon
 
 def post_document_annotation(
     document_id: int,
+    project_id: int,
     label_id: int,
     label_set_id: int,
-    accuracy: float,
+    confidence: float,
     revised: bool = False,
     is_correct: bool = False,
     annotation_set=None,
@@ -257,18 +253,15 @@ def post_document_annotation(
     annotation will be added to the previous annotation set created (define_annotation_set=False)
 
     :param document_id: ID of the file
-    :param start_offset: Start offset of the annotation
-    :param end_offset: End offset of the annotation
     :param label_id: ID of the label.
     :param label_set_id: ID of the label set where the annotation belongs
-    :param accuracy: Accuracy of the annotation
+    :param confidence: Confidence of the Annotation still called Accuracy by text-annotation
     :param revised: If the annotation is revised or not (bool)
     :param is_correct: If the annotation is corrected or not (bool)
     :param annotation_set: Annotation set to connect to the server
-    :param define_annotation_set: If to define the annotation set (bool)
     :return: Response status.
     """
-    url = get_document_annotations_url(document_id)
+    url = get_document_annotations_url(document_id, project_id=project_id)
 
     bbox = kwargs.get('bbox', None)
     custom_bboxes = kwargs.get('bboxes', None)
@@ -284,7 +277,7 @@ def post_document_annotation(
         'label': label_id,
         'revised': revised,
         'section_label_id': label_set_id,
-        'accuracy': accuracy,
+        'accuracy': confidence,
         'is_correct': is_correct,
     }
 
@@ -318,7 +311,7 @@ def post_document_annotation(
     return r
 
 
-def delete_document_annotation(document_id: int, annotation_id: int, session=konfuzio_session()):
+def delete_document_annotation(document_id: int, annotation_id: int, project_id: int, session=konfuzio_session()):
     """
     Delete a given annotation of the given document.
 
@@ -327,12 +320,16 @@ def delete_document_annotation(document_id: int, annotation_id: int, session=kon
     :param session: Session to connect to the server.
     :return: Response status.
     """
-    url = get_annotation_url(document_id=document_id, annotation_id=annotation_id)
+    url = get_annotation_url(document_id=document_id, annotation_id=annotation_id, project_id=project_id)
     r = session.delete(url)
-    return r
+    if r.status_code == 200:
+        # the text annotation received negative feedback and copied the annotation and created a new one
+        return json.loads(r.text)['id']
+    elif r.status_code == 204:
+        return r
 
 
-def get_meta_of_files(session=konfuzio_session()) -> List[dict]:
+def get_meta_of_files(project_id: int, session=konfuzio_session()) -> List[dict]:
     """
     Get dictionary of previously uploaded document names to Konfuzio API.
 
@@ -346,7 +343,7 @@ def get_meta_of_files(session=konfuzio_session()) -> List[dict]:
     :param session: Session to connect to the server
     :return: Sorted documents names in the format {id: 'pdf_name'}.
     """
-    url = get_documents_meta_url()
+    url = get_documents_meta_url(project_id=project_id)
     result = []
 
     while True:
@@ -366,14 +363,14 @@ def get_meta_of_files(session=konfuzio_session()) -> List[dict]:
     return sorted_documents
 
 
-def get_project_labels(session=konfuzio_session()) -> List[dict]:
+def get_project_labels(project_id: int, session=konfuzio_session()) -> List[dict]:
     """
     Get Labels available in project.
 
     :param session: Session to connect to the server
     :return: Sorted labels.
     """
-    url = get_project_url()
+    url = get_project_url(project_id=project_id)
     r = retry_get(session, url)
     sorted_labels = sorted(r.json()['labels'], key=itemgetter('id'))
     return sorted_labels
@@ -414,14 +411,14 @@ def create_label(
     return label_id
 
 
-def get_project_label_sets(session=konfuzio_session()) -> List[dict]:
+def get_project_label_sets(project_id: int, session=konfuzio_session()) -> List[dict]:
     """
     Get Label Sets available in project.
 
     :param session: Session to connect to the server
     :return: Sorted Label Sets.
     """
-    url = get_project_url()
+    url = get_project_url(project_id=project_id)
     r = session.get(url=url)
     r.raise_for_status()
     sorted_label_sets = sorted(r.json()['section_labels'], key=itemgetter('id'))
