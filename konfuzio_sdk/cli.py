@@ -25,35 +25,6 @@ konfuzio_sdk download_data 123: downloads the data from the project, use the ID 
 These commands should be run inside of your working directory.
 """
 
-SETTINGS_FILE_CONTENT = '''
-"""Konfuzio SDK settings."""
-
-import os
-
-from decouple import config
-
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.realpath(__file__))
-
-KONFUZIO_HOST = config('KONFUZIO_HOST', default="https://app.konfuzio.com")
-KONFUZIO_USER = config('KONFUZIO_USER', default=None)
-KONFUZIO_TOKEN = config('KONFUZIO_TOKEN', default=None)
-'''
-
-
-def init_settings(project_folder):
-    """
-    Add settings file to the working directory.
-
-    :param project_folder: root folder of the project where to place the settings file
-    """
-    settings_file = "settings.py"
-
-    with open(os.path.join(project_folder, settings_file), "w", encoding="utf-8") as f:
-        f.write(SETTINGS_FILE_CONTENT)
-
-    return True
-
 
 def init_env(project_folder):
     """
@@ -79,16 +50,6 @@ def init_env(project_folder):
     print("[SUCCESS] SDK initialized!")
 
     return True
-
-
-def init(project_folder="./"):
-    """
-    Add settings and .env files to the working directory.
-
-    :param project_folder: Root folder of the project
-    """
-    # assert init_settings(project_folder)
-    assert init_env(project_folder)
 
 
 def data(id: int):
@@ -170,7 +131,7 @@ def main():
         return -1
 
     if first_arg == 'init':
-        init()
+        init_env(project_folder="./")
 
     elif first_arg == 'download_data':
         try:
