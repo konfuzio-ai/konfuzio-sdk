@@ -142,6 +142,7 @@ def get_document_details(
     Use the text-extraction server to retrieve the data from a document.
 
     :param document_id: ID of the document
+    :param project_id: ID of the project
     :param session: Session to connect to the server
     :return: Data of the document.
     """
@@ -169,6 +170,7 @@ def get_document_text(document_id: int, project_id: int, session=konfuzio_sessio
     Use the text-extraction server to retrieve the text found in the document.
 
     :param document_id: ID of the file
+    :param project_id: ID of the project
     :param session: Session to connect to the server
     :return: Document text.
     """
@@ -188,6 +190,7 @@ def get_document_hocr(document_id: int, project_id: int, session=konfuzio_sessio
     Use the text-extraction server to retrieve the hOCR data.
 
     :param document_id: ID of the file
+    :param project_id: ID of the project
     :param session: Session to connect to the server
     :return: hOCR data of the document.
     """
@@ -207,6 +210,7 @@ def get_document_annotations(document_id, project_id, include_extractions=False,
     Use the text-extraction server to retrieve human revised annotations.
 
     :param document_id: ID of the file
+    :param project_id: ID of the project
     :param include_extractions: Bool to include extractions
     :param session: Session to connect to the server
     :return: Sorted annotations.
@@ -220,16 +224,17 @@ def get_document_annotations(document_id, project_id, include_extractions=False,
     return sorted_annotations
 
 
-def post_document_bulk_annotation(document_id: int, annotation_list, session=konfuzio_session()):
+def post_document_bulk_annotation(document_id: int, project_id: int, annotation_list, session=konfuzio_session()):
     """
     Add a list of annotations to an existing document.
 
     :param document_id: ID of the file
+    :param project_id: ID of the project
     :param annotation_list: List of annotations
     :param session: Session to connect to the server
     :return: Response status.
     """
-    url = get_document_annotations_url(document_id)
+    url = get_document_annotations_url(document_id, project_id=project_id)
     r = session.post(url, json=annotation_list)
     r.raise_for_status()
     return r
@@ -259,6 +264,7 @@ def post_document_annotation(
     annotation will be added to the previous annotation set created (define_annotation_set=False)
 
     :param document_id: ID of the file
+    :param project_id: ID of the project
     :param label_id: ID of the label.
     :param label_set_id: ID of the label set where the annotation belongs
     :param confidence: Confidence of the Annotation still called Accuracy by text-annotation
@@ -323,6 +329,7 @@ def delete_document_annotation(document_id: int, annotation_id: int, project_id:
 
     :param document_id: ID of the document
     :param annotation_id: ID of the annotation
+    :param project_id: ID of the project
     :param session: Session to connect to the server.
     :return: Response status.
     """
@@ -346,6 +353,7 @@ def get_meta_of_files(project_id: int, session=konfuzio_session()) -> List[dict]
     TEST = 3
     LOW_OCR_QUALITY = 4
 
+    :param project_id: ID of the project
     :param session: Session to connect to the server
     :return: Sorted documents names in the format {id: 'pdf_name'}.
     """
@@ -373,6 +381,7 @@ def get_project_labels(project_id: int, session=konfuzio_session()) -> List[dict
     """
     Get Labels available in project.
 
+    :param project_id: ID of the project
     :param session: Session to connect to the server
     :return: Sorted labels.
     """
@@ -421,6 +430,7 @@ def get_project_label_sets(project_id: int, session=konfuzio_session()) -> List[
     """
     Get Label Sets available in project.
 
+    :param project_id: ID of the project
     :param session: Session to connect to the server
     :return: Sorted Label Sets.
     """
@@ -442,6 +452,7 @@ def upload_file_konfuzio_api(
     Upload file to Konfuzio API.
 
     :param filepath: Path to file to be uploaded
+    :param project_id: ID of the project
     :param session: Session to connect to the server
     :param project_id: Project ID where to upload the document
     :return: Response status.
