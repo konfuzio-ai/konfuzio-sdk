@@ -21,13 +21,13 @@ Valid options:
 
 konfuzio_sdk init: inits the konfuzio Package by setting the necessary files
 konfuzio_sdk create_project my_project: creates a new project online
-konfuzio_sdk download_data 123: downloads the data from the project, use the ID of the project, e.g. 123
+konfuzio_sdk migrate_data 123: downloads the data from the project, use the ID of the project, e.g. 123
 
 These commands should be run inside of your working directory.
 """
 
 
-def init_env(project_folder):
+def init_env(project_folder="./"):
     """
     Add the .env file to the working directory.
 
@@ -55,11 +55,10 @@ def init_env(project_folder):
 
 def data(id: int):
     """
-    Download the data from the project.
+    Migrate your project to another host.
 
-    It has to run after having the .env and settings.py files.
-
-    :param include_extra: if to download also the pdf, bounding boxes information and page images of the documents
+    See https://help.konfuzio.com/integrations/migration-between-konfuzio-server-instances/index.html
+        #migrate-projects-between-konfuzio-server-instances
     """
     print("Starting the download. Please wait until the data download is finished...")
     from konfuzio_sdk.data import Project
@@ -91,9 +90,9 @@ def main():
         return -1
 
     if first_arg == 'init':
-        init_env(project_folder="./")
+        init_env()
 
-    elif first_arg == 'download_data':
+    elif first_arg == 'migrate_data':
         try:
             id = cli_options[0]
         except IndexError:
