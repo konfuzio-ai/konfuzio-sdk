@@ -77,13 +77,8 @@ class AnnotationSet(Data):
         self.document = document
         self.label_set = label_set
         self.annotations = annotations
-        _annotations = [x for x in annotations if x.start_offset and x.end_offset]
-        if len(_annotations) > 0:
-            self.start_offset = min(x.start_offset for x in _annotations)
-            self.end_offset = max(x.end_offset for x in _annotations)
-        else:
-            self.start_offset = None
-            self.end_offset = None
+        self.start_offset = min((s.start_offset for a in self.annotations for s in a._spans), default=None)
+        self.end_offset = max((s.end_offset for a in self.annotations for s in a._spans), default=None)
 
 
 class LabelSet(Data):
@@ -300,6 +295,7 @@ class Span(Data):
         x1: Union[int, None] = None,
         y0: Union[int, None] = None,
         y1: Union[int, None] = None,
+        annotation = None,
         page_index: Union[int, None] = None,
     ):
         """
@@ -307,13 +303,28 @@ class Span(Data):
 
         :param start_offset: Start of the offset string (int)
         :param end_offset: Ending of the offset string (int)
+        :param x0: x0 coordinate of the span
+        :param x1: x1 coordinate of the span
+        :param y0: y0 coordinate of the span
+        :param y1: y1 coordinate of the span
+        :param page_index: 0-based index of the page
         """
         self.id_local = next(Data.id_iter)
+        self.x0 = x0
+        self.x1 = x1
+        self.y0 = y0
+        self.y1 = y1
+        self.annotation = annotation
+        self.page_index = page_index
         self.start_offset = start_offset
         self.end_offset = end_offset
         if x0 is None or x1 is None or y0 is None or y1 is None or page_index is None:
             logger.error(f"{self} does not provide a bounding box.")
 
+    @property
+    def offset_string(self):
+        return self.annotation.document.text[self.start_offset: self.end_offset]
+    
     def __eq__(self, other) -> bool:
         """Compare any point of data with their position is equal."""
         return (
@@ -432,6 +443,7 @@ class Annotation(Data):
                     y0=bbox["y0"],
                     y1=bbox["y1"],
                     page_index=bbox["page_index"],
+                    annotation=self,
                 )
                 self.add_span(sa)
         elif (
@@ -440,14 +452,16 @@ class Annotation(Data):
             and kwargs.get("end_offset", None) is not None
         ):
             # Legacy support for creating annotations with a single offset
+            bbox = kwargs.get('bbox', {})
             sa = Span(
                 start_offset=kwargs.get("start_offset"),
                 end_offset=kwargs.get("end_offset"),
-                x0=None,
-                x1=None,
-                y0=None,
-                y1=None,
-                page_index=None,
+                x0=bbox.get("x0"),
+                x1=bbox.get("x1"),
+                y0=bbox.get("y0"),
+                y1=bbox.get("y1"),
+                page_index=bbox.get("page_index"),
+                annotation=self,
             )
             self.add_span(sa)
         elif label is None and id is None and annotation_set is None and label_set_id is None:
@@ -497,7 +511,8 @@ class Annotation(Data):
     def __repr__(self):
         """Return string representation."""
         if self.label and self.document:
-            return f"{self.label.name} ({self.start_offset}, {self.end_offset}): {self.offset_string}"
+            span_str = ', '.join(f'{x.start_offset, x.end_offset}' for x in self._spans)
+            return f"{self.label.name} {span_str}: {self.offset_string}"
         elif self.label and self.offset_string:
             return f"{self.label.name} ({self.start_offset}, {self.end_offset})"
         else:
@@ -506,6 +521,7 @@ class Annotation(Data):
     @property
     def start_offset(self) -> int:
         """Legacy: One Annotations can have multiple start offsets."""
+        logger.warning('Depreciation warning: One Annotation will have one to many offsets.')
         if len(self._spans) == 1:
             return min([sa.start_offset for sa in self._spans])
         else:
@@ -514,6 +530,7 @@ class Annotation(Data):
     @property
     def end_offset(self) -> int:
         """Legacy: One Annotations can have multiple end offsets."""
+        logger.warning('Depreciation warning: One Annotation will have one to many offsets.')
         if len(self._spans) == 1:
             return max([sa.end_offset for sa in self._spans])
         else:
@@ -525,13 +542,9 @@ class Annotation(Data):
         return self.id is not None
 
     @property
-    def offset_string(self) -> Union[List[str], str]:
+    def offset_string(self) -> List[str]:
         """View the string representation of the Annotation."""
-        if self._spans and len(self._spans) == 1:
-            return self.document.text[self._spans[0].start_offset : self._spans[0].end_offset]
-        elif self._spans and len(self._spans) > 1:
-            logger.warning('Depreciation warning: One Annotation will have one to many offsets.')
-            return [self.document.text[span.start_offset : span.end_offset] for span in self._spans]
+        return [self.document.text[span.start_offset : span.end_offset] for span in self._spans]
 
     @property
     def eval_dict(self) -> List[dict]:
