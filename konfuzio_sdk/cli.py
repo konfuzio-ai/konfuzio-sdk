@@ -1,7 +1,6 @@
 """Command Line interface to the konfuzio_sdk package."""
 
 import getpass
-import json
 import logging
 import os
 import sys
@@ -19,7 +18,9 @@ CLI_ERROR = """
 Please enter a valid command line option.
 ----------------------------------------
 Valid options:
+
 konfuzio_sdk init: inits the konfuzio Package by setting the necessary files
+konfuzio_sdk create_project my_project: creates a new project online
 konfuzio_sdk download_data 123: downloads the data from the project, use the ID of the project, e.g. 123
 
 These commands should be run inside of your working directory.
@@ -78,47 +79,6 @@ def data(id: int):
     print("[SUCCESS] Data downloading finished successfully!")
 
 
-def create_project(token=None, host=None):
-    """Create a new project."""
-    project_name = input("Name of the project: ")
-    response = create_new_project(project_name, token, host)
-    if response.status_code == 201:
-        project_id = json.loads(response.text)["id"]
-        print(
-            f"Project {project_name} (ID {project_id}) was created successfully!"
-            f"Initializing the environment with the project that was created."
-        )
-        return project_id
-    else:
-        raise Exception(f'The project {project_name} was not created.')
-
-
-def verify_data_folder(project_folder, data_folder):
-    """
-    Verify if data folder is empty.
-
-    If not empty, asks the user for a new folder name or if to use the same.
-
-    :param project_folder: Root folder of the project
-    :param data_folder: Name of the data folder
-    :return: Final name for the data folder
-    """
-    project_data_folder = f"{project_folder}/{data_folder}"
-
-    if os.path.exists(project_data_folder) and len(os.listdir(project_data_folder)) != 0:
-        print(
-            f"The directory: {project_data_folder} is not empty."
-            f"If you choose to continue, the old data can be overwritten."
-        )
-        update_data_dir = input("Choose another folder to allocate the data? (Y[default]/ N) ")
-        # for precaution, everything different than "N" is considered "Y"
-        if update_data_dir != 'N':
-            data_folder = input("Folder where to allocate the data: ")
-            data_folder = verify_data_folder(project_folder, data_folder)
-
-    return data_folder
-
-
 def main():
     """CLI of Konfuzio SDK."""
     cli_options = sys.argv
@@ -139,6 +99,13 @@ def main():
         except IndexError:
             raise IndexError("Please define a project ID, e.g. 'konfuzio_sdk download_data 123'")
         data(id=int(id))
+
+    elif first_arg == 'create_project':
+        try:
+            project_name = cli_options[0]
+        except IndexError:
+            raise IndexError("Please define a project name, e.g. 'konfuzio_sdk create_project my_project'")
+        create_new_project(project_name)
 
     else:
         print(CLI_ERROR)

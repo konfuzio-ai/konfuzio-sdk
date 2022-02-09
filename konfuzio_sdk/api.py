@@ -60,17 +60,23 @@ def get_project_list(token, host):
     return json.loads(r.text)
 
 
-def create_new_project(project_name, token=None, host=None):
+def create_new_project(project_name):
     """
     Create a new project for the user.
 
     :return: Response object
     """
-    session = konfuzio_session(token)
-    url = get_projects_list_url(host)
+    session = konfuzio_session()
+    url = get_projects_list_url()
     new_project_data = {"name": project_name}
     r = session.post(url=url, json=new_project_data)
-    return r
+
+    if r.status_code == 201:
+        project_id = json.loads(r.text)["id"]
+        print(f"Project {project_name} (ID {project_id}) was created successfully!")
+        return project_id
+    else:
+        raise Exception(f'The project {project_name} was not created, please check your permissions.')
 
 
 def retry_get(session, url):
