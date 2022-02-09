@@ -8,6 +8,8 @@ from operator import itemgetter
 from typing import List, Union
 
 import requests
+from requests_toolbelt import MultipartEncoder
+
 from konfuzio_sdk import KONFUZIO_HOST, KONFUZIO_TOKEN
 from konfuzio_sdk.urls import (
     get_auth_token_url,
@@ -23,6 +25,8 @@ from konfuzio_sdk.urls import (
     get_document_url,
     get_document_segmentation_details_url,
     get_labels_url,
+    get_update_ai_model_url,
+    get_create_ai_model_url,
 )
 from konfuzio_sdk.utils import is_file
 
@@ -553,3 +557,33 @@ def get_results_from_segmentation(doc_id: int, project_id: int) -> List[List[dic
     segmentation_result = response.json()
 
     return segmentation_result
+
+
+def upload_ai_model(ai_model_path: str, templates=None, session=konfuzio_session()):  # noqa: F821
+    """
+    Upload an ai_model to the text-annotation server.
+
+    :param ai_model_path: Path to the ai_model
+    :param session: session to connect to server
+    :return:
+    """
+    url = get_create_ai_model_url()
+    with open(ai_model_path, 'rb') as f:
+        m = MultipartEncoder(fields={'ai_model': (os.path.basename(ai_model_path), f, "application/octet-stream")})
+        headers = {"Prefer": "respond-async", "Content-Type": m.content_type}
+        r = session.post(url, data=m, headers=headers)
+    r.raise_for_status()
+    data = r.json()
+    ai_model_id = data['id']
+    ai_model = data['ai_model']
+
+    if templates:
+        url = get_update_ai_model_url(ai_model_id)
+        template_ids = [x.id for x in templates]
+        data = {'templates': template_ids}
+        headers = {'content-type': 'application/json'}
+        response = session.patch(url, data=json.dumps(data), headers=headers)
+        response.raise_for_status()
+
+    logger.info(f'New ai_model uploaded {ai_model} to {url}')
+    return ai_model
