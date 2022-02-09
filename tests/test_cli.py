@@ -1,4 +1,4 @@
-"""Validate cli functions."""
+"""Validate CLI functions."""
 
 import subprocess
 import unittest
