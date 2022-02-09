@@ -29,7 +29,7 @@ from konfuzio_sdk.utils import is_file
 logger = logging.getLogger(__name__)
 
 
-def get_auth_token(username, password, host) -> str:
+def get_auth_token(username, password, host=KONFUZIO_HOST) -> str:
     """
     Generate the authentication token for the user.
 
