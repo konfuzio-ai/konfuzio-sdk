@@ -352,8 +352,7 @@ class Annotation(Data):
         id: int = None,
         accuracy: float = None,
         document=None,
-        annotation_set: Optional[int] = None,
-        label_set_text=None,
+        annotation_set_id: Union[None, int] = None,
         translated_string=None,
         *initial_data,
         **kwargs,
@@ -415,22 +414,27 @@ class Annotation(Data):
         elif label_set_id:
             self.label_set: LabelSet = self.document.project.get_label_set_by_id(label_set_id)
 
-        # The annotation set is named "section" in the server
-        if annotation_set is None:
-            annotation_set = kwargs.get("section")
-            if annotation_set is None:
-                logger.error("the fallback on kwargs is not None safe")  # todo
+        self.annotation_set_id = annotation_set_id
 
-        self.annotation_set = annotation_set
+        # if label:  # Annotation with no label are artifically created by the tokenizers
+        #     # The annotation set is named "section" in the server
+        #     if annotation_set is None:
+        #         annotation_set = kwargs.get("section")
+        #         if annotation_set is None:
+        #             logger.error("the fallback on kwargs is not None safe")  # todo
 
         self.selection_bbox = kwargs.get("selection_bbox", None)
         self.page_number = kwargs.get("page_number", None)
-        # if no label_set_text we check if is passed by section_label_text
-        if label_set_text is None:
-            label_set_text = kwargs.get("section_label_text")
-            if label_set_text is None:
-                logger.error("the fallback on kwargs is not None safe")  # todo
-        self.annotation_set_text = label_set_text
+        
+        #  label_set_text should not be needed as we habe label_set
+        
+        # if label:  # Annotation with no label are artifically created by the tokenizers
+        #     # if no label_set_text we check if is passed by section_label_text
+        #     if label_set_text is None:
+        #         label_set_text = kwargs.get("section_label_text")
+        #         if label_set_text is None:
+        #             logger.error("the fallback on kwargs is not None safe")  # todo
+        #     self.annotation_set_text = label_set_text
 
         bboxes = kwargs.get("bboxes", None)
         if bboxes and len(bboxes) > 0:
@@ -546,6 +550,10 @@ class Annotation(Data):
         """View the string representation of the Annotation."""
         return [self.document.text[span.start_offset : span.end_offset] for span in self._spans]
 
+    @property
+    def annotation_set(self):
+        return self.document.get_annotation_set_by_id(self.annotation_set_id)
+    
     @property
     def eval_dict(self) -> List[dict]:
         """Calculate the span information to evaluate the Annotation."""
@@ -689,6 +697,7 @@ class Document(Data):
 
     session = konfuzio_session()
     annotation_class = Annotation
+    annotation_set_class = AnnotationSet
 
     def __init__(
         self,
@@ -833,6 +842,19 @@ class Document(Data):
                 result += annotation.eval_dict
 
         return result
+
+    def get_annotation_set_by_id(self, id: int) -> AnnotationSet:
+        """
+        Return a Annotation Set by ID.
+
+        :param id: ID of the Annotation Set to get.
+        """
+        if not hasattr(self, 'annotation_sets'):
+            logger.info(f'Load annotation sets for {self}...')
+            self.project.load_annotation_sets(documents=[self])
+        for annotation_set in self.annotation_sets:
+            if annotation_set.id == id:
+                return annotation_set
 
     @property
     def is_online(self) -> Optional[int]:
@@ -989,6 +1011,8 @@ class Document(Data):
         if hasattr(self, "project") and self.project:
             for raw_annotation in raw_annotations:
                 if not raw_annotation["custom_offset_string"]:
+                    raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
+                    raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
                     _ = self.annotation_class(document=self, **raw_annotation)
                 else:
                     raise NotImplementedError  # todo add multiple offset strings per annotation, see Span
@@ -1199,11 +1223,13 @@ class Project(Data):
         """Calculate the data root of the project."""
         return f"data_{self.id}"
 
-    def load_annotation_sets(self):
+    def load_annotation_sets(self, documents=None):
         """Load document annotation sets for all training and test documents."""
+        if documents is None:
+            documents = self.documents + self.test_documents
         label_set_mapper_dict = dict((label_set.id, label_set) for label_set in self.label_sets)
-        for document in self.documents + self.test_documents:
-            annotations = [(anno.annotation_set, anno) for anno in document.annotations()]
+        for document in documents:
+            annotations = [(anno.annotation_set_id, anno) for anno in document.annotations()]
             annotations_dict = {}
             for annotation_set_id, annotation in annotations:
                 annotations_dict.setdefault(annotation_set_id, []).append(annotation)
