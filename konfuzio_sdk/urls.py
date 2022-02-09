@@ -186,3 +186,21 @@ def get_annotation_url(document_id: int, annotation_id: int, project_id: int, ho
     :return: URL to access an annotation of a document
     """
     return f'{host}/api/projects/{project_id}/docs/{document_id}/annotations/{annotation_id}/'
+
+
+def get_create_ai_model_url(host: str = KONFUZIO_HOST) -> str:
+    """
+    Get url to create new AiModel.
+
+    :return: URL
+    """
+    return f'{host}/api/aimodels/'
+
+
+def get_update_ai_model_url(ai_model_id, host: str = KONFUZIO_HOST) -> str:
+    """
+    Get url to update an AiModel.
+
+    :return: URL
+    """
+    return f'{host}/api/aimodels/{ai_model_id}/'

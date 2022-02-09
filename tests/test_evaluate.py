@@ -630,6 +630,6 @@ class TestEvaluation(unittest.TestCase):
         evaluation = human_doc.evaluate_extraction_model(path_to_model)
         self.assertEqual(10, evaluation["true_positive"].sum())
         self.assertEqual(1, evaluation["false_positive"].sum())
-        self.assertEqual(8, evaluation["false_negative"].sum())
+        self.assertEqual(9, evaluation["false_negative"].sum())
         self.assertEqual(1519, evaluation['start_offset'][6])
         self.assertEqual(1552, evaluation['end_offset'][18])
