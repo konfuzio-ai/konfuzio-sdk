@@ -30,20 +30,6 @@ from konfuzio_sdk.utils import is_file, convert_to_bio_scheme, amend_file_name
 
 logger = logging.getLogger(__name__)
 
-EMPTY_SPAN_EVALUATION = {
-    "id_local": None,
-    "id": None,
-    "confidence": None,
-    "start_offset": 0,  # to support compare function to evaluate True and False
-    "end_offset": 0,  # to support compare function to evaluate True and False
-    "is_correct": None,
-    "revised": None,
-    "label_threshold": None,
-    "label_id": None,
-    "label_set_id": None,
-    "annotation_set_id": 0,  # to allow grouping to compare boolean
-}
-
 
 class Data(object):
     """Collect general functionality to work with data from API."""
@@ -326,6 +312,39 @@ class Span(Data):
         """Calculate the offset string of a Span."""
         return self.annotation.document.text[self.start_offset : self.end_offset]
 
+    def eval_dict(self):
+        """Return any information needed to evaluate the Span."""
+        if self.start_offset == 0 and self.end_offset == 0:
+            eval = {
+                "id_local": None,
+                "id": None,
+                "confidence": None,
+                "start_offset": 0,  # to support compare function to evaluate True and False
+                "end_offset": 0,  # to support compare function to evaluate True and False
+                "is_correct": None,
+                "revised": None,
+                "label_threshold": None,
+                "label_id": None,
+                "label_set_id": None,
+                "annotation_set_id": 0,  # to allow grouping to compare boolean
+            }
+        else:
+            eval = {
+                "id_local": self.annotation.id_local,
+                "id": self.annotation.id,
+                "confidence": self.annotation.confidence,
+                "start_offset": self.start_offset,  # to support multiline
+                "end_offset": self.end_offset,  # to support multiline
+                "is_correct": self.annotation.is_correct,
+                "revised": self.annotation.revised,
+                "label_threshold": self.annotation.label.threshold,
+                # todo check if we need a variable to optimize the threshold
+                "label_id": self.annotation.label.id,
+                "label_set_id": self.annotation.label_set.id,
+                "annotation_set_id": self.annotation.annotation_set.id,
+            }
+        return eval
+
     def __eq__(self, other) -> bool:
         """Compare any point of data with their position is equal."""
         return (
@@ -469,10 +488,6 @@ class Annotation(Data):
                 annotation=self,
             )
             self.add_span(sa)
-        elif label is None and id is None and annotation_set_id is None and label_set_id is None:
-            # TODO: do we need to check the label?
-            sa = Span(start_offset=0, end_offset=0, x0=None, x1=None, y0=None, y1=None, page_index=None)
-            self.add_span(sa)
 
             logger.warning(f'{self} is empty')
         else:
@@ -561,28 +576,13 @@ class Annotation(Data):
         """Calculate the span information to evaluate the Annotation."""
         result = []
         if self.label is None or self.label_set is None or self.annotation_set is None:
-            result.append(EMPTY_SPAN_EVALUATION)
+            result.append(Span(start_offset=0, end_offset=0).eval_dict())
         else:
             for sa in self._spans:
                 if sa.start_offset is None or sa.end_offset is None:
                     raise NotImplementedError
                 else:
-                    result.append(
-                        {
-                            "id_local": self.id_local,
-                            "id": self.id,
-                            "confidence": self.confidence,
-                            "start_offset": sa.start_offset,  # to support multiline
-                            "end_offset": sa.end_offset,  # to support multiline
-                            "is_correct": self.is_correct,
-                            "revised": self.revised,
-                            "label_threshold": self.label.threshold,
-                            # todo check if we need a variable to optimize the threshold
-                            "label_id": self.label.id,
-                            "label_set_id": self.label_set.id,
-                            "annotation_set_id": self.annotation_set.id,  # todo refer to the class not the ID
-                        }
-                    )
+                    result.append(sa.eval_dict())
         return result
 
     def add_span(self, span: Span, check_duplicate=True):
@@ -838,7 +838,7 @@ class Document(Data):
         result = []
         annotations = self.annotations(use_correct=use_correct)
         if not annotations:  # if there are no annotations in this documents
-            result.append(EMPTY_SPAN_EVALUATION)
+            result.append(Span(start_offset=0, end_offset=0).eval_dict())
         else:
             for annotation in annotations:
                 result += annotation.eval_dict
