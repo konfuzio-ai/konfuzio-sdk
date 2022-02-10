@@ -295,7 +295,7 @@ class Span(Data):
         x1: Union[int, None] = None,
         y0: Union[int, None] = None,
         y1: Union[int, None] = None,
-        annotation = None,
+        annotation=None,
         page_index: Union[int, None] = None,
     ):
         """
@@ -323,8 +323,9 @@ class Span(Data):
 
     @property
     def offset_string(self):
-        return self.annotation.document.text[self.start_offset: self.end_offset]
-    
+        """Calculate the offset string of a Span."""
+        return self.annotation.document.text[self.start_offset : self.end_offset]
+
     def __eq__(self, other) -> bool:
         """Compare any point of data with their position is equal."""
         return (
@@ -425,9 +426,9 @@ class Annotation(Data):
 
         self.selection_bbox = kwargs.get("selection_bbox", None)
         self.page_number = kwargs.get("page_number", None)
-        
+
         #  label_set_text should not be needed as we habe label_set
-        
+
         # if label:  # Annotation with no label are artifically created by the tokenizers
         #     # if no label_set_text we check if is passed by section_label_text
         #     if label_set_text is None:
@@ -468,7 +469,7 @@ class Annotation(Data):
                 annotation=self,
             )
             self.add_span(sa)
-        elif label is None and id is None and annotation_set is None and label_set_id is None:
+        elif label is None and id is None and annotation_set_id is None and label_set_id is None:
             # TODO: do we need to check the label?
             sa = Span(start_offset=0, end_offset=0, x0=None, x1=None, y0=None, y1=None, page_index=None)
             self.add_span(sa)
@@ -552,8 +553,9 @@ class Annotation(Data):
 
     @property
     def annotation_set(self):
+        """Return the Annotation Set by ID."""
         return self.document.get_annotation_set_by_id(self.annotation_set_id)
-    
+
     @property
     def eval_dict(self) -> List[dict]:
         """Calculate the span information to evaluate the Annotation."""
@@ -578,7 +580,7 @@ class Annotation(Data):
                             # todo check if we need a variable to optimize the threshold
                             "label_id": self.label.id,
                             "label_set_id": self.label_set.id,
-                            "annotation_set_id": self.annotation_set,  # todo refer to the class not the ID
+                            "annotation_set_id": self.annotation_set.id,  # todo refer to the class not the ID
                         }
                     )
         return result
