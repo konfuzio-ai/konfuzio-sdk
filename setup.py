@@ -48,6 +48,7 @@ setuptools.setup(
         'python-dateutil',
         'python-decouple',
         'requests',
+        'requests_toolbelt',
         'tabulate',
         'tqdm',
     ],
