@@ -957,12 +957,72 @@ class Document(Data):
         """Define if the Document is saved to the server."""
         return self.id is not None
 
-    def annotations(self, label: Label = None, use_correct: bool = True) -> List[Annotation]:
+    def get_annotations_for_all_offsets(self, annotations: list):
+        """
+        Get annotations for all offsets in the document.
+
+        Creates artificial annotations for the offsets where there are no correct annotations.
+        The artificial annotations are created with a start and end offset.
+        They do not have a Label (None) and are is_correct=False.
+
+        # TODO: review multiline case
+        :param annotations: Annotations existing in the document.
+        :return: Annotations existing in the document and artificial ones for the remaining offsets.
+        """
+        start_offset = 0
+        end_offset = len(self.text) + 1
+        all_annotations = []
+
+        if not annotations:
+            artificial_anno = self.annotation_class(
+                start_offset=start_offset, end_offset=end_offset, document=self, label=None, is_correct=False
+            )
+
+            all_annotations.append(artificial_anno)
+
+        else:
+            for annotation in annotations:
+                # create artificial annotations for offsets before the correct annotations spans
+                for annotation_span in annotation._spans:
+                    if annotation_span.start_offset > start_offset:
+                        artificial_anno = self.annotation_class(
+                            start_offset=start_offset,
+                            end_offset=annotation_span.start_offset,
+                            document=self,
+                            label=None,
+                            is_correct=False,
+                        )
+                        all_annotations.append(artificial_anno)
+
+                    start_offset = annotation_span.end_offset
+
+                all_annotations.append(annotation)
+
+            if max(span.end_offset for span in annotation._spans) < end_offset:
+                # create annotation for offsets between last correct annotation and end offset
+                artificial_anno = self.annotation_class(
+                    start_offset=max(span.end_offset for span in annotation._spans),
+                    end_offset=end_offset,
+                    document=self,
+                    label=None,
+                    is_correct=False,
+                )
+
+                all_annotations.append(artificial_anno)
+
+        return all_annotations
+
+    def annotations(
+        self, label: Label = None, use_correct: bool = True, create_empty_annotations: bool = False
+    ) -> List[Annotation]:
         """
         Filter available annotations.
 
+        # TODO: add option to filter annotations by offsets (review)
+
         :param label: Label for which to filter the annotations
         :param use_correct: If to filter by correct annotations
+        :param create_empty_annotations: If create empty annotations for offsets without annotations (only if no label)
         :return: Annotations in the document.
         """
         annotations = []
@@ -975,6 +1035,18 @@ class Document(Data):
                 # todo: add option to filter for overlapping Annotations, `add_annotation` just checks for identical
                 elif label is None:
                     annotations.append(annotation)
+
+        if create_empty_annotations:
+            if label is not None:
+                # if we filter by label we could create empty annotations overlapping with annotations existing in the
+                # document
+                logger.warning('Empty annotations are not created because the annotations are being filtered by label.')
+
+            elif self.text is None:
+                logger.warning('The text of the document is necessary to create empty annotations - for end_offset.')
+
+            else:
+                annotations = self.get_annotations_for_all_offsets(annotations)
 
         return annotations
 
