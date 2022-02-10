@@ -4,9 +4,12 @@ import json
 import logging
 import os
 import pathlib
+import re
 import shutil
 from copy import deepcopy
+import time
 from datetime import tzinfo
+from multiprocessing import Pool
 from typing import Dict, Optional, List, Union, Tuple
 
 import dateutil.parser
@@ -26,9 +29,18 @@ from konfuzio_sdk.api import (
     upload_file_konfuzio_api,
     create_label,
     update_file_konfuzio_api,
+    get_document_annotations,
 )
+from konfuzio_sdk.utils import get_bbox
 from konfuzio_sdk.evaluate import compare
 from konfuzio_sdk.normalize import normalize
+from konfuzio_sdk.regex import (
+    check_for_match,
+    generic_candidate_function,
+    get_best_regex,
+    regex_annotations,
+    suggest_regex_for_string,
+)
 from konfuzio_sdk.utils import is_file, convert_to_bio_scheme, amend_file_name
 
 logger = logging.getLogger(__name__)
@@ -279,6 +291,12 @@ class Label(Data):
         if label_sets:
             [x.add_label(self) for x in label_sets]
 
+        # Regex features
+        self._tokens = None
+        self.tokens_file_path = None
+        self._regex: List[str] = []
+        self.regex_file_path = None
+
     def __repr__(self):
         """Return string representation."""
         return self.name
@@ -288,6 +306,15 @@ class Label(Data):
         """Get the label sets in which this label is used."""
         label_sets = [x for x in self.project.label_sets if self in x.labels]
         return label_sets
+
+    @property
+    def translations(self):
+        """Create a translation dictionary between offset string and business relevant representation."""
+        return {
+            annotation.offset_string: annotation.translated_string
+            for annotation in self.annotations
+            if annotation.translated_string
+        }
 
     @property
     def annotations(self):
@@ -321,6 +348,230 @@ class Label(Data):
         """Return all documents which contain annotations of this label."""
         relevant_id = list(set([anno.document.id for anno in self.annotations]))
         return [doc for doc in self.project.documents if (doc.id in relevant_id)]
+
+    def find_tokens(self):
+        """Calculate the regex token of a label, which matches all offset_strings of all correct annotations."""
+        _evaluations = []
+        for annotation in self.correct_annotations:
+            _evaluations += annotation.tokens()  # TODO every token is evaluated even it is a duplicate.
+
+        evaluations = []
+        for _evaluation in _evaluations:
+            # remove duplicates is hard, as every annotation contains the id  # TODO FZ move check out of loop.
+            if re.sub(r'_\d+\>', r'\>', _evaluation['regex']) not in [
+                re.sub(r'_\d+\>', r'\>', cor['regex']) for cor in evaluations
+            ]:
+                evaluations.append(_evaluation)
+
+        try:
+            tokens = get_best_regex(evaluations, log_stats=True)
+            # Debug code.
+            # correct_findings = set(x for evaluation in evaluations for x in evaluation['correct_findings'])
+            # missing_annotations = set(self.annotations) - correct_findings
+            # if missing_annotations:
+            #     logger.error(f'Missing correct annotation when building regex: {missing_annotations}')
+
+        except ValueError:
+            logger.error(f'We cannot find tokens for {self} with a f_score > 0.')
+            tokens = []
+
+        fallback_tokens = []
+        for document in set(x.document for x in self.correct_annotations):
+            spans = [
+                (x.start_offset, x.end_offset)
+                for x in Annotation.regex_annotation_generator(tokens, document, skip_bbox=True)
+            ]
+            for annotation in document.annotations(label=self):
+                if (annotation.start_offset, annotation.end_offset) not in spans:
+                    logger.error(
+                        f'No matching token found for >>{annotation.offset_string}<< ({annotation.document}). '
+                        f'Add fallback token.'
+                    )
+                    fallback_tokens += annotation.tokens()
+
+        # Remove duplicate fallback tokens, to be removed in the feature.
+        unique_fallback_tokens = []
+        uniques = []
+        for _fallback_tokens in [x['regex'] for x in fallback_tokens]:
+            hash = _fallback_tokens.split('>')[1].split(')')[0]
+            if hash not in uniques:
+                unique_fallback_tokens.append(_fallback_tokens)
+                uniques.append(hash)
+        # ----------------------------------------
+
+        result = tokens + unique_fallback_tokens
+        return result
+
+    def tokens(self, update=False) -> List:
+        """Calculate tokens to be used in the regex of the Label."""
+        if not self._tokens or update:
+            self.tokens_file_path = os.path.join(self.project.project_folder, f'{self.name_clean}_tokens.json5')
+            if not is_file(self.tokens_file_path, raise_exception=False) or update:
+                logger.info(f'Build tokens for Label {self.name}.')
+                self._tokens = self.find_tokens()
+                with open(self.tokens_file_path, 'w') as f:
+                    json.dump(self._tokens, f, indent=2, sort_keys=True)
+            else:
+                logger.info(f'Load existing tokens for Label {self.name}.')
+                with open(self.tokens_file_path, 'r') as f:
+                    self._tokens = json.load(f)
+        return self._tokens
+
+    def evaluate_regex(self, regex, filtered_group=None, regex_quality=0):
+        """
+        Evaluate a regex on overall project data.
+
+        Type of regex allows you to group regex by generality
+
+        Example:
+            Three annotations about the birth date in two documents and one regex to be evaluated
+            1.doc: "My was born at the 12th of December 1980, you could also say 12.12.1980." (2 Annotations)
+            2.doc: "My was born at 12.06.1997." (1 Annotations)
+            regex: dd.dd.dddd (without escaped characters for easier reading)
+            stats:
+                  total_correct_findings: 2
+                  correct_label_annotations: 3
+                  total_findings: 2 --> precision 100 %
+                  num_docs_matched: 2
+                  project.documents: 2  --> document recall 100%
+
+        """
+        evaluations = [
+            document.evaluate_regex(regex=regex, filtered_group=filtered_group, label=self)
+            for document in self.project.documents
+        ]
+
+        total_findings = sum(evaluation['count_total_findings'] for evaluation in evaluations)
+        correct_findings = [finding for evaluation in evaluations for finding in evaluation['correct_findings']]
+        total_correct_findings = sum(evaluation['count_total_correct_findings'] for evaluation in evaluations)
+        processing_times = [evaluation['runtime'] for evaluation in evaluations]
+
+        try:
+            annotation_precision = total_correct_findings / total_findings
+        except ZeroDivisionError:
+            annotation_precision = 0
+
+        try:
+            annotation_recall = total_correct_findings / len(self.correct_annotations)
+        except ZeroDivisionError:
+            annotation_recall = 0
+
+        try:
+            f_score = 2 * (annotation_precision * annotation_recall) / (annotation_precision + annotation_recall)
+        except ZeroDivisionError:
+            f_score = 0
+
+        if self.project.documents:
+            evaluation = {
+                'regex': regex,
+                'regex_len': len(regex),  # the longer the regex the more conservative it is to use
+                'runtime': sum(processing_times) / len(processing_times),  # time to process the regex
+                'annotation_recall': annotation_recall,
+                'annotation_precision': annotation_precision,
+                'f1_score': f_score,
+                'regex_quality': regex_quality,
+                # other stats
+                'correct_findings': correct_findings,
+                'total_findings': total_findings,
+                'total_correct_findings': total_correct_findings,
+            }
+            return evaluation
+        else:
+            return {}
+
+    def find_regex(self, multiprocessing=True) -> List[str]:
+        """Find the best combination of regex in the list of all regex proposed by annotations."""
+        if not self.correct_annotations:
+            logger.warning(f'{self} has no correct annotations.')
+            return []
+
+        # Additional generic regexes
+        default_regexes = [
+            rf'(?P<{self.name_clean}_entity_1>[^ \n\t\f]+)',
+            rf'(?P<{self.name_clean}_entity_2>(?:[^ \t\n]+(?:[ \t][^ \t\n]+)*)+)',
+            rf'(?::[ \t])(?P<{self.name_clean}_entity_3>(?:[^ \t\n]+(?:[ \t][^ \t\n]+)*)+)',
+        ]
+        if hasattr(self, 'use_default_regex') and self.use_default_regex is False:
+            default_regexes = []
+
+        regex_made = []
+        len_correct_annotations = len(self.correct_annotations)
+        for i, correct_annotation in enumerate(self.correct_annotations):
+            logger.info(f'Build regexes for annotation {i}/{len_correct_annotations}')
+            # TODO: review multiline case
+            proposals = correct_annotation.document.regex(
+                min(span.start_offset for span in correct_annotation._spans),
+                max(span.end_offset for span in correct_annotation._spans),
+                None,
+            )  # 15 + 3 * len_correct_annotations)
+            for proposal in proposals:
+                # remove duplicates is hard, as every annotation contains the id  # TODO FZ move check out of loop.
+                if re.sub(r'_\d+\>', r'\>', proposal) not in [re.sub(r'_\d+\>', r'\>', cor) for cor in regex_made]:
+                    regex_made.append(proposal)
+
+        logger.info(
+            f'For label {self.name} we found {len(regex_made)} regex proposals for {len(self.correct_annotations)}'
+            f' annotations.'
+        )
+
+        regex_made += default_regexes
+
+        if multiprocessing:
+            with Pool() as p:
+                evaluations = p.starmap(self.evaluate_regex, zip(regex_made, itertools.repeat(f'{self.name_clean}_')))
+        else:
+            evaluations = [self.evaluate_regex(_regex_made, f'{self.name_clean}_') for _regex_made in regex_made]
+        logger.info(f'We compare {len(evaluations)} regex for {len(self.correct_annotations)} correct annotations.')
+
+        # correct_findings = set(x for evaluation in evaluations for x in evaluation['correct_findings'])
+        # if missing_annotations := set(self.annotations) - correct_findings:
+        #    logger.error(f'Missing correct annotation when building regex: {missing_annotations}')
+        logger.info(f'Evaluate {self} for best regex.')
+        try:
+            best_regex = get_best_regex(evaluations)
+        except ValueError:
+            logger.exception(f'We cannot find regex for {self} with a f_score > 0.')
+            best_regex = []
+
+        for annotation in self.annotations:
+            for regex in best_regex:
+                _, _, spans = generic_candidate_function(regex)(annotation.document.text)
+                if (annotation.start_offset, annotation.end_offset) in spans:
+                    break
+            else:
+                logger.error(f'Fallback regex added for >>{annotation}<<.')
+                _suggest = annotation.document.regex_new(self, annotation.start_offset, annotation.end_offset)
+                match = check_for_match(
+                    annotation.document.text, _suggest[:1], annotation.start_offset, annotation.end_offset
+                )
+                if match:
+                    best_regex += _suggest[:1]  # TODO FZ
+
+        # Final check.
+        # for annotation in self.annotations:
+        #     for regex in best_regex:
+        #         x = generic_candidate_function(regex)(annotation.document.text)
+        #         if (annotation.start_offset, annotation.end_offset) in x[2]:
+        #             break
+        #     else:
+        #         logger.error(f'{annotation} could not be found by any regex.')
+        return best_regex
+
+    def regex(self, update=False, multiprocessing=True) -> List:
+        """Calculate regex to be used in the LabelExtractionModel."""
+        if not self._regex or update:
+            self.regex_file_path = os.path.join(self.project.project_folder, 'regex', f'{self.name_clean}.json5')
+            if not is_file(self.regex_file_path, raise_exception=False) or update:
+                logger.info(f'Build regexes for Label {self.name}.')
+                self._regex = self.find_regex(multiprocessing)
+                with open(self.regex_file_path, 'w') as f:
+                    json.dump(self._regex, f, indent=2, sort_keys=True)
+            else:
+                logger.info(f'Start loading existing regexes for Label {self.name}.')
+                with open(self.regex_file_path, 'r') as f:
+                    self._regex = json.load(f)
+        logger.info(f'Regexes are ready for Label {self.name}.')
+        return self._regex
 
     def save(self) -> bool:
         """
@@ -448,7 +699,109 @@ class Span(Data):
 
 
 class Annotation(Data):
-    """An Annotation holds information that a Label and Annotation Set has been assigned to."""
+    """
+    An Annotation holds information that a Label and Annotation Set has been assigned to.
+
+    Keep the information of one sequence of the document.
+
+    Todo: the endpoint test_get_project_labels does no longer include the document annotation_sets, as the relation of
+    a label and a annotation_set can be configured by a user while labeling. We might ne to model the relation of many
+    Annotations to one AnnotationSet in a more explicit way.
+
+    Example document: "I earn 15 Euro per hour."
+
+    Assume the word "15" should be labeled. The project contains the labels "Amount" and "Tax".
+
+    # CREATE
+
+    Annotations can be created by:
+
+    - Human: Who is using the web interface
+    - Import: A human user imports extractions and uses "Copy extractions to annotations" admin action
+    - Training: Using the konfuzio package you create an annotation online, via an Bot user
+    - Text FB: Text Feedback - External API user, sends new extraction without ID, which contains only the offset string
+    - Extraction: Internal Process after we receive a new document from an External API user
+    - Extraction FB: External Feedback - External API user, sends feedback to existing extraction incl. ID
+
+    ID column: relates to the Annotation instance created in the database
+    is_revised: A human revisor had a look at this annotation
+    correct: Human claims that this annotation should be extracted in future documents
+
+    The KONFUZIO package will use annotations which are revised or (no XOR) correct.
+
+    | ID | Creator       | is_revised  | correct       | User      | Label   | Action  |
+    |:---|:--------------|:------------|:------------- |:----------|:--------|:--------|
+    | 1  | Human         | False       | True          | Human     | Amount  | ALLOWED |
+    | 2  | Import        | False       | False         | None      | Amount  | ALLOWED | Extraction.created_by_import
+    | 3  | Training      | False       | False         | Bot       | Amount  | ALLOWED |
+    | 4  | Extraction    | False       | False         | External  | Amount  | ALLOWED | one annotation per extraction
+    | X  | Text FB       | -----       | -----         | ---       | Amount  | see 2   | only create extraction
+
+    # REVISE
+
+    Annotations, as they heave been created, can be revised by:
+
+    - Human: Who is using the web interface
+    - Revise Feedback: ?
+
+    ## Positive Feedback will change
+
+    | ID | Revisor       | is_revised  | correct       | User      | Label   | Action  |
+    |:---|:--------------|:------------|:------------- |:----------|:--------|:--------|
+    | 1  | Human         | NA          | NA            | NA        | Amount  | HIDDEN  |
+    | 2  | Human         | True        | True          | Human     | Amount  | ALLOWED |
+    | 3  | Human         | True        | True          | Bot       | Amount  | ALLOWED | -> ? does PUT update User
+    | 4  | Human         | NA          | NA            | External  | Amount  | HIDDEN  |
+    | 1  | Extraction FB | True        | True          | Human     | Amount  | ALLOWED |
+    | 2  | Extraction FB | ----        | ----          | ----      | ----    | ----    | External user does not get ID
+    | 3  | Extraction FB | ----        | ----          | ----      | ----    | ----    | External user does not get ID
+    | 4  | Extraction FB | True        | True          | Bot       | Amount  | ALLOWED |
+
+    As positive feedback displays the annotation in the interface but stores them as correct examples, the
+    word "15" should NOT be labeled anew. This time the creator might choose between label "Amount" and "Tax".
+
+    | ID | Creator       | is_revised  | correct       | User      | Label   | Action  |
+    |:---|:--------------|:------------|:------------- |:----------|:--------|:--------|
+    | 5  | Human         | False       | True          | Human     | Amount  | DENIED  |
+    | 6  | Import        | True        | False         | None      | Amount  | DENIED  |
+    | 7  | Training      | False       | False         | Bot       | Amount  | DENIED  |
+    | 8  | Extraction FB | ?           | ?             | ?         | Amount  | DENIED  |
+    | 9  | Human         | False       | True          | Human     | Tax     | DENIED  |
+    | 10 | Import        | ----        | ----          | ----      | Tax     | DENIED  | External user does not get ID
+    | 11 | Training      | ----        | ----          | ----      | Tax     | DENIED  | External user does not get ID
+    | 12 | Extraction FB | ?           | ?             | ?         | Tax     | DENIED  |
+
+    ## Negative Feedback will change
+
+    - The user clicks on delete button next to the annotation in the web interface.
+    - Incorrect or deleted annotations will no longer be displayed in the web interface.
+
+    | ID | Revisor       | is_revised  | correct       | User      | Label   | Action  |
+    |:---|:--------------|:------------|:------------- |:----------|:--------|:--------|
+    | 1  | Human         | DELTED      | DELTED        | DELTED    | Amount  | ALLOWED | delete revised=F, correct=T
+    | 2  | Human         | True        | False         | None      | Amount  | ALLOWED | Update three fields
+    | 3  | Human         | True        | False         | Bot       | Amount  | ALLOWED | Does update is_revised field
+    | 4  | Human         | ?           | ?             | ?         | Amount  | ALLOWED |
+    | 1  | Extraction FB | True        | False         | ?         | Amount  | ALLOWED |
+    | 2  | Extraction FB | ----        | ----          | ----      | Amount  | ALLOWED | External user does not get ID
+    | 3  | Extraction FB | ----        | ----          | ----      | Amount  | ALLOWED | External user does not get ID
+    | 4  | Extraction FB | True        | False         | External  | Amount  | ALLOWED |
+
+    As negative feedback removed any annotation from the web interface but stores them as incorrect examples, the
+    word "15" can be labeled anew. This time the creator might choose between label "Amount" and "Tax".
+
+    | ID | Creator       | is_revised  | correct       | User      | Label   | Action  |
+    |:---|:--------------|:------------|:------------- |:----------|:--------|:--------|
+    | 5  | Human         | False       | True          | Human     | Amount  | ?DENIED | -> in contrast to annotation 1
+    | 6  | Import        | ---         | ---           | ---       | ---     | DENIED  |
+    | 7  | Training      | ---         | ---           | ---       | ---     | DENIED  |
+    | 8  | Extraction FB | ?           | ?             | ?         | Amount  | NA      | Need to send new document
+    | 9  | Human         | False       | True          | Human     | Tax     | ALLOWED | now we have 2 annotations
+    | 10 | Import        | False       | False         | None      | Tax     | ALLOWED |
+    | 11 | Training      | False       | False         | Bot       | Tax     | ALLOWED |
+    | 12 | Extraction FB | ?           | ?             | ?         | Tax     | NA      | Need to send new document
+
+    """
 
     def __init__(
         self,
@@ -590,6 +943,10 @@ class Annotation(Data):
             raise
         # TODO END LEGACY -
 
+        # regex features
+        self._tokens = []
+        self._regex = None
+
     def __repr__(self):
         """Return string representation."""
         if self.label and self.document:
@@ -599,6 +956,25 @@ class Annotation(Data):
             return f"{self.label.name} ({self.start_offset}, {self.end_offset})"
         else:
             return f"{self.__class__.__name__} without Label ({self.start_offset}, {self.end_offset})"
+
+    @property
+    def is_multiline(self) -> bool:
+        """Calculate if Annotation spans multiple lines of text."""
+        # TODO: clean code after issue 6230 is solved (TODO: move to sdk)
+        if (
+            self.bboxes is not None
+            and self.bboxes
+            and (
+                ('line_number' in self.bboxes[0].keys() and len(set([bbox['line_number'] for bbox in self.bboxes])) > 1)
+                or (  # NOQA
+                    'line_index' in self.bboxes[0].keys() and len(set([bbox['line_index'] for bbox in self.bboxes])) > 1
+                )
+            )
+        ):  # NOQA
+            is_multiline = True
+        else:
+            is_multiline = False
+        return is_multiline
 
     @property
     def normalize(self) -> str:
@@ -735,6 +1111,149 @@ class Annotation(Data):
                 except KeyError:
                     logger.error(f"Not able to save annotation online: {response}")
         return new_annotation_added
+
+    @classmethod
+    def regex_annotation_generator(cls, regex_list, document, skip_bbox=False) -> List['Annotation']:
+        """
+        Build candidates for regexes.
+
+        :return: Return sorted list of Annotations by start_offset
+        """
+        annotations = []
+        dict_annotations = []
+
+        bbox = document.get_bbox()
+        for regex in regex_list:
+            _dict_annotations = regex_annotations(doctext=document.text, regex=regex)
+            dict_annotations += _dict_annotations
+
+        for span in list(set((x['start_offset'], x['end_offset']) for x in dict_annotations)):
+            offset_string = document.text[span[0] : span[1]]
+            if not offset_string or '\f' in offset_string:
+                continue
+
+            if skip_bbox:
+                annotation = Annotation(start_offset=span[0], end_offset=span[1], document=document)
+            else:
+                annotation = Annotation(
+                    start_offset=span[0],
+                    end_offset=span[1],
+                    document=document,
+                    bbox=get_bbox(bbox, start_offset=span[0], end_offset=span[1]),
+                )
+                if annotation.x0 is None or annotation.y0 is None:
+                    logger.warning(
+                        f'ANNOTATION {annotation.offset_string} in document ({document.id}) '
+                        f'WITH NO x0 OR y0 FOUND. Skip it.'
+                    )
+                    continue
+            annotations.append(annotation)
+
+        return sorted(annotations, key=lambda x: x.start_offset)
+
+    def toJSON(self):
+        """Convert Annotation to dict."""
+        res_dict = {
+            'start_offset': self.start_offset,
+            'end_offset': self.end_offset,
+            'label': self.label.id,
+            'revised': self.revised,
+            'annotation_set': self.annotation_set,
+            'label_set_id': self.label_set.id,
+            'accuracy': self.confidence,
+            'is_correct': self.is_correct,
+        }
+
+        res = {k: v for k, v in res_dict.items() if v is not None}
+        return res
+
+    @property
+    def page_index(self) -> int:
+        """Calculate the index of the page on which the Annotation starts, first page has index 0."""
+        return self.document.text[0 : self.start_offset].count('\f')
+
+    @property
+    def line_index(self) -> int:
+        """Calculate the index of the page on which the Annotation starts, first page has index 0."""
+        return self.document.text[0 : self.start_offset].count('\n')
+
+    def bbox(self) -> Dict:
+        """Calculate the bounding box of a text sequence."""
+        b = get_bbox(self.document.bbox(), self.start_offset, self.end_offset)
+        self.bottom = b['bottom']
+        assert self.page_index == b['page_index'], 'BoundingBox and Annotation are not aligned.'
+        self.top = b['top']
+        self.bottom = b['bottom']
+        self.x0 = b['x0']
+        self.x1 = b['x1']
+        self.y0 = b['y0']
+        self.y1 = b['y1']
+        return {
+            'page_index': self.page_index,
+            'x0': self.x0,
+            'x1': self.x1,
+            'y0': self.y0,
+            'y1': self.y1,
+            'top': self.top,
+            'bottom': self.bottom,
+        }
+
+    def tokens(self) -> List:
+        """Create a list of potential tokens based on this annotation."""
+        if not self._tokens:
+            if self.label:
+                harmonized_whitespace = suggest_regex_for_string(self.offset_string, replace_numbers=False)
+                numbers_replaced = suggest_regex_for_string(self.offset_string)
+                full_replacement = suggest_regex_for_string(self.offset_string, replace_characters=True)
+
+                # the original string, with harmonized whitespaces
+                regex_w = f'(?P<{self.label.name_clean}_W_{self.id}>{harmonized_whitespace})'
+                evaluation_w = self.label.evaluate_regex(regex_w, regex_quality=0)
+                if self.label.token_whitespace_replacement and evaluation_w['total_correct_findings'] > 1:
+                    self._tokens.append(evaluation_w)
+                # the original string, numbers replaced
+                if self.label.token_number_replacement and harmonized_whitespace != numbers_replaced:
+                    regex_n = f'(?P<{self.label.name_clean}_N_{self.id}>{numbers_replaced})'
+                    self._tokens.append(self.label.evaluate_regex(regex_n, regex_quality=1))
+                # numbers and characters replaced
+                if self.label.token_full_replacement and numbers_replaced != full_replacement:
+                    regex_f = f'(?P<{self.label.name_clean}_F_{self.id}>{full_replacement})'
+                    self._tokens.append(self.label.evaluate_regex(regex_f, regex_quality=2))
+                if not self._tokens:  # fallback if every proposed token is equal
+                    if self.label.token_whitespace_replacement:
+                        regex_w = f'(?P<{self.label.name_clean}_W_{self.id}_fallback>{harmonized_whitespace})'
+                        self._tokens.append(self.label.evaluate_regex(regex_w, regex_quality=0))
+                    if self.label.token_number_replacement:
+                        regex_n = f'(?P<{self.label.name_clean}_N_{self.id}_fallback>{numbers_replaced})'
+                        self._tokens.append(self.label.evaluate_regex(regex_n, regex_quality=1))
+                    if self.label.token_full_replacement:
+                        regex_f = f'(?P<{self.label.name_clean}_F_{self.id}_fallback>{full_replacement})'
+                        self._tokens.append(self.label.evaluate_regex(regex_f, regex_quality=2))
+            else:
+                self._tokens = []  # Annotations without label should not suggest tokens
+
+        return self._tokens
+
+    def regex(self):
+        """Return regex of this annotation."""
+        if not self._regex:
+            if self.label:
+                if len(self.label.tokens()) == 0:
+                    # We have tried to find tokens without success, use the tokens of the Annotation
+                    tokens = r'|'.join(sorted([x['regex'] for x in self.tokens()], key=len, reverse=True))
+                else:
+                    # Use the token of the Label
+                    tokens = r'|'.join(sorted(self.label.tokens(), key=len, reverse=True))
+            else:
+                # TODO: review
+                # If there is no label is probably because it's an artificial annotation.
+                # In that case we should only have 1 span
+                if len(self._spans) > 1:
+                    raise NotImplementedError('Trying to get regex for an annotation without label and multiple spans')
+                tokens = suggest_regex_for_string(self.offset_string[0])
+
+            self._regex = f'(?:{tokens})'
+        return self._regex
 
     def delete(self) -> None:
         """Delete Annotation online."""
@@ -1290,6 +1809,242 @@ class Document(Data):
             shutil.rmtree(self.document_folder)
         except FileNotFoundError:
             pass
+
+    # def annotate(self, result_dict: dict, label_set: LabelSet) -> List:
+    #     """Add annotations online."""
+    #     annotations = []
+    #     all_res = []
+    #     for key, value in result_dict.items():
+    #         if isinstance(value, dict):
+    #             try:
+    #                 label_set = [label for label in self.project.label_sets if label.name == key][0]
+    #                 res = self.annotate(result_dict=value, label_set=label_set)
+    #                 all_res += res
+    #             except IndexError:
+    #                 pass
+    #
+    #         if isinstance(value, pandas.DataFrame):
+    #             label = [label for label in label_set.labels if label.name == key][0]
+    #             raw_annotations = [annotation for index,
+    #                           annotation in value.iterrows() if annotation['Accuracy'] > 0.1]
+    #             _annotations = [self.annotation_class(
+    #                 start_offset=annotation['Start'],
+    #                 end_offset=annotation['End'],
+    #                 accuracy=annotation['Accuracy'],
+    #                 label=label.id,
+    #                 label_set_id=label_set.id,
+    #                 document=self,
+    #             ).toJSON() for annotation in raw_annotations]
+    #             annotations += _annotations
+    #
+    #     res = post_document_bulk_annotation(self.id, self.project.id, annotations)
+    #     all_res += res.json()
+    #     return all_res
+
+    def regex_new(self, label, start_offset: int, end_offset: int, max_findings_per_page=15) -> List[str]:
+        """
+        Suggest a list of regex which can be used to get the specified offset of a document.
+
+        It is faster to evaluate a regex on the document text, than evaluating the regex on the overall dataset.
+        """
+        proposals = []
+        all_annotations = self.annotations(create_empty_annotations=True)
+
+        for spacer in [0, 1, 3, 5, 8, 10]:
+            annotations = [
+                annotation
+                for annotation in all_annotations
+                if min(span.start_offset for span in annotation._spans) >= max(start_offset - spacer ** 2, 0)
+                and max(span.end_offset for span in annotation._spans) <= min(end_offset + spacer, len(self.text))
+            ]
+
+            proposal = ''.join(
+                [
+                    f'(?:(?P<{label.name_clean}_SUGGEST>{suggest_regex_for_string(annotation.offset_string)}))'
+                    for annotation in annotations
+                ]
+            )
+            # do not add duplicates
+            if re.sub(r'_\d+\>', r'\>', proposal) not in [re.sub(r'_\d+\>', r'\>', cor) for cor in proposals]:
+                try:
+                    # num_matches = len(re.findall(proposal, self.text))
+                    # if num_matches / (self.text.count('\f') + 1) < max_findings_per_page:
+                    proposals.append(proposal)
+                    # else:
+                    #    logger.info(f'Skip to evaluate regex {repr(proposal)} as it finds {num_matches} in {self}.')
+                except re.error:
+                    logger.error('Not able to run regex. Probably the same token is used twice in proposal.')
+
+        return proposals
+
+    def regex(self, start_offset: int, end_offset: int, max_findings_per_page=15) -> List[str]:
+        """
+        Suggest a list of regex which can be used to get the specified offset of a document.
+
+        It is faster to evaluate a regex on the document text, than evaluating the regex on the overall dataset.
+        """
+        proposals = []
+        # TODO: review multiline case
+        # TODO: we want to get the correct annotation that matches the input offsets
+        #  The option create_empty_annotations may return an artificial annotation if there is any mismatch
+        #   of the offsets
+        all_annotations = self.annotations(create_empty_annotations=True)
+        filtered_annotations = [
+            annotation
+            for annotation in all_annotations
+            if min(span.start_offset for span in annotation._spans) >= start_offset
+            and max(span.end_offset for span in annotation._spans) <= end_offset
+        ]
+        annotation_token = filtered_annotations[0].regex()
+        for spacer in [1, 3, 5]:
+            before_regex = suggest_regex_for_string(self.text[start_offset - spacer ** 2 : start_offset])
+            after_regex = suggest_regex_for_string(self.text[end_offset : end_offset + spacer])
+            # artificial_annotations = self.offset(
+            #     max(start_offset - spacer ** 2, 0), min(end_offset + spacer, len(self.text))
+            # )
+            # _proposal = ''.join([annotation.regex() for annotation in artificial_annotations])
+            proposal = before_regex + annotation_token + after_regex
+
+            if len(before_regex) == 0 and len(after_regex) == 0:
+                logger.error(f'Regex without before or after spaces build: >>{proposal}<<')
+
+            # do not add duplicates
+            if re.sub(r'_\d+\>', r'\>', proposal) not in [re.sub(r'_\d+\>', r'\>', cor) for cor in proposals]:
+                if max_findings_per_page:
+                    try:
+                        num_matches = len(re.findall(proposal, self.text))
+                        if num_matches / (self.text.count('\f') + 1) < max_findings_per_page:
+                            proposals.append(proposal)
+                        else:
+                            logger.info(f'Skip to evaluate regex {repr(proposal)} as it finds {num_matches} in {self}.')
+                    except re.error:
+                        logger.error('Not able to run regex. Probably the same token is used twice in proposal.')
+                else:
+                    proposals.append(proposal)
+        return proposals
+
+    def evaluate_regex(self, regex, label: Label, filtered_group=None):
+        """Evaluate a regex based on the document."""
+        start_time = time.time()
+        findings_in_document = regex_annotations(
+            doctext=self.text,
+            regex=regex,
+            keep_full_match=False,
+            # filter by name of label: one regex can match multiple labels
+            filtered_group=filtered_group,
+        )
+        processing_time = time.time() - start_time
+        correct_findings = []
+
+        label_annotations = self.annotations(label=label)
+        for finding in findings_in_document:
+            _correct_findings = [
+                x
+                for x in label_annotations
+                if x.start_offset == finding['start_offset'] and x.end_offset == finding['end_offset']
+            ]
+            # TODO FZ performance improvement.
+            # findings = self._annotation_dict[(finding['start_offset'], finding['end_offset'], label.id)]
+            correct_findings += _correct_findings
+
+        # TODO correct_findings make set.
+        try:
+            annotation_precision = len(correct_findings) / len(findings_in_document)
+        except ZeroDivisionError:
+            annotation_precision = 0
+
+        try:
+            annotation_recall = len(correct_findings) / len(self.annotations(label=label))
+        except ZeroDivisionError:
+            annotation_recall = 0
+
+        try:
+            f1_score = 2 * (annotation_precision * annotation_recall) / (annotation_precision + annotation_recall)
+        except ZeroDivisionError:
+            f1_score = 0
+        return {
+            'id': self.id,
+            'regex': regex,
+            'runtime': processing_time,
+            'count_total_findings': len(findings_in_document),
+            'count_total_correct_findings': len(correct_findings),
+            'count_correct_annotations': len(self.annotations(label=label)),
+            'count_correct_annotations_not_found': len(correct_findings) - len(self.annotations(label=label)),
+            # 'doc_matched': len(correct_findings) > 0,
+            'annotation_precision': annotation_precision,
+            'document_recall': 0,  # keep this key to be able to use the function get_best_regex
+            'annotation_recall': annotation_recall,
+            'f1_score': f1_score,
+            'correct_findings': correct_findings,
+        }
+
+    def get_annotations(self, update: bool = False):
+        """
+        Get annotations of ocr file.
+
+        :param update: Update the downloaded information even it is already available
+        :return: Annotations
+        """
+        if self.is_without_errors and (not self._annotations or update):
+            self.annotation_file_path = os.path.join(self.document_folder, 'annotations.json5')
+            if not is_file(self.annotation_file_path, raise_exception=False) or update:
+                annotations = get_document_annotations(document_id=self.id, session=self.session)
+                # write a file, even there are no annotations to support offline work
+                with open(self.annotation_file_path, 'w') as f:
+                    json.dump(annotations, f, indent=2, sort_keys=True)
+            else:
+                with open(self.annotation_file_path, 'r') as f:
+                    annotations = json.load(f)
+
+            # add Annotations to the document
+            for annotation_data in annotations:
+                if not annotation_data['custom_offset_string']:
+                    annotation = self.annotation_class(document=self, **annotation_data)
+                    self.add_annotation(annotation)
+                else:
+                    real_string = self.text[annotation_data['start_offset'] : annotation_data['end_offset']]
+                    if real_string == annotation_data['offset_string']:
+                        annotation = self.annotation_class(document=self, **annotation_data)
+                        self.add_annotation(annotation)
+                    else:
+                        logger.warning(
+                            f'Annotation {annotation_data["id"]} is not used '
+                            f'in training {KONFUZIO_HOST}/a/{annotation_data["id"]}.'
+                        )
+        return self._annotations
+
+    def check_annotations(self):
+        """Check for annotations width more values than allowed."""
+        labels = self.project.labels
+        # Labels that can only have 1 value.
+        labels_to_check = [label.name_clean for label in labels if not label.has_multiple_top_candidates]
+
+        # Check is done per annotation_set.
+        for annotation_set in self.annotation_sets:
+            values_annotations = {}
+            for annotation in annotation_set.annotations:
+                annotation_label = annotation.label.name_clean
+
+                if annotation_label in labels_to_check:
+                    annotation_value = annotation.normalize
+
+                    if annotation.normalized is None:
+                        annotation_value = annotation.offset_string
+
+                    if annotation_label in values_annotations.keys():
+                        if annotation_value not in values_annotations[annotation_label]:
+                            values_annotations[annotation_label].extend([annotation_value])
+
+                    else:
+                        values_annotations[annotation_label] = [annotation_value]
+
+            for label, values in values_annotations.items():
+                if len(values) > 1:
+                    logger.info(
+                        f'[Warning] Doc {self.id} - '
+                        f'AnnotationSet {annotation.label_set.name_clean} ({annotation.label_set.id})- '
+                        f'Label "{label}" shouldn\'t have more than 1 value. Values = {values}'
+                    )
 
 
 class Project(Data):

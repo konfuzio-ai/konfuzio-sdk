@@ -10,7 +10,7 @@ import zipfile
 from contextlib import contextmanager
 from io import BytesIO
 from statistics import median
-from typing import Union, List, Tuple
+from typing import Union, List, Tuple, Dict
 
 import filetype
 import nltk
@@ -593,3 +593,71 @@ def merge_bboxes(bboxes: list):
     }
 
     return merge_bbox
+
+
+def get_bbox(bbox, start_offset, end_offset) -> Dict:
+    """
+    Get single bbox for offset_string.
+
+    Given a `bbox` (a dictionary containing a bbox for every character in a document) and a start/end_offset into that
+    document, create a new bbox which covers every character bbox between the given start and end offset.
+
+    Pages are zero indexed, i.e. the first page has page_number = 0.
+    """
+    # exit early if document bbox is empty or start/end offsets are not given
+    if not bbox or start_offset is None or end_offset is None:
+        return {}
+
+    # get the index of every character bbox in the document between the start and end offset
+    char_bbox_ids = [str(char_bbox_id) for char_bbox_id in range(start_offset, end_offset) if str(char_bbox_id) in bbox]
+
+    # exit early if no bboxes are found between the start/end offset
+    if len(char_bbox_ids) < 1:
+        return {}
+
+    # set the defaut values which we overwrite with the actual character bbox values
+    x0 = 100000000
+    top = 10000000
+    y0 = 10000000
+    x1 = 0
+    y1 = 0
+    bottom = 0
+    pdf_page_index = None
+    line_indexes = []
+
+    # combine all of the found character bboxes and calculate their combined x0, x1, etc. values
+    for char_bbox_id in char_bbox_ids:
+        x0 = min(bbox[char_bbox_id]['x0'], x0)
+        top = min(bbox[char_bbox_id]['top'], top)
+        y0 = min(bbox[char_bbox_id]['y0'], y0)
+
+        x1 = max(bbox[char_bbox_id]['x1'], x1)
+        bottom = max(bbox[char_bbox_id]['bottom'], bottom)
+        y1 = max(bbox[char_bbox_id]['y1'], y1)
+        line_indexes.append(bbox[char_bbox_id]['page_number'])
+
+        if pdf_page_index is not None:
+            try:
+                assert pdf_page_index == bbox[char_bbox_id]['page_number'] - 1
+            except AssertionError:
+                logger.warning(
+                    "We don't support bounding boxes over page breaks yet, and will return the bounding box"
+                    "on the first page of the match."
+                )
+                break
+        pdf_page_index = bbox[char_bbox_id]['page_number'] - 1
+
+    res = {
+        'bottom': bottom,
+        'page_index': pdf_page_index,
+        'top': top,
+        'x0': x0,
+        'x1': x1,
+        'y0': y0,
+        'y1': y1,
+        'start_offset': start_offset,
+        'end_offset': end_offset,
+    }
+    if len(set(line_indexes)) == 1:
+        res['line_index'] = line_indexes[0]
+    return res
