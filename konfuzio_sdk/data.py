@@ -10,6 +10,8 @@ from datetime import tzinfo
 from typing import Dict, Optional, List, Union, Tuple
 
 import dateutil.parser
+import pandas
+
 from konfuzio_sdk import KONFUZIO_HOST
 from konfuzio_sdk.api import (
     get_document_details,
@@ -26,6 +28,13 @@ from konfuzio_sdk.api import (
     update_file_konfuzio_api,
 )
 from konfuzio_sdk.evaluate import compare
+from konfuzio_sdk.normalize import (
+    normalize_to_positive_float,
+    normalize_to_float,
+    normalize_to_date,
+    normalize_to_bool,
+    normalize_to_percentage,
+)
 from konfuzio_sdk.utils import is_file, convert_to_bio_scheme, amend_file_name
 
 logger = logging.getLogger(__name__)
@@ -45,6 +54,12 @@ class Data(object):
         """Return hash(self)."""
         return hash(str(self.id))
 
+    def lose_weight(self):
+        """Delete data of the instance."""
+        if self.project:
+            self.project = None
+        return self
+
 
 class AnnotationSet(Data):
     """Represent an Annotation Set - group of annotations."""
@@ -62,6 +77,7 @@ class AnnotationSet(Data):
         self.id = id
         self.document = document
         self.label_set = label_set
+        self.section_label = label_set  # todo remove legacy
         self.annotations = annotations
         self.start_offset = min((s.start_offset for a in self.annotations for s in a._spans), default=None)
         self.end_offset = max((s.end_offset for a in self.annotations for s in a._spans), default=None)
@@ -119,6 +135,57 @@ class LabelSet(Data):
             if isinstance(label, int):
                 label = self.project.get_label_by_id(id=label)
             self.add_label(label)
+        self.has_multiple_sections = self.has_multiple_annotation_sets
+        self.default_templates = self.categories
+
+    def evaluate(self, doc_model):
+        """Evaluate templates."""
+        if self.is_default:
+            return None
+        if not self.has_multiple_sections:
+            return None
+        if not hasattr(self, 'pattern') or not self.pattern:
+            return None
+
+        evaluation_df = pandas.DataFrame()
+        for test_doc in self.project.test_docs:
+            res = doc_model.extract(test_doc.text)
+            evaluation_df = self.evaluate_document_templates(test_doc, doc_model, evaluation_df, res)
+
+    def evaluate_document_templates(
+        self, test_doc, doc_model, evaluation_df: pandas.DataFrame, res: Dict
+    ) -> pandas.DataFrame:
+        """Evaluate templates for a document."""
+        if self.is_default:
+            return evaluation_df
+        if not self.has_multiple_sections:
+            return evaluation_df
+        item_annotations = [x for x in test_doc.annotations() if x.section_label.id == self.id]
+        item_section_ids = set(x.section for x in item_annotations)
+
+        if self.name in res.keys() and len(item_section_ids) == len(res[self.name]):
+            evaluation = True
+            length = len(item_section_ids)
+            length_predicted = len(res[self.name])
+        else:
+            evaluation = False
+            length = len(item_section_ids)
+            length_predicted = len(res[self.name]) if self.name in res.keys() else 0
+
+        evaluation_df = evaluation_df.append(
+            {
+                'evaluation': evaluation,
+                'section_label': self.name,
+                'document': test_doc.id,
+                'length': length,
+                'length_predicted': length_predicted,
+            },
+            ignore_index=True,
+        )
+        evaluation_df['document'] = evaluation_df.document.astype(int)
+        evaluation_df['length'] = evaluation_df.length.astype(int)
+        evaluation_df['length_predicted'] = evaluation_df.length_predicted.astype(int)
+        return evaluation_df
 
     def __repr__(self):
         """Return string representation of the Label Set."""
@@ -149,6 +216,14 @@ class Category(LabelSet):
         self.has_multiple_annotation_sets = False
         self.categories = []
         self.project.add_category(self)
+
+    def documents(self):
+        """Filter for documents of this category."""
+        return [x for x in self.project.documents if x.category == self]
+
+    def test_documents(self):
+        """Filter for test documents of this category."""
+        return [x for x in self.project.test_documents if x.category == self]
 
 
 class Label(Data):
@@ -308,7 +383,26 @@ class Span(Data):
             logger.error(f"{self} does not provide a bounding box.")
 
     @property
-    def offset_string(self):
+    def normalized(self):
+        """Normalize the offset string."""
+        if self.annotation.label.data_type in ['Positive Number', 'float_positive']:
+            result = normalize_to_positive_float(self.offset_string)
+        elif self.annotation.label.data_type in ['Number', 'float']:
+            result = normalize_to_float(self.offset_string)
+        elif self.annotation.label.data_type in ['Date', 'date']:
+            result = normalize_to_date(self.offset_string)
+        elif self.annotation.label.data_type in ['True/False', 'bool']:
+            result = normalize_to_bool(self.offset_string)  # bool not implemented yet.
+        elif self.annotation.label.data_type in ['percentage', 'Percentage']:
+            result = normalize_to_percentage(self.offset_string)
+        elif self.annotation.label.data_type in ['Text', 'str']:
+            result = self.offset_string
+        else:
+            result = None
+        return result
+
+    @property
+    def offset_string(self) -> str:
         """Calculate the offset string of a Span."""
         return self.annotation.document.text[self.start_offset : self.end_offset]
 
@@ -781,7 +875,7 @@ class Document(Data):
 
     def __repr__(self):
         """Return the name of the document incl. the ID."""
-        return f"{self.id}: {self.name}"
+        return f"{self.name}: {self.id}"
 
     def add_extractions_as_annotations(self, label: Label, extractions, label_set: LabelSet, annotation_set: int):
         """Add the extraction of a model on the document."""
