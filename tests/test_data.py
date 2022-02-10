@@ -308,6 +308,47 @@ class TestAPIDataSetup(unittest.TestCase):
         prj = Project(id=TEST_PROJECT_ID)
         Annotation(label=Label(project=prj), document=Document(text='', project=prj)).start_offset
 
+    def test_get_annotations_for_all_offsets_in_the_document(self):
+        """Get annotations for all offsets in the document."""
+        document = self.prj.documents[0]
+        temp_doc = Document(project=self.prj)
+        temp_doc.text = document.text
+
+        for annotation in document.annotations():
+            temp_doc.add_annotation(annotation)
+
+        all_annotations = temp_doc.annotations(create_empty_annotations=True)
+
+        test_start_offset = 0
+        test_end_offset = 1195
+
+        # TODO: add option to filter annotations by offsets (annotations method)
+        filtered_annotations = [
+            annotation
+            for annotation in all_annotations
+            if min(span.start_offset for span in annotation._spans) >= test_start_offset
+            and max(span.end_offset for span in annotation._spans) <= test_end_offset
+        ]
+
+        # there are 3 correct annotations within the offset range 0 to 1195
+        # the first correct annotation is multiline. 1 artificial annotation will be created within its span offsets
+        # there is 1 correct annotation that starts in 1194 and that is not considered
+        # in total 5 artificial annotations will be created
+        assert len(filtered_annotations) == 8
+        assert len([annotation for annotation in filtered_annotations if annotation.label is None]) == 5
+        assert filtered_annotations[0].start_offset == 0
+        assert filtered_annotations[0].end_offset == 66
+        assert filtered_annotations[0].label is None
+        assert filtered_annotations[1].start_offset == 78
+        assert filtered_annotations[1].end_offset == 159
+        assert filtered_annotations[1].label is None
+        assert min(span.start_offset for span in filtered_annotations[2]._spans) == 66
+        assert max(span.end_offset for span in filtered_annotations[2]._spans) == 169
+        assert filtered_annotations[2].label.id == 867
+        assert filtered_annotations[-1].start_offset == 366
+        assert filtered_annotations[-1].end_offset == 1194
+        assert filtered_annotations[-1].label is None
+
     @classmethod
     def tearDownClass(cls) -> None:
         """Test if the project remains the same as in the beginning."""
