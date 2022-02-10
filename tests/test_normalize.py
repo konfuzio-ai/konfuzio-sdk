@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 def test_date_with_only_one_digit_in_front_and_only_two_for_the_year():
-    """Test to normalize yers."""
+    """Test to normalize years."""
     t1 = '1.01.01'
     t2 = '4.01.89'
     t3 = '2/03/05'
@@ -39,13 +39,13 @@ def test_date_with_wrong_strings():
     assert normalize_to_date(t4) is None
 
 
-def test_float_normalization(self):
+def test_float_normalization():
     """Test to normalize floats."""
     t1 = '42.34-'
     assert normalize_to_float(t1) == -42.34
 
 
-def test_empty_string(self):
+def test_empty_string():
     """Test to normalize empty string."""
     t1 = ''
     assert normalize_to_date(t1) is None
@@ -53,7 +53,7 @@ def test_empty_string(self):
     assert normalize_to_positive_float(t1) is None
 
 
-def test_one_char(self):
+def test_one_char():
     """Test to normalize negative number text."""
     t1 = '-2'
     assert normalize_to_date(t1) is None

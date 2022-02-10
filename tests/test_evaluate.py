@@ -413,7 +413,7 @@ class TestEvaluation(unittest.TestCase):
 
         new_annotation = deepcopy(doc_a.annotations(use_correct=False)[1])
         # keep the offset string but change the start and end offsets
-        assert new_annotation.offset_string == '00600'
+        assert new_annotation.offset_string == ['00600']
         new_annot_dict = new_annotation.__dict__
         # TODO: change offsets in Span
         new_annot_dict['bboxes'][0]['start_offset'] = 79
@@ -454,7 +454,7 @@ class TestEvaluation(unittest.TestCase):
 
         new_annotation = deepcopy(doc_a.annotations(use_correct=False)[0])
         # keep the offset string but change the start and end offsets
-        assert new_annotation.offset_string == '03.01.2018'
+        assert new_annotation.offset_string == ['03.01.2018']
         new_annot_dict = new_annotation.__dict__
         # TODO: change offsets in Span
         new_annot_dict['bboxes'][0]['end_offset'] = new_annot_dict['bboxes'][0]['end_offset'] - 1
@@ -496,7 +496,7 @@ class TestEvaluation(unittest.TestCase):
         # TODO: add function to edit annotation?
         new_annotation = deepcopy(doc_a.annotations(use_correct=False)[0])
         # keep the offset string but change the start and end offsets
-        assert new_annotation.offset_string == '03.01.2018'
+        assert new_annotation.offset_string == ['03.01.2018']
         new_annot_dict = new_annotation.__dict__
         # TODO: change offsets in Span
         new_annot_dict['bboxes'][0]['offset_string'] = '00600'
@@ -536,7 +536,7 @@ class TestEvaluation(unittest.TestCase):
         # 1st annotation from 1st annotation set Brutto-Bezug belonging to the 2nd annotation set
         new_annotation_1 = deepcopy(doc_a.annotations(use_correct=False)[6])
         # keep the annotation but change the annotation set ID
-        assert new_annotation_1.offset_string == '2020'
+        assert new_annotation_1.offset_string == ['2020']
         new_annot_dict_1 = new_annotation_1.__dict__
         new_annot_dict_1['annotation_set'] = 79165 + 10
         new_annot_dict_1.pop('document')

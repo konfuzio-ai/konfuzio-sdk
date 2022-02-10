@@ -11,6 +11,7 @@ from konfuzio_sdk.utils import is_file
 logger = logging.getLogger(__name__)
 
 TEST_PROJECT_ID = 46
+TEST_DOCUMENT_ID = 44823
 
 
 @pytest.mark.serial
@@ -110,7 +111,7 @@ class TestAPIDataSetup(unittest.TestCase):
 
         # existing annotation
         assert len(doc.annotations(use_correct=False)) == 24
-        assert doc.annotations()[0].offset_string == '22.05.2018'  # start_offset=465, start_offset=466
+        assert doc.annotations()[0].offset_string == ['22.05.2018']  # start_offset=465, start_offset=466
         assert len(doc.annotations()) == 24
         assert doc.annotations()[0].is_online
         assert not doc.annotations()[0].save()  # Save returns False because Annotation is already online.
@@ -118,7 +119,7 @@ class TestAPIDataSetup(unittest.TestCase):
     def test_document_with_multiline_annotation(self):
         """Test properties of a specific documents in the test project."""
         doc = self.prj.labels[0].documents[0]  # one doc before doc without annotations
-        assert doc.id == 44823
+        assert doc.id == TEST_DOCUMENT_ID
         assert doc.category.name == 'Lohnabrechnung'
         self.assertEqual(len(self.prj.labels[0].correct_annotations), self.document_count)
         doc.update()
@@ -162,9 +163,8 @@ class TestAPIDataSetup(unittest.TestCase):
 
     def test_multiline_annotation(self):
         """Test to convert a multiline span Annotation to a dict."""
-        for doc in self.prj.documents:
-            if doc.id == 44823:
-                assert len(doc.annotations()[0].eval_dict) == 2
+        doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
+        assert len(doc.annotations()[0].eval_dict) == 2
 
     def test_annotation_to_dict(self):
         """Test to convert a Annotation to a dict."""
@@ -209,7 +209,7 @@ class TestAPIDataSetup(unittest.TestCase):
         annotations = doc.annotations()
 
         self.assertEqual(24, len(annotations))
-        assert annotations[2].offset_string == '4'
+        assert annotations[2].offset_string == ['4']
 
     @unittest.skip(reason='Waiting for API to support to add to default annotation set')
     def test_document_add_new_annotation(self):
@@ -277,6 +277,7 @@ class TestAPIDataSetup(unittest.TestCase):
     def test_init_annotation_with_default_annotation_set(self):
         """Test adding a new annotation."""
         prj = Project(id=TEST_PROJECT_ID)
+        doc = Document(project=prj)
         annotation = Annotation(
             start_offset=225,
             end_offset=237,
@@ -285,11 +286,11 @@ class TestAPIDataSetup(unittest.TestCase):
             revised=True,
             is_correct=True,
             accuracy=0.98765431,
-            document=Document(project=prj),
-            annotation_set=78730,
+            document=doc,
+            annotation_set=None,
         )
 
-        assert annotation.annotation_set == 78730
+        assert annotation.annotation_set.id == 78730
 
     @unittest.skip(reason="Issue https://gitlab.com/konfuzio/objectives/-/issues/8664.")
     def test_get_text_in_bio_scheme(self):
