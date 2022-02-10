@@ -28,13 +28,7 @@ from konfuzio_sdk.api import (
     update_file_konfuzio_api,
 )
 from konfuzio_sdk.evaluate import compare
-from konfuzio_sdk.normalize import (
-    normalize_to_positive_float,
-    normalize_to_float,
-    normalize_to_date,
-    normalize_to_bool,
-    normalize_to_percentage,
-)
+from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.utils import is_file, convert_to_bio_scheme, amend_file_name
 
 logger = logging.getLogger(__name__)
@@ -280,7 +274,6 @@ class Label(Data):
         self.threshold = kwargs.get("threshold", 0.1)
 
         self.project: Project = project
-        self._correct_annotations_indexed = None
 
         project.add_label(self)
         if label_sets:
@@ -402,21 +395,7 @@ class Span(Data):
     @property
     def normalized(self):
         """Normalize the offset string."""
-        if self.annotation.label.data_type in ['Positive Number', 'float_positive']:
-            result = normalize_to_positive_float(self.offset_string)
-        elif self.annotation.label.data_type in ['Number', 'float']:
-            result = normalize_to_float(self.offset_string)
-        elif self.annotation.label.data_type in ['Date', 'date']:
-            result = normalize_to_date(self.offset_string)
-        elif self.annotation.label.data_type in ['True/False', 'bool']:
-            result = normalize_to_bool(self.offset_string)  # bool not implemented yet.
-        elif self.annotation.label.data_type in ['percentage', 'Percentage']:
-            result = normalize_to_percentage(self.offset_string)
-        elif self.annotation.label.data_type in ['Text', 'str']:
-            result = self.offset_string
-        else:
-            result = None
-        return result
+        return normalize(self.offset_string, self.annotation.label.data_type)
 
     @property
     def offset_string(self) -> str:
@@ -622,6 +601,12 @@ class Annotation(Data):
             return f"{self.__class__.__name__} without Label ({self.start_offset}, {self.end_offset})"
 
     @property
+    def normalize(self) -> str:
+        """Provide one normalized offset string due to legacy."""
+        logger.warning('You use normalize on Annotation Level which is legacy.')
+        return normalize(self.offset_string, self.label.data_type)
+
+    @property
     def start_offset(self) -> int:
         """Legacy: One Annotations can have multiple start offsets."""
         return min([sa.start_offset for sa in self._spans], default=None)
@@ -788,7 +773,7 @@ class Document(Data):
         **kwargs,
     ):
         """
-        Check if the document root is available, otherwise create it.
+        Check if the document document_folder is available, otherwise create it.
 
         :param id: ID of the Document
         :param project: Project where the document belongs to
@@ -831,21 +816,19 @@ class Document(Data):
         self.project = project
         project.add_document(self)  # check for duplicates by ID before adding the document to the project
 
-        self.annotation_file_path = os.path.join(self.root, "annotations.json5")
-        self.annotation_set_file_path = os.path.join(self.root, "annotation_sets.json5")
-        self.txt_file_path = os.path.join(self.root, "document.txt")
-        self.hocr_file_path = os.path.join(self.root, "document.hocr")
-        self.pages_file_path = os.path.join(self.root, "pages.json5")
-
-        self.bbox_file_path = None
-        if os.path.exists(os.path.join(self.root, "bbox.json5")):
-            self.bbox_file_path = os.path.join(self.root, "bbox.json5")
-
         self.bio_scheme_file_path = None
         self.text = kwargs.get("text")
         self.hocr = kwargs.get("hocr")
+
         # prepare local setup for document
-        pathlib.Path(self.root).mkdir(parents=True, exist_ok=True)
+        pathlib.Path(self.document_folder).mkdir(parents=True, exist_ok=True)
+        self.annotation_file_path = os.path.join(self.document_folder, "annotations.json5")
+        self.annotation_set_file_path = os.path.join(self.document_folder, "annotation_sets.json5")
+        self.txt_file_path = os.path.join(self.document_folder, "document.txt")
+        self.hocr_file_path = os.path.join(self.document_folder, "document.hocr")
+        self.pages_file_path = os.path.join(self.document_folder, "pages.json5")
+        self.bbox_file_path = os.path.join(self.document_folder, "bbox.json5")
+        self.bio_scheme_file_path = os.path.join(self.document_folder, "bio_scheme.txt")
 
     def __repr__(self):
         """Return the name of the document incl. the ID."""
@@ -938,7 +921,6 @@ class Document(Data):
             artificial_anno = self.annotation_class(
                 start_offset=start_offset, end_offset=end_offset, document=self, label=None, is_correct=False
             )
-
             all_annotations.append(artificial_anno)
 
         else:
@@ -973,9 +955,7 @@ class Document(Data):
 
         return all_annotations
 
-    def annotations(
-        self, label: Label = None, use_correct: bool = True, create_empty_annotations: bool = False
-    ) -> List[Annotation]:
+    def annotations(self, label: Label = None, use_correct: bool = True, fill: bool = False) -> List[Annotation]:
         """
         Filter available annotations.
 
@@ -983,7 +963,7 @@ class Document(Data):
 
         :param label: Label for which to filter the annotations
         :param use_correct: If to filter by correct annotations
-        :param create_empty_annotations: If create empty annotations for offsets without annotations (only if no label)
+        :param fill: Fill offsets between Annotations which have a Label with Annotations with no Label.
         :return: Annotations in the document.
         """
         annotations = []
@@ -997,7 +977,7 @@ class Document(Data):
                 elif label is None:
                     annotations.append(annotation)
 
-        if create_empty_annotations:
+        if fill:
             if label is not None:
                 # if we filter by label we could create empty annotations overlapping with annotations existing in the
                 # document
@@ -1021,9 +1001,9 @@ class Document(Data):
             return self.status[0] == 2
 
     @property
-    def root(self):
+    def document_folder(self):
         """Get the path to the folder where all the document information is cached locally."""
-        return os.path.join(self.project.data_root, "pdf", str(self.id))
+        return os.path.join(self.project.project_folder, "pdf", str(self.id))
 
     def get_file(self, ocr_version: bool = True, update: bool = False):
         """
@@ -1036,9 +1016,9 @@ class Document(Data):
         filename = self.name.replace(":", "-")
         if ocr_version:
             filename = amend_file_name(filename, append_text="ocr", new_extension=".pdf")
-            self.ocr_file_path = os.path.join(self.root, filename)
+            self.ocr_file_path = os.path.join(self.document_folder, filename)
 
-        file_path = os.path.join(self.root, filename)
+        file_path = os.path.join(self.document_folder, filename)
         if self.is_without_errors and (not file_path or not is_file(file_path, raise_exception=False) or update):
             if not is_file(file_path, raise_exception=False) or update:
                 pdf_content = download_file_konfuzio_api(self.id, ocr=ocr_version, session=self.session)
@@ -1060,7 +1040,7 @@ class Document(Data):
             if is_file(page["image"], raise_exception=False):
                 self.image_paths.append(page["image"])
             else:
-                page_path = os.path.join(self.root, f'page_{page["number"]}.png')
+                page_path = os.path.join(self.document_folder, f'page_{page["number"]}.png')
                 self.image_paths.append(page_path)
 
                 if not is_file(page_path, raise_exception=False) or update:
@@ -1211,8 +1191,6 @@ class Document(Data):
                 ]
                 converted_text = convert_to_bio_scheme(self.text, annotations_in_doc)
 
-            self.bio_scheme_file_path = os.path.join(self.root, "bio_scheme.txt")
-
             with open(self.bio_scheme_file_path, "w", encoding="utf-8") as f:
                 for word, tag in converted_text:
                     f.writelines(word + " " + tag + "\n")
@@ -1248,7 +1226,7 @@ class Document(Data):
             return self.bbox
 
         if not self.bbox_file_path or not is_file(self.bbox_file_path, raise_exception=False) or update:
-            self.bbox_file_path = os.path.join(self.root, "bbox.json5")
+            self.bbox_file_path = os.path.join(self.document_folder, "bbox.json5")
 
             with open(self.bbox_file_path, "w", encoding="utf-8") as f:
                 data = get_document_details(
@@ -1268,17 +1246,17 @@ class Document(Data):
         :return: True if the new document was created or existing document was updated.
         """
         document_saved = False
-        category_template_id = None
+        category_id = None
 
         if hasattr(self, "category") and self.category is not None:
-            category_template_id = self.category.id
+            category_id = self.category.id
 
         if not self.is_online:
             response = upload_file_konfuzio_api(
                 filepath=self.file_path,
                 project_id=self.project.id,
                 dataset_status=self.dataset_status,
-                category_template_id=category_template_id,
+                category_id=category_id,
             )
             if response.status_code == 201:
                 self.id = json.loads(response.text)["id"]
@@ -1287,10 +1265,7 @@ class Document(Data):
                 logger.error(f"Not able to save document {self.file_path} online: {response.text}")
         else:
             response = update_file_konfuzio_api(
-                document_id=self.id,
-                file_name=self.name,
-                dataset_status=self.dataset_status,
-                category_template_id=category_template_id,
+                document_id=self.id, file_name=self.name, dataset_status=self.dataset_status, category_id=category_id
             )
             if response.status_code == 200:
                 self.project.update_document(document=self)
@@ -1303,7 +1278,7 @@ class Document(Data):
     def update(self):
         """Update document information."""
         self.delete()
-        pathlib.Path(self.root).mkdir(parents=True, exist_ok=True)
+        pathlib.Path(self.document_folder).mkdir(parents=True, exist_ok=True)
         self._annotations = []
         self._annotation_sets = []
         self.get_document_details(update=True)
@@ -1312,7 +1287,7 @@ class Document(Data):
     def delete(self):
         """Delete all local information for the document."""
         try:
-            shutil.rmtree(self.root)
+            shutil.rmtree(self.document_folder)
         except FileNotFoundError:
             pass
 
@@ -1328,14 +1303,13 @@ class Project(Data):
     document_class = Document
     annotation_class = Annotation
 
-    # todo calculate data root
+    # todo calculate data document_folder
     def __init__(self, id: int, offline=False, **kwargs):
         """
         Set up the data using the Konfuzio Host.
 
         :param id: ID of the project
         :param offline: If to get the data from Konfuzio Host
-        :param data_root: Path to the folder with the data. If not specified uses the data_root defined in the project,
         by default.
         """
         self.id_local = next(Data.id_iter)
@@ -1355,7 +1329,6 @@ class Project(Data):
         self.meta_file_path = None
         self.meta_data = None
         self._textcorpus = None
-        self._correct_annotations_indexed = {}
         if not offline:
             self.make_paths()
             self.get()  # keep update to False, so once you have downloaded the data, don't do it again.
@@ -1365,8 +1338,8 @@ class Project(Data):
         return f"Project {self.id}"
 
     @property
-    def data_root(self) -> str:
-        """Calculate the data root of the project."""
+    def project_folder(self) -> str:
+        """Calculate the data document_folder of the project."""
         return f"data_{self.id}"
 
     def load_categories(self):
@@ -1383,10 +1356,11 @@ class Project(Data):
     def make_paths(self):
         """Create paths needed to store the project."""
         # create folders if not available
-        # Ensure self.data_root exists
-        if not os.path.exists(self.data_root):
-            os.makedirs(self.data_root)
-        pathlib.Path(os.path.join(self.data_root, "pdf")).mkdir(parents=True, exist_ok=True)
+        # Ensure self.project_folder exists
+        if not os.path.exists(self.project_folder):
+            os.makedirs(self.project_folder)
+        pathlib.Path(os.path.join(self.project_folder, "pdf")).mkdir(parents=True, exist_ok=True)
+        pathlib.Path(os.path.join(self.project_folder, "models")).mkdir(parents=True, exist_ok=True)
 
     def get(self, update=False):
         """
@@ -1516,7 +1490,7 @@ class Project(Data):
         :return: Information of the documents in the project.
         """
         if not self.meta_data or update:
-            self.meta_file_path = os.path.join(self.data_root, "documents_meta.json5")
+            self.meta_file_path = os.path.join(self.project_folder, "documents_meta.json5")
 
             if not is_file(self.meta_file_path, raise_exception=False) or update:
                 self.meta_data = get_meta_of_files(project_id=self.id, session=self.session)
@@ -1557,7 +1531,7 @@ class Project(Data):
         :return: Label Sets in the project.
         """
         if not self.label_sets or update:
-            self.label_sets_file_path = os.path.join(self.data_root, "label_sets.json5")
+            self.label_sets_file_path = os.path.join(self.project_folder, "label_sets.json5")
             if not is_file(self.label_sets_file_path, raise_exception=False) or update:
                 label_sets_data = get_project_label_sets(project_id=self.id, session=self.session)
                 if label_sets_data:
@@ -1581,7 +1555,7 @@ class Project(Data):
         :return: Labels in the project.
         """
         if not self.labels or update:
-            self.labels_file_path = os.path.join(self.data_root, "labels.json5")
+            self.labels_file_path = os.path.join(self.project_folder, "labels.json5")
             if not is_file(self.labels_file_path, raise_exception=False) or update:
                 labels_data = get_project_labels(project_id=self.id, session=self.session)
                 with open(self.labels_file_path, "w") as f:
@@ -1621,9 +1595,9 @@ class Project(Data):
                 needs_update = True
 
         if (new_in_dataset or needs_update) and update:
-            data_path = os.path.join(self.data_root, "df_data.pkl")
-            test_data_path = os.path.join(self.data_root, "df_test.pkl")
-            feature_list_path = os.path.join(self.data_root, "label_feature_list.pkl")
+            data_path = os.path.join(self.project_folder, "df_data.pkl")
+            test_data_path = os.path.join(self.project_folder, "df_test.pkl")
+            feature_list_path = os.path.join(self.project_folder, "label_feature_list.pkl")
 
             if os.path.exists(data_path):
                 os.remove(data_path)
@@ -1729,7 +1703,7 @@ class Project(Data):
             )
             remove_document_ids = existing_document_ids.difference(meta_data_document_ids)
             for document_id in remove_document_ids:
-                document_path = os.path.join(self.data_root, "pdf", document_id)
+                document_path = os.path.join(self.project_folder, "pdf", document_id)
                 try:
                     shutil.rmtree(document_path)
                 except FileNotFoundError:
@@ -1801,6 +1775,22 @@ class Project(Data):
         self.label_sets_file_path = None
         self.label_sets: List[LabelSet] = []
 
+    def get_label_sets_for_category(self, category_id):
+        """Get all LabelSets that belong to a category (or represent the category)."""
+        project_label_sets = [
+            label_set
+            for label_set in self.label_sets
+            if label_set.id == category_id
+            or category_id in [x.id for x in label_set.default_label_sets if x is not None]
+        ]
+        return project_label_sets
+
+    def check_normalization(self):
+        """Check normalized offset_strings."""
+        for document in self.documents + self.test_documents:
+            for annotation in document.annotations():
+                annotation.normalize()
+
     def update(self):
         """Update the project and all documents by downloading them from the host. Note : It will not work offline."""
         # make sure you always update any changes to Labels, ProjectMeta
@@ -1809,3 +1799,9 @@ class Project(Data):
         self.get(update=True)
 
         return self
+
+    def delete(self):
+        """Delete all project document data."""
+        for document in self.documents:
+            document.delete()
+        self.clean_meta()

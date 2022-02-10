@@ -24,7 +24,7 @@ from konfuzio_sdk.api import (
     get_project_list,
 )
 
-# Change project root to tests folder
+# Change project document_folder to tests folder
 from konfuzio_sdk.data import Project
 
 FOLDER_ROOT = os.path.dirname(os.path.realpath(__file__))

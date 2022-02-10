@@ -450,7 +450,7 @@ def upload_file_konfuzio_api(
     project_id: int,
     session=konfuzio_session(),
     dataset_status: int = 0,
-    category_template_id: Union[None, int] = None,
+    category_id: Union[None, int] = None,
 ):
     """
     Upload file to Konfuzio API.
@@ -468,7 +468,7 @@ def upload_file_konfuzio_api(
         file_data = f.read()
 
     files = {"data_file": (os.path.basename(filepath), file_data, "multipart/form-data")}
-    data = {"project": project_id, "dataset_status": dataset_status, "category_template": category_template_id}
+    data = {"project": project_id, "dataset_status": dataset_status, "category_template": category_id}
 
     r = session.post(url=url, files=files, data=data)
     return r
@@ -503,9 +503,9 @@ def update_file_konfuzio_api(
     """
     url = get_document_url(document_id)
 
-    category_template_id = kwargs.get('category_template_id', None)
+    category_id = kwargs.get('category_template_id', None)
 
-    data = {"data_file_name": file_name, "dataset_status": dataset_status, "category_template": category_template_id}
+    data = {"data_file_name": file_name, "dataset_status": dataset_status, "category_template": category_id}
 
     r = session.patch(url=url, json=data)
     return json.loads(r.text)

@@ -640,3 +640,22 @@ def normalize_to_bool(offset_string: str):
             return None
     else:
         return None
+
+
+def normalize(offset_string, data_type):
+    """Wrap all normalize functionality."""
+    if data_type in ['Positive Number', 'float_positive']:
+        result = normalize_to_positive_float(offset_string)
+    elif data_type in ['Number', 'float']:
+        result = normalize_to_float(offset_string)
+    elif data_type in ['Date', 'date']:
+        result = normalize_to_date(offset_string)
+    elif data_type in ['True/False', 'bool']:
+        result = normalize_to_bool(offset_string)  # bool not implemented yet.
+    elif data_type in ['percentage', 'Percentage']:
+        result = normalize_to_percentage(offset_string)
+    elif data_type in ['Text', 'str']:
+        result = offset_string
+    else:
+        result = None
+    return result

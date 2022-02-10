@@ -107,7 +107,7 @@ class TestAPIDataSetup(unittest.TestCase):
         doc.update()
         self.assertEqual(len(self.prj.labels[0].correct_annotations), self.document_count)
         assert len(doc.text) == 4793
-        assert len(glob.glob(os.path.join(doc.root, '*.*'))) == 4
+        assert len(glob.glob(os.path.join(doc.document_folder, '*.*'))) == 4
 
         # existing annotation
         assert len(doc.annotations(use_correct=False)) == 24
@@ -125,7 +125,7 @@ class TestAPIDataSetup(unittest.TestCase):
         doc.update()
         self.assertEqual(self.document_count, len(self.prj.labels[0].correct_annotations))
         self.assertEqual(len(doc.text), 4537)
-        self.assertEqual(len(glob.glob(os.path.join(doc.root, '*.*'))), 4)
+        self.assertEqual(len(glob.glob(os.path.join(doc.document_folder, '*.*'))), 4)
 
         # existing annotation
         # https://app.konfuzio.com/admin/server/sequenceannotation/?document_id=44823&project=46
