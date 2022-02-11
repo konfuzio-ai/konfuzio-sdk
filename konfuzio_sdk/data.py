@@ -1791,7 +1791,7 @@ class Document(Data):
         It is faster to evaluate a regex on the document text, than evaluating the regex on the overall dataset.
         """
         proposals = []
-        all_annotations = self.annotations(create_empty_annotations=True)
+        all_annotations = self.annotations(fill=True)
 
         for spacer in [0, 1, 3, 5, 8, 10]:
             annotations = [
@@ -1829,9 +1829,9 @@ class Document(Data):
         proposals = []
         # TODO: review multiline case
         # TODO: we want to get the correct annotation that matches the input offsets
-        #  The option create_empty_annotations may return an artificial annotation if there is any mismatch
+        #  The option fill may return an artificial annotation if there is any mismatch
         #   of the offsets
-        all_annotations = self.annotations(create_empty_annotations=True)
+        all_annotations = self.annotations(fill=True)
         filtered_annotations = [
             annotation
             for annotation in all_annotations
@@ -2469,8 +2469,7 @@ class Project(Data):
         project_label_sets = [
             label_set
             for label_set in self.label_sets
-            if label_set.id == category_id
-            or category_id in [x.id for x in label_set.default_label_sets if x is not None]
+            if label_set.id == category_id or category_id in [x.id for x in label_set.categories if x is not None]
         ]
         return project_label_sets
 
