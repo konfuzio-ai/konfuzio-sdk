@@ -1,6 +1,6 @@
 """Generic way to build regex from examples."""
 import logging
-import re
+import regex as re
 from typing import List, Dict
 
 import pandas
@@ -20,7 +20,7 @@ def harmonize_whitespaces(text):
 
 def escape(string: str):
     """Escape a string, so that it can still be used to create a regex."""
-    escaped_orginial = (
+    escaped_original = (
         string.replace('\\', "\\\\")
         .replace('[', r'\[')
         .replace(']', r'\]')
@@ -41,7 +41,7 @@ def escape(string: str):
         .replace('{', r'\{')
         .replace('}', r'\}')
     )
-    return escaped_orginial
+    return escaped_original
 
 
 def plausible_regex(suggestion, string):
