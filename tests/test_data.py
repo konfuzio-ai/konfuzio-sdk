@@ -311,18 +311,14 @@ class TestAPIDataSetup(unittest.TestCase):
 
     def test_get_annotations_for_all_offsets_in_the_document(self):
         """Get annotations for all offsets in the document."""
-        document = self.prj.documents[0]
-        temp_doc = Document(project=self.prj)
-        temp_doc.text = document.text
+        doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
 
-        for annotation in document.annotations():
-            temp_doc.add_annotation(annotation)
-
-        all_annotations = temp_doc.annotations(create_empty_annotations=True)
+        all_annotations = doc.annotations(fill=True)
 
         test_start_offset = 0
         test_end_offset = 1195
 
+        # todo fill option assumes that annotations are sorted which is not the case
         # TODO: add option to filter annotations by offsets (annotations method)
         filtered_annotations = [
             annotation

@@ -1272,9 +1272,6 @@ class Annotation(Data):
 class Document(Data):
     """Access the information about one document, which is available online."""
 
-    annotation_class = Annotation
-    annotation_set_class = AnnotationSet
-
     def __init__(
         self,
         project,
@@ -1420,72 +1417,24 @@ class Document(Data):
         """Define if the Document is saved to the server."""
         return self.id is not None
 
-    def get_annotations_for_all_offsets(self, annotations: list):
-        """
-        Get annotations for all offsets in the document.
-
-        Creates artificial annotations for the offsets where there are no correct annotations.
-        The artificial annotations are created with a start and end offset.
-        They do not have a Label (None) and are is_correct=False.
-
-        # TODO: review multiline case
-        :param annotations: Annotations existing in the document.
-        :return: Annotations existing in the document and artificial ones for the remaining offsets.
-        """
-        start_offset = 0
-        end_offset = len(self.text) + 1
-        all_annotations = []
-
-        if not annotations:
-            artificial_anno = self.annotation_class(
-                start_offset=start_offset, end_offset=end_offset, document=self, label=None, is_correct=False
-            )
-            all_annotations.append(artificial_anno)
-
-        else:
-            for annotation in annotations:
-                # create artificial annotations for offsets before the correct annotations spans
-                for annotation_span in annotation._spans:
-                    if annotation_span.start_offset > start_offset:
-                        artificial_anno = self.annotation_class(
-                            start_offset=start_offset,
-                            end_offset=annotation_span.start_offset,
-                            document=self,
-                            label=None,
-                            is_correct=False,
-                        )
-                        all_annotations.append(artificial_anno)
-
-                    start_offset = annotation_span.end_offset
-
-                all_annotations.append(annotation)
-
-            if max(span.end_offset for span in annotation._spans) < end_offset:
-                # create annotation for offsets between last correct annotation and end offset
-                artificial_anno = self.annotation_class(
-                    start_offset=max(span.end_offset for span in annotation._spans),
-                    end_offset=end_offset,
-                    document=self,
-                    label=None,
-                    is_correct=False,
-                )
-
-                all_annotations.append(artificial_anno)
-
-        return all_annotations
-
     def annotations(self, label: Label = None, use_correct: bool = True, fill: bool = False) -> List[Annotation]:
         """
         Filter available annotations.
 
         # TODO: add option to filter annotations by offsets (review)
+        # todo: add test for multiline annotation
 
         :param label: Label for which to filter the annotations
         :param use_correct: If to filter by correct annotations
-        :param fill: Fill offsets between Annotations which have a Label with Annotations with no Label.
+        :param fill: Fill offsets between Annotations which have a Label with Annotations with no Label. Creates
+                artificial annotations for the offsets where there are no correct annotations. The artificial
+                 annotations are created with a start and end offset. They do not have a Label (None) and
+                  are is_correct=False.
         :return: Annotations in the document.
         """
         annotations = []
+        artificial_annotations = []
+
         for annotation in self._annotations:
             if (use_correct and annotation.is_correct) or not use_correct:
                 # filter by label
@@ -1497,18 +1446,43 @@ class Document(Data):
                     annotations.append(annotation)
 
         if fill:
-            if label is not None:
-                # if we filter by label we could create empty annotations overlapping with annotations existing in the
-                # document
-                logger.warning('Empty annotations are not created because the annotations are being filtered by label.')
-
-            elif self.text is None:
-                logger.warning('The text of the document is necessary to create empty annotations - for end_offset.')
+            start_offset = 0
+            end_offset = len(self.text)
+            if not annotations:
+                artificial_anno = Annotation(
+                    start_offset=start_offset, end_offset=end_offset, document=self, label=None, is_correct=False
+                )
+                artificial_annotations.append(artificial_anno)
 
             else:
-                annotations = self.get_annotations_for_all_offsets(annotations)
+                for annotation in annotations:
+                    # create artificial annotations for offsets before the correct annotations spans
+                    for annotation_span in annotation._spans:
+                        if annotation_span.start_offset > start_offset:
+                            artificial_anno = Annotation(
+                                start_offset=start_offset,
+                                end_offset=annotation_span.start_offset,
+                                document=self,
+                                label=None,
+                                is_correct=False,
+                            )
+                            artificial_annotations.append(artificial_anno)
 
-        return annotations
+                        start_offset = annotation_span.end_offset
+
+                if max(span.end_offset for span in annotation._spans) < end_offset:
+                    # create annotation for offsets between last correct annotation and end offset
+                    artificial_anno = Annotation(
+                        start_offset=max(span.end_offset for span in annotation._spans),
+                        end_offset=end_offset,
+                        document=self,
+                        label=None,
+                        is_correct=False,
+                    )
+
+                    artificial_annotations.append(artificial_anno)
+
+        return annotations + artificial_annotations
 
     @property
     def is_without_errors(self) -> bool:
@@ -1644,7 +1618,7 @@ class Document(Data):
             else:
                 raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
                 raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
-                _ = self.annotation_class(document=self, **raw_annotation)
+                _ = Annotation(document=self, **raw_annotation)
 
         return self
 
@@ -1810,37 +1784,6 @@ class Document(Data):
         except FileNotFoundError:
             pass
 
-    # def annotate(self, result_dict: dict, label_set: LabelSet) -> List:
-    #     """Add annotations online."""
-    #     annotations = []
-    #     all_res = []
-    #     for key, value in result_dict.items():
-    #         if isinstance(value, dict):
-    #             try:
-    #                 label_set = [label for label in self.project.label_sets if label.name == key][0]
-    #                 res = self.annotate(result_dict=value, label_set=label_set)
-    #                 all_res += res
-    #             except IndexError:
-    #                 pass
-    #
-    #         if isinstance(value, pandas.DataFrame):
-    #             label = [label for label in label_set.labels if label.name == key][0]
-    #             raw_annotations = [annotation for index,
-    #                           annotation in value.iterrows() if annotation['Accuracy'] > 0.1]
-    #             _annotations = [self.annotation_class(
-    #                 start_offset=annotation['Start'],
-    #                 end_offset=annotation['End'],
-    #                 accuracy=annotation['Accuracy'],
-    #                 label=label.id,
-    #                 label_set_id=label_set.id,
-    #                 document=self,
-    #             ).toJSON() for annotation in raw_annotations]
-    #             annotations += _annotations
-    #
-    #     res = post_document_bulk_annotation(self.id, self.project.id, annotations)
-    #     all_res += res.json()
-    #     return all_res
-
     def regex_new(self, label, start_offset: int, end_offset: int, max_findings_per_page=15) -> List[str]:
         """
         Suggest a list of regex which can be used to get the specified offset of a document.
@@ -1999,12 +1942,12 @@ class Document(Data):
             # add Annotations to the document
             for annotation_data in annotations:
                 if not annotation_data['custom_offset_string']:
-                    annotation = self.annotation_class(document=self, **annotation_data)
+                    annotation = Annotation(document=self, **annotation_data)
                     self.add_annotation(annotation)
                 else:
                     real_string = self.text[annotation_data['start_offset'] : annotation_data['end_offset']]
                     if real_string == annotation_data['offset_string']:
-                        annotation = self.annotation_class(document=self, **annotation_data)
+                        annotation = Annotation(document=self, **annotation_data)
                         self.add_annotation(annotation)
                     else:
                         logger.warning(
@@ -2050,15 +1993,6 @@ class Document(Data):
 class Project(Data):
     """Access the information of a project."""
 
-    # classes are defined here to be able to redefine them if needed
-    label_class = Label
-    annotation_set_class = AnnotationSet
-    label_set_class = LabelSet
-    category_class = Category
-    document_class = Document
-    annotation_class = Annotation
-
-    # todo calculate data document_folder
     def __init__(self, id: int, offline=False, **kwargs):
         """
         Set up the data using the Konfuzio Host.
@@ -2274,7 +2208,7 @@ class Project(Data):
                 if label_set.is_default:
                     temp_label_set = deepcopy(label_set)
                     temp_label_set.__dict__.pop("project", None)
-                    self.category_class(project=self, **temp_label_set.__dict__)
+                    Category(project=self, **temp_label_set.__dict__)
 
         return self.categories
 
@@ -2298,7 +2232,7 @@ class Project(Data):
                     label_sets_data = json.load(f)
 
             for label_set_data in label_sets_data:
-                self.label_set_class(project=self, **label_set_data)
+                LabelSet(project=self, **label_set_data)
 
         return self.label_sets
 
@@ -2321,7 +2255,7 @@ class Project(Data):
             for label_data in labels_data:
                 # Remove the project from label_data as we use the already present project reference.
                 label_data.pop("project", None)
-                self.label_class(project=self, **label_data)
+                Label(project=self, **label_data)
 
         return self.labels
 
@@ -2362,11 +2296,11 @@ class Project(Data):
                 os.remove(feature_list_path)
 
         if (new_in_dataset and update) or (needs_update and update):
-            doc = self.document_class(project=self, **document_data)
+            doc = Document(project=self, **document_data)
             doc.get_document_details(update=update)
             self.update_document(doc)
         else:
-            doc = self.document_class(project=self, **document_data)
+            doc = Document(project=self, **document_data)
             doc.get_document_details(update=False)
 
     def get_document_by_id(self, document_id: int) -> Document:
