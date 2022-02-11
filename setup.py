@@ -49,6 +49,7 @@ setuptools.setup(
         'python-decouple',
         'requests',
         'requests_toolbelt',
+        'regex',
         'tabulate',
         'tqdm',
     ],
