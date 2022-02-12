@@ -6,6 +6,7 @@ import os
 import pathlib
 import re
 import shutil
+from abc import ABC
 from copy import deepcopy
 import time
 from datetime import tzinfo
@@ -38,8 +39,10 @@ from konfuzio_sdk.utils import is_file, convert_to_bio_scheme, amend_file_name
 
 logger = logging.getLogger(__name__)
 
+# todo refactor id to id_ !
 
-class Data(object):
+
+class Data(ABC):
     """Collect general functionality to work with data from API."""
 
     id_iter = itertools.count()
@@ -54,6 +57,7 @@ class Data(object):
         """Return hash(self)."""
         return hash(str(self.id))
 
+    # todo review function to be defined as @abstractmethod
     def lose_weight(self):
         """Delete data of the instance."""
         if self.project:
@@ -79,24 +83,29 @@ class AnnotationSet(Data):
         self.document = document
         document.add_annotation_set(self)
 
-        @property
-        def annotations():
-            """All Annotations currently in this Annotation Set."""
-            related_annotation = []
-            for annotation in self.document.annotations():
-                if annotation.annotation_set == self:
-                    related_annotation.append(annotation)
-            return related_annotation
+    def lose_weight(self):
+        """Delete data of the instance."""
+        self.label_set = None
+        self.document = None
 
-        @property
-        def start_offset(self):
-            """Calculate earliest start based on all Annotations currently in this Annotation Set."""
-            min((a.start_offset for a in self.annotations), default=None)
+    @property
+    def annotations(self):
+        """All Annotations currently in this Annotation Set."""
+        related_annotation = []
+        for annotation in self.document.annotations():
+            if annotation.annotation_set == self:
+                related_annotation.append(annotation)
+        return related_annotation
 
-        @property
-        def end_offset(self):
-            """Calculate the end based on all Annotations currently in this Annotation Set."""
-            max((a.end_offset for a in self.annotations), default=None)
+    @property
+    def start_offset(self):
+        """Calculate earliest start based on all Annotations currently in this Annotation Set."""
+        min((a.start_offset for a in self.annotations), default=None)
+
+    @property
+    def end_offset(self):
+        """Calculate the end based on all Annotations currently in this Annotation Set."""
+        max((a.end_offset for a in self.annotations), default=None)
 
 
 class LabelSet(Data):
@@ -2247,7 +2256,7 @@ class Project(Data):
         :return: Documents with the specified dataset status
         """
         documents = []
-
+        logger.info(f'Start downloading {len(self.meta_data)} files from {KONFUZIO_HOST}.')
         for document_data in self.meta_data:
             if document_data["dataset_status"] in dataset_statuses:
                 self._init_document(document_data, document_list_cache, update)

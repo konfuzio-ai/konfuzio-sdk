@@ -165,7 +165,7 @@ def get_document_details(
     if text is None:
         logger.warning(f'Document with ID {document_id} does not contain any text, check OCR status.')
     else:
-        logger.info(
+        logger.debug(
             f'Document with ID {document_id} contains {len(text)} characters '
             f'and {len(annotations)} annotations in {len(annotations_sets)} annotation sets.'
         )

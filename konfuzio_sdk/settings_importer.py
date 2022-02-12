@@ -1,9 +1,9 @@
 """Central place to collect settings from projects and make them available in the konfuzio_sdk package."""
-
+import logging
 import os
 import sys
-from decouple import AutoConfig
 
+from decouple import AutoConfig
 
 sys.path.append(os.getcwd())
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -18,3 +18,15 @@ IMAGE_FILE = 2
 OFFICE_FILE = 3
 
 SUPPORTED_FILE_TYPES = {PDF_FILE: 'PDF', IMAGE_FILE: 'IMAGE', OFFICE_FILE: 'OFFICE'}
+
+LOG_FILE_PATH = os.path.join(os.getcwd(), 'konfuzio_sdk.log')
+LOG_FORMAT = (
+    "%(asctime)s [%(name)-20.20s] [%(threadName)-10.10s] [%(levelname)-8.8s] "
+    "[%(funcName)-20.20s][%(lineno)-4.4d] %(message)-10s"
+)
+
+logging.basicConfig(
+    level=config('LOGGING_LEVEL', default=logging.INFO, cast=int),
+    format=LOG_FORMAT,
+    handlers=[logging.FileHandler(LOG_FILE_PATH), logging.StreamHandler()],
+)
