@@ -43,7 +43,7 @@ setuptools.setup(
         'filetype',
         'nltk',
         'numpy',
-        'pandas==1.4.0',
+        'pandas==1.1.5',
         'Pillow',
         'python-dateutil',
         'python-decouple',

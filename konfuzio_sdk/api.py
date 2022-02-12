@@ -92,6 +92,10 @@ def retry_get(session, url):
     :return: Response.
     """
     retry_count = 0
+
+    if session.headers['Authorization'] == 'Token None':
+        print('Please run "konfuzio_sdk init"!')
+        exit()
     while True:
         try:
             r = session.get(url=url, timeout=60.0)

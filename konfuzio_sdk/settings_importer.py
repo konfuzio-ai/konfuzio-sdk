@@ -2,13 +2,13 @@
 
 import os
 import sys
-from decouple import config
+from decouple import AutoConfig
 
-# This settings file will search for the settings file in the project in which konfuzio_sdk is imported
+
 sys.path.append(os.getcwd())
-
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
+config = AutoConfig(search_path=os.getcwd())
 KONFUZIO_HOST = config('KONFUZIO_HOST', default="https://app.konfuzio.com")
 KONFUZIO_USER = config('KONFUZIO_USER', default=None)
 KONFUZIO_TOKEN = config('KONFUZIO_TOKEN', default=None)
