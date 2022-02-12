@@ -6,7 +6,7 @@ import unittest
 
 import pytest
 from konfuzio_sdk.data import Project, Annotation, Document, Label
-from konfuzio_sdk.utils import is_file
+from konfuzio_sdk.utils import is_file, get_default_label_set_documents, separate_labels
 
 logger = logging.getLogger(__name__)
 
@@ -129,7 +129,7 @@ class TestAPIDataSetup(unittest.TestCase):
 
         # existing annotation
         # https://app.konfuzio.com/admin/server/sequenceannotation/?document_id=44823&project=46
-        self.assertEqual(len(doc.annotations(use_correct=False)), 20)
+        self.assertEqual(len(doc.annotations(use_correct=False)), 21)
         # a multiline annotation in the top right corner, see https://app.konfuzio.com/a/4419937
         # todo improve multiline support
         self.assertEqual(66, doc.annotations()[0]._spans[0].start_offset)
@@ -307,25 +307,14 @@ class TestAPIDataSetup(unittest.TestCase):
     def test_create_empty_annotation(self):
         """Create an empty Annotation and get the start offset."""
         prj = Project(id=TEST_PROJECT_ID)
-        Annotation(label=Label(project=prj), document=Document(text='', project=prj)).start_offset
+        label = Label(project=prj)
+        Annotation(label=label, label_set=label.label_sets, document=Document(text='', project=prj)).start_offset
 
     def test_get_annotations_for_all_offsets_in_the_document(self):
         """Get annotations for all offsets in the document."""
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
 
-        all_annotations = doc.annotations(fill=True)
-
-        test_start_offset = 0
-        test_end_offset = 1195
-
-        # todo fill option assumes that annotations are sorted which is not the case
-        # TODO: add option to filter annotations by offsets (annotations method)
-        filtered_annotations = [
-            annotation
-            for annotation in all_annotations
-            if min(span.start_offset for span in annotation._spans) >= test_start_offset
-            and max(span.end_offset for span in annotation._spans) <= test_end_offset
-        ]
+        filtered_annotations = doc.annotations(start_offset=0, end_offset=1195)
 
         # there are 3 correct annotations within the offset range 0 to 1195
         # the first correct annotation is multiline. 1 artificial annotation will be created within its span offsets
@@ -345,6 +334,89 @@ class TestAPIDataSetup(unittest.TestCase):
         assert filtered_annotations[-1].start_offset == 366
         assert filtered_annotations[-1].end_offset == 1194
         assert filtered_annotations[-1].label is None
+
+    def test_create_list_of_regex_for_label_without_annotations(self):
+        """Check regex build for empty Labels."""
+        try:
+            label = next(x for x in self.prj.labels if len(x.annotations) == 0)
+            automated_regex_for_label = label.regex()
+            # There is no regex available.
+            assert len(automated_regex_for_label) == 0
+            is_file(label.regex_file_path)
+        except StopIteration:
+            pass
+
+    def test_get_default_label_set_documents(self):
+        """Check get documents and labels associated to a default annotation_set label."""
+        default_label_sets = [x for x in self.prj.label_sets if x.is_default]
+
+        default_label_set_documents_dict, default_labels_dict = get_default_label_set_documents(
+            project=self.prj,
+            documents=self.prj.documents,
+            selected_default_label_sets=default_label_sets,
+            project_label_sets=self.prj.label_sets,
+            merge_multi_default=False,
+        )
+
+        assert list(default_label_set_documents_dict.keys()) == [63]
+        self.assertEqual(len(default_label_set_documents_dict[63]), self.correct_document_count)
+        assert default_label_set_documents_dict.keys() == default_labels_dict.keys()
+        assert len(default_labels_dict[63]) == 17
+
+    def test_separate_labels(self):
+        """Test LabelSets and Labels can be combined correctly."""
+        self.assertEqual(len(self.prj.label_sets), 5)
+        assert len(self.prj.labels) == 18
+
+        labels_with_annotations = {}
+
+        for label_set in [x for x in self.prj.label_sets if not x.is_default]:
+            labels_names = [label.name for label in label_set.labels if len(label.annotations) > 0]
+            labels_with_annotations[label_set.name] = labels_names
+
+        n_labels_with_annotations = 0
+
+        for _, labels_names in labels_with_annotations.items():
+            n_labels_with_annotations += len(labels_names)
+
+        prj = separate_labels(project=self.prj)
+        assert len(prj.label_sets) == 5
+
+        # separate labels changes the labels of the annotations that belong to non default label_sets in the project
+        separated_labels_with_annotations = [
+            label.name
+            for label in prj.labels
+            if len([s for s in label.label_sets if not s.is_default]) > 0 and len(label.annotations) > 0
+        ]
+
+        assert len(separated_labels_with_annotations) == n_labels_with_annotations
+        assert len(prj.documents) == self.document_count  # only 29 documents have been added to the dataset
+
+        # verify if new labels are indeed added
+        for label_set in [x for x in prj.label_sets if not x.is_default]:
+            new_labels = [label.name for label in label_set.labels if len(label.annotations) > 0 and "__" in label.name]
+
+            assert len(new_labels) > 0
+            original_labels = labels_with_annotations[label_set.name]
+
+            for label in new_labels:
+                original_label = label.split("__")[1]
+                assert original_label in original_labels
+
+        self.prj = Project(id=46)
+        assert len(self.prj.label_sets) == 5
+        assert len(self.prj.labels) == 18
+        assert len(self.prj.labels[0].correct_annotations) == self.correct_document_count
+
+    def test_annotation_keywordtoken_with_linebreak(self):
+        """Check if number replacement of regexed is correctly preferred, see _N_."""
+        assert len(self.prj.labels[0].annotations) == 26
+        # 26 Annotations can be represented by 3 Regex
+        assert self.prj.labels[0].tokens() == [
+            '(?P<Auszahlungsbetrag_N_4420351_3777>\\d\\.\\d\\d\\d\\,\\d\\d)',
+            '(?P<Auszahlungsbetrag_N_671698_3433>\\d\\d\\d\\,\\d\\d)',
+            '(?P<Auszahlungsbetrag_N_673143_4074>\\d\\d\\,[ ]+\\d\\d[-])',
+        ]
 
     @classmethod
     def tearDownClass(cls) -> None:

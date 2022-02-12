@@ -13,6 +13,8 @@ from konfuzio_sdk.utils import (
     convert_to_bio_scheme,
     map_offsets,
     get_sentences,
+    amend_file_name,
+    does_not_raise,
 )
 
 TEST_STRING = "sample string"
@@ -191,3 +193,40 @@ class TestUtils(unittest.TestCase):
         assert sentences[1]['offset_string'] == 'This is a test.'
         assert sentences[1]['start_offset'] == 50
         assert sentences[1]['end_offset'] == 85
+
+
+file_name_append_data = [
+    # text embeddings all over the text
+    ('/tmp/text_embeddings_0639187398.pdf', '/tmp/text_embeddings_0639187398_ocr.pdf', does_not_raise()),
+    # text embeddings only on some pages of the text
+    ('only_some_pages_have_embeddigns.tiff', 'only_some_pages_have_embeddigns_ocr.tiff', does_not_raise()),
+    # two sots in a file name
+    ('only_some_pages._have_embeddigns.tiff', 'only_some_pages._have_embeddigns_ocr.tiff', does_not_raise()),
+    # empty file path
+    (' ', False, pytest.raises(ValueError)),
+    # Current file name is already too long, 255 chr
+    (
+        '1qgjpzndwlawckhpjzpvlwxhwqywsjkixlnphihvwlfxtifjvzbqajcjlxdfclbtmstievnepcxubvmgc'
+        'uyhpvpujkinqahmxjxhbsdejuqvmzcsaqlmynykgaznembeuuhtjwzudsigfukdnkiatqpmgvxfsonthd'
+        'kbisiojrkulngipzxojkxgetqhgrrnigucneirfxothiekhxplfbbjxlxxyohdavatzoxuultcthjmdtt'
+        'qxyuvzfyddao',
+        False,
+        pytest.raises(OSError),
+    ),
+    # File name which will be generated is to long: 254 character
+    (
+        'qgjpzndwlawckhpjzpvlwxhwqywsjkixlnphihvwlfxtifjvzbqajcjlxdfclbtmstievnepcxubvmgcu'
+        'yhpvpujkinqahmxjxhbsdejuqvmzcsaqlmynykgaznembeuuhtjwzudsigfukdnkiatqpmgvxfsonthdk'
+        'bisiojrkulngipzxojkxgetqhgrrnigucneirfxothiekhxplfbbjxlxxyohdavatzoxuultcthjmdttq'
+        'xyuvzfyddao',
+        False,
+        pytest.raises(OSError),
+    ),
+]
+
+
+@pytest.mark.parametrize("file_path, expected_result, expected_error", file_name_append_data)
+def test_append_text_to_filename(file_path, expected_result, expected_error):
+    """Test if we detect the correct file name."""
+    with expected_error:
+        assert amend_file_name(file_path, 'ocr') == expected_result

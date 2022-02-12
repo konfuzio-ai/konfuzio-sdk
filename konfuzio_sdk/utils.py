@@ -1,5 +1,5 @@
 """Utils for the konfuzio sdk package."""
-
+import copy
 import datetime
 import hashlib
 import itertools
@@ -7,8 +7,10 @@ import logging
 import os
 import re
 import zipfile
+from collections import defaultdict
 from contextlib import contextmanager
 from io import BytesIO
+from random import random
 from statistics import median
 from typing import Union, List, Tuple, Dict
 
@@ -595,7 +597,7 @@ def merge_bboxes(bboxes: list):
     return merge_bbox
 
 
-def get_bbox(bbox, start_offset, end_offset) -> Dict:
+def get_bbox(bbox, start_offset: int, end_offset: int) -> Dict:
     """
     Get single bbox for offset_string.
 
@@ -604,16 +606,13 @@ def get_bbox(bbox, start_offset, end_offset) -> Dict:
 
     Pages are zero indexed, i.e. the first page has page_number = 0.
     """
-    # exit early if document bbox is empty or start/end offsets are not given
-    if not bbox or start_offset is None or end_offset is None:
-        return {}
-
     # get the index of every character bbox in the document between the start and end offset
     char_bbox_ids = [str(char_bbox_id) for char_bbox_id in range(start_offset, end_offset) if str(char_bbox_id) in bbox]
 
     # exit early if no bboxes are found between the start/end offset
-    if len(char_bbox_ids) < 1:
-        return {}
+    if not char_bbox_ids:
+        logger.error(f"Between start {start_offset} and {end_offset} we do not find the bboxes of the characters.")
+        return {'bottom': None, 'top': None, 'page_index': None, 'x0': None, 'x1': None, 'y0': None, 'y1': None}
 
     # set the defaut values which we overwrite with the actual character bbox values
     x0 = 100000000
@@ -647,17 +646,194 @@ def get_bbox(bbox, start_offset, end_offset) -> Dict:
                 break
         pdf_page_index = bbox[char_bbox_id]['page_number'] - 1
 
-    res = {
-        'bottom': bottom,
-        'page_index': pdf_page_index,
-        'top': top,
-        'x0': x0,
-        'x1': x1,
-        'y0': y0,
-        'y1': y1,
-        'start_offset': start_offset,
-        'end_offset': end_offset,
-    }
+    res = {'bottom': bottom, 'page_index': pdf_page_index, 'top': top, 'x0': x0, 'x1': x1, 'y0': y0, 'y1': y1}
     if len(set(line_indexes)) == 1:
         res['line_index'] = line_indexes[0]
     return res
+
+
+def get_default_label_set_documents(
+    project, documents: List, selected_default_label_sets: List, project_label_sets: list, merge_multi_default: bool
+) -> Tuple[Dict[int, List], Dict[int, List]]:
+    """
+    For each default label_set in a prj get a list of documents to be used for that default label_set.
+
+    For each default label_set we collect the labels that belong to that label_set.
+
+    Then, for each document, we verify the category label_set. If if matches the default label_set, we add the
+    document to the default label_set list of documents.
+
+    If merge_multi_default is False we discard any documents with a different default label_set.
+
+    If the category label_set of the document does not match, but we still want to use labels that are shared between
+    default label_sets (merge_multi_default=True), then we check for the labels in each annotation_set of the document
+    that mach labels in the default label_set that we are analysing.
+
+    We rename the labels that are not shared as "NO_LABEL".
+
+    Format of dict is: {default label_set.id: list of documents)
+    """
+    # keys are default label_set ids, values are list of documents
+    default_label_set_documents = defaultdict(list)
+    # keys are default label_set names, values are list of label names that appear in that default label_set
+    default_labels = defaultdict(set)
+
+    # filter label_sets of the project that belong to the selected default label_sets
+    selected_ids = [x.id for x in selected_default_label_sets]
+    selected_label_sets = []
+    for label_set in project_label_sets:
+        if label_set.is_default and label_set.id in selected_ids:
+            selected_label_sets.append(label_set)
+            continue
+        if len(list(set([x.id for x in label_set.categories if x is not None]) & set(selected_ids))) > 0:
+            selected_label_sets.append(label_set)
+            continue
+
+    # get the labels which appear in each default label_set
+    for label_set in selected_label_sets:
+        if label_set.is_default:
+            # if the label_set is default, get the label directly
+            _default_label_sets = [label_set]
+        else:
+            # if not, it is a child label_set, get the default from its parent (default_label_set)
+            _default_label_sets = label_set.categories
+
+        # add the labels which appear in that default label_set and that contain annotations
+        label_set_labels = []
+        for label in label_set.labels:
+            if len(label.annotations) > 0:
+                label_set_labels.append(label)
+
+        for _default_label_set in _default_label_sets:
+            default_labels[_default_label_set.id] |= set(label_set_labels)
+
+    # for each document label_set in the project
+    for default_label_set in [x for x in selected_default_label_sets if x.is_default]:
+        # copy documents so we only edit a new copy of them
+        _documents = copy.deepcopy(documents) if merge_multi_default else documents
+        # for each document
+        for document in _documents:
+            # if the default label_set matches the category label_set, simply add to documents
+            # we can't simply check if default_label_set.id
+            # is in document_annotation_sets because document_annotation_sets
+            # can contain annotation_sets from multiple default label_sets
+            if len(document.annotations()) == 0:
+                continue
+            if document.category == default_label_set:
+                default_label_set_documents[default_label_set.id].append(document)
+            # if not, then we need to edit it before adding
+            # but only if merge_multi_default is True
+            # if merge_multi_default is False we discard any documents with a different default label_set
+            elif merge_multi_default:
+                # loop over the annotation_sets
+                for i, annotation_set in enumerate(document.annotation_sets):
+                    # we need to check if the annotation_set belongs to the "wrong" default label_set
+                    # if it belongs to a default label_set, get the id from the default label_set as id = None
+                    # if not a default, get the label_set id
+                    if annotation_set.label_set.default_label_set:
+                        document_label_set_id = annotation_set.label_set.default_label_set.id
+                    else:
+                        document_label_set_id = annotation_set.label_set.id
+                    # if it does not match the current default label_set
+                    if document_label_set_id != default_label_set.id:
+                        # get the labels that do not overlap with the current default label_set
+                        non_overlapping_labels = (
+                            set(annotation_set.label_set.labels) - default_labels[default_label_set]
+                        )  # NOQA
+                        # if the labels do not overlap with the current default label_set, change to NO_LABEL
+                        for label in non_overlapping_labels:
+                            label.name = 'NO_LABEL'
+                # append document to the default_label_set_documents
+                default_label_set_documents[default_label_set.id].append(document)
+    # return all default label_set documents
+    return default_label_set_documents, default_labels
+
+
+def separate_labels(project, default_label_sets: List = None):
+    """
+    Create separated labels for labels which are shared between LabelSets.
+
+    This should be used only for the training purpose.
+
+    For all documents in the project (training + test) for each category, we check all annotations in annotation_sets
+    that do not belong to the category label_set.
+
+    For each label that we find, we rewrite the name of the label, adding the label_set name, followed by "__" and
+    the original name of the label.
+    E.g.: label_set: Shipper, Label: Name -> Label: Shipper__Name
+
+    Notes:
+    When using this method, the labels in the project are changed. This should be used in combination with the model
+    models_labels_multiclass.SeparateLabelsAnnotationMultiClassModel so that these changes are undone in the extract
+    and the output contains the correct labels names.
+
+    If the labels of the project should be used in the original format for other tasks, for example, for the
+    business evaluation, the project should be reloaded after the training.
+
+    """
+    from konfuzio_sdk.data import Label
+
+    if not default_label_sets:
+        default_label_sets = [x for x in project.label_sets if x.is_default]
+
+    # Group documents by default label_set and prepare for training.
+    default_label_set_documents_dict, _ = get_default_label_set_documents(
+        project=project,
+        documents=project.documents + project.test_documents,
+        selected_default_label_sets=default_label_sets,
+        project_label_sets=project.label_sets,
+        merge_multi_default=False,
+    )
+
+    for default_label_set in default_label_sets:
+        try:
+            # Use patched documents to also use knowledge from other document types which share some labels.
+            _documents = default_label_set_documents_dict[default_label_set.id]
+
+            if len(_documents) == 0:
+                logger.error(f'There are no documents for {default_label_set.name}.')
+                continue
+
+            for document in _documents:
+                # Should we move this to a separate function?
+                if len(document.annotations()) == 0:
+                    continue
+                document_default_annotation_sets = [
+                    x for x in document.annotation_sets if x.label_set.is_default and x.label_set == document.category
+                ]
+                if len(document_default_annotation_sets) != 1:
+                    raise Exception(
+                        f'Exactly 1 default annotation_set is expected. '
+                        f'There is {len(document_default_annotation_sets)} in document {document.id}'
+                    )
+                for annotation_set in document.annotation_sets:
+                    label_set = annotation_set.label_set
+                    prj_label_set = project.get_label_set_by_id(label_set.id)
+                    if label_set.is_default is False:
+                        for annotation in annotation_set.annotations:
+                            new_label_name = label_set.name + '__' + annotation.label.name
+                            new_label_name_clean = label_set.name_clean + '__' + annotation.label.name_clean
+                            if new_label_name in [x.name for x in project.labels]:
+                                new_label = next(x for x in project.labels if new_label_name == x.name)
+                            else:
+                                # Sender__FirstName and Receiver__FirstName
+                                new_label = Label(
+                                    id=random.randrange(-999999, -1),  # create negative ids to identify separate labels
+                                    text=new_label_name,
+                                    text_clean=new_label_name_clean,
+                                    get_data_type_display=annotation.label.data_type,
+                                    description=annotation.label.description,
+                                    project=annotation.label.project,
+                                    token_full_replacement=annotation.label.token_full_replacement,
+                                    token_whitespace_replacement=annotation.label.token_whitespace_replacement,
+                                    token_number_replacement=annotation.label.token_number_replacement,
+                                    has_multiple_top_candidates=annotation.label.has_multiple_top_candidates,
+                                )
+                                prj_label_set.add_label(new_label)
+                            annotation.label = new_label
+
+        except Exception as e:
+            logger.error(f'Separate labels for {default_label_set} failed because of >>{e}<<.')
+            return None
+
+    return project

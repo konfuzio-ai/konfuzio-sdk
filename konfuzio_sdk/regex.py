@@ -6,8 +6,6 @@ from typing import List, Dict
 import pandas
 from tabulate import tabulate
 
-from konfuzio_sdk.utils import get_bbox
-
 logger = logging.getLogger(__name__)
 
 
@@ -89,7 +87,7 @@ def get_best_regex(evaluations: List, log_stats: bool = True, allow_zero_f1score
     """Optimize selection of one regex in scenarios were we are unsure if all correct annotations are labeled."""
     df = pandas.DataFrame(evaluations)
     if df.empty:
-        logger.error(f'\n{"#" * 60}\nWe cannot find any regex!\n{"#" * 60}')
+        logger.error('We cannot find any regex!')
         return []
 
     if not allow_zero_f1score:
@@ -135,27 +133,11 @@ def get_best_regex(evaluations: List, log_stats: bool = True, allow_zero_f1score
     # best_regex = df.loc[index_of_regex, 'regex'].to_list()
     best_regex = df.loc[df['new_matches_count'] > 0, 'regex'].to_list()
 
-    # Not every document has correct annotations !
-    # documents_not_matched = matched_document.columns[matched_document.tail(n=1).any() == 0]
-    # if matched_document.shape[1] < df['matched_annotations_total'].max() and documents_not_matched.any():
-    #     # we did not find an annotation using one of the regexes and we do not log documents without annotations
-    #     logger.error(f'Missing regex to match annotations in documents with ID {documents_not_matched.to_list()}')
-    #     # return list(set(df['regex'].to_list()))
-    # else:
-    #     logger.info(f'We detected {len(best_regex)} good regex out of {len(evaluations)}.')
-
     return best_regex
 
 
-def regex_annotations(
-    doctext: str,
-    regex: str,
-    start_chr: int = 0,
-    bbox=None,
-    flags=0,
-    overlapped=False,
-    keep_full_match=True,
-    filtered_group=None,
+def regex_spans(
+    doctext: str, regex: str, start_chr: int = 0, flags=0, overlapped=False, keep_full_match=True, filtered_group=None
 ) -> List[Dict]:
     """
     Convert a text with the help by one regex to annotations.
@@ -235,12 +217,12 @@ def regex_annotations(
                 }
             )
 
-        if bbox:
-            # update each element in _results with bbox
-            for res in _results:
-                res['bounding_box'] = get_bbox(
-                    bbox, res['start_offset'] + res['start_text'], res['end_offset'] + res['start_text']
-                )
+        # if bbox:
+        #     # update each element in _results with bbox
+        #     for res in _results:
+        #         res['bounding_box'] = get_bbox(
+        #             bbox, res['start_offset'] + res['start_text'], res['end_offset'] + res['start_text']
+        #         )
 
         # add results per match to all results
         results.extend(_results)
@@ -269,7 +251,7 @@ def generic_candidate_function(regex, flags=0, overlapped=False, filtered_group=
         :param doctext: Text of the candidate
         :return: Tuple of list of candidates and other text chunks
         """
-        annotations = regex_annotations(
+        annotations = regex_spans(
             doctext=doctext,
             regex=regex,
             flags=flags,

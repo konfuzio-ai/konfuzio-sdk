@@ -78,7 +78,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         """Download Annotations and the Text from API for a Document and check their offset alignment."""
         text = get_document_text(TEST_DOCUMENT_ID, project_id=TEST_PROJECT_ID)
         annotations = get_document_annotations(TEST_DOCUMENT_ID, project_id=TEST_PROJECT_ID)
-        assert len(annotations) == 20
+        assert len(annotations) == 21
         # check the text to be in line with the annotations offsets
         for i in range(0, len(annotations)):
             assert (
