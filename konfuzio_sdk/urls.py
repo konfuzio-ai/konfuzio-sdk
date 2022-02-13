@@ -118,7 +118,7 @@ def get_document_original_file_url(document_id: int, host: str = KONFUZIO_HOST) 
 
 
 def get_document_api_details_url(
-    document_id: int, project_id: int, host: str = KONFUZIO_HOST, include_extractions: bool = False, extra_fields='bbox'
+    document_id: int, project_id: int, host: str = KONFUZIO_HOST, extra_fields='hocr,bbox'
 ) -> str:
     """
     Generate URL to access the details of a document in a project.
@@ -126,14 +126,10 @@ def get_document_api_details_url(
     :param document_id: ID of the document as integer
     :param project_id: ID of the project
     :param host: Konfuzio host
-    :param include_extractions: Bool to include extractions
     :param extra_fields: Extra information to include in the response
     :return: URL to get document details
     """
-    return (
-        f'{host}/api/projects/{project_id}/docs/{document_id}/'
-        f'?include_extractions={include_extractions}&extra_fields={extra_fields}'
-    )
+    return f'{host}/api/projects/{project_id}/docs/{document_id}/?extra_fields={extra_fields}'
 
 
 # LABELS

@@ -88,8 +88,7 @@ class TestUrls(unittest.TestCase):
     def test_get_document_api_details_url(self):
         """Test function used to generate url to access document details of one document in a project."""
         document_api_details_url = (
-            f'{KONFUZIO_HOST}/api/projects/{TEST_PROJECT_ID}/docs/{DOCUMENT_ID}/'
-            f'?include_extractions={False}&extra_fields={"bbox"}'
+            f'{KONFUZIO_HOST}/api/projects/{TEST_PROJECT_ID}/docs/{DOCUMENT_ID}/' f'?extra_fields=hocr,bbox'
         )
         self.assertEqual(
             get_document_api_details_url(DOCUMENT_ID, project_id=TEST_PROJECT_ID), document_api_details_url

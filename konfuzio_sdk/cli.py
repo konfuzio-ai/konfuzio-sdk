@@ -8,7 +8,7 @@ import sys
 from tqdm import tqdm
 
 import konfuzio_sdk
-from konfuzio_sdk.api import get_auth_token, create_new_project
+from konfuzio_sdk.api import _get_auth_token, create_new_project
 
 sys.tracebacklimit = 0
 
@@ -41,7 +41,7 @@ def init_env(project_folder="./"):
     if host == "":
         host = konfuzio_sdk.KONFUZIO_HOST
 
-    token = get_auth_token(user, password, host)
+    token = _get_auth_token(user, password, host)
 
     with open(os.path.join(project_folder, ".env"), "w") as f:
         f.write(f"KONFUZIO_HOST = {host}\n")
@@ -53,7 +53,7 @@ def init_env(project_folder="./"):
     return True
 
 
-def data(id: int):
+def data(id_: int):
     """
     Migrate your project to another host.
 
@@ -63,7 +63,7 @@ def data(id: int):
     print("Starting the download. Please wait until the data download is finished...")
     from konfuzio_sdk.data import Project
 
-    training_prj = Project(id=id)
+    training_prj = Project(id_=id_)
     training_prj.update()
 
     if len(training_prj.documents + training_prj.test_documents) == 0:
@@ -94,10 +94,10 @@ def main():
 
     elif first_arg == 'migrate_data':
         try:
-            id = cli_options[0]
+            id_ = cli_options[0]
         except IndexError:
             raise IndexError("Please define a project ID, e.g. 'konfuzio_sdk download_data 123'")
-        data(id=int(id))
+        data(id_=int(id_))
 
     elif first_arg == 'create_project':
         try:
