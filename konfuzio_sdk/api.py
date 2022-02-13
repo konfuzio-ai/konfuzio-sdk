@@ -82,7 +82,7 @@ def _konfuzio_session(token=KONFUZIO_TOKEN):
     :return: Request session.
     """
     retry_strategy = Retry(
-        total=10,
+        total=5,
         status_forcelist=[429, 500, 502, 503, 504],
         backoff_factor=2,
         method_whitelist=["HEAD", "GET", "PUT", "DELETE", "OPTIONS", "TRACE"],  # POST excluded
@@ -449,7 +449,7 @@ def get_results_from_segmentation(doc_id: int, project_id: int, session=_konfuzi
     :param project_id: ID of the project.
     :param session: Konfuzio session with Retry and Timeout policy
     """
-    segmentation_url = get_document_segmentation_details_url(doc_id, project_id, action='segmentation')
+    segmentation_url = get_document_segmentation_details_url(doc_id, project_id)
     response = session.get(segmentation_url)
     segmentation_result = response.json()
 
