@@ -9,7 +9,7 @@ import re
 
 from konfuzio_sdk.data import Project, Annotation, Label
 
-my_project = Project(id=YOUR_PROJECT_ID)
+my_project = Project(id_=YOUR_PROJECT_ID)
 
 # Word/expression to annotate in the document
 # should match an existing one in your document
@@ -23,7 +23,7 @@ my_label = Label(my_project, text=label_name)
 my_label.save()
 
 # Label Set where label belongs
-label_set_id = my_label.label_sets[0].id
+label_set_id = my_label.label_sets[0].id_
 
 # First document in the project
 document = my_project.documents[0]
@@ -38,7 +38,7 @@ new_annotations_links = []
 for offsets in matches_locations:
     annotation_obj = Annotation(
         document=document,
-        document_id=document.id,
+        document_id=document.id_,
         start_offset=offsets[0],
         end_offset=offsets[1],
         label=my_label,

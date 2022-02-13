@@ -33,5 +33,5 @@ You need to:
 ```python
 from konfuzio_sdk.data import Project
 
-prj_B = Project(id=id_prj_B, data_root=path_to_data_prj_B)
+prj_B = Project(id_=id_prj_B, data_root=path_to_data_prj_B)
 ```

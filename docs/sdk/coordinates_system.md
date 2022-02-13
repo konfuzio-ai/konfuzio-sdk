@@ -17,7 +17,7 @@ The format is [width, height].
 ```python
 from konfuzio_sdk.data import Project
 
-my_project = Project(id=YOUR_PROJECT_ID)
+my_project = Project(id_=YOUR_PROJECT_ID)
 # first document uploaded
 document = my_project.documents[0]
 # index of the page to test
@@ -43,7 +43,7 @@ import numpy as np
 from PIL import Image
 from konfuzio_sdk.data import Project
 
-my_project = Project(id=YOUR_PROJECT_ID)
+my_project = Project(id_=YOUR_PROJECT_ID)
 # first document uploaded
 document = my_project.documents[0]
 # index of the page to test
@@ -91,7 +91,7 @@ from PIL import Image
 from konfuzio_sdk.data import Project
 from konfuzio_sdk.api import get_results_from_segmentation
 
-my_project = Project(id=YOUR_PROJECT_ID)
+my_project = Project(id_=YOUR_PROJECT_ID)
 # first document uploaded
 document = my_project.documents[0]
 # index of the page to test
@@ -100,7 +100,7 @@ page_index = 0
 document.get_images()
 image_path = document.image_paths[page_index]
 image = Image.open(image_path).convert('RGB')
-image_segmentation_bboxes = get_results_from_segmentation(document.id, my_project.id)
+image_segmentation_bboxes = get_results_from_segmentation(document.id_, my_project.id_)
 
 for bbox in image_segmentation_bboxes[page_index]:
     pp1 = (int(bbox["x0"]), int(bbox["y0"]))
@@ -125,7 +125,7 @@ from PIL import Image
 from konfuzio_sdk.data import Project
 from konfuzio_sdk.api import get_results_from_segmentation
 
-my_project = Project(id=YOUR_PROJECT_ID)
+my_project = Project(id_=YOUR_PROJECT_ID)
 # first document uploaded
 document = my_project.documents[0]
 # index of the page to test
@@ -154,7 +154,7 @@ for bbox in image_characters_bbox:
     pp2 = (int(bbox["x1"]), int((height - bbox["y1"])))
     image = cv2.rectangle(np.array(image), pp1, pp2, (0, 255, 0), 1)
 
-image_segmentation_bboxes = get_results_from_segmentation(document.id, my_project.id)
+image_segmentation_bboxes = get_results_from_segmentation(document.id_, my_project.id_)
 
 for bbox in image_segmentation_bboxes[page_index]:
     pp1 = (int(bbox["x0"] * factor_x), int(bbox["y0"] * factor_y))

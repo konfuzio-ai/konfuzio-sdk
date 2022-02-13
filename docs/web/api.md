@@ -55,8 +55,8 @@ import requests
 from requests.auth import HTTPBasicAuth
 from konfuzio_sdk.data import Project
 
-my_project = Project(id=YOUR_PROJECT_ID)
-project_id = my_project.id
+my_project = Project(id_=YOUR_PROJECT_ID)
+project_id = my_project.id_
 
 auth = HTTPBasicAuth('USERNAME', 'PASSWORD')
 
@@ -64,14 +64,14 @@ categories = {"xx": "Category A", "yy": "Category B"}
 
 # filepath - path to your local file
 with open(filepath, "rb") as f:
-    file_data = f.read()
+   file_data = f.read()
 
 files_data = {
-    "data_file": (os.path.basename(filepath), file_data, "multipart/form-data"),
+   "data_file": (os.path.basename(filepath), file_data, "multipart/form-data"),
 }
 
 # sync = True to have directly the metadata of the file
-# PROJECT_ID - id of your project in app konfuzio
+# PROJECT_ID - id_ of your project in app konfuzio
 data = {'project': project_id, 'sync': True}
 
 r = requests.post(url="https://app.konfuzio.com/api/v2/docs/", auth=auth, files=files_data, data=data)
@@ -100,12 +100,12 @@ from PIL import Image
 from requests.auth import HTTPBasicAuth
 from konfuzio_sdk.data import Project
 
-my_project = Project(id=YOUR_PROJECT_ID)
+my_project = Project(id_=YOUR_PROJECT_ID)
 
-project_id = my_project.id
+project_id = my_project.id_
 # first training document uploaded in the project
 document = my_project.documents[0]
-doc_id = document.id
+doc_id = document.id_
 
 auth = HTTPBasicAuth('USERNAME', 'PASSWORD')
 url = f'https://app.konfuzio.com/api/projects/{project_id}/docs/{doc_id}/segmentation/'
@@ -118,17 +118,17 @@ page_index = 0
 image_path = document.image_paths[page_index]
 image = Image.open(image_path).convert('RGB')
 
-color_code  = {'text': (255, 0, 0),
-               'title': (0, 255, 0),
-               'list': (0, 0, 255),
-               'table': (255, 255, 0),
-               'figure': (0, 255, 255)}
+color_code = {'text': (255, 0, 0),
+              'title': (0, 255, 0),
+              'list': (0, 0, 255),
+              'table': (255, 255, 0),
+              'figure': (0, 255, 255)}
 
 for bbox in result[page_index]:
-    label = bbox['label']
-    pp1 = (int(bbox["x0"]), int(bbox["y0"]))
-    pp2 = (int(bbox["x1"]), int(bbox["y1"]))
-    image = cv2.rectangle(np.array(image), pp1, pp2, color_code[label], 1)
+   label = bbox['label']
+   pp1 = (int(bbox["x0"]), int(bbox["y0"]))
+   pp2 = (int(bbox["x1"]), int(bbox["y1"]))
+   image = cv2.rectangle(np.array(image), pp1, pp2, color_code[label], 1)
 
 plt.imshow(image)
 plt.show()

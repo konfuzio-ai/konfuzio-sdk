@@ -87,7 +87,7 @@ then "Run main". As we didn't upload any documents to our project yet, the total
 from konfuzio_sdk.data import Project
 
 # Initialize the project:
-my_project = Project(id=YOUR_PROJECT_ID)
+my_project = Project(id_=YOUR_PROJECT_ID)
 
 # Receive the total number of training documents in the project:
 print(f"Number of training documents in the project: {len(my_project.documents)}.")
