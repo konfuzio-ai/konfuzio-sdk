@@ -29,7 +29,7 @@ class TestUtils(unittest.TestCase):
     """Test utility functions."""
 
     def test_get_id(self):
-        """Test if the returned unique id is an instance of String."""
+        """Test if the returned unique id_ is an instance of String."""
         assert isinstance(get_id(TEST_STRING), int)
 
     def test_get_timestamp(self):
@@ -74,14 +74,14 @@ class TestUtils(unittest.TestCase):
         annotations = []
         converted_text = convert_to_bio_scheme(text=text, annotations=annotations)
         assert len(converted_text) == 6
-        assert all([annot[1] == 'O' for annot in converted_text])
+        assert all([annotation[1] == 'O' for annotation in converted_text])
 
     def test_convert_to_bio_scheme_no_text(self):
         """Test conversion to BIO scheme without text."""
         text = ''
         annotations = [(12, 20, 'Organization')]
         converted_text = convert_to_bio_scheme(text=text, annotations=annotations)
-        self.assertIsNone(converted_text)
+        self.assertEqual(converted_text, [])
 
     def test_map_offsets(self):
         """Test creation of mapping between the position of the character and its offset."""
@@ -128,11 +128,11 @@ class TestUtils(unittest.TestCase):
             },
         ]
 
-        map = map_offsets(characters_bboxes)
+        my_map = map_offsets(characters_bboxes)
 
         expected_map = {0: 1000, 1: 1002}
 
-        assert map == expected_map
+        assert my_map == expected_map
 
     def test_get_sentences(self):
         """Test get sentences."""
@@ -199,9 +199,9 @@ file_name_append_data = [
     # text embeddings all over the text
     ('/tmp/text_embeddings_0639187398.pdf', '/tmp/text_embeddings_0639187398_ocr.pdf', does_not_raise()),
     # text embeddings only on some pages of the text
-    ('only_some_pages_have_embeddigns.tiff', 'only_some_pages_have_embeddigns_ocr.tiff', does_not_raise()),
+    ('only_some_pages_have_embeddings.tiff', 'only_some_pages_have_embeddings_ocr.tiff', does_not_raise()),
     # two sots in a file name
-    ('only_some_pages._have_embeddigns.tiff', 'only_some_pages._have_embeddigns_ocr.tiff', does_not_raise()),
+    ('only_some_pages._have_embeddings.tiff', 'only_some_pages._have_embeddings_ocr.tiff', does_not_raise()),
     # empty file path
     (' ', False, pytest.raises(ValueError)),
     # Current file name is already too long, 255 chr

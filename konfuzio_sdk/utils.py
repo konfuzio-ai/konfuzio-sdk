@@ -10,7 +10,7 @@ import zipfile
 from collections import defaultdict
 from contextlib import contextmanager
 from io import BytesIO
-from random import random
+from random import randrange
 from statistics import median
 from typing import Union, List, Tuple, Dict
 
@@ -33,7 +33,7 @@ def get_id(a_string, include_time: bool = False) -> int:
     :return: Unique ID
     """
     if include_time:
-        unique_string = a_string + get_timestamp(format='%Y-%m-%d-%H-%M-%S.%f')
+        unique_string = a_string + get_timestamp(konfuzio_format='%Y-%m-%d-%H-%M-%S.%f')
     else:
         unique_string = a_string
     try:
@@ -72,15 +72,15 @@ def is_file(file_path, raise_exception=True, maximum_size=100000000, allow_empty
             return False
 
 
-def get_timestamp(format='%Y-%m-%d-%H-%M-%S') -> str:
+def get_timestamp(konfuzio_format='%Y-%m-%d-%H-%M-%S') -> str:
     """
     Return formatted timestamp.
 
-    :param format: Format of the timestamp (e.g. year-month-day-hour-min-sec)
+    :param konfuzio_format: Format of the timestamp (e.g. year-month-day-hour-min-sec)
     :return: Timestamp
     """
     now = datetime.datetime.now()
-    timestamp = now.strftime(format)
+    timestamp = now.strftime(konfuzio_format)
     return timestamp
 
 
@@ -142,7 +142,7 @@ def get_file_type_and_extension(input_file: Union[str, BytesIO, bytes] = None) -
 
     def isfile(z, name):
         """Check zip file namelist."""
-        return any(x.endswith(name) for x in r.namelist())
+        return any(x.endswith(name) for x in z.namelist())
 
     if extension is None:
         if isinstance(input_file, str):
@@ -163,7 +163,7 @@ def get_file_type_and_extension(input_file: Union[str, BytesIO, bytes] = None) -
     elif extension in ['png', 'tiff', 'tif', 'jpeg', 'jpg']:
         file_type = IMAGE_FILE
     elif extension == 'zip':
-        r = zipfile.ZipFile(input_file, "r")
+        r = zipfile.ZipFile(input_file)
         # check for office files
         if isdir(r, "docProps") or isdir(r, "_rels"):
             file_type = OFFICE_FILE
@@ -203,7 +203,7 @@ def convert_to_bio_scheme(text: str, annotations: List) -> List[Tuple[str, str]]
     Konfuzio B-ORG
     . O
 
-    The start and end offsets are considered having the origin in the begining of the input text.
+    The start and end offsets are considered having the origin in the beginning of the input text.
     If only part of the text of the document is passed, the start and end offsets of the annotations must be
     adapted first.
 
@@ -211,38 +211,29 @@ def convert_to_bio_scheme(text: str, annotations: List) -> List[Tuple[str, str]]
     :param annotations: annotations in the document with start and end offset and label name
     :return: list of tuples with each word in the text an the respective label
     """
-    if len(text) == 0:
-        logger.error('No text to be converted to the BIO-scheme.')
-        return None
-
     nltk.download('punkt')
     tagged_entities = []
     annotations.sort(key=lambda x: x[0])
 
-    if len(annotations) == 0:
-        logger.info('No annotations in the converstion to the BIO-scheme.')
-        for word in nltk.word_tokenize(text):
-            tagged_entities.append((word, 'O'))
-        return tagged_entities
-
     previous_start = 0
+    end = 0
+    if text:
+        for start, end, label_name in annotations:
+            prev_text = text[previous_start:start]
+            for word in nltk.word_tokenize(prev_text):
+                tagged_entities.append((word, 'O'))
 
-    for start, end, label_name in annotations:
-        prev_text = text[previous_start:start]
-        for word in nltk.word_tokenize(prev_text):
-            tagged_entities.append((word, 'O'))
+            temp_str = text[start:end]
+            tmp_list = nltk.word_tokenize(temp_str)
 
-        temp_str = text[start:end]
-        tmp_list = nltk.word_tokenize(temp_str)
+            if len(tmp_list) > 1:
+                tagged_entities.append((tmp_list[0], 'B-' + label_name))
+                for w in tmp_list[1:]:
+                    tagged_entities.append((w, 'I-' + label_name))
+            else:
+                tagged_entities.append((tmp_list[0], 'B-' + label_name))
 
-        if len(tmp_list) > 1:
-            tagged_entities.append((tmp_list[0], 'B-' + label_name))
-            for w in tmp_list[1:]:
-                tagged_entities.append((w, 'I-' + label_name))
-        else:
-            tagged_entities.append((tmp_list[0], 'B-' + label_name))
-
-        previous_start = start
+            previous_start = start
 
     if end < len(text):
         pos_text = text[end:]
@@ -529,7 +520,7 @@ def group_bboxes_per_line(char_bboxes: dict, page_index: int) -> list:
 
     # iterate over each line_number and all of the character bboxes with that line number
     for line_number, line_char_bboxes in itertools.groupby(char_bboxes, lambda x: x['line_number']):
-        # set the defaut values which we overwrite with the actual character bbox values
+        # set the default values which we overwrite with the actual character bbox values
         x0 = 100000000
         top = 10000000
         y0 = 10000000
@@ -614,7 +605,7 @@ def get_bbox(bbox, start_offset: int, end_offset: int) -> Dict:
         logger.error(f"Between start {start_offset} and {end_offset} we do not find the bboxes of the characters.")
         return {'bottom': None, 'top': None, 'page_index': None, 'x0': None, 'x1': None, 'y0': None, 'y1': None}
 
-    # set the defaut values which we overwrite with the actual character bbox values
+    # set the default values which we overwrite with the actual character bbox values
     x0 = 100000000
     top = 10000000
     y0 = 10000000
@@ -653,8 +644,8 @@ def get_bbox(bbox, start_offset: int, end_offset: int) -> Dict:
 
 
 def get_default_label_set_documents(
-    project, documents: List, selected_default_label_sets: List, project_label_sets: list, merge_multi_default: bool
-) -> Tuple[Dict[int, List], Dict[int, List]]:
+    documents: List, selected_default_label_sets: List, project_label_sets: list, merge_multi_default: bool
+):
     """
     For each default label_set in a prj get a list of documents to be used for that default label_set.
 
@@ -671,7 +662,7 @@ def get_default_label_set_documents(
 
     We rename the labels that are not shared as "NO_LABEL".
 
-    Format of dict is: {default label_set.id: list of documents)
+    Format of dict is: {default label_set.id_: list of documents)
     """
     # keys are default label_set ids, values are list of documents
     default_label_set_documents = defaultdict(list)
@@ -679,13 +670,13 @@ def get_default_label_set_documents(
     default_labels = defaultdict(set)
 
     # filter label_sets of the project that belong to the selected default label_sets
-    selected_ids = [x.id for x in selected_default_label_sets]
+    selected_ids = [x.id_ for x in selected_default_label_sets]
     selected_label_sets = []
     for label_set in project_label_sets:
-        if label_set.is_default and label_set.id in selected_ids:
+        if label_set.is_default and label_set.id_ in selected_ids:
             selected_label_sets.append(label_set)
             continue
-        if len(list(set([x.id for x in label_set.categories if x is not None]) & set(selected_ids))) > 0:
+        if len(list(set([x.id_ for x in label_set.categories if x is not None]) & set(selected_ids))) > 0:
             selected_label_sets.append(label_set)
             continue
 
@@ -705,7 +696,7 @@ def get_default_label_set_documents(
                 label_set_labels.append(label)
 
         for _default_label_set in _default_label_sets:
-            default_labels[_default_label_set.id] |= set(label_set_labels)
+            default_labels[_default_label_set.id_] |= set(label_set_labels)
 
     # for each document label_set in the project
     for default_label_set in [x for x in selected_default_label_sets if x.is_default]:
@@ -714,13 +705,13 @@ def get_default_label_set_documents(
         # for each document
         for document in _documents:
             # if the default label_set matches the category label_set, simply add to documents
-            # we can't simply check if default_label_set.id
+            # we can't simply check if default_label_set.id_
             # is in document_annotation_sets because document_annotation_sets
             # can contain annotation_sets from multiple default label_sets
             if len(document.annotations()) == 0:
                 continue
             if document.category == default_label_set:
-                default_label_set_documents[default_label_set.id].append(document)
+                default_label_set_documents[default_label_set.id_].append(document)
             # if not, then we need to edit it before adding
             # but only if merge_multi_default is True
             # if merge_multi_default is False we discard any documents with a different default label_set
@@ -728,14 +719,14 @@ def get_default_label_set_documents(
                 # loop over the annotation_sets
                 for i, annotation_set in enumerate(document.annotation_sets):
                     # we need to check if the annotation_set belongs to the "wrong" default label_set
-                    # if it belongs to a default label_set, get the id from the default label_set as id = None
-                    # if not a default, get the label_set id
+                    # if it belongs to a default label_set, get the id_ from the default label_set as id_ = None
+                    # if not a default, get the label_set id_
                     if annotation_set.label_set.default_label_set:
-                        document_label_set_id = annotation_set.label_set.default_label_set.id
+                        document_label_set_id = annotation_set.label_set.default_label_set.id_
                     else:
-                        document_label_set_id = annotation_set.label_set.id
+                        document_label_set_id = annotation_set.label_set.id_
                     # if it does not match the current default label_set
-                    if document_label_set_id != default_label_set.id:
+                    if document_label_set_id != default_label_set.id_:
                         # get the labels that do not overlap with the current default label_set
                         non_overlapping_labels = (
                             set(annotation_set.label_set.labels) - default_labels[default_label_set]
@@ -744,8 +735,9 @@ def get_default_label_set_documents(
                         for label in non_overlapping_labels:
                             label.name = 'NO_LABEL'
                 # append document to the default_label_set_documents
-                default_label_set_documents[default_label_set.id].append(document)
+                default_label_set_documents[default_label_set.id_].append(document)
     # return all default label_set documents
+    # hotfix removed typing " -> Tuple[Dict[int, List], Dict[int, List]]" as it is unclear what should be returned
     return default_label_set_documents, default_labels
 
 
@@ -778,7 +770,6 @@ def separate_labels(project, default_label_sets: List = None):
 
     # Group documents by default label_set and prepare for training.
     default_label_set_documents_dict, _ = get_default_label_set_documents(
-        project=project,
         documents=project.documents + project.test_documents,
         selected_default_label_sets=default_label_sets,
         project_label_sets=project.label_sets,
@@ -788,7 +779,7 @@ def separate_labels(project, default_label_sets: List = None):
     for default_label_set in default_label_sets:
         try:
             # Use patched documents to also use knowledge from other document types which share some labels.
-            _documents = default_label_set_documents_dict[default_label_set.id]
+            _documents = default_label_set_documents_dict[default_label_set.id_]
 
             if len(_documents) == 0:
                 logger.error(f'There are no documents for {default_label_set.name}.')
@@ -804,11 +795,11 @@ def separate_labels(project, default_label_sets: List = None):
                 if len(document_default_annotation_sets) != 1:
                     raise Exception(
                         f'Exactly 1 default annotation_set is expected. '
-                        f'There is {len(document_default_annotation_sets)} in document {document.id}'
+                        f'There is {len(document_default_annotation_sets)} in document {document.id_}'
                     )
                 for annotation_set in document.annotation_sets:
                     label_set = annotation_set.label_set
-                    prj_label_set = project.get_label_set_by_id(label_set.id)
+                    prj_label_set = project.get_label_set_by_id(label_set.id_)
                     if label_set.is_default is False:
                         for annotation in annotation_set.annotations:
                             new_label_name = label_set.name + '__' + annotation.label.name
@@ -818,7 +809,7 @@ def separate_labels(project, default_label_sets: List = None):
                             else:
                                 # Sender__FirstName and Receiver__FirstName
                                 new_label = Label(
-                                    id=random.randrange(-999999, -1),  # create negative ids to identify separate labels
+                                    id_=randrange(-999999, -1),  # hotfix: identify separate labels by ID < 0
                                     text=new_label_name,
                                     text_clean=new_label_name_clean,
                                     get_data_type_display=annotation.label.data_type,
