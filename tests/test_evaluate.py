@@ -242,28 +242,23 @@ class TestEvaluation(unittest.TestCase):
         """
         Test if a document is equivalent if an annotation set is missing.
 
+        We create 1 copy of a document online.
+        We copy all annotation sets except the last one - doc b.
+        Doc b will have a missing annotation set compared to doc a.
+
         All annotations expected for that annotation set will be counted as false negatives.
         """
-        from konfuzio_sdk.data import AnnotationSet, Annotation
-
         prj = Project(id_=TEST_PROJECT_ID)
         doc_a = prj.documents[20]  # doc ID 44859
         doc_b = Document(project=prj)
 
-        annotation_sets = []
-        for annotation_set in doc_a.annotation_sets[:-1]:
-            # TODO: add function "add_annotation_set"
-            annotation_set_dict = annotation_set.__dict__.copy()
-            annotation_set_dict.pop('document')
-            new_annotation_set = AnnotationSet(**annotation_set_dict, document=doc_b)
-            annotation_sets.append(new_annotation_set)
+        # TODO: add attribute annotation_sets to Document (same behaviour as annotations? issue #8739)
+        for annotation_set in doc_a._annotation_sets[:-1]:
+            doc_b.add_annotation_set(annotation_set)
 
-            for annotation in new_annotation_set.annotations:
-                annotation_dict = annotation.__dict__.copy()
-                annotation_dict.pop('document')
-                _ = Annotation(document=doc_b, **annotation_dict)
-
-        doc_b.annotation_sets = annotation_sets
+            # TODO: add annotations when adding an annotation set (issue #8740)
+            for annotation in annotation_set.annotations:
+                doc_b.add_annotation(annotation)
 
         evaluation = compare(doc_a, doc_b)
         assert len(evaluation) == 31
@@ -275,52 +270,42 @@ class TestEvaluation(unittest.TestCase):
         """
         Test if a document is equivalent if there is one more annotation set than the correct ones.
 
+        We create 2 copies of a document online.
+        In copy 1 we keep all annotation sets - doc a
+        In copy 2 we remove one annotation set from the Label Set Brutto Bezug (multiple=True) - doc b
+        Doc b will have an extra annotation set compared to doc a.
+
         The annotations in the extra annotation set will be counted as false positives.
         """
-        from konfuzio_sdk.data import AnnotationSet, Annotation
-
         prj = Project(id_=TEST_PROJECT_ID)
         doc_online = prj.documents[20]  # doc ID 44859
         doc_a = Document(project=prj)
         doc_b = Document(project=prj)
 
-        annotation_sets_b = []
-        for annotation_set in doc_online.annotation_sets:
-            # TODO: add function "add_annotation_set"
-            annotation_set_dict = annotation_set.__dict__.copy()
-            annotation_set_dict.pop('document')
-            new_annotation_set = AnnotationSet(**annotation_set_dict, document=doc_b)
-            annotation_sets_b.append(new_annotation_set)
+        # TODO: add attribute annotation_sets to Document (same behaviour as annotations?  issue #8739)
+        for annotation_set in doc_online._annotation_sets:
+            doc_b.add_annotation_set(annotation_set)
 
-            for annotation in new_annotation_set.annotations:
-                annotation_dict = annotation.__dict__.copy()
-                annotation_dict.pop('document')
-                _ = Annotation(document=doc_b, **annotation_dict)
+            # TODO: add annotations when adding an annotation set (issue #8740)
+            for annotation in annotation_set.annotations:
+                doc_b.add_annotation(annotation)
 
-        doc_b.annotation_sets = annotation_sets_b
-
-        annotation_sets_a = []
         # Last annotation set from Brutto Bezug removed
-        for annotation_set in doc_online.annotation_sets[:-2] + [doc_online.annotation_sets[-1]]:
-            # TODO: add function "add_annotation_set"
-            annotation_set_dict = annotation_set.__dict__.copy()
-            annotation_set_dict.pop('document')
-            new_annotation_set = AnnotationSet(**annotation_set_dict, document=doc_a)
-            annotation_sets_a.append(new_annotation_set)
+        # TODO: add attribute annotation_sets to Document (same behaviour as annotations?  issue #8739)
+        for annotation_set in doc_online._annotation_sets[:-2] + [doc_online._annotation_sets[-1]]:
+            doc_a.add_annotation_set(annotation_set)
 
-            for annotation in new_annotation_set.annotations:
-                annotation_dict = annotation.__dict__.copy()
-                annotation_dict.pop('document')
-                _ = Annotation(document=doc_a, **annotation_dict)
-
-        doc_a.annotation_sets = annotation_sets_a
+            # TODO: add annotations when adding an annotation set (issue #8740)
+            for annotation in annotation_set.annotations:
+                doc_a.add_annotation(annotation)
 
         # TODO:
         #  add "delete" to AnnotationSet that also deletes the annotations that belong to that annotation set
         #  add "delete" where the AnnotationSet can be specified by ID
 
-        assert len(doc_a.annotation_sets) == len(doc_b.annotation_sets) - 1
-        assert len(doc_b.annotation_sets[-2].annotations) > 0
+        # TODO: add attribute annotation_sets to Document (same behaviour as annotations?  issue #8739)
+        assert len(doc_a._annotation_sets) == len(doc_b._annotation_sets) - 1
+        assert len(doc_b._annotation_sets[-2].annotations) > 0
 
         evaluation = compare(doc_a, doc_b)
         assert len(evaluation) == 31
@@ -345,7 +330,7 @@ class TestEvaluation(unittest.TestCase):
             # replace 1st Steuer annotation set (ID 679457) with 2nd (ID 679458)
             new_annotation = deepcopy(annotation)
             if annotation.annotation_set.id_ == 679457:
-                new_annotation.annotation_set = 679458
+                new_annotation.annotation_set.id_ = 679458
 
             doc_b.add_annotation(new_annotation)
 
@@ -378,8 +363,8 @@ class TestEvaluation(unittest.TestCase):
         for annotation in doc_a.annotations(use_correct=False)[:-7] + doc_a.annotations(use_correct=False)[-6:]:
             # replace 1st Steuer annotation set (ID 679457) with 2nd (ID 679458)
             new_annotation = deepcopy(annotation)
-            if annotation.annotation_set == 679457:
-                new_annotation.annotation_set = 679458
+            if annotation.annotation_set.id_ == 679457:
+                new_annotation.annotation_set.id_ = 679458
 
             doc_b.add_annotation(new_annotation)
 
@@ -493,7 +478,7 @@ class TestEvaluation(unittest.TestCase):
         doc_a = prj.documents[4]  # doc ID 44841
         doc_b = Document(project=prj)
 
-        # TODO: add function to edit annotation?
+        # TODO: add function to edit annotation? (issue #8741)
         new_annotation = deepcopy(doc_a.annotations(use_correct=False)[0])
         # keep the offset string but change the start and end offsets
         assert new_annotation.offset_string == ['03.01.2018']
@@ -533,23 +518,25 @@ class TestEvaluation(unittest.TestCase):
         doc_a = prj.documents[4]  # doc ID 44841
         doc_b = Document(project=prj)
 
+        # TODO: add function to edit annotation? (issue #8741)
         # 1st annotation from 1st annotation set Brutto-Bezug belonging to the 2nd annotation set
         new_annotation_1 = deepcopy(doc_a.annotations(use_correct=False)[6])
         # keep the annotation but change the annotation set ID
         assert new_annotation_1.offset_string == ['2020']
         new_annot_dict_1 = new_annotation_1.__dict__
-        new_annot_dict_1['annotation_set'] = 79165 + 10
+        new_annot_dict_1['annotation_set'].id_ = 79165 + 10
         new_annot_dict_1.pop('document')
         new_annotation_1 = Annotation(document=doc_b, **new_annot_dict_1)
 
         doc_b.add_annotation(new_annotation_1)
 
+        # TODO: add function to edit annotation? (issue #8741)
         # 3rd annotation from 1st annotation set Brutto-Bezug belonging to the 3rd annotation set
         new_annotation_2 = deepcopy(doc_a.annotations(use_correct=False)[8])
         # keep the annotation but change the annotation set ID
         assert new_annotation_2.offset_string == ['2.285,50']
         new_annot_dict_2 = new_annotation_2.__dict__
-        new_annot_dict_2['annotation_set'] = 79166 + 10
+        new_annot_dict_2['annotation_set'].id_ = 79166 + 10
         new_annot_dict_2.pop('document')
         new_annotation_2 = Annotation(document=doc_b, **new_annot_dict_2)
 
@@ -562,7 +549,7 @@ class TestEvaluation(unittest.TestCase):
         ):
             new_annotation = deepcopy(annotation)
             new_annot_dict = new_annotation.__dict__
-            new_annot_dict['annotation_set'] = new_annot_dict['annotation_set'] + 10
+            new_annot_dict['annotation_set'].id_ = new_annot_dict['annotation_set'].id_ + 10
             new_annot_dict.pop('document')
             new_annotation = Annotation(document=doc_b, **new_annot_dict)
             doc_b.add_annotation(new_annotation)
