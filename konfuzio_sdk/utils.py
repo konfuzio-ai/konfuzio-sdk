@@ -260,7 +260,7 @@ def amend_file_name(file_path: str, append_text: str = '', new_extension: str = 
         path, extension = os.path.splitext(file_path)
 
         if ":" in path:
-            logger.error(f'The file name must not contain a ":" see >>{path}<<')
+            logger.warning(f'The file name must not contain a ":" see >>{path}<<, we replace it by a "-".')
             path = path.replace(":", "-")
 
         if new_extension == '':

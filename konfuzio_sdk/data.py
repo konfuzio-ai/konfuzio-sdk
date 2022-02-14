@@ -752,7 +752,7 @@ class Annotation(Data):
 
     | ID | Revisor       | is_revised  | correct       | User      | Label   | Action  |
     |:---|:--------------|:------------|:------------- |:----------|:--------|:--------|
-    | 1  | Human         | DELTED      | DELTED        | DELTED    | Amount  | ALLOWED | delete revised=F, correct=T
+    | 1  | Human         | DELETED     | DELETED       | DELETED   | Amount  | ALLOWED | delete revised=F, correct=T
     | 2  | Human         | True        | False         | None      | Amount  | ALLOWED | Update three fields
     | 3  | Human         | True        | False         | Bot       | Amount  | ALLOWED | Does update is_revised field
     | 4  | Human         | ?           | ?             | ?         | Amount  | ALLOWED |

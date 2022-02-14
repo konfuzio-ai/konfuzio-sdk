@@ -301,7 +301,7 @@ def normalize_to_percentage(offset_string: str) -> Optional[float]:
 
 
 def normalize_to_date(offset_string: str) -> Optional[str]:
-    """Given an annotation this function tries to translate the offset-string to a date in the format 'XX.XX.XXXX'."""
+    """Given an annotation this function tries to translate the offset-string to a date in the format 'DD.MM.YYYY'."""
     translation = None
     offset_string = (
         offset_string.replace(' ', '')

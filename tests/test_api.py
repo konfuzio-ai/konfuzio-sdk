@@ -21,6 +21,7 @@ from konfuzio_sdk.api import (
     get_project_details,
     upload_ai_model,
 )
+from konfuzio_sdk.utils import is_file
 
 FOLDER_ROOT = os.path.dirname(os.path.realpath(__file__))
 
@@ -322,4 +323,6 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_upload_ai_model(self):
         """Test to upload an AI model."""
-        upload_ai_model(ai_model_path=os.path.join('lohnabrechnung.pkl'), category_ids=[63])
+        path = os.path.join(os.getcwd(), 'lohnabrechnung.pkl')
+        if is_file(file_path=path, raise_exception=False):
+            upload_ai_model(ai_model_path=path, category_ids=[63])
