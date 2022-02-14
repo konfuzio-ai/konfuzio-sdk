@@ -19,9 +19,9 @@ from konfuzio_sdk.utils import (
 
 TEST_STRING = "sample string"
 FOLDER_ROOT = os.path.dirname(os.path.realpath(__file__))
-TEST_PDF_FILE = os.path.join(FOLDER_ROOT, 'test_data/pdf/1_test.pdf')
-TEST_IMAGE_FILE = os.path.join(FOLDER_ROOT, 'test_data/images/Konfuzio logo square.png')
-TEST_ZIP_FILE = os.path.join(FOLDER_ROOT, 'test_data/file-sample.docx')
+TEST_PDF_FILE = os.path.join(FOLDER_ROOT, 'test_data', 'pdf.pdf')
+TEST_IMAGE_FILE = os.path.join(FOLDER_ROOT, 'test_data', 'png.png')
+TEST_ZIP_FILE = os.path.join(FOLDER_ROOT, 'test_data', 'docx.docx')
 
 
 @pytest.mark.local
@@ -202,6 +202,7 @@ file_name_append_data = [
     ('only_some_pages_have_embeddings.tiff', 'only_some_pages_have_embeddings_ocr.tiff', does_not_raise()),
     # two sots in a file name
     ('only_some_pages._have_embeddings.tiff', 'only_some_pages._have_embeddings_ocr.tiff', does_not_raise()),
+    ('2022-02-13 19:23:06.168728.tiff', '2022-02-13 19-23-06.168728_ocr.tiff', does_not_raise()),
     # empty file path
     (' ', False, pytest.raises(ValueError)),
     # Current file name is already too long, 255 chr
@@ -230,3 +231,8 @@ def test_append_text_to_filename(file_path, expected_result, expected_error):
     """Test if we detect the correct file name."""
     with expected_error:
         assert amend_file_name(file_path, 'ocr') == expected_result
+
+
+def test_corrupted_name():
+    """Test to convert an invalide file name to a valid file name."""
+    assert amend_file_name('2022-02-13 19:23:06.168728.tiff') == '2022-02-13 19-23-06.168728.tiff'

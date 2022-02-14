@@ -62,7 +62,7 @@ def is_file(file_path, raise_exception=True, maximum_size=100000000, allow_empty
             return True
         else:
             if raise_exception:
-                raise FileExistsError(f'Please check your file with size {file_size} at {file_path}.')
+                raise FileExistsError(f'Please check your file {file_path} with size {file_size} at {file_path}.')
             else:
                 return False
     else:
@@ -258,6 +258,10 @@ def amend_file_name(file_path: str, append_text: str = '', new_extension: str = 
         raise OSError('The name of the file you want to generate is too long.')
     if file_path.strip():
         path, extension = os.path.splitext(file_path)
+
+        if ":" in path:
+            logger.error(f'The file name must not contain a ":" see >>{path}<<')
+            path = path.replace(":", "-")
 
         if new_extension == '':
             extension = ''
