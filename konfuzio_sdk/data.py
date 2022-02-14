@@ -17,19 +17,16 @@ import pandas
 
 from konfuzio_sdk import KONFUZIO_HOST
 from konfuzio_sdk.api import (
-    get_document_details,
-    konfuzio_session,
+    _konfuzio_session,
     download_file_konfuzio_api,
     get_meta_of_files,
-    get_project_labels,
+    get_project_details,
     post_document_annotation,
-    get_project_label_sets,
-    retry_get,
     delete_document_annotation,
     upload_file_konfuzio_api,
     create_label,
     update_file_konfuzio_api,
-    get_document_annotations,
+    get_document_details,
 )
 from konfuzio_sdk.utils import get_bbox
 from konfuzio_sdk.evaluate import compare
@@ -39,23 +36,21 @@ from konfuzio_sdk.utils import is_file, convert_to_bio_scheme, amend_file_name
 
 logger = logging.getLogger(__name__)
 
-# todo refactor id to id_ !
-
 
 class Data(ABC):
     """Collect general functionality to work with data from API."""
 
     id_iter = itertools.count()
-    id = None
-    session = konfuzio_session()
+    id_ = None
+    session = _konfuzio_session()
 
     def __eq__(self, other) -> bool:
         """Compare any point of data with their ID, overwrite if needed."""
-        return hasattr(other, "id") and self.id and other.id and self.id == other.id
+        return self.id_ and other.id_ and self.id_ == other.id_
 
     def __hash__(self):
         """Return hash(self)."""
-        return hash(str(self.id))
+        return hash(str(self.id_))
 
     # todo review function to be defined as @abstractmethod
     def lose_weight(self):
@@ -68,7 +63,7 @@ class Data(ABC):
 class AnnotationSet(Data):
     """Represent an Annotation Set - group of annotations."""
 
-    def __init__(self, id, document, label_set, **kwargs):
+    def __init__(self, document, label_set, id_: Union[int, None] = None, **kwargs):
         """
         Create an Annotation Set.
 
@@ -78,10 +73,13 @@ class AnnotationSet(Data):
         :param annotations: Annotations of the annotation set
         """
         self.id_local = next(Data.id_iter)
-        self.id = id
+        self.id_ = id_
         self.label_set = label_set
-        self.document = document
-        document.add_annotation_set(self)
+        self.document = document  # we don't add it to the document as it's added via get_annotations
+
+    def __repr__(self):
+        """Return string representation of the Annotation Set."""
+        return f"{self.__class__.__name__}({self.id_}) of {self.label_set} in {self.document}."
 
     def lose_weight(self):
         """Delete data of the instance."""
@@ -114,10 +112,10 @@ class LabelSet(Data):
     def __init__(
         self,
         project,
-        id: int,
-        name: str,
-        name_clean: str,
-        labels: List[int],
+        labels: List[int] = [],
+        id_: int = None,
+        name: str = None,
+        name_clean: str = None,
         is_default=False,
         categories: List["Category"] = [],
         has_multiple_annotation_sets=False,
@@ -127,7 +125,7 @@ class LabelSet(Data):
         Create a named Label Set.
 
         :param project: Project where the Label Set belongs
-        :param id: ID of the Label Set
+        :param id_: ID of the Label Set
         :param name: Name of Label Set
         :param name_clean: Normalized name of the Label Set
         :param labels: Labels that belong to the Label Set (IDs)
@@ -136,7 +134,7 @@ class LabelSet(Data):
         :param has_multiple_annotation_sets: Bool to allow the Label Set to have different annotation sets in a document
         """
         self.id_local = next(Data.id_iter)
-        self.id = id
+        self.id_ = id_
         self.name = name
         self.name_clean = name_clean
         self.is_default = is_default
@@ -152,13 +150,11 @@ class LabelSet(Data):
             self.has_multiple_annotation_sets = kwargs["has_multiple_sections"]
 
         self.project: Project = project
-
         self.labels: List[Label] = []
-        project.add_label_set(self)
 
         for label in labels:
             if isinstance(label, int):
-                label = self.project.get_label_by_id(id=label)
+                label = self.project.get_label_by_id(id_=label)
             self.add_label(label)
         self.has_multiple_sections = self.has_multiple_annotation_sets
         self.default_templates = self.categories
@@ -185,7 +181,7 @@ class LabelSet(Data):
             return evaluation_df
         if not self.has_multiple_sections:
             return evaluation_df
-        item_annotations = [x for x in test_doc.annotations() if x.section_label.id == self.id]
+        item_annotations = [x for x in test_doc.annotations() if x.section_label.id_ == self.id_]
         item_section_ids = set(x.section for x in item_annotations)
 
         if self.name in res.keys() and len(item_section_ids) == len(res[self.name]):
@@ -201,7 +197,7 @@ class LabelSet(Data):
             {
                 'evaluation': evaluation,
                 'section_label': self.name,
-                'document': test_doc.id,
+                'document': test_doc.id_,
                 'length': length,
                 'length_predicted': length_predicted,
             },
@@ -214,7 +210,7 @@ class LabelSet(Data):
 
     def __repr__(self):
         """Return string representation of the Label Set."""
-        return f"{self.name} ({self.id})"
+        return f"{self.name} ({self.id_})"
 
     def add_label(self, label):
         """
@@ -224,6 +220,8 @@ class LabelSet(Data):
         """
         if label not in self.labels:
             self.labels.append(label)
+        else:
+            logger.error(f'{self} already has {label}, which cannot be added twice.')
 
 
 class Category(LabelSet):
@@ -257,7 +255,7 @@ class Label(Data):
     def __init__(
         self,
         project,
-        id: Union[int, None] = None,
+        id_: Union[int, None] = None,
         text: str = None,
         get_data_type_display: str = None,
         text_clean: str = None,
@@ -271,7 +269,7 @@ class Label(Data):
         Create a named Label.
 
         :param project: Project where the label belongs
-        :param id: ID of the label
+        :param id_: ID of the label
         :param text: Name of the label
         :param get_data_type_display: Data type of the label
         :param text_clean: Normalized name of the label
@@ -279,7 +277,7 @@ class Label(Data):
         :param label_sets: Label sets that use this label
         """
         self.id_local = next(Data.id_iter)
-        self.id = id
+        self.id_ = id_
         self.name = text
         self.name_clean = text_clean
         self.data_type = get_data_type_display
@@ -290,7 +288,7 @@ class Label(Data):
         self.project: Project = project
 
         project.add_label(self)
-        if label_sets:
+        if label_sets:  # todo why?
             [x.add_label(self) for x in label_sets]
 
         # Regex features
@@ -340,6 +338,8 @@ class Label(Data):
         """
         if label_set not in self.label_sets:
             self.label_sets.append(label_set)
+        else:
+            logger.warning(f'{self} already has label set {label_set}.')
         return self
 
     @property
@@ -350,8 +350,8 @@ class Label(Data):
     @property
     def documents(self) -> List["Document"]:
         """Return all documents which contain annotations of this label."""
-        relevant_id = list(set([anno.document.id for anno in self.annotations]))
-        return [doc for doc in self.project.documents if (doc.id in relevant_id)]
+        relevant_id = list(set([anno.document.id_ for anno in self.annotations]))
+        return [doc for doc in self.project.documents if (doc.id_ in relevant_id)]
 
     def find_tokens(self):
         """Calculate the regex token of a label, which matches all offset_strings of all correct annotations."""
@@ -376,7 +376,7 @@ class Label(Data):
                 valid_offset = span.offset_string.replace('\n', '').replace('\t', '').replace('\f', '').replace(' ', '')
                 if valid_offset and span not in annotation.regex_annotation_generator(tokens):
                     logger.error(
-                        f'Please check Annotation ({KONFUZIO_HOST}/a/{annotation.id})'
+                        f'Please check Annotation ({KONFUZIO_HOST}/a/{annotation.id_})'
                         f' >>{repr(span.offset_string)}<<.'
                     )
         return tokens
@@ -402,8 +402,11 @@ class Label(Data):
     def combined_tokens(self):
         """Create one OR Regex for all relevant Annotations tokens."""
         if not self._combined_tokens:
-            tokens = r'|'.join(sorted(self.tokens(), key=len, reverse=True))
-            self._combined_tokens = f'(?:{tokens})'  # store them for later use
+            if len(self.tokens()) == 0:
+                raise NotImplementedError
+            else:
+                tokens = r'|'.join(sorted(self.tokens(), key=len, reverse=True))
+                self._combined_tokens = f'(?:{tokens})'  # store them for later use
         return self._combined_tokens
 
     def evaluate_regex(self, regex, filtered_group=None, regex_quality=0):
@@ -560,14 +563,14 @@ class Label(Data):
                 label_set.add_label(self)
 
             response = create_label(
-                project_id=self.project.id,
+                project_id=self.project.id_,
                 label_name=self.name,
                 description=self.description,
                 has_multiple_top_candidates=self.has_multiple_top_candidates,
                 data_type=self.data_type,
                 label_sets=self.label_sets,
             )
-            self.id = response
+            self.id_ = response
             new_label_added = True
         except Exception:
             logger.error(f"Not able to save label {self.name}.")
@@ -580,7 +583,9 @@ class Span(Data):
 
     def __init__(self, start_offset: int, end_offset: int, annotation=None):
         """
-        Initialize the Span.
+        Initialize the Span without bbox, to save storage.
+
+        If Bbox should be calculated the bbox file of the document will be automatically downloaded.
 
         :param start_offset: Start of the offset string (int)
         :param end_offset: Ending of the offset string (int)
@@ -592,7 +597,6 @@ class Span(Data):
         self.annotation = annotation
         self.start_offset = start_offset
         self.end_offset = end_offset
-        self.bbox()
 
     def __eq__(self, other) -> bool:
         """Compare any point of data with their position is equal."""
@@ -639,7 +643,7 @@ class Span(Data):
         if self.start_offset == 0 and self.end_offset == 0:
             eval = {
                 "id_local": None,
-                "id": None,
+                "id_": None,
                 "confidence": None,
                 "start_offset": 0,  # to support compare function to evaluate True and False
                 "end_offset": 0,  # to support compare function to evaluate True and False
@@ -653,16 +657,16 @@ class Span(Data):
         else:
             eval = {
                 "id_local": self.annotation.id_local,
-                "id": self.annotation.id,
+                "id_": self.annotation.id_,
                 "confidence": self.annotation.confidence,
                 "start_offset": self.start_offset,  # to support multiline
                 "end_offset": self.end_offset,  # to support multiline
                 "is_correct": self.annotation.is_correct,
                 "revised": self.annotation.revised,
                 "label_threshold": self.annotation.label.threshold,  # todo: allow to optimize threshold
-                "label_id": self.annotation.label.id,
-                "label_set_id": self.annotation.label_set.id,
-                "annotation_set_id": self.annotation.annotation_set.id,
+                "label_id": self.annotation.label.id_,
+                "label_set_id": self.annotation.label_set.id_,
+                "annotation_set_id": self.annotation.annotation_set.id_,
             }
         return eval
 
@@ -783,7 +787,7 @@ class Annotation(Data):
         is_correct: bool = False,
         revised: bool = False,
         normalized=None,
-        id: int = None,
+        id_: int = None,
         accuracy: float = None,
         translated_string=None,
         *initial_data,
@@ -795,7 +799,7 @@ class Annotation(Data):
         :param label: ID of the Annotation
         :param is_correct: If the annotation is correct or not (bool)
         :param revised: If the annotation is revised or not (bool)
-        :param id: ID of the annotation (int)
+        :param id_: ID of the annotation (int)
         :param accuracy: Accuracy of the annotation (float) which is the confidence
         :param document: Document to annotate
         :param annotation: Annotation set of the document where the label belongs
@@ -808,14 +812,13 @@ class Annotation(Data):
         self.revised = revised
         self.normalized = normalized
         self.translated_string = translated_string
-        self.document = document
-        document.add_annotation(self)
+        self.document = document  # we don't add it to the document, as it's added via document.add_annotation(self)
         self._spans: List[Span] = []
-        self.id = id  # Annotations can have None id, if they are not saved online and are only available locally
+        self.id_ = id_  # Annotations can have None id_, if they are not saved online and are only available locally
 
         if accuracy:  # its a confidence
             self.confidence = accuracy
-        elif self.id is not None and accuracy is None:  # todo hotfix: it's an online annotation crated by a human
+        elif self.id_ is not None and accuracy is None:  # todo hotfix: it's an online annotation crated by a human
             self.confidence = 1
         else:
             self.confidence = None
@@ -846,7 +849,8 @@ class Annotation(Data):
         if isinstance(annotation_set, AnnotationSet):
             self.annotation_set = annotation_set
         elif annotation_set is None and annotation_set_id is None:
-            raise AttributeError(f'{self.__class__.__name__} {self.id_local} has no Annotation Set.')
+            logger.warning(f'{self} created but without annotation set information.')
+            # raise AttributeError(f'{self.__class__.__name__} {self.id_local} has no Annotation Set.')
 
         self.selection_bbox = kwargs.get("selection_bbox", None)
         self.page_number = kwargs.get("page_number", None)
@@ -868,7 +872,8 @@ class Annotation(Data):
 
             logger.warning(f'{self} is empty')
         else:
-            raise NotImplementedError
+            logger.warning(f'{self} created but without bbox information.')
+            # raise NotImplementedError
             # todo is it ok to have no bbox ? raise NotImplementedError
 
         # TODO START LEGACY -
@@ -902,15 +907,15 @@ class Annotation(Data):
         """Return string representation."""
         if self.label and self.document:
             span_str = ', '.join(f'{x.start_offset, x.end_offset}' for x in self._spans)
-            return f"{self.label.name} {span_str}: {self.offset_string}"
-        elif self.label and self.offset_string:
-            return f"{self.label.name} ({self.start_offset}, {self.end_offset})"
+            return f"{self.label.name} {span_str}"
+        elif self.label:
+            return f"{self.label.name} ({self._spans})"
         else:
             logger.error(f"{self.__class__.__name__} without Label ({self.start_offset}, {self.end_offset})")
 
     def __lt__(self, other):
         """If we sort Annotations we do so by start offset."""
-        # todo check for overlapping
+        logger.warning('Legacy: Annotations can not be sorted consistently by start offset.')
         return self.start_offset < other.start_offset
 
     @property
@@ -941,21 +946,24 @@ class Annotation(Data):
     @property
     def start_offset(self) -> int:
         """Legacy: One Annotations can have multiple start offsets."""
+        logger.warning('You use start_offset on Annotation Level which is legacy.')
         return min([sa.start_offset for sa in self._spans], default=None)
 
     @property
     def end_offset(self) -> int:
         """Legacy: One Annotations can have multiple end offsets."""
+        logger.warning('You use end_offset on Annotation Level which is legacy.')
         return max([sa.end_offset for sa in self._spans], default=None)
 
     @property
     def is_online(self) -> Optional[int]:
         """Define if the Annotation is saved to the server."""
-        return self.id is not None
+        return self.id_ is not None
 
     @property
     def offset_string(self) -> List[str]:
         """View the string representation of the Annotation."""
+        logger.warning('You use offset_string on Annotation Level which is legacy.')
         if self.document.text:
             result = [self.document.text[span.start_offset : span.end_offset] for span in self._spans]
         else:
@@ -973,27 +981,17 @@ class Annotation(Data):
                 result.append(sa.eval_dict())
         return result
 
-    def add_span(self, span: Span, check_duplicate=True):
-        """Add an span to a document.
-
-        If check_duplicate is True, we only add an span after checking it doesn't exist in the
-        document already. If check_duplicate is False, we add an span without checking, but it is
-        considerably faster when the number of span in the document is large.
-
-        :param span: Annotation to add in the document
-        :param check_duplicate: If to check if the annotation already exists in the document
-        :return: Input annotation.
-        """
-        if check_duplicate:
-            if span not in self._spans:
-                self._spans.append(span)
-        else:
+    def add_span(self, span: Span):
+        """Add an Span to an Annotation."""
+        if span not in self._spans:
             self._spans.append(span)
-        return span
+        else:
+            logger.error(f'In {self} the Span {span} is a duplicate and will not be added.')
+        return self
 
     def get_link(self):
         """Get link to the annotation in the SmartView."""
-        return KONFUZIO_HOST + "/a/" + str(self.id)
+        return KONFUZIO_HOST + "/a/" + str(self.id_)
 
     def save(self, document_annotations: list = None) -> bool:
         """
@@ -1002,7 +1000,7 @@ class Annotation(Data):
         If there is already an annotation in the same place as the current one, we will not be able to save the current
         annotation.
 
-        In that case, we get the id of the original one to be able to track it.
+        In that case, we get the id_ of the original one to be able to track it.
         The verification of the duplicates is done by checking if the offsets and label match with any annotations
         online.
         To be sure that we are comparing with the information online, we need to have the document updated.
@@ -1016,13 +1014,13 @@ class Annotation(Data):
         if not self.label_set:
             label_set_id = None
         else:
-            label_set_id = self.label_set.id
+            label_set_id = self.label_set.id_
         if not self.is_online:
             response = post_document_annotation(
-                document_id=self.document.id,
+                document_id=self.document.id_,
                 start_offset=self.start_offset,
                 end_offset=self.end_offset,
-                label_id=self.label.id,
+                label_id=self.label.id_,
                 label_set_id=label_set_id,
                 accuracy=self.confidence,
                 is_correct=self.is_correct,
@@ -1034,7 +1032,7 @@ class Annotation(Data):
             )
             if response.status_code == 201:
                 json_response = json.loads(response.text)
-                self.id = json_response["id"]
+                self.id_ = json_response["id"]
                 new_annotation_added = True
             elif response.status_code == 403:
                 logger.error(response.text)
@@ -1044,7 +1042,7 @@ class Annotation(Data):
                             # get the annotation
                             self.document.update()
                             document_annotations = self.document.annotations()
-                        # get the id of the existing annotation
+                        # get the id_ of the existing annotation
                         is_duplicated = False
                         for annotation in document_annotations:
                             if (
@@ -1052,8 +1050,8 @@ class Annotation(Data):
                                 and annotation.end_offset == self.end_offset
                                 and annotation.label == self.label
                             ):
-                                logger.error(f"ID of annotation online: {annotation.id}")
-                                self.id = annotation.id
+                                logger.error(f"ID of annotation online: {annotation.id_}")
+                                self.id_ = annotation.id_
                                 is_duplicated = True
                                 break
 
@@ -1082,17 +1080,18 @@ class Annotation(Data):
             for offset in list(set((x['start_offset'], x['end_offset']) for x in dict_spans)):
                 span = Span(start_offset=offset[0], end_offset=offset[1])
                 spans.append(span)
-        return sorted(spans, key=lambda x: x.start_offset)
+        spans.sort()
+        return spans
 
     def toJSON(self):
         """Convert Annotation to dict."""
         res_dict = {
             'start_offset': self.start_offset,
             'end_offset': self.end_offset,
-            'label': self.label.id,
+            'label': self.label.id_,
             'revised': self.revised,
             'annotation_set': self.annotation_set,
-            'label_set_id': self.label_set.id,
+            'label_set_id': self.label_set.id_,
             'accuracy': self.confidence,
             'is_correct': self.is_correct,
         }
@@ -1100,15 +1099,15 @@ class Annotation(Data):
         res = {k: v for k, v in res_dict.items() if v is not None}
         return res
 
-    @property
-    def page_index(self) -> int:
-        """Calculate the index of the page on which the Annotation starts, first page has index 0."""
-        return self.document.text[0 : self.start_offset].count('\f')
-
-    @property
-    def line_index(self) -> int:
-        """Calculate the index of the page on which the Annotation starts, first page has index 0."""
-        return self.document.text[0 : self.start_offset].count('\n')
+    # @property
+    # def page_index(self) -> int:
+    #     """Calculate the index of the page on which the Annotation starts, first page has index 0."""
+    #     return self.document.text[0: self.start_offset].count('\f')
+    #
+    # @property
+    # def line_index(self) -> int:
+    #     """Calculate the index of the page on which the Annotation starts, first page has index 0."""
+    #     return self.document.text[0: self.start_offset].count('\n')
 
     def token_append(self, evaluation, new_regex):
         """Append token if it is not a duplicate."""
@@ -1131,39 +1130,31 @@ class Annotation(Data):
                 full_replacement = suggest_regex_for_string(span.offset_string, replace_characters=True)
 
                 # the original string, with harmonized whitespaces
-                regex_w = f'(?P<{self.label.name_clean}_W_{self.id}_{span.start_offset}>{harmonized_whitespace})'
+                regex_w = f'(?P<{self.label.name_clean}_W_{self.id_}_{span.start_offset}>{harmonized_whitespace})'
                 evaluation_w = self.label.evaluate_regex(regex_w, regex_quality=0)
                 if evaluation_w['total_correct_findings'] > 1:
                     self.token_append(evaluation=evaluation_w, new_regex=regex_w)
                 # the original string, numbers replaced
                 if harmonized_whitespace != numbers_replaced:
-                    regex_n = f'(?P<{self.label.name_clean}_N_{self.id}_{span.start_offset}>{numbers_replaced})'
+                    regex_n = f'(?P<{self.label.name_clean}_N_{self.id_}_{span.start_offset}>{numbers_replaced})'
                     self.token_append(evaluation=self.label.evaluate_regex(regex_n, regex_quality=1), new_regex=regex_n)
                 # numbers and characters replaced
                 if numbers_replaced != full_replacement:
-                    regex_f = f'(?P<{self.label.name_clean}_F_{self.id}_{span.start_offset}>{full_replacement})'
+                    regex_f = f'(?P<{self.label.name_clean}_F_{self.id_}_{span.start_offset}>{full_replacement})'
                     self.token_append(evaluation=self.label.evaluate_regex(regex_f, regex_quality=2), new_regex=regex_f)
                 if not self._tokens:  # fallback if every proposed token is equal
-                    regex_w = f'(?P<{self.label.name_clean}_W_{self.id}_fallback>{harmonized_whitespace})'
+                    regex_w = f'(?P<{self.label.name_clean}_W_{self.id_}_fallback>{harmonized_whitespace})'
                     self.token_append(evaluation=self.label.evaluate_regex(regex_w, regex_quality=0), new_regex=regex_w)
 
-                    regex_n = f'(?P<{self.label.name_clean}_N_{self.id}_fallback>{numbers_replaced})'
+                    regex_n = f'(?P<{self.label.name_clean}_N_{self.id_}_fallback>{numbers_replaced})'
                     self.token_append(evaluation=self.label.evaluate_regex(regex_n, regex_quality=1), new_regex=regex_n)
-                    regex_f = f'(?P<{self.label.name_clean}_F_{self.id}_fallback>{full_replacement})'
+                    regex_f = f'(?P<{self.label.name_clean}_F_{self.id_}_fallback>{full_replacement})'
                     self.token_append(evaluation=self.label.evaluate_regex(regex_f, regex_quality=2), new_regex=regex_f)
         return self._tokens
 
     def regex(self):
         """Return regex of this annotation."""
-        if not self._regex:
-            if len(self.label.tokens()) == 0:
-                raise NotImplementedError
-                # We have tried to find tokens without success, use the tokens of the Annotation
-                # tokens = r'|'.join(sorted([x['regex'] for x in self.tokens()], key=len, reverse=True))
-            else:
-                # Use the token of the Label
-                self._regex = self.label.combined_tokens
-        return self._regex
+        return self.label.combined_tokens
 
     def delete(self) -> None:
         """Delete Annotation online."""
@@ -1172,9 +1163,9 @@ class Annotation(Data):
                 del self.document._annotations[index]
 
         if self.is_online:
-            response = delete_document_annotation(document_id=self.document.id, annotation_id=self.id)
+            response = delete_document_annotation(document_id=self.document.id_, annotation_id=self.id_)
             if response.status_code == 204:
-                self.id = None
+                self.id_ = None
             else:
                 logger.exception(response.text)
 
@@ -1190,7 +1181,7 @@ class Document(Data):
     def __init__(
         self,
         project,
-        id: Union[int, None] = None,
+        id_: Union[int, None] = None,
         file_path: str = None,
         file_url: str = None,
         status=None,
@@ -1199,13 +1190,14 @@ class Document(Data):
         dataset_status: int = None,
         updated_at: tzinfo = None,
         number_of_pages: int = None,
-        *initial_data,
+        category_template: int = None,
+        *args,
         **kwargs,
     ):
         """
         Check if the document document_folder is available, otherwise create it.
 
-        :param id: ID of the Document
+        :param id_: ID of the Document
         :param project: Project where the document belongs to
         :param file_path: Path to a local file from which generate the Document object
         :param file_url: URL of the document
@@ -1218,37 +1210,37 @@ class Document(Data):
         :param number_of_pages: Number of pages in the document
         """
         self.id_local = next(Data.id_iter)
+        self.id_ = id_
         self.file_path = file_path
-        self.annotation_file_path = None  # path to json containing the Annotations of a Document
-        self.annotation_set_file_path = None  # path to json containing the Annotation Sets of a Document
         self._annotations: List[Annotation] = []
         self._annotation_sets: List[AnnotationSet] = []
         self.file_url = file_url
         self.is_dataset = is_dataset
         self.dataset_status = dataset_status
         self.number_of_pages = number_of_pages
-        if project:
-            self.category = project.get_category_by_id(kwargs.get("category_template", None))
-        self.id = id
+
+        if project and category_template:
+            self.category = project.get_category_by_id(category_template)
+
         if updated_at:
             self.updated_at = dateutil.parser.isoparse(updated_at)
         else:
             self.updated_at = None
 
         self.name = data_file_name
-        self.ocr_file_path = None  # Path to the ocred pdf (sandwich pdf)
-        self.image_paths = []  # Path to the images
         self.status = status  # status of document online
-
         self.project = project
-        project.add_document(self)  # check for duplicates by ID before adding the document to the project
+        # project.add_document(self)  # check for duplicates by ID before adding the document to the project
 
-        self.text = kwargs.get("text")
-        self.hocr = kwargs.get("hocr")
-        self._bbox = None
+        # use hidden variables to store low volume information in instance
+        self._text = None
+        self._hocr = None
+        self._pages = None
 
         # prepare local setup for document
         pathlib.Path(self.document_folder).mkdir(parents=True, exist_ok=True)
+        self.image_paths = []  # Path to the images  # todo implement pages
+        self.ocr_file_path = None  # Path to the ocred pdf (sandwich pdf)
         self.annotation_file_path = os.path.join(self.document_folder, "annotations.json5")
         self.annotation_set_file_path = os.path.join(self.document_folder, "annotation_sets.json5")
         self.txt_file_path = os.path.join(self.document_folder, "document.txt")
@@ -1259,7 +1251,7 @@ class Document(Data):
 
     def __repr__(self):
         """Return the name of the document incl. the ID."""
-        return f"{self.name}: {self.id}"
+        return f"{self.name}: {self.id_}"
 
     def add_extractions_as_annotations(self, label: Label, extractions, label_set: LabelSet, annotation_set: int):
         """Add the extraction of a model on the document."""
@@ -1295,7 +1287,7 @@ class Document(Data):
             if not isinstance(information, list):
                 label = self.project.get_label_by_name(label_or_label_set_name)
                 virtual_doc.add_extractions_as_annotations(
-                    label=label, extractions=information, label_set=self.category, annotation_set=self.category.id
+                    label=label, extractions=information, label_set=self.category, annotation_set=self.category.id_
                 )
             else:  # process multi annotation sets where multiline is True
                 label_set = self.project.get_label_set_by_name(label_or_label_set_name)
@@ -1326,19 +1318,19 @@ class Document(Data):
     @property
     def is_online(self) -> Optional[int]:
         """Define if the Document is saved to the server."""
-        return self.id is not None
+        return self.id_ is not None
 
-    def spans(self, start_offset: int, end_offset: int) -> List[Span]:
-        """
-        Translate an offset into where offsets between the Spans of Annotations are filled with no Label Annotations.
-
-        todo: If a regex can be used as a combination of Span regex Tokens.
-
-        :param start_offset: Start of the offset to analyze in the document.
-        :param end_offset: End of the offset to analyze in the document.
-        :return: Returns a sorted lists of Spans.
-        """
-        raise NotImplementedError
+    # def spans(self, start_offset: int, end_offset: int) -> List[Span]:
+    #     """
+    #     Translate an offset into where offsets between the Spans of Annotations are filled with no Label Annotations.
+    #
+    #     todo: If a regex can be used as a combination of Span regex Tokens.
+    #
+    #     :param start_offset: Start of the offset to analyze in the document.
+    #     :param end_offset: End of the offset to analyze in the document.
+    #     :return: Returns a sorted lists of Spans.
+    #     """
+    #     raise NotImplementedError
 
     def annotations(
         self, label: Label = None, use_correct: bool = True, start_offset: int = None, end_offset: int = None
@@ -1351,91 +1343,84 @@ class Document(Data):
         :return: Annotations in the document.
         """
         annotations = []
-        artificial_annotations = []
-        self._annotations.sort()  # use .sort() not sorted([list]): sort the instances not copy them
+        add = False
         for annotation in self._annotations:
-            if annotation.start_offset is None or annotation.end_offset is None:
-                raise NotImplementedError
-            # filter by correct information
-            if (use_correct and annotation.is_correct) or not use_correct:
-                # todo: add option to filter for overruled Annotations where mult.=F
-                # todo: add option to filter for overlapping Annotations, `add_annotation` just checks for identical
-                # filter by start and end offset, include annotations that extend into the offset
-                if start_offset and end_offset:  # if the start and end offset are specified
-                    latest_start = max(annotation.start_offset, start_offset)
-                    earliest_end = min(annotation.end_offset, end_offset)
-                    is_overlapping = latest_start - earliest_end <= 0
-                else:
-                    is_overlapping = True
+            for span in annotation.spans:
+                if span.start_offset is None or span.end_offset is None:
+                    raise NotImplementedError
+                # filter by correct information
+                if (use_correct and annotation.is_correct) or not use_correct:
+                    # todo: add option to filter for overruled Annotations where mult.=F
+                    # todo: add option to filter for overlapping Annotations, `add_annotation` just checks for identical
+                    # filter by start and end offset, include annotations that extend into the offset
+                    if start_offset and end_offset:  # if the start and end offset are specified
+                        latest_start = max(span.start_offset, start_offset)
+                        earliest_end = min(span.end_offset, end_offset)
+                        is_overlapping = latest_start - earliest_end <= 0
+                    else:
+                        is_overlapping = True
 
-                # filter by label
-                if label is not None:
-                    if annotation.label == label and is_overlapping:
-                        annotations.append(annotation)
-                elif is_overlapping:
-                    annotations.append(annotation)
+                    if label is not None:  # filter by label
+                        if label == annotation.label and is_overlapping:
+                            add = True
+                    elif is_overlapping:
+                        add = True
+            # as multiline Annotations will be added twice
+            if add:
+                annotations.append(annotation)
+                add = False
 
-            # if (use_correct and annotation.is_correct) or not use_correct:
-            #     # filter by label
-            #     if label is not None and annotation.label == label:
-            #         annotations.append(annotation)
-            #
-            #     elif label is None:
-            #         annotations.append(annotation)
+        return annotations
+        # if (use_correct and annotation.is_correct) or not use_correct:
+        #     # filter by label
+        #     if label is not None and annotation.label == label:
+        #         annotations.append(annotation)
+        #
+        #     elif label is None:
+        #         annotations.append(annotation)
 
-            # if fill:
-            #    raise NotImplementedError
-            #     start_offset = 0
-            #     end_offset = len(self.text)
-            #     if not annotations:
-            #         artificial_anno = Annotation(
-            #             start_offset=start_offset, end_offset=end_offset, document=self, label=None, is_correct=False
-            #         )
-            #         artificial_annotations.append(artificial_anno)
-            #
-            #     else:
-            #         for annotation in annotations:
-            #             # create artificial annotations for offsets before the correct annotations spans
-            #             for annotation_span in annotation._spans:
-            #                 if annotation_span.start_offset > start_offset:
-            #                     artificial_anno = Annotation(
-            #                         start_offset=start_offset,
-            #                         end_offset=annotation_span.start_offset,
-            #                         document=self,
-            #                         label=None,
-            #                         is_correct=False,
-            #                     )
-            #                     artificial_annotations.append(artificial_anno)
-            #
-            #                 start_offset = annotation_span.end_offset
-            #
-            #         if max(span.end_offset for span in annotation._spans) < end_offset:
-            #             # create annotation for offsets between last correct annotation and end offset
-            #             artificial_anno = Annotation(
-            #                 start_offset=max(span.end_offset for span in annotation._spans),
-            #                 end_offset=end_offset,
-            #                 document=self,
-            #                 label=None,
-            #                 is_correct=False,
-            #             )
-            #
-            #             artificial_annotations.append(artificial_anno)
-
-        return annotations + artificial_annotations
-
-    @property
-    def is_without_errors(self) -> bool:
-        """Check if the document can be used for training clf."""
-        if self.status is None:
-            # Assumption: any Document without status, might be ok
-            return True
-        else:
-            return self.status[0] == 2
+        # if fill:
+        #    raise NotImplementedError
+        #     start_offset = 0
+        #     end_offset = len(self.text)
+        #     if not annotations:
+        #         artificial_anno = Annotation(
+        #             start_offset=start_offset, end_offset=end_offset, document=self, label=None, is_correct=False
+        #         )
+        #         artificial_annotations.append(artificial_anno)
+        #
+        #     else:
+        #         for annotation in annotations:
+        #             # create artificial annotations for offsets before the correct annotations spans
+        #             for annotation_span in annotation._spans:
+        #                 if annotation_span.start_offset > start_offset:
+        #                     artificial_anno = Annotation(
+        #                         start_offset=start_offset,
+        #                         end_offset=annotation_span.start_offset,
+        #                         document=self,
+        #                         label=None,
+        #                         is_correct=False,
+        #                     )
+        #                     artificial_annotations.append(artificial_anno)
+        #
+        #                 start_offset = annotation_span.end_offset
+        #
+        #         if max(span.end_offset for span in annotation._spans) < end_offset:
+        #             # create annotation for offsets between last correct annotation and end offset
+        #             artificial_anno = Annotation(
+        #                 start_offset=max(span.end_offset for span in annotation._spans),
+        #                 end_offset=end_offset,
+        #                 document=self,
+        #                 label=None,
+        #                 is_correct=False,
+        #             )
+        #
+        #             artificial_annotations.append(artificial_anno)
 
     @property
     def document_folder(self):
         """Get the path to the folder where all the document information is cached locally."""
-        return os.path.join(self.project.project_folder, "pdf", str(self.id))
+        return os.path.join(self.project.documents_folder, str(self.id_))
 
     def get_file(self, ocr_version: bool = True, update: bool = False):
         """
@@ -1445,15 +1430,15 @@ class Document(Data):
         :param update: Update the downloaded file even if it is already available
         :return: Path to the selected file.
         """
-        filename = self.name.replace(":", "-")
         if ocr_version:
-            filename = amend_file_name(filename, append_text="ocr", new_extension=".pdf")
+            filename = amend_file_name(self.name, append_text="ocr", new_extension=".pdf")
             self.ocr_file_path = os.path.join(self.document_folder, filename)
 
-        file_path = os.path.join(self.document_folder, filename)
-        if self.is_without_errors and (not file_path or not is_file(file_path, raise_exception=False) or update):
+        valid_file_name = amend_file_name(self.name)  # make sure the name online is a valid file name, e.g. rmv ":"
+        file_path = os.path.join(self.document_folder, valid_file_name)
+        if self.status[0] == 2 and (not file_path or not is_file(file_path, raise_exception=False) or update):
             if not is_file(file_path, raise_exception=False) or update:
-                pdf_content = download_file_konfuzio_api(self.id, ocr=ocr_version, session=self.session)
+                pdf_content = download_file_konfuzio_api(self.id_, ocr=ocr_version, session=self.session)
                 with open(file_path, "wb") as f:
                     f.write(pdf_content)
 
@@ -1477,128 +1462,68 @@ class Document(Data):
 
                 if not is_file(page_path, raise_exception=False) or update:
                     url = f'{KONFUZIO_HOST}{page["image"]}'
-                    res = retry_get(self.session, url)
+                    res = self.session.get(url)
                     with open(page_path, "wb") as f:
                         f.write(res.content)
 
-    def get_document_details(self, update):
+    def download_document_details(self):
         """
-        Get data from a document.
+        Retrieve data from a document online in case documented has finished processing.
 
         :param update: Update the downloaded information even it is already available
         """
-        if update or not (
-            is_file(self.annotation_file_path, raise_exception=False)
-            and is_file(self.annotation_set_file_path, raise_exception=False)
-            and is_file(self.txt_file_path, raise_exception=False)
-            and is_file(self.pages_file_path, raise_exception=False)
-        ):
-            data = get_document_details(
-                document_id=self.id, project_id=self.project.id, session=self.session, extra_fields="hocr"
-            )
-
-            raw_annotations = data["annotations"]
-            raw_annotation_sets = data["sections"]
-            self.number_of_pages = data["number_of_pages"]
-
-            self.text = data["text"]
-            self.hocr = data["hocr"] or None
-            self.pages = data["pages"]
+        if self.status[0] == 2:
+            data = get_document_details(document_id=self.id_, project_id=self.project.id_, session=self.session)
 
             # write a file, even there are no annotations to support offline work
             with open(self.annotation_file_path, "w") as f:
-                json.dump(raw_annotations, f, indent=2, sort_keys=True)
+                json.dump(data["annotations"], f, indent=2, sort_keys=True)
 
             with open(self.annotation_set_file_path, "w") as f:
-                json.dump(raw_annotation_sets, f, indent=2, sort_keys=True)
+                json.dump(data["sections"], f, indent=2, sort_keys=True)
 
             with open(self.txt_file_path, "w", encoding="utf-8") as f:
                 f.write(data["text"])
 
             with open(self.pages_file_path, "w") as f:
                 json.dump(data["pages"], f, indent=2, sort_keys=True)
-
-            if self.hocr is not None:
-                with open(self.hocr_file_path, "w", encoding="utf-8") as f:
-                    f.write(data["hocr"])
-
         else:
-            with open(self.txt_file_path, "r", encoding="utf-8") as f:
-                self.text = f.read()
-
-            with open(self.annotation_file_path, "rb") as f:
-                raw_annotations = json.loads(f.read())
-
-            with open(self.annotation_set_file_path, "rb") as f:
-                raw_annotation_sets = json.loads(f.read())
-
-            with open(self.pages_file_path, "rb") as f:
-                self.pages = json.loads(f.read())
-
-            if is_file(self.hocr_file_path, raise_exception=False):
-                # hocr might not be available (depends on the project settings)
-                with open(self.hocr_file_path, "r", encoding="utf-8") as f:
-                    self.hocr = f.read()
-
-        # first load all Annotation Sets before we create Annotations
-        for raw_annotation_set in raw_annotation_sets:
-            annotation_set = AnnotationSet(
-                id=raw_annotation_set["id"], document=self, label_set=raw_annotation_set["section_label"]
-            )  # todo rename
-            # todo add parent to define default annotation set
-            self.add_annotation_set(annotation_set)
-
-        for raw_annotation in raw_annotations:
-            if raw_annotation["custom_offset_string"]:
-                logger.warning(
-                    f'Annotation {raw_annotation["id"]} is a custom string and, therefore, it will not be added'
-                    f' to the document annotations {KONFUZIO_HOST}/a/{raw_annotation["id"]}.'
-                )
-            else:
-                raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
-                raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
-                _ = Annotation(document=self, **raw_annotation)
+            logger.error(f'{self} is not available for download.')
 
         return self
 
-    def add_annotation(self, annotation: Annotation, check_duplicate=True):
+    def add_annotation(self, annotation: Annotation):
         """Add an annotation to a document.
-
-        If check_duplicate is True, we only add an annotation after checking it doesn't exist in the document already.
-        If check_duplicate is False, we add an annotation without checking, but it is considerably faster when the
-        number of annotations in the document is large.
 
         :param annotation: Annotation to add in the document
         :param check_duplicate: If to check if the annotation already exists in the document
         :return: Input annotation.
         """
-        if check_duplicate:
-            if annotation not in self._annotations:
-                self._annotations.append(annotation)
-        else:
+        if annotation not in self._annotations:
             self._annotations.append(annotation)
-        return annotation
-
-    def add_annotation_set(self, annotation_set: AnnotationSet, check_duplicate=True):
-        """Add the annotation sets to the document."""
-        if check_duplicate:
-            if annotation_set not in self._annotation_sets:
-                # todo: skip annotation sets that don't belong to the category: not possilbe via current API
-                # if annotation_set.label_set.category == self.category:
-                self._annotation_sets.append(annotation_set)
         else:
-            self._annotation_sets.append(annotation_set)
-        return annotation_set
+            logger.error(f'In {self} the annotation {annotation} is a duplicate and will not be added.')
+        return self
 
-    def get_annotation_set_by_id(self, id: int) -> AnnotationSet:
+    def add_annotation_set(self, annotation_set: AnnotationSet):
+        """Add the annotation sets to the document."""
+        if annotation_set not in self._annotation_sets:
+            # todo: skip annotation sets that don't belong to the category: not possible via current API
+            # if annotation_set.label_set.category == self.category:
+            self._annotation_sets.append(annotation_set)
+        else:
+            logger.error(f'In {self} the annotation {annotation_set} is a duplicate and will not be added.')
+        return self
+
+    def get_annotation_set_by_id(self, id_: int) -> AnnotationSet:
         """
         Return a Label Set by ID.
 
-        :param id: ID of the Label Set to get.
+        :param id_: ID of the Label Set to get.
         """
         result = None
         for annotation_set in self._annotation_sets:
-            if annotation_set.id == id:
+            if annotation_set.id_ == id_:
                 result = annotation_set
         if result:
             return result
@@ -1639,35 +1564,75 @@ class Document(Data):
 
         return bio_annotations
 
-    def get_bbox(self, update=False):
+    def get_bbox(self):
         """
-        Get bbox information per character of file.
+        Get bbox information per character of file. We don't store bbox as an attribute to save memory.
 
-        There are two ways to access it:
-        - If the bbox attribute is set when creating the Document, it is returned immediately.
-        - Otherwise, we open the file at bbox_file_path and return its content.
-
-        In the second case, we do not store bbox as an attribute on Document because with many big
-        documents this quickly fills the available memory. So it is first written to a file by
-        get_document_details and then retrieved from that file when accessing it.
-
-        :param update: Update the bbox information even if it's are already available
         :return: Bounding box information per character in the document.
         """
-        if self._bbox and not update:
-            pass
-        elif is_file(self.bbox_file_path, raise_exception=False) and not update:
+        if is_file(self.bbox_file_path, raise_exception=False):
             with open(self.bbox_file_path, "r", encoding="utf-8") as f:
-                self._bbox = json.loads(f.read())
+                bbox = json.loads(f.read())
         else:
-            # todo: reduce number of api calls to get_document_details
-            self._bbox = get_document_details(
-                document_id=self.id, project_id=self.project.id, session=self.session, extra_fields="bbox"
-            )['bbox']
-            with open(self.bbox_file_path, "w", encoding="utf-8") as f:
-                json.dump(self._bbox, f, indent=2, sort_keys=True)
+            logger.warning(f'Start downloading bbox files of all characters {self}.')
+            if self.status[0] == 2:
+                data = get_document_details(
+                    document_id=self.id_, project_id=self.project.id_, session=self.session, extra_fields="bbox"
+                )
+                bbox = data['bbox']
+                with open(self.bbox_file_path, "w", encoding="utf-8") as f:
+                    json.dump(bbox, f, indent=2, sort_keys=True)
 
-        return self._bbox
+        return bbox
+
+    @property
+    def text(self):
+        """Get document text. Once loaded stored in memory."""
+        if self._text:
+            pass
+        elif is_file(self.txt_file_path, raise_exception=False):
+            with open(self.txt_file_path, "r", encoding="utf-8") as f:
+                self._text = f.read()
+        else:
+            logger.error(f'{self} does not provide a text.')
+
+        return self._text
+
+    @property
+    def pages(self):
+        """Get Pages of document. Once loaded stored in memory."""
+        if self._pages:
+            pass
+        elif is_file(self.pages_file_path, raise_exception=False):
+            with open(self.pages_file_path, "r") as f:
+                self._pages = json.loads(f.read())
+        else:
+            logger.error(f'{self} does not provide information about pages.')
+        return self._pages
+
+    @property
+    def hocr(self):
+        """Get HOCR of document. Once loaded stored in memory."""
+        if self._hocr:
+            pass
+        elif is_file(self.hocr_file_path, raise_exception=False):
+            # hocr might not be available (depends on the project settings)
+            with open(self.hocr_file_path, "r", encoding="utf-8") as f:
+                self._hocr = f.read()
+        else:
+            if self.status[0] == 2:
+                data = get_document_details(
+                    document_id=self.id_, project_id=self.project.id_, session=self.session, extra_fields="hocr"
+                )
+
+            if 'hocr' in data.keys() and data['hocr']:
+                self._hocr = data['hocr']
+                with open(self.hocr_file_path, "w", encoding="utf-8") as f:
+                    f.write(self._hocr)
+            else:
+                logger.warning(f'Please enable HOCR in {self.project} and upload {self} again to create HOCR.')
+
+        return self._hocr
 
     def save(self) -> bool:
         """
@@ -1679,39 +1644,39 @@ class Document(Data):
         category_id = None
 
         if hasattr(self, "category") and self.category is not None:
-            category_id = self.category.id
+            category_id = self.category.id_
 
         if not self.is_online:
             response = upload_file_konfuzio_api(
                 filepath=self.file_path,
-                project_id=self.project.id,
+                project_id=self.project.id_,
                 dataset_status=self.dataset_status,
                 category_id=category_id,
             )
             if response.status_code == 201:
-                self.id = json.loads(response.text)["id"]
+                self.id_ = json.loads(response.text)["id"]
                 document_saved = True
             else:
                 logger.error(f"Not able to save document {self.file_path} online: {response.text}")
         else:
             response = update_file_konfuzio_api(
-                document_id=self.id, file_name=self.name, dataset_status=self.dataset_status, category_id=category_id
+                document_id=self.id_, file_name=self.name, dataset_status=self.dataset_status, category_id=category_id
             )
             if response.status_code == 200:
                 self.project.update_document(document=self)
                 document_saved = True
             else:
-                logger.error(f"Not able to update document {self.id} online: {response.text}")
+                logger.error(f"Not able to update document {self.id_} online: {response.text}")
 
         return document_saved
 
     def update(self):
         """Update document information."""
+        # todo add a check about if document needs an update
+        # probably save a snippet of the full meta in the document folder
         self.delete()
-        pathlib.Path(self.document_folder).mkdir(parents=True, exist_ok=True)
-        self._annotations = []
-        self._annotation_sets = []
-        self.get_document_details(update=True)
+        self.download_document_details()
+        self.get_annotations()
         return self
 
     def delete(self):
@@ -1720,6 +1685,9 @@ class Document(Data):
             shutil.rmtree(self.document_folder)
         except FileNotFoundError:
             pass
+        pathlib.Path(self.document_folder).mkdir(parents=True, exist_ok=True)
+        self._annotations = []
+        self._annotation_sets = []
 
     # def regex_new(self, label, start_offset: int, end_offset: int, max_findings_per_page=15) -> List[str]:
     #     """Suggest a list of regex which can be used to get the specified offset of a document."""
@@ -1804,7 +1772,7 @@ class Document(Data):
         except ZeroDivisionError:
             f1_score = 0
         return {
-            'id': self.id,
+            'id_': self.id_,
             'regex': regex,
             'runtime': processing_time,
             'count_total_findings': len(findings_in_document),
@@ -1819,39 +1787,43 @@ class Document(Data):
             'correct_findings': correct_findings,
         }
 
-    def get_annotations(self, update: bool = False):
+    def get_annotations(self):
         """
         Get annotations of the Document.
 
         :param update: Update the downloaded information even it is already available
         :return: Annotations
         """
-        if self.is_without_errors and (not self._annotations or update):
-            self.annotation_file_path = os.path.join(self.document_folder, 'annotations.json5')
-            if not is_file(self.annotation_file_path, raise_exception=False) or update:
-                annotations = get_document_annotations(document_id=self.id, session=self.session)
-                # write a file, even there are no annotations to support offline work
-                with open(self.annotation_file_path, 'w') as f:
-                    json.dump(annotations, f, indent=2, sort_keys=True)
-            else:
-                with open(self.annotation_file_path, 'r') as f:
-                    annotations = json.load(f)
+        with open(self.annotation_set_file_path, "r") as f:
+            raw_annotation_sets = json.load(f)
 
-            # add Annotations to the document
-            for annotation_data in annotations:
-                if not annotation_data['custom_offset_string']:
-                    annotation = Annotation(document=self, **annotation_data)
+        # first load all Annotation Sets before we create Annotations
+        for raw_annotation_set in raw_annotation_sets:
+            # todo add parent to define default annotation set
+            annotation_set = AnnotationSet(
+                id_=raw_annotation_set["id"], document=self, label_set=raw_annotation_set["section_label"]
+            )
+            self.add_annotation_set(annotation_set)
+
+        with open(self.annotation_file_path, 'r') as f:
+            raw_annotations = json.load(f)
+
+        for raw_annotation in raw_annotations:
+            if raw_annotation["custom_offset_string"]:
+                real_string = self.text[raw_annotation['start_offset'] : raw_annotation['end_offset']]
+                if real_string == raw_annotation['offset_string']:
+                    annotation = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
                     self.add_annotation(annotation)
                 else:
-                    real_string = self.text[annotation_data['start_offset'] : annotation_data['end_offset']]
-                    if real_string == annotation_data['offset_string']:
-                        annotation = Annotation(document=self, **annotation_data)
-                        self.add_annotation(annotation)
-                    else:
-                        logger.warning(
-                            f'Annotation {annotation_data["id"]} is not used '
-                            f'in training {KONFUZIO_HOST}/a/{annotation_data["id"]}.'
-                        )
+                    logger.warning(
+                        f'Annotation {raw_annotation["id"]} has custom string and is not used '
+                        f'in training {KONFUZIO_HOST}/a/{raw_annotation["id"]}.'
+                    )
+            else:
+                raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
+                raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
+                self.add_annotation(Annotation(document=self, id_=raw_annotation['id'], **raw_annotation))
+
         return self._annotations
 
     # todo: please add tests before adding this functionality
@@ -1883,8 +1855,8 @@ class Document(Data):
     #         for label, values in values_annotations.items():
     #             if len(values) > 1:
     #                 logger.info(
-    #                     f'[Warning] Doc {self.id} - '
-    #                     f'AnnotationSet {annotation.label_set.name_clean} ({annotation.label_set.id})- '
+    #                     f'[Warning] Doc {self.id_} - '
+    #                     f'AnnotationSet {annotation.label_set.name_clean} ({annotation.label_set.id_})- '
     #                     f'Label "{label}" shouldn\'t have more than 1 value. Values = {values}'
     #                 )
 
@@ -1892,44 +1864,79 @@ class Document(Data):
 class Project(Data):
     """Access the information of a project."""
 
-    def __init__(self, id: int, offline=False, **kwargs):
+    def __init__(self, id_: int, offline=False, update=False, **kwargs):
         """
         Set up the data using the Konfuzio Host.
 
-        :param id: ID of the project
+        :param id_: ID of the project
         :param offline: If to get the data from Konfuzio Host
         by default.
         """
         self.id_local = next(Data.id_iter)
-        self.id = id
+        self.id_ = id_
+
         self.categories: List[Category] = []
         self.label_sets: List[LabelSet] = []
         self.labels: List[Label] = []
+        self._documents: List[Document] = []
 
-        self.documents: List[Document] = []
-        self.test_documents: List[Document] = []
-        self.no_status_documents: List[Document] = []
-        self.preparation_documents: List[Document] = []
-        self.low_ocr_documents: List[Document] = []
+        # paths
+        self.meta_data = []
+        self.meta_file_path = os.path.join(self.project_folder, "documents_meta.json5")
+        self.labels_file_path = os.path.join(self.project_folder, "labels.json5")
+        self.label_sets_file_path = os.path.join(self.project_folder, "label_sets.json5")
 
-        self.label_sets_file_path = None
-        self.labels_file_path = None
-        self.meta_file_path = None
-        self.meta_data = None
+        if is_file(self.meta_file_path, raise_exception=False):
+            logger.debug("Keep your local information about documents to be able to do a partial update.")
+            with open(self.meta_file_path, "r") as f:
+                self.old_meta_data = json.load(f)
+        else:
+            self.old_meta_data = []
+
         if not offline:
             pathlib.Path(self.project_folder).mkdir(parents=True, exist_ok=True)
+            pathlib.Path(self.documents_folder).mkdir(parents=True, exist_ok=True)
             pathlib.Path(self.regex_folder).mkdir(parents=True, exist_ok=True)
             pathlib.Path(self.model_folder).mkdir(parents=True, exist_ok=True)
-            self.get()  # keep update to False, so once you have downloaded the data, don't do it again.
+
+        if update:
+            self.update()
+        else:
+            self.get()
 
     def __repr__(self):
         """Return string representation."""
-        return f"Project {self.id}"
+        return f"Project {self.id_}"
+
+    @property
+    def documents(self):
+        """Return documents with status training."""
+        return [doc for doc in self._documents if doc.dataset_status == 2]
+
+    @property
+    def test_documents(self):
+        """Return documents with status test."""
+        return [doc for doc in self._documents if doc.dataset_status == 3]
+
+    @property
+    def excluded_documents(self):
+        """Return documents wich have been excluded."""
+        return [doc for doc in self._documents if doc.dataset_status == 4]
+
+    @property
+    def preperation_documents(self):
+        """Return documents with status test."""
+        return [doc for doc in self._documents if doc.dataset_status == 1]
+
+    @property
+    def no_status_documents(self):
+        """Return documents with status test."""
+        return [doc for doc in self._documents if doc.dataset_status == 0]
 
     @property
     def project_folder(self) -> str:
         """Calculate the data document_folder of the project."""
-        return f"data_{self.id}"
+        return f"data_{self.id_}"
 
     @property
     def regex_folder(self) -> str:
@@ -1937,9 +1944,178 @@ class Project(Data):
         return os.path.join(self.project_folder, "regex")
 
     @property
+    def documents_folder(self) -> str:
+        """Calculate the regex folder of the project."""
+        return os.path.join(self.project_folder, "documents")
+
+    @property
     def model_folder(self) -> str:
         """Calculate the model folder of the project."""
         return os.path.join(self.project_folder, "models")
+
+    def write_project_files(self):
+        """Overwrite files with Project, Label, Label Set information."""
+        data = get_project_details(project_id=self.id_)
+        with open(self.label_sets_file_path, "w") as f:
+            json.dump(data['section_labels'], f, indent=2, sort_keys=True)
+        with open(self.labels_file_path, "w") as f:
+            json.dump(data['labels'], f, indent=2, sort_keys=True)
+
+        meta_data = get_meta_of_files(project_id=self.id_, session=self.session)
+        with open(self.meta_file_path, "w") as f:
+            json.dump(meta_data, f, indent=2, sort_keys=True)
+        return self
+
+    def get(self):
+        """
+        Access meta information of the project.
+
+        :param update: Update the downloaded information even it is already available
+        """
+        if not is_file(self.meta_file_path, raise_exception=False):
+            self.write_project_files()
+        self.get_meta()
+        self.get_labels()
+        self.get_label_sets()
+        self.get_categories()
+        self.load_categories()
+        self.init_or_update_document()
+        return self
+
+    def update(self):
+        """Update the project and all documents by downloading them from the host. Note : It will not work offline."""
+        self.write_project_files()
+        self.get_meta()
+        self.get_labels()
+        self.get_label_sets()
+        self.get_categories()
+        self.load_categories()
+        self.init_or_update_document()  # we will do a partial update in case you already had a version locally.
+        return self
+
+    def add_label_set(self, label_set: LabelSet):
+        """
+        Add label set to project, if it does not exist.
+
+        :param label_set: Label Set to add in the project
+        """
+        if label_set not in self.label_sets:
+            self.label_sets.append(label_set)
+        else:
+            logger.error(f'{self} already has label set {label_set}.')
+
+    def add_category(self, category: Category):
+        """
+        Add category to project, if it does not exist.
+
+        :param category: Category to add in the project
+        """
+        if category not in self.categories:
+            self.categories.append(category)
+        else:
+            logger.error(f'{self} already has category {category}.')
+
+    def add_label(self, label: Label):
+        """
+        Add label to project, if it does not exist.
+
+        :param label: Label to add in the project
+        """
+        if label not in self.labels:
+            self.labels.append(label)
+
+    def add_document(self, document: Document):
+        """Add document to project, if it does not exist."""
+        if document not in self._documents:
+            self._documents.append(document)
+        else:
+            logger.error(f"{document} does exist in {self} and will not be added.")
+
+    # def add_document(self, document: Document):
+    #     """
+    #     Add document to project, if it does not exist.
+    #
+    #     :param document: Document to add in the project
+    #     """
+    #     if (
+    #             document
+    #             not in self.documents
+    #             + self.test_documents
+    #             + self.no_status_documents
+    #             + self.preparation_documents
+    #             + self.low_ocr_documents
+    #     ):
+    #         if document.dataset_status == 2:
+    #             self.documents.append(document)
+    #         elif document.dataset_status == 3:
+    #             self.test_documents.append(document)
+    #         elif document.dataset_status == 0:
+    #             self.no_status_documents.append(document)
+    #         elif document.dataset_status == 1:
+    #             self.preparation_documents.append(document)
+    #         elif document.dataset_status == 4:
+    #             self.low_ocr_documents.append(document)
+    #     return self
+
+    # def update_document(self, document):
+    #     """
+    #     Update document in the project.
+    #
+    #     Update can be in the dataset_status, name or category.
+    #     First, we need to find the document (different list accordingly with dataset_status).
+    #     Then, if we are just updating the name or category, we can change the fields in place.
+    #     If we are updating the document dataset status, we need to move the document from the project list.
+    #
+    #     :param document: Document to update in the project
+    #     """
+    #     current_status = document.dataset_status
+    #
+    #     prj_docs = {
+    #         0: self.no_status_documents,
+    #         1: self.preparation_documents,
+    #         2: self.documents,
+    #         3: self.test_documents,
+    #         4: self.low_ocr_documents,
+    #     }
+    #
+    #     # by default the status is None (even if not in the no_status_documents)
+    #     previous_status = 0
+    #     project_documents = []
+    #
+    #     # get project list that contains the document
+    #     for previous_status, project_list in prj_docs.items():
+    #         if document in project_list:
+    #             project_documents = project_list
+    #             break
+    #
+    #     # update name and category and get dataset status
+    #     for doc in project_documents:
+    #         if doc.id_ == document.id_:
+    #             doc.name = document.name
+    #             doc.category = document.category
+    #             break
+    #
+    #     # if the document is new to the project, just add it
+    #     if len(project_documents) == 0:
+    #         doc = document
+    #
+    #     # update project list if dataset status is different
+    #     if current_status != previous_status:
+    #         if doc in project_documents:
+    #             project_documents.remove(doc)
+    #         doc.dataset_status = current_status
+    #         self.add_document(doc)
+
+    def get_meta(self):
+        """
+        Get the list of all documents in the project and their information.
+
+        :param update: Update the downloaded information even it is already available
+        :return: Information of the documents in the project.
+        """
+        with open(self.meta_file_path, "r") as f:
+            self.meta_data = json.load(f)
+        return self.meta_data
 
     def load_categories(self):
         """Load categories for all label sets in the project."""
@@ -1952,159 +2128,18 @@ class Project(Data):
                     updated_list.append(category)
             label_set.categories = updated_list
 
-    def get(self, update=False):
-        """
-        Access meta information of the project.
-
-        :param update: Update the downloaded information even it is already available
-        """
-        # if not self.meta_file_path or update:
-        # add the labels first, before creating documents and annotations
-        self.get_meta(update=update)
-        self.get_labels(update=update)
-        self.get_label_sets(update=update)
-        self.get_categories(update=update)
-        self.load_categories()
-        self.clean_documents(update=update)
-        self.get_documents(update=update)
-        self.get_test_documents(update=update)
-
-        return self
-
-    def add_label_set(self, label_set: LabelSet):
-        """
-        Add label set to project, if it does not exist.
-
-        :param label_set: Label Set to add in the project
-        """
-        if label_set not in self.label_sets:
-            self.label_sets.append(label_set)
-
-    def add_category(self, category: Category):
-        """
-        Add category to project, if it does not exist.
-
-        :param category: Category to add in the project
-        """
-        if category not in self.categories:
-            self.categories.append(category)
-
-    def add_label(self, label: Label):
-        """
-        Add label to project, if it does not exist.
-
-        :param label: Label to add in the project
-        """
-        if label not in self.labels:
-            self.labels.append(label)
-
-    def add_document(self, document: Document):
-        """
-        Add document to project, if it does not exist.
-
-        :param document: Document to add in the project
-        """
-        if (
-            document
-            not in self.documents
-            + self.test_documents
-            + self.no_status_documents
-            + self.preparation_documents
-            + self.low_ocr_documents
-        ):
-            if document.dataset_status == 2:
-                self.documents.append(document)
-            elif document.dataset_status == 3:
-                self.test_documents.append(document)
-            elif document.dataset_status == 0:
-                self.no_status_documents.append(document)
-            elif document.dataset_status == 1:
-                self.preparation_documents.append(document)
-            elif document.dataset_status == 4:
-                self.low_ocr_documents.append(document)
-
-    def update_document(self, document):
-        """
-        Update document in the project.
-
-        Update can be in the dataset_status, name or category.
-        First, we need to find the document (different list accordingly with dataset_status).
-        Then, if we are just updating the name or category, we can change the fields in place.
-        If we are updating the document dataset status, we need to move the document from the project list.
-
-        :param document: Document to update in the project
-        """
-        current_status = document.dataset_status
-
-        prj_docs = {
-            0: self.no_status_documents,
-            1: self.preparation_documents,
-            2: self.documents,
-            3: self.test_documents,
-            4: self.low_ocr_documents,
-        }
-
-        # by default the status is None (even if not in the no_status_documents)
-        previous_status = 0
-        project_documents = []
-
-        # get project list that contains the document
-        for previous_status, project_list in prj_docs.items():
-            if document in project_list:
-                project_documents = project_list
-                break
-
-        # update name and category and get dataset status
-        for doc in project_documents:
-            if doc.id == document.id:
-                doc.name = document.name
-                doc.category = document.category
-                break
-
-        # if the document is new to the project, just add it
-        if len(project_documents) == 0:
-            doc = document
-
-        # update project list if dataset status is different
-        if current_status != previous_status:
-            if doc in project_documents:
-                project_documents.remove(doc)
-            doc.dataset_status = current_status
-            self.add_document(doc)
-
-    def get_meta(self, update=False):
-        """
-        Get the list of all documents in the project and their information.
-
-        :param update: Update the downloaded information even it is already available
-        :return: Information of the documents in the project.
-        """
-        if not self.meta_data or update:
-            self.meta_file_path = os.path.join(self.project_folder, "documents_meta.json5")
-
-            if not is_file(self.meta_file_path, raise_exception=False) or update:
-                self.meta_data = get_meta_of_files(project_id=self.id, session=self.session)
-                with open(self.meta_file_path, "w") as f:
-                    json.dump(self.meta_data, f, indent=2, sort_keys=True)
-            else:
-                with open(self.meta_file_path, "r") as f:
-                    self.meta_data = json.load(f)
-
-        return self.meta_data
-
-    def get_categories(self, update=False):
+    def get_categories(self):
         """
         Get Categories in the project.
 
         :param update: Update the downloaded information even it is already available
         :return: Categories in the project.
         """
-        if not self.categories or update:
-            if not self.label_sets:
-                error_message = "You need to get the label sets before getting the categories of the project."
-                logger.error(error_message)
-                raise ValueError(error_message)
-
+        if not self.categories and not self.label_sets:
+            error_message = "You need to get the label sets before getting the categories of the project."
+            logger.error(error_message)
+            raise ValueError(error_message)
+        elif not self.categories:
             for label_set in self.label_sets:
                 if label_set.is_default:
                     temp_label_set = deepcopy(label_set)
@@ -2113,284 +2148,257 @@ class Project(Data):
 
         return self.categories
 
-    def get_label_sets(self, update=False):
+    def get_label_sets_for_category(self, category_id):
+        """Get all LabelSets that belong to a category (or represent the category)."""
+        project_label_sets = [
+            label_set
+            for label_set in self.label_sets
+            if label_set.id_ == category_id or category_id in [x.id_ for x in label_set.categories if x is not None]
+        ]
+        return project_label_sets
+
+    def get_label_sets(self):
         """
         Get Label Sets in the project.
 
         :param update: Update the downloaded information even it is already available
         :return: Label Sets in the project.
         """
-        if not self.label_sets or update:
-            self.label_sets_file_path = os.path.join(self.project_folder, "label_sets.json5")
-            if not is_file(self.label_sets_file_path, raise_exception=False) or update:
-                label_sets_data = get_project_label_sets(project_id=self.id, session=self.session)
-                if label_sets_data:
-                    # the text of a document can be None
-                    with open(self.label_sets_file_path, "w") as f:
-                        json.dump(label_sets_data, f, indent=2, sort_keys=True)
-            else:
-                with open(self.label_sets_file_path, "r") as f:
-                    label_sets_data = json.load(f)
+        with open(self.label_sets_file_path, "r") as f:
+            label_sets_data = json.load(f)
 
-            for label_set_data in label_sets_data:
-                LabelSet(project=self, **label_set_data)
+        for label_set_data in label_sets_data:
+            # todo add Label Sets to project / document - no duplicate check?
+            label_set = LabelSet(project=self, id_=label_set_data['id'], **label_set_data)
+            self.add_label_set(label_set)
 
         return self.label_sets
 
-    def get_labels(self, update=False):
+    def get_labels(self):
         """
         Get ID and name of any label in the project.
 
         :param update: Update the downloaded information even it is already available
         :return: Labels in the project.
         """
-        if not self.labels or update:
-            self.labels_file_path = os.path.join(self.project_folder, "labels.json5")
-            if not is_file(self.labels_file_path, raise_exception=False) or update:
-                labels_data = get_project_labels(project_id=self.id, session=self.session)
-                with open(self.labels_file_path, "w") as f:
-                    json.dump(labels_data, f, indent=2, sort_keys=True)
-            else:
-                with open(self.labels_file_path, "r") as f:
-                    labels_data = json.load(f)
-            for label_data in labels_data:
-                # Remove the project from label_data as we use the already present project reference.
-                label_data.pop("project", None)
-                Label(project=self, **label_data)
+        with open(self.labels_file_path, "r") as f:
+            labels_data = json.load(f)
+        # todo clean labels before reading from file?
+        for label_data in labels_data:
+            # Remove the project from label_data
+            label_data.pop("project", None)
+            Label(project=self, id_=label_data['id'], **label_data)
 
-        return self.labels
+        return self
 
-    def _init_document(self, document_data, document_list_cache, update):
+    def init_or_update_document(self):
         """
-        Initialize Document.
+        Initialize Document to then decide about full, incremental or no update.
 
         :param document_data: Document data
-        :param document_list_cache: Cache with documents in the project
         :param update: Update the downloaded information even it is already available
         """
-        if document_data["status"][0] != 2:
-            logger.info(f"Document {document_data['id']} skipped due to: {document_data['status']}")
-            return None
+        for document_data in self.meta_data:
+            new_date = document_data["updated_at"]
+            if self.old_meta_data:
+                last_date = [d["updated_at"] for d in self.old_meta_data if d['id'] == document_data["id"]][0]
+                new = document_data["id"] not in [doc["id"] for doc in self.old_meta_data]
+                updated = dateutil.parser.isoparse(new_date) > dateutil.parser.isoparse(last_date)
+            else:
+                new = True
+                updated = None
 
-        needs_update = False  # basic assumption, document has not changed since the latest pull
-        new_in_dataset = False
-        if document_data["id"] not in [doc.id for doc in document_list_cache]:
-            # it is a new document
-            new_in_dataset = True
-        else:
-            # it might have been changed since our latest pull
-            latest_change_online = dateutil.parser.isoparse(document_data["updated_at"])
-            doc = [document for document in document_list_cache if document.id == document_data["id"]][0]
-            if doc.updated_at is None or (latest_change_online > doc.updated_at):
-                needs_update = True
-
-        if (new_in_dataset or needs_update) and update:
-            data_path = os.path.join(self.project_folder, "df_data.pkl")
-            test_data_path = os.path.join(self.project_folder, "df_test.pkl")
-            feature_list_path = os.path.join(self.project_folder, "label_feature_list.pkl")
-
-            if os.path.exists(data_path):
-                os.remove(data_path)
-            if os.path.exists(test_data_path):
-                os.remove(test_data_path)
-            if os.path.exists(feature_list_path):
-                os.remove(feature_list_path)
-
-        if (new_in_dataset and update) or (needs_update and update):
-            doc = Document(project=self, **document_data)
-            doc.get_document_details(update=update)
-            self.update_document(doc)
-        else:
-            doc = Document(project=self, **document_data)
-            doc.get_document_details(update=False)
+            doc = Document(project=self, id_=document_data['id'], **document_data)
+            if updated:
+                logger.info(f'{doc} was updated, we will download it again.')
+                doc.update()  # todo make sure the folder is and any linkage is gone
+            elif new:
+                logger.info(f'{doc} is not available on your machine, we will download it.')
+                doc.update()
+            else:
+                logger.debug(f'Load local version of {doc} from {new_date}.')
+                doc.get_annotations()
+            self.add_document(doc)
 
     def get_document_by_id(self, document_id: int) -> Document:
         """Return document by it's ID."""
         for document in self.documents:
-            if document.id == document_id:
+            if document.id_ == document_id:
                 return document
         raise IndexError
 
-    def get_documents(self, update=False):
-        """
-        Get all documents in a project which have been marked as available in the training dataset.
+    # def get_documents(self, update=False):
+    #     """
+    #     Get all documents in a project which have been marked as available in the training dataset.
+    #
+    #     Dataset status: training = 2
+    #
+    #     :param update: Bool to update the meta-information from the project
+    #     :return: training documents
+    #     """
+    #     document_list_cache = self.documents
+    #     self.documents: List[Document] = []
+    #     self.get_documents_by_status(dataset_statuses=[2], document_list_cache=document_list_cache, update=update)
+    #
+    #     return self.documents
+    #
+    # def get_test_documents(self, update=False):
+    #     """
+    #     Get all documents in a project which have been marked as available in the test dataset.
+    #
+    #     Dataset status: test = 3
+    #
+    #     :param update: Bool to update the meta-information from the project
+    #     :return: test documents
+    #     """
+    #     document_list_cache = self.test_documents
+    #     self.test_documents: List[Document] = []
+    #     self.get_documents_by_status(dataset_statuses=[3], document_list_cache=document_list_cache, update=update)
+    #
+    #     return self.test_documents
 
-        Dataset status: training = 2
+    # def get_documents_by_status(
+    #         self, dataset_statuses: List[int] = [0], document_list_cache: List[Document] = [], update: bool = False
+    # ) -> List[Document]:
+    #     """
+    #     Get a list of documents with the specified dataset status from the project.
+    #
+    #     Besides returning a list, the documents are also initialized in the project.
+    #     They become accessible from the attributes of the class: self.test_documents, self.none_documents,...
+    #
+    #     :param dataset_statuses: List of status of the documents to get
+    #     :param document_list_cache: Cache with documents in the project
+    #     :param update: Bool to update the meta-information from the project
+    #     :return: Documents with the specified dataset status
+    #     """
+    #     documents = []
+    #     logger.info(f'Start downloading {len(self.meta_data)} files from {KONFUZIO_HOST}.')
+    #     for document_data in self.meta_data:
+    #         if document_data["dataset_status"] in dataset_statuses:
+    #             # todo reduce number of API requests
+    #             self._init_document(document_data, document_list_cache, update)
+    #
+    #     raise NotImplementedError('We assign the documents to mulitple lists if a list of statuses is parsed.')
+    #
+    #     if 0 in dataset_statuses:
+    #         documents.extend(self.no_status_documents)
+    #     if 1 in dataset_statuses:
+    #         documents.extend(self.preparation_documents)
+    #     if 2 in dataset_statuses:
+    #         documents.extend(self.documents)
+    #     if 3 in dataset_statuses:
+    #         documents.extend(self.test_documents)
+    #     if 4 in dataset_statuses:
+    #         documents.extend(self.low_ocr_documents)
+    #
+    #     return documents
 
-        :param update: Bool to update the meta-information from the project
-        :return: training documents
-        """
-        document_list_cache = self.documents
-        self.documents: List[Document] = []
-        self.get_documents_by_status(dataset_statuses=[2], document_list_cache=document_list_cache, update=update)
-
-        return self.documents
-
-    def get_test_documents(self, update=False):
-        """
-        Get all documents in a project which have been marked as available in the test dataset.
-
-        Dataset status: test = 3
-
-        :param update: Bool to update the meta-information from the project
-        :return: test documents
-        """
-        document_list_cache = self.test_documents
-        self.test_documents: List[Document] = []
-        self.get_documents_by_status(dataset_statuses=[3], document_list_cache=document_list_cache, update=update)
-
-        return self.test_documents
-
-    def get_documents_by_status(
-        self, dataset_statuses: List[int] = [0], document_list_cache: List[Document] = [], update: bool = False
-    ) -> List[Document]:
-        """
-        Get a list of documents with the specified dataset status from the project.
-
-        Besides returning a list, the documents are also initialized in the project.
-        They become accessible from the attributes of the class: self.test_documents, self.none_documents,...
-
-        :param dataset_statuses: List of status of the documents to get
-        :param document_list_cache: Cache with documents in the project
-        :param update: Bool to update the meta-information from the project
-        :return: Documents with the specified dataset status
-        """
-        documents = []
-        logger.info(f'Start downloading {len(self.meta_data)} files from {KONFUZIO_HOST}.')
-        for document_data in self.meta_data:
-            if document_data["dataset_status"] in dataset_statuses:
-                self._init_document(document_data, document_list_cache, update)
-
-        if 0 in dataset_statuses:
-            documents.extend(self.no_status_documents)
-        if 1 in dataset_statuses:
-            documents.extend(self.preparation_documents)
-        if 2 in dataset_statuses:
-            documents.extend(self.documents)
-        if 3 in dataset_statuses:
-            documents.extend(self.test_documents)
-        if 4 in dataset_statuses:
-            documents.extend(self.low_ocr_documents)
-
-        return documents
-
-    def clean_documents(self, update):
-        """
-        Clean the documents by removing those that have been removed from the App.
-
-        Only if to update the project locally.
-
-        :param update: Bool to update locally the documents in the project
-        """
-        if update:
-            meta_data_document_ids = set([str(document["id"]) for document in self.meta_data])
-            existing_document_ids = set(
-                [
-                    str(document["id"])
-                    for document in self.existing_meta_data
-                    if document["dataset_status"] == 2 or document["dataset_status"] == 3
-                ]
-            )
-            remove_document_ids = existing_document_ids.difference(meta_data_document_ids)
-            for document_id in remove_document_ids:
-                document_path = os.path.join(self.project_folder, "pdf", document_id)
-                try:
-                    shutil.rmtree(document_path)
-                except FileNotFoundError:
-                    pass
+    # def clean_documents(self, update):
+    #     """
+    #     Clean the documents by removing those that have been removed from the App.
+    #
+    #     Only if to update the project locally.
+    #
+    #     :param update: Bool to update locally the documents in the project
+    #     """
+    #     raise NotImplementedError  # todo move to Document itself as delete method?
+    #     if update:
+    #         meta_data_document_ids = set([str(document["id"]) for document in self.meta_data])
+    #         existing_document_ids = set(
+    #             [
+    #                 str(document["id"])
+    #                 for document in self.existing_meta_data
+    #                 if document["dataset_status"] == 2 or document["dataset_status"] == 3
+    #             ]
+    #         )
+    #         remove_document_ids = existing_document_ids.difference(meta_data_document_ids)
+    #         for document_id in remove_document_ids:
+    #             # todo file path automated
+    #             document_path = os.path.join(self.project_folder, "pdf", document_id)
+    #             try:
+    #                 shutil.rmtree(document_path)
+    #             except FileNotFoundError:
+    #                 pass
 
     def get_label_by_name(self, name: str) -> Label:
         """Return label by its name."""
         for label in self.labels:
             if label.name == name:
                 return label
+        raise IndexError
 
-    def get_label_by_id(self, id: int) -> Label:
+    def get_label_by_id(self, id_: int) -> Label:
         """
         Return a label by ID.
 
-        :param id: ID of the label to get.
+        :param id_: ID of the label to get.
         """
         for label in self.labels:
-            if label.id == id:
+            if label.id_ == id_:
                 return label
 
     def get_label_set_by_name(self, name: str) -> LabelSet:
         """
         Return a Label Set by ID.
 
-        :param id: ID of the Label Set to get.
+        :param id_: ID of the Label Set to get.
         """
         for label_set in self.label_sets:
             if label_set.name == name:
                 return label_set
 
-    def get_label_set_by_id(self, id: int) -> LabelSet:
+    def get_label_set_by_id(self, id_: int) -> LabelSet:
         """
         Return a Label Set by ID.
 
-        :param id: ID of the Label Set to get.
+        :param id_: ID of the Label Set to get.
         """
         for label_set in self.label_sets:
-            if label_set.id == id:
+            if label_set.id_ == id_:
                 return label_set
 
-    def get_category_by_id(self, id: int) -> Category:
+    def get_category_by_id(self, id_: int) -> Category:
         """
         Return a Category by ID.
 
-        :param id: ID of the Category to get.
+        :param id_: ID of the Category to get.
         """
         for category in self.categories:
-            if category.id == id:
+            if category.id_ == id_:
                 return category
 
-    def clean_meta(self):
-        """Clean the meta-information about the Project, Labels, and Label Sets."""
-        if self.meta_file_path:
-            os.remove(self.meta_file_path)
-        assert not is_file(self.meta_file_path, raise_exception=False)
-        self.meta_data = None
-        self.meta_file_path = None
-
-        if self.labels_file_path:
-            os.remove(self.labels_file_path)
-        assert not is_file(self.labels_file_path, raise_exception=False)
-        self.labels_file_path = None
-        self.labels: List[Label] = []
-
-        if self.label_sets_file_path:
-            os.remove(self.label_sets_file_path)
-        assert not is_file(self.label_sets_file_path, raise_exception=False)
-        self.label_sets_file_path = None
-        self.label_sets: List[LabelSet] = []
-
-    def get_label_sets_for_category(self, category_id):
-        """Get all LabelSets that belong to a category (or represent the category)."""
-        project_label_sets = [
-            label_set
-            for label_set in self.label_sets
-            if label_set.id == category_id or category_id in [x.id for x in label_set.categories if x is not None]
-        ]
-        return project_label_sets
+    # def clean_meta(self):
+    #     """Clean the meta-information about the Project, Labels, and Label Sets."""
+    #     if self.meta_file_path:
+    #         os.remove(self.meta_file_path)
+    #     assert not is_file(self.meta_file_path, raise_exception=False)
+    #     self.meta_data = None
+    #     self.meta_file_path = None
+    #
+    #     if self.labels_file_path:
+    #         os.remove(self.labels_file_path)
+    #     assert not is_file(self.labels_file_path, raise_exception=False)
+    #     self.labels_file_path = None
+    #     self.labels: List[Label] = []
+    #
+    #     if self.label_sets_file_path:
+    #         os.remove(self.label_sets_file_path)
+    #     assert not is_file(self.label_sets_file_path, raise_exception=False)
+    #     self.label_sets_file_path = None
+    #     self.label_sets: List[LabelSet] = []
 
     def check_normalization(self):
         """Check normalized offset_strings."""
         for document in self.documents + self.test_documents:
             for annotation in document.annotations():
-                annotation.normalize()
+                for span in annotation.spans:
+                    span.normalize()
 
-    def update(self):
-        """Update the project and all documents by downloading them from the host. Note : It will not work offline."""
-        # make sure you always update any changes to Labels, ProjectMeta
-        self.existing_meta_data = self.meta_data  # get meta data of what currently exists locally
-        self.clean_meta()
-        self.get(update=True)
-
-        return self
-
-    def delete(self):
-        """Delete all project document data."""
-        for document in self.documents:
-            document.delete()
-        self.clean_meta()
+    #
+    #
+    # def delete(self):
+    #     """Delete the file folder, keep other folder."""
+    #     raise NotImplementedError
+    #     for document in self.documents:
+    #         document.delete()
+    #     self.clean_meta()
