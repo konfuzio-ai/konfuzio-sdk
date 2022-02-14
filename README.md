@@ -3,20 +3,82 @@
 ![Downloads](https://pepy.tech/badge/konfuzio-sdk)
 
 The Konfuzio Software Development Kit (Konfuzio SDK) provides a [Python API](https://dev.konfuzio.com/sdk/sourcecode.html) to interact with the 
-[Konfuzio Server](https://dev.konfuzio.com/index.html#konfuzio-server).
+[Konfuzio Server](https://dev.konfuzio.com/index.html#konfuzio-server). As a developer you can register on our public 
+HOST for free:
 
-## Quickstart
+[https://app.konfuzio.com](https://app.konfuzio.com/accounts/signup/)
+
+The SDK allows you to retrieve visual and text features to build your own document models. Konfuzio Server serves as an 
+UI to define the data structure, manage training/test data and to deploy your models as API.
+
+
+Function               | Public Host (Free)       | On-Site (Paid)      |
+:--------------------- | :------------------------| :-------------------|
+OCR Text               | :heavy_check_mark:       |  :heavy_check_mark: |
+OCR Handwriting        | :heavy_check_mark:       |  :heavy_check_mark: |
+Text Annotation        | :heavy_check_mark:       |  :heavy_check_mark: |
+PDF Annotation         | :heavy_check_mark:       |  :heavy_check_mark: |
+Table Annotation       | :heavy_check_mark:       |  :heavy_check_mark: |
+Download HOCR          | :heavy_check_mark:       |  :heavy_check_mark: |
+Download Images        | :heavy_check_mark:       |  :heavy_check_mark: |
+Download PDF with OCR  | :heavy_check_mark:       |  :heavy_check_mark: |
+Deploy AI models       | :heavy_multiplication_x: |  :heavy_check_mark: |
+
+## Installation
 
 You can use pip to install Konfuzio SDK.
 
   `pip install konfuzio_sdk`
 
-You need to initialize it with your credentials. You can register a free account [here](https://app.konfuzio.com/accounts/signup/).
+You will need to set ENV Variables `KONFUZIO_USER` and `KONFUZIO_TOKEN`. Optionally you can define `KONFUZIO_HOST` 
+if you want to connect to a on-site Installation of Konfuzio.
+
+You need to initialize it with your credentials. 
 
   `konfuzio_sdk init`
 
 Find the full installation guide [here](https://dev.konfuzio.com/sdk/configuration_reference.html)
 or setup PyCharm as described [here](https://dev.konfuzio.com/sdk/quickstart_pycharm.html).
+
+## CLI
+
+  `konfuzio_sdk create_project YOUR_PROJECT_NAME`
+
+You will see "Project `{YOUR_PROJECT_NAME}` (ID `{YOUR_PROJECT_ID}`) was created successfully!" printed.
+
+Start creating your data model online and upload your files.
+
+You can now start to download all files of you project.
+
+  `konfuzio_sdk download_data YOUR_PROJECT_ID`
+
+## Python
+
+ ```python
+from konfuzio_sdk.data import Project, Span
+
+# Initialize the project:
+my_project = Project(id_=YOUR_PROJECT_ID)
+
+# Get any project online
+doc = my_project.get_document_by_id(DOCUMENT_ID_ONLNIE)
+
+# Get the Annotations in a Document
+doc.annotations()
+
+# Filter Annotations by Label
+label = my_project.get_label_by_name('MY_OWN_LABEL_NAME')
+doc.annotations(label=label)
+
+# Or get all Anntations that belong to one Label
+label.annotations
+
+# Force a project update. To save time documents will only be updated if they have changed
+my_project.update()
+
+# Calculate the Bounding Box of a Text Offset.
+span_with_bbox_information = Span(annotation=, start_offset=10, end_offset=50).bbox()
+```
 
 
 ## Tutorials
