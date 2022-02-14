@@ -139,16 +139,14 @@ def create_new_project(project_name, session=_konfuzio_session()):
         raise Exception(f'The project {project_name} was not created, please check your permissions.')
 
 
-def get_document_details(
-    document_id: int, project_id: int, session=_konfuzio_session(), extra_fields: str = 'bbox,hocr'
-):
+def get_document_details(document_id: int, project_id: int, session=_konfuzio_session(), extra_fields: str = ''):
     """
     Use the text-extraction server to retrieve the data from a document.
 
     :param document_id: ID of the document
     :param project_id: ID of the project
     :param session: Konfuzio session with Retry and Timeout policy
-    :param extra_fields: Retrieve bounding boxes and HOCR from document, too.
+    :param extra_fields: Retrieve bounding boxes and HOCR from document, too. Can be "bbox,hocr", it's a hotfix
     :return: Data of the document.
     """
     url = get_document_api_details_url(document_id=document_id, project_id=project_id, extra_fields=extra_fields)

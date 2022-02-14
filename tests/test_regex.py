@@ -104,14 +104,14 @@ class TestTokens(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the Project."""
-        cls.prj = Project(id=46)
+        cls.prj = Project(id_=46)
 
     @pytest.mark.xfail(reason='We force to have an annotation_set to init an Annotation.')
     def test_token_replacement_only_whitespace_2(self):
         """Create a regex where only whitespaces are replaced."""
         label_data = {
             "description": "Betrag des jew. Bruttobezugs",
-            "id": 88888888,
+            "id_": 88888888,
             "shortcut": "N/A",
             "text": "Betrag",
             "get_data_type_display": "Text",
@@ -129,8 +129,8 @@ class TestTokens(unittest.TestCase):
         new_anno = Annotation(
             start_offset=127,
             end_offset=140,
-            label=new_label.id,
-            label_set_id=new_label.label_sets[0].id,  # hand selected document label_set
+            label=new_label.id_,
+            label_set_id=new_label.label_sets[0].id_,  # hand selected document label_set
             revised=True,
             is_correct=True,
             accuracy=0.98765431,
@@ -158,9 +158,9 @@ class TestTokens(unittest.TestCase):
 
     def test_label_plz_token(self):
         """Extract all tax gross amounts of all payslips."""
-        label = self.prj.get_label_by_name('SteuerBrutto')
+        label = self.prj.get_label_by_name('Steuer-Brutto')
         tokens = label.tokens()
-        assert len(tokens) == 1
+        assert len(tokens) == 4
         assert '(?P<SteuerBrutto_N_' in tokens[0]
 
     def test_label_token_auszahlungsbetrag(self):
@@ -192,8 +192,8 @@ class TestTokens(unittest.TestCase):
         new_anno_1 = Annotation(
             start_offset=177,
             end_offset=179,
-            label=label.id,
-            label_set_id=label.label_sets[0].id,  # hand selected document label_set
+            label=label.id_,
+            label_set_id=label.label_sets[0].id_,  # hand selected document label_set
             annotation_set_id=1,
             revised=True,
             is_correct=True,
@@ -211,13 +211,14 @@ class TestRegexGenerator(unittest.TestCase):
     """Test to create regex based on data online."""
 
     document_count = 26
+    correct_annotations = 25
 
     @classmethod
     def setUpClass(cls) -> None:
         """Load the project data from the Konfuzio Host."""
-        cls.prj = Project(id=46)
+        cls.prj = Project(id_=46)
         assert len(cls.prj.documents) == cls.document_count
-        assert len(cls.prj.labels[0].correct_annotations) == cls.document_count
+        assert len(cls.prj.labels[0].correct_annotations) == cls.correct_annotations
 
     @classmethod
     def tearDownClass(cls) -> None:

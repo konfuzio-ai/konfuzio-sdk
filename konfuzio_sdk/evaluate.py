@@ -4,7 +4,7 @@ import pandas as pd
 
 RELEVANT_FOR_EVALUATION = [
     "id_local",  # needed to group spans in annotations
-    "id",  # even we don't care of the id, as the ID is defined by the start and end span
+    "id_",  # even we won't care of the id_, as the ID is defined by the start and end span
     # "confidence", we don't care about the confidence of doc_a  # todo rename to confidence
     "start_offset",  # only relevant for the merge but allows to track multiple sequences per annotation
     "end_offset",  # only relevant for the merge but allows to track multiple sequences per annotation
@@ -14,7 +14,7 @@ RELEVANT_FOR_EVALUATION = [
     "revised",  # we need it to filter feedback required annotations
     "annotation_set_id",
     "label_set_id",
-    # "id_predicted", we don't care of the id see "id"
+    # "id__predicted", we don't care of the id_ see "id_"
     "confidence_predicted",  # we care about the confidence of the prediction # todo rename to confidence
     # "start_offset_predicted", only relevant for the merge
     # "end_offset_predicted", only relevant for the merge
@@ -28,7 +28,7 @@ RELEVANT_FOR_EVALUATION = [
 
 
 def grouped(group, target: str):
-    """Define which of the correct element in the predicted group defines the "correct" group id."""
+    """Define which of the correct element in the predicted group defines the "correct" group id_."""
     verbose_validation_column_name = f"defined_to_be_correct_{target}"
     # all rows where is_correct is nan relate to an element which has no correct element partner
     correct = group["is_correct"].fillna(False)  # so fill nan with False as .loc will need boolean
@@ -71,7 +71,7 @@ def compare(doc_a, doc_b, only_use_correct=False) -> pd.DataFrame:
     spans["is_correct_label"] = spans["label_id"] == spans["label_id_predicted"]
     spans["is_correct_label_set"] = spans["label_set_id"] == spans["label_set_id_predicted"]
     # add check to evaluate multiline Annotations
-    spans = spans.groupby("id_local", dropna=False).apply(lambda group: grouped(group, "id"))
+    spans = spans.groupby("id_local", dropna=False).apply(lambda group: grouped(group, "id_"))
     # add check to evaluate annotation sets
     spans = spans.groupby("annotation_set_id_predicted", dropna=False).apply(
         lambda group: grouped(group, "annotation_set_id")
@@ -87,7 +87,7 @@ def compare(doc_a, doc_b, only_use_correct=False) -> pd.DataFrame:
             (spans["is_correct_label"])
             & (spans["is_correct_label_set"])
             & (spans["is_correct_annotation_set_id"])
-            & (spans["is_correct_id"])
+            & (spans["is_correct_id_"])
         )
     )
 
@@ -97,7 +97,7 @@ def compare(doc_a, doc_b, only_use_correct=False) -> pd.DataFrame:
             (~spans["is_correct_label"])
             | (~spans["is_correct_label_set"])
             | (~spans["is_correct_annotation_set_id"])
-            | (~spans["is_correct_id"])
+            | (~spans["is_correct_id_"])
         )
     )
 

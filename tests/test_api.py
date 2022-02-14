@@ -94,8 +94,8 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'file_url',
             'data_file_name',
             'text',
-            'bbox',
-            'hocr',
+            # 'bbox',  removed from default to reduce loading time
+            # 'hocr',  removed from default to reduce loading time
             'data_file_producer',
             'data_file',
             'ocr_time',
@@ -121,8 +121,8 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'file_url',
             'data_file_name',
             'text',
-            'bbox',
-            'hocr',
+            # 'bbox',  removed from default to reduce loading time
+            # 'hocr',  removed from default to reduce loading time
             'data_file_producer',
             'data_file',
             'ocr_time',
@@ -145,7 +145,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     def test_upload_file_konfuzio_api(self):
         """Test upload of a file through API and its removal."""
-        file_path = os.path.join(FOLDER_ROOT, 'test_data/pdf/1_test.pdf')
+        file_path = os.path.join(FOLDER_ROOT, 'test_data', 'pdf.pdf')
         doc = upload_file_konfuzio_api(file_path, project_id=TEST_PROJECT_ID)
         assert doc.status_code == 201
         document_id = json.loads(doc.text)['id']
@@ -172,7 +172,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
     def test_get_annotations(self):
         """Download Annotations and the Text from API for a Document and check their offset alignment."""
         annotations = get_document_details(TEST_DOCUMENT_ID, project_id=TEST_PROJECT_ID)['annotations']
-        self.assertEqual(len(annotations), 21)
+        self.assertEqual(len(annotations), 22)
 
     def test_post_document_annotation_multiline_as_bboxes(self):
         """Create a multiline Annotation via API."""

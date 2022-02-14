@@ -1,4 +1,4 @@
-.env
+.env*
 data
 konfuzio_sdk.egg-info
 .idea
