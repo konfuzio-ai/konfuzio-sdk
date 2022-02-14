@@ -1244,6 +1244,8 @@ class Document(Data):
 
         if project and category_template:
             self.category = project.get_category_by_id(category_template)
+        else:
+            self.category = None
 
         if updated_at:
             self.updated_at = dateutil.parser.isoparse(updated_at)
@@ -1354,6 +1356,11 @@ class Document(Data):
     #     :return: Returns a sorted lists of Spans.
     #     """
     #     raise NotImplementedError
+
+    @property
+    def annotation_sets(self):
+        """Return Annotation Sets of documents."""
+        return self._annotation_sets
 
     def annotations(
         self, label: Label = None, use_correct: bool = True, start_offset: int = None, end_offset: int = None
