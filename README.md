@@ -32,9 +32,9 @@ As developer register on our [public HOST for free: https://app.konfuzio.com](ht
 
 Then you can use pip to install Konfuzio SDK and run init:
 
-    `pip install konfuzio_sdk`
+    pip install konfuzio_sdk
 
-    `konfuzio_sdk init`
+    konfuzio_sdk init
 
 The init will create a Token to connect to the Konfuzio Server. This will create variables `KONFUZIO_USER`,
 `KONFUZIO_TOKEN` and `KONFUZIO_HOST` in an `.env` file in your working directory.
