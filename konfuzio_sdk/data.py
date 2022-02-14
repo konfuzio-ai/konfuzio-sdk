@@ -593,7 +593,7 @@ class Span(Data):
         :param page_index: 0-based index of the page
         """
         if start_offset == end_offset:
-            raise IndexError("Spans must not be empty.")
+            logger.warning(f"You created a {self.__class__.__name__} with start {start_offset} and zero width.")
         self.id_local = next(Data.id_iter)
         self.annotation = annotation
         self.start_offset = start_offset
