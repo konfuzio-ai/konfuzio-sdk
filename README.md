@@ -24,7 +24,7 @@ Download Images        | :heavy_check_mark:                        |  :heavy_che
 Download PDF with OCR  | :heavy_check_mark:                        |  :heavy_check_mark: |
 Deploy AI models       | :heavy_multiplication_x:                  |  :heavy_check_mark: |
 
-* Under fair use policy: We will impose 10 pages/hour throttling eventually.
+`*` Under fair use policy: We will impose 10 pages/hour throttling eventually.
 
 ## Installation
 
@@ -42,7 +42,7 @@ The init will create a Token to connect to the Konfuzio Server. This will create
 Find the full installation guide [here](https://dev.konfuzio.com/sdk/configuration_reference.html)
 or setup PyCharm as described [here](https://dev.konfuzio.com/sdk/quickstart_pycharm.html).
 
-## Python General Use
+## Basics
 
  ```python
 from konfuzio_sdk.data import Project, Document
@@ -67,7 +67,9 @@ label.annotations
 my_project.update()
 ```
 
-## Python Regex
+Find more explanations in the [Examples](https://dev.konfuzio.com/sdk/examples/examples.html).
+
+## Regex
 
 ```python
 from konfuzio_sdk.regex import suggest_regex_for_string
@@ -94,7 +96,7 @@ regex = suggest_regex_for_string('Date: 20.05.2022')
 assert regex == 'Date:[ ]+\\d\\d\\.\\d\\d\\.\\d\\d\\d\\d'
 ```
 
-## Visual Text Features
+## Add visual features to text
 
 Calculate the bounding box of a span by providing the start and end offset.
 
@@ -125,9 +127,7 @@ And download any project via the id:
 
 ## Tutorials
 
-- [Example Usage](https://dev.konfuzio.com/sdk/examples/examples.html): Some examples of the basic Konfuzio SDK
-  functionalities.
-- [Create Regex-based Annotations](https://dev.konfuzio.com/sdk/examples/examples.html#create-regex-based-annotations)
+- [Automate Annotations with Regex](https://dev.konfuzio.com/sdk/examples/examples.html#create-regex-based-annotations)
   : An example of how to create regex-based annotations in a Konfuzio project.
 - [Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations](https://dev.konfuzio.com/sdk/examples/examples.html#retrain-flair-ner-ontonotes-fast-with-human-revised-annotations) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/human_in_the_loop.ipynb):
   An example of how Konfuzio SDK package can be used in a pipeline to have an easy feedback workflow can be seen in this
