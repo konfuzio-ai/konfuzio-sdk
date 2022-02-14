@@ -90,6 +90,7 @@ class AnnotationSet(Data):
     def annotations(self):
         """All Annotations currently in this Annotation Set."""
         related_annotation = []
+        # todo discuss [x for x in self.document.annotations() if x.label]:
         for annotation in self.document.annotations():
             if annotation.annotation_set == self:
                 related_annotation.append(annotation)
@@ -98,12 +99,12 @@ class AnnotationSet(Data):
     @property
     def start_offset(self):
         """Calculate earliest start based on all Annotations currently in this Annotation Set."""
-        min((a.start_offset for a in self.annotations), default=None)
+        return min((a.start_offset for a in self.annotations), default=None)
 
     @property
     def end_offset(self):
         """Calculate the end based on all Annotations currently in this Annotation Set."""
-        max((a.end_offset for a in self.annotations), default=None)
+        return max((a.end_offset for a in self.annotations), default=None)
 
 
 class LabelSet(Data):
@@ -827,8 +828,10 @@ class Annotation(Data):
             self.label: Label = self.document.project.get_label_by_id(label)
         elif isinstance(label, Label):
             self.label: Label = label
-        elif label is None:
-            self.label = None
+        # todo discuss
+        # elif label is None and self.__class__.__name__ == 'NoLabelAnnotation':
+        #    self.label = None
+        else:
             raise AttributeError(f'{self.__class__.__name__} {self.id_local} has no label.')
 
         # if no label_set_id we check if is passed by section_label_id
@@ -840,15 +843,21 @@ class Annotation(Data):
             self.label_set: LabelSet = self.document.project.get_label_set_by_id(label_set_id)
         elif isinstance(label_set, LabelSet):
             self.label_set = label_set
+        # todo discuss
+        # elif self.__class__.__name__ == 'NoLabelAnnotation':
+        #    self.label_set = None
         else:
             raise AttributeError(f'{self.__class__.__name__} {self.id_local} has no Label Set.')
 
         # make sure an Annotation Set is available
         if isinstance(annotation_set_id, int):
             self.annotation_set = self.document.get_annotation_set_by_id(annotation_set_id)
-        if isinstance(annotation_set, AnnotationSet):
+        elif isinstance(annotation_set, AnnotationSet):
             self.annotation_set = annotation_set
-        elif annotation_set is None and annotation_set_id is None:
+        # todo discuss
+        # elif self.__class__.__name__ == 'NoLabelAnnotation':
+        #    self.annotation_set = None
+        else:
             logger.warning(f'{self} created but without annotation set information.')
             # raise AttributeError(f'{self.__class__.__name__} {self.id_local} has no Annotation Set.')
 
@@ -910,6 +919,9 @@ class Annotation(Data):
             return f"{self.label.name} {span_str}"
         elif self.label:
             return f"{self.label.name} ({self._spans})"
+        # todo dicuss
+        # elif self.__class__.__name__ == 'NoLabelAnnotation':
+        #     return f"NoLabelAnnotation ({self.start_offset}, {self.end_offset})"
         else:
             logger.error(f"{self.__class__.__name__} without Label ({self.start_offset}, {self.end_offset})")
 
@@ -1173,6 +1185,17 @@ class Annotation(Data):
     def spans(self):
         """Return default entry to get all Spans of the Annotation."""
         return self._spans
+
+
+# todo dicuss
+# class NoLabelAnnotation(Annotation):
+#    """
+#     This is an Annotation created by a tokenizer which is not labeled.
+#
+#     Because of this is does not have 'id', 'label', 'annotation_set'
+#
+#    """
+#    pass
 
 
 class Document(Data):
