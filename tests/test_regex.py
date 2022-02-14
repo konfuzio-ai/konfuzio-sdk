@@ -224,7 +224,7 @@ class TestRegexGenerator(unittest.TestCase):
     def tearDownClass(cls) -> None:
         """Check that no local data was changed by the tests."""
         assert len(cls.prj.documents) == cls.document_count
-        assert len(cls.prj.labels[0].correct_annotations) == cls.document_count
+        assert len(cls.prj.labels[0].correct_annotations) == cls.correct_annotations
         # cls.prj.delete()
 
     def test_regex_single_annotation_in_row(self):

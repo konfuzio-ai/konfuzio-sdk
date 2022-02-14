@@ -42,10 +42,10 @@ class TestEvaluation(unittest.TestCase):
         doc_a = prj.documents[0]
         doc_b = prj.documents[0]  # predicted
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 21
+        assert len(evaluation) == 24
         # for an annotation which is human made, it is nan, so that above threshold is False
-        # doc_a 17 + 1
-        assert evaluation["true_positive"].sum() == 19  # 1 multiline with 2 lines = 2 annotations
+        # doc_a 19 + 2 multiline + 2 feedback required + 1 rejected
+        assert evaluation["true_positive"].sum() == 21  # 1 multiline with 2 lines = 2 annotations
         assert evaluation["false_positive"].sum() == 0
         # due to the fact that Konfuzio Server does not save confidence = 100 % if annotation was not created by a human
         assert evaluation["false_negative"].sum() == 0
@@ -58,9 +58,9 @@ class TestEvaluation(unittest.TestCase):
         doc_b._annotations.pop(0)  # pop an annotation that is correct in BOTH documents
         assert doc_a._annotations == doc_b._annotations  # first annotation is removed in both documents
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 19  # 2 annotations are is_correct false
-        # doc_a 16 (multiline removed)
-        assert evaluation["true_positive"].sum() == 17
+        assert len(evaluation) == 22  # 2 annotations are is_correct false
+        # doc_a 18 (multiline removed) + 1 multiline + 2 feedback required + 1 rejected
+        assert evaluation["true_positive"].sum() == 19
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 0
 
@@ -72,9 +72,9 @@ class TestEvaluation(unittest.TestCase):
         doc_b._annotations.pop(11)  # pop an annotation that is correct in BOTH documents
         assert doc_a._annotations == doc_b._annotations  # last annotation is removed in both documents
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 20  # 2 annotations are is_correct false
-        # doc_a 16 + 1
-        assert evaluation["true_positive"].sum() == 18
+        assert len(evaluation) == 23  # 2 annotations are is_correct false
+        # doc_a 18 + 2 multiline + 2 feedback required + 1 rejected
+        assert evaluation["true_positive"].sum() == 20
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 0
 
@@ -88,9 +88,9 @@ class TestEvaluation(unittest.TestCase):
 
         assert len(doc_b.annotations()) == len(doc_a.annotations()) - 1
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 21  # 2 annotations are false
-        # doc a 17 + 1
-        assert evaluation["true_positive"].sum() == 17  # 1 multiline with 2 lines = 2 annotations
+        assert len(evaluation) == 24  # 2 annotations are false
+        # doc_a 19 + 2 multiline + 2 feedback required + 1 rejected
+        assert evaluation["true_positive"].sum() == 19  # 1 multiline with 2 lines = 2 annotations
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 2
 
@@ -106,16 +106,16 @@ class TestEvaluation(unittest.TestCase):
         # evaluate on doc_b and assume the feedback required ones are correct
         assert len(doc_a.annotations()) == len(doc_b.annotations()) - 1
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 21  # 2 annotations are false and two have feedback required
+        assert len(evaluation) == 24  # 2 annotations are false and two have feedback required
         # TODO: add feedback required again
-        assert evaluation["true_positive"].sum() == 17
-        assert evaluation["false_positive"].sum() == 3  # 1 multiline (2 lines == 2 annotations) + 2 feedback required
+        assert evaluation["true_positive"].sum() == 19
+        assert evaluation["false_positive"].sum() == 4  # 1 multiline (2 lines == 2 annotations) + 2 feedback required
         assert evaluation["false_negative"].sum() == 0
 
     def test_only_unrevised_annotations(self):
         """Test to evaluate on a document that has only unrevised annotations."""
         prj = Project(id_=TEST_PROJECT_ID)
-        for document in prj.documents(dataset_statuses=[0]):
+        for document in prj.no_status_documents:
             if document.id_ == 137234:
                 doc_a = document
 
@@ -140,9 +140,9 @@ class TestEvaluation(unittest.TestCase):
 
         assert len(doc_a.annotations()) == len(doc_b.annotations()) - 1
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 21  # 2 annotations are false
-        # doc a 17 + 1
-        assert evaluation["true_positive"].sum() == 17
+        assert len(evaluation) == 24  # 2 annotations are false
+        # doc_a 18 + 1 multiline + 2 feedback required + 1 rejected
+        assert evaluation["true_positive"].sum() == 19
         assert evaluation["false_positive"].sum() == 2  # 1 multiline (2 lines == 2 annotations)
         assert evaluation["false_negative"].sum() == 0
 
@@ -156,9 +156,9 @@ class TestEvaluation(unittest.TestCase):
             doc_b.add_annotation(annotation)
 
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 21  # 2 annotations are false
-        # doc a 17 + 1
-        assert evaluation["true_positive"].sum() == 18  # due to the fact that we find both offsets of the multiline
+        assert len(evaluation) == 24  # 2 annotations are false
+        # doc_a 19 + 2 multiline
+        assert evaluation["true_positive"].sum() == 20  # due to the fact that we find both offsets of the multiline
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 1
 
@@ -172,9 +172,9 @@ class TestEvaluation(unittest.TestCase):
             doc_a.add_annotation(annotation)
 
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 21  # 2 annotations are false
-        # doc a 16 + 1
-        assert evaluation["true_positive"].sum() == 18  # due to the fact that we find both offsets of the multiline
+        assert len(evaluation) == 24  # 2 annotations are false
+        # doc_a 18 + 2 multiline
+        assert evaluation["true_positive"].sum() == 20  # due to the fact that we find both offsets of the multiline
         assert evaluation["false_positive"].sum() == 1
         assert evaluation["false_negative"].sum() == 0
 
@@ -184,11 +184,11 @@ class TestEvaluation(unittest.TestCase):
         doc_a = Document(project=prj)
         doc_b = prj.documents[0]
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 22
+        assert len(evaluation) == 24
         assert evaluation["true_positive"].sum() == 0
         # any annotation above threshold is a false positive independent if it's correct or revised
         assert len([an for an in doc_b.annotations(use_correct=False) if an.confidence > an.label.threshold]) == 19
-        assert evaluation["false_positive"].sum() == 20  # but one annotation is multiline
+        assert evaluation["false_positive"].sum() == 21  # but one annotation is multiline
         assert evaluation["false_negative"].sum() == 0
 
     def test_nothing_can_be_predicted(self):
@@ -197,10 +197,10 @@ class TestEvaluation(unittest.TestCase):
         doc_a = prj.documents[0]
         doc_b = Document(project=prj)
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 22  # we evaluate on span level an one annotation is multiline
+        assert len(evaluation) == 24  # we evaluate on span level an one annotation is multiline
         assert evaluation["true_positive"].sum() == 0
         assert evaluation["false_positive"].sum() == 0
-        assert evaluation["false_negative"].sum() == 19
+        assert evaluation["false_negative"].sum() == 21
 
     def test_doc_with_overruled_top_annotations(self):
         """
@@ -225,9 +225,9 @@ class TestEvaluation(unittest.TestCase):
             doc_b.add_annotation(annotation)
 
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 21
+        assert len(evaluation) == 24
         # Evaluation as it is now: everything needs to be find even if multiple=False
-        assert evaluation["true_positive"].sum() == 18
+        assert evaluation["true_positive"].sum() == 20
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 1
 
