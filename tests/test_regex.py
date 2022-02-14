@@ -19,9 +19,10 @@ logger = logging.getLogger(__name__)
 
 suggest_regex_for_string_data = [
     ({'string': ' '}, r'[ ]+', does_not_raise()),
+    ({'string': 'VAG GmbH', 'replace_characters': True}, r'[A-ZÄÖÜ]+[ ]+[A-ZÄÖÜ][a-zäöüß]+[A-ZÄÖÜ]', does_not_raise()),
     (
         {'string': 'a2bau GmbH', 'replace_characters': True},
-        r'a\d[a-zäöüß]+[ ]+[A-ZÄÖÜ][a-zäöüß]+[A-ZÄÖÜ]',
+        r'[a-zäöüß]\d[a-zäöüß]+[ ]+[A-ZÄÖÜ][a-zäöüß]+[A-ZÄÖÜ]',
         does_not_raise(),
     ),
     (
@@ -83,6 +84,11 @@ suggest_regex_for_string_data = [
     (
         {'string': 'Achtung       Kontrolle 911    ', 'replace_characters': True},
         r'[A-ZÄÖÜ][a-zäöüß]+[ ]{2,}[A-ZÄÖÜ][a-zäöüß]+[ ]+\d\d\d[ ]{2,}',
+        does_not_raise(),
+    ),
+    (
+        {'string': 'hello.mio@konfuzio.c', 'replace_characters': True},
+        r'[a-zäöüß]+\.[a-zäöüß]+\@[a-zäöüß]+\.[a-zäöüß]',
         does_not_raise(),
     ),
 ]

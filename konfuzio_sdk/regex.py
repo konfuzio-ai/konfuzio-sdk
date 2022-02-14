@@ -65,13 +65,19 @@ def plausible_regex(suggestion, string):
 
 def suggest_regex_for_string(string: str, replace_characters: bool = False, replace_numbers: bool = True):
     """Suggest regex for a given string."""
+    if '.c' in string:
+        print(1)
     escaped_original = escape(string)
 
     if replace_characters:
         # strict replace capital letters
-        escaped_capital_letters = re.sub(r'[A-Z\Ä\Ö\Ü]', r'[A-ZÄÖÜ]', escaped_original)
-        # lazy replace of lowercase characters
-        escaped_original = re.sub(r'[a-zäöüß]{2,}', r'[a-zäöüß]+', escaped_capital_letters)
+        strict_escaped_capital_letters = re.sub(r'[A-Z\Ä\Ö\Ü]', r'[A-ZÄÖÜ]', escaped_original)
+        # combine multiple capital letters in sequence
+        combined_capital_letters = re.sub(r'(\[A-Z\Ä\Ö\Ü\]){2,}', r'[A-ZÄÖÜ]+', strict_escaped_capital_letters)
+        # escape all lower case letters
+        escaped_small_letters = re.sub(r'[a-zäöüß]', r'[a-zäöüß]', combined_capital_letters)
+        # combine multiple lower case letters in sequence
+        escaped_original = re.sub(r'(\[a-zäöüß\]){2,}', '[a-zäöüß]+', escaped_small_letters)
 
     if replace_numbers:
         escaped_original = re.sub('\\d', r'\\d', escaped_original)
