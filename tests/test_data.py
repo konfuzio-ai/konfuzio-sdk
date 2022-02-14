@@ -101,6 +101,11 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         category = Project(id_=46).get_document_by_id(44860).category
         self.assertEqual(category.name, 'Lohnabrechnung')
 
+    def test_category_of_document_without_category(self):
+        """Test the category of a document without category."""
+        category = Project(id_=46).get_document_by_id(44864).category
+        self.assertIsNone(category)
+
     def test_get_file_with_white_colon_name(self):
         """Test to download a file which includes a whitespace in the name."""
         doc = Project(id_=46).get_document_by_id(44860)
@@ -146,6 +151,11 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert len(doc.annotations()) == 24
         assert doc.annotations()[0].is_online
         assert not doc.annotations()[0].save()  # Save returns False because Annotation is already online.
+
+    def test_annotation_sets_in_document(self):
+        """Test number of annotation sets in a specific document in the test project."""
+        doc = self.prj.get_document_by_id(44842)
+        assert len(doc.annotation_sets) == 5
 
     def test_document_with_multiline_annotation(self):
         """Test properties of a specific documents in the test project."""
