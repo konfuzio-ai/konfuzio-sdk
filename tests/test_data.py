@@ -354,7 +354,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         _ = Annotation(label=label, annotation_set=annotation_set, label_set=label_set, document=doc)
 
     def test_get_annotations_for_offset_of_first_and_last_name(self):
-        """Get annotations for all offsets in the document."""
+        """Get Annotations for all offsets in the document."""
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
         filtered_annotations = doc.annotations(start_offset=1500, end_offset=1530)
         self.assertEqual(len(filtered_annotations), 3)  # 3 is correct even 4 Spans!

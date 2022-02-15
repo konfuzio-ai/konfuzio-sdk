@@ -354,6 +354,7 @@ class Label(Data):
         relevant_id = list(set([anno.document.id_ for anno in self.annotations]))
         return [doc for doc in self.project.documents if (doc.id_ in relevant_id)]
 
+    # todo move to regex.py so it runs on a list of annotations, run on annotations
     def find_tokens(self):
         """Calculate the regex token of a label, which matches all offset_strings of all correct annotations."""
         evaluations = []
@@ -1068,7 +1069,7 @@ class Annotation(Data):
         """
         Build candidates for regexes.
 
-        # todo add more info from regex span function to Span.
+        # todo: Allow to add label to Span
 
         :return: Return sorted list of Spans by start_offset
         """
@@ -1554,15 +1555,12 @@ class Document(Data):
         :return: list of tuples with each word in the text an the respective label
         """
         if not self.bio_scheme_file_path or not is_file(self.bio_scheme_file_path, raise_exception=False) or update:
-            annotations = self.annotations()
             converted_text = []
-
-            if len(annotations) > 0:
-                annotations_in_doc = [
-                    (annotation.start_offset, annotation.end_offset, annotation.label.name)
-                    for annotation in annotations
-                ]
-                converted_text = convert_to_bio_scheme(self.text, annotations_in_doc)
+            annotations_in_doc = []
+            for annotation in self.annotations():
+                for span in annotation.spans:
+                    annotations_in_doc.append((span.start_offset, span.end_offset, annotation.label.name))
+            converted_text = convert_to_bio_scheme(self.text, annotations_in_doc)
 
             with open(self.bio_scheme_file_path, "w", encoding="utf-8") as f:
                 for word, tag in converted_text:
