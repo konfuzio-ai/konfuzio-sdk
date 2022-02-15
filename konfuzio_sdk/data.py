@@ -63,7 +63,7 @@ class Data(ABC):
 class AnnotationSet(Data):
     """Represent an Annotation Set - group of annotations."""
 
-    def __init__(self, document, label_set, id_: Union[int, None] = None, **kwargs):
+    def __init__(self, document, label_set: 'LabelSet', id_: Union[int, None] = None, **kwargs):
         """
         Create an Annotation Set.
 
@@ -74,8 +74,8 @@ class AnnotationSet(Data):
         """
         self.id_local = next(Data.id_iter)
         self.id_ = id_
-        self.label_set = label_set
-        self.document = document  # we don't add it to the document as it's added via get_annotations
+        self.label_set: LabelSet = label_set
+        self.document: Document = document  # we don't add it to the document as it's added via get_annotations
 
     def __repr__(self):
         """Return string representation of the Annotation Set."""
@@ -1805,7 +1805,7 @@ class Document(Data):
 
     def get_annotations(self):
         """
-        Get annotations of the Document.
+        Get Annotations of the Document.
 
         :param update: Update the downloaded information even it is already available
         :return: Annotations
@@ -1817,7 +1817,9 @@ class Document(Data):
         for raw_annotation_set in raw_annotation_sets:
             # todo add parent to define default annotation set
             annotation_set = AnnotationSet(
-                id_=raw_annotation_set["id"], document=self, label_set=raw_annotation_set["section_label"]
+                id_=raw_annotation_set["id"],
+                document=self,
+                label_set=self.project.get_label_set_by_id(raw_annotation_set["section_label"]),
             )
             self.add_annotation_set(annotation_set)
 
