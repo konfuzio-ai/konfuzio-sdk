@@ -16,10 +16,10 @@ from typing import Union, List, Tuple, Dict
 
 import filetype
 import nltk
+from nltk.tokenize import sent_tokenize
 import pandas as pd
 from PIL import Image
 from konfuzio_sdk import IMAGE_FILE, PDF_FILE, OFFICE_FILE, SUPPORTED_FILE_TYPES
-from nltk.tokenize import sent_tokenize
 
 logger = logging.getLogger(__name__)
 
@@ -832,3 +832,50 @@ def separate_labels(project, default_label_sets: List = None):
             return None
 
     return project
+
+
+def get_missing_offsets(start_offset: int, end_offset: int, annotated_offsets: List[range]):
+    """
+    Calculate the missing characters.
+
+    :param start_offset: Start of the overall text as index
+    :param end_offset: End of the overall text as index
+    :param: A list integers, where one character presents a character. It may be outside the start and end offset.
+
+    :type start_offset: int
+    :type end_offset:
+    :type annotated_offsets: List[int]
+
+     :Example:
+
+    >>> get_missing_offsets(start_offset=0, end_offset=170, annotated_offsets=[range(66, 78), range(159, 169)])
+    [(0, 65), (78, 158), (169, 170)]
+
+    """
+    annotated_characters: List[int] = sum([list(span) for span in annotated_offsets], [])
+
+    # Create boolean list of size high-low+1, each index i representing whether (i+low)th element found or not.
+    points_of_range = [False] * (end_offset - start_offset + 1)
+    for i in range(len(annotated_characters)):
+        # if ith element of arr is in range low to high then mark corresponding index as true in array
+        if start_offset <= annotated_characters[i] and annotated_characters[i] <= end_offset:
+            points_of_range[annotated_characters[i] - start_offset] = True
+
+    # Traverse through the range and create all Spans where the character is not included, i.e. False.
+    missing_characters = []
+    for x in range(end_offset - start_offset + 1):
+        if not points_of_range[x]:
+            missing_characters.append(start_offset + x)
+
+    start_span = 0
+    spans: List[Tuple[int, int]] = []
+    for before, missing_character in zip(missing_characters, missing_characters[1:]):
+        if before == start_offset:
+            start_span = before
+        elif before + 1 < missing_character:
+            spans.append((start_span, before))
+            start_span = missing_character
+        if missing_character == end_offset:
+            spans.append((start_span, missing_character))
+
+    return spans

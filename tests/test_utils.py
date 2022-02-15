@@ -4,6 +4,7 @@ import unittest
 
 import pytest
 from konfuzio_sdk import IMAGE_FILE, PDF_FILE, OFFICE_FILE
+from konfuzio_sdk.data import Project
 from konfuzio_sdk.utils import (
     get_id,
     get_timestamp,
@@ -15,6 +16,7 @@ from konfuzio_sdk.utils import (
     get_sentences,
     amend_file_name,
     does_not_raise,
+    get_missing_offsets,
 )
 
 TEST_STRING = "sample string"
@@ -236,3 +238,18 @@ def test_append_text_to_filename(file_path, expected_result, expected_error):
 def test_corrupted_name():
     """Test to convert an invalide file name to a valid file name."""
     assert amend_file_name('2022-02-13 19:23:06.168728.tiff') == '2022-02-13 19-23-06.168728.tiff'
+
+
+def test_find_missing_characters():
+    """Find the character offsets that are not annotated."""
+    prj = Project(46)
+    doc = prj.get_document_by_id(44823)
+    offsets = []
+    for annotation in doc.annotations(start_offset=0, end_offset=2000):
+        for span in annotation.spans:
+            offsets.append(range(span.start_offset, span.end_offset))
+
+    # character 66:78 and 159:169 belong to a multiline annotation, so it spans
+    # [66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168]
+    missing_offsets = get_missing_offsets(start_offset=0, end_offset=170, annotated_offsets=offsets)
+    assert missing_offsets == [(0, 65), (78, 158), (169, 170)]
