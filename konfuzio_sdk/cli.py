@@ -24,6 +24,8 @@ konfuzio_sdk create_project my_project: creates a new project online
 konfuzio_sdk migrate_data 123: downloads the data from the project, use the ID of the project, e.g. 123
 
 These commands should be run inside of your working directory.
+
+A bug report can be filed in the tracker at https://github.com/konfuzio-ai/document-ai-python-sdk/issues. Thanks!
 """
 
 
