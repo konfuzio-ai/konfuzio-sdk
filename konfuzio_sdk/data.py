@@ -919,7 +919,7 @@ class Annotation(Data):
             return f"{self.label.name} {span_str}"
         elif self.label:
             return f"{self.label.name} ({self._spans})"
-        # todo dicuss
+        # todo discuss
         # elif self.__class__.__name__ == 'NoLabelAnnotation':
         #     return f"NoLabelAnnotation ({self.start_offset}, {self.end_offset})"
         else:
@@ -931,23 +931,9 @@ class Annotation(Data):
         return self.start_offset < other.start_offset
 
     @property
-    def is_multiline(self) -> bool:
+    def is_multiline(self) -> int:
         """Calculate if Annotation spans multiple lines of text."""
-        # TODO: clean code after issue 6230 is solved (TODO: move to sdk)
-        if (
-            self.bboxes is not None
-            and self.bboxes
-            and (
-                ('line_number' in self.bboxes[0].keys() and len(set([bbox['line_number'] for bbox in self.bboxes])) > 1)
-                or (  # NOQA
-                    'line_index' in self.bboxes[0].keys() and len(set([bbox['line_index'] for bbox in self.bboxes])) > 1
-                )
-            )
-        ):  # NOQA
-            is_multiline = True
-        else:
-            is_multiline = False
-        return is_multiline
+        return self.offset_string.count('\n')
 
     @property
     def normalize(self) -> str:
@@ -1187,7 +1173,7 @@ class Annotation(Data):
         return self._spans
 
 
-# todo dicuss
+# todo discuss
 # class NoLabelAnnotation(Annotation):
 #    """
 #     This is an Annotation created by a tokenizer which is not labeled.
