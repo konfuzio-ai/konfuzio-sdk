@@ -5,7 +5,7 @@ import os
 import unittest
 
 import pytest
-from konfuzio_sdk.data import Project, Annotation, Document, Label, AnnotationSet, LabelSet
+from konfuzio_sdk.data import Project, Annotation, Document, Label, AnnotationSet, LabelSet, Data
 from konfuzio_sdk.utils import is_file, get_default_label_set_documents, separate_labels
 
 logger = logging.getLogger(__name__)
@@ -451,3 +451,26 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert len(cls.prj.documents) == cls.document_count
         assert len(cls.prj.test_documents) == cls.test_document_count
         assert len(cls.prj.labels[0].annotations) == cls.annotations_correct
+
+
+@pytest.mark.local
+class TestData(unittest.TestCase):
+    """Test functions that don't require data."""
+
+    def test_compare_none_and_id(self):
+        """Test to compare an instance to None."""
+        a = Data()
+        a.id_ = 5
+        self.assertNotEqual(a, None)
+
+    def test_compare_nones(self):
+        """Test to compare an instance with None ID to None."""
+        a = Data()
+        self.assertNotEqual(a, None)
+
+    def test_compare_id_with_instance_without(self):
+        """Test to compare an instance with ID to an instance with None ID."""
+        a = Data()
+        a.id_ = 5
+        b = Data()
+        self.assertNotEqual(a, b)

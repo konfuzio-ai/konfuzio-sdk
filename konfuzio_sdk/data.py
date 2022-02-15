@@ -6,7 +6,6 @@ import os
 import pathlib
 import re
 import shutil
-from abc import ABC
 from copy import deepcopy
 import time
 from datetime import tzinfo
@@ -37,7 +36,7 @@ from konfuzio_sdk.utils import is_file, convert_to_bio_scheme, amend_file_name
 logger = logging.getLogger(__name__)
 
 
-class Data(ABC):
+class Data:
     """Collect general functionality to work with data from API."""
 
     id_iter = itertools.count()
@@ -46,7 +45,7 @@ class Data(ABC):
 
     def __eq__(self, other) -> bool:
         """Compare any point of data with their ID, overwrite if needed."""
-        return self.id_ and other.id_ and self.id_ == other.id_
+        return self.id_ and other and other.id_ and self.id_ == other.id_
 
     def __hash__(self):
         """Return hash(self)."""
