@@ -147,3 +147,15 @@ The Konfuzio Server Tutorial:
 - [Issue Tracker](https://github.com/konfuzio-ai/document-ai-python-sdk/issues)
 - [MIT License](https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/LICENSE.md)
 - [Konfuzio Homepage](https://www.konfuzio.com/en/)
+
+# Supported CRUD Operations
+
+| data structure | Create/Upload | Edit | Update (sync) | Delete     |
+|----------------|---------------|------|---------------|------------|
+| Project        | yes           | x    | yes           | x          |
+| Document       | yes           | yes  | yes           | only local |
+| Label          | yes           | x    | x             | x          |
+| Annotation     | yes           | x    | x             | yes        |
+| Label set      | x             | x    | x             | x          |
+| Annotation set | x             | x    | x             | x          |
+| Category       | x             | x    | x             | x          |
