@@ -262,6 +262,7 @@ class Label(Data):
         description: str = None,
         label_sets: List[LabelSet] = [],
         has_multiple_top_candidates: bool = False,
+        threshold: float = None,  # todo should we really add the default 0.1?
         *initial_data,
         **kwargs,
     ):
@@ -283,8 +284,7 @@ class Label(Data):
         self.data_type = get_data_type_display
         self.description = description
         self.has_multiple_top_candidates = has_multiple_top_candidates
-        self.threshold = kwargs.get("threshold", 0.1)
-
+        self.threshold = threshold
         self.project: Project = project
 
         project.add_label(self)
@@ -1120,8 +1120,6 @@ class Annotation(Data):
     def tokens(self) -> List:
         """Create a list of potential tokens based on this annotation."""
         if not self._tokens:
-            if len(self._spans) > 1:
-                print(1)
             for span in self._spans:
                 harmonized_whitespace = suggest_regex_for_string(span.offset_string, replace_numbers=False)
                 numbers_replaced = suggest_regex_for_string(span.offset_string)
