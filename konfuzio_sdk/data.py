@@ -1272,6 +1272,7 @@ class Document(Data):
         annotations.rename(columns={'Start': 'start_offset', 'End': 'end_offset'}, inplace=True)
         for annotation in annotations.to_dict('records'):  # todo ask Ana: are Start and End always ints
             anno = Annotation(
+                document=self,
                 label=label,
                 accuracy=annotation['Accuracy'],
                 label_set=label_set,
