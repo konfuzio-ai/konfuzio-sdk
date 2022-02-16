@@ -256,7 +256,7 @@ class TestMissingOffsets(unittest.TestCase):
         # character 66:78 and 159:169 belong to a multiline annotation, so it spans
         # [66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168]
         missing_offsets = get_missing_offsets(start_offset=0, end_offset=170, annotated_offsets=offsets)
-        assert missing_offsets == [(0, 65), (78, 158), (169, 170)]
+        assert missing_offsets == [range(0, 66), range(78, 159), range(169, 170)]
 
     def test_find_missing_spans_unordered(self):
         """Find the character offsets independent of the order."""
@@ -271,22 +271,31 @@ class TestMissingOffsets(unittest.TestCase):
     def test_overlapping_annotation(self):
         """Test to incorporate a labeled sequence which is only partly included."""
         missing = get_missing_offsets(start_offset=0, end_offset=16, annotated_offsets=[range(15, 17), range(6, 7)])
-        assert missing == [(0, 5), (7, 14)]
+        assert missing == [range(0, 6), range(7, 15)]
 
     def test_annotation_start(self):
         """Test to on a sequence which starts with an annotation."""
         missing = get_missing_offsets(start_offset=0, end_offset=10, annotated_offsets=[range(5, 7), range(0, 3)])
-        assert missing == [(4, 4), (7, 10)]
+        assert missing == [range(3, 5), range(7, 10)]
 
     def test_annotation_ends(self):
-        """Test to on a sequence which ends with an annotation."""
+        """
+        Test to on a sequence which ends with an annotation.
+
+        :Example:
+
+        # >>> "0123456789"[0:7]
+        '0123456'
+        # >>> "0123456789"[7:10]
+        '789'
+        """
         missing = get_missing_offsets(start_offset=0, end_offset=10, annotated_offsets=[range(7, 10)])
-        assert missing == [(0, 6)]
+        assert missing == [range(0, 7)]
 
     def test_empty_annotations(self):
         """Test on an unlabeled sequence."""
         missing = get_missing_offsets(start_offset=0, end_offset=160, annotated_offsets=[])
-        assert missing == [(0, 160)]
+        assert missing == [range(0, 160)]
 
     def test_fully_labeled(self):
         """Test on an labeled sequence."""
@@ -308,24 +317,29 @@ class TestMissingOffsets(unittest.TestCase):
         missing = get_missing_offsets(
             start_offset=10, end_offset=160, annotated_offsets=[range(159, 169), range(66, 78)]
         )
-        assert missing == [(10, 65), (78, 158)]
+        assert missing == [range(10, 66), range(78, 159)]
 
     def test_annotation_start_start_later(self):
         """Test to on a sequence which starts with an annotation."""
         missing = get_missing_offsets(start_offset=2, end_offset=10, annotated_offsets=[range(5, 7), range(0, 3)])
-        assert missing == [(4, 4), (7, 10)]
+        assert missing == [range(3, 5), range(7, 10)]
 
     def test_annotation_ends_start_later(self):
         """Test to on a sequence which ends with an annotation."""
         missing = get_missing_offsets(start_offset=2, end_offset=10, annotated_offsets=[range(7, 10)])
-        assert missing == [(2, 6)]
+        assert missing == [range(2, 7)]
 
     def test_empty_annotations_start_later(self):
         """Test on an unlabeled sequence."""
         missing = get_missing_offsets(start_offset=100, end_offset=160, annotated_offsets=[])
-        assert missing == [(100, 160)]
+        assert missing == [range(100, 160)]
 
     def test_fully_labeled_start_later(self):
         """Test on an labeled sequence."""
         missing = get_missing_offsets(start_offset=50, end_offset=160, annotated_offsets=[range(0, 160)])
         assert missing == []
+
+    def test_one_character_missing(self):
+        """Test on an labeled sequence."""
+        missing = get_missing_offsets(start_offset=0, end_offset=10, annotated_offsets=[range(0, 5), range(6, 10)])
+        assert missing == [range(5, 6)]

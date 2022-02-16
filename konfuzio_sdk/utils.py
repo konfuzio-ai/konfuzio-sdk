@@ -852,9 +852,10 @@ def get_missing_offsets(start_offset: int, end_offset: int, annotated_offsets: L
      :Example:
 
     >>> get_missing_offsets(start_offset=0, end_offset=170, annotated_offsets=[range(66, 78), range(159, 169)])
-    [(0, 65), (78, 158), (169, 170)]
+    [range(0, 65), range(78, 158), range(169, 170)]
 
     """
+    # range makes sure that uvalid ranges are ignored: list(range(4,2)) == []
     annotated_characters: List[int] = sum([list(span) for span in annotated_offsets], [])
 
     # Create boolean list of size high-low+1, each index i representing whether (i+low)th element found or not.
@@ -871,18 +872,23 @@ def get_missing_offsets(start_offset: int, end_offset: int, annotated_offsets: L
             missing_characters.append(start_offset + x)
 
     start_span = 0
-    spans: List[Tuple[int, int]] = []
+    spans: List[range] = []
     for before, missing_character in zip(missing_characters, missing_characters[1:]):
         if before == start_offset:
             start_span = before  # enter the offset
-        elif before == missing_characters[0]:
-            start_span = missing_character  # later start as sequence starts with a labeled offset
-        elif before + 1 < missing_character:
-            spans.append((start_span, before))  # add intermediate
+        elif before == missing_characters[0] and before + 1 == missing_character:
+            start_span = before  # later start as sequence starts with a labeled offset
+        elif before == missing_characters[0] and before + 1 < missing_character:
+            spans.append(range(before, before + 1))  # we found a single missing character, list(range(5,6)) == [5]
+        elif before + 1 < missing_character and start_span < before:
+            spans.append(range(start_span, before + 1))  # add intermediate
+            start_span = missing_character
+        elif before + 1 < missing_character and start_span == before:
+            spans.append(range(start_span, before + 1))  # add intermediate for a single chracter
             start_span = missing_character
         elif missing_character == end_offset:
-            spans.append((start_span, missing_character))  # exit the offset
+            spans.append(range(start_span, missing_character))  # exit the offset
         elif missing_character == missing_characters[-1]:
-            spans.append((start_span, missing_character))  # earlier end as sequence ends with a labeled offset
+            spans.append(range(start_span, missing_character + 1))  # earlier end as sequence ends with a labeled offset
 
     return spans

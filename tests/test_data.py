@@ -462,6 +462,61 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert len(cls.prj.labels[0].annotations) == cls.annotations_correct
 
 
+@pytest.mark.serial
+class TestFillOperation(unittest.TestCase):
+    """Seperate Test as we add non Labels to the project."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Initialize the test: https://app.konfuzio.com/projects/46/docs/44823/bbox-annotations/."""
+        cls.prj = Project(id_=46)
+        cls.doc = cls.prj.get_document_by_id(TEST_DOCUMENT_ID)
+        default_label_set = cls.prj.get_label_set_by_name('Lohnabrechnung')
+        assert default_label_set.labels.__len__() == 10
+        cls.annotations = cls.doc.annotations(start_offset=1498, end_offset=1590, fill=True)
+        cls.sorted_spans = sorted([span for annotation in cls.annotations for span in annotation.spans])
+        assert default_label_set.labels.__len__() == 11
+        cls.text = '198,34\n  Erna-Muster Eiermann                         KiSt      15,83   Solz        10,89\n  '
+        assert cls.doc.text[1498:1590] == cls.text
+
+    def test_number_of_annotations(self):
+        """Get Annotations for all offsets in the document."""
+        self.assertEqual(len(self.annotations), 7)  # 2 single line Annotation, one multiline with two spans
+
+    def test_number_of_spans(self):
+        """Get Annotations for all offsets in the document."""
+        self.assertEqual(len([span for annotation in self.annotations for span in annotation.spans]), 10)
+
+    def test_fill_doc_without_category(self):
+        """Try to fill a document without category."""
+        self.prj.get_document_by_id(44864).annotations(fill=True)
+
+    def test_fill_full_doucment_with_category(self):
+        """Try to fill a document with category."""
+        self.prj.get_document_by_id(TEST_DOCUMENT_ID).annotations(fill=True)
+
+    def test_correct_text_offset(self):
+        """Test if the the sorted spans can create the offset text."""
+        offsets = [sorted_span.offset_string for sorted_span in self.sorted_spans]
+        span_text = "".join(offsets)
+        self.assertEqual(self.doc.text[1498:1590], span_text)
+
+    def test_span_start_and_end(self):
+        """Test if the Spans have the correct offsets."""
+        spa = [(span.start_offset, span.end_offset) for span in self.sorted_spans]
+        assert self.doc.text[slice(spa[0][0], spa[0][1])] == self.doc.text[1498:1504] == '198,34'
+        assert self.doc.text[slice(spa[1][0], spa[1][1])] == self.doc.text[1504:1505] == '\n'
+        assert self.doc.text[slice(spa[2][0], spa[2][1])] == self.doc.text[1505:1507] == '  '
+        assert self.doc.text[slice(spa[3][0], spa[3][1])] == self.doc.text[1507:1518] == 'Erna-Muster'
+        assert self.doc.text[slice(spa[4][0], spa[4][1])] == self.doc.text[1518:1519] == ' '
+        assert self.doc.text[slice(spa[5][0], spa[5][1])] == self.doc.text[1519:1527] == 'Eiermann'
+        unlabeled = '                         KiSt      15,83   Solz        '
+        assert self.doc.text[slice(spa[6][0], spa[6][1])] == self.doc.text[1527:1582] == unlabeled
+        assert self.doc.text[slice(spa[7][0], spa[7][1])] == self.doc.text[1582:1587] == '10,89'
+        assert self.doc.text[slice(spa[8][0], spa[8][1])] == self.doc.text[1587:1588] == '\n'
+        assert self.doc.text[slice(spa[9][0], spa[9][1])] == self.doc.text[1588:1590] == '  '
+
+
 @pytest.mark.local
 class TestData(unittest.TestCase):
     """Test functions that don't require data."""

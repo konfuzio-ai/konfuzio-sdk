@@ -26,7 +26,7 @@ from konfuzio_sdk.api import (
     update_file_konfuzio_api,
     get_document_details,
 )
-from konfuzio_sdk.utils import get_bbox
+from konfuzio_sdk.utils import get_bbox, get_missing_offsets
 from konfuzio_sdk.evaluate import compare
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_spans, suggest_regex_for_string, merge_regex
@@ -753,7 +753,7 @@ class Annotation(Data):
         # elif self.__class__.__name__ == 'NoLabelAnnotation':
         #    self.annotation_set = None
         else:
-            logger.warning(f'{self} created but without annotation set information.')
+            logger.warning(f'{self} in {self.document} created but without annotation set information.')
             # raise AttributeError(f'{self.__class__.__name__} {self.id_local} has no Annotation Set.')
 
         self.selection_bbox = kwargs.get("selection_bbox", None)
@@ -762,8 +762,11 @@ class Annotation(Data):
         bboxes = kwargs.get("bboxes", None)
         if bboxes and len(bboxes) > 0:
             for bbox in bboxes:
-                sa = Span(start_offset=bbox["start_offset"], end_offset=bbox["end_offset"], annotation=self)
-                self.add_span(sa)
+                if "start_offset" in bbox.keys() and "end_offset" in bbox.keys():
+                    sa = Span(start_offset=bbox["start_offset"], end_offset=bbox["end_offset"], annotation=self)
+                    self.add_span(sa)
+                else:
+                    logger.error(f'SDK cannot read bbox of Annotation {self.id_} in {self.document}: {bbox}')
         elif (
             bboxes is None
             and kwargs.get("start_offset", None) is not None
@@ -811,9 +814,9 @@ class Annotation(Data):
         """Return string representation."""
         if self.label and self.document:
             span_str = ', '.join(f'{x.start_offset, x.end_offset}' for x in self._spans)
-            return f"{self.label.name} {span_str}"
+            return f"Annotation {self.label.name} {span_str}"
         elif self.label:
-            return f"{self.label.name} ({self._spans})"
+            return f"Annotation {self.label.name} ({self._spans})"
         # todo discuss
         # elif self.__class__.__name__ == 'NoLabelAnnotation':
         #     return f"NoLabelAnnotation ({self.start_offset}, {self.end_offset})"
@@ -965,9 +968,7 @@ class Annotation(Data):
 
     def regex_annotation_generator(self, regex_list) -> List[Span]:
         """
-        Build candidates for regexes.
-
-        # todo: Allow to add label to Span
+        Build Spans without Labels by regexes.
 
         :return: Return sorted list of Spans by start_offset
         """
@@ -975,7 +976,7 @@ class Annotation(Data):
         for regex in regex_list:
             dict_spans = regex_spans(doctext=self.document.text, regex=regex)
             for offset in list(set((x['start_offset'], x['end_offset']) for x in dict_spans)):
-                span = Span(start_offset=offset[0], end_offset=offset[1])
+                span = Span(start_offset=offset[0], end_offset=offset[1], annotation=self)
                 spans.append(span)
         spans.sort()
         return spans
@@ -1068,17 +1069,6 @@ class Annotation(Data):
     def spans(self):
         """Return default entry to get all Spans of the Annotation."""
         return self._spans
-
-
-# todo discuss
-# class NoLabelAnnotation(Annotation):
-#    """
-#     This is an Annotation created by a tokenizer which is not labeled.
-#
-#     Because of this is does not have 'id', 'label', 'annotation_set'
-#
-#    """
-#    pass
 
 
 class Document(Data):
@@ -1246,7 +1236,12 @@ class Document(Data):
         return self._annotation_sets
 
     def annotations(
-        self, label: Label = None, use_correct: bool = True, start_offset: int = None, end_offset: int = None
+        self,
+        label: Label = None,
+        use_correct: bool = True,
+        start_offset: int = 0,
+        end_offset: int = None,
+        fill: bool = False,
     ) -> List[Annotation]:
         """
         Filter available annotations.
@@ -1283,52 +1278,35 @@ class Document(Data):
                 annotations.append(annotation)
                 add = False
 
-        return annotations
-        # if (use_correct and annotation.is_correct) or not use_correct:
-        #     # filter by label
-        #     if label is not None and annotation.label == label:
-        #         annotations.append(annotation)
-        #
-        #     elif label is None:
-        #         annotations.append(annotation)
+        if fill:
+            # add a None Label to the default Label Set of the Document
+            # todo: we cannot assure that the document has a category, so Annotations must not require label_set
+            default_label_set = self.project.get_label_set_by_id(self.category.id_)
+            no_label = Label(project=self.project, label_sets=[default_label_set])
 
-        # if fill:
-        #    raise NotImplementedError
-        #     start_offset = 0
-        #     end_offset = len(self.text)
-        #     if not annotations:
-        #         artificial_anno = Annotation(
-        #             start_offset=start_offset, end_offset=end_offset, document=self, label=None, is_correct=False
-        #         )
-        #         artificial_annotations.append(artificial_anno)
-        #
-        #     else:
-        #         for annotation in annotations:
-        #             # create artificial annotations for offsets before the correct annotations spans
-        #             for annotation_span in annotation._spans:
-        #                 if annotation_span.start_offset > start_offset:
-        #                     artificial_anno = Annotation(
-        #                         start_offset=start_offset,
-        #                         end_offset=annotation_span.start_offset,
-        #                         document=self,
-        #                         label=None,
-        #                         is_correct=False,
-        #                     )
-        #                     artificial_annotations.append(artificial_anno)
-        #
-        #                 start_offset = annotation_span.end_offset
-        #
-        #         if max(span.end_offset for span in annotation._spans) < end_offset:
-        #             # create annotation for offsets between last correct annotation and end offset
-        #             artificial_anno = Annotation(
-        #                 start_offset=max(span.end_offset for span in annotation._spans),
-        #                 end_offset=end_offset,
-        #                 document=self,
-        #                 label=None,
-        #                 is_correct=False,
-        #             )
-        #
-        #             artificial_annotations.append(artificial_anno)
+            spans = [range(span.start_offset, span.end_offset) for anno in annotations for span in anno.spans]
+            if end_offset is None:
+                end_offset = len(self.text)
+            missings = get_missing_offsets(start_offset=start_offset, end_offset=end_offset, annotated_offsets=spans)
+
+            for missing in missings:
+                new_spans = []
+                offset_text = self.text[missing.start : missing.stop]
+                new_annotation = Annotation(document=self, label=no_label, label_set=default_label_set)
+                # we split spans which span multiple lines, so that one Span comprises one line
+                offset_of_offset = 0
+                line_breaks = [offset_line for offset_line in re.split(r'(\n)', offset_text) if offset_line != '']
+                for offset in line_breaks:
+                    start = missing.start + offset_of_offset
+                    offset_of_offset += len(offset)
+                    end = missing.start + offset_of_offset
+                    new_span = Span(start_offset=start, end_offset=end, annotation=new_annotation)
+                    new_spans.append(new_span)
+                if new_spans:
+                    new_annotation._spans = new_spans
+                    annotations.append(new_annotation)
+
+        return annotations
 
     @property
     def document_folder(self):
