@@ -1910,10 +1910,7 @@ class Project(Data):
             pathlib.Path(self.regex_folder).mkdir(parents=True, exist_ok=True)
             pathlib.Path(self.model_folder).mkdir(parents=True, exist_ok=True)
 
-        if update:
-            self.update()
-        else:
-            self.get()
+        self.get(update=update)
 
     def __repr__(self):
         """Return string representation."""
@@ -1977,13 +1974,13 @@ class Project(Data):
             json.dump(meta_data, f, indent=2, sort_keys=True)
         return self
 
-    def get(self):
+    def get(self, update=False):
         """
         Access meta information of the project.
 
         :param update: Update the downloaded information even it is already available
         """
-        if not is_file(self.meta_file_path, raise_exception=False):
+        if not is_file(self.meta_file_path, raise_exception=False) or update:
             self.write_project_files()
         self.get_meta()
         self.get_labels()
@@ -1991,17 +1988,6 @@ class Project(Data):
         self.get_categories()
         self.load_categories()
         self.init_or_update_document()
-        return self
-
-    def update(self):
-        """Update the project and all documents by downloading them from the host. Note : It will not work offline."""
-        self.write_project_files()
-        self.get_meta()
-        self.get_labels()
-        self.get_label_sets()
-        self.get_categories()
-        self.load_categories()
-        self.init_or_update_document()  # we will do a partial update in case you already had a version locally.
         return self
 
     def add_label_set(self, label_set: LabelSet):

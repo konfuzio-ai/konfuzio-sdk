@@ -129,7 +129,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_update_prj(self):
         """Test number of documents after updating a project."""
         assert len(self.prj.documents) == self.document_count
-        self.prj.update()
+        self.prj.get(update=True)
         assert len(self.prj.documents) == self.document_count
         is_file(self.prj.meta_file_path)
 
