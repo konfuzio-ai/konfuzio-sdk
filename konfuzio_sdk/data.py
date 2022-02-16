@@ -1185,12 +1185,14 @@ class Document(Data):
         from konfuzio.load_data import load_pickle
 
         model = load_pickle(path_to_model)
-        extraction_result = model.extract(document=self)
 
         # build the doc from model results
         virtual_doc = Document(project=self.project)
         virtual_annotation_set = 0  # counter for accross mult. annotation set groups of a label set
 
+        extraction_result = model.extract(document=virtual_doc)
+
+        # TODO: not needed once extract returns a document
         for label_or_label_set_name, information in extraction_result.items():
             if not isinstance(information, list):
                 label = self.project.get_label_by_name(label_or_label_set_name)
