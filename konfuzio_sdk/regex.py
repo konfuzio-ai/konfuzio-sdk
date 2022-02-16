@@ -9,6 +9,12 @@ from tabulate import tabulate
 logger = logging.getLogger(__name__)
 
 
+def merge_regex(regex_tokens: List[str]):
+    """Merge a list of regex to one group."""
+    tokens = r'|'.join(sorted(regex_tokens, key=len, reverse=True))
+    return f'(?:{tokens})'
+
+
 def harmonize_whitespaces(text):
     """Convert multiple whitespaces to one."""
     single_whitespace_replaced = re.sub(r'(?<! ) (?! )', r'[ ]+', text)
@@ -65,8 +71,6 @@ def plausible_regex(suggestion, string):
 
 def suggest_regex_for_string(string: str, replace_characters: bool = False, replace_numbers: bool = True):
     """Suggest regex for a given string."""
-    if '.c' in string:
-        print(1)
     escaped_original = escape(string)
 
     if replace_characters:

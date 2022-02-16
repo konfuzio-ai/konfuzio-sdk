@@ -3,7 +3,7 @@ import textwrap
 from timeit import timeit
 
 
-from konfuzio_sdk.regex import suggest_regex_for_string
+from konfuzio_sdk.regex import suggest_regex_for_string, merge_regex
 from konfuzio_sdk.utils import does_not_raise
 
 import logging
@@ -102,6 +102,15 @@ def test_suggest_regex_for_string(input, output, expected_exception):
             assert suggest_regex_for_string(**input) == output
         else:
             assert suggest_regex_for_string(**input) is None
+
+
+def test_merge_regex():
+    """Test to merge multiple regex to one group."""
+    my_regex = merge_regex([r'[a-z]+', r'\d+', r'[A-Z]+'])
+    assert my_regex == r'(?:[a-z]+|[A-Z]+|\d+)'
+    test_string = "39 gallons is the per capita consumption of softdrinks in US."
+    tokens = regex_spans(test_string, my_regex)
+    assert len(tokens) == len(test_string.split(' '))
 
 
 class TestTokens(unittest.TestCase):
