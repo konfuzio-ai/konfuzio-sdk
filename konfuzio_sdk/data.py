@@ -223,6 +223,56 @@ class LabelSet(Data):
         else:
             logger.error(f'{self} already has {label}, which cannot be added twice.')
 
+    # todo: In how far we need it
+    # def evaluate(self, doc_model):
+    #     """Evaluate templates."""
+    #     if self.is_default:
+    #         return None
+    #     if not self.has_multiple_sections:
+    #         return None
+    #     if not hasattr(self, 'pattern') or not self.pattern:
+    #         return None
+    #
+    #     evaluation_df = pandas.DataFrame()
+    #     for test_doc in self.project.test_docs:
+    #         res = doc_model.extract(test_doc.text)
+    #         evaluation_df = self.evaluate_document_templates(test_doc, doc_model, evaluation_df, res)
+    #
+    # def evaluate_document_templates(
+    #     self, test_doc, doc_model, evaluation_df: pandas.DataFrame, res: Dict
+    # ) -> pandas.DataFrame:
+    #     """Evaluate templates for a document."""
+    #     if self.is_default:
+    #         return evaluation_df
+    #     if not self.has_multiple_sections:
+    #         return evaluation_df
+    #     item_annotations = [x for x in test_doc.annotations() if x.section_label.id_ == self.id_]
+    #     item_section_ids = set(x.section for x in item_annotations)
+    #
+    #     if self.name in res.keys() and len(item_section_ids) == len(res[self.name]):
+    #         evaluation = True
+    #         length = len(item_section_ids)
+    #         length_predicted = len(res[self.name])
+    #     else:
+    #         evaluation = False
+    #         length = len(item_section_ids)
+    #         length_predicted = len(res[self.name]) if self.name in res.keys() else 0
+    #
+    #     evaluation_df = evaluation_df.append(
+    #         {
+    #             'evaluation': evaluation,
+    #             'section_label': self.name,
+    #             'document': test_doc.id_,
+    #             'length': length,
+    #             'length_predicted': length_predicted,
+    #         },
+    #         ignore_index=True,
+    #     )
+    #     evaluation_df['document'] = evaluation_df.document.astype(int)
+    #     evaluation_df['length'] = evaluation_df.length.astype(int)
+    #     evaluation_df['length_predicted'] = evaluation_df.length_predicted.astype(int)
+    #     return evaluation_df
+
 
 class Category(LabelSet):
     """A Category is used to group documents."""
