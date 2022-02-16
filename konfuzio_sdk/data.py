@@ -1009,6 +1009,10 @@ class Annotation(Data):
             label_set_id = None
         else:
             label_set_id = self.label_set.id_
+        if self.is_online:
+            logger.error("You cannot update Annotations once saved online.")
+            # update_annotation(id_=self.id_, document_id=self.document.id_, project_id=self.project.id_)
+
         if not self.is_online:
             response = post_document_annotation(
                 document_id=self.document.id_,
