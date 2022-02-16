@@ -240,7 +240,6 @@ def test_corrupted_name():
     assert amend_file_name('2022-02-13 19:23:06.168728.tiff') == '2022-02-13 19-23-06.168728.tiff'
 
 
-@pytest.mark.local
 class TestMissingOffsets(unittest.TestCase):
     """Test to detect not labeled sequences."""
 
