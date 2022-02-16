@@ -445,6 +445,15 @@ class TestKonfuzioDataSetup(unittest.TestCase):
             '(?P<Auszahlungsbetrag_N_673143_4074>\\d\\d\\,[ ]+\\d\\d[-])',
         ]
 
+    @unittest.skip(reason='Waiting for Text-Annotation Documentation.')
+    def test_to_change_an_annotation_online(self):
+        """Test to update an Annotation from revised to not revised and back to revised."""
+        doc = self.prj.get_document_by_id(44864)
+        annotations = doc.annotations(start_offset=10, end_offset=200)
+        first_annotation = annotations[0]
+        first_annotation.revised = False
+        first_annotation.save()
+
     @classmethod
     def tearDownClass(cls) -> None:
         """Test if the project remains the same as in the beginning."""
