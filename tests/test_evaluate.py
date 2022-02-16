@@ -613,7 +613,6 @@ class TestEvaluation(unittest.TestCase):
     def test_compare_extractions_to_a_real_doc(self):
         """Test to compare the results of an extraction model to the human annotations."""
         prj = Project(id_=TEST_PROJECT_ID)
-        human_doc = prj.documents[0]
         human_doc = prj.get_document_by_id(44823)
         path_to_model = os.path.join(os.getcwd(), "lohnabrechnung.pkl")
         if is_file(file_path=path_to_model, raise_exception=False):

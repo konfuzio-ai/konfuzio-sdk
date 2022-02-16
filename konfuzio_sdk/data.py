@@ -1161,7 +1161,9 @@ class Document(Data):
         """Return the name of the document incl. the ID."""
         return f"{self.name}: {self.id_}"
 
-    def add_extractions_as_annotations(self, label: Label, extractions, label_set: LabelSet, annotation_set: int):
+    def add_extractions_as_annotations(
+        self, label: Label, extractions, label_set: LabelSet, annotation_set: AnnotationSet
+    ):
         """Add the extraction of a model on the document."""
         annotations = extractions[extractions['Accuracy'] > 0.1][
             ['Start', 'End', 'Accuracy', 'page_index', 'x0', 'x1', 'y0', 'y1', 'top', 'bottom']
@@ -1187,22 +1189,46 @@ class Document(Data):
         model = load_pickle(path_to_model)
 
         # build the doc from model results
-        virtual_doc = Document(project=self.project)
-        virtual_annotation_set = 0  # counter for accross mult. annotation set groups of a label set
+        # TODO: build virtual document that can be used for extraction
+        virtual_doc = Document(project=self.project, text=self.text, bbox=self.get_bbox())
+        # TODO: use virtual document for extraction
+        extraction_result = model.extract(document=self)
+
+        virtual_annotation_set_id = 0  # counter for accross mult. annotation set groups of a label set
+
+        # define annotation set for the category label set
+        category_label_set = self.project.get_label_set_by_id(self.category.id_)
+        virtual_default_annotation_set = AnnotationSet(
+            document=virtual_doc, label_set=category_label_set, id_=virtual_annotation_set_id
+        )
 
         extraction_result = model.extract(document=virtual_doc)
 
         # TODO: not needed once extract returns a document
         for label_or_label_set_name, information in extraction_result.items():
             if not isinstance(information, list):
+                # annotations belong to the default annotation set
+                # add default annotation set if there is any prediction for it
+                if virtual_default_annotation_set not in virtual_doc.annotation_sets:
+                    virtual_doc.add_annotation_set(virtual_default_annotation_set)
+
                 label = self.project.get_label_by_name(label_or_label_set_name)
                 virtual_doc.add_extractions_as_annotations(
-                    label=label, extractions=information, label_set=self.category, annotation_set=self.category.id_
+                    label=label,
+                    extractions=information,
+                    label_set=self.category,
+                    annotation_set=virtual_default_annotation_set,
                 )
+
             else:  # process multi annotation sets where multiline is True
                 label_set = self.project.get_label_set_by_name(label_or_label_set_name)
                 for entry in information:  # represents one of pot. multiple annotation-sets belonging of one label set
-                    virtual_annotation_set += 1
+                    virtual_annotation_set_id += 1
+                    virtual_annotation_set = AnnotationSet(
+                        document=virtual_doc, label_set=label_set, id_=virtual_annotation_set_id
+                    )
+                    virtual_doc.add_annotation_set(virtual_annotation_set)
+
                     for label_name, extractions in entry.items():
                         label = self.project.get_label_by_name(label_name)
                         virtual_doc.add_extractions_as_annotations(
@@ -1211,6 +1237,7 @@ class Document(Data):
                             label_set=label_set,
                             annotation_set=virtual_annotation_set,
                         )
+
         return compare(self, virtual_doc)
 
     def eval_dict(self, use_correct=False) -> dict:
