@@ -1169,6 +1169,7 @@ class Document(Data):
         annotations.rename(columns={'Start': 'start_offset', 'End': 'end_offset'}, inplace=True)
         for annotation in annotations.to_dict('records'):  # todo ask Ana: are Start and End always ints
             anno = Annotation(
+                document=self,
                 label=label,
                 accuracy=annotation['Accuracy'],
                 label_set=label_set,
@@ -1184,9 +1185,8 @@ class Document(Data):
         from konfuzio.load_data import load_pickle
 
         model = load_pickle(path_to_model)
-        extraction_result = model.extract(
-            text=self.text, bbox=self.get_bbox()  # todo: ask ana: why does it not save those as attribute of the doc
-        )
+        extraction_result = model.extract(document=self)
+
         # build the doc from model results
         virtual_doc = Document(project=self.project)
         virtual_annotation_set = 0  # counter for accross mult. annotation set groups of a label set
