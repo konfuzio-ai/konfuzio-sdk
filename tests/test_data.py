@@ -491,6 +491,7 @@ class TestFillOperation(unittest.TestCase):
         """Try to fill a document without category."""
         self.prj.get_document_by_id(44864).annotations(fill=True)
 
+    @unittest.skip(reason="Documents without Category cannot be processed.")
     def test_fill_full_doucment_with_category(self):
         """Try to fill a document with category."""
         self.prj.get_document_by_id(TEST_DOCUMENT_ID).annotations(fill=True)
