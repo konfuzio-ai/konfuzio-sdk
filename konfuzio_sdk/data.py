@@ -30,7 +30,7 @@ from konfuzio_sdk.api import (
 from konfuzio_sdk.utils import get_bbox
 from konfuzio_sdk.evaluate import compare
 from konfuzio_sdk.normalize import normalize
-from konfuzio_sdk.regex import get_best_regex, regex_spans, suggest_regex_for_string
+from konfuzio_sdk.regex import get_best_regex, regex_spans, suggest_regex_for_string, merge_regex
 from konfuzio_sdk.utils import is_file, convert_to_bio_scheme, amend_file_name
 
 logger = logging.getLogger(__name__)
@@ -403,11 +403,7 @@ class Label(Data):
     def combined_tokens(self):
         """Create one OR Regex for all relevant Annotations tokens."""
         if not self._combined_tokens:
-            if len(self.tokens()) == 0:
-                raise NotImplementedError
-            else:
-                tokens = r'|'.join(sorted(self.tokens(), key=len, reverse=True))
-                self._combined_tokens = f'(?:{tokens})'  # store them for later use
+            self._combined_tokens = merge_regex(self.tokens())
         return self._combined_tokens
 
     def evaluate_regex(self, regex, filtered_group=None, regex_quality=0):
