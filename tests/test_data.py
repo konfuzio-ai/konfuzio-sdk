@@ -96,6 +96,13 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.prj.documents[0].get_file()
         assert self.prj.documents[0].ocr_file_path
 
+    def test_create_new_doc_via_text_and_bbox(self):
+        """Test to create a new document which by a text and a bbox."""
+        doc = Project(id_=46).get_document_by_id(TEST_DOCUMENT_ID)
+        new_doc = Document(project=doc.project, text=doc.text, bbox=doc.get_bbox())
+        assert new_doc.text
+        assert new_doc.get_bbox()
+
     def test_category_of_document(self):
         """Test to download a file which includes a whitespace in the name."""
         category = Project(id_=46).get_document_by_id(44860).category

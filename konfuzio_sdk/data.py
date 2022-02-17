@@ -1087,6 +1087,8 @@ class Document(Data):
         updated_at: tzinfo = None,
         number_of_pages: int = None,
         category_template: int = None,
+        text: str = None,
+        bbox: dict = None,
         *args,
         **kwargs,
     ):
@@ -1131,7 +1133,8 @@ class Document(Data):
         # project.add_document(self)  # check for duplicates by ID before adding the document to the project
 
         # use hidden variables to store low volume information in instance
-        self._text = None
+        self._text = text
+        self._bbox = bbox
         self._hocr = None
         self._pages = None
 
@@ -1487,6 +1490,8 @@ class Document(Data):
 
         :return: Bounding box information per character in the document.
         """
+        if self._bbox:
+            return self._bbox
         if is_file(self.bbox_file_path, raise_exception=False):
             with open(self.bbox_file_path, "r", encoding="utf-8") as f:
                 bbox = json.loads(f.read())
