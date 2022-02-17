@@ -1089,6 +1089,7 @@ class Document(Data):
         category_template: int = None,
         text: str = None,
         bbox: dict = None,
+        needs_update: bool = None,
         *args,
         **kwargs,
     ):
@@ -1116,6 +1117,7 @@ class Document(Data):
         self.is_dataset = is_dataset
         self.dataset_status = dataset_status
         self.number_of_pages = number_of_pages
+        self.needs_update = needs_update  # the default is None: True will load it from the API, False from local files
 
         if project and category_template:
             self.category = project.get_category_by_id(category_template)
@@ -1282,6 +1284,16 @@ class Document(Data):
         :param use_correct: If to filter by correct annotations.
         :return: Annotations in the document.
         """
+        # make sure the document has all required information
+        if self.needs_update is None:
+            pass
+        elif self.needs_update:
+            self.update()
+            self.needs_update = None  # Make sure we don't repeat to load once loaded.
+        else:
+            self.get_annotations()  # get_annotations has a fallback, if you deleted the raw json files
+            self.needs_update = None  # Make sure we don't repeat to load once loaded.
+
         annotations = []
         add = False
         for annotation in self._annotations:
@@ -1716,6 +1728,12 @@ class Document(Data):
         :param update: Update the downloaded information even it is already available
         :return: Annotations
         """
+        # Check JSON for Annotation Sets as a fallback if needs_update is False or None but the files do not exist
+        if not is_file(self.annotation_set_file_path, raise_exception=False) or not is_file(
+            self.annotation_file_path, raise_exception=False
+        ):
+            self.update()
+
         with open(self.annotation_set_file_path, "r") as f:
             raw_annotation_sets = json.load(f)
 
@@ -2118,16 +2136,15 @@ class Project(Data):
                 new = True
                 updated = None
 
-            doc = Document(project=self, id_=document_data['id'], **document_data)
             if updated:
-                logger.info(f'{doc} was updated, we will download it again.')
-                doc.update()  # todo make sure the folder is and any linkage is gone
+                doc = Document(project=self, needs_update=True, id_=document_data['id'], **document_data)
+                logger.info(f'{doc} was updated, we will download it again as soon you use it.')
             elif new:
-                logger.info(f'{doc} is not available on your machine, we will download it.')
-                doc.update()
+                doc = Document(project=self, needs_update=True, id_=document_data['id'], **document_data)
+                logger.info(f'{doc} is not available on your machine, we will download it as soon you use it.')
             else:
+                doc = Document(project=self, needs_update=False, id_=document_data['id'], **document_data)
                 logger.debug(f'Load local version of {doc} from {new_date}.')
-                doc.get_annotations()
             self.add_document(doc)
 
     def get_document_by_id(self, document_id: int) -> Document:
