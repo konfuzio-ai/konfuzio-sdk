@@ -892,3 +892,25 @@ def get_missing_offsets(start_offset: int, end_offset: int, annotated_offsets: L
             spans.append(range(start_span, missing_character + 1))  # earlier end as sequence ends with a labeled offset
 
     return spans
+
+
+def iter_before_and_after(iterable, before=1, after=None, fill=None):
+    """Iterate and provide before and after element. Generalized from http://stackoverflow.com/a/1012089."""
+    logger.error('For non productive use only. Please add tests.')
+    if after is None:
+        after = before
+
+    iterators = itertools.tee(iterable, 1 + before + after)
+
+    new = []
+
+    for i, iterator in enumerate(iterators[:before]):
+        new.append(itertools.chain([fill] * (before - i), iterator))
+
+    new.append(iterators[before])
+
+    if after > 0:
+        for i, iterator in enumerate(iterators[-after:]):
+            new.append(itertools.chain(itertools.islice(iterator, i + 1, None), [fill] * (i + 1)))
+
+    return zip(*new)
