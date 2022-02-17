@@ -723,9 +723,6 @@ class Annotation(Data):
             self.label: Label = self.document.project.get_label_by_id(label)
         elif isinstance(label, Label):
             self.label: Label = label
-        # todo discuss
-        # elif label is None and self.__class__.__name__ == 'NoLabelAnnotation':
-        #    self.label = None
         else:
             raise AttributeError(f'{self.__class__.__name__} {self.id_local} has no label.')
 
@@ -738,9 +735,6 @@ class Annotation(Data):
             self.label_set: LabelSet = self.document.project.get_label_set_by_id(label_set_id)
         elif isinstance(label_set, LabelSet):
             self.label_set = label_set
-        # todo discuss
-        # elif self.__class__.__name__ == 'NoLabelAnnotation':
-        #    self.label_set = None
         else:
             raise AttributeError(f'{self.__class__.__name__} {self.id_local} has no Label Set.')
 
@@ -749,9 +743,6 @@ class Annotation(Data):
             self.annotation_set = self.document.get_annotation_set_by_id(annotation_set_id)
         elif isinstance(annotation_set, AnnotationSet):
             self.annotation_set = annotation_set
-        # todo discuss
-        # elif self.__class__.__name__ == 'NoLabelAnnotation':
-        #    self.annotation_set = None
         else:
             logger.warning(f'{self} in {self.document} created but without annotation set information.')
             # raise AttributeError(f'{self.__class__.__name__} {self.id_local} has no Annotation Set.')
@@ -817,9 +808,6 @@ class Annotation(Data):
             return f"Annotation {self.label.name} {span_str}"
         elif self.label:
             return f"Annotation {self.label.name} ({self._spans})"
-        # todo discuss
-        # elif self.__class__.__name__ == 'NoLabelAnnotation':
-        #     return f"NoLabelAnnotation ({self.start_offset}, {self.end_offset})"
         else:
             logger.error(f"{self.__class__.__name__} without Label ({self.start_offset}, {self.end_offset})")
 
@@ -1184,10 +1172,10 @@ class Document(Data):
         model = load_pickle(path_to_model)
 
         # build the doc from model results
-        # TODO: build virtual document that can be used for extraction
-        virtual_doc = Document(project=self.project, text=self.text, bbox=self.get_bbox())
-        # TODO: use virtual document for extraction
-        extraction_result = model.extract(document=self)
+        virtual_doc = Document(
+            project=self.project, text=self.text, bbox=self.get_bbox(), number_of_pages=len(self.text.split('\f'))
+        )
+        extraction_result = model.extract(document=virtual_doc)
 
         virtual_annotation_set_id = 0  # counter for accross mult. annotation set groups of a label set
 
@@ -1196,8 +1184,6 @@ class Document(Data):
         virtual_default_annotation_set = AnnotationSet(
             document=virtual_doc, label_set=category_label_set, id_=virtual_annotation_set_id
         )
-
-        extraction_result = model.extract(document=virtual_doc)
 
         # TODO: not needed once extract returns a document
         for label_or_label_set_name, information in extraction_result.items():
@@ -1806,12 +1792,11 @@ class Document(Data):
 class Project(Data):
     """Access the information of a project."""
 
-    def __init__(self, id_: int, offline=False, update=False, **kwargs):
+    def __init__(self, id_: int, update=False, **kwargs):
         """
         Set up the data using the Konfuzio Host.
 
         :param id_: ID of the project
-        :param offline: If to get the data from Konfuzio Host
         by default.
         """
         self.id_local = next(Data.id_iter)
@@ -1827,19 +1812,6 @@ class Project(Data):
         self.meta_file_path = os.path.join(self.project_folder, "documents_meta.json5")
         self.labels_file_path = os.path.join(self.project_folder, "labels.json5")
         self.label_sets_file_path = os.path.join(self.project_folder, "label_sets.json5")
-
-        if is_file(self.meta_file_path, raise_exception=False):
-            logger.debug("Keep your local information about documents to be able to do a partial update.")
-            with open(self.meta_file_path, "r") as f:
-                self.old_meta_data = json.load(f)
-        else:
-            self.old_meta_data = []
-
-        if not offline:
-            pathlib.Path(self.project_folder).mkdir(parents=True, exist_ok=True)
-            pathlib.Path(self.documents_folder).mkdir(parents=True, exist_ok=True)
-            pathlib.Path(self.regex_folder).mkdir(parents=True, exist_ok=True)
-            pathlib.Path(self.model_folder).mkdir(parents=True, exist_ok=True)
 
         self.get(update=update)
 
@@ -1911,6 +1883,18 @@ class Project(Data):
 
         :param update: Update the downloaded information even it is already available
         """
+        if is_file(self.meta_file_path, raise_exception=False):
+            logger.debug("Keep your local information about documents to be able to do a partial update.")
+            with open(self.meta_file_path, "r") as f:
+                self.old_meta_data = json.load(f)
+        else:
+            self.old_meta_data = []
+
+        pathlib.Path(self.project_folder).mkdir(parents=True, exist_ok=True)
+        pathlib.Path(self.documents_folder).mkdir(parents=True, exist_ok=True)
+        pathlib.Path(self.regex_folder).mkdir(parents=True, exist_ok=True)
+        pathlib.Path(self.model_folder).mkdir(parents=True, exist_ok=True)
+
         if not is_file(self.meta_file_path, raise_exception=False) or update:
             self.write_project_files()
         self.get_meta()
