@@ -56,6 +56,7 @@ class TestEvaluation(unittest.TestCase):
         prj = Project(id_=TEST_PROJECT_ID)
         doc_a = prj.documents[0]
         doc_b = prj.documents[0]  # predicted
+        doc_b.annotations()
         doc_b._annotations.pop(0)  # pop an annotation that is correct in BOTH documents
         assert doc_a._annotations == doc_b._annotations  # first annotation is removed in both documents
         evaluation = compare(doc_a, doc_b)
@@ -70,6 +71,7 @@ class TestEvaluation(unittest.TestCase):
         prj = Project(id_=TEST_PROJECT_ID)
         doc_a = prj.documents[0]
         doc_b = prj.documents[0]  # predicted
+        doc_b.annotations()
         doc_b._annotations.pop(11)  # pop an annotation that is correct in BOTH documents
         assert doc_a._annotations == doc_b._annotations  # last annotation is removed in both documents
         evaluation = compare(doc_a, doc_b)
@@ -252,6 +254,7 @@ class TestEvaluation(unittest.TestCase):
         prj = Project(id_=TEST_PROJECT_ID)
         doc_a = prj.documents[20]  # doc ID 44859
         doc_b = Document(project=prj)
+        doc_a.annotations()
 
         # TODO: add attribute annotation_sets to Document (same behaviour as annotations? issue #8739)
         for annotation_set in doc_a._annotation_sets[:-1]:
@@ -282,6 +285,7 @@ class TestEvaluation(unittest.TestCase):
         doc_online = prj.documents[20]  # doc ID 44859
         doc_a = Document(project=prj)
         doc_b = Document(project=prj)
+        doc_online.annotations()
 
         # TODO: add attribute annotation_sets to Document (same behaviour as annotations?  issue #8739)
         for annotation_set in doc_online._annotation_sets:

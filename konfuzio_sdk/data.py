@@ -1172,10 +1172,10 @@ class Document(Data):
         model = load_pickle(path_to_model)
 
         # build the doc from model results
-        # TODO: build virtual document that can be used for extraction
-        virtual_doc = Document(project=self.project, text=self.text, bbox=self.get_bbox())
-        # TODO: use virtual document for extraction
-        extraction_result = model.extract(document=self)
+        virtual_doc = Document(
+            project=self.project, text=self.text, bbox=self.get_bbox(), number_of_pages=len(self.text.split('\f'))
+        )
+        extraction_result = model.extract(document=virtual_doc)
 
         virtual_annotation_set_id = 0  # counter for accross mult. annotation set groups of a label set
 
@@ -1184,8 +1184,6 @@ class Document(Data):
         virtual_default_annotation_set = AnnotationSet(
             document=virtual_doc, label_set=category_label_set, id_=virtual_annotation_set_id
         )
-
-        extraction_result = model.extract(document=virtual_doc)
 
         # TODO: not needed once extract returns a document
         for label_or_label_set_name, information in extraction_result.items():
