@@ -102,6 +102,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         new_doc = Document(project=doc.project, text=doc.text, bbox=doc.get_bbox())
         assert new_doc.text
         assert new_doc.get_bbox()
+        assert new_doc.number_of_pages == 1
 
     def test_category_of_document(self):
         """Test to download a file which includes a whitespace in the name."""

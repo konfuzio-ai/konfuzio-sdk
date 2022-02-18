@@ -1073,7 +1073,6 @@ class Document(Data):
         is_dataset: bool = None,
         dataset_status: int = None,
         updated_at: tzinfo = None,
-        number_of_pages: int = None,
         category_template: int = None,
         text: str = None,
         bbox: dict = None,
@@ -1104,7 +1103,6 @@ class Document(Data):
         self.file_url = file_url
         self.is_dataset = is_dataset
         self.dataset_status = dataset_status
-        self.number_of_pages = number_of_pages
         self.needs_update = needs_update  # the default is None: True will load it from the API, False from local files
 
         if project and category_template:
@@ -1143,6 +1141,11 @@ class Document(Data):
     def __repr__(self):
         """Return the name of the document incl. the ID."""
         return f"{self.name}: {self.id_}"
+
+    @property
+    def number_of_pages(self):
+        """Calculate the number of pages."""
+        return len(self.text.split('\f'))
 
     def add_extractions_as_annotations(
         self, label: Label, extractions, label_set: LabelSet, annotation_set: AnnotationSet
