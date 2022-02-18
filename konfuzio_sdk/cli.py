@@ -65,8 +65,7 @@ def data(id_: int):
     print("Starting the download. Please wait until the data download is finished...")
     from konfuzio_sdk.data import Project
 
-    training_prj = Project(id_=id_)
-    training_prj.update()
+    training_prj = Project(id_=id_, update=True)
 
     if len(training_prj.documents + training_prj.test_documents) == 0:
         raise ValueError("No documents in the training or test set. Please add them.")
