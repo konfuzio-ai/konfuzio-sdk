@@ -289,20 +289,3 @@ def generic_candidate_function(regex, flags=0, overlapped=False, filtered_group=
 
     candidate_function.__name__ = f"regex_{regex}"
     return candidate_function
-
-
-def check_for_match(text, regex_list, start_offset, end_offset) -> bool:
-    """
-    Check if offset_string can be found with a list of regexes.
-
-    :param text:
-    :param regex_list:
-    :param start_offset:
-    :param end_offset:
-    :return:
-    """
-    for regex in regex_list:
-        x = generic_candidate_function(regex)(text)
-        if (start_offset, end_offset) in x[2]:
-            return True
-    return False
