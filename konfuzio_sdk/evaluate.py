@@ -1,17 +1,17 @@
-"""Calculate the accuracy on any level in a document."""
+"""Calculate the accuracy on any level in a  Document."""
 
 import pandas as pd
 
 RELEVANT_FOR_EVALUATION = [
-    "id_local",  # needed to group spans in annotations
+    "id_local",  # needed to group spans in Annotations
     "id_",  # even we won't care of the id_, as the ID is defined by the start and end span
     # "confidence", we don't care about the confidence of doc_a  # todo rename to confidence
     "start_offset",  # only relevant for the merge but allows to track multiple sequences per annotation
     "end_offset",  # only relevant for the merge but allows to track multiple sequences per annotation
-    "is_correct",  # we care if it is correct, humans create annotations without confidence
+    "is_correct",  # we care if it is correct, humans create Annotations without confidence
     "label_id",
     "label_threshold",
-    "revised",  # we need it to filter feedback required annotations
+    "revised",  # we need it to filter feedback required Annotations
     "annotation_set_id",
     "label_set_id",
     # "id__predicted", we don't care of the id_ see "id_"
@@ -33,17 +33,14 @@ def grouped(group, target: str):
     # all rows where is_correct is nan relate to an element which has no correct element partner
     correct = group["is_correct"].fillna(False)  # so fill nan with False as .loc will need boolean
 
-    # TODO: check if the group selection follows the logic of text annotation
-    if correct.isnull().all():
-        # there is no correct element we can map on, all nan values
-        group[verbose_validation_column_name] = 0
-    elif len(group.loc[correct][target]) == 0:
+    # if correct.isnull().all():  # todo: rmv code - based on the tests this is not needed
+    #     # there is no correct element we can map on, all nan values
+    #     group[verbose_validation_column_name] = 0
+    if len(group.loc[correct][target]) == 0:
         # there is no "correct" element in the group, however the predicted grouping is correct
-        # todo support for mode if it is not math. defined, i.e. [1, 1, 2, 2]
         group[verbose_validation_column_name] = group[target].mode(dropna=False)[0]
     else:
-        # get the most frequent annotation_set_id from the *correct* annotations in this group
-        # todo support for mode if it is not math. defined, i.e. [1, 1, 2, 2]
+        # get the most frequent annotation_set_id from the *correct* Annotations in this group
         group[verbose_validation_column_name] = group.loc[correct][target].mode(dropna=False)[0]
 
     validation_column_name = f"is_correct_{target}"
@@ -52,7 +49,7 @@ def grouped(group, target: str):
 
 
 def compare(doc_a, doc_b, only_use_correct=False) -> pd.DataFrame:
-    """Compare the annotations of two potentially empty documents wrt. to **all** annotations.
+    """Compare the Annotations of two potentially empty Documents wrt. to **all** Annotations.
 
     :param doc_a: Document which is assumed to be correct
     :param doc_b: Document which needs to be evaluated
@@ -72,7 +69,7 @@ def compare(doc_a, doc_b, only_use_correct=False) -> pd.DataFrame:
     spans["is_correct_label_set"] = spans["label_set_id"] == spans["label_set_id_predicted"]
     # add check to evaluate multiline Annotations
     spans = spans.groupby("id_local", dropna=False).apply(lambda group: grouped(group, "id_"))
-    # add check to evaluate annotation sets
+    # add check to evaluate Annotation Sets
     spans = spans.groupby("annotation_set_id_predicted", dropna=False).apply(
         lambda group: grouped(group, "annotation_set_id")
     )

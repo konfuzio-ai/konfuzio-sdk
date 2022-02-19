@@ -2,8 +2,13 @@
 import textwrap
 from timeit import timeit
 
-
-from konfuzio_sdk.regex import suggest_regex_for_string, merge_regex
+from konfuzio_sdk.regex import (
+    suggest_regex_for_string,
+    merge_regex,
+    generic_candidate_function,
+    plausible_regex,
+    get_best_regex,
+)
 from konfuzio_sdk.utils import does_not_raise
 
 import logging
@@ -113,6 +118,42 @@ def test_merge_regex():
     assert len(tokens) == len(test_string.split(' '))
 
 
+def test_regex_plausibility_compile_error():
+    """Test the plausibility check for regex."""
+    assert 'x' == plausible_regex(r'x', 'xxx')
+    assert '' == plausible_regex(r'****', 'xxx')
+    assert '' == plausible_regex(r'\d', 'xxx')
+
+
+def test_regex_spans_with_invalid_regex_group_name():
+    """Test to run regex_spans with an invalid group name."""
+    result = regex_spans('I go home at 5 AM.', regex=r'(?P<9variable>\d)')
+    expected_result = [
+        {
+            'regex_used': "'(?P<_9variable>\\\\d)'",
+            'regex_group': '_9variable',
+            'value': '5',
+            'start_offset': 13,
+            'end_offset': 14,
+            'start_text': 0,
+        },
+        {
+            'regex_used': "'(?P<_9variable>\\\\d)'",
+            'regex_group': '0',
+            'value': '5',
+            'start_offset': 13,
+            'end_offset': 14,
+            'start_text': 0,
+        },
+    ]
+    assert expected_result == result
+
+
+def test_get_best_regex():
+    """Test to evaluate an empty list."""
+    assert get_best_regex([]) == []
+
+
 class TestTokens(unittest.TestCase):
     """Create Tokens from example Data of the Konfuzio Host."""
 
@@ -145,7 +186,7 @@ class TestTokens(unittest.TestCase):
             start_offset=127,
             end_offset=140,
             label=new_label.id_,
-            label_set_id=new_label.label_sets[0].id_,  # hand selected document label_set
+            label_set_id=new_label.label_sets[0].id_,  # hand selected Document label_set
             revised=True,
             is_correct=True,
             accuracy=0.98765431,
@@ -163,6 +204,13 @@ class TestTokens(unittest.TestCase):
         assert '_F_' not in regex
         assert '_N_' not in regex
         assert regex == '(?P<Betrag_W_None_fallback>Dezember[ ]+2018)'
+
+    def test_generic_candidate_function(self):
+        """Test to create a function which applies a RegEx."""
+        my_function = generic_candidate_function(r"\d\d.\d\d.\d\d\d\d")
+        self.assertEqual(
+            (['23.04.2055'], ['I was born at the ', '.'], [(18, 28)]), my_function('I was born at the 23.04.2055.')
+        )
 
     def test_label_keyword_token(self):
         """Extract value for Steuerklasse."""
@@ -208,7 +256,7 @@ class TestTokens(unittest.TestCase):
             start_offset=177,
             end_offset=179,
             label=label.id_,
-            label_set_id=label.label_sets[0].id_,  # hand selected document label_set
+            label_set_id=label.label_sets[0].id_,  # hand selected Document label_set
             annotation_set_id=1,
             revised=True,
             is_correct=True,
@@ -261,13 +309,13 @@ class TestRegexGenerator(unittest.TestCase):
                         assert span.offset_string in clean_findings
 
     def test_two_annotations_with_same_label_close_to_each_other(self):
-        """Test that any text to regex subset works, even if the text contains two annotations with the same label."""
+        """Test that any text to regex subset works, even if the text contains two Annotations with the same label."""
         # previously this resulted in "sre_constants.error: redefinition of group name" error
         document = self.prj.documents[-1]
         assert len(document.annotations()) == 28
         # new functionality let you create a regex for a region in a document, from 950 to 1500 character
         regex = document.regex(start_offset=950, end_offset=1500)[0]
-        # in this document region we will use 2 times the regex tokens for Ort, each uses two tokens
+        # in this Document region we will use 2 times the regex tokens for Ort, each uses two tokens
         assert regex.count('(?P<Vorname_') == 1
 
     @unittest.skip('We do not support multiple Annotations in one offset for now')
@@ -364,7 +412,7 @@ class TestRegexGenerator(unittest.TestCase):
 
 
 class Test_named_group_multi_match:
-    """Test overlapping and multiple annotation in one string."""
+    """Test overlapping and multiple Annotation in one string."""
 
     # this test case was created as one issue in the PatternExtractionModel: The match of "Hansi repeats" would
     # overwrite all other Hansi ... matches, as Hansi was the key in the dictionary to aggregate his information (verbs)

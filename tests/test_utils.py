@@ -17,6 +17,7 @@ from konfuzio_sdk.utils import (
     amend_file_name,
     does_not_raise,
     get_missing_offsets,
+    iter_before_and_after,
 )
 
 TEST_STRING = "sample string"
@@ -71,7 +72,7 @@ class TestUtils(unittest.TestCase):
         ]
 
     def test_convert_to_bio_scheme_no_annotations(self):
-        """Test conversion to BIO scheme without annotations."""
+        """Test conversion to BIO scheme without Annotations."""
         text = "Hello, it's Konfuzio."
         annotations = []
         converted_text = convert_to_bio_scheme(text=text, annotations=annotations)
@@ -342,3 +343,12 @@ class TestMissingOffsets(unittest.TestCase):
         """Test on an labeled sequence."""
         missing = get_missing_offsets(start_offset=0, end_offset=10, annotated_offsets=[range(0, 5), range(6, 10)])
         assert missing == [range(5, 6)]
+
+
+def test_iter_before_and_after():
+    """Test to get before and after element."""
+    for before, i, after in iter_before_and_after([1, 2, 3, 4, 5, 6]):
+        if before:
+            assert before + 1 == i
+        elif after:
+            assert after - 1 == i

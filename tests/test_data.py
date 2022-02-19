@@ -68,59 +68,67 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         cls.prj = Project(id_=46)
 
     def test_number_training_documents(self):
-        """Test the number of documents in data set status test."""
+        """Test the number of Documents in data set status test."""
         assert len(self.prj.documents) == self.document_count
 
     def test_number_test_documents(self):
-        """Test the number of documents in data set status test."""
+        """Test the number of Documents in data set status test."""
         assert len(self.prj.test_documents) == self.test_document_count
 
+    def test_number_excluded_documents(self):
+        """Test the number of Documents in data set status test."""
+        assert len(self.prj.excluded_documents) == 1
+
+    def test_number_preperation_documents(self):
+        """Test the number of Documents in data set status test."""
+        assert len(self.prj.preperation_documents) == 0
+
     def test_annotation_of_label(self):
-        """Test the number of annotations across all documents in training."""
+        """Test the number of Annotations across all Documents in training."""
         label = self.prj.get_label_by_id(867)
         assert len(label.correct_annotations) == self.annotations_correct
 
     def test_number_of_label_sets(self):
-        """Test label sets numbers."""
+        """Test Label Sets numbers."""
         assert self.prj.label_sets.__len__() == 5
 
     def test_has_multiple_annotation_sets(self):
-        """Test label sets in the test project."""
+        """Test Label Sets in the test project."""
         assert self.prj.get_label_set_by_name('Brutto-Bezug').has_multiple_annotation_sets
 
     def test_has_not_multiple_annotation_sets(self):
-        """Test label sets in the test project."""
+        """Test Label Sets in the test project."""
         assert not self.prj.get_label_set_by_name('Lohnabrechnung').has_multiple_annotation_sets
 
     def test_default_label_set(self):
-        """Test the main label set incl. it's labels."""
+        """Test the main Label Set incl. it's labels."""
         default_label_set = self.prj.get_label_set_by_name('Lohnabrechnung')
         assert default_label_set.labels.__len__() == 10
 
     def test_to_filter_annotations_by_label(self):
-        """Test to get correct annotations of a label."""
+        """Test to get correct Annotations of a Label."""
         label = self.prj.get_label_by_id(858)
         self.assertEqual(len(label.correct_annotations), self.annotations_correct + 1)
 
     def test_category(self):
-        """Test if category of main label set is initialized correctly."""
+        """Test if Category of main Label Set is initialized correctly."""
         assert len(self.prj.categories) == 1
         assert self.prj.categories[0].id_ == 63
         assert self.prj.label_sets[0].categories[0].id_ == 63
 
     def test_label_set_multiple(self):
-        """Test label set config that is set to multiple."""
+        """Test Label Set config that is set to multiple."""
         label_set = self.prj.get_label_set_by_name('Brutto-Bezug')
         assert label_set.categories.__len__() == 1
 
     def test_number_of_labels_of_label_set(self):
-        """Test the number of labels of the default label set."""
+        """Test the number of Labels of the default Label Set."""
         label_set = self.prj.get_label_set_by_name('Lohnabrechnung')
         assert label_set.categories[0] is None  # defines a category
         assert label_set.labels.__len__() == 10
 
     def test_categories(self):
-        """Test get labels in the project."""
+        """Test get Labels in the project."""
         assert self.prj.categories.__len__() == 1
         assert self.prj.categories[0].name == 'Lohnabrechnung'
         assert self.prj.categories[0].is_default
@@ -136,8 +144,22 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.prj.documents[0].get_file()
         assert self.prj.documents[0].ocr_file_path
 
+    def test_get_bbox(self):
+        """Test to get BoundingBox of Text offset."""
+        doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
+        annotation = Annotation(document=doc)
+        span = Span(start_offset=44, end_offset=65, annotation=annotation)
+        span.bbox()
+        self.assertEqual(span.top, 23.849)
+        self.assertEqual(span.bottom, 32.849)
+        self.assertEqual(span.page_index, 0)
+        self.assertEqual(span.x0, 426.0)
+        self.assertEqual(span.x1, 442.8)
+        self.assertEqual(span.y0, 808.831)
+        self.assertEqual(span.y1, 817.831)
+
     def test_size_of_project(self):
-        """Test size of Project and compare it to the size after documents have been loaded."""
+        """Test size of Project and compare it to the size after Documents have been loaded."""
         import sys
         from types import ModuleType, FunctionType
         from gc import get_referents
@@ -170,10 +192,10 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         for document in prj.documents:
             document.text
         after = _getsize(prj)
-        assert after / before > 1.9
+        assert after / before > 1.8
 
     def test_create_new_doc_via_text_and_bbox(self):
-        """Test to create a new document which by a text and a bbox."""
+        """Test to create a new Document which by a text and a bbox."""
         doc = Project(id_=46).get_document_by_id(TEST_DOCUMENT_ID)
         new_doc = Document(project=doc.project, text=doc.text, bbox=doc.get_bbox())
         assert new_doc.text
@@ -186,7 +208,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.assertEqual(category.name, 'Lohnabrechnung')
 
     def test_category_of_document_without_category(self):
-        """Test the category of a document without category."""
+        """Test the Category of a Document without Category."""
         category = Project(id_=46).get_document_by_id(44864).category
         self.assertIsNone(category)
 
@@ -196,7 +218,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         doc.get_file()
 
     def test_labels(self):
-        """Test get labels in the project."""
+        """Test get Labels in the project."""
         assert len(self.prj.labels) == 18
 
     def test_project(self):
@@ -211,14 +233,14 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert new_project.meta_file_path == self.prj.meta_file_path
 
     def test_update_prj(self):
-        """Test number of documents after updating a project."""
+        """Test number of Documents after updating a project."""
         assert len(self.prj.documents) == self.document_count
         self.prj.get(update=True)
         assert len(self.prj.documents) == self.document_count
         is_file(self.prj.meta_file_path)
 
     def test_document(self):
-        """Test properties of a specific documents in the test project."""
+        """Test properties of a specific Documents in the test project."""
         doc = self.prj.get_document_by_id(44842)
         assert doc.category.name == 'Lohnabrechnung'
         assert len(self.prj.labels[0].correct_annotations) == self.annotations_correct
@@ -228,7 +250,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert len(glob.glob(os.path.join(doc.document_folder, '*.*'))) == 4
 
     def test_annotations_in_document(self):
-        """Test number and value of annotations."""
+        """Test number and value of Annotations."""
         doc = self.prj.get_document_by_id(44842)
         assert len(doc.annotations(use_correct=False)) == 24
         assert doc.annotations()[0].offset_string == ['22.05.2018']  # start_offset=465, start_offset=466
@@ -237,12 +259,12 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert not doc.annotations()[0].save()  # Save returns False because Annotation is already online.
 
     def test_annotation_sets_in_document(self):
-        """Test number of annotation sets in a specific document in the test project."""
+        """Test number of Annotation Sets in a specific Document in the test project."""
         doc = self.prj.get_document_by_id(44842)
         assert len(doc.annotation_sets) == 5
 
     def test_document_with_multiline_annotation(self):
-        """Test properties of a specific documents in the test project."""
+        """Test properties of a specific Documents in the test project."""
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
         assert doc.category.name == 'Lohnabrechnung'
         label = self.prj.get_label_by_id(867)
@@ -255,7 +277,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         # existing annotation
         # https://app.konfuzio.com/admin/server/sequenceannotation/?document_id=44823&project=46
         self.assertEqual(len(doc.annotations(use_correct=False)), 22)
-        # a multiline annotation in the top right corner, see https://app.konfuzio.com/a/4419937
+        # a multiline Annotation in the top right corner, see https://app.konfuzio.com/a/4419937
         # todo improve multiline support
         self.assertEqual(66, doc.annotations()[0]._spans[0].start_offset)
         self.assertEqual(78, doc.annotations()[0]._spans[0].end_offset)
@@ -266,20 +288,20 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.assertTrue(not doc.annotations()[0].save())  # Save returns False because Annotation is already online.
 
     def test_add_document_twice(self):
-        """Test adding same document twice."""
+        """Test adding same Document twice."""
         old_doc = self.prj.documents[1]
         assert len(self.prj.documents) == self.document_count
         self.prj.add_document(old_doc)
         assert len(self.prj.documents) == self.document_count
 
     def test_correct_annotations(self):
-        """Test correct annotations of a certain label in a specific document."""
+        """Test correct Annotations of a certain Label in a specific document."""
         doc = self.prj.get_document_by_id(44842)
         label = self.prj.get_label_by_id(867)
         assert len(doc.annotations(label=label)) == 1
 
     def test_annotation_start_offset_zero_filter(self):
-        """Test annotations with start offset equal to zero."""
+        """Test Annotations with start offset equal to zero."""
         doc = self.prj.get_document_by_id(44842)
         assert len(doc.annotations()) == 24
         assert doc.annotations()[0].start_offset == 188
@@ -319,27 +341,27 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         # self.assertIsNone(anno["translated_string"])  # todo: how to translate null in a meaningful way
 
     def test_document_annotations_filter(self):
-        """Test annotations filter."""
+        """Test Annotations filter."""
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
         self.assertEqual(len(doc.annotations()), 19)
         assert len(doc.annotations(label=self.prj.get_label_by_id(858))) == 1
         assert len(doc.annotations(use_correct=False)) == 22
 
     def test_document_offset(self):
-        """Test document offsets."""
+        """Test Document offsets."""
         doc = self.prj.get_document_by_id(44842)
         assert doc.text[395:396] == '4'
         annotations = doc.annotations()
         self.assertEqual(24, len(annotations))
         assert annotations[2].offset_string == ['4']
 
-    @unittest.skip(reason='Waiting for API to support to add to default annotation set')
+    @unittest.skip(reason='Waiting for API to support to add to default Annotation Set')
     def test_document_add_new_annotation(self):
         """Test adding a new annotation."""
         doc = self.prj.labels[0].documents[5]  # the latest document
-        # we create a revised annotations, as only revised annotation can be deleted
+        # we create a revised Annotations, as only revised Annotation can be deleted
         # if we would delete an unrevised annotation, we would provide feedback and thereby keep the
-        # annotation as "wrong" but "revised"
+        # Annotation as "wrong" but "revised"
         assert len(doc.annotations(use_correct=False)) == 23
         label = self.prj.labels[0]
         new_anno = Annotation(
@@ -352,7 +374,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
             accuracy=0.98765431,
             document=doc,
         )
-        # make sure document annotations are updated too
+        # make sure Document Annotations are updated too
         assert len(doc.annotations(use_correct=False)) == 24
         self.assertEqual(self.document_count + 1, len(self.prj.labels[0].correct_annotations))
         assert new_anno.id_ is None
@@ -396,9 +418,9 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
         # TODO: expand assert to check for specific error message
 
-    @pytest.mark.xfail(reason='We cannot define the annotation set automatically.')
+    @pytest.mark.xfail(reason='We cannot define the Annotation Set automatically.')
     def test_init_annotation_with_default_annotation_set(self):
-        """Test adding a new annotation without providing the annotation set."""
+        """Test adding a new Annotation without providing the Annotation Set."""
         prj = Project(id_=TEST_PROJECT_ID)
         doc = Document(project=prj)
         annotation = Annotation(
@@ -413,12 +435,12 @@ class TestKonfuzioDataSetup(unittest.TestCase):
             annotation_set=None,
         )
 
-        # an Annotation set needs to be created or retrieved after the annotation is saved
+        # an Annotation Set needs to be created or retrieved after the Annotation is saved
         assert annotation.annotation_set.id_ == 78730
 
     @unittest.skip(reason="Issue https://gitlab.com/konfuzio/objectives/-/issues/8664.")
     def test_get_text_in_bio_scheme(self):
-        """Test getting document in the BIO scheme."""
+        """Test getting Document in the BIO scheme."""
         doc = self.prj.documents[0]
         bio_annotations = doc.get_text_in_bio_scheme()
         assert len(bio_annotations) == 398
@@ -458,7 +480,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     @pytest.mark.xfail(reason='Refactoring via Pair Programming needed to clean up code and clarify test cases.')
     def test_get_default_label_set_documents(self):
-        """Check get documents and labels associated to a default annotation_set label."""
+        """Check get Documents and Labels associated to a default annotation_set label."""
         default_label_sets = [x for x in self.prj.label_sets if x.is_default]
 
         default_label_set_documents_dict, default_labels_dict = get_default_label_set_documents(
@@ -475,7 +497,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     @pytest.mark.xfail(reason='Refactoring via Pair Programming needed to clean up code and clarify test cases.')
     def test_separate_labels(self):
-        """Test LabelSets and Labels can be combined correctly."""
+        """Test Label Sets and Labels can be combined correctly."""
         self.assertEqual(len(self.prj.label_sets), 5)
         assert len(self.prj.labels) == 18
 
@@ -493,7 +515,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         prj = separate_labels(project=self.prj)
         assert len(prj.label_sets) == 5
 
-        # separate labels changes the labels of the annotations that belong to non default label_sets in the project
+        # separate Labels changes the Labels of the Annotations that belong to non default label_sets in the project
         separated_labels_with_annotations = [
             label.name
             for label in prj.labels
@@ -501,9 +523,9 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         ]
 
         assert len(separated_labels_with_annotations) == n_labels_with_annotations
-        assert len(prj.documents) == self.document_count  # only 29 documents have been added to the dataset
+        assert len(prj.documents) == self.document_count  # only 29 Documents have been added to the dataset
 
-        # verify if new labels are indeed added
+        # verify if new Labels are indeed added
         for label_set in [x for x in prj.label_sets if not x.is_default]:
             new_labels = [label.name for label in label_set.labels if len(label.annotations) > 0 and "__" in label.name]
 
@@ -573,11 +595,11 @@ class TestFillOperation(unittest.TestCase):
 
     @unittest.skip(reason="Documents without Category cannot be processed.")
     def test_fill_doc_without_category(self):
-        """Try to fill a document without category."""
+        """Try to fill a Document without Category."""
         self.prj.get_document_by_id(44864).annotations(fill=True)
 
     def test_fill_full_doucment_with_category(self):
-        """Try to fill a document with category."""
+        """Try to fill a Document with Category."""
         self.prj.get_document_by_id(TEST_DOCUMENT_ID).annotations(fill=True)
 
     def test_correct_text_offset(self):

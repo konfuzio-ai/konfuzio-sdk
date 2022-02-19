@@ -1,18 +1,27 @@
 """Validate CLI functions."""
-
-import subprocess
 import unittest
 
+from konfuzio_sdk.cli import CLI_ERROR, main
 
-class TestCLI(unittest.TestCase):
-    """Test CLI functions."""
 
-    def test_cli(self):
-        """Test if CLI can be called."""
-        proc = subprocess.Popen(
-            ['konfuzio_sdk', ''], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-        process_result, err = proc.communicate()
+def test_cli_error():
+    """Test if CLI print is available."""
+    assert "Please enter a valid command line option." in CLI_ERROR
 
-        # If stderr is not none, use the original image.
-        assert "Please enter a valid command line option." in str(process_result)
+
+def test_help():
+    """Test to run CLI."""
+    with unittest.mock.patch('sys.argv', ['--help']):
+        assert main() == -1
+
+
+def test_without_input():
+    """Test to run CLI."""
+    with unittest.mock.patch('sys.argv', [None]):
+        assert main() == -1
+
+
+def test_init_project():
+    """Test to run CLI."""
+    with unittest.mock.patch('sys.argv', ['init']):
+        assert main() == -1

@@ -11,14 +11,13 @@ from collections import defaultdict
 from contextlib import contextmanager
 from io import BytesIO
 from random import randrange
-from statistics import median
 from typing import Union, List, Tuple, Dict
 
 import filetype
 import nltk
 from nltk.tokenize import sent_tokenize
-import pandas as pd
 from PIL import Image
+
 from konfuzio_sdk import IMAGE_FILE, PDF_FILE, OFFICE_FILE, SUPPORTED_FILE_TYPES
 
 logger = logging.getLogger(__name__)
@@ -204,12 +203,12 @@ def convert_to_bio_scheme(text: str, annotations: List) -> List[Tuple[str, str]]
     . O
 
     The start and end offsets are considered having the origin in the beginning of the input text.
-    If only part of the text of the document is passed, the start and end offsets of the annotations must be
+    If only part of the text of the Document is passed, the start and end offsets of the Annotations must be
     adapted first.
 
     :param text: text to be annotated in the bio scheme
-    :param annotations: annotations in the document with start and end offset and label name
-    :return: list of tuples with each word in the text an the respective label
+    :param annotations: annotations in the Document with start and end offset and Label name
+    :return: list of tuples with each word in the text an the respective Label
     """
     nltk.download('punkt')
     tagged_entities = []
@@ -276,119 +275,120 @@ def amend_file_name(file_path: str, append_text: str = '', new_extension: str = 
         raise ValueError(f'Name of file cannot be: {file_path}')
 
 
-def get_paragraphs_by_line_space(
-    bbox: dict,
-    text: str,
-    height: Union[float, int] = None,
-    return_dataframe: bool = False,
-    line_height_ration: float = 0.8,
-) -> Union[List[List[List[dict]]], Tuple[List[List[List[dict]]], pd.DataFrame]]:
-    """
-    Split a text into paragraphs considering the space between the lines.
-
-    A paragraph consists in a list of lines. Each line corresponds to a dictionary.
-
-    :param bbox: Bounding boxes of the characters in the document
-    :param text: Text of the document
-    :param height: Threshold value for the distance between lines
-    :param return_dataframe: If to return a dataframe with the paragraph text and page number
-    :param line_height_ration: Ratio of the result of median of the distance between lines to be considered as threshold
-    :return: List of with the paragraph information per page of the document.
-    """
-    # Add start_offset and end_offset to every bbox item.
-    bbox = dict((k, dict(**v, start_offset=int(k), end_offset=int(k) + 1)) for (k, v) in bbox.items())
-    page_numbers = set(int(box['page_number']) for box in bbox.values())
-    document_structure = []
-    data = []
-
-    if height is not None:
-        if not (isinstance(height, int) or isinstance(height, float)):
-            raise Exception(f'Parameter must be of type int or float. It is {type(height)}.')
-
-    for page_number in page_numbers:
-        previous_y0 = None
-        paragraphs = []
-
-        if height is None:
-            line_threshold = line_height_ration * median(
-                box['y1'] - box['y0'] for box in bbox.values() if box['page_number'] == page_number
-            )
-        else:
-            line_threshold = height
-
-        line_numbers = set(int(box['line_number']) for box in bbox.values() if box['page_number'] == page_number)
-        for line_number in line_numbers:
-            line_bboxes = list(
-                box for box in bbox.values() if box['page_number'] == page_number and box['line_number'] == line_number
-            )
-            max_y1 = max([x['y1'] for x in line_bboxes])
-            min_y0 = min([x['y0'] for x in line_bboxes])
-
-            max_x1 = max([x['x1'] for x in line_bboxes])
-            min_x0 = min([x['x0'] for x in line_bboxes])
-
-            min_top = min([x['top'] for x in line_bboxes])
-            max_bottom = max([x['bottom'] for x in line_bboxes])
-
-            start_offset = min(x['start_offset'] for x in line_bboxes)
-            end_offset = max(x['end_offset'] for x in line_bboxes)
-            _text = text[start_offset:end_offset]
-            if _text.replace(' ', '') == '':
-                continue
-
-            if previous_y0 and previous_y0 - max_y1 < line_threshold:
-                paragraphs[-1].append(
-                    {
-                        'start_offset': start_offset,
-                        'end_offset': end_offset,
-                        'text': _text,
-                        'line_bbox': {
-                            'x0': min_x0,
-                            'x1': max_x1,
-                            'y0': min_y0,
-                            'y1': max_y1,
-                            'top': min_top,
-                            'bottom': max_bottom,
-                            'page_index': page_number - 1,
-                        },
-                    }
-                )
-            else:
-                paragraphs.append(
-                    [
-                        {
-                            'start_offset': start_offset,
-                            'end_offset': end_offset,
-                            'text': _text,
-                            'line_bbox': {
-                                'x0': min_x0,
-                                'x1': max_x1,
-                                'y0': min_y0,
-                                'y1': max_y1,
-                                'top': min_top,
-                                'bottom': max_bottom,
-                                'page_index': page_number - 1,
-                            },
-                        }
-                    ]
-                )
-
-            previous_y0 = min_y0
-
-        document_structure.append(paragraphs)
-
-        for paragraph_ in paragraphs:
-            paragraph_text = [line['text'] + "\n" for line in paragraph_]
-            paragraph_text = ''.join(paragraph_text)
-            data.append({"page_number": page_number, "paragraph_text": paragraph_text})
-
-    dataframe = pd.DataFrame(data=data)
-
-    if return_dataframe:
-        return document_structure, dataframe
-
-    else:
-        return document_structure
+#
+# def get_paragraphs_by_line_space(
+#     bbox: dict,
+#     text: str,
+#     height: Union[float, int] = None,
+#     return_dataframe: bool = False,
+#     line_height_ration: float = 0.8,
+# ) -> Union[List[List[List[dict]]], Tuple[List[List[List[dict]]], pd.DataFrame]]:
+#     """
+#     Split a text into paragraphs considering the space between the lines.
+#
+#     A paragraph consists in a list of lines. Each line corresponds to a dictionary.
+#
+#     :param bbox: Bounding boxes of the characters in the  Document
+#     :param text: Text of the document
+#     :param height: Threshold value for the distance between lines
+#     :param return_dataframe: If to return a dataframe with the paragraph text and page number
+#     :param line_height_ration: Ratio of the result of median of the distance between lines as threshold
+#     :return: List of with the paragraph information per page of the document.
+#     """
+#     # Add start_offset and end_offset to every bbox item.
+#     bbox = dict((k, dict(**v, start_offset=int(k), end_offset=int(k) + 1)) for (k, v) in bbox.items())
+#     page_numbers = set(int(box['page_number']) for box in bbox.values())
+#     document_structure = []
+#     data = []
+#
+#     if height is not None:
+#         if not (isinstance(height, int) or isinstance(height, float)):
+#             raise Exception(f'Parameter must be of type int or float. It is {type(height)}.')
+#
+#     for page_number in page_numbers:
+#         previous_y0 = None
+#         paragraphs = []
+#
+#         if height is None:
+#             line_threshold = line_height_ration * median(
+#                 box['y1'] - box['y0'] for box in bbox.values() if box['page_number'] == page_number
+#             )
+#         else:
+#             line_threshold = height
+#
+#         line_numbers = set(int(box['line_number']) for box in bbox.values() if box['page_number'] == page_number)
+#         for line_number in line_numbers:
+#             line_bboxes = list(
+#                 box for box in bbox.values() if box['page_number'] == page_number and box['line_number'] ==line_number
+#             )
+#             max_y1 = max([x['y1'] for x in line_bboxes])
+#             min_y0 = min([x['y0'] for x in line_bboxes])
+#
+#             max_x1 = max([x['x1'] for x in line_bboxes])
+#             min_x0 = min([x['x0'] for x in line_bboxes])
+#
+#             min_top = min([x['top'] for x in line_bboxes])
+#             max_bottom = max([x['bottom'] for x in line_bboxes])
+#
+#             start_offset = min(x['start_offset'] for x in line_bboxes)
+#             end_offset = max(x['end_offset'] for x in line_bboxes)
+#             _text = text[start_offset:end_offset]
+#             if _text.replace(' ', '') == '':
+#                 continue
+#
+#             if previous_y0 and previous_y0 - max_y1 < line_threshold:
+#                 paragraphs[-1].append(
+#                     {
+#                         'start_offset': start_offset,
+#                         'end_offset': end_offset,
+#                         'text': _text,
+#                         'line_bbox': {
+#                             'x0': min_x0,
+#                             'x1': max_x1,
+#                             'y0': min_y0,
+#                             'y1': max_y1,
+#                             'top': min_top,
+#                             'bottom': max_bottom,
+#                             'page_index': page_number - 1,
+#                         },
+#                     }
+#                 )
+#             else:
+#                 paragraphs.append(
+#                     [
+#                         {
+#                             'start_offset': start_offset,
+#                             'end_offset': end_offset,
+#                             'text': _text,
+#                             'line_bbox': {
+#                                 'x0': min_x0,
+#                                 'x1': max_x1,
+#                                 'y0': min_y0,
+#                                 'y1': max_y1,
+#                                 'top': min_top,
+#                                 'bottom': max_bottom,
+#                                 'page_index': page_number - 1,
+#                             },
+#                         }
+#                     ]
+#                 )
+#
+#             previous_y0 = min_y0
+#
+#         document_structure.append(paragraphs)
+#
+#         for paragraph_ in paragraphs:
+#             paragraph_text = [line['text'] + "\n" for line in paragraph_]
+#             paragraph_text = ''.join(paragraph_text)
+#             data.append({"page_number": page_number, "paragraph_text": paragraph_text})
+#
+#     dataframe = pd.DataFrame(data=data)
+#
+#     if return_dataframe:
+#         return document_structure, dataframe
+#
+#     else:
+#         return document_structure
 
 
 def get_sentences(text: str, offsets_map: Union[dict, None] = None, language: str = 'german') -> List[dict]:
@@ -463,133 +463,134 @@ def map_offsets(characters_bboxes: list) -> dict:
     return offsets_map
 
 
-def convert_segmentation_bbox(bbox: dict, page: dict) -> dict:
-    """
-    Convert bounding box from the segmentation result to the scale of the characters bboxes of the document.
+# def convert_segmentation_bbox(bbox: dict, page: dict) -> dict:
+#     """
+#     Convert bounding box from the segmentation result to the scale of the characters bboxes of the document.
+#
+#     :param bbox: Bounding box from the segmentation result
+#     :param page: Page information
+#     :return: Converted bounding box.
+#     """
+#     original_size = page['original_size']
+#     image_size = page['size']
+#     factor_y = original_size[1] / image_size[1]
+#     factor_x = original_size[0] / image_size[0]
+#     height = image_size[1]
+#
+#     temp_y0 = (height - bbox['y0']) * factor_y
+#     temp_y1 = (height - bbox['y1']) * factor_y
+#     bbox['y0'] = temp_y1
+#     bbox['y1'] = temp_y0
+#     bbox['x0'] = bbox['x0'] * factor_x
+#     bbox['x1'] = bbox['x1'] * factor_x
+#
+#     return bbox
 
-    :param bbox: Bounding box from the segmentation result
-    :param page: Page information
-    :return: Converted bounding box.
-    """
-    original_size = page['original_size']
-    image_size = page['size']
-    factor_y = original_size[1] / image_size[1]
-    factor_x = original_size[0] / image_size[0]
-    height = image_size[1]
+#
+# def select_bboxes(selection_bbox: dict, page_bboxes: list, tolerance: int = 10) -> list:
+#     """
+#     Filter the characters bboxes of the Document page according to their x/y values.
+#
+#     The result only includes the characters that are inside the selection bbox.
+#
+#     :param selection_bbox: Bounding box used to select the characters bboxes.
+#     :param page_bboxes: Bounding boxes of the characters in the Document page.
+#     :param tolerance: Tolerance for the coordinates values.
+#     :return: Selected characters bboxes.
+#     """
+#     selected_char_bboxes = [
+#         char_bbox
+#         for char_bbox in page_bboxes
+#         if int(selection_bbox["x0"]) - tolerance <= char_bbox["x0"]
+#         and int(selection_bbox["x1"]) + tolerance >= char_bbox["x1"]
+#         and int(selection_bbox["y0"]) - tolerance <= char_bbox["y0"]
+#         and int(selection_bbox["y1"]) + tolerance >= char_bbox["y1"]
+#     ]
+#
+#     return selected_char_bboxes
 
-    temp_y0 = (height - bbox['y0']) * factor_y
-    temp_y1 = (height - bbox['y1']) * factor_y
-    bbox['y0'] = temp_y1
-    bbox['y1'] = temp_y0
-    bbox['x0'] = bbox['x0'] * factor_x
-    bbox['x1'] = bbox['x1'] * factor_x
-
-    return bbox
-
-
-def select_bboxes(selection_bbox: dict, page_bboxes: list, tolerance: int = 10) -> list:
-    """
-    Filter the characters bboxes of the document page according to their x/y values.
-
-    The result only includes the characters that are inside the selection bbox.
-
-    :param selection_bbox: Bounding box used to select the characters bboxes.
-    :param page_bboxes: Bounding boxes of the characters in the document page.
-    :param tolerance: Tolerance for the coordinates values.
-    :return: Selected characters bboxes.
-    """
-    selected_char_bboxes = [
-        char_bbox
-        for char_bbox in page_bboxes
-        if int(selection_bbox["x0"]) - tolerance <= char_bbox["x0"]
-        and int(selection_bbox["x1"]) + tolerance >= char_bbox["x1"]
-        and int(selection_bbox["y0"]) - tolerance <= char_bbox["y0"]
-        and int(selection_bbox["y1"]) + tolerance >= char_bbox["y1"]
-    ]
-
-    return selected_char_bboxes
-
-
-def group_bboxes_per_line(char_bboxes: dict, page_index: int) -> list:
-    """
-    Group characters bounding boxes per line.
-
-    A line will have a single bounding box.
-
-    :param char_bboxes: Bounding boxes of the characters.
-    :param page_index: Index of the page in the document.
-    :return: List with 1 bounding box per line.
-    """
-    lines_bboxes = []
-
-    # iterate over each line_number and all of the character bboxes with that line number
-    for line_number, line_char_bboxes in itertools.groupby(char_bboxes, lambda x: x['line_number']):
-        # set the default values which we overwrite with the actual character bbox values
-        x0 = 100000000
-        top = 10000000
-        y0 = 10000000
-        x1 = 0
-        y1 = 0
-        bottom = 0
-        start_offset = 100000000
-        end_offset = 0
-
-        # remove space chars from the line selection so they don't interfere with the merging of bboxes
-        # (a bbox should never start with a space char)
-        trimmed_line_char_bboxes = [char for char in line_char_bboxes if not char['text'].isspace()]
-
-        if len(trimmed_line_char_bboxes) == 0:
-            continue
-
-        # merge characters bounding boxes of the same line
-        for char_bbox in trimmed_line_char_bboxes:
-            x0 = min(char_bbox['x0'], x0)
-            top = min(char_bbox['top'], top)
-            y0 = min(char_bbox['y0'], y0)
-
-            x1 = max(char_bbox['x1'], x1)
-            bottom = max(char_bbox['bottom'], bottom)
-            y1 = max(char_bbox['y1'], y1)
-
-            start_offset = min(int(char_bbox['string_offset']), start_offset)
-            end_offset = max(int(char_bbox['string_offset']), end_offset)
-
-        line_bbox = {
-            'bottom': bottom,
-            'page_index': page_index,
-            'top': top,
-            'x0': x0,
-            'x1': x1,
-            'y0': y0,
-            'y1': y1,
-            'start_offset': start_offset,
-            'end_offset': end_offset + 1,
-            'line_number': line_number,
-        }
-
-        lines_bboxes.append(line_bbox)
-
-    return lines_bboxes
+#
+# def group_bboxes_per_line(char_bboxes: dict, page_index: int) -> list:
+#     """
+#     Group characters bounding boxes per line.
+#
+#     A line will have a single bounding box.
+#
+#     :param char_bboxes: Bounding boxes of the characters.
+#     :param page_index: Index of the page in the document.
+#     :return: List with 1 bounding box per line.
+#     """
+#     lines_bboxes = []
+#
+#     # iterate over each line_number and all of the character bboxes with that line number
+#     for line_number, line_char_bboxes in itertools.groupby(char_bboxes, lambda x: x['line_number']):
+#         # set the default values which we overwrite with the actual character bbox values
+#         x0 = 100000000
+#         top = 10000000
+#         y0 = 10000000
+#         x1 = 0
+#         y1 = 0
+#         bottom = 0
+#         start_offset = 100000000
+#         end_offset = 0
+#
+#         # remove space chars from the line selection so they don't interfere with the merging of bboxes
+#         # (a bbox should never start with a space char)
+#         trimmed_line_char_bboxes = [char for char in line_char_bboxes if not char['text'].isspace()]
+#
+#         if len(trimmed_line_char_bboxes) == 0:
+#             continue
+#
+#         # merge characters bounding boxes of the same line
+#         for char_bbox in trimmed_line_char_bboxes:
+#             x0 = min(char_bbox['x0'], x0)
+#             top = min(char_bbox['top'], top)
+#             y0 = min(char_bbox['y0'], y0)
+#
+#             x1 = max(char_bbox['x1'], x1)
+#             bottom = max(char_bbox['bottom'], bottom)
+#             y1 = max(char_bbox['y1'], y1)
+#
+#             start_offset = min(int(char_bbox['string_offset']), start_offset)
+#             end_offset = max(int(char_bbox['string_offset']), end_offset)
+#
+#         line_bbox = {
+#             'bottom': bottom,
+#             'page_index': page_index,
+#             'top': top,
+#             'x0': x0,
+#             'x1': x1,
+#             'y0': y0,
+#             'y1': y1,
+#             'start_offset': start_offset,
+#             'end_offset': end_offset + 1,
+#             'line_number': line_number,
+#         }
+#
+#         lines_bboxes.append(line_bbox)
+#
+#     return lines_bboxes
 
 
-def merge_bboxes(bboxes: list):
-    """
-    Merge bounding boxes.
-
-    :param bboxes: Bounding boxes to be merged.
-    :return: Merged bounding box.
-    """
-    merge_bbox = {
-        "x0": min([b['x0'] for b in bboxes]),
-        "x1": max([b['x1'] for b in bboxes]),
-        "y0": min([b['y0'] for b in bboxes]),
-        "y1": max([b['y1'] for b in bboxes]),
-        "top": min([b['top'] for b in bboxes]),
-        "bottom": max([b['bottom'] for b in bboxes]),
-        "page_index": bboxes[0]['page_index'],
-    }
-
-    return merge_bbox
+# def merge_bboxes(bboxes: list):
+#     """
+#     Merge bounding boxes.
+#
+#     :param bboxes: Bounding boxes to be merged.
+#     :return: Merged bounding box.
+#     """
+#     merge_bbox = {
+#         "x0": min([b['x0'] for b in bboxes]),
+#         "x1": max([b['x1'] for b in bboxes]),
+#         "y0": min([b['y0'] for b in bboxes]),
+#         "y1": max([b['y1'] for b in bboxes]),
+#         "top": min([b['top'] for b in bboxes]),
+#         "bottom": max([b['bottom'] for b in bboxes]),
+#         "page_index": bboxes[0]['page_index'],
+#     }
+#
+#     return merge_bbox
+#
 
 
 def get_bbox(bbox, start_offset: int, end_offset: int) -> Dict:
@@ -601,7 +602,7 @@ def get_bbox(bbox, start_offset: int, end_offset: int) -> Dict:
 
     Pages are zero indexed, i.e. the first page has page_number = 0.
     """
-    # get the index of every character bbox in the document between the start and end offset
+    # get the index of every character bbox in the Document between the start and end offset
     char_bbox_ids = [str(char_bbox_id) for char_bbox_id in range(start_offset, end_offset) if str(char_bbox_id) in bbox]
 
     # exit early if no bboxes are found between the start/end offset
@@ -651,26 +652,26 @@ def get_default_label_set_documents(
     documents: List, selected_default_label_sets: List, project_label_sets: list, merge_multi_default: bool
 ):
     """
-    For each default label_set in a prj get a list of documents to be used for that default label_set.
+    For each default Label_set in a prj get a list of Documents to be used for that default Label_set.
 
-    For each default label_set we collect the labels that belong to that label_set.
+    For each default Label_set we collect the Labels that belong to that Label_set.
 
-    Then, for each document, we verify the category label_set. If if matches the default label_set, we add the
-    document to the default label_set list of documents.
+    Then, for each document, we verify the Category Label_set. If if matches the default Label_set, we add the
+    Document to the default Label_set list of Documents.
 
-    If merge_multi_default is False we discard any documents with a different default label_set.
+    If merge_multi_default is False we discard any Documents with a different default Label_set.
 
-    If the category label_set of the document does not match, but we still want to use labels that are shared between
-    default label_sets (merge_multi_default=True), then we check for the labels in each annotation_set of the document
-    that mach labels in the default label_set that we are analysing.
+    If the Category Label_set of the Document does not match, but we still want to use Labels that are shared between
+    default Label_sets (merge_multi_default=True), then we check for the Labels in each annotation_set of the document
+    that mach Labels in the default Label_set that we are analysing.
 
-    We rename the labels that are not shared as "NO_LABEL".
+    We rename the Labels that are not shared as "NO_LABEL".
 
-    Format of dict is: {default label_set.id_: list of documents)
+    Format of dict is: {default Label_set.id_: list of Documents)
     """
-    # keys are default label_set ids, values are list of documents
+    # keys are default Label_set ids, values are list of Documents
     default_label_set_documents = defaultdict(list)
-    # keys are default label_set names, values are list of label names that appear in that default label_set
+    # keys are default Label_set names, values are list of Label names that appear in that default label_set
     default_labels = defaultdict(set)
 
     # filter label_sets of the project that belong to the selected default label_sets
@@ -684,16 +685,16 @@ def get_default_label_set_documents(
             selected_label_sets.append(label_set)
             continue
 
-    # get the labels which appear in each default label_set
+    # get the Labels which appear in each default label_set
     for label_set in selected_label_sets:
         if label_set.is_default:
-            # if the label_set is default, get the label directly
+            # if the label_set is default, get the Label directly
             _default_label_sets = [label_set]
         else:
             # if not, it is a child label_set, get the default from its parent (default_label_set)
             _default_label_sets = label_set.categories
 
-        # add the labels which appear in that default label_set and that contain annotations
+        # add the Labels which appear in that default label_set and that contain Annotations
         label_set_labels = []
         for label in label_set.labels:
             if len(label.annotations) > 0:
@@ -702,13 +703,13 @@ def get_default_label_set_documents(
         for _default_label_set in _default_label_sets:
             default_labels[_default_label_set.id_] |= set(label_set_labels)
 
-    # for each document label_set in the project
+    # for each Document label_set in the project
     for default_label_set in [x for x in selected_default_label_sets if x.is_default]:
-        # copy documents so we only edit a new copy of them
+        # copy Documents so we only edit a new copy of them
         _documents = copy.deepcopy(documents) if merge_multi_default else documents
         # for each document
         for document in _documents:
-            # if the default label_set matches the category label_set, simply add to documents
+            # if the default label_set matches the Category label_set, simply add to Documents
             # we can't simply check if default_label_set.id_
             # is in document_annotation_sets because document_annotation_sets
             # can contain annotation_sets from multiple default label_sets
@@ -718,7 +719,7 @@ def get_default_label_set_documents(
                 default_label_set_documents[default_label_set.id_].append(document)
             # if not, then we need to edit it before adding
             # but only if merge_multi_default is True
-            # if merge_multi_default is False we discard any documents with a different default label_set
+            # if merge_multi_default is False we discard any Documents with a different default label_set
             elif merge_multi_default:
                 # loop over the annotation_sets
                 for i, annotation_set in enumerate(document.annotation_sets):
@@ -731,39 +732,39 @@ def get_default_label_set_documents(
                         document_label_set_id = annotation_set.label_set.id_
                     # if it does not match the current default label_set
                     if document_label_set_id != default_label_set.id_:
-                        # get the labels that do not overlap with the current default label_set
+                        # get the Labels that do not overlap with the current default label_set
                         non_overlapping_labels = (
                             set(annotation_set.label_set.labels) - default_labels[default_label_set]
                         )  # NOQA
-                        # if the labels do not overlap with the current default label_set, change to NO_LABEL
+                        # if the Labels do not overlap with the current default label_set, change to NO_LABEL
                         for label in non_overlapping_labels:
                             label.name = 'NO_LABEL'
-                # append document to the default_label_set_documents
+                # append Document to the default_label_set_documents
                 default_label_set_documents[default_label_set.id_].append(document)
-    # return all default label_set documents
+    # return all default label_set Documents
     # hotfix removed typing " -> Tuple[Dict[int, List], Dict[int, List]]" as it is unclear what should be returned
     return default_label_set_documents, default_labels
 
 
 def separate_labels(project, default_label_sets: List = None):
     """
-    Create separated labels for labels which are shared between LabelSets.
+    Create separated Labels for Labels which are shared between Label Sets.
 
     This should be used only for the training purpose.
 
-    For all documents in the project (training + test) for each category, we check all annotations in annotation_sets
-    that do not belong to the category label_set.
+    For all Documents in the project (training + test) for each Category, we check all Annotations in annotation_sets
+    that do not belong to the Category label_set.
 
-    For each label that we find, we rewrite the name of the label, adding the label_set name, followed by "__" and
-    the original name of the label.
+    For each Label that we find, we rewrite the name of the label, adding the label_set name, followed by "__" and
+    the original name of the Label
     E.g.: label_set: Shipper, Label: Name -> Label: Shipper__Name
 
     Notes:
-    When using this method, the labels in the project are changed. This should be used in combination with the model
+    When using this method, the Labels in the project are changed. This should be used in combination with the model
     models_labels_multiclass.SeparateLabelsAnnotationMultiClassModel so that these changes are undone in the extract
-    and the output contains the correct labels names.
+    and the output contains the correct Labels names.
 
-    If the labels of the project should be used in the original format for other tasks, for example, for the
+    If the Labels of the project should be used in the original format for other tasks, for example, for the
     business evaluation, the project should be reloaded after the training.
 
     """
@@ -772,7 +773,7 @@ def separate_labels(project, default_label_sets: List = None):
     if not default_label_sets:
         default_label_sets = [x for x in project.label_sets if x.is_default]
 
-    # Group documents by default label_set and prepare for training.
+    # Group Documents by default label_set and prepare for training.
     default_label_set_documents_dict, _ = get_default_label_set_documents(
         documents=project.documents + project.test_documents,
         selected_default_label_sets=default_label_sets,
@@ -782,7 +783,7 @@ def separate_labels(project, default_label_sets: List = None):
 
     for default_label_set in default_label_sets:
         try:
-            # Use patched documents to also use knowledge from other document types which share some labels.
+            # Use patched Documents to also use knowledge from other Document types which share some labels.
             _documents = default_label_set_documents_dict[default_label_set.id_]
 
             if len(_documents) == 0:
@@ -799,7 +800,7 @@ def separate_labels(project, default_label_sets: List = None):
                 if len(document_default_annotation_sets) != 1:
                     raise Exception(
                         f'Exactly 1 default annotation_set is expected. '
-                        f'There is {len(document_default_annotation_sets)} in document {document.id_}'
+                        f'There is {len(document_default_annotation_sets)} in Document {document.id_}'
                     )
                 for annotation_set in document.annotation_sets:
                     label_set = annotation_set.label_set
@@ -813,7 +814,7 @@ def separate_labels(project, default_label_sets: List = None):
                             else:
                                 # Sender__FirstName and Receiver__FirstName
                                 new_label = Label(
-                                    id_=randrange(-999999, -1),  # hotfix: identify separate labels by ID < 0
+                                    id_=randrange(-999999, -1),  # hotfix: identify separate Labels by ID < 0
                                     text=new_label_name,
                                     text_clean=new_label_name_clean,
                                     get_data_type_display=annotation.label.data_type,
@@ -828,7 +829,7 @@ def separate_labels(project, default_label_sets: List = None):
                             annotation.label = new_label
 
         except Exception as e:
-            logger.error(f'Separate labels for {default_label_set} failed because of >>{e}<<.')
+            logger.error(f'Separate Labels for {default_label_set} failed because of >>{e}<<.')
             return None
 
     return project

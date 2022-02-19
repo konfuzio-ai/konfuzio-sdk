@@ -45,19 +45,19 @@ class TestUrls(unittest.TestCase):
         self.assertEqual(get_project_url(TEST_PROJECT_ID), project_url)
 
     def test_get_documents_meta_url(self):
-        """Test function used to generate url to load meta information about documents."""
+        """Test function used to generate url to load meta information about Documents."""
         document_meta_url = f"{KONFUZIO_HOST}/api/projects/{TEST_PROJECT_ID}/docs/"
         self.assertEqual(get_documents_meta_url(project_id=TEST_PROJECT_ID), document_meta_url)
 
     def test_get_document_annotations_url(self):
-        """Test function used to generate url to access annotations from a document."""
+        """Test function used to generate url to access Annotations from a document."""
         document_annotations_url = f"{KONFUZIO_HOST}/api/projects/{TEST_PROJECT_ID}/docs/{DOCUMENT_ID}/annotations/"
         self.assertEqual(
             get_document_annotations_url(document_id=DOCUMENT_ID, project_id=TEST_PROJECT_ID), document_annotations_url
         )
 
     def test_get_document_segmentation_details_url(self):
-        """Test function used to generate url to get the segmentation details of one document in a project."""
+        """Test function used to generate url to get the segmentation details of one Document in a project."""
         document_segmentation_details_url = (
             f'{KONFUZIO_HOST}/api/projects/{TEST_PROJECT_ID}/docs/{DOCUMENT_ID}/segmentation/'
         )
@@ -86,7 +86,7 @@ class TestUrls(unittest.TestCase):
         self.assertEqual(get_document_original_file_url(DOCUMENT_ID), document_original_file_url)
 
     def test_get_document_api_details_url(self):
-        """Test function used to generate url to access document details of one document in a project."""
+        """Test function used to generate url to access Document details of one Document in a project."""
         document_api_details_url = (
             f'{KONFUZIO_HOST}/api/projects/{TEST_PROJECT_ID}/docs/{DOCUMENT_ID}/' f'?extra_fields=hocr,bbox'
         )
@@ -95,7 +95,7 @@ class TestUrls(unittest.TestCase):
         )
 
     def test_get_labels_url(self):
-        """Test function used to generate url to list all labels."""
+        """Test function used to generate url to list all Labels."""
         labels_url = f"{KONFUZIO_HOST}/api/v2/labels/"
         self.assertEqual(get_labels_url(), labels_url)
 
@@ -105,7 +105,7 @@ class TestUrls(unittest.TestCase):
         self.assertEqual(get_label_url(label_id=LABEL_ID), label_url)
 
     def test_get_annotation_url(self):
-        """Test function used to generate url to access an annotation of a document."""
+        """Test function used to generate url to access an Annotation of a document."""
         annotation_url = (
             f'{KONFUZIO_HOST}/api/projects/{TEST_PROJECT_ID}' f'/docs/{DOCUMENT_ID}/' f'annotations/{ANNOTATION_ID}/'
         )

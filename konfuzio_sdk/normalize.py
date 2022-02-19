@@ -276,7 +276,7 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
 
 
 def normalize_to_percentage(offset_string: str) -> Optional[float]:
-    """Given an annotation this function tries to translate the offset-string to an percentage -a float between 0 -1."""
+    """Given an Annotation this function tries to translate the offset-string to an percentage -a float between 0 -1."""
     offset_string = offset_string.replace(' ', '').replace('+', '').replace('-', '').replace('"', '').replace('„', '')
     if len(offset_string) > 1 and offset_string[-1] in ['.', ';', ',']:
         offset_string = offset_string[:-1]
@@ -301,7 +301,7 @@ def normalize_to_percentage(offset_string: str) -> Optional[float]:
 
 
 def normalize_to_date(offset_string: str) -> Optional[str]:
-    """Given an annotation this function tries to translate the offset-string to a date in the format 'DD.MM.YYYY'."""
+    """Given an Annotation this function tries to translate the offset-string to a date in the format 'DD.MM.YYYY'."""
     translation = None
     offset_string = (
         offset_string.replace(' ', '')
@@ -500,7 +500,6 @@ def _check_for_dates_with_day_count(offset_string: str, org_str: str, month_dict
         else:
             logger.warning('Could not convert >>' + offset_string + '<< to date (no conversion case found)')
     except ValueError:
-
         logger.warning('Could not convert >>' + offset_string + '<< to date (value error)')
         pass
 

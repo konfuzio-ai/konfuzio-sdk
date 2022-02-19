@@ -56,17 +56,25 @@ def plausible_regex(suggestion, string):
     """
     try:
         re.compile(suggestion)
-    except re.error:
+        plausibility_run = re.findall(suggestion, string)
+        if not plausibility_run:
+            logger.error(
+                f'Using "{repr(string)}" we found the regex {repr(suggestion)}, which does not match the input.'
+            )
+            logger.error(
+                'We are not able to able to convert your string to a valid regex. Please help to make it happen.'
+            )
+            result = ''
+        else:
+            result = suggestion
+
+    except re.error as e:
         logger.exception(f'The proposed regex >>{repr(suggestion)}<< is not a valid regex of string: >>{string}<<')
         logger.error('We are not able to able to convert your string to a valid regex. Please help to make it happen.')
-        return ''  # return valid regex todo how to handle those cases?
+        logger.error(e)
+        result = ''
 
-    plausibility_run = re.findall(suggestion, string)
-    if not plausibility_run:
-        logger.error(f'Using "{repr(string)}" we found the regex {repr(suggestion)}, which does not match the input.')
-        logger.error('We are not able to able to convert your string to a valid regex. Please help to make it happen.')
-
-    return suggestion
+    return result
 
 
 def suggest_regex_for_string(string: str, replace_characters: bool = False, replace_numbers: bool = True):
@@ -94,7 +102,7 @@ def suggest_regex_for_string(string: str, replace_characters: bool = False, repl
 
 
 def get_best_regex(evaluations: List, log_stats: bool = True, allow_zero_f1score=False) -> List:
-    """Optimize selection of one regex in scenarios were we are unsure if all correct annotations are labeled."""
+    """Optimize selection of one regex in scenarios were we are unsure if all correct Annotations are Labeled."""
     df = pandas.DataFrame(evaluations)
     if df.empty:
         logger.error('We cannot find any regex!')
@@ -102,9 +110,6 @@ def get_best_regex(evaluations: List, log_stats: bool = True, allow_zero_f1score
 
     if not allow_zero_f1score:
         df = df.loc[df['f1_score'] > 0]
-
-    if df.empty:
-        raise ValueError('We have no regex to evaluate!')
 
     df = df.sort_values(
         [
@@ -127,7 +132,7 @@ def get_best_regex(evaluations: List, log_stats: bool = True, allow_zero_f1score
 
     # iterate over sorted df, mark any row if it adds no matching value compared to regex above, we used max windowsize
     # matched_document = df.filter(regex=r'document_\d+').rolling(min_periods=1, window=100000000).max()
-    # any regex witch matches more documents that the regex before, is a good regex
+    # any regex witch matches more Documents that the regex before, is a good regex
     # relevant_regex = matched_document.sum(axis=1).diff()
     # df['matched_annotations_total'] = matched_document.sum(axis=1)
     # df['matched_annotations_additional'] = relevant_regex
@@ -150,7 +155,7 @@ def regex_spans(
     doctext: str, regex: str, start_chr: int = 0, flags=0, overlapped=False, keep_full_match=True, filtered_group=None
 ) -> List[Dict]:
     """
-    Convert a text with the help by one regex to annotations.
+    Convert a text with the help by one regex to Annotations.
 
     A result of results is a full regex match, matches or (named) groups are separated by keys within this result. The
     function regexinfo in konfuzio.wrapper standardizes the information we keep per match.

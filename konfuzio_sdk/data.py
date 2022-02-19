@@ -12,6 +12,7 @@ from datetime import tzinfo
 from typing import Optional, List, Union, Tuple
 
 import dateutil.parser
+from tqdm import tqdm
 
 from konfuzio_sdk import KONFUZIO_HOST
 from konfuzio_sdk.api import (
@@ -21,13 +22,10 @@ from konfuzio_sdk.api import (
     get_project_details,
     post_document_annotation,
     delete_document_annotation,
-    upload_file_konfuzio_api,
     create_label,
-    update_file_konfuzio_api,
     get_document_details,
 )
 from konfuzio_sdk.utils import get_bbox, get_missing_offsets
-from konfuzio_sdk.evaluate import compare
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_spans, suggest_regex_for_string, merge_regex
 from konfuzio_sdk.utils import is_file, convert_to_bio_scheme, amend_file_name
@@ -59,21 +57,21 @@ class Data:
 
 
 class AnnotationSet(Data):
-    """Represent an Annotation Set - group of annotations."""
+    """Represent an Annotation Set - group of Annotations."""
 
     def __init__(self, document, label_set: 'LabelSet', id_: Union[int, None] = None, **kwargs):
         """
         Create an Annotation Set.
 
-        :param id: ID of the annotation set
-        :param document: Document where the annotation set belongs
-        :param label_set: Label set where the annotation set belongs to
-        :param annotations: Annotations of the annotation set
+        :param id: ID of the Annotation Set
+        :param document: Document where the Annotation Set belongs
+        :param label_set: Label set where the Annotation Set belongs to
+        :param annotations: Annotations of the Annotation Set
         """
         self.id_local = next(Data.id_iter)
         self.id_ = id_
         self.label_set: LabelSet = label_set
-        self.document: Document = document  # we don't add it to the document as it's added via get_annotations
+        self.document: Document = document  # we don't add it to the Document as it's added via get_annotations
 
     def __repr__(self):
         """Return string representation of the Annotation Set."""
@@ -129,8 +127,8 @@ class LabelSet(Data):
         :param name_clean: Normalized name of the Label Set
         :param labels: Labels that belong to the Label Set (IDs)
         :param is_default: Bool for the Label Set to be the default one in the project
-        :param categories: Categories to which the LabelSet belongs
-        :param has_multiple_annotation_sets: Bool to allow the Label Set to have different annotation sets in a document
+        :param categories: Categories to which the Label Set belongs
+        :param has_multiple_annotation_sets: Bool to allow the Label Set to have different Annotation Sets in a Document
         """
         self.id_local = next(Data.id_iter)
         self.id_ = id_
@@ -165,7 +163,7 @@ class LabelSet(Data):
 
     def add_label(self, label):
         """
-        Add label to Label Set, if it does not exist.
+        Add Label to Label Set, if it does not exist.
 
         :param label: Label ID to be added
         """
@@ -192,7 +190,7 @@ class LabelSet(Data):
     # def evaluate_document_templates(
     #     self, test_doc, doc_model, evaluation_df: pandas.DataFrame, res: Dict
     # ) -> pandas.DataFrame:
-    #     """Evaluate templates for a document."""
+    #     """Evaluate templates for a  Document."""
     #     if self.is_default:
     #         return evaluation_df
     #     if not self.has_multiple_sections:
@@ -213,7 +211,7 @@ class LabelSet(Data):
     #         {
     #             'evaluation': evaluation,
     #             'section_label': self.name,
-    #             'document': test_doc.id_,
+    #             ' Document': test_doc.id_,
     #             'length': length,
     #             'length_predicted': length_predicted,
     #         },
@@ -226,13 +224,13 @@ class LabelSet(Data):
 
 
 class Category(LabelSet):
-    """A Category is used to group documents."""
+    """A Category is used to group Documents."""
 
     def __init__(self, *args, **kwargs):
         """
         Create a named Category.
 
-        A Category is also a Label Set but cannot have other categories associated to it.
+        A Category is also a Label Set but cannot have other Categories associated to it.
         """
         LabelSet.__init__(self, *args, **kwargs)
         self.id_local = next(Data.id_iter)
@@ -242,16 +240,16 @@ class Category(LabelSet):
         self.project.add_category(self)
 
     def documents(self):
-        """Filter for documents of this category."""
+        """Filter for Documents of this Category."""
         return [x for x in self.project.documents if x.category == self]
 
     def test_documents(self):
-        """Filter for test documents of this category."""
+        """Filter for test Documents of this Category."""
         return [x for x in self.project.test_documents if x.category == self]
 
 
 class Label(Data):
-    """A label is the name of a group of individual pieces of information annotated in a type of document."""
+    """A Label is the name of a group of individual pieces of information annotated in a type of document."""
 
     def __init__(
         self,
@@ -270,7 +268,7 @@ class Label(Data):
         """
         Create a named Label.
 
-        :param project: Project where the label belongs
+        :param project: Project where the Label belongs
         :param id_: ID of the label
         :param text: Name of the label
         :param get_data_type_display: Data type of the label
@@ -306,7 +304,7 @@ class Label(Data):
 
     @property
     def label_sets(self):
-        """Get the label sets in which this label is used."""
+        """Get the Label Sets in which this Label is used."""
         label_sets = [x for x in self.project.label_sets if self in x.labels]
         return label_sets
 
@@ -322,7 +320,7 @@ class Label(Data):
     @property
     def annotations(self):
         """
-        Add annotation to label.
+        Add Annotation to Label.
 
         :return: Annotations
         """
@@ -333,30 +331,30 @@ class Label(Data):
 
     def add_label_set(self, label_set: "LabelSet"):
         """
-        Add label set to label, if it does not exist.
+        Add Label Set to label, if it does not exist.
 
         :param label_set: Label set to add
         """
         if label_set not in self.label_sets:
             self.label_sets.append(label_set)
         else:
-            logger.warning(f'{self} already has label set {label_set}.')
+            logger.warning(f'{self} already has Label Set {label_set}.')
         return self
 
     @property
     def correct_annotations(self):
-        """Return correct annotations."""
+        """Return correct Annotations."""
         return [annotation for annotation in self.annotations if annotation.is_correct]
 
     @property
     def documents(self) -> List["Document"]:
-        """Return all documents which contain annotations of this label."""
+        """Return all Documents which contain Annotations of this Label."""
         relevant_id = list(set([anno.document.id_ for anno in self.annotations]))
         return [doc for doc in self.project.documents if (doc.id_ in relevant_id)]
 
-    # todo move to regex.py so it runs on a list of annotations, run on annotations
+    # todo move to regex.py so it runs on a list of Annotations, run on Annotations
     def find_tokens(self):
-        """Calculate the regex token of a label, which matches all offset_strings of all correct annotations."""
+        """Calculate the regex token of a label, which matches all offset_strings of all correct Annotations."""
         evaluations = []
         for annotation in self.correct_annotations:
             tokens = annotation.tokens()
@@ -414,7 +412,7 @@ class Label(Data):
         Type of regex allows you to group regex by generality
 
         Example:
-            Three annotations about the birth date in two documents and one regex to be evaluated
+            Three Annotations about the birth date in two Documents and one regex to be evaluated
             1.doc: "My was born at the 12th of December 1980, you could also say 12.12.1980." (2 Annotations)
             2.doc: "My was born at 12.06.1997." (1 Annotations)
             regex: dd.dd.dddd (without escaped characters for easier reading)
@@ -423,7 +421,7 @@ class Label(Data):
                   correct_label_annotations: 3
                   total_findings: 2 --> precision 100 %
                   num_docs_matched: 2
-                  project.documents: 2  --> document recall 100%
+                  project.documents: 2  --> Document recall 100%
 
         """
         evaluations = [
@@ -470,7 +468,7 @@ class Label(Data):
             return {}
 
     def find_regex(self) -> List[str]:
-        """Find the best combination of regex in the list of all regex proposed by annotations."""
+        """Find the best combination of regex in the list of all regex proposed by Annotations."""
         if not self.correct_annotations:
             logger.warning(f'{self} has no correct annotations.')
             return []
@@ -478,7 +476,6 @@ class Label(Data):
         regex_made = []
         for annotation in self.annotations:
             for span in annotation._spans:
-                # TODO: review multiline case
                 proposals = annotation.document.regex(start_offset=span.start_offset, end_offset=span.end_offset)
                 for proposal in proposals:
                     regex_to_remove_groupnames = re.compile('<.*?>')
@@ -488,18 +485,15 @@ class Label(Data):
                         regex_made.append(proposal)
 
         logger.info(
-            f'For label {self.name} we found {len(regex_made)} regex proposals for {len(self.correct_annotations)}'
+            f'For Label {self.name} we found {len(regex_made)} regex proposals for {len(self.correct_annotations)}'
             f' annotations.'
         )
 
         evaluations = [self.evaluate_regex(_regex_made, f'{self.name_clean}_') for _regex_made in regex_made]
-        logger.info(f'We compare {len(evaluations)} regex for {len(self.correct_annotations)} correct annotations.')
+        logger.info(f'We compare {len(evaluations)} regex for {len(self.correct_annotations)} correct Annotations.')
 
-        # correct_findings = set(x for evaluation in evaluations for x in evaluation['correct_findings'])
-        # if missing_annotations := set(self.annotations) - correct_findings:
-        #    logger.error(f'Missing correct annotation when building regex: {missing_annotations}')
-        logger.info(f'Evaluate {self} for best regex.')
         try:
+            logger.info(f'Evaluate {self} for best regex.')
             best_regex = get_best_regex(evaluations)
         except ValueError:
             logger.exception(f'We cannot find regex for {self} with a f_score > 0.')
@@ -549,9 +543,9 @@ class Label(Data):
         """
         Save Label online.
 
-        If no label sets are specified, the label is associated with the first default label set of the project.
+        If no Label Sets are specified, the Label is associated with the first default Label Set of the project.
 
-        :return: True if the new label was created.
+        :return: True if the new Label was created.
         """
         new_label_added = False
         try:
@@ -571,7 +565,7 @@ class Label(Data):
             self.id_ = response
             new_label_added = True
         except Exception:
-            logger.error(f"Not able to save label {self.name}.")
+            logger.error(f"Not able to save Label {self.name}.")
 
         return new_label_added
 
@@ -583,18 +577,25 @@ class Span(Data):
         """
         Initialize the Span without bbox, to save storage.
 
-        If Bbox should be calculated the bbox file of the document will be automatically downloaded.
+        If Bbox should be calculated the bbox file of the Document will be automatically downloaded.
 
         :param start_offset: Start of the offset string (int)
         :param end_offset: Ending of the offset string (int)
-        :param page_index: 0-based index of the page
+        :param annotation: The Annotation the Span belong to
         """
         if start_offset == end_offset:
-            logger.warning(f"You created a {self.__class__.__name__} with start {start_offset} and zero width.")
+            logger.warning(f"You created a {self.__class__.__name__} with start {start_offset} and no Text.")
         self.id_local = next(Data.id_iter)
         self.annotation = annotation
         self.start_offset = start_offset
         self.end_offset = end_offset
+        self.page_index = None
+        self.top = None
+        self.bottom = None
+        self.x0 = None
+        self.x1 = None
+        self.y0 = None
+        self.y1 = None
 
     def __eq__(self, other) -> bool:
         """Compare any point of data with their position is equal."""
@@ -624,7 +625,7 @@ class Span(Data):
             self.x1 = b['x1']
             self.y0 = b['y0']
             self.y1 = b['y1']
-            return self
+        return self
 
     @property
     def normalized(self):
@@ -694,15 +695,15 @@ class Annotation(Data):
         Initialize the Annotation.
 
         :param label: ID of the Annotation
-        :param is_correct: If the annotation is correct or not (bool)
-        :param revised: If the annotation is revised or not (bool)
-        :param id_: ID of the annotation (int)
-        :param accuracy: Accuracy of the annotation (float) which is the confidence
+        :param is_correct: If the Annotation is correct or not (bool)
+        :param revised: If the Annotation is revised or not (bool)
+        :param id_: ID of the Annotation (int)
+        :param accuracy: Accuracy of the Annotation (float) which is the Confidence
         :param document: Document to annotate
-        :param annotation: Annotation set of the document where the label belongs
-        :param label_set_text: Name of the label set where the label belongs
+        :param annotation: Annotation Set of the Document where the Label belongs
+        :param label_set_text: Name of the Label Set where the Label belongs
         :param translated_string: Translated string
-        :param label_set_id: ID of the label set where the label belongs
+        :param label_set_id: ID of the Label Set where the Label belongs
         """
         self.id_local = next(Data.id_iter)
         self.is_correct = is_correct
@@ -710,7 +711,6 @@ class Annotation(Data):
         self.normalized = normalized
         self.translated_string = translated_string
         self.document = document  # we don't add it to the document, as it's added via document.add_annotation(self)
-        self._spans: List[Span] = []
         self.id_ = id_  # Annotations can have None id_, if they are not saved online and are only available locally
         self._spans = []
 
@@ -727,13 +727,13 @@ class Annotation(Data):
             self.label: Label = label
         else:
             self.label: Label = None
-            logger.info(f'{self.__class__.__name__} {self.id_local} has no label.')
+            logger.info(f'{self.__class__.__name__} {self.id_local} has no Label.')
 
         # if no label_set_id we check if is passed by section_label_id
         if label_set_id is None and kwargs.get("section_label_id") is not None:
             label_set_id = kwargs.get("section_label_id")
 
-        # handles association to an annotation set if the annotation belongs to a category
+        # handles association to an Annotation Set if the Annotation belongs to a Category
         if isinstance(label_set_id, int):
             self.label_set: LabelSet = self.document.project.get_label_set_by_id(label_set_id)
         elif isinstance(label_set, LabelSet):
@@ -749,7 +749,7 @@ class Annotation(Data):
             self.annotation_set = annotation_set
         else:
             self.annotation_set = None
-            logger.info(f'{self} in {self.document} created but without annotation set information.')
+            logger.info(f'{self} in {self.document} created but without Annotation Set information.')
 
         if self.document:
             self.document.add_annotation(self)
@@ -757,7 +757,7 @@ class Annotation(Data):
             self.add_span(span)
 
         self.selection_bbox = kwargs.get("selection_bbox", None)
-        self.page_number = kwargs.get("page_number", None)
+        # self.page_number = kwargs.get("page_number", None)
 
         bboxes = kwargs.get("bboxes", None)
         if bboxes and len(bboxes) > 0:
@@ -772,7 +772,7 @@ class Annotation(Data):
             and kwargs.get("start_offset", None) is not None
             and kwargs.get("end_offset", None) is not None
         ):
-            # Legacy support for creating annotations with a single offset
+            # Legacy support for creating Annotations with a single offset
             bbox = kwargs.get('bbox', {})
             sa = Span(start_offset=kwargs.get("start_offset"), end_offset=kwargs.get("end_offset"), annotation=self)
             self.add_span(sa)
@@ -802,8 +802,6 @@ class Annotation(Data):
         self.bboxes = kwargs.get('bboxes', None)  # todo: smoothen implementation of multiple bboxes
         self.selection_bbox = kwargs.get('selection_bbox', None)
         self.page_number = kwargs.get('page_number', None)
-        if not hasattr(self, 'label'):
-            raise
         # TODO END LEGACY -
 
         # regex features
@@ -875,7 +873,7 @@ class Annotation(Data):
 
     @property
     def eval_dict(self) -> List[dict]:
-        """Calculate the span information to evaluate the Annotation."""
+        """Calculate the Span information to evaluate the Annotation."""
         result = []
         if not self._spans:
             result.append(Span(start_offset=0, end_offset=0).eval_dict())
@@ -893,24 +891,24 @@ class Annotation(Data):
         return self
 
     def get_link(self):
-        """Get link to the annotation in the SmartView."""
+        """Get link to the Annotation in the SmartView."""
         return KONFUZIO_HOST + "/a/" + str(self.id_)
 
     def save(self, document_annotations: list = None) -> bool:
         """
         Save Annotation online.
 
-        If there is already an annotation in the same place as the current one, we will not be able to save the current
+        If there is already an Annotation in the same place as the current one, we will not be able to save the current
         annotation.
 
         In that case, we get the id_ of the original one to be able to track it.
-        The verification of the duplicates is done by checking if the offsets and label match with any annotations
+        The verification of the duplicates is done by checking if the offsets and Label match with any Annotations
         online.
-        To be sure that we are comparing with the information online, we need to have the document updated.
-        The update can be done after the request (per annotation) or the updated annotations can be passed as input
-        of the function (advisable when dealing with big documents or documents with many annotations).
+        To be sure that we are comparing with the information online, we need to have the Document updated.
+        The update can be done after the request (per annotation) or the updated Annotations can be passed as input
+        of the function (advisable when dealing with big Documents or Documents with many Annotations).
 
-        :param document_annotations: Annotations in the document (list)
+        :param document_annotations: Annotations in the Document (list)
         :return: True if new Annotation was created
         """
         new_annotation_added = False
@@ -946,7 +944,7 @@ class Annotation(Data):
                 try:
                     if "In one project you cannot label the same text twice." in response.text:
                         if document_annotations is None:
-                            # get the annotation
+                            # get the Annotation
                             self.document.update()
                             document_annotations = self.document.annotations()
                         # get the id_ of the existing annotation
@@ -962,7 +960,7 @@ class Annotation(Data):
                                 is_duplicated = True
                                 break
 
-                        # if there isn't a perfect match, the current annotation is considered incorrect
+                        # if there isn't a perfect match, the current Annotation is considered incorrect
                         if not is_duplicated:
                             self.is_correct = False
 
@@ -988,21 +986,21 @@ class Annotation(Data):
         spans.sort()
         return spans
 
-    def toJSON(self):
-        """Convert Annotation to dict."""
-        res_dict = {
-            'start_offset': self.start_offset,
-            'end_offset': self.end_offset,
-            'label': self.label.id_,
-            'revised': self.revised,
-            'annotation_set': self.annotation_set,
-            'label_set_id': self.label_set.id_,
-            'accuracy': self.confidence,
-            'is_correct': self.is_correct,
-        }
-
-        res = {k: v for k, v in res_dict.items() if v is not None}
-        return res
+    # def toJSON(self):
+    #     """Convert Annotation to dict."""
+    #     res_dict = {
+    #         'start_offset': self.start_offset,
+    #         'end_offset': self.end_offset,
+    #         'label': self.label.id_,
+    #         'revised': self.revised,
+    #         'annotation_set': self.annotation_set,
+    #         'label_set_id': self.label_set.id_,
+    #         'accuracy': self.confidence,
+    #         'is_correct': self.is_correct,
+    #     }
+    #
+    #     res = {k: v for k, v in res_dict.items() if v is not None}
+    #     return res
 
     # @property
     # def page_index(self) -> int:
@@ -1100,16 +1098,16 @@ class Document(Data):
         **kwargs,
     ):
         """
-        Check if the document document_folder is available, otherwise create it.
+        Check if the Document document_folder is available, otherwise create it.
 
         :param id_: ID of the Document
-        :param project: Project where the document belongs to
+        :param project: Project where the Document belongs to
         :param file_path: Path to a local file from which generate the Document object
         :param file_url: URL of the document
         :param status: Status of the document
         :param data_file_name: File name of the document
         :param is_dataset: Is dataset or not. (bool)
-        :param dataset_status: Dataset status of the document (e.g. training)
+        :param dataset_status: Dataset status of the Document (e.g. training)
         :param updated_at: Updated information
         :param bbox: Bounding box information per character in the PDF (dict)
         :param number_of_pages: Number of pages in the document
@@ -1137,7 +1135,7 @@ class Document(Data):
         self.name = data_file_name
         self.status = status  # status of document online
         self.project = project
-        # project.add_document(self)  # check for duplicates by ID before adding the document to the project
+        # project.add_document(self)  # check for duplicates by ID before adding the Document to the project
 
         # use hidden variables to store low volume information in instance
         self._text = text
@@ -1158,7 +1156,7 @@ class Document(Data):
         self.bio_scheme_file_path = os.path.join(self.document_folder, "bio_scheme.txt")
 
     def __repr__(self):
-        """Return the name of the document incl. the ID."""
+        """Return the name of the Document incl. the ID."""
         return f"{self.name}: {self.id_}"
 
     @property
@@ -1166,88 +1164,90 @@ class Document(Data):
         """Calculate the number of pages."""
         return len(self.text.split('\f'))
 
-    def add_extractions_as_annotations(
-        self, label: Label, extractions, label_set: LabelSet, annotation_set: AnnotationSet
-    ):
-        """Add the extraction of a model on the document."""
-        annotations = extractions[extractions['Accuracy'] > 0.1][
-            ['Start', 'End', 'Accuracy', 'page_index', 'x0', 'x1', 'y0', 'y1', 'top', 'bottom']
-        ].sort_values(by='Accuracy', ascending=False)
-        annotations.rename(columns={'Start': 'start_offset', 'End': 'end_offset'}, inplace=True)
-        for annotation in annotations.to_dict('records'):  # todo ask Ana: are Start and End always ints
-            anno = Annotation(
-                document=self,
-                label=label,
-                accuracy=annotation['Accuracy'],
-                label_set=label_set,
-                annotation_set=annotation_set,
-                bboxes=[annotation],
-            )
-            self.add_annotation(anno)
-        return self
+    # todo goes to Trainer extract Method of AI Models
+    # def add_extractions_as_annotations(
+    #     self, label: Label, extractions, label_set: LabelSet, annotation_set: AnnotationSet
+    # ):
+    #     """Add the extraction of a model to the document."""
+    #     annotations = extractions[extractions['Accuracy'] > 0.1][
+    #         ['Start', 'End', 'Accuracy', 'page_index', 'x0', 'x1', 'y0', 'y1', 'top', 'bottom']
+    #     ].sort_values(by='Accuracy', ascending=False)
+    #     annotations.rename(columns={'Start': 'start_offset', 'End': 'end_offset'}, inplace=True)
+    #     for annotation in annotations.to_dict('records'):  # todo ask Ana: are Start and End always ints
+    #         anno = Annotation(
+    #             document=self,
+    #             label=label,
+    #             accuracy=annotation['Accuracy'],
+    #             label_set=label_set,
+    #             annotation_set=annotation_set,
+    #             bboxes=[annotation],
+    #         )
+    #         self.add_annotation(anno)
+    #     return self
 
-    def evaluate_extraction_model(self, path_to_model: str):
-        """Run and evaluate model on this document."""
-        # todo: tbd local import to prevent circular import - Can only be used by konfuzio Trainer users
-        from konfuzio.load_data import load_pickle
-
-        model = load_pickle(path_to_model)
-
-        # build the doc from model results
-        virtual_doc = Document(
-            project=self.project, text=self.text, bbox=self.get_bbox(), number_of_pages=len(self.text.split('\f'))
-        )
-        extraction_result = model.extract(document=virtual_doc)
-
-        virtual_annotation_set_id = 0  # counter for accross mult. annotation set groups of a label set
-
-        # define annotation set for the category label set
-        category_label_set = self.project.get_label_set_by_id(self.category.id_)
-        virtual_default_annotation_set = AnnotationSet(
-            document=virtual_doc, label_set=category_label_set, id_=virtual_annotation_set_id
-        )
-
-        # TODO: not needed once extract returns a document
-        for label_or_label_set_name, information in extraction_result.items():
-            if not isinstance(information, list):
-                # annotations belong to the default annotation set
-                # add default annotation set if there is any prediction for it
-                if virtual_default_annotation_set not in virtual_doc.annotation_sets:
-                    virtual_doc.add_annotation_set(virtual_default_annotation_set)
-
-                label = self.project.get_label_by_name(label_or_label_set_name)
-                virtual_doc.add_extractions_as_annotations(
-                    label=label,
-                    extractions=information,
-                    label_set=self.category,
-                    annotation_set=virtual_default_annotation_set,
-                )
-
-            else:  # process multi annotation sets where multiline is True
-                label_set = self.project.get_label_set_by_name(label_or_label_set_name)
-                for entry in information:  # represents one of pot. multiple annotation-sets belonging of one label set
-                    virtual_annotation_set_id += 1
-                    virtual_annotation_set = AnnotationSet(
-                        document=virtual_doc, label_set=label_set, id_=virtual_annotation_set_id
-                    )
-                    virtual_doc.add_annotation_set(virtual_annotation_set)
-
-                    for label_name, extractions in entry.items():
-                        label = self.project.get_label_by_name(label_name)
-                        virtual_doc.add_extractions_as_annotations(
-                            label=label,
-                            extractions=extractions,
-                            label_set=label_set,
-                            annotation_set=virtual_annotation_set,
-                        )
-
-        return compare(self, virtual_doc)
+    # todo: Goes to Trainer extract AI method
+    # def evaluate_extraction_model(self, path_to_model: str):
+    #     """Run and evaluate model on this document."""
+    #     # todo: tbd local import to prevent circular import - Can only be used by konfuzio Trainer users
+    #     from konfuzio.load_data import load_pickle
+    #
+    #     model = load_pickle(path_to_model)
+    #
+    #     # build the doc from model results
+    #     virtual_doc = Document(
+    #         project=self.project, text=self.text, bbox=self.get_bbox(), number_of_pages=len(self.text.split('\f'))
+    #     )
+    #     extraction_result = model.extract(document=virtual_doc)
+    #
+    #     virtual_annotation_set_id = 0  # counter for accross mult. Annotation Set groups of a Label Set
+    #
+    #     # define Annotation Set for the Category Label Set
+    #     category_label_set = self.project.get_label_set_by_id(self.category.id_)
+    #     virtual_default_annotation_set = AnnotationSet(
+    #         document=virtual_doc, label_set=category_label_set, id_=virtual_annotation_set_id
+    #     )
+    #
+    #     # TODO: not needed once extract returns a document
+    #     for label_or_label_set_name, information in extraction_result.items():
+    #         if not isinstance(information, list):
+    #             # annotations belong to the default Annotation Set
+    #             # add default Annotation Set if there is any prediction for it
+    #             if virtual_default_annotation_set not in virtual_doc.annotation_sets:
+    #                 virtual_doc.add_annotation_set(virtual_default_annotation_set)
+    #
+    #             label = self.project.get_label_by_name(label_or_label_set_name)
+    #             virtual_doc.add_extractions_as_annotations(
+    #                 label=label,
+    #                 extractions=information,
+    #                 label_set=self.category,
+    #                 annotation_set=virtual_default_annotation_set,
+    #             )
+    #
+    #         else:  # process multi Annotation Sets where multiline is True
+    #             label_set = self.project.get_label_set_by_name(label_or_label_set_name)
+    #             for entry in information:  # represents one of pot. multiple annotation-sets belonging of one LabelSet
+    #                 virtual_annotation_set_id += 1
+    #                 virtual_annotation_set = AnnotationSet(
+    #                     document=virtual_doc, label_set=label_set, id_=virtual_annotation_set_id
+    #                 )
+    #                 virtual_doc.add_annotation_set(virtual_annotation_set)
+    #
+    #                 for label_name, extractions in entry.items():
+    #                     label = self.project.get_label_by_name(label_name)
+    #                     virtual_doc.add_extractions_as_annotations(
+    #                         label=label,
+    #                         extractions=extractions,
+    #                         label_set=label_set,
+    #                         annotation_set=virtual_annotation_set,
+    #                     )
+    #
+    #     return compare(self, virtual_doc)
 
     def eval_dict(self, use_correct=False) -> dict:
         """Use this dict to evaluate Documents. The speciality: For ever Span of an Annotation create one entry."""
         result = []
         annotations = self.annotations(use_correct=use_correct)
-        if not annotations:  # if there are no annotations in this documents
+        if not annotations:  # if there are no annotations in this Documents
             result.append(Span(start_offset=0, end_offset=0).eval_dict())
         else:
             for annotation in annotations:
@@ -1260,21 +1260,9 @@ class Document(Data):
         """Define if the Document is saved to the server."""
         return self.id_ is not None
 
-    # def spans(self, start_offset: int, end_offset: int) -> List[Span]:
-    #     """
-    #     Translate an offset into where offsets between the Spans of Annotations are filled with no Label Annotations.
-    #
-    #     todo: If a regex can be used as a combination of Span regex Tokens.
-    #
-    #     :param start_offset: Start of the offset to analyze in the document.
-    #     :param end_offset: End of the offset to analyze in the document.
-    #     :return: Returns a sorted lists of Spans.
-    #     """
-    #     raise NotImplementedError
-
     @property
     def annotation_sets(self):
-        """Return Annotation Sets of documents."""
+        """Return Annotation Sets of Documents."""
         return self._annotation_sets
 
     def annotations(
@@ -1288,11 +1276,11 @@ class Document(Data):
         """
         Filter available annotations.
 
-        :param label: Label for which to filter the annotations.
+        :param label: Label for which to filter the Annotations.
         :param use_correct: If to filter by correct annotations.
         :return: Annotations in the document.
         """
-        # make sure the document has all required information
+        # make sure the Document has all required information
         if self.needs_update is None:
             pass
         elif self.needs_update:
@@ -1332,7 +1320,7 @@ class Document(Data):
 
         if fill:
             # add a None Label to the default Label Set of the Document
-            # todo: we cannot assure that the document has a category, so Annotations must not require label_set
+            # todo: we cannot assure that the Document has a Category, so Annotations must not require label_set
             default_label_set = self.project.get_label_set_by_id(self.category.id_)
             no_label = Label(project=self.project, label_sets=[default_label_set])
 
@@ -1345,7 +1333,7 @@ class Document(Data):
                 new_spans = []
                 offset_text = self.text[missing.start : missing.stop]
                 new_annotation = Annotation(document=self, label=no_label, label_set=default_label_set)
-                # we split spans which span multiple lines, so that one Span comprises one line
+                # we split Spans which apan multiple lines, so that one Span comprises one line
                 offset_of_offset = 0
                 line_breaks = [offset_line for offset_line in re.split(r'(\n)', offset_text) if offset_line != '']
                 for offset in line_breaks:
@@ -1362,7 +1350,7 @@ class Document(Data):
 
     @property
     def document_folder(self):
-        """Get the path to the folder where all the document information is cached locally."""
+        """Get the path to the folder where all the Document information is cached locally."""
         return os.path.join(self.project.documents_folder, str(self.id_))
 
     def get_file(self, ocr_version: bool = True, update: bool = False):
@@ -1389,7 +1377,7 @@ class Document(Data):
 
     def get_images(self, update: bool = False):
         """
-        Get document pages as png images.
+        Get Document pages as png images.
 
         :param update: Update the downloaded images even they are already available
         :return: Path to OCR file.
@@ -1411,7 +1399,7 @@ class Document(Data):
 
     def download_document_details(self):
         """
-        Retrieve data from a document online in case documented has finished processing.
+        Retrieve data from a Document online in case documented has finished processing.
 
         :param update: Update the downloaded information even it is already available
         """
@@ -1439,23 +1427,23 @@ class Document(Data):
         """Add an annotation to a document.
 
         :param annotation: Annotation to add in the document
-        :param check_duplicate: If to check if the annotation already exists in the document
+        :param check_duplicate: If to check if the Annotation already exists in the document
         :return: Input annotation.
         """
         if annotation not in self._annotations:
             self._annotations.append(annotation)
         else:
-            logger.error(f'In {self} the annotation {annotation} is a duplicate and will not be added.')
+            logger.error(f'In {self} the Annotation {annotation} is a duplicate and will not be added.')
         return self
 
     def add_annotation_set(self, annotation_set: AnnotationSet):
-        """Add the annotation sets to the document."""
+        """Add the Annotation Sets to the document."""
         if annotation_set not in self._annotation_sets:
-            # todo: skip annotation sets that don't belong to the category: not possible via current API
+            # todo: skip Annotation Sets that don't belong to the Category: not possible via current API
             # if annotation_set.label_set.category == self.category:
             self._annotation_sets.append(annotation_set)
         else:
-            logger.error(f'In {self} the annotation {annotation_set} is a duplicate and will not be added.')
+            logger.error(f'In {self} the Annotation {annotation_set} is a duplicate and will not be added.')
         return self
 
     def get_annotation_set_by_id(self, id_: int) -> AnnotationSet:
@@ -1475,34 +1463,32 @@ class Document(Data):
 
     def get_text_in_bio_scheme(self, update=False) -> List[Tuple[str, str]]:
         """
-        Get the text of the document in the BIO scheme.
+        Get the text of the Document in the BIO scheme.
 
         :param update: Update the bio annotations even they are already available
         :return: list of tuples with each word in the text an the respective label
         """
-        if not self.bio_scheme_file_path or not is_file(self.bio_scheme_file_path, raise_exception=False) or update:
-            converted_text = []
-            annotations_in_doc = []
-            for annotation in self.annotations():
-                for span in annotation.spans:
-                    annotations_in_doc.append((span.start_offset, span.end_offset, annotation.label.name))
-            converted_text = convert_to_bio_scheme(self.text, annotations_in_doc)
+        # if not is_file(self.bio_scheme_file_path, raise_exception=False) or update:
+        annotations_in_doc = []
+        for annotation in self.annotations():
+            for span in annotation.spans:
+                annotations_in_doc.append((span.start_offset, span.end_offset, annotation.label.name))
+        converted_text = convert_to_bio_scheme(self.text, annotations_in_doc)
+        with open(self.bio_scheme_file_path, "w", encoding="utf-8") as f:
+            for word, tag in converted_text:
+                f.writelines(word + " " + tag + "\n")
+            f.writelines("\n")
 
-            with open(self.bio_scheme_file_path, "w", encoding="utf-8") as f:
-                for word, tag in converted_text:
-                    f.writelines(word + " " + tag + "\n")
-                f.writelines("\n")
-
-        bio_annotations = []
-
-        with open(self.bio_scheme_file_path, "r", encoding="utf-8") as f:
-            for line in f.readlines():
-                if line == "\n":
-                    continue
-                word, tag = line.replace("\n", "").split(" ")
-                bio_annotations.append((word, tag))
-
-        return bio_annotations
+        return converted_text
+        #
+        # bio_annotations = []
+        #
+        # with open(self.bio_scheme_file_path, "r", encoding="utf-8") as f:
+        #     for line in f.readlines():
+        #         if line == "\n":
+        #             continue
+        #         word, tag = line.replace("\n", "").split(" ")
+        #         bio_annotations.append((word, tag))
 
     def get_bbox(self):
         """
@@ -1529,7 +1515,7 @@ class Document(Data):
 
     @property
     def text(self):
-        """Get document text. Once loaded stored in memory."""
+        """Get Document text. Once loaded stored in memory."""
         if self._text:
             pass
         elif is_file(self.txt_file_path, raise_exception=False):
@@ -1576,46 +1562,45 @@ class Document(Data):
 
         return self._hocr
 
-    def save(self) -> bool:
-        """
-        Save or edit Document online.
-
-        :return: True if the new document was created or existing document was updated.
-        """
-        document_saved = False
-        category_id = None
-
-        if hasattr(self, "category") and self.category is not None:
-            category_id = self.category.id_
-
-        if not self.is_online:
-            response = upload_file_konfuzio_api(
-                filepath=self.file_path,
-                project_id=self.project.id_,
-                dataset_status=self.dataset_status,
-                category_id=category_id,
-            )
-            if response.status_code == 201:
-                self.id_ = json.loads(response.text)["id"]
-                document_saved = True
-            else:
-                logger.error(f"Not able to save document {self.file_path} online: {response.text}")
-        else:
-            response = update_file_konfuzio_api(
-                document_id=self.id_, file_name=self.name, dataset_status=self.dataset_status, category_id=category_id
-            )
-            if response.status_code == 200:
-                self.project.update_document(document=self)
-                document_saved = True
-            else:
-                logger.error(f"Not able to update document {self.id_} online: {response.text}")
-
-        return document_saved
+    # todo: add real workflow to add a new document to a project
+    # def save(self) -> bool:
+    #     """
+    #     Save or edit Document online.
+    #
+    #     :return: True if the new document was created or existing document was updated.
+    #     """
+    #     document_saved = False
+    #     category_id = None
+    #
+    #     if hasattr(self, "category") and self.category is not None:
+    #         category_id = self.category.id_
+    #
+    #     if not self.is_online:
+    #         response = upload_file_konfuzio_api(
+    #             filepath=self.file_path,
+    #             project_id=self.project.id_,
+    #             dataset_status=self.dataset_status,
+    #             category_id=category_id,
+    #         )
+    #         if response.status_code == 201:
+    #             self.id_ = json.loads(response.text)["id"]
+    #             document_saved = True
+    #         else:
+    #             logger.error(f"Not able to save document {self.file_path} online: {response.text}")
+    #     else:
+    #         response = update_file_konfuzio_api(
+    #             document_id=self.id_, file_name=self.name, dataset_status=self.dataset_status, category_id=category_id
+    #         )
+    #         if response.status_code == 200:
+    #             self.project.update_document(document=self)
+    #             document_saved = True
+    #         else:
+    #             logger.error(f"Not able to update document {self.id_} online: {response.text}")
+    #
+    #     return document_saved
 
     def update(self):
         """Update document information."""
-        # todo add a check about if document needs an update
-        # probably save a snippet of the full meta in the document folder
         self.delete()
         self.download_document_details()
         self.get_annotations()
@@ -1747,7 +1732,7 @@ class Document(Data):
 
         # first load all Annotation Sets before we create Annotations
         for raw_annotation_set in raw_annotation_sets:
-            # todo add parent to define default annotation set
+            # todo add parent to define default Annotation Set
             annotation_set = AnnotationSet(
                 id_=raw_annotation_set["id"],
                 document=self,
@@ -1781,7 +1766,7 @@ class Document(Data):
     #     """Check for annotations width more values than allowed."""
     #     labels = self.project.labels
     #     # Labels that can only have 1 value.
-    #     labels_to_check = [label.name_clean for label in labels if not label.has_multiple_top_candidates]
+    #     labels_to_check = [label.name_clean for label in labels if not Label.has_multiple_top_candidates]
     #
     #     # Check is done per annotation_set.
     #     for annotation_set in self.annotation_sets:
@@ -1814,7 +1799,7 @@ class Document(Data):
 class Project(Data):
     """Access the information of a project."""
 
-    def __init__(self, id_: int, update=False, **kwargs):
+    def __init__(self, id_: Union[int, None], update=False, **kwargs):
         """
         Set up the data using the Konfuzio Host.
 
@@ -1844,27 +1829,27 @@ class Project(Data):
 
     @property
     def documents(self):
-        """Return documents with status training."""
+        """Return Documents with status training."""
         return [doc for doc in self._documents if doc.dataset_status == 2]
 
     @property
     def test_documents(self):
-        """Return documents with status test."""
+        """Return Documents with status test."""
         return [doc for doc in self._documents if doc.dataset_status == 3]
 
     @property
     def excluded_documents(self):
-        """Return documents wich have been excluded."""
+        """Return Documents wich have been excluded."""
         return [doc for doc in self._documents if doc.dataset_status == 4]
 
     @property
     def preperation_documents(self):
-        """Return documents with status test."""
+        """Return Documents with status test."""
         return [doc for doc in self._documents if doc.dataset_status == 1]
 
     @property
     def no_status_documents(self):
-        """Return documents with status test."""
+        """Return Documents with status test."""
         return [doc for doc in self._documents if doc.dataset_status == 0]
 
     @property
@@ -1907,7 +1892,7 @@ class Project(Data):
         :param update: Update the downloaded information even it is already available
         """
         if is_file(self.meta_file_path, raise_exception=False):
-            logger.debug("Keep your local information about documents to be able to do a partial update.")
+            logger.debug("Keep your local information about Documents to be able to do a partial update.")
             with open(self.meta_file_path, "r") as f:
                 self.old_meta_data = json.load(f)
         else:
@@ -1930,18 +1915,18 @@ class Project(Data):
 
     def add_label_set(self, label_set: LabelSet):
         """
-        Add label set to project, if it does not exist.
+        Add Label Set to project, if it does not exist.
 
         :param label_set: Label Set to add in the project
         """
         if label_set not in self.label_sets:
             self.label_sets.append(label_set)
         else:
-            logger.error(f'{self} already has label set {label_set}.')
+            logger.error(f'{self} already has Label Set {label_set}.')
 
     def add_category(self, category: Category):
         """
-        Add category to project, if it does not exist.
+        Add Category to project, if it does not exist.
 
         :param category: Category to add in the project
         """
@@ -1952,7 +1937,7 @@ class Project(Data):
 
     def add_label(self, label: Label):
         """
-        Add label to project, if it does not exist.
+        Add Label to project, if it does not exist.
 
         :param label: Label to add in the project
         """
@@ -1996,9 +1981,9 @@ class Project(Data):
     #     """
     #     Update document in the project.
     #
-    #     Update can be in the dataset_status, name or category.
+    #     Update can be in the dataset_status, name or Category.
     #     First, we need to find the document (different list accordingly with dataset_status).
-    #     Then, if we are just updating the name or category, we can change the fields in place.
+    #     Then, if we are just updating the name or Category, we can change the fields in place.
     #     If we are updating the document dataset status, we need to move the document from the project list.
     #
     #     :param document: Document to update in the project
@@ -2023,7 +2008,7 @@ class Project(Data):
     #             project_documents = project_list
     #             break
     #
-    #     # update name and category and get dataset status
+    #     # update name and Category and get dataset status
     #     for doc in project_documents:
     #         if doc.id_ == document.id_:
     #             doc.name = document.name
@@ -2043,17 +2028,17 @@ class Project(Data):
 
     def get_meta(self):
         """
-        Get the list of all documents in the project and their information.
+        Get the list of all Documents in the project and their information.
 
         :param update: Update the downloaded information even it is already available
-        :return: Information of the documents in the project.
+        :return: Information of the Documents in the project.
         """
         with open(self.meta_file_path, "r") as f:
             self.meta_data = json.load(f)
         return self.meta_data
 
     def load_categories(self):
-        """Load categories for all label sets in the project."""
+        """Load Categories for all Label Sets in the project."""
         for label_set in self.label_sets:
             updated_list = []
             for category in label_set.categories:
@@ -2071,7 +2056,7 @@ class Project(Data):
         :return: Categories in the project.
         """
         if not self.categories and not self.label_sets:
-            error_message = "You need to get the label sets before getting the categories of the project."
+            error_message = "You need to get the Label Sets before getting the Categories of the project."
             logger.error(error_message)
             raise ValueError(error_message)
         elif not self.categories:
@@ -2084,7 +2069,7 @@ class Project(Data):
         return self.categories
 
     def get_label_sets_for_category(self, category_id):
-        """Get all LabelSets that belong to a category (or represent the category)."""
+        """Get all Label Sets that belong to a Category (or represent the Category)."""
         project_label_sets = [
             label_set
             for label_set in self.label_sets
@@ -2111,14 +2096,14 @@ class Project(Data):
 
     def get_labels(self):
         """
-        Get ID and name of any label in the project.
+        Get ID and name of any Label in the project.
 
         :param update: Update the downloaded information even it is already available
         :return: Labels in the project.
         """
         with open(self.labels_file_path, "r") as f:
             labels_data = json.load(f)
-        # todo clean labels before reading from file?
+        # todo clean Labels before reading from file?
         for label_data in labels_data:
             # Remove the project from label_data
             label_data.pop("project", None)
@@ -2163,12 +2148,12 @@ class Project(Data):
 
     # def get_documents(self, update=False):
     #     """
-    #     Get all documents in a project which have been marked as available in the training dataset.
+    #     Get all Documents in a project which have been marked as available in the training dataset.
     #
     #     Dataset status: training = 2
     #
     #     :param update: Bool to update the meta-information from the project
-    #     :return: training documents
+    #     :return: training Documents
     #     """
     #     document_list_cache = self.documents
     #     self.documents: List[Document] = []
@@ -2178,12 +2163,12 @@ class Project(Data):
     #
     # def get_test_documents(self, update=False):
     #     """
-    #     Get all documents in a project which have been marked as available in the test dataset.
+    #     Get all Documents in a project which have been marked as available in the test dataset.
     #
     #     Dataset status: test = 3
     #
     #     :param update: Bool to update the meta-information from the project
-    #     :return: test documents
+    #     :return: test Documents
     #     """
     #     document_list_cache = self.test_documents
     #     self.test_documents: List[Document] = []
@@ -2195,13 +2180,13 @@ class Project(Data):
     #         self, dataset_statuses: List[int] = [0], document_list_cache: List[Document] = [], update: bool = False
     # ) -> List[Document]:
     #     """
-    #     Get a list of documents with the specified dataset status from the project.
+    #     Get a list of Documents with the specified dataset status from the project.
     #
-    #     Besides returning a list, the documents are also initialized in the project.
+    #     Besides returning a list, the Documents are also initialized in the project.
     #     They become accessible from the attributes of the class: self.test_documents, self.none_documents,...
     #
-    #     :param dataset_statuses: List of status of the documents to get
-    #     :param document_list_cache: Cache with documents in the project
+    #     :param dataset_statuses: List of status of the Documents to get
+    #     :param document_list_cache: Cache with Documents in the project
     #     :param update: Bool to update the meta-information from the project
     #     :return: Documents with the specified dataset status
     #     """
@@ -2212,7 +2197,7 @@ class Project(Data):
     #             # todo reduce number of API requests
     #             self._init_document(document_data, document_list_cache, update)
     #
-    #     raise NotImplementedError('We assign the documents to mulitple lists if a list of statuses is parsed.')
+    #     raise NotImplementedError('We assign the Documents to mulitple lists if a list of statuses is parsed.')
     #
     #     if 0 in dataset_statuses:
     #         documents.extend(self.no_status_documents)
@@ -2229,11 +2214,11 @@ class Project(Data):
 
     # def clean_documents(self, update):
     #     """
-    #     Clean the documents by removing those that have been removed from the App.
+    #     Clean the Documents by removing those that have been removed from the App.
     #
     #     Only if to update the project locally.
     #
-    #     :param update: Bool to update locally the documents in the project
+    #     :param update: Bool to update locally the Documents in the project
     #     """
     #     raise NotImplementedError  # todo move to Document itself as delete method?
     #     if update:
@@ -2255,7 +2240,7 @@ class Project(Data):
     #                 pass
 
     def get_label_by_name(self, name: str) -> Label:
-        """Return label by its name."""
+        """Return Label by its name."""
         for label in self.labels:
             if label.name == name:
                 return label
@@ -2263,9 +2248,9 @@ class Project(Data):
 
     def get_label_by_id(self, id_: int) -> Label:
         """
-        Return a label by ID.
+        Return a Label by ID.
 
-        :param id_: ID of the label to get.
+        :param id_: ID of the Label to get.
         """
         for label in self.labels:
             if label.id_ == id_:
@@ -2336,3 +2321,24 @@ class Project(Data):
     #     for document in self.documents:
     #         document.delete()
     #     self.clean_meta()
+
+
+def download_training_and_test_data(id_: int):
+    """
+    Migrate your project to another HOST.
+
+    See https://help.konfuzio.com/integrations/migration-between-konfuzio-server-instances/index.html
+        #migrate-projects-between-konfuzio-server-instances
+    """
+    prj = Project(id_=id_, update=True)
+
+    if len(prj.documents + prj.test_documents) == 0:
+        raise ValueError("No documents in the training or test set. Please add them.")
+
+    for document in tqdm(prj.documents + prj.test_documents):
+        document.get_file()
+        document.get_file(ocr_version=False)
+        document.get_bbox()
+        document.get_images()
+
+    print("[SUCCESS] Data downloading finished successfully!")

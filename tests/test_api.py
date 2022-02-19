@@ -7,6 +7,8 @@ import sys
 import unittest
 
 import pytest
+
+from konfuzio import BASE_DIR
 from konfuzio_sdk.api import (
     get_meta_of_files,
     download_file_konfuzio_api,
@@ -20,6 +22,7 @@ from konfuzio_sdk.api import (
     get_document_details,
     get_project_details,
     upload_ai_model,
+    init_env,
 )
 from konfuzio_sdk.utils import is_file
 
@@ -34,7 +37,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
     """Test API with payslip example project."""
 
     def test_projects_details(self):
-        """Test to get document details."""
+        """Test to get Document details."""
         data = get_project_list()
         assert TEST_PROJECT_ID in [prj["id"] for prj in data]
         assert data[0].keys() == {
@@ -48,7 +51,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         }
 
     def test_project_details(self):
-        """Test to get document details."""
+        """Test to get Document details."""
         data = get_project_details(project_id=TEST_PROJECT_ID)
         assert data.keys() == {
             'id',
@@ -61,7 +64,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         }
 
     def test_documents_list(self):
-        """Test to get documents details."""
+        """Test to get Documents details."""
         data = get_meta_of_files(project_id=TEST_PROJECT_ID)
         assert data[0].keys() == {
             'id',
@@ -85,7 +88,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         }
 
     def test_document_details(self):
-        """Test to get document details."""
+        """Test to get Document details."""
         data = get_document_details(document_id=TEST_DOCUMENT_ID, project_id=TEST_PROJECT_ID)
         assert data.keys() == {
             'id',
@@ -112,7 +115,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         }
 
     def test_long_document_details(self):
-        """Test to get document details."""
+        """Test to get Document details."""
         data = get_document_details(document_id=216836, project_id=TEST_PROJECT_ID)
         assert data.keys() == {
             'id',
@@ -139,7 +142,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         }
 
     def test_get_list_of_files(self):
-        """Get meta information from documents in the project."""
+        """Get meta information from Documents in the project."""
         sorted_documents = get_meta_of_files(project_id=TEST_PROJECT_ID)
         sorted_dataset_documents = [x for x in sorted_documents if x['dataset_status'] in [2, 3]]
         self.assertEqual(26 + 3, len(sorted_dataset_documents))
@@ -238,7 +241,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         end_offset = 63
         confidence = 0.0001
         label_id = 863  # Refers to Label Betrag (863)
-        label_set_id = 64  # Refers to LabelSet Brutto-Bezug (allows multiple annotation sets)
+        label_set_id = 64  # Refers to LabelSet Brutto-Bezug (allows multiple Annotation Sets)
         # create a revised annotation, so we can verify its existence via get_document_annotations
         response = post_document_annotation(
             document_id=TEST_DOCUMENT_ID,
@@ -257,7 +260,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         assert annotation['id'] in [annotation['id'] for annotation in annotations]
         # delete the annotation, i.e. change it's status from feedback required to negative
         negative_id = delete_document_annotation(TEST_DOCUMENT_ID, annotation['id'], project_id=TEST_PROJECT_ID)
-        # delete it a second time to remove this annotation from the feedback stored as negative
+        # delete it a second time to remove this Annotation from the feedback stored as negative
         assert delete_document_annotation(TEST_DOCUMENT_ID, negative_id, project_id=TEST_PROJECT_ID)
 
     def test_get_project_labels(self):
@@ -296,12 +299,6 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         result = update_file_konfuzio_api(document_id=214414, file_name=timestamp, dataset_status=0)
         assert result['data_file_name'] == timestamp
 
-    # def test_get_document_hocr(self):
-    #     """Get the HOCR of a file."""
-    #     prj = Project(id_=TEST_PROJECT_ID)
-    #     result = get_document_hocr(document_id=prj.documents[-1].id_, project_id=TEST_PROJECT_ID)
-    #     assert result is None
-
     @unittest.skip(reason="Skip to test to create label, as there is no option to delete it again.")
     def test_create_label(self):
         """Create a label."""
@@ -326,3 +323,9 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         path = os.path.join(os.getcwd(), 'lohnabrechnung.pkl')
         if is_file(file_path=path, raise_exception=False):
             upload_ai_model(ai_model_path=path, category_ids=[63])
+
+
+def test_init_env():
+    """Test to write env file."""
+    with pytest.raises(ValueError, match="Your credentials are not correct"):
+        init_env(user="user", password="ABCD", working_directory=BASE_DIR, file_ending="x.env")

@@ -10,7 +10,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3 import Retry
 
-from konfuzio_sdk import KONFUZIO_HOST, KONFUZIO_TOKEN
+from konfuzio_sdk import KONFUZIO_HOST, KONFUZIO_TOKEN, BASE_DIR
 from konfuzio_sdk.urls import (
     get_auth_token_url,
     get_projects_list_url,
@@ -49,6 +49,27 @@ def _get_auth_token(username, password, host=KONFUZIO_HOST) -> str:
             "[ERROR] Your credentials are not correct! Please run init again and provide the correct credentials."
         )
     return token
+
+
+def init_env(
+    user: str, password: str, host: str = KONFUZIO_HOST, working_directory=BASE_DIR, file_ending: str = ".env"
+):
+    """
+    Add the .env file to the working directory.
+
+    :param project_folder: Root folder of the project where to place the .env file
+    :return: file content
+    """
+    token = _get_auth_token(user, password, host)
+
+    with open(os.path.join(working_directory, file_ending), "w") as f:
+        f.write(f"KONFUZIO_HOST = {host}\n")
+        f.write(f"KONFUZIO_USER = {user}\n")
+        f.write(f"KONFUZIO_TOKEN = {token}\n")
+
+    print("[SUCCESS] SDK initialized!")
+
+    return True
 
 
 class TimeoutHTTPAdapter(HTTPAdapter):
@@ -136,7 +157,7 @@ def create_new_project(project_name, session=_konfuzio_session()):
         print(f"Project {project_name} (ID {project_id}) was created successfully!")
         return project_id
     else:
-        raise Exception(f'The project {project_name} was not created, please check your permissions.')
+        raise PermissionError(f'The project {project_name} was not created, please check your permissions.')
 
 
 def get_document_details(document_id: int, project_id: int, session=_konfuzio_session(), extra_fields: str = ''):
@@ -158,11 +179,11 @@ def get_document_details(document_id: int, project_id: int, session=_konfuzio_se
 
 def post_document_bulk_annotation(document_id: int, project_id: int, annotation_list, session=_konfuzio_session()):
     """
-    Add a list of annotations to an existing document.
+    Add a list of Annotations to an existing document.
 
     :param document_id: ID of the file
     :param project_id: ID of the project
-    :param annotation_list: List of annotations
+    :param annotation_list: List of Annotations
     :param session: Konfuzio session with Retry and Timeout policy
     :return: Response status.
     """
@@ -185,24 +206,24 @@ def post_document_annotation(
     **kwargs,
 ):
     """
-    Add an annotation to an existing document.
+    Add an Annotation to an existing document.
 
-    For the annotation set definition, we can:
-    - define the annotation set id_ where the annotation should belong
+    For the Annotation Set definition, we can:
+    - define the Annotation Set id_ where the Annotation should belong
     (annotation_set=x (int), define_annotation_set=True)
-    - pass it as None and a new annotation set will be created
+    - pass it as None and a new Annotation Set will be created
     (annotation_set=None, define_annotation_set=True)
-    - do not pass the annotation set field and a new annotation set will be created if does not exist any or the
-    annotation will be added to the previous annotation set created (define_annotation_set=False)
+    - do not pass the Annotation Set field and a new Annotation Set will be created if does not exist any or the
+    Annotation will be added to the previous Annotation Set created (define_annotation_set=False)
 
     :param document_id: ID of the file
     :param project_id: ID of the project
-    :param label_id: ID of the label.
-    :param label_set_id: ID of the label set where the annotation belongs
+    :param label_id: ID of the Label
+    :param label_set_id: ID of the Label Set where the Annotation belongs
     :param confidence: Confidence of the Annotation still called Accuracy by text-annotation
-    :param revised: If the annotation is revised or not (bool)
-    :param is_correct: If the annotation is corrected or not (bool)
-    :param annotation_set: Annotation set to connect to the server
+    :param revised: If the Annotation is revised or not (bool)
+    :param is_correct: If the Annotation is corrected or not (bool)
+    :param annotation_set: Annotation Set to connect to the server
     :param session: Konfuzio session with Retry and Timeout policy
     :return: Response status.
     """
@@ -259,7 +280,7 @@ def post_document_annotation(
 
 def delete_document_annotation(document_id: int, annotation_id: int, project_id: int, session=_konfuzio_session()):
     """
-    Delete a given annotation of the given document.
+    Delete a given Annotation of the given document.
 
     :param document_id: ID of the document
     :param annotation_id: ID of the annotation
@@ -270,7 +291,7 @@ def delete_document_annotation(document_id: int, annotation_id: int, project_id:
     url = get_annotation_url(document_id=document_id, annotation_id=annotation_id, project_id=project_id)
     r = session.delete(url)
     if r.status_code == 200:
-        # the text annotation received negative feedback and copied the annotation and created a new one
+        # the text Annotation received negative feedback and copied the Annotation and created a new one
         return json.loads(r.text)['id']
     elif r.status_code == 204:
         return r
@@ -278,7 +299,7 @@ def delete_document_annotation(document_id: int, annotation_id: int, project_id:
 
 def get_meta_of_files(project_id: int, session=_konfuzio_session()) -> List[dict]:
     """
-    Get dictionary of previously uploaded document names to Konfuzio API.
+    Get dictionary of previously uploaded Document names to Konfuzio API.
 
     Dataset_status:
     NONE = 0
@@ -289,7 +310,7 @@ def get_meta_of_files(project_id: int, session=_konfuzio_session()) -> List[dict
 
     :param project_id: ID of the project
     :param session: Konfuzio session with Retry and Timeout policy
-    :return: Sorted documents names in the format {id_: 'pdf_name'}.
+    :return: Sorted Documents names in the format {id_: 'pdf_name'}.
     """
     url = get_documents_meta_url(project_id=project_id)
     result = []
@@ -315,7 +336,7 @@ def create_label(
     project_id: int, label_name: str, label_sets: list, session=_konfuzio_session(), **kwargs
 ) -> List[dict]:
     """
-    Create a Label and associate it with labels sets.
+    Create a Label and associate it with Labels sets.
 
     :param project_id: Project ID where to create the label
     :param label_name: Name for the label
@@ -360,7 +381,7 @@ def upload_file_konfuzio_api(
     :param project_id: ID of the project
     :param session: Konfuzio session with Retry and Timeout policy
     :param dataset_status: Set data set status of the document.
-    :param category_id: Define a category the document belongs to
+    :param category_id: Define a Category the Document belongs to
     :return: Response status.
     """
     url = get_upload_document_url()
@@ -396,11 +417,11 @@ def update_file_konfuzio_api(
     document_id: int, file_name: str, dataset_status: int, session=_konfuzio_session(), **kwargs
 ):
     """
-    Update the dataset status of an existing document via Konfuzio API.
+    Update the dataset status of an existing Document via Konfuzio API.
 
     :param document_id: ID of the document
     :param file_name: New file name.
-    :param dataset_status: Change or keep dataset status. Get document information first to keep the status.
+    :param dataset_status: Change or keep dataset status. Get Document information first to keep the status.
     :param session: Konfuzio session with Retry and Timeout policy
     :return: Response status.
     """
@@ -416,7 +437,7 @@ def update_file_konfuzio_api(
 
 def download_file_konfuzio_api(document_id: int, ocr: bool = True, session=_konfuzio_session()):
     """
-    Download file from the Konfuzio server using the document id_.
+    Download file from the Konfuzio server using the Document id_.
 
     Django authentication is form-based, whereas DRF uses BasicAuth.
 
@@ -459,7 +480,7 @@ def upload_ai_model(ai_model_path: str, category_ids: List[int] = None, session=
     Upload an ai_model to the text-annotation server.
 
     :param ai_model_path: Path to the ai_model
-    :param category_ids: define ids of categories the model should become available after upload.
+    :param category_ids: define ids of Categories the model should become available after upload.
     :param session: session to connect to server
     :return:
     """
