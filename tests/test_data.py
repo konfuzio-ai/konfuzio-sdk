@@ -96,6 +96,42 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.prj.documents[0].get_file()
         assert self.prj.documents[0].ocr_file_path
 
+    def test_size_of_project(self):
+        """Test size of Project and compare it to the size after documents have been loaded."""
+        import sys
+        from types import ModuleType, FunctionType
+        from gc import get_referents
+
+        # Custom objects know their class.
+        # Function objects seem to know way too much, including modules.
+        # Exclude modules as well.
+        BLACKLIST = type, ModuleType, FunctionType
+
+        def _getsize(obj):
+            """Sum size of object & members. From https://stackoverflow.com/a/30316760."""
+            if isinstance(obj, BLACKLIST):
+                raise TypeError('getsize() does not take argument of type: ' + str(type(obj)))
+            seen_ids = set()
+            size = 0
+            objects = [obj]
+            while objects:
+                need_referents = []
+                for obj in objects:
+                    if not isinstance(obj, BLACKLIST) and id(obj) not in seen_ids:
+                        seen_ids.add(id(obj))
+                        size += sys.getsizeof(obj)
+                        need_referents.append(obj)
+                objects = get_referents(*need_referents)
+            return size
+
+        # start of test
+        prj = Project(id_=46)
+        before = _getsize(prj)
+        for document in prj.documents:
+            document.text
+        after = _getsize(prj)
+        assert after / before > 1.9
+
     def test_create_new_doc_via_text_and_bbox(self):
         """Test to create a new document which by a text and a bbox."""
         doc = Project(id_=46).get_document_by_id(TEST_DOCUMENT_ID)
