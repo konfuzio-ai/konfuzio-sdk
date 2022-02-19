@@ -8,7 +8,7 @@ import unittest
 
 import pytest
 
-from konfuzio import BASE_DIR
+from konfuzio_sdk import BASE_DIR
 from konfuzio_sdk.api import (
     get_meta_of_files,
     download_file_konfuzio_api,
