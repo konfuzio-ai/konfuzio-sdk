@@ -5,13 +5,53 @@ import os
 import unittest
 
 import pytest
-from konfuzio_sdk.data import Project, Annotation, Document, Label, AnnotationSet, LabelSet, Data
+from konfuzio_sdk.data import Project, Annotation, Document, Label, AnnotationSet, LabelSet, Data, Span
 from konfuzio_sdk.utils import is_file, get_default_label_set_documents, separate_labels
 
 logger = logging.getLogger(__name__)
 
 TEST_PROJECT_ID = 46
 TEST_DOCUMENT_ID = 44823
+
+
+class TestOfflineDataSetup(unittest.TestCase):
+    """Test data features without real data."""
+
+    def test_to_add_spans_to_annotation(self):
+        """Add one Span to one Annotation."""
+        prj = Project(id_=None)
+        doc = Document(project=prj)
+        span = Span(start_offset=1, end_offset=2)
+        annotation = Annotation(document=doc, spans=[span])
+        self.assertEqual([span], annotation.spans)
+
+    def test_to_add_two_spans_to_annotation(self):
+        """Add one Span to one Annotation."""
+        prj = Project(id_=None)
+        doc = Document(project=prj)
+        span = Span(start_offset=1, end_offset=2)
+        annotation = Annotation(document=doc, spans=[span, span])
+        self.assertEqual([span], annotation.spans)
+
+    def test_to_add_an_annotation_twice_to_a_document(self):
+        """Test to add an the same Annotation twice to a Document."""
+        prj = Project(id_=None)
+        span = Span(start_offset=1, end_offset=2)
+        doc = Document(project=prj)
+        annotation = Annotation(document=doc, spans=[span])
+        doc.add_annotation(annotation)
+        doc.add_annotation(annotation)
+        self.assertEqual([annotation], doc.annotations(use_correct=False))
+
+    def test_to_add_two_annotations_to_a_document(self):
+        """Test to add an the same Annotation twice to a Document."""
+        prj = Project(id_=None)
+        first_span = Span(start_offset=1, end_offset=2)
+        second_span = Span(start_offset=2, end_offset=3)
+        doc = Document(project=prj)
+        first_annotation = Annotation(document=doc, spans=[first_span])
+        second_annotation = Annotation(document=doc, spans=[first_span, second_span])
+        self.assertEqual([first_annotation, second_annotation], doc.annotations(use_correct=False))
 
 
 @pytest.mark.serial

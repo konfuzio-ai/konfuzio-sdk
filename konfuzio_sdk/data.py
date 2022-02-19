@@ -684,6 +684,7 @@ class Annotation(Data):
         revised: bool = False,
         normalized=None,
         id_: int = None,
+        spans: List[Span] = [],
         accuracy: float = None,
         translated_string=None,
         *initial_data,
@@ -711,6 +712,7 @@ class Annotation(Data):
         self.document = document  # we don't add it to the document, as it's added via document.add_annotation(self)
         self._spans: List[Span] = []
         self.id_ = id_  # Annotations can have None id_, if they are not saved online and are only available locally
+        self._spans = []
 
         if accuracy:  # its a confidence
             self.confidence = accuracy
@@ -724,7 +726,8 @@ class Annotation(Data):
         elif isinstance(label, Label):
             self.label: Label = label
         else:
-            raise AttributeError(f'{self.__class__.__name__} {self.id_local} has no label.')
+            self.label: Label = None
+            logger.info(f'{self.__class__.__name__} {self.id_local} has no label.')
 
         # if no label_set_id we check if is passed by section_label_id
         if label_set_id is None and kwargs.get("section_label_id") is not None:
@@ -736,7 +739,8 @@ class Annotation(Data):
         elif isinstance(label_set, LabelSet):
             self.label_set = label_set
         else:
-            raise AttributeError(f'{self.__class__.__name__} {self.id_local} has no Label Set.')
+            self.label_set = None
+            logger.info(f'{self.__class__.__name__} {self.id_local} has no Label Set.')
 
         # make sure an Annotation Set is available
         if isinstance(annotation_set_id, int):
@@ -744,8 +748,13 @@ class Annotation(Data):
         elif isinstance(annotation_set, AnnotationSet):
             self.annotation_set = annotation_set
         else:
-            logger.warning(f'{self} in {self.document} created but without annotation set information.')
-            # raise AttributeError(f'{self.__class__.__name__} {self.id_local} has no Annotation Set.')
+            self.annotation_set = None
+            logger.info(f'{self} in {self.document} created but without annotation set information.')
+
+        if self.document:
+            self.document.add_annotation(self)
+        for span in spans:
+            self.add_span(span)
 
         self.selection_bbox = kwargs.get("selection_bbox", None)
         self.page_number = kwargs.get("page_number", None)
@@ -809,7 +818,17 @@ class Annotation(Data):
         elif self.label:
             return f"Annotation {self.label.name} ({self._spans})"
         else:
-            logger.error(f"{self.__class__.__name__} without Label ({self.start_offset}, {self.end_offset})")
+            return f"{self.__class__.__name__} without Label ({self.start_offset}, {self.end_offset})"
+
+    def __eq__(self, other):
+        """We compare a Annotation based on it's Label, Label-Sets."""
+        result = False
+        if self.document and other.document and self.document == other.document:
+            if self.label and other.label and self.label == other.label:
+                if self.label_set and other.label_set and self.label_set == other.label_set:
+                    if self.spans == other.spans:
+                        result = True
+        return result
 
     def __lt__(self, other):
         """If we sort Annotations we do so by start offset."""
@@ -1803,7 +1822,7 @@ class Project(Data):
         by default.
         """
         self.id_local = next(Data.id_iter)
-        self.id_ = id_
+        self.id_ = id_  # A Project with None ID is not retrieved from the HOST
 
         self.categories: List[Category] = []
         self.label_sets: List[LabelSet] = []
@@ -1816,7 +1835,8 @@ class Project(Data):
         self.labels_file_path = os.path.join(self.project_folder, "labels.json5")
         self.label_sets_file_path = os.path.join(self.project_folder, "label_sets.json5")
 
-        self.get(update=update)
+        if self.id_:
+            self.get(update=update)
 
     def __repr__(self):
         """Return string representation."""
