@@ -88,6 +88,10 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         label = self.prj.get_label_by_id(867)
         assert len(label.correct_annotations) == self.annotations_correct
 
+    def test_annotation_hashable(self):
+        """Test if an annotation can be hashed."""
+        set(self.prj.get_document_by_id(TEST_DOCUMENT_ID).annotations())
+
     def test_number_of_label_sets(self):
         """Test Label Sets numbers."""
         assert self.prj.label_sets.__len__() == 5

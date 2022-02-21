@@ -38,6 +38,7 @@ class Data:
 
     id_iter = itertools.count()
     id_ = None
+    id_local = None
     session = _konfuzio_session()
 
     def __eq__(self, other) -> bool:
@@ -45,8 +46,8 @@ class Data:
         return self.id_ and other and other.id_ and self.id_ == other.id_
 
     def __hash__(self):
-        """Return hash(self)."""
-        return hash(str(self.id_))
+        """Make any online or local concept hashablele. See https://stackoverflow.com/a/7152650."""
+        return hash(str(self.id_local))
 
     # todo review function to be defined as @abstractmethod
     def lose_weight(self):
@@ -830,8 +831,12 @@ class Annotation(Data):
 
     def __lt__(self, other):
         """If we sort Annotations we do so by start offset."""
-        logger.warning('Legacy: Annotations can not be sorted consistently by start offset.')
-        return self.start_offset < other.start_offset
+        # logger.warning('Legacy: Annotations can not be sorted consistently by start offset.')
+        return min([span.start_offset for span in self.spans]) < min([span.start_offset for span in other.spans])
+
+    def __hash__(self):
+        """Identity of Annotation that does not change over time."""
+        return hash((self.start_offset, self.end_offset, self.label_set, self.document, self.label))
 
     @property
     def is_multiline(self) -> int:
@@ -864,9 +869,8 @@ class Annotation(Data):
     @property
     def offset_string(self) -> List[str]:
         """View the string representation of the Annotation."""
-        logger.warning('You use offset_string on Annotation Level which is legacy.')
         if self.document.text:
-            result = [self.document.text[span.start_offset : span.end_offset] for span in self._spans]
+            result = [span.offset_string for span in self.spans]
         else:
             result = []
         return result
