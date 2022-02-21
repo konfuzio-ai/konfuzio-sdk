@@ -21,7 +21,7 @@ konfuzio_sdk init
     add the API Token as .env file to connect to the Konfuzio Server, i.e. Host
 konfuzio_sdk create_project >NAME<
     Create a new project on the Konfuzio Server. Returns the ID of the new project.
-konfuzio_sdk migrate_data >ID<
+konfuzio_sdk export_project >ID<
     Download the data from a project by ID to migrate it to another Host.
 
 These commands should be run inside of your working directory.
@@ -38,7 +38,7 @@ def main():
         password = getpass("Password you use to login to Konfuzio Server: ")
         host = str(input("Server Host URL (press [ENTER] for https://app.konfuzio.com): ") or KONFUZIO_HOST)
         init_env(user=user, password=password, host=host)
-    elif sys.argv and sys.argv[0] == 'migrate_data' and sys.argv[1].isdigit():
+    elif sys.argv and sys.argv[0] == 'export_project' and sys.argv[1].isdigit():
         download_training_and_test_data(id_=int(sys.argv[1]))
     elif sys.argv and sys.argv[0] == 'create_project' and sys.argv[1]:
         create_new_project(sys.argv[1])
