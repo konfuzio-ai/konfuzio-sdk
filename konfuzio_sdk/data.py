@@ -6,6 +6,7 @@ import os
 import pathlib
 import re
 import shutil
+import zipfile
 from copy import deepcopy
 import time
 from datetime import tzinfo
@@ -1520,6 +1521,9 @@ class Document(Data):
         if is_file(self.bbox_file_path, raise_exception=False):
             with open(self.bbox_file_path, "r", encoding="utf-8") as f:
                 bbox = json.loads(f.read())
+        elif is_file(self.bbox_file_path + '.zip', raise_exception=False):
+            with zipfile.ZipFile(self.bbox_file_path + '.zip', "r") as archive:
+                bbox = json.loads(archive.read('bbox.json5'))
         else:
             logger.warning(f'Start downloading bbox files of all characters {self}.')
             if self.status[0] == 2:
@@ -1527,9 +1531,16 @@ class Document(Data):
                     document_id=self.id_, project_id=self.project.id_, session=self.session, extra_fields="bbox"
                 )
                 bbox = data['bbox']
-                with open(self.bbox_file_path, "w", encoding="utf-8") as f:
-                    json.dump(bbox, f, indent=2, sort_keys=True)
-
+                # Use the `zipfile` module
+                # `compresslevel` was added in Python 3.7
+                with zipfile.ZipFile(self.bbox_file_path + ".zip", mode="w", compression=zipfile.ZIP_DEFLATED,
+                                     compresslevel=9) as zip_file:
+                    # Dump JSON data
+                    dumped_JSON: str = json.dumps(bbox, indent=2, sort_keys=True)
+                    # Write the JSON data into `data.json` *inside* the ZIP file
+                    zip_file.writestr('bbox.json5', data=dumped_JSON)
+                    # Test integrity of compressed archive
+                    zip_file.testzip()
         return bbox
 
     @property
