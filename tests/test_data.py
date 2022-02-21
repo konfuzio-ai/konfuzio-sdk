@@ -96,6 +96,11 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         """Test Label Sets numbers."""
         assert self.prj.label_sets.__len__() == 5
 
+    def test_check_tokens(self):
+        """Test to find not matched Annotations."""
+        spans = self.prj.get_label_by_id(867).check_tokens()
+        assert len(spans) == 1
+
     def test_has_multiple_annotation_sets(self):
         """Test Label Sets in the test project."""
         assert self.prj.get_label_set_by_name('Brutto-Bezug').has_multiple_annotation_sets
