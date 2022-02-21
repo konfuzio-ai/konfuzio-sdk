@@ -25,6 +25,12 @@ class TestOfflineDataSetup(unittest.TestCase):
         annotation = Annotation(document=doc, spans=[span])
         self.assertEqual([span], annotation.spans)
 
+    def test_to_there_must_not_be_a_folder(self):
+        """Add one Span to one Annotation."""
+        prj = Project(id_=None)
+        doc = Document(project=prj)
+        assert not os.path.isdir(doc.document_folder)
+
     def test_to_add_two_spans_to_annotation(self):
         """Add one Span to one Annotation."""
         prj = Project(id_=None)

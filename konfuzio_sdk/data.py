@@ -1157,7 +1157,8 @@ class Document(Data):
         self._pages = None
 
         # prepare local setup for document
-        pathlib.Path(self.document_folder).mkdir(parents=True, exist_ok=True)
+        if self.id_:
+            pathlib.Path(self.document_folder).mkdir(parents=True, exist_ok=True)
         self.image_paths = []  # Path to the images  # todo implement pages
         self.ocr_file_path = None  # Path to the ocred pdf (sandwich pdf)
         self.annotation_file_path = os.path.join(self.document_folder, "annotations.json5")
