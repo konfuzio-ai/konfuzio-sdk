@@ -10,7 +10,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3 import Retry
 
-from konfuzio_sdk import KONFUZIO_HOST, KONFUZIO_TOKEN, BASE_DIR
+from konfuzio_sdk import KONFUZIO_HOST, KONFUZIO_TOKEN
 from konfuzio_sdk.urls import (
     get_auth_token_url,
     get_projects_list_url,
@@ -52,7 +52,7 @@ def _get_auth_token(username, password, host=KONFUZIO_HOST) -> str:
 
 
 def init_env(
-    user: str, password: str, host: str = KONFUZIO_HOST, working_directory=BASE_DIR, file_ending: str = ".env"
+    user: str, password: str, host: str = KONFUZIO_HOST, working_directory=os.getcwd(), file_ending: str = ".env"
 ):
     """
     Add the .env file to the working directory.
@@ -90,6 +90,8 @@ class TimeoutHTTPAdapter(HTTPAdapter):
 
     def send(self, request, *args, **kwargs):
         """Use timeout policy if not otherwise declared."""
+        if request.headers['Authorization'] == 'Token None':
+            raise PermissionError(f'Your Token to connect to {KONFUZIO_HOST} is missing, e.g. use "konfuzio_sdk init"')
         timeout = kwargs.get("timeout")
         if timeout is None:
             kwargs["timeout"] = self.timeout
