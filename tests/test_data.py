@@ -164,6 +164,18 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.prj.documents[0].get_file()
         assert self.prj.documents[0].ocr_file_path
 
+    def test_get_file_without_ocr(self):
+        """Download file without OCR."""
+        doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
+        doc.get_file(ocr_version=False)
+        is_file(doc.file_path)
+
+    def test_get_file_with_ocr(self):
+        """Download file without OCR."""
+        doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
+        doc.get_file()
+        is_file(doc.ocr_file_path)
+
     def test_get_bbox(self):
         """Test to get BoundingBox of Text offset."""
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
