@@ -33,14 +33,14 @@ A bug report can be filed at https://github.com/konfuzio-ai/document-ai-python-s
 def main():
     """CLI of Konfuzio SDK."""
     _cli_file_path = sys.argv.pop(0)  # NOQA
-    if len(sys.argv) > 1 and sys.argv[0] == 'init':
+    if len(sys.argv) == 1 and sys.argv[0] == 'init':
         user = input("Username you use to login to Konfuzio Server: ")
         password = getpass("Password you use to login to Konfuzio Server: ")
         host = str(input("Server Host URL (press [ENTER] for https://app.konfuzio.com): ") or KONFUZIO_HOST)
         init_env(user=user, password=password, host=host)
-    elif len(sys.argv) > 2 and sys.argv[0] == 'export_project' and sys.argv[1].isdigit():
+    elif len(sys.argv) == 2 and sys.argv[0] == 'export_project' and sys.argv[1].isdigit():
         download_training_and_test_data(id_=int(sys.argv[1]))
-    elif len(sys.argv) > 2 and sys.argv[0] == 'create_project' and sys.argv[1]:
+    elif len(sys.argv) == 2 and sys.argv[0] == 'create_project' and sys.argv[1]:
         create_new_project(sys.argv[1])
     else:
         print(CLI_ERROR)

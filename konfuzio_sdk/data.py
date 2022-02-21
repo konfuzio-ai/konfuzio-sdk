@@ -1304,8 +1304,6 @@ class Document(Data):
         add = False
         for annotation in self._annotations:
             for span in annotation.spans:
-                if span.start_offset is None or span.end_offset is None:
-                    raise NotImplementedError
                 # filter by correct information
                 if (use_correct and annotation.is_correct) or not use_correct:
                     # todo: add option to filter for overruled Annotations where mult.=F
@@ -2346,6 +2344,7 @@ def download_training_and_test_data(id_: int):
         raise ValueError("No documents in the training or test set. Please add them.")
 
     for document in tqdm(prj.documents + prj.test_documents):
+        document.download_document_details()
         document.get_file()
         document.get_file(ocr_version=False)
         document.get_bbox()
