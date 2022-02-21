@@ -110,7 +110,7 @@ class LabelSet(Data):
     def __init__(
         self,
         project,
-        labels: List[int] = [],
+        labels=None,
         id_: int = None,
         name: str = None,
         name_clean: str = None,
@@ -131,6 +131,8 @@ class LabelSet(Data):
         :param categories: Categories to which the Label Set belongs
         :param has_multiple_annotation_sets: Bool to allow the Label Set to have different Annotation Sets in a Document
         """
+        if labels is None:
+            labels = []
         self.id_local = next(Data.id_iter)
         self.id_ = id_
         self.name = name
@@ -228,11 +230,7 @@ class Category(LabelSet):
     """A Category is used to group Documents."""
 
     def __init__(self, *args, **kwargs):
-        """
-        Create a named Category.
-
-        A Category is also a Label Set but cannot have other Categories associated to it.
-        """
+        """Define a Category that is also a Label Set but cannot have other Categories associated to it."""
         LabelSet.__init__(self, *args, **kwargs)
         self.id_local = next(Data.id_iter)
         self.is_default = True
@@ -260,7 +258,7 @@ class Label(Data):
         get_data_type_display: str = None,
         text_clean: str = None,
         description: str = None,
-        label_sets: List[LabelSet] = [],
+        label_sets=None,
         has_multiple_top_candidates: bool = False,
         threshold: float = None,  # todo should we really add the default 0.1?
         *initial_data,
@@ -277,6 +275,8 @@ class Label(Data):
         :param description: Description of the label
         :param label_sets: Label sets that use this label
         """
+        if label_sets is None:
+            label_sets = []
         self.id_local = next(Data.id_iter)
         self.id_ = id_
         self.name = text
@@ -286,7 +286,6 @@ class Label(Data):
         self.has_multiple_top_candidates = has_multiple_top_candidates
         self.threshold = threshold
         self.project: Project = project
-
         project.add_label(self)
         if label_sets:  # todo why?
             [x.add_label(self) for x in label_sets]
@@ -298,6 +297,7 @@ class Label(Data):
         self.regex_file_path = None
         self._combined_tokens = None
         self.regex_file_path = os.path.join(self.project.regex_folder, f'{self.name_clean}.json5')
+        self._correct_annotations = []
 
     def __repr__(self):
         """Return string representation."""
@@ -345,7 +345,10 @@ class Label(Data):
     @property
     def correct_annotations(self):
         """Return correct Annotations."""
-        return [annotation for annotation in self.annotations if annotation.is_correct]
+        if not self._correct_annotations:
+            logger.info(f'Find all correct Annotations of {self}.')
+            self._correct_annotations = [annotation for annotation in self.annotations if annotation.is_correct]
+        return self._correct_annotations
 
     @property
     def documents(self) -> List["Document"]:
@@ -356,30 +359,14 @@ class Label(Data):
     # todo move to regex.py so it runs on a list of Annotations, run on Annotations
     def find_tokens(self):
         """Calculate the regex token of a label, which matches all offset_strings of all correct Annotations."""
-        evaluations = []
+        self._evaluations = []  # used to do the duplicate check on Annotation level
         for annotation in self.correct_annotations:
-            tokens = annotation.tokens()
-            for token in tokens:
-                # remove duplicates
-                matcher = re.sub(re.compile('<.*?>'), '', token['regex'])
-                matchers = [re.sub(re.compile('<.*?>'), '', t['regex']) for t in evaluations]
-                if matcher not in matchers:
-                    evaluations.append(token)
-
+            self._evaluations += annotation.tokens()
         try:
-            tokens = get_best_regex(evaluations, log_stats=True)
+            tokens = get_best_regex(self._evaluations, log_stats=True)
         except ValueError:
             logger.error(f'We cannot find tokens for {self} with a f_score > 0.')
             tokens = []
-
-        for annotation in self.correct_annotations:
-            for span in annotation._spans:
-                valid_offset = span.offset_string.replace('\n', '').replace('\t', '').replace('\f', '').replace(' ', '')
-                if valid_offset and span not in annotation.regex_annotation_generator(tokens):
-                    logger.error(
-                        f'Please check Annotation ({KONFUZIO_HOST}/a/{annotation.id_})'
-                        f' >>{repr(span.offset_string)}<<.'
-                    )
         return tokens
 
     def tokens(self, update=False) -> List[str]:
@@ -398,6 +385,19 @@ class Label(Data):
                 with open(self.tokens_file_path, 'r') as f:
                     self._tokens = json.load(f)
         return self._tokens
+
+    def check_tokens(self):
+        """Check if a list of regex do find the annotations. Log Annotations that we cannot find."""
+        not_found = []
+        for annotation in self.correct_annotations:
+            for span in annotation.spans:
+                valid_offset = span.offset_string.replace('\n', '').replace('\t', '').replace('\f', '').replace(' ', '')
+                if valid_offset and span not in annotation.regex_annotation_generator(self.tokens()):
+                    logger.error(
+                        f'Please check Annotation ({span.annotation.get_link()}) >>{repr(span.offset_string)}<<.'
+                    )
+                    not_found.append(span)
+        return not_found
 
     @property
     def combined_tokens(self):
@@ -474,6 +474,7 @@ class Label(Data):
             logger.warning(f'{self} has no correct annotations.')
             return []
 
+        # todo: start duplicate check
         regex_made = []
         for annotation in self.annotations:
             for span in annotation._spans:
@@ -499,6 +500,7 @@ class Label(Data):
         except ValueError:
             logger.exception(f'We cannot find regex for {self} with a f_score > 0.')
             best_regex = []
+        # todo: end duplicate check
 
         # for annotation in self.annotations:
         #     for span in annotation._spans:
@@ -634,9 +636,12 @@ class Span(Data):
         return normalize(self.offset_string, self.annotation.label.data_type)
 
     @property
-    def offset_string(self) -> str:
+    def offset_string(self) -> Union[str, None]:
         """Calculate the offset string of a Span."""
-        return self.annotation.document.text[self.start_offset : self.end_offset]
+        if self.annotation and self.annotation.document and self.annotation.document.text:
+            return self.annotation.document.text[self.start_offset : self.end_offset]
+        else:
+            return None
 
     def eval_dict(self):
         """Return any information needed to evaluate the Span."""
@@ -686,7 +691,7 @@ class Annotation(Data):
         revised: bool = False,
         normalized=None,
         id_: int = None,
-        spans: List[Span] = [],
+        spans=None,
         accuracy: float = None,
         translated_string=None,
         *initial_data,
@@ -711,7 +716,7 @@ class Annotation(Data):
         self.revised = revised
         self.normalized = normalized
         self.translated_string = translated_string
-        self.document = document  # we don't add it to the document, as it's added via document.add_annotation(self)
+        self.document = document
         self.id_ = id_  # Annotations can have None id_, if they are not saved online and are only available locally
         self._spans = []
 
@@ -750,11 +755,11 @@ class Annotation(Data):
             self.annotation_set = annotation_set
         else:
             self.annotation_set = None
-            logger.info(f'{self} in {self.document} created but without Annotation Set information.')
+            logger.debug(f'{self} in {self.document} created but without Annotation Set information.')
 
         if self.document:
             self.document.add_annotation(self)
-        for span in spans:
+        for span in spans or []:
             self.add_span(span)
 
         self.selection_bbox = kwargs.get("selection_bbox", None)
@@ -780,7 +785,7 @@ class Annotation(Data):
 
             logger.warning(f'{self} is empty')
         else:
-            logger.warning(f'{self} created but without bbox information.')
+            logger.debug(f'{self} created but without bbox information.')
             # raise NotImplementedError
             # todo is it ok to have no bbox ? raise NotImplementedError
 
@@ -813,9 +818,9 @@ class Annotation(Data):
         """Return string representation."""
         if self.label and self.document:
             span_str = ', '.join(f'{x.start_offset, x.end_offset}' for x in self._spans)
-            return f"Annotation {self.label.name} {span_str}"
+            return f"{self.__class__.__name__} {self.label.name} {span_str}"
         elif self.label:
-            return f"Annotation {self.label.name} ({self._spans})"
+            return f"{self.__class__.__name__} {self.label.name} ({self._spans})"
         else:
             return f"{self.__class__.__name__} without Label ({self.start_offset}, {self.end_offset})"
 
@@ -841,6 +846,7 @@ class Annotation(Data):
     @property
     def is_multiline(self) -> int:
         """Calculate if Annotation spans multiple lines of text."""
+        logger.error('We cannot calculate this. The indicator is unreliable.')
         return self.offset_string.count('\n')
 
     @property
