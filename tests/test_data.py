@@ -103,6 +103,11 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         """Test the number of Documents in data set status test."""
         assert len(self.prj.excluded_documents) == 1
 
+    def test_all_labels_have_threshold(self):
+        """Test the number of Documents in data set status test."""
+        for label in self.prj.labels:
+            assert hasattr(label, 'threshold')
+
     def test_number_preperation_documents(self):
         """Test the number of Documents in data set status test."""
         assert len(self.prj.preperation_documents) == 0
@@ -579,9 +584,9 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         label = self.prj.get_label_by_id(858)
         # 26 Annotations can be represented by 3 Regex
         assert label.tokens() == [
-            '(?P<Auszahlungsbetrag_F_4420351_3777>\\d\\.\\d\\d\\d\\,\\d\\d)',
-            '(?P<Auszahlungsbetrag_F_671698_3433>\\d\\d\\d\\,\\d\\d)',
-            '(?P<Auszahlungsbetrag_F_673143_4074>\\d\\d\\,[ ]+\\d\\d[-])',
+            '(?P<Auszahlungsbetrag_N_4420351_3777>\\d\\.\\d\\d\\d\\,\\d\\d)',
+            '(?P<Auszahlungsbetrag_N_671698_3433>\\d\\d\\d\\,\\d\\d)',
+            '(?P<Auszahlungsbetrag_N_673143_4074>\\d\\d\\,[ ]+\\d\\d[-])',
         ]
 
     @unittest.skip(reason='Waiting for Text-Annotation Documentation.')

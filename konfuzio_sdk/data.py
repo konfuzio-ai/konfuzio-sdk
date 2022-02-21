@@ -25,6 +25,7 @@ from konfuzio_sdk.api import (
     create_label,
     get_document_details,
 )
+from konfuzio_sdk.evaluate import compare
 from konfuzio_sdk.utils import get_bbox, get_missing_offsets
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_spans, suggest_regex_for_string, merge_regex
@@ -73,6 +74,8 @@ class AnnotationSet(Data):
         self.id_ = id_
         self.label_set: LabelSet = label_set
         self.document: Document = document  # we don't add it to the Document as it's added via get_annotations
+        if document:
+            document.add_annotation_set(self)
 
     def __repr__(self):
         """Return string representation of the Annotation Set."""
@@ -1175,83 +1178,83 @@ class Document(Data):
         return len(self.text.split('\f'))
 
     # todo goes to Trainer extract Method of AI Models
-    # def add_extractions_as_annotations(
-    #     self, label: Label, extractions, label_set: LabelSet, annotation_set: AnnotationSet
-    # ):
-    #     """Add the extraction of a model to the document."""
-    #     annotations = extractions[extractions['Accuracy'] > 0.1][
-    #         ['Start', 'End', 'Accuracy', 'page_index', 'x0', 'x1', 'y0', 'y1', 'top', 'bottom']
-    #     ].sort_values(by='Accuracy', ascending=False)
-    #     annotations.rename(columns={'Start': 'start_offset', 'End': 'end_offset'}, inplace=True)
-    #     for annotation in annotations.to_dict('records'):  # todo ask Ana: are Start and End always ints
-    #         anno = Annotation(
-    #             document=self,
-    #             label=label,
-    #             accuracy=annotation['Accuracy'],
-    #             label_set=label_set,
-    #             annotation_set=annotation_set,
-    #             bboxes=[annotation],
-    #         )
-    #         self.add_annotation(anno)
-    #     return self
+    def add_extractions_as_annotations(
+        self, label: Label, extractions, label_set: LabelSet, annotation_set: AnnotationSet
+    ):
+        """Add the extraction of a model to the document."""
+        annotations = extractions[extractions['Accuracy'] > 0.1][
+            ['Start', 'End', 'Accuracy', 'page_index', 'x0', 'x1', 'y0', 'y1', 'top', 'bottom']
+        ].sort_values(by='Accuracy', ascending=False)
+        annotations.rename(columns={'Start': 'start_offset', 'End': 'end_offset'}, inplace=True)
+        for annotation in annotations.to_dict('records'):  # todo ask Ana: are Start and End always ints
+            anno = Annotation(
+                document=self,
+                label=label,
+                accuracy=annotation['Accuracy'],
+                label_set=label_set,
+                annotation_set=annotation_set,
+                bboxes=[annotation],
+            )
+            self.add_annotation(anno)
+        return self
 
     # todo: Goes to Trainer extract AI method
-    # def evaluate_extraction_model(self, path_to_model: str):
-    #     """Run and evaluate model on this document."""
-    #     # todo: tbd local import to prevent circular import - Can only be used by konfuzio Trainer users
-    #     from konfuzio.load_data import load_pickle
-    #
-    #     model = load_pickle(path_to_model)
-    #
-    #     # build the doc from model results
-    #     virtual_doc = Document(
-    #         project=self.project, text=self.text, bbox=self.get_bbox(), number_of_pages=len(self.text.split('\f'))
-    #     )
-    #     extraction_result = model.extract(document=virtual_doc)
-    #
-    #     virtual_annotation_set_id = 0  # counter for accross mult. Annotation Set groups of a Label Set
-    #
-    #     # define Annotation Set for the Category Label Set
-    #     category_label_set = self.project.get_label_set_by_id(self.category.id_)
-    #     virtual_default_annotation_set = AnnotationSet(
-    #         document=virtual_doc, label_set=category_label_set, id_=virtual_annotation_set_id
-    #     )
-    #
-    #     # TODO: not needed once extract returns a document
-    #     for label_or_label_set_name, information in extraction_result.items():
-    #         if not isinstance(information, list):
-    #             # annotations belong to the default Annotation Set
-    #             # add default Annotation Set if there is any prediction for it
-    #             if virtual_default_annotation_set not in virtual_doc.annotation_sets:
-    #                 virtual_doc.add_annotation_set(virtual_default_annotation_set)
-    #
-    #             label = self.project.get_label_by_name(label_or_label_set_name)
-    #             virtual_doc.add_extractions_as_annotations(
-    #                 label=label,
-    #                 extractions=information,
-    #                 label_set=self.category,
-    #                 annotation_set=virtual_default_annotation_set,
-    #             )
-    #
-    #         else:  # process multi Annotation Sets where multiline is True
-    #             label_set = self.project.get_label_set_by_name(label_or_label_set_name)
-    #             for entry in information:  # represents one of pot. multiple annotation-sets belonging of one LabelSet
-    #                 virtual_annotation_set_id += 1
-    #                 virtual_annotation_set = AnnotationSet(
-    #                     document=virtual_doc, label_set=label_set, id_=virtual_annotation_set_id
-    #                 )
-    #                 virtual_doc.add_annotation_set(virtual_annotation_set)
-    #
-    #                 for label_name, extractions in entry.items():
-    #                     label = self.project.get_label_by_name(label_name)
-    #                     virtual_doc.add_extractions_as_annotations(
-    #                         label=label,
-    #                         extractions=extractions,
-    #                         label_set=label_set,
-    #                         annotation_set=virtual_annotation_set,
-    #                     )
-    #
-    #     return compare(self, virtual_doc)
+    def evaluate_extraction_model(self, path_to_model: str):
+        """Run and evaluate model on this document."""
+        # todo: tbd local import to prevent circular import - Can only be used by konfuzio Trainer users
+        from konfuzio.load_data import load_pickle
+
+        model = load_pickle(path_to_model)
+
+        # build the doc from model results
+        virtual_doc = Document(
+            project=self.project, text=self.text, bbox=self.get_bbox(), number_of_pages=len(self.text.split('\f'))
+        )
+        extraction_result = model.extract(document=virtual_doc)
+
+        virtual_annotation_set_id = 0  # counter for accross mult. Annotation Set groups of a Label Set
+
+        # define Annotation Set for the Category Label Set
+        category_label_set = self.project.get_label_set_by_id(self.category.id_)
+        virtual_default_annotation_set = AnnotationSet(
+            document=virtual_doc, label_set=category_label_set, id_=virtual_annotation_set_id
+        )
+
+        # TODO: not needed once extract returns a document
+        for label_or_label_set_name, information in extraction_result.items():
+            if not isinstance(information, list):
+                # annotations belong to the default Annotation Set
+                # add default Annotation Set if there is any prediction for it
+                if virtual_default_annotation_set not in virtual_doc.annotation_sets:
+                    virtual_doc.add_annotation_set(virtual_default_annotation_set)
+
+                label = self.project.get_label_by_name(label_or_label_set_name)
+                virtual_doc.add_extractions_as_annotations(
+                    label=label,
+                    extractions=information,
+                    label_set=self.category,
+                    annotation_set=virtual_default_annotation_set,
+                )
+
+            else:  # process multi Annotation Sets where multiline is True
+                label_set = self.project.get_label_set_by_name(label_or_label_set_name)
+                for entry in information:  # represents one of pot. multiple annotation-sets belonging of one LabelSet
+                    virtual_annotation_set_id += 1
+                    virtual_annotation_set = AnnotationSet(
+                        document=virtual_doc, label_set=label_set, id_=virtual_annotation_set_id
+                    )
+                    virtual_doc.add_annotation_set(virtual_annotation_set)
+
+                    for label_name, extractions in entry.items():
+                        label = self.project.get_label_by_name(label_name)
+                        virtual_doc.add_extractions_as_annotations(
+                            label=label,
+                            extractions=extractions,
+                            label_set=label_set,
+                            annotation_set=virtual_annotation_set,
+                        )
+
+        return compare(self, virtual_doc)
 
     def eval_dict(self, use_correct=False) -> dict:
         """Use this dict to evaluate Documents. The speciality: For ever Span of an Annotation create one entry."""
@@ -1441,7 +1444,8 @@ class Document(Data):
         if annotation not in self._annotations:
             self._annotations.append(annotation)
         else:
-            logger.error(f'In {self} the Annotation {annotation} is a duplicate and will not be added.')
+            # todo raise NotImplementedError
+            logger.error(f'In {self} the {annotation} is a duplicate and will not be added.')
         return self
 
     def add_annotation_set(self, annotation_set: AnnotationSet):
@@ -1451,7 +1455,8 @@ class Document(Data):
             # if annotation_set.label_set.category == self.category:
             self._annotation_sets.append(annotation_set)
         else:
-            logger.error(f'In {self} the Annotation {annotation_set} is a duplicate and will not be added.')
+            # todo raise NotImplementedError
+            logger.error(f'In {self} the {annotation_set} is a duplicate and will not be added.')
         return self
 
     def get_annotation_set_by_id(self, id_: int) -> AnnotationSet:
@@ -1741,31 +1746,33 @@ class Document(Data):
         # first load all Annotation Sets before we create Annotations
         for raw_annotation_set in raw_annotation_sets:
             # todo add parent to define default Annotation Set
-            annotation_set = AnnotationSet(
+            _ = AnnotationSet(
                 id_=raw_annotation_set["id"],
                 document=self,
                 label_set=self.project.get_label_set_by_id(raw_annotation_set["section_label"]),
             )
-            self.add_annotation_set(annotation_set)
 
         with open(self.annotation_file_path, 'r') as f:
             raw_annotations = json.load(f)
 
         for raw_annotation in raw_annotations:
-            if raw_annotation["custom_offset_string"]:
-                real_string = self.text[raw_annotation['start_offset'] : raw_annotation['end_offset']]
-                if real_string == raw_annotation['offset_string']:
-                    annotation = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
-                    self.add_annotation(annotation)
-                else:
-                    logger.warning(
-                        f'Annotation {raw_annotation["id"]} has custom string and is not used '
-                        f'in training {KONFUZIO_HOST}/a/{raw_annotation["id"]}.'
-                    )
-            else:
-                raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
-                raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
-                self.add_annotation(Annotation(document=self, id_=raw_annotation['id'], **raw_annotation))
+            raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
+            raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
+            _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
+            # if raw_annotation["custom_offset_string"]:
+            #     real_string = self.text[raw_annotation['start_offset'] : raw_annotation['end_offset']]
+            #     if real_string == raw_annotation['offset_string']:
+            #
+            #         # self.add_annotation(annotation)
+            #     else:
+            #         logger.warning(
+            #             f'Annotation {raw_annotation["id"]} has custom string and is not used '
+            #             f'in training {KONFUZIO_HOST}/a/{raw_annotation["id"]}.'
+            #         )
+            # else:
+            #
+            #
+            #     self.add_annotation(Annotation(document=self, id_=raw_annotation['id'], **raw_annotation))
 
         return self._annotations
 
