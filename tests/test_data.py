@@ -555,16 +555,6 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert len(self.prj.labels) == 18
         assert len(self.prj.labels[0].correct_annotations) == self.correct_document_count
 
-    def test_annotation_keywordtoken_with_linebreak(self):
-        """Check if number replacement of regexed is correctly preferred, see _N_."""
-        label = self.prj.get_label_by_id(858)
-        # 26 Annotations can be represented by 3 Regex
-        assert label.tokens() == [
-            '(?P<Auszahlungsbetrag_N_4420351_3777>\\d\\.\\d\\d\\d\\,\\d\\d)',
-            '(?P<Auszahlungsbetrag_N_671698_3433>\\d\\d\\d\\,\\d\\d)',
-            '(?P<Auszahlungsbetrag_N_673143_4074>\\d\\d\\,[ ]+\\d\\d[-])',
-        ]
-
     @unittest.skip(reason='Waiting for Text-Annotation Documentation.')
     def test_to_change_an_annotation_online(self):
         """Test to update an Annotation from revised to not revised and back to revised."""
