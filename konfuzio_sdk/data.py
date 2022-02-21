@@ -1115,7 +1115,6 @@ class Document(Data):
 
         :param id_: ID of the Document
         :param project: Project where the Document belongs to
-        :param file_path: Path to a local file from which generate the Document object
         :param file_url: URL of the document
         :param status: Status of the document
         :param data_file_name: File name of the document
@@ -1127,7 +1126,6 @@ class Document(Data):
         """
         self.id_local = next(Data.id_iter)
         self.id_ = id_
-        self.file_path = file_path
         self._annotations: List[Annotation] = []
         self._annotation_sets: List[AnnotationSet] = []
         self.file_url = file_url
@@ -1160,10 +1158,6 @@ class Document(Data):
         if self.id_:
             pathlib.Path(self.document_folder).mkdir(parents=True, exist_ok=True)
         self.image_paths = []  # Path to the images  # todo implement pages
-        self.ocr_file_path = os.path.join(
-            self.document_folder, amend_file_name(self.name, append_text="ocr", new_extension=".pdf")
-        )
-        self.file_path = os.path.join(self.document_folder, amend_file_name(self.name))
         self.annotation_file_path = os.path.join(self.document_folder, "annotations.json5")
         self.annotation_set_file_path = os.path.join(self.document_folder, "annotation_sets.json5")
         self.txt_file_path = os.path.join(self.document_folder, "document.txt")
@@ -1175,6 +1169,16 @@ class Document(Data):
     def __repr__(self):
         """Return the name of the Document incl. the ID."""
         return f"{self.name}: {self.id_}"
+
+    @property
+    def file_path(self):
+        """Return path to file."""
+        return os.path.join(self.document_folder, amend_file_name(self.name))
+
+    @property
+    def ocr_file_path(self):
+        """Return path to OCR PDF file."""
+        return os.path.join(self.document_folder, amend_file_name(self.name, append_text="ocr", new_extension=".pdf"))
 
     @property
     def number_of_pages(self):
@@ -2137,25 +2141,26 @@ class Project(Data):
         :param update: Update the downloaded information even it is already available
         """
         for document_data in self.meta_data:
-            new_date = document_data["updated_at"]
-            if self.old_meta_data:
-                last_date = [d["updated_at"] for d in self.old_meta_data if d['id'] == document_data["id"]][0]
-                new = document_data["id"] not in [doc["id"] for doc in self.old_meta_data]
-                updated = dateutil.parser.isoparse(new_date) > dateutil.parser.isoparse(last_date)
-            else:
-                new = True
-                updated = None
+            if document_data['status'][0] == 2:  # NOQA - hotfix for Text Annotation Server
+                new_date = document_data["updated_at"]
+                if self.old_meta_data:
+                    last_date = [d["updated_at"] for d in self.old_meta_data if d['id'] == document_data["id"]][0]
+                    new = document_data["id"] not in [doc["id"] for doc in self.old_meta_data]
+                    updated = dateutil.parser.isoparse(new_date) > dateutil.parser.isoparse(last_date)
+                else:
+                    new = True
+                    updated = None
 
-            if updated:
-                doc = Document(project=self, needs_update=True, id_=document_data['id'], **document_data)
-                logger.info(f'{doc} was updated, we will download it again as soon you use it.')
-            elif new:
-                doc = Document(project=self, needs_update=True, id_=document_data['id'], **document_data)
-                logger.info(f'{doc} is not available on your machine, we will download it as soon you use it.')
-            else:
-                doc = Document(project=self, needs_update=False, id_=document_data['id'], **document_data)
-                logger.debug(f'Load local version of {doc} from {new_date}.')
-            self.add_document(doc)
+                if updated:
+                    doc = Document(project=self, needs_update=True, id_=document_data['id'], **document_data)
+                    logger.info(f'{doc} was updated, we will download it again as soon you use it.')
+                elif new:
+                    doc = Document(project=self, needs_update=True, id_=document_data['id'], **document_data)
+                    logger.info(f'{doc} is not available on your machine, we will download it as soon you use it.')
+                else:
+                    doc = Document(project=self, needs_update=False, id_=document_data['id'], **document_data)
+                    logger.debug(f'Load local version of {doc} from {new_date}.')
+                self.add_document(doc)
 
     def get_document_by_id(self, document_id: int) -> Document:
         """Return document by it's ID."""
