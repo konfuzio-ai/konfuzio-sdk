@@ -5,7 +5,7 @@ from copy import deepcopy
 
 from pandas import DataFrame
 
-from konfuzio_sdk.data import Project, Document
+from konfuzio_sdk.data import Project, Document, Annotation
 from konfuzio_sdk.evaluate import compare, grouped
 from konfuzio_sdk.urls import get_document_api_details_url
 from konfuzio_sdk.utils import is_file
@@ -397,8 +397,6 @@ class TestEvaluation(unittest.TestCase):
         create a new one (2 actions).
         TODO: review
         """
-        from konfuzio_sdk.data import Annotation
-
         prj = Project(id_=TEST_PROJECT_ID)
         doc_a = prj.documents[4]  # doc ID 44841
         doc_b = Document(project=prj)
@@ -438,8 +436,6 @@ class TestEvaluation(unittest.TestCase):
         We are double penalizing the AI, however to correct this, the user only needs to adjust the offsets.
         TODO: review
         """
-        from konfuzio_sdk.data import Annotation
-
         prj = Project(id_=TEST_PROJECT_ID)
         doc_a = prj.documents[4]  # doc ID 44841
         doc_b = Document(project=prj)
@@ -479,8 +475,6 @@ class TestEvaluation(unittest.TestCase):
         create a new one (2 actions).
         TODO: review
         """
-        from konfuzio_sdk.data import Annotation
-
         prj = Project(id_=TEST_PROJECT_ID)
         doc_a = prj.documents[4]  # doc ID 44841
         doc_b = Document(project=prj)
@@ -519,8 +513,6 @@ class TestEvaluation(unittest.TestCase):
         Each annotation in a certain Annotation Set is predicted as belonging to a different Annotation Set.
         The Annotation Set cannot be determined by the mode of the Annotation Set IDs.
         """
-        from konfuzio_sdk.data import Annotation
-
         prj = Project(id_=TEST_PROJECT_ID)
         doc_a = prj.documents[4]  # doc ID 44841
         doc_b = Document(project=prj)
@@ -533,9 +525,7 @@ class TestEvaluation(unittest.TestCase):
         new_annot_dict_1 = new_annotation_1.__dict__
         new_annot_dict_1['annotation_set'].id_ = 79165 + 10
         new_annot_dict_1.pop('document')
-        new_annotation_1 = Annotation(document=doc_b, **new_annot_dict_1)
-
-        doc_b.add_annotation(new_annotation_1)
+        _ = Annotation(document=doc_b, **new_annot_dict_1)
 
         # TODO: add function to edit annotation? (issue #8741)
         # 3rd annotation from 1st Annotation Set Brutto-Bezug belonging to the 3rd Annotation Set
@@ -545,9 +535,7 @@ class TestEvaluation(unittest.TestCase):
         new_annot_dict_2 = new_annotation_2.__dict__
         new_annot_dict_2['annotation_set'].id_ = 79166 + 10
         new_annot_dict_2.pop('document')
-        new_annotation_2 = Annotation(document=doc_b, **new_annot_dict_2)
-
-        doc_b.add_annotation(new_annotation_2)
+        _ = Annotation(document=doc_b, **new_annot_dict_2)
 
         for annotation in (
             doc_a.annotations(use_correct=False)[:6]
@@ -558,11 +546,9 @@ class TestEvaluation(unittest.TestCase):
             new_annot_dict = new_annotation.__dict__
             new_annot_dict['annotation_set'].id_ = new_annot_dict['annotation_set'].id_ + 10
             new_annot_dict.pop('document')
-            new_annotation = Annotation(document=doc_b, **new_annot_dict)
-            doc_b.add_annotation(new_annotation)
+            _ = Annotation(document=doc_b, **new_annot_dict)
 
         assert len(doc_b.annotations()) == len(doc_a.annotations())
-
         evaluation = compare(doc_a, doc_b)
         assert len(evaluation) == 32
         assert evaluation["true_positive"].sum() == 30
