@@ -1160,7 +1160,10 @@ class Document(Data):
         if self.id_:
             pathlib.Path(self.document_folder).mkdir(parents=True, exist_ok=True)
         self.image_paths = []  # Path to the images  # todo implement pages
-        self.ocr_file_path = None  # Path to the ocred pdf (sandwich pdf)
+        self.ocr_file_path = os.path.join(
+            self.document_folder, amend_file_name(self.name, append_text="ocr", new_extension=".pdf")
+        )
+        self.file_path = os.path.join(self.document_folder, amend_file_name(self.name))
         self.annotation_file_path = os.path.join(self.document_folder, "annotations.json5")
         self.annotation_set_file_path = os.path.join(self.document_folder, "annotation_sets.json5")
         self.txt_file_path = os.path.join(self.document_folder, "document.txt")
@@ -1374,18 +1377,17 @@ class Document(Data):
         :return: Path to the selected file.
         """
         if ocr_version:
-            filename = amend_file_name(self.name, append_text="ocr", new_extension=".pdf")
-            self.ocr_file_path = os.path.join(self.document_folder, filename)
+            file_path = self.ocr_file_path
+        else:
+            file_path = self.file_path
 
-        valid_file_name = amend_file_name(self.name)  # make sure the name online is a valid file name, e.g. rmv ":"
-        file_path = os.path.join(self.document_folder, valid_file_name)
         if self.status[0] == 2 and (not file_path or not is_file(file_path, raise_exception=False) or update):
             if not is_file(file_path, raise_exception=False) or update:
                 pdf_content = download_file_konfuzio_api(self.id_, ocr=ocr_version, session=self.session)
                 with open(file_path, "wb") as f:
                     f.write(pdf_content)
 
-        return self.ocr_file_path
+        return file_path
 
     def get_images(self, update: bool = False):
         """
