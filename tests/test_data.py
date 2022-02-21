@@ -25,6 +25,12 @@ class TestOfflineDataSetup(unittest.TestCase):
         annotation = Annotation(document=doc, spans=[span])
         self.assertEqual([span], annotation.spans)
 
+    def test_to_there_must_not_be_a_folder(self):
+        """Add one Span to one Annotation."""
+        prj = Project(id_=None)
+        doc = Document(project=prj)
+        assert not os.path.isdir(doc.document_folder)
+
     def test_to_add_two_spans_to_annotation(self):
         """Add one Span to one Annotation."""
         prj = Project(id_=None)
@@ -78,6 +84,11 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_number_excluded_documents(self):
         """Test the number of Documents in data set status test."""
         assert len(self.prj.excluded_documents) == 1
+
+    def test_all_labels_have_threshold(self):
+        """Test the number of Documents in data set status test."""
+        for label in self.prj.labels:
+            assert hasattr(label, 'threshold')
 
     def test_number_preperation_documents(self):
         """Test the number of Documents in data set status test."""
@@ -549,16 +560,6 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert len(self.prj.label_sets) == 5
         assert len(self.prj.labels) == 18
         assert len(self.prj.labels[0].correct_annotations) == self.correct_document_count
-
-    def test_annotation_keywordtoken_with_linebreak(self):
-        """Check if number replacement of regexed is correctly preferred, see _N_."""
-        label = self.prj.get_label_by_id(858)
-        # 26 Annotations can be represented by 3 Regex
-        assert label.tokens() == [
-            '(?P<Auszahlungsbetrag_F_4420351_3777>\\d\\.\\d\\d\\d\\,\\d\\d)',
-            '(?P<Auszahlungsbetrag_F_671698_3433>\\d\\d\\d\\,\\d\\d)',
-            '(?P<Auszahlungsbetrag_F_673143_4074>\\d\\d\\,[ ]+\\d\\d[-])',
-        ]
 
     @unittest.skip(reason='Waiting for Text-Annotation Documentation.')
     def test_to_change_an_annotation_online(self):

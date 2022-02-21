@@ -228,16 +228,16 @@ class TestTokens(unittest.TestCase):
 
     def test_label_token_auszahlungsbetrag(self):
         """Return the summary of all regex needed to get the wage."""
-        label = next(x for x in self.prj.labels if x.name == 'Auszahlungsbetrag')
+        label = self.prj.get_label_by_name('Auszahlungsbetrag')
 
         tokens = sorted(label.tokens())
         assert len(tokens) == 3
         assert '(?P<Auszahlungsbetrag_' in tokens[0]
         assert '(?P<Auszahlungsbetrag_' in tokens[1]
-        assert '(?P<Auszahlungsbetrag_' in tokens[1]
-        assert '>\\d\\.\\d\\d\\d\\,\\d\\d)' in tokens[0]
-        assert '>\\d\\d\\d\\,\\d\\d)' in tokens[1]
-        assert '>\\d\\d\\,[ ]+\\d\\d[-])' in tokens[2]
+        assert '(?P<Auszahlungsbetrag_' in tokens[2]
+        assert '>\\d\\d\\d\\,\\d\\d)' in tokens[0] + tokens[1] + tokens[2]
+        assert '>\\d\\.\\d\\d\\d\\,\\d\\d)' in tokens[0] + tokens[1] + tokens[2]
+        assert '>\\d\\d\\,[ ]+\\d\\d[-])' in tokens[0] + tokens[1] + tokens[2]
 
     def test_label_empty_annotations(self):
         """Empty Annotations should not create regex."""
