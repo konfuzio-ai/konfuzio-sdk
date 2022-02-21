@@ -5,7 +5,7 @@ from copy import deepcopy
 
 from pandas import DataFrame
 
-from konfuzio_sdk.data import Project, Document, Annotation
+from konfuzio_sdk.data import Project, Document
 from konfuzio_sdk.evaluate import compare, grouped
 from konfuzio_sdk.urls import get_document_api_details_url
 from konfuzio_sdk.utils import is_file
@@ -258,8 +258,8 @@ class TestEvaluation(unittest.TestCase):
         doc_b = Document(project=prj)
         doc_a.annotations()
 
-        # TODO: add attribute annotation_sets to Document (same behaviour as Annotations? issue #8739)
-        for annotation_set in doc_a._annotation_sets[:-1]:
+        # TODO: should annotation_sets have the same behaviour as Annotations? issue #8739
+        for annotation_set in doc_a.annotation_sets[:-1]:
             doc_b.add_annotation_set(annotation_set)
 
             # TODO: add Annotations when adding an Annotation Set (issue #8740)
@@ -289,8 +289,8 @@ class TestEvaluation(unittest.TestCase):
         doc_b = Document(project=prj)
         doc_online.annotations()
 
-        # TODO: add attribute annotation_sets to Document (same behaviour as Annotations?  issue #8739)
-        for annotation_set in doc_online._annotation_sets:
+        # TODO: should annotation_sets have the same behaviour as Annotations? issue #8739
+        for annotation_set in doc_online.annotation_sets:
             doc_b.add_annotation_set(annotation_set)
 
             # TODO: add annotations when adding an Annotation Set (issue #8740)
@@ -298,8 +298,8 @@ class TestEvaluation(unittest.TestCase):
                 doc_b.add_annotation(annotation)
 
         # Last Annotation Set from Brutto Bezug removed
-        # TODO: add attribute annotation_sets to Document (same behaviour as annotations?  issue #8739)
-        for annotation_set in doc_online._annotation_sets[:-2] + [doc_online._annotation_sets[-1]]:
+        # TODO: should annotation_sets have the same behaviour as Annotations? issue #8739
+        for annotation_set in doc_online.annotation_sets[:-2] + [doc_online.annotation_sets[-1]]:
             doc_a.add_annotation_set(annotation_set)
 
             # TODO: add annotations when adding an Annotation Set (issue #8740)
@@ -310,9 +310,8 @@ class TestEvaluation(unittest.TestCase):
         #  add "delete" to AnnotationSet that also deletes the annotations that belong to that Annotation Set
         #  add "delete" where the AnnotationSet can be specified by ID
 
-        # TODO: add attribute annotation_sets to Document (same behaviour as annotations?  issue #8739)
-        assert len(doc_a._annotation_sets) == len(doc_b._annotation_sets) - 1
-        assert len(doc_b._annotation_sets[-2].annotations) > 0
+        assert len(doc_a.annotation_sets) == len(doc_b.annotation_sets) - 1
+        assert len(doc_b.annotation_sets[-2].annotations) > 0
 
         evaluation = compare(doc_a, doc_b)
         assert len(evaluation) == 31
@@ -404,13 +403,8 @@ class TestEvaluation(unittest.TestCase):
         new_annotation = deepcopy(doc_a.annotations(use_correct=False)[1])
         # keep the offset string but change the start and end offsets
         assert new_annotation.offset_string == ['00600']
-        new_annot_dict = new_annotation.__dict__
-        # TODO: change offsets in Span
-        new_annot_dict['bboxes'][0]['start_offset'] = 79
-        new_annot_dict['bboxes'][0]['end_offset'] = 84
-        new_annot_dict.pop('document')
-        new_annotation = Annotation(document=doc_b, **new_annot_dict)
-
+        new_annotation.spans[0].start_offset = 79
+        new_annotation.spans[0].end_offset = 84
         doc_b.add_annotation(new_annotation)
 
         for annotation in [doc_a.annotations(use_correct=False)[0]] + doc_a.annotations(use_correct=False)[2:]:
@@ -443,12 +437,7 @@ class TestEvaluation(unittest.TestCase):
         new_annotation = deepcopy(doc_a.annotations(use_correct=False)[0])
         # keep the offset string but change the start and end offsets
         assert new_annotation.offset_string == ['03.01.2018']
-        new_annot_dict = new_annotation.__dict__
-        # TODO: change offsets in Span
-        new_annot_dict['bboxes'][0]['end_offset'] = new_annot_dict['bboxes'][0]['end_offset'] - 1
-        new_annot_dict.pop('document')
-        new_annotation = Annotation(document=doc_b, **new_annot_dict)
-
+        new_annotation.spans[0].end_offset = new_annotation.spans[0].end_offset - 1
         doc_b.add_annotation(new_annotation)
 
         for annotation in doc_a.annotations(use_correct=False)[1:]:
@@ -479,18 +468,11 @@ class TestEvaluation(unittest.TestCase):
         doc_a = prj.documents[4]  # doc ID 44841
         doc_b = Document(project=prj)
 
-        # TODO: add function to edit annotation? (issue #8741)
         new_annotation = deepcopy(doc_a.annotations(use_correct=False)[0])
         # keep the offset string but change the start and end offsets
         assert new_annotation.offset_string == ['03.01.2018']
-        new_annot_dict = new_annotation.__dict__
-        # TODO: change offsets in Span
-        new_annot_dict['bboxes'][0]['offset_string'] = '00600'
-        new_annot_dict['bboxes'][0]['start_offset'] = 79
-        new_annot_dict['bboxes'][0]['end_offset'] = 84
-        new_annot_dict.pop('document')
-        new_annotation = Annotation(document=doc_b, **new_annot_dict)
-
+        new_annotation.spans[0].start_offset = 79
+        new_annotation.spans[0].end_offset = 84
         doc_b.add_annotation(new_annotation)
 
         for annotation in doc_a.annotations(use_correct=False)[1:]:
@@ -517,25 +499,19 @@ class TestEvaluation(unittest.TestCase):
         doc_a = prj.documents[4]  # doc ID 44841
         doc_b = Document(project=prj)
 
-        # TODO: add function to edit annotation? (issue #8741)
         # 1st annotation from 1st Annotation Set Brutto-Bezug belonging to the 2nd Annotation Set
         new_annotation_1 = deepcopy(doc_a.annotations(use_correct=False)[6])
         # keep the annotation but change the Annotation Set ID
         assert new_annotation_1.offset_string == ['2020']
-        new_annot_dict_1 = new_annotation_1.__dict__
-        new_annot_dict_1['annotation_set'].id_ = 79165 + 10
-        new_annot_dict_1.pop('document')
-        _ = Annotation(document=doc_b, **new_annot_dict_1)
+        new_annotation_1.annotation_set.id_ = 79165 + 10
+        doc_b.add_annotation(new_annotation_1)
 
-        # TODO: add function to edit annotation? (issue #8741)
         # 3rd annotation from 1st Annotation Set Brutto-Bezug belonging to the 3rd Annotation Set
         new_annotation_2 = deepcopy(doc_a.annotations(use_correct=False)[8])
         # keep the annotation but change the Annotation Set ID
         assert new_annotation_2.offset_string == ['2.285,50']
-        new_annot_dict_2 = new_annotation_2.__dict__
-        new_annot_dict_2['annotation_set'].id_ = 79166 + 10
-        new_annot_dict_2.pop('document')
-        _ = Annotation(document=doc_b, **new_annot_dict_2)
+        new_annotation_2.annotation_set.id_ = 79166 + 10
+        doc_b.add_annotation(new_annotation_2)
 
         for annotation in (
             doc_a.annotations(use_correct=False)[:6]
@@ -543,10 +519,8 @@ class TestEvaluation(unittest.TestCase):
             + doc_a.annotations(use_correct=False)[9:]
         ):
             new_annotation = deepcopy(annotation)
-            new_annot_dict = new_annotation.__dict__
-            new_annot_dict['annotation_set'].id_ = new_annot_dict['annotation_set'].id_ + 10
-            new_annot_dict.pop('document')
-            _ = Annotation(document=doc_b, **new_annot_dict)
+            new_annotation.annotation_set.id_ = new_annotation.annotation_set.id_ + 10
+            doc_b.add_annotation(new_annotation)
 
         assert len(doc_b.annotations()) == len(doc_a.annotations())
         evaluation = compare(doc_a, doc_b)
