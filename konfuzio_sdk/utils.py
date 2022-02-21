@@ -897,7 +897,6 @@ def get_missing_offsets(start_offset: int, end_offset: int, annotated_offsets: L
 
 def iter_before_and_after(iterable, before=1, after=None, fill=None):
     """Iterate and provide before and after element. Generalized from http://stackoverflow.com/a/1012089."""
-    logger.error('For non productive use only. Please add tests.')
     if after is None:
         after = before
 
