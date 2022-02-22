@@ -1828,7 +1828,7 @@ class Project(Data):
         Set up the data using the Konfuzio Host.
 
         :param id_: ID of the project
-        by default.
+        :project_folder: Set a project_older if empty "data_<id_> will be used.
         """
         self.id_local = next(Data.id_iter)
         self.id_ = id_  # A Project with None ID is not retrieved from the HOST
@@ -1837,14 +1837,14 @@ class Project(Data):
         self.label_sets: List[LabelSet] = []
         self.labels: List[Label] = []
         self._documents: List[Document] = []
-
-        # paths
         self.meta_data = []
-        self.meta_file_path = os.path.join(self.project_folder, "documents_meta.json5")
-        self.labels_file_path = os.path.join(self.project_folder, "labels.json5")
-        self.label_sets_file_path = os.path.join(self.project_folder, "label_sets.json5")
 
-        if self.id_ or self._project_folder:
+        if self.project_folder:
+            # paths
+            self.meta_file_path = os.path.join(self.project_folder, "documents_meta.json5")
+            self.labels_file_path = os.path.join(self.project_folder, "labels.json5")
+            self.label_sets_file_path = os.path.join(self.project_folder, "label_sets.json5")
+
             self.get(update=update)
 
     def __repr__(self):
@@ -1877,12 +1877,15 @@ class Project(Data):
         return [doc for doc in self._documents if doc.dataset_status == 0]
 
     @property
-    def project_folder(self) -> str:
+    def project_folder(self) -> Optional[str]:
         """Calculate the data document_folder of the project."""
         if self._project_folder is not None:
             return self._project_folder
-        else:
+        elif self.id_ is not None:
             return f"data_{self.id_}"
+        else:
+            logger.warning(f'This project with neither "id_" nor "project_folder" specified.')
+            return None
 
     @property
     def regex_folder(self) -> str:
