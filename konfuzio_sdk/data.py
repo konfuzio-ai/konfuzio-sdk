@@ -1845,6 +1845,7 @@ class Project(Data):
             self.labels_file_path = os.path.join(self.project_folder, "labels.json5")
             self.label_sets_file_path = os.path.join(self.project_folder, "label_sets.json5")
 
+        if self.id_ and self.project_folder:
             self.get(update=update)
 
     def __repr__(self):
@@ -1877,15 +1878,12 @@ class Project(Data):
         return [doc for doc in self._documents if doc.dataset_status == 0]
 
     @property
-    def project_folder(self) -> Optional[str]:
+    def project_folder(self) -> str:
         """Calculate the data document_folder of the project."""
         if self._project_folder is not None:
             return self._project_folder
-        elif self.id_ is not None:
-            return f"data_{self.id_}"
         else:
-            logger.warning(f'Project {self} with neither "id_" nor "project_folder" initialized.')
-            return None
+            return f"data_{self.id_}"
 
     @property
     def regex_folder(self) -> str:
