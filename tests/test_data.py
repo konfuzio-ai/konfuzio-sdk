@@ -96,6 +96,36 @@ class TestOfflineDataSetup(unittest.TestCase):
 
 
 @pytest.mark.serial
+class TestProjectWithoutInit(unittest.TestCase):
+    """Test project load without init of project objects."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Initialize the test project."""
+        cls.prj = Project(id_=46, init_objects=False)
+
+    def test_number_training_documents(self):
+        """Test the number of Documents in data set status test."""
+        assert len(self.prj.documents) == 0
+
+    def test_number_test_documents(self):
+        """Test the number of Documents in data set status test."""
+        assert len(self.prj.test_documents) == 0
+
+    def test_number_of_labels(self):
+        """Test the number of labels."""
+        assert len(self.prj.labels) == 0
+
+    def test_number_of_label_sets(self):
+        """Test the number of label sets."""
+        assert len(self.prj.label_sets) == 0
+
+    def test_number_of_categories(self):
+        """Test the number of categories."""
+        assert len(self.prj.categories) == 0
+
+
+@pytest.mark.serial
 class TestKonfuzioDataSetup(unittest.TestCase):
     """Test handle data."""
 

@@ -1823,12 +1823,13 @@ class Document(Data):
 class Project(Data):
     """Access the information of a project."""
 
-    def __init__(self, id_: Union[int, None], project_folder=None, update=False, **kwargs):
+    def __init__(self, id_: Union[int, None], project_folder=None, update=False, init_objects=True, **kwargs):
         """
         Set up the data using the Konfuzio Host.
 
         :param id_: ID of the project
-        :project_folder: Set a project_older if empty "data_<id_> will be used.
+        :param project_folder: Set a project_older if empty "data_<id_>" will be used.
+        :param init_objects: Initialize objects of ths project.
         """
         self.id_local = next(Data.id_iter)
         self.id_ = id_  # A Project with None ID is not retrieved from the HOST
@@ -1839,13 +1840,12 @@ class Project(Data):
         self._documents: List[Document] = []
         self.meta_data = []
 
-        if self.project_folder:
-            # paths
-            self.meta_file_path = os.path.join(self.project_folder, "documents_meta.json5")
-            self.labels_file_path = os.path.join(self.project_folder, "labels.json5")
-            self.label_sets_file_path = os.path.join(self.project_folder, "label_sets.json5")
+        # paths
+        self.meta_file_path = os.path.join(self.project_folder, "documents_meta.json5")
+        self.labels_file_path = os.path.join(self.project_folder, "labels.json5")
+        self.label_sets_file_path = os.path.join(self.project_folder, "label_sets.json5")
 
-        if self.id_ and self.project_folder:
+        if self.id_ and init_objects:
             self.get(update=update)
 
     def __repr__(self):
