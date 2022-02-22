@@ -5,7 +5,18 @@ import os
 import unittest
 
 import pytest
-from konfuzio_sdk.data import Project, Annotation, Document, Label, AnnotationSet, LabelSet, Data, Span
+
+from konfuzio_sdk.data import (
+    Project,
+    Annotation,
+    Document,
+    Label,
+    AnnotationSet,
+    LabelSet,
+    Data,
+    Span,
+    download_training_and_test_data,
+)
 from konfuzio_sdk.utils import is_file, get_default_label_set_documents, separate_labels
 
 logger = logging.getLogger(__name__)
@@ -691,3 +702,8 @@ class TestData(unittest.TestCase):
         a.id_ = 5
         b = Data()
         self.assertNotEqual(a, b)
+
+
+def test_download_training_and_test_data():
+    """Test downloading of data from training and test documents."""
+    download_training_and_test_data(TEST_PROJECT_ID)
