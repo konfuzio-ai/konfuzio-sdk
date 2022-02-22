@@ -30,13 +30,19 @@ A bug report can be filed at https://github.com/konfuzio-ai/document-ai-python-s
 """
 
 
+def credentials():
+    """Retrieve user input."""
+    user = input("Username you use to login to Konfuzio Server: ")
+    password = getpass("Password you use to login to Konfuzio Server: ")
+    host = str(input("Server Host URL (press [ENTER] for https://app.konfuzio.com): ") or KONFUZIO_HOST)
+    return user, password, host
+
+
 def main():
     """CLI of Konfuzio SDK."""
     _cli_file_path = sys.argv.pop(0)  # NOQA
     if len(sys.argv) == 1 and sys.argv[0] == 'init':
-        user = input("Username you use to login to Konfuzio Server: ")
-        password = getpass("Password you use to login to Konfuzio Server: ")
-        host = str(input("Server Host URL (press [ENTER] for https://app.konfuzio.com): ") or KONFUZIO_HOST)
+        user, password, host = credentials()
         init_env(user=user, password=password, host=host)
     elif len(sys.argv) == 2 and sys.argv[0] == 'export_project' and sys.argv[1].isdigit():
         download_training_and_test_data(id_=int(sys.argv[1]))
@@ -49,4 +55,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main()  # pragma: no cover

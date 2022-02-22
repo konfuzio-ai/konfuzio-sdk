@@ -1500,15 +1500,6 @@ class Document(Data):
             f.writelines("\n")
 
         return converted_text
-        #
-        # bio_annotations = []
-        #
-        # with open(self.bio_scheme_file_path, "r", encoding="utf-8") as f:
-        #     for line in f.readlines():
-        #         if line == "\n":
-        #             continue
-        #         word, tag = line.replace("\n", "").split(" ")
-        #         bio_annotations.append((word, tag))
 
     def get_bbox(self):
         """
@@ -1533,8 +1524,9 @@ class Document(Data):
                 bbox = data['bbox']
                 # Use the `zipfile` module
                 # `compresslevel` was added in Python 3.7
-                with zipfile.ZipFile(self.bbox_file_path + ".zip", mode="w", compression=zipfile.ZIP_DEFLATED,
-                                     compresslevel=9) as zip_file:
+                with zipfile.ZipFile(
+                    self.bbox_file_path + ".zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
+                ) as zip_file:
                     # Dump JSON data
                     dumped_JSON: str = json.dumps(bbox, indent=2, sort_keys=True)
                     # Write the JSON data into `data.json` *inside* the ZIP file
@@ -2151,7 +2143,7 @@ class Project(Data):
         :param update: Update the downloaded information even it is already available
         """
         for document_data in self.meta_data:
-            if document_data['status'][0] == 2:  # NOQA - hotfix for Text Annotation Server
+            if document_data['status'][0] == 2:  # NOQA - hotfix for Text Annotation Server # todo add test
                 new_date = document_data["updated_at"]
                 if self.old_meta_data:
                     last_date = [d["updated_at"] for d in self.old_meta_data if d['id'] == document_data["id"]][0]
@@ -2346,14 +2338,15 @@ class Project(Data):
                 for span in annotation.spans:
                     span.normalize()
 
-    #
-    #
-    # def delete(self):
-    #     """Delete the file folder, keep other folder."""
-    #     raise NotImplementedError
-    #     for document in self.documents:
-    #         document.delete()
-    #     self.clean_meta()
+
+#
+#
+# def delete(self):
+#     """Delete the file folder, keep other folder."""
+#     raise NotImplementedError
+#     for document in self.documents:
+#         document.delete()
+#     self.clean_meta()
 
 
 def download_training_and_test_data(id_: int):
