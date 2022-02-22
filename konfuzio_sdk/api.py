@@ -462,7 +462,10 @@ def download_file_konfuzio_api(document_id: int, ocr: bool = True, session=_konf
 
     content_type = r.headers.get('content-type')
     if content_type not in ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg']:
-        raise FileNotFoundError(f'CONTENT TYP of {document_id} is {content_type} and no PDF or image.')
+        logger.info(f'CONTENT TYP of {document_id} is {content_type} and no PDF or image.')
+
+    if r.status_code != 200:
+        raise FileNotFoundError(f'{document_id} cannot be found on the server.')
 
     logger.info(f'Downloaded file {document_id} from {KONFUZIO_HOST}.')
     return r.content

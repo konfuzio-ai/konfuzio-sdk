@@ -149,7 +149,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         """Get meta information from Documents in the project."""
         sorted_documents = get_meta_of_files(project_id=TEST_PROJECT_ID)
         sorted_dataset_documents = [x for x in sorted_documents if x['dataset_status'] in [2, 3]]
-        self.assertEqual(26 + 3, len(sorted_dataset_documents))
+        self.assertEqual(27 + 3, len(sorted_dataset_documents))
 
     def test_upload_file_konfuzio_api(self):
         """Test upload of a file through API and its removal."""
@@ -290,6 +290,10 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             12484,
             12503,
         }
+
+    def test_download_office_file(self):
+        """Test to download the original version of an Office file."""
+        download_file_konfuzio_api(219912, ocr=False)
 
     def test_get_results_from_segmentation(self):
         """Download segmentation results."""

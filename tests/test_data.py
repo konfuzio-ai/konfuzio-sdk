@@ -99,7 +99,7 @@ class TestOfflineDataSetup(unittest.TestCase):
 class TestKonfuzioDataSetup(unittest.TestCase):
     """Test handle data."""
 
-    document_count = 26
+    document_count = 27
     test_document_count = 3
     annotations_correct = 25
 
@@ -712,4 +712,4 @@ def test_download_training_and_test_data():
 def test_to_init_prj_from_folder():
     """Load project from folder."""
     prj = Project(id_=None, project_folder='data_46')
-    assert len(prj.documents) == 26
+    assert len(prj.documents) == 27

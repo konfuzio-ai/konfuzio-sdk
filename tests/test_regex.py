@@ -273,7 +273,7 @@ class TestTokens(unittest.TestCase):
 class TestRegexGenerator(unittest.TestCase):
     """Test to create regex based on data online."""
 
-    document_count = 26
+    document_count = 27
     correct_annotations = 25
 
     @classmethod
@@ -311,7 +311,7 @@ class TestRegexGenerator(unittest.TestCase):
     def test_two_annotations_with_same_label_close_to_each_other(self):
         """Test that any text to regex subset works, even if the text contains two Annotations with the same label."""
         # previously this resulted in "sre_constants.error: redefinition of group name" error
-        document = self.prj.documents[-1]
+        document = self.prj.documents[-2]
         assert len(document.annotations()) == 28
         # new functionality let you create a regex for a region in a document, from 950 to 1500 character
         regex = document.regex(start_offset=950, end_offset=1500)[0]
@@ -323,7 +323,7 @@ class TestRegexGenerator(unittest.TestCase):
         """Todo add a test if two annotated offsets are connected to each other "please pay <GrossAmount><Currency>."""
         # first name and last name are in one line in the document:
         first_names = self.prj.get_label_by_name('Vorname')
-        assert len(first_names.annotations) == 26
+        assert len(first_names.annotations) == 27
         assert len(first_names.tokens()) == 1
         token_three_names = '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)'
         assert (token_three_names in s for s in first_names.tokens())
