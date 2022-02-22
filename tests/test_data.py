@@ -127,7 +127,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_number_preperation_documents(self):
         """Test the number of Documents in data set status test."""
-        assert len(self.prj.preperation_documents) == 0
+        assert len(self.prj.preparation_documents) == 0
 
     def test_annotation_of_label(self):
         """Test the number of Annotations across all Documents in training."""
