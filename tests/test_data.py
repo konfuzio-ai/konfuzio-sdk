@@ -5,7 +5,18 @@ import os
 import unittest
 
 import pytest
-from konfuzio_sdk.data import Project, Annotation, Document, Label, AnnotationSet, LabelSet, Data, Span
+
+from konfuzio_sdk.data import (
+    Project,
+    Annotation,
+    Document,
+    Label,
+    AnnotationSet,
+    LabelSet,
+    Data,
+    Span,
+    download_training_and_test_data,
+)
 from konfuzio_sdk.utils import is_file, get_default_label_set_documents, separate_labels
 
 logger = logging.getLogger(__name__)
@@ -16,6 +27,30 @@ TEST_DOCUMENT_ID = 44823
 
 class TestOfflineDataSetup(unittest.TestCase):
     """Test data features without real data."""
+
+    def test_to_add_label_to_project(self):
+        """Add one Label to a Project."""
+        prj = Project(id_=None)
+        label = Label(project=prj)
+        prj.add_label(label)
+        self.assertEqual([label], prj.labels)
+
+    def test_to_add_label_twice_to_a_project(self):
+        """Add the same Label twice to a Project."""
+        prj = Project(id_=None)
+        label = Label(project=prj)
+        prj.add_label(label)
+        prj.add_label(label)
+        self.assertEqual([label], prj.labels)
+
+    def test_to_add_two_labels_to_a_project(self):
+        """Add two Labels to a Project."""
+        prj = Project(id_=None)
+        first_label = Label(project=prj)
+        second_label = Label(project=prj)
+        prj.add_label(first_label)
+        prj.add_label(second_label)
+        self.assertEqual([first_label, second_label], prj.labels)
 
     def test_to_add_spans_to_annotation(self):
         """Add one Span to one Annotation."""
@@ -40,7 +75,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         self.assertEqual([span], annotation.spans)
 
     def test_to_add_an_annotation_twice_to_a_document(self):
-        """Test to add an the same Annotation twice to a Document."""
+        """Test to add the same Annotation twice to a Document."""
         prj = Project(id_=None)
         span = Span(start_offset=1, end_offset=2)
         doc = Document(project=prj)
@@ -620,7 +655,7 @@ class TestFillOperation(unittest.TestCase):
         """Try to fill a Document without Category."""
         self.prj.get_document_by_id(44864).annotations(fill=True)
 
-    def test_fill_full_doucment_with_category(self):
+    def test_fill_full_document_with_category(self):
         """Try to fill a Document with Category."""
         self.prj.get_document_by_id(TEST_DOCUMENT_ID).annotations(fill=True)
 
@@ -667,3 +702,8 @@ class TestData(unittest.TestCase):
         a.id_ = 5
         b = Data()
         self.assertNotEqual(a, b)
+
+
+def test_download_training_and_test_data():
+    """Test downloading of data from training and test documents."""
+    download_training_and_test_data(TEST_PROJECT_ID)
