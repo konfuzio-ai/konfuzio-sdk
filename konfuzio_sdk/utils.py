@@ -15,8 +15,6 @@ from random import randrange
 from typing import Union, List, Tuple, Dict
 
 import filetype
-import nltk
-from nltk.tokenize import sent_tokenize
 from PIL import Image
 
 from konfuzio_sdk import IMAGE_FILE, PDF_FILE, OFFICE_FILE, SUPPORTED_FILE_TYPES
@@ -207,6 +205,8 @@ def convert_to_bio_scheme(text: str, annotations: List) -> List[Tuple[str, str]]
     :param annotations: annotations in the Document with start and end offset and Label name
     :return: list of tuples with each word in the text an the respective Label
     """
+    import nltk
+
     nltk.download('punkt')
     tagged_entities = []
     annotations.sort(key=lambda x: x[0])  # todo only spans can be sorted
@@ -413,6 +413,8 @@ def get_sentences(text: str, offsets_map: Union[dict, None] = None, language: st
     :param language: language of the text
     :return: List with a dict per sentence with its text and its start and end offsets in the text of the document.
     """
+    from nltk.tokenize import sent_tokenize
+
     sentences = set()
     tokens = sent_tokenize(text, language=language)
 
