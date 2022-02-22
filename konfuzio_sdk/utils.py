@@ -94,11 +94,7 @@ def load_image(input_file: Union[str, BytesIO]):
         assert (
             get_file_type(input_file) == IMAGE_FILE
         ), 'The image file you want to load, is not defined by us as an image.'
-    try:
-        image = Image.open(input_file)
-    except OSError:
-        # in case of corrupted images
-        return None
+    image = Image.open(input_file)
 
     return image
 

@@ -43,11 +43,13 @@ def _get_auth_token(username, password, host=KONFUZIO_HOST) -> str:
     user_credentials = {"username": username, "password": password}
     r = requests.post(url, json=user_credentials)
     if r.status_code == 200:
-        token = json.loads(r.text)['token']
-    else:
-        raise ValueError(
+        token = r.json()['token']
+    elif r.status_code in [403, 400]:
+        raise PermissionError(
             "[ERROR] Your credentials are not correct! Please run init again and provide the correct credentials."
         )
+    else:
+        raise ConnectionError(f'HTTP Status {r.status_code}: {r.text}')
     return token
 
 
@@ -155,11 +157,14 @@ def create_new_project(project_name, session=_konfuzio_session()):
     r = session.post(url=url, json=new_project_data)
 
     if r.status_code == 201:
-        project_id = json.loads(r.text)["id"]
+        project_id = r.json()["id"]
         print(f"Project {project_name} (ID {project_id}) was created successfully!")
         return project_id
     else:
-        raise PermissionError(f'The project {project_name} was not created, please check your permissions.')
+        raise PermissionError(
+            f'HTTP Status {r.status_code}: The project {project_name} was not created, please check'
+            f' your permissions. Error {r.json()}'
+        )
 
 
 def get_document_details(document_id: int, project_id: int, session=_konfuzio_session(), extra_fields: str = ''):
@@ -174,25 +179,23 @@ def get_document_details(document_id: int, project_id: int, session=_konfuzio_se
     """
     url = get_document_api_details_url(document_id=document_id, project_id=project_id, extra_fields=extra_fields)
     r = session.get(url)
-    data = json.loads(r.text)
-
-    return data
+    return r.json()
 
 
-def post_document_bulk_annotation(document_id: int, project_id: int, annotation_list, session=_konfuzio_session()):
-    """
-    Add a list of Annotations to an existing document.
-
-    :param document_id: ID of the file
-    :param project_id: ID of the project
-    :param annotation_list: List of Annotations
-    :param session: Konfuzio session with Retry and Timeout policy
-    :return: Response status.
-    """
-    url = get_document_annotations_url(document_id, project_id=project_id)
-    r = session.post(url, json=annotation_list)
-    r.raise_for_status()
-    return r
+# def post_document_bulk_annotation(document_id: int, project_id: int, annotation_list, session=_konfuzio_session()):
+#     """
+#     Add a list of Annotations to an existing document.
+#
+#     :param document_id: ID of the file
+#     :param project_id: ID of the project
+#     :param annotation_list: List of Annotations
+#     :param session: Konfuzio session with Retry and Timeout policy
+#     :return: Response status.
+#     """
+#     url = get_document_annotations_url(document_id, project_id=project_id)
+#     r = session.post(url, json=annotation_list)
+#     r.raise_for_status()
+#     return r
 
 
 def post_document_annotation(
@@ -335,7 +338,13 @@ def get_meta_of_files(project_id: int, session=_konfuzio_session()) -> List[dict
 
 
 def create_label(
-    project_id: int, label_name: str, label_sets: list, session=_konfuzio_session(), **kwargs
+    project_id: int,
+    label_name: str,
+    label_sets: list,
+    session=_konfuzio_session(),
+    description=None,
+    has_multiple_top_candidates=None,
+    data_type=None,
 ) -> List[dict]:
     """
     Create a Label and associate it with Labels sets.
@@ -349,10 +358,6 @@ def create_label(
     url = get_labels_url()
     label_sets_ids = [label_set.id_ for label_set in label_sets]
 
-    description = kwargs.get('description', None)
-    has_multiple_top_candidates = kwargs.get('has_multiple_top_candidates', False)
-    data_type = kwargs.get('data_type', 'Text')
-
     data = {
         "project": project_id,
         "text": label_name,
@@ -364,8 +369,8 @@ def create_label(
 
     r = session.post(url=url, json=data)
 
-    assert r.status_code == requests.codes.created, f'Status of request: {r}'
-    label_id = r.json()['id_']
+    assert r.status_code == 201
+    label_id = r.json()['id']
     return label_id
 
 

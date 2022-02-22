@@ -6,6 +6,7 @@ import os
 import pathlib
 import re
 import shutil
+import zipfile
 from copy import deepcopy
 import time
 from datetime import tzinfo
@@ -1096,7 +1097,6 @@ class Document(Data):
         self,
         project,
         id_: Union[int, None] = None,
-        file_path: str = None,
         file_url: str = None,
         status=None,
         data_file_name: str = None,
@@ -1115,7 +1115,6 @@ class Document(Data):
 
         :param id_: ID of the Document
         :param project: Project where the Document belongs to
-        :param file_path: Path to a local file from which generate the Document object
         :param file_url: URL of the document
         :param status: Status of the document
         :param data_file_name: File name of the document
@@ -1127,7 +1126,6 @@ class Document(Data):
         """
         self.id_local = next(Data.id_iter)
         self.id_ = id_
-        self.file_path = file_path
         self._annotations: List[Annotation] = []
         self._annotation_sets: List[AnnotationSet] = []
         self.file_url = file_url
@@ -1157,9 +1155,9 @@ class Document(Data):
         self._pages = None
 
         # prepare local setup for document
-        pathlib.Path(self.document_folder).mkdir(parents=True, exist_ok=True)
+        if self.id_:
+            pathlib.Path(self.document_folder).mkdir(parents=True, exist_ok=True)
         self.image_paths = []  # Path to the images  # todo implement pages
-        self.ocr_file_path = None  # Path to the ocred pdf (sandwich pdf)
         self.annotation_file_path = os.path.join(self.document_folder, "annotations.json5")
         self.annotation_set_file_path = os.path.join(self.document_folder, "annotation_sets.json5")
         self.txt_file_path = os.path.join(self.document_folder, "document.txt")
@@ -1171,6 +1169,16 @@ class Document(Data):
     def __repr__(self):
         """Return the name of the Document incl. the ID."""
         return f"{self.name}: {self.id_}"
+
+    @property
+    def file_path(self):
+        """Return path to file."""
+        return os.path.join(self.document_folder, amend_file_name(self.name))
+
+    @property
+    def ocr_file_path(self):
+        """Return path to OCR PDF file."""
+        return os.path.join(self.document_folder, amend_file_name(self.name, append_text="ocr", new_extension=".pdf"))
 
     @property
     def number_of_pages(self):
@@ -1373,18 +1381,17 @@ class Document(Data):
         :return: Path to the selected file.
         """
         if ocr_version:
-            filename = amend_file_name(self.name, append_text="ocr", new_extension=".pdf")
-            self.ocr_file_path = os.path.join(self.document_folder, filename)
+            file_path = self.ocr_file_path
+        else:
+            file_path = self.file_path
 
-        valid_file_name = amend_file_name(self.name)  # make sure the name online is a valid file name, e.g. rmv ":"
-        file_path = os.path.join(self.document_folder, valid_file_name)
         if self.status[0] == 2 and (not file_path or not is_file(file_path, raise_exception=False) or update):
             if not is_file(file_path, raise_exception=False) or update:
                 pdf_content = download_file_konfuzio_api(self.id_, ocr=ocr_version, session=self.session)
                 with open(file_path, "wb") as f:
                     f.write(pdf_content)
 
-        return self.ocr_file_path
+        return file_path
 
     def get_images(self, update: bool = False):
         """
@@ -1493,15 +1500,6 @@ class Document(Data):
             f.writelines("\n")
 
         return converted_text
-        #
-        # bio_annotations = []
-        #
-        # with open(self.bio_scheme_file_path, "r", encoding="utf-8") as f:
-        #     for line in f.readlines():
-        #         if line == "\n":
-        #             continue
-        #         word, tag = line.replace("\n", "").split(" ")
-        #         bio_annotations.append((word, tag))
 
     def get_bbox(self):
         """
@@ -1514,6 +1512,9 @@ class Document(Data):
         if is_file(self.bbox_file_path, raise_exception=False):
             with open(self.bbox_file_path, "r", encoding="utf-8") as f:
                 bbox = json.loads(f.read())
+        elif is_file(self.bbox_file_path + '.zip', raise_exception=False):
+            with zipfile.ZipFile(self.bbox_file_path + '.zip', "r") as archive:
+                bbox = json.loads(archive.read('bbox.json5'))
         else:
             logger.warning(f'Start downloading bbox files of all characters {self}.')
             if self.status[0] == 2:
@@ -1521,9 +1522,17 @@ class Document(Data):
                     document_id=self.id_, project_id=self.project.id_, session=self.session, extra_fields="bbox"
                 )
                 bbox = data['bbox']
-                with open(self.bbox_file_path, "w", encoding="utf-8") as f:
-                    json.dump(bbox, f, indent=2, sort_keys=True)
-
+                # Use the `zipfile` module
+                # `compresslevel` was added in Python 3.7
+                with zipfile.ZipFile(
+                    self.bbox_file_path + ".zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
+                ) as zip_file:
+                    # Dump JSON data
+                    dumped_JSON: str = json.dumps(bbox, indent=2, sort_keys=True)
+                    # Write the JSON data into `data.json` *inside* the ZIP file
+                    zip_file.writestr('bbox.json5', data=dumped_JSON)
+                    # Test integrity of compressed archive
+                    zip_file.testzip()
         return bbox
 
     @property
@@ -2134,25 +2143,26 @@ class Project(Data):
         :param update: Update the downloaded information even it is already available
         """
         for document_data in self.meta_data:
-            new_date = document_data["updated_at"]
-            if self.old_meta_data:
-                last_date = [d["updated_at"] for d in self.old_meta_data if d['id'] == document_data["id"]][0]
-                new = document_data["id"] not in [doc["id"] for doc in self.old_meta_data]
-                updated = dateutil.parser.isoparse(new_date) > dateutil.parser.isoparse(last_date)
-            else:
-                new = True
-                updated = None
+            if document_data['status'][0] == 2:  # NOQA - hotfix for Text Annotation Server # todo add test
+                new_date = document_data["updated_at"]
+                if self.old_meta_data:
+                    last_date = [d["updated_at"] for d in self.old_meta_data if d['id'] == document_data["id"]][0]
+                    new = document_data["id"] not in [doc["id"] for doc in self.old_meta_data]
+                    updated = dateutil.parser.isoparse(new_date) > dateutil.parser.isoparse(last_date)
+                else:
+                    new = True
+                    updated = None
 
-            if updated:
-                doc = Document(project=self, needs_update=True, id_=document_data['id'], **document_data)
-                logger.info(f'{doc} was updated, we will download it again as soon you use it.')
-            elif new:
-                doc = Document(project=self, needs_update=True, id_=document_data['id'], **document_data)
-                logger.info(f'{doc} is not available on your machine, we will download it as soon you use it.')
-            else:
-                doc = Document(project=self, needs_update=False, id_=document_data['id'], **document_data)
-                logger.debug(f'Load local version of {doc} from {new_date}.')
-            self.add_document(doc)
+                if updated:
+                    doc = Document(project=self, needs_update=True, id_=document_data['id'], **document_data)
+                    logger.info(f'{doc} was updated, we will download it again as soon you use it.')
+                elif new:
+                    doc = Document(project=self, needs_update=True, id_=document_data['id'], **document_data)
+                    logger.info(f'{doc} is not available on your machine, we will download it as soon you use it.')
+                else:
+                    doc = Document(project=self, needs_update=False, id_=document_data['id'], **document_data)
+                    logger.debug(f'Load local version of {doc} from {new_date}.')
+                self.add_document(doc)
 
     def get_document_by_id(self, document_id: int) -> Document:
         """Return document by it's ID."""
@@ -2328,14 +2338,15 @@ class Project(Data):
                 for span in annotation.spans:
                     span.normalize()
 
-    #
-    #
-    # def delete(self):
-    #     """Delete the file folder, keep other folder."""
-    #     raise NotImplementedError
-    #     for document in self.documents:
-    #         document.delete()
-    #     self.clean_meta()
+
+#
+#
+# def delete(self):
+#     """Delete the file folder, keep other folder."""
+#     raise NotImplementedError
+#     for document in self.documents:
+#         document.delete()
+#     self.clean_meta()
 
 
 def download_training_and_test_data(id_: int):

@@ -5,6 +5,7 @@ import os
 import json
 import sys
 import unittest
+from unittest.mock import patch
 
 import pytest
 
@@ -23,6 +24,9 @@ from konfuzio_sdk.api import (
     get_project_details,
     upload_ai_model,
     init_env,
+    _get_auth_token,
+    create_new_project,
+    create_label,
 )
 from konfuzio_sdk.utils import is_file
 
@@ -299,20 +303,66 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         result = update_file_konfuzio_api(document_id=214414, file_name=timestamp, dataset_status=0)
         assert result['data_file_name'] == timestamp
 
-    @unittest.skip(reason="Skip to test to create label, as there is no option to delete it again.")
     def test_create_label(self):
         """Create a label."""
-        pass
+        # mock session
+        class _Session:
+            """Mock requests POST response."""
+
+            status_code = 201
+
+            def json(self):
+                """Mock valid return."""
+                return {"id": 420}
+
+            def post(self, *arg, **kwargs):
+                """Empty return value."""
+                return self
+
+        create_label(project_id=0, label_name='', label_sets=[], session=_Session())
 
     @unittest.skip(reason="Skip to iterate version of meta information of files, unclear when it paginates.")
     def test_meta_file_pagination(self):
         """Iterate over Urls with a next page and for empty projects without document."""
         pass
 
-    @unittest.skip(reason="Skip to test to create project, as there is no option to delete it again.")
-    def create_new_project(self):
+    def test_create_new_project(self):
         """Test to create new project."""
-        pass
+        # mock session
+        class _Session:
+            """Mock requests POST response."""
+
+            status_code = 201
+
+            def json(self):
+                """Mock valid return."""
+                return {"id": 420}
+
+            def post(self, *arg, **kwargs):
+                """Empty return value."""
+                return self
+
+        assert create_new_project('test', session=_Session()) == 420
+
+    def test_create_new_project_permission_error(self):
+        """Test to create new project."""
+        # mock session
+        class _Session:
+            """Mock requests POST response."""
+
+            status_code = 403
+
+            def json(self):
+                """Mock valid return."""
+                return {"id": 420}
+
+            def post(self, *arg, **kwargs):
+                """Empty return value."""
+                return self
+
+        with self.assertRaises(PermissionError) as e:
+            create_new_project('test', session=_Session())
+            assert 'was not created' in str(e.exception)
 
     def test_download_file_konfuzio_api_with_whitespace_name_file(self):
         """Test to download a file which includes a whitespace in the name."""
@@ -324,8 +374,42 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         if is_file(file_path=path, raise_exception=False):
             upload_ai_model(ai_model_path=path, category_ids=[63])
 
+    @patch("requests.post")
+    def test_get_auth_token(self, function):
+        """Test to run CLI."""
+        # mock response
+        class _Response:
+            """Mock requests POST response."""
+
+            status_code = 200
+
+            def json(self):
+                """Mock valid return."""
+                return {"token": "faketoken"}
+
+        function.return_value = _Response()
+        _get_auth_token('test', 'test')
+
+    @patch("requests.post")
+    def test_patched_init_env(self, function):
+        """Test to run CLI."""
+        # mock response
+        class _Response:
+            """Mock requests POST response."""
+
+            status_code = 200
+
+            def json(self):
+                """Mock valid return."""
+                return {"token": "faketoken"}
+
+        function.return_value = _Response()
+        env_file = ".testenv"
+        assert init_env(user='me', password='pw', file_ending=env_file)
+        os.remove(os.path.join(os.getcwd(), env_file))
+
 
 def test_init_env():
     """Test to write env file."""
-    with pytest.raises(ValueError, match="Your credentials are not correct"):
+    with pytest.raises(PermissionError, match="Your credentials are not correct"):
         init_env(user="user", password="ABCD", working_directory=BASE_DIR, file_ending="x.env")
