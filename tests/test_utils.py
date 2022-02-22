@@ -200,12 +200,12 @@ class TestUtils(unittest.TestCase):
 
 file_name_append_data = [
     # text embeddings all over the text
-    ('/tmp/text_embeddings_0639187398.pdf', '/tmp/text_embeddings_0639187398_ocr.pdf', does_not_raise()),
+    ('/tmp/text_embeddings_0639187398.pdf', 'tmptext_embeddings_0639187398_ocr.pdf', does_not_raise()),
     # text embeddings only on some pages of the text
     ('only_some_pages_have_embeddings.tiff', 'only_some_pages_have_embeddings_ocr.tiff', does_not_raise()),
     # two sots in a file name
-    ('only_some_pages._have_embeddings.tiff', 'only_some_pages._have_embeddings_ocr.tiff', does_not_raise()),
-    ('2022-02-13 19:23:06.168728.tiff', '2022-02-13 19-23-06.168728_ocr.tiff', does_not_raise()),
+    ('only_some_pages._have_embeddings.tiff', 'only_some_pages_have_embeddings_ocr.tiff', does_not_raise()),
+    ('2022-02-13 19:23:06.168728.tiff', '2022-02-13-19-23-06-168728_ocr.tiff', does_not_raise()),
     # empty file path
     (' ', False, pytest.raises(ValueError)),
     # Current file name is already too long, 255 chr
@@ -238,7 +238,7 @@ def test_append_text_to_filename(file_path, expected_result, expected_error):
 
 def test_corrupted_name():
     """Test to convert an invalide file name to a valid file name."""
-    assert amend_file_name('2022-02-13 19:23:06.168728.tiff') == '2022-02-13 19-23-06.168728.tiff'
+    assert amend_file_name('2022-02-13 19:23:06.168728.tiff') == '2022-02-13-19-23-06-168728.tiff'
 
 
 class TestMissingOffsets(unittest.TestCase):

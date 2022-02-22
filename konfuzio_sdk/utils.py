@@ -6,6 +6,7 @@ import itertools
 import logging
 import os
 import re
+import unicodedata
 import zipfile
 from collections import defaultdict
 from contextlib import contextmanager
@@ -238,7 +239,25 @@ def convert_to_bio_scheme(text: str, annotations: List) -> List[Tuple[str, str]]
     return tagged_entities
 
 
-def amend_file_name(file_path: str, append_text: str = '', new_extension: str = None) -> str:
+def slugify(value, allow_unicode=False):
+    """
+    Taken from https://github.com/django/django/blob/master/django/utils/text.py.
+
+    Convert to ASCII if 'allow_unicode' is False. Convert spaces or repeated
+    dashes to single dashes. Remove characters that aren't alphanumerics,
+    underscores, or hyphens. Convert to lowercase. Also strip leading and
+    trailing whitespace, dashes, and underscores.
+    """
+    value = str(value)
+    if allow_unicode:
+        value = unicodedata.normalize('NFKC', value)
+    else:
+        value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
+    value = re.sub(r'[^\:\.\w\s-]', '', value.lower())
+    return re.sub(r'[-\s\:\.]+', '-', value).replace('-_', '_')
+
+
+def amend_file_name(file_name: str, append_text: str = '', new_extension: str = None) -> str:
     """
     Append text to a filename in front of extension.
 
@@ -249,14 +268,11 @@ def amend_file_name(file_path: str, append_text: str = '', new_extension: str = 
     :param append_text: Text you you want to append between file name ane extension
     :return: extended path to file
     """
-    if len(os.path.basename(file_path) + append_text) >= 255:
+    if len(os.path.basename(file_name) + append_text) >= 255:
         raise OSError('The name of the file you want to generate is too long.')
-    if file_path.strip():
-        path, extension = os.path.splitext(file_path)
-
-        if ":" in path:
-            logger.warning(f'The file name must not contain a ":" see >>{path}<<, we replace it by a "-".')
-            path = path.replace(":", "-")
+    if file_name.strip():
+        path, extension = os.path.splitext(file_name)
+        path = slugify(path)
 
         if new_extension == '':
             extension = ''
@@ -268,7 +284,7 @@ def amend_file_name(file_path: str, append_text: str = '', new_extension: str = 
 
         return f'{path}{append_text}{extension}'
     else:
-        raise ValueError(f'Name of file cannot be: {file_path}')
+        raise ValueError(f'Name of file cannot be: {file_name}')
 
 
 #
