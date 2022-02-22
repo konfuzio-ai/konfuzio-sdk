@@ -707,3 +707,9 @@ class TestData(unittest.TestCase):
 def test_download_training_and_test_data():
     """Test downloading of data from training and test documents."""
     download_training_and_test_data(TEST_PROJECT_ID)
+
+
+def test_to_init_prj_from_folder():
+    """Load project from folder."""
+    prj = Project(id_=None, project_folder='data_46')
+    assert len(prj.documents) == 26

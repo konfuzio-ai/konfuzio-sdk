@@ -1823,7 +1823,7 @@ class Document(Data):
 class Project(Data):
     """Access the information of a project."""
 
-    def __init__(self, id_: Union[int, None], update=False, **kwargs):
+    def __init__(self, id_: Union[int, None], project_folder=None, update=False, **kwargs):
         """
         Set up the data using the Konfuzio Host.
 
@@ -1832,7 +1832,7 @@ class Project(Data):
         """
         self.id_local = next(Data.id_iter)
         self.id_ = id_  # A Project with None ID is not retrieved from the HOST
-
+        self._project_folder = project_folder
         self.categories: List[Category] = []
         self.label_sets: List[LabelSet] = []
         self.labels: List[Label] = []
@@ -1844,7 +1844,7 @@ class Project(Data):
         self.labels_file_path = os.path.join(self.project_folder, "labels.json5")
         self.label_sets_file_path = os.path.join(self.project_folder, "label_sets.json5")
 
-        if self.id_:
+        if self.id_ or self._project_folder:
             self.get(update=update)
 
     def __repr__(self):
@@ -1879,7 +1879,10 @@ class Project(Data):
     @property
     def project_folder(self) -> str:
         """Calculate the data document_folder of the project."""
-        return f"data_{self.id_}"
+        if self._project_folder is not None:
+            return self._project_folder
+        else:
+            return f"data_{self.id_}"
 
     @property
     def regex_folder(self) -> str:
