@@ -1867,7 +1867,7 @@ class Project(Data):
         return [doc for doc in self._documents if doc.dataset_status == 4]
 
     @property
-    def preperation_documents(self):
+    def preparation_documents(self):
         """Return Documents with status test."""
         return [doc for doc in self._documents if doc.dataset_status == 1]
 
