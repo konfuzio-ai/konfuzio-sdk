@@ -1884,7 +1884,7 @@ class Project(Data):
         elif self.id_ is not None:
             return f"data_{self.id_}"
         else:
-            logger.warning(f'This project with neither "id_" nor "project_folder" specified.')
+            logger.warning(f'Project {self} with neither "id_" nor "project_folder" initialized.')
             return None
 
     @property
