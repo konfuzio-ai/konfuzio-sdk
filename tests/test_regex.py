@@ -278,7 +278,7 @@ class TestRegexGenerator(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        """Load the project data from the Konfuzio Host."""
+        """Load the Project data from the Konfuzio Host."""
         cls.prj = Project(id_=46)
         assert len(cls.prj.documents) == cls.document_count
         assert len(cls.prj.labels[0].correct_annotations) == cls.correct_annotations

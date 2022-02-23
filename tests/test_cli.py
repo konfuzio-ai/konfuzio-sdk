@@ -38,7 +38,7 @@ class TestCLI(TestCase):
     @patch('builtins.input', side_effect=['myuser', ''])
     @patch("konfuzio_sdk.cli.getpass", side_effect=['pw'])
     def test_init_project(self, input, getpass):
-        """Mock to init a project without host."""
+        """Mock to init a Project without host."""
         with mock.patch('sys.argv', ['file', 'init']):
             with self.assertRaises(PermissionError) as e:
                 main()

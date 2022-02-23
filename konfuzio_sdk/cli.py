@@ -19,10 +19,10 @@ Please enter a valid command line option.
 
 konfuzio_sdk init
     add the API Token as .env file to connect to the Konfuzio Server, i.e. Host
-konfuzio_sdk create_project >NAME<
-    Create a new project on the Konfuzio Server. Returns the ID of the new project.
+konfuzio_sdk create_Project >NAME<
+    Create a new Project on the Konfuzio Server. Returns the ID of the new Project.
 konfuzio_sdk export_project >ID<
-    Download the data from a project by ID to migrate it to another Host.
+    Download the data from a Project by ID to migrate it to another Host.
 
 These commands should be run inside of your working directory.
 

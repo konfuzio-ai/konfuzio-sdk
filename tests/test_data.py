@@ -28,7 +28,7 @@ TEST_DOCUMENT_ID = 44823
 class TestOfflineDataSetup(unittest.TestCase):
     """Test data features without real data."""
 
-    def test_to_add_label_to_project(self):
+    def test_to_add_label_to_Project(self):
         """Add one Label to a Project."""
         prj = Project(id_=None)
         label = Label(project=prj)
@@ -95,34 +95,44 @@ class TestOfflineDataSetup(unittest.TestCase):
         self.assertEqual([first_annotation, second_annotation], doc.annotations(use_correct=False))
 
 
-@pytest.mark.serial
-class TestProjectWithoutInit(unittest.TestCase):
-    """Test project load without init of project objects."""
-
-    @classmethod
-    def setUpClass(cls) -> None:
-        """Initialize the test project."""
-        cls.prj = Project(id_=46, init_objects=False)
-
-    def test_number_training_documents(self):
-        """Test the number of Documents in data set status test."""
-        assert len(self.prj.documents) == 0
-
-    def test_number_test_documents(self):
-        """Test the number of Documents in data set status test."""
-        assert len(self.prj.test_documents) == 0
-
-    def test_number_of_labels(self):
-        """Test the number of labels."""
-        assert len(self.prj.labels) == 0
-
-    def test_number_of_label_sets(self):
-        """Test the number of label sets."""
-        assert len(self.prj.label_sets) == 0
-
-    def test_number_of_categories(self):
-        """Test the number of categories."""
-        assert len(self.prj.categories) == 0
+# @pytest.mark.serial
+# class TestProjectWithoutInit(unittest.TestCase):
+#     """Test Project init without init of Category, Label Set, Label, Annotation, Annotation Set."""
+#
+#     @classmethod
+#     def setUpClass(cls) -> None:
+#         """Initialize the test Project."""
+#         cls.prj = Project(id_=46)
+#
+#     def test_number_training_documents(self):
+#         """Test the number of Documents in data set status test."""
+#         assert len(self.prj.documents) == 0
+#
+#     def test_get_single_document(self):
+#         """Get a single document without loading the full Project."""
+#         # todo: does the doc need the information of the prj?
+#         # self.prj.get_document_by_id(44863)
+#
+#     @unittest.skip(reason='Please upload via REST API.')
+#     def test_init_a_document_from_file(self):
+#         """Init a document by file."""
+#         raise NotImplementedError
+#
+#     def test_number_test_documents(self):
+#         """Test the number of Documents in data set status test."""
+#         assert len(self.prj.test_documents) == 0
+#
+#     def test_number_of_labels(self):
+#         """Test the number of labels."""
+#         assert len(self.prj.labels) == 0
+#
+#     def test_number_of_label_sets(self):
+#         """Test the number of label sets."""
+#         assert len(self.prj.label_sets) == 0
+#
+#     def test_number_of_categories(self):
+#         """Test the number of categories."""
+#         assert len(self.prj.categories) == 0
 
 
 @pytest.mark.serial
@@ -135,7 +145,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        """Initialize the test project."""
+        """Initialize the test Project."""
         cls.prj = Project(id_=46)
 
     def test_number_training_documents(self):
@@ -178,11 +188,11 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert len(spans) == 1
 
     def test_has_multiple_annotation_sets(self):
-        """Test Label Sets in the test project."""
+        """Test Label Sets in the test Project."""
         assert self.prj.get_label_set_by_name('Brutto-Bezug').has_multiple_annotation_sets
 
     def test_has_not_multiple_annotation_sets(self):
-        """Test Label Sets in the test project."""
+        """Test Label Sets in the test Project."""
         assert not self.prj.get_label_set_by_name('Lohnabrechnung').has_multiple_annotation_sets
 
     def test_default_label_set(self):
@@ -209,11 +219,11 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_number_of_labels_of_label_set(self):
         """Test the number of Labels of the default Label Set."""
         label_set = self.prj.get_label_set_by_name('Lohnabrechnung')
-        assert label_set.categories[0] is None  # defines a category
+        assert label_set.categories == []  # defines a category
         assert label_set.labels.__len__() == 10
 
     def test_categories(self):
-        """Test get Labels in the project."""
+        """Test get Labels in the Project."""
         assert self.prj.categories.__len__() == 1
         assert self.prj.categories[0].name == 'Lohnabrechnung'
         assert self.prj.categories[0].is_default
@@ -315,11 +325,11 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         doc.get_file()
 
     def test_labels(self):
-        """Test get Labels in the project."""
+        """Test get Labels in the Project."""
         assert len(self.prj.labels) == 18
 
     def test_project(self):
-        """Test basic properties of the project object."""
+        """Test basic properties of the Project object."""
         assert is_file(self.prj.meta_file_path)
         assert self.prj.documents[1].id_ > self.prj.documents[0].id_
         assert len(self.prj.documents)
@@ -330,14 +340,14 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert new_project.meta_file_path == self.prj.meta_file_path
 
     def test_update_prj(self):
-        """Test number of Documents after updating a project."""
+        """Test number of Documents after updating a Project."""
         assert len(self.prj.documents) == self.document_count
         self.prj.get(update=True)
         assert len(self.prj.documents) == self.document_count
         is_file(self.prj.meta_file_path)
 
     def test_document(self):
-        """Test properties of a specific Documents in the test project."""
+        """Test properties of a specific Documents in the test Project."""
         doc = self.prj.get_document_by_id(44842)
         assert doc.category.name == 'Lohnabrechnung'
         assert len(self.prj.labels[0].correct_annotations) == self.annotations_correct
@@ -356,12 +366,12 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert not doc.annotations()[0].save()  # Save returns False because Annotation is already online.
 
     def test_annotation_sets_in_document(self):
-        """Test number of Annotation Sets in a specific Document in the test project."""
+        """Test number of Annotation Sets in a specific Document in the test Project."""
         doc = self.prj.get_document_by_id(44842)
         assert len(doc.annotation_sets) == 5
 
     def test_document_with_multiline_annotation(self):
-        """Test properties of a specific Documents in the test project."""
+        """Test properties of a specific Documents in the test Project."""
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
         assert doc.category.name == 'Lohnabrechnung'
         label = self.prj.get_label_by_id(867)
@@ -649,7 +659,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        """Test if the project remains the same as in the beginning."""
+        """Test if the Project remains the same as in the beginning."""
         assert len(cls.prj.documents) == cls.document_count
         assert len(cls.prj.test_documents) == cls.test_document_count
         assert len(cls.prj.labels[0].annotations) == cls.annotations_correct
@@ -657,7 +667,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
 @pytest.mark.serial
 class TestFillOperation(unittest.TestCase):
-    """Seperate Test as we add non Labels to the project."""
+    """Seperate Test as we add non Labels to the Project."""
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -740,6 +750,6 @@ def test_download_training_and_test_data():
 
 
 def test_to_init_prj_from_folder():
-    """Load project from folder."""
+    """Load Project from folder."""
     prj = Project(id_=46, project_folder='data_46')
     assert len(prj.documents) == 27

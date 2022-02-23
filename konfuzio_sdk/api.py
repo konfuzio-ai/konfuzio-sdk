@@ -59,7 +59,7 @@ def init_env(
     """
     Add the .env file to the working directory.
 
-    :param project_folder: Root folder of the project where to place the .env file
+    :param Project_folder: Root folder of the Project where to place the .env file
     :return: file content
     """
     token = _get_auth_token(user, password, host)
@@ -120,7 +120,7 @@ def _konfuzio_session(token=KONFUZIO_TOKEN):
 
 def get_project_list(session=_konfuzio_session()):
     """
-    Get the list of all projects for the user.
+    Get the list of all Projects for the user.
 
     :param session: Konfuzio session with Retry and Timeout policy
     :return: Response object
@@ -132,9 +132,9 @@ def get_project_list(session=_konfuzio_session()):
 
 def get_project_details(project_id: int, session=_konfuzio_session()) -> dict:
     """
-    Get Label Sets available in project.
+    Get Label Sets available in Project.
 
-    :param project_id: ID of the project
+    :param Project_id: ID of the Project
     :param session: Konfuzio session with Retry and Timeout policy
     :return: Sorted Label Sets.
     """
@@ -146,7 +146,7 @@ def get_project_details(project_id: int, session=_konfuzio_session()) -> dict:
 
 def create_new_project(project_name, session=_konfuzio_session()):
     """
-    Create a new project for the user.
+    Create a new Project for the user.
 
     :param project_name: name of the project you want to create
     :param session: Konfuzio session with Retry and Timeout policy
@@ -172,7 +172,7 @@ def get_document_details(document_id: int, project_id: int, session=_konfuzio_se
     Use the text-extraction server to retrieve the data from a document.
 
     :param document_id: ID of the document
-    :param project_id: ID of the project
+    :param Project_id: ID of the Project
     :param session: Konfuzio session with Retry and Timeout policy
     :param extra_fields: Retrieve bounding boxes and HOCR from document, too. Can be "bbox,hocr", it's a hotfix
     :return: Data of the document.

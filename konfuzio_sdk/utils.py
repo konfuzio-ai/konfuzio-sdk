@@ -688,7 +688,7 @@ def get_default_label_set_documents(
     # keys are default Label_set names, values are list of Label names that appear in that default label_set
     default_labels = defaultdict(set)
 
-    # filter label_sets of the project that belong to the selected default label_sets
+    # filter label_sets of the Project that belong to the selected default label_sets
     selected_ids = [x.id_ for x in selected_default_label_sets]
     selected_label_sets = []
     for label_set in project_label_sets:
@@ -717,7 +717,7 @@ def get_default_label_set_documents(
         for _default_label_set in _default_label_sets:
             default_labels[_default_label_set.id_] |= set(label_set_labels)
 
-    # for each Document label_set in the project
+    # for each Document label_set in the Project
     for default_label_set in [x for x in selected_default_label_sets if x.is_default]:
         # copy Documents so we only edit a new copy of them
         _documents = copy.deepcopy(documents) if merge_multi_default else documents
@@ -766,7 +766,7 @@ def separate_labels(project, default_label_sets: List = None):
 
     This should be used only for the training purpose.
 
-    For all Documents in the project (training + test) for each Category, we check all Annotations in annotation_sets
+    For all Documents in the Project (training + test) for each Category, we check all Annotations in annotation_sets
     that do not belong to the Category label_set.
 
     For each Label that we find, we rewrite the name of the label, adding the label_set name, followed by "__" and
@@ -774,12 +774,12 @@ def separate_labels(project, default_label_sets: List = None):
     E.g.: label_set: Shipper, Label: Name -> Label: Shipper__Name
 
     Notes:
-    When using this method, the Labels in the project are changed. This should be used in combination with the model
+    When using this method, the Labels in the Project are changed. This should be used in combination with the model
     models_labels_multiclass.SeparateLabelsAnnotationMultiClassModel so that these changes are undone in the extract
     and the output contains the correct Labels names.
 
-    If the Labels of the project should be used in the original format for other tasks, for example, for the
-    business evaluation, the project should be reloaded after the training.
+    If the Labels of the Project should be used in the original format for other tasks, for example, for the
+    business evaluation, the Project should be reloaded after the training.
 
     """
     from konfuzio_sdk.data import Label

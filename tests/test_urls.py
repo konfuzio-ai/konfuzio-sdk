@@ -35,12 +35,12 @@ class TestUrls(unittest.TestCase):
         self.assertEqual(get_auth_token_url(host=KONFUZIO_HOST), auth_token_url_url)
 
     def test_get_projects_list_url(self):
-        """Test function used to generate url to list all the projects available for the user."""
+        """Test function used to generate url to list all the Projects available for the user."""
         projects_list_url = f"{KONFUZIO_HOST}/api/projects/"
         self.assertEqual(get_projects_list_url(), projects_list_url)
 
     def test_get_project_url(self):
-        """Test function used to generate url to access project details."""
+        """Test function used to generate url to access Project details."""
         project_url = f'{KONFUZIO_HOST}/api/projects/{TEST_PROJECT_ID}/'
         self.assertEqual(get_project_url(TEST_PROJECT_ID), project_url)
 
@@ -57,7 +57,7 @@ class TestUrls(unittest.TestCase):
         )
 
     def test_get_document_segmentation_details_url(self):
-        """Test function used to generate url to get the segmentation details of one Document in a project."""
+        """Test function used to generate url to get the segmentation details of one Document in a Project."""
         document_segmentation_details_url = (
             f'{KONFUZIO_HOST}/api/projects/{TEST_PROJECT_ID}/docs/{DOCUMENT_ID}/segmentation/'
         )
@@ -86,7 +86,7 @@ class TestUrls(unittest.TestCase):
         self.assertEqual(get_document_original_file_url(DOCUMENT_ID), document_original_file_url)
 
     def test_get_document_api_details_url(self):
-        """Test function used to generate url to access Document details of one Document in a project."""
+        """Test function used to generate url to access Document details of one Document in a Project."""
         document_api_details_url = (
             f'{KONFUZIO_HOST}/api/projects/{TEST_PROJECT_ID}/docs/{DOCUMENT_ID}/' f'?extra_fields=hocr,bbox'
         )
