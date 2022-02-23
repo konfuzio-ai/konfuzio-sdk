@@ -59,7 +59,7 @@ def init_env(
     """
     Add the .env file to the working directory.
 
-    :param Project_folder: Root folder of the Project where to place the .env file
+    :param project_folder: Root folder of the Project where to place the .env file
     :return: file content
     """
     token = _get_auth_token(user, password, host)
@@ -134,7 +134,7 @@ def get_project_details(project_id: int, session=_konfuzio_session()) -> dict:
     """
     Get Label Sets available in Project.
 
-    :param Project_id: ID of the Project
+    :param project_id: ID of the Project
     :param session: Konfuzio session with Retry and Timeout policy
     :return: Sorted Label Sets.
     """
@@ -172,7 +172,7 @@ def get_document_details(document_id: int, project_id: int, session=_konfuzio_se
     Use the text-extraction server to retrieve the data from a document.
 
     :param document_id: ID of the document
-    :param Project_id: ID of the Project
+    :param project_id: ID of the Project
     :param session: Konfuzio session with Retry and Timeout policy
     :param extra_fields: Retrieve bounding boxes and HOCR from document, too. Can be "bbox,hocr", it's a hotfix
     :return: Data of the document.

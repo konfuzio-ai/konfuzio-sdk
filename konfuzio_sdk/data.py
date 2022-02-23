@@ -125,7 +125,7 @@ class LabelSet(Data):
         """
         Create a named Label Set.
 
-        :param Project: Project where the Label Set belongs
+        :param project: Project where the Label Set belongs
         :param id_: ID of the Label Set
         :param name: Name of Label Set
         :param name_clean: Normalized name of the Label Set
@@ -296,7 +296,7 @@ class Label(Data):
         """
         Create a named Label.
 
-        :param Project: Project where the Label belongs
+        :param project: Project where the Label belongs
         :param id_: ID of the label
         :param text: Name of the label
         :param get_data_type_display: Data type of the label

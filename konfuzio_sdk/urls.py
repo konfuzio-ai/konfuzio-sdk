@@ -39,7 +39,7 @@ def get_project_url(project_id: Union[int, None], host: str = KONFUZIO_HOST) -> 
     Generate URL to access the Project details.
 
     :param host: Konfuzio host
-    :param Project_id: ID of the Project
+    :param project_id: ID of the Project
     :return: URL to access the Project details.
     """
     return f'{host}/api/projects/{project_id}/'
@@ -49,7 +49,7 @@ def get_documents_meta_url(project_id: int, host: str = KONFUZIO_HOST) -> str:
     """
     Generate URL to load meta information about the Documents in the Project.
 
-    :param Project_id: ID of the Project
+    :param project_id: ID of the Project
     :param host: Konfuzio host
     :return: URL to get all the Documents details.
     """
@@ -63,7 +63,7 @@ def get_document_segmentation_details_url(
     Generate URL to get the segmentation results of a  Document.
 
     :param document_id: ID of the Document as integer
-    :param Project_id: ID of the Project
+    :param project_id: ID of the Project
     :param host: Konfuzio host
     :param action: Action from where to get the results
     :return: URL to access the segmentation results of a  Document
