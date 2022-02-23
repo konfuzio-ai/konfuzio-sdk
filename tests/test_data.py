@@ -94,6 +94,31 @@ class TestOfflineDataSetup(unittest.TestCase):
         second_annotation = Annotation(document=doc, spans=[first_span, second_span])
         self.assertEqual([first_annotation, second_annotation], doc.annotations(use_correct=False))
 
+    def test_get_annotation_set_id_after_removal(self):
+        """Test get an annotation set that no longer exists."""
+        with self.assertRaises(IndexError) as _:
+            # create annotation for a certain annotation set in a document
+            prj = Project(id_=TEST_PROJECT_ID)
+            label = Label(project=prj)
+            doc = Document(text='', project=prj)
+            label_set = LabelSet(project=prj)
+            annotation_set = AnnotationSet(document=doc, label_set=label_set, id_=123)
+            span = Span(start_offset=1, end_offset=2)
+            _ = Annotation(label=label, annotation_set=annotation_set, label_set=label_set, document=doc, spans=[span])
+
+            # get the annotation set ID of the annotation created
+            annotations = doc.annotations(use_correct=False)
+            annotation_set_id = annotations[0].annotation_set.id_
+            assert annotation_set_id == 123
+            annotation_set_temp = doc.get_annotation_set_by_id(annotation_set_id)
+            assert annotation_set_temp is not None
+
+            # delete annotation set
+            doc._annotation_sets = []
+
+            # trying to get an annotation set that no longer exists
+            _ = doc.get_annotation_set_by_id(annotation_set_id)
+
 
 @pytest.mark.serial
 class TestProjectWithoutInit(unittest.TestCase):

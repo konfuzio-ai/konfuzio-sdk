@@ -1479,6 +1479,7 @@ class Document(Data):
         if result:
             return result
         else:
+            logger.error(f"Annotation Set {id_} is not part of Document {self.id_}.")
             raise IndexError
 
     def get_text_in_bio_scheme(self, update=False) -> List[Tuple[str, str]]:
