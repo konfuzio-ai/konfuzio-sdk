@@ -6,13 +6,14 @@ import os
 import pathlib
 import re
 import shutil
+import time
 import zipfile
 from copy import deepcopy
-import time
 from datetime import tzinfo
 from typing import Optional, List, Union, Tuple
 
 import dateutil.parser
+import pandas as pd
 from tqdm import tqdm
 
 from konfuzio_sdk import KONFUZIO_HOST
@@ -27,9 +28,9 @@ from konfuzio_sdk.api import (
     get_document_details,
 )
 from konfuzio_sdk.evaluate import compare
-from konfuzio_sdk.utils import get_bbox, get_missing_offsets
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_spans, suggest_regex_for_string, merge_regex
+from konfuzio_sdk.utils import get_bbox, get_missing_offsets
 from konfuzio_sdk.utils import is_file, convert_to_bio_scheme, amend_file_name
 
 logger = logging.getLogger(__name__)
@@ -1216,7 +1217,7 @@ class Document(Data):
 
         # build the doc from model results
         virtual_doc = Document(
-            project=self.project, text=self.text, bbox=self.get_bbox(), number_of_pages=len(self.text.split('\f'))
+            project=self.project, text=self.text, bbox=self.get_bbox(), number_of_pages=self.number_of_pages
         )
         extraction_result = model.extract(document=virtual_doc)
 
@@ -1230,7 +1231,7 @@ class Document(Data):
 
         # TODO: not needed once extract returns a document
         for label_or_label_set_name, information in extraction_result.items():
-            if not isinstance(information, list):
+            if isinstance(information, pd.DataFrame):
                 # annotations belong to the default Annotation Set
                 # add default Annotation Set if there is any prediction for it
                 if virtual_default_annotation_set not in virtual_doc.annotation_sets:
@@ -1246,6 +1247,10 @@ class Document(Data):
 
             else:  # process multi Annotation Sets where multiline is True
                 label_set = self.project.get_label_set_by_name(label_or_label_set_name)
+
+                if not isinstance(information, list):
+                    information = [information]
+
                 for entry in information:  # represents one of pot. multiple annotation-sets belonging of one LabelSet
                     virtual_annotation_set_id += 1
                     virtual_annotation_set = AnnotationSet(
