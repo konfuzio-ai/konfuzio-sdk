@@ -380,7 +380,7 @@ Password: {PROVIDED_BY_KONFUZIO}</p>
 <h4>4. Init the database, create first superuser via cli and prefill e-mail templates<a class="headerlink" href="#init-the-database-create-first-superuser-via-cli-and-prefill-e-mail-templates" title="Permalink to this headline">¶</a></h4>
 <p>In this example we store the files on the host VM and mount the directory “/konfuzio-vm/text-annotation/data” into the container. In the first step we create a container with a shell to then start the initialization scripts within the container.
 The container needs to be able to access IP addresses and hostnames used in the .env. This can be ensured using –add.host. In the example we make the host IP 10.0.0.1 available.</p>
-<p>docker run -it –add-host:10.0.0.1 –env-file /konfuzio-vm/text-annotation.env –mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data registry.gitlab.com/konfuzio/text-annotation/master:latest bash</p>
+<p>docker run -it –add-host=10.0.0.1 –env-file /konfuzio-vm/text-annotation.env –mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data registry.gitlab.com/konfuzio/text-annotation/master:latest bash</p>
 <p><code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">migrate</span></code><span class="raw-html-m2r"><br></span>
 <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">createsuperuser</span></code><span class="raw-html-m2r"><br></span>
 <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">init_email_templates</span></code><span class="raw-html-m2r"><br></span>
