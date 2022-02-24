@@ -149,7 +149,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         cls.prj = Project(id_=46)
 
     def test_number_training_documents(self):
-        """Test the number of Documents in data set status test."""
+        """Test the number of Documents in data set status training."""
         assert len(self.prj.documents) == self.document_count
 
     def test_number_test_documents(self):
@@ -157,16 +157,16 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert len(self.prj.test_documents) == self.test_document_count
 
     def test_number_excluded_documents(self):
-        """Test the number of Documents in data set status test."""
+        """Test the number of Documents in data set status excluded."""
         assert len(self.prj.excluded_documents) == 1
 
     def test_all_labels_have_threshold(self):
-        """Test the number of Documents in data set status test."""
+        """Test that all labels have the attribute threshold."""
         for label in self.prj.labels:
             assert hasattr(label, 'threshold')
 
-    def test_number_preperation_documents(self):
-        """Test the number of Documents in data set status test."""
+    def test_number_preparation_documents(self):
+        """Test the number of Documents in data set status preparation."""
         assert len(self.prj.preparation_documents) == 0
 
     def test_annotation_of_label(self):
