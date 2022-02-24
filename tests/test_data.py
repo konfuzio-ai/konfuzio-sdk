@@ -575,31 +575,22 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert bio_annotations[8][0] == '22.05.2018'
         assert bio_annotations[8][1] == 'B-Austellungsdatum'
 
-    def test_get_text_for_doc_needing_update(self):
-        """Test get text from document that needs update."""
+    def test_number_of_all_documents(self):
+        """Count the number of all available documents online."""
         prj = Project(id_=TEST_PROJECT_ID)
-        doc = Document(id_=214414, project=prj, needs_update=True)
+        assert len(prj._documents) == 42
 
-        assert len(os.listdir(os.path.join(prj.documents_folder, str(doc.id_)))) == 0
-        assert self.assertTrue(doc.needs_update)
-        assert isinstance(doc.text, str)
-
-    def test_get_text_for_doc_not_previous_initialized(self):
-        """Test get text from an existing document not previously initialized."""
-        first_round_prj = Project(id_=TEST_PROJECT_ID)
-        doc = first_round_prj.documents[0]
-
-        for file in glob.glob(os.path.join(first_round_prj.documents_folder, str(doc.id_), '*')):
-            os.remove(file)
-
-        assert doc.text is None
-
-        # folder for doc already exists but is empty and doc ID is in the meta information
-        second_round_prj = Project(id_=TEST_PROJECT_ID)
-        doc = second_round_prj.documents[0]
-
-        assert isinstance(doc.text, str)
-        assert len(doc.text) > 0
+    def test_get_text_for_doc_needing_update(self):
+        """Test to load the Project into a custom folder and only get one document."""
+        prj = Project(id_=TEST_PROJECT_ID, project_folder='my_own_data')
+        doc = prj.get_document_by_id(214414)
+        doc.download_document_details()
+        self.assertTrue(is_file(doc.txt_file_path))
+        for document in prj.documents:
+            if document.id_ != doc.id_:
+                self.assertTrue(not is_file(document.txt_file_path, raise_exception=False))
+        self.assertTrue(doc.text)
+        prj.delete()
 
     def test_create_empty_annotation(self):
         """Create an empty Annotation and get the start offset."""

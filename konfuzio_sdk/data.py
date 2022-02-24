@@ -1132,7 +1132,7 @@ class Document(Data):
         category_template: int = None,
         text: str = None,
         bbox: dict = None,
-        needs_update: bool = None,
+        update: bool = None,
         *args,
         **kwargs,
     ):
@@ -1157,7 +1157,7 @@ class Document(Data):
         self.file_url = file_url
         self.is_dataset = is_dataset
         self.dataset_status = dataset_status
-        self.needs_update = needs_update  # the default is None: True will load it from the API, False from local files
+        self._update = update  # the default is None: True will load it from the API, False from local files
 
         if project and category_template:
             self.category = project.get_category_by_id(category_template)
@@ -1332,14 +1332,14 @@ class Document(Data):
         :return: Annotations in the document.
         """
         # make sure the Document has all required information
-        if self.needs_update is None:
+        if self._update is None:
             pass
-        elif self.needs_update:
+        elif self._update:
             self.update()
-            self.needs_update = None  # Make sure we don't repeat to load once loaded.
+            self._update = None  # Make sure we don't repeat to load once loaded.
         else:
             self.get_annotations()  # get_annotations has a fallback, if you deleted the raw json files
-            self.needs_update = None  # Make sure we don't repeat to load once loaded.
+            self._update = None  # Make sure we don't repeat to load once loaded.
 
         annotations = []
         add = False
@@ -1774,7 +1774,7 @@ class Document(Data):
         :param update: Update the downloaded information even it is already available
         :return: Annotations
         """
-        # Check JSON for Annotation Sets as a fallback if needs_update is False or None but the files do not exist
+        # Check JSON for Annotation Sets as a fallback if update is False or None but the files do not exist
         if not is_file(self.annotation_set_file_path, raise_exception=False) or not is_file(
             self.annotation_file_path, raise_exception=False
         ):
@@ -2162,19 +2162,19 @@ class Project(Data):
                     updated = None
 
                 if updated:
-                    doc = Document(project=self, needs_update=True, id_=document_data['id'], **document_data)
+                    doc = Document(project=self, update=True, id_=document_data['id'], **document_data)
                     logger.info(f'{doc} was updated, we will download it again as soon you use it.')
                 elif new:
-                    doc = Document(project=self, needs_update=True, id_=document_data['id'], **document_data)
+                    doc = Document(project=self, update=True, id_=document_data['id'], **document_data)
                     logger.info(f'{doc} is not available on your machine, we will download it as soon you use it.')
                 else:
-                    doc = Document(project=self, needs_update=False, id_=document_data['id'], **document_data)
+                    doc = Document(project=self, update=False, id_=document_data['id'], **document_data)
                     logger.debug(f'Load local version of {doc} from {new_date}.')
                 self.add_document(doc)
 
     def get_document_by_id(self, document_id: int) -> Document:
         """Return document by it's ID."""
-        for document in self.documents:
+        for document in self._documents:
             if document.id_ == document_id:
                 return document
         raise IndexError
@@ -2351,15 +2351,9 @@ class Project(Data):
                 for span in annotation.spans:
                     span.normalize()
 
-
-#
-#
-# def delete(self):
-#     """Delete the file folder, keep other folder."""
-#     raise NotImplementedError
-#     for document in self.documents:
-#         document.delete()
-#     self.clean_meta()
+    def delete(self):
+        """Delete the Project folder."""
+        shutil.rmtree(self.project_folder)
 
 
 def download_training_and_test_data(id_: int):
