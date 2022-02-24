@@ -1,4 +1,4 @@
-"""Central place to collect settings from projects and make them available in the konfuzio_sdk package."""
+"""Central place to collect settings from Projects and make them available in the konfuzio_sdk package."""
 import logging
 import os
 import sys

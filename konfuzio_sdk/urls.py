@@ -26,30 +26,30 @@ def get_auth_token_url(host: str = KONFUZIO_HOST) -> str:
 
 def get_projects_list_url(host: str = KONFUZIO_HOST) -> str:
     """
-    Generate URL to list all the projects available for the user.
+    Generate URL to list all the Projects available for the user.
 
     :param host: Konfuzio host
-    :return: URL to get all the projects for the user.
+    :return: URL to get all the Projects for the user.
     """
     return f"{host}/api/projects/"
 
 
 def get_project_url(project_id: Union[int, None], host: str = KONFUZIO_HOST) -> str:
     """
-    Generate URL to access the project details.
+    Generate URL to access the Project details.
 
     :param host: Konfuzio host
-    :param project_id: ID of the project
-    :return: URL to access the project details.
+    :param project_id: ID of the Project
+    :return: URL to access the Project details.
     """
     return f'{host}/api/projects/{project_id}/'
 
 
 def get_documents_meta_url(project_id: int, host: str = KONFUZIO_HOST) -> str:
     """
-    Generate URL to load meta information about the Documents in the project.
+    Generate URL to load meta information about the Documents in the Project.
 
-    :param project_id: ID of the project
+    :param project_id: ID of the Project
     :param host: Konfuzio host
     :return: URL to get all the Documents details.
     """
@@ -63,7 +63,7 @@ def get_document_segmentation_details_url(
     Generate URL to get the segmentation results of a  Document.
 
     :param document_id: ID of the Document as integer
-    :param project_id: ID of the project
+    :param project_id: ID of the Project
     :param host: Konfuzio host
     :param action: Action from where to get the results
     :return: URL to access the segmentation results of a  Document

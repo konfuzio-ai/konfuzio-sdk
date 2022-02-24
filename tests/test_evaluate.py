@@ -552,7 +552,7 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 1
 
-    @unittest.skip(reason="Cannot load project with custom strings with current changes.")
+    @unittest.skip(reason="Cannot load Project with custom strings with current changes.")
     def test_doc_with_custom_offset_string(self):
         """
         Test a Document with an annotation that has a custom offset string.

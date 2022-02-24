@@ -38,7 +38,7 @@ TEST_PROJECT_ID = 46
 
 @pytest.mark.serial
 class TestKonfuzioSDKAPI(unittest.TestCase):
-    """Test API with payslip example project."""
+    """Test API with payslip example Project."""
 
     def test_projects_details(self):
         """Test to get Document details."""
@@ -146,7 +146,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         }
 
     def test_get_list_of_files(self):
-        """Get meta information from Documents in the project."""
+        """Get meta information from Documents in the Project."""
         sorted_documents = get_meta_of_files(project_id=TEST_PROJECT_ID)
         sorted_dataset_documents = [x for x in sorted_documents if x['dataset_status'] in [2, 3]]
         self.assertEqual(27 + 3, len(sorted_dataset_documents))
@@ -327,11 +327,11 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
     @unittest.skip(reason="Skip to iterate version of meta information of files, unclear when it paginates.")
     def test_meta_file_pagination(self):
-        """Iterate over Urls with a next page and for empty projects without document."""
+        """Iterate over Urls with a next page and for empty Project without document."""
         pass
 
     def test_create_new_project(self):
-        """Test to create new project."""
+        """Test to create new Project."""
         # mock session
         class _Session:
             """Mock requests POST response."""
@@ -349,7 +349,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         assert create_new_project('test', session=_Session()) == 420
 
     def test_create_new_project_permission_error(self):
-        """Test to create new project."""
+        """Test to create new Project."""
         # mock session
         class _Session:
             """Mock requests POST response."""
