@@ -1570,12 +1570,12 @@ class Document(Data):
     def text(self):
         """Get Document text. Once loaded stored in memory."""
         if self._text:
-            pass
-        elif is_file(self.txt_file_path, raise_exception=False):
+            return self._text
+        if not is_file(self.txt_file_path, raise_exception=False):
+            self.download_document_details()
+        if is_file(self.txt_file_path, raise_exception=False):
             with open(self.txt_file_path, "r", encoding="utf-8") as f:
                 self._text = f.read()
-        else:
-            logger.error(f'{self} does not provide a text.')
 
         return self._text
 
@@ -2179,99 +2179,6 @@ class Project(Data):
                 return document
         raise IndexError
 
-    # def get_documents(self, update=False):
-    #     """
-    #     Get all Documents in a project which have been marked as available in the training dataset.
-    #
-    #     Dataset status: training = 2
-    #
-    #     :param update: Bool to update the meta-information from the project
-    #     :return: training Documents
-    #     """
-    #     document_list_cache = self.documents
-    #     self.documents: List[Document] = []
-    #     self.get_documents_by_status(dataset_statuses=[2], document_list_cache=document_list_cache, update=update)
-    #
-    #     return self.documents
-    #
-    # def get_test_documents(self, update=False):
-    #     """
-    #     Get all Documents in a project which have been marked as available in the test dataset.
-    #
-    #     Dataset status: test = 3
-    #
-    #     :param update: Bool to update the meta-information from the project
-    #     :return: test Documents
-    #     """
-    #     document_list_cache = self.test_documents
-    #     self.test_documents: List[Document] = []
-    #     self.get_documents_by_status(dataset_statuses=[3], document_list_cache=document_list_cache, update=update)
-    #
-    #     return self.test_documents
-
-    # def get_documents_by_status(
-    #         self, dataset_statuses: List[int] = [0], document_list_cache: List[Document] = [], update: bool = False
-    # ) -> List[Document]:
-    #     """
-    #     Get a list of Documents with the specified dataset status from the project.
-    #
-    #     Besides returning a list, the Documents are also initialized in the project.
-    #     They become accessible from the attributes of the class: self.test_documents, self.none_documents,...
-    #
-    #     :param dataset_statuses: List of status of the Documents to get
-    #     :param document_list_cache: Cache with Documents in the project
-    #     :param update: Bool to update the meta-information from the project
-    #     :return: Documents with the specified dataset status
-    #     """
-    #     documents = []
-    #     logger.info(f'Start downloading {len(self.meta_data)} files from {KONFUZIO_HOST}.')
-    #     for document_data in self.meta_data:
-    #         if document_data["dataset_status"] in dataset_statuses:
-    #             # todo reduce number of API requests
-    #             self._init_document(document_data, document_list_cache, update)
-    #
-    #     raise NotImplementedError('We assign the Documents to mulitple lists if a list of statuses is parsed.')
-    #
-    #     if 0 in dataset_statuses:
-    #         documents.extend(self.no_status_documents)
-    #     if 1 in dataset_statuses:
-    #         documents.extend(self.preparation_documents)
-    #     if 2 in dataset_statuses:
-    #         documents.extend(self.documents)
-    #     if 3 in dataset_statuses:
-    #         documents.extend(self.test_documents)
-    #     if 4 in dataset_statuses:
-    #         documents.extend(self.low_ocr_documents)
-    #
-    #     return documents
-
-    # def clean_documents(self, update):
-    #     """
-    #     Clean the Documents by removing those that have been removed from the App.
-    #
-    #     Only if to update the project locally.
-    #
-    #     :param update: Bool to update locally the Documents in the project
-    #     """
-    #     raise NotImplementedError  # todo move to Document itself as delete method?
-    #     if update:
-    #         meta_data_document_ids = set([str(document["id"]) for document in self.meta_data])
-    #         existing_document_ids = set(
-    #             [
-    #                 str(document["id"])
-    #                 for document in self.existing_meta_data
-    #                 if document["dataset_status"] == 2 or document["dataset_status"] == 3
-    #             ]
-    #         )
-    #         remove_document_ids = existing_document_ids.difference(meta_data_document_ids)
-    #         for document_id in remove_document_ids:
-    #             # todo file path automated
-    #             document_path = os.path.join(self.project_folder, "pdf", document_id)
-    #             try:
-    #                 shutil.rmtree(document_path)
-    #             except FileNotFoundError:
-    #                 pass
-
     def get_label_by_name(self, name: str) -> Label:
         """Return Label by its name."""
         for label in self.labels:
@@ -2323,26 +2230,6 @@ class Project(Data):
                 return category
 
         raise IndexError
-
-    # def clean_meta(self):
-    #     """Clean the meta-information about the Project, Labels, and Label Sets."""
-    #     if self.meta_file_path:
-    #         os.remove(self.meta_file_path)
-    #     assert not is_file(self.meta_file_path, raise_exception=False)
-    #     self.meta_data = None
-    #     self.meta_file_path = None
-    #
-    #     if self.labels_file_path:
-    #         os.remove(self.labels_file_path)
-    #     assert not is_file(self.labels_file_path, raise_exception=False)
-    #     self.labels_file_path = None
-    #     self.labels: List[Label] = []
-    #
-    #     if self.label_sets_file_path:
-    #         os.remove(self.label_sets_file_path)
-    #     assert not is_file(self.label_sets_file_path, raise_exception=False)
-    #     self.label_sets_file_path = None
-    #     self.label_sets: List[LabelSet] = []
 
     def check_normalization(self):
         """Check normalized offset_strings."""

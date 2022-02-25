@@ -95,44 +95,29 @@ class TestOfflineDataSetup(unittest.TestCase):
         self.assertEqual([first_annotation, second_annotation], doc.annotations(use_correct=False))
 
 
-# @pytest.mark.serial
-# class TestProjectWithoutInit(unittest.TestCase):
-#     """Test Project init without init of Category, Label Set, Label, Annotation, Annotation Set."""
-#
-#     @classmethod
-#     def setUpClass(cls) -> None:
-#         """Initialize the test Project."""
-#         cls.prj = Project(id_=46)
-#
-#     def test_number_training_documents(self):
-#         """Test the number of Documents in data set status test."""
-#         assert len(self.prj.documents) == 0
-#
-#     def test_get_single_document(self):
-#         """Get a single document without loading the full Project."""
-#         # todo: does the doc need the information of the prj?
-#         # self.prj.get_document_by_id(44863)
-#
-#     @unittest.skip(reason='Please upload via REST API.')
-#     def test_init_a_document_from_file(self):
-#         """Init a document by file."""
-#         raise NotImplementedError
-#
-#     def test_number_test_documents(self):
-#         """Test the number of Documents in data set status test."""
-#         assert len(self.prj.test_documents) == 0
-#
-#     def test_number_of_labels(self):
-#         """Test the number of labels."""
-#         assert len(self.prj.labels) == 0
-#
-#     def test_number_of_label_sets(self):
-#         """Test the number of label sets."""
-#         assert len(self.prj.label_sets) == 0
-#
-#     def test_number_of_categories(self):
-#         """Test the number of categories."""
-#         assert len(self.prj.categories) == 0
+class TestKonfuzioDataCustomPath(unittest.TestCase):
+    """Test handle data."""
+
+    def test_get_text_for_doc_needing_update(self):
+        """Test to load the Project into a custom folder and only get one document."""
+        prj = Project(id_=TEST_PROJECT_ID, project_folder='my_own_data')
+        doc = prj.get_document_by_id(214414)
+        doc.download_document_details()
+        self.assertTrue(is_file(doc.txt_file_path))
+        for document in prj.documents:
+            if document.id_ != doc.id_:
+                self.assertTrue(not is_file(document.txt_file_path, raise_exception=False))
+        self.assertTrue(doc.text)
+        prj.delete()
+
+    def test_make_sure_text_is_downloaded_automatically(self):
+        """Test if a Text downloaded automatically."""
+        prj = Project(id_=TEST_PROJECT_ID, project_folder='my_own_data')
+        doc = prj.get_document_by_id(214414)
+        self.assertEqual(None, doc._text)
+        self.assertTrue(doc.text)
+        self.assertTrue(is_file(doc.txt_file_path))
+        prj.delete()
 
 
 @pytest.mark.serial
@@ -579,18 +564,6 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         """Count the number of all available documents online."""
         prj = Project(id_=TEST_PROJECT_ID)
         assert len(prj._documents) == 42
-
-    def test_get_text_for_doc_needing_update(self):
-        """Test to load the Project into a custom folder and only get one document."""
-        prj = Project(id_=TEST_PROJECT_ID, project_folder='my_own_data')
-        doc = prj.get_document_by_id(214414)
-        doc.download_document_details()
-        self.assertTrue(is_file(doc.txt_file_path))
-        for document in prj.documents:
-            if document.id_ != doc.id_:
-                self.assertTrue(not is_file(document.txt_file_path, raise_exception=False))
-        self.assertTrue(doc.text)
-        prj.delete()
 
     def test_create_empty_annotation(self):
         """Create an empty Annotation and get the start offset."""
