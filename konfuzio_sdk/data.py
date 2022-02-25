@@ -251,7 +251,6 @@ class Category(Data):
 
     def __init__(self, project, id_: int = None, name: str = None, name_clean: str = None, *args, **kwargs):
         """Define a Category that is also a Label Set but cannot have other Categories associated to it."""
-
         self.id_local = next(Data.id_iter)
         self.id_ = id_
         self.name = name
@@ -1193,7 +1192,7 @@ class Document(Data):
         self.txt_file_path = os.path.join(self.document_folder, "document.txt")
         self.hocr_file_path = os.path.join(self.document_folder, "document.hocr")
         self.pages_file_path = os.path.join(self.document_folder, "pages.json5")
-        self.bbox_file_path = os.path.join(self.document_folder, "bbox.json5")
+        self.bbox_file_path = os.path.join(self.document_folder, "bbox.zip")
         self.bio_scheme_file_path = os.path.join(self.document_folder, "bio_scheme.txt")
 
     def __repr__(self):
@@ -1544,27 +1543,20 @@ class Document(Data):
         """
         if self._bbox:
             return self._bbox
-        if is_file(self.bbox_file_path, raise_exception=False):
-            with open(self.bbox_file_path, "r", encoding="utf-8") as f:
-                bbox = json.loads(f.read())
-        elif is_file(self.bbox_file_path + '.zip', raise_exception=False):
-            with zipfile.ZipFile(self.bbox_file_path + '.zip', "r") as archive:
+        elif is_file(self.bbox_file_path, raise_exception=False):
+            with zipfile.ZipFile(self.bbox_file_path, "r") as archive:
                 bbox = json.loads(archive.read('bbox.json5'))
         elif self.status and self.status[0] == 2:
             logger.warning(f'Start downloading bbox files of all characters {self}.')
-            data = get_document_details(
-                document_id=self.id_, project_id=self.project.id_, session=self.session, extra_fields="bbox"
-            )
-            bbox = data['bbox']
-            # Use the `zipfile` module
-            # `compresslevel` was added in Python 3.7
+            bbox = get_document_details(document_id=self.id_, project_id=self.project.id_, extra_fields="bbox")['bbox']
+            # Use the `zipfile` module: `compresslevel` was added in Python 3.7
             with zipfile.ZipFile(
-                self.bbox_file_path + ".zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
+                self.bbox_file_path, mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
             ) as zip_file:
                 # Dump JSON data
-                dumped_JSON: str = json.dumps(bbox, indent=2, sort_keys=True)
+                dumped: str = json.dumps(bbox, indent=2, sort_keys=True)
                 # Write the JSON data into `data.json` *inside* the ZIP file
-                zip_file.writestr('bbox.json5', data=dumped_JSON)
+                zip_file.writestr('bbox.json5', data=dumped)
                 # Test integrity of compressed archive
                 zip_file.testzip()
         else:
@@ -2016,81 +2008,6 @@ class Project(Data):
         else:
             logger.error(f"{document} does exist in {self} and will not be added.")
 
-    # def add_document(self, document: Document):
-    #     """
-    #     Add document to project, if it does not exist.
-    #
-    #     :param document: Document to add in the project
-    #     """
-    #     if (
-    #             document
-    #             not in self.documents
-    #             + self.test_documents
-    #             + self.no_status_documents
-    #             + self.preparation_documents
-    #             + self.low_ocr_documents
-    #     ):
-    #         if document.dataset_status == 2:
-    #             self.documents.append(document)
-    #         elif document.dataset_status == 3:
-    #             self.test_documents.append(document)
-    #         elif document.dataset_status == 0:
-    #             self.no_status_documents.append(document)
-    #         elif document.dataset_status == 1:
-    #             self.preparation_documents.append(document)
-    #         elif document.dataset_status == 4:
-    #             self.low_ocr_documents.append(document)
-    #     return self
-
-    # def update_document(self, document):
-    #     """
-    #     Update document in the project.
-    #
-    #     Update can be in the dataset_status, name or Category.
-    #     First, we need to find the document (different list accordingly with dataset_status).
-    #     Then, if we are just updating the name or Category, we can change the fields in place.
-    #     If we are updating the document dataset status, we need to move the document from the project list.
-    #
-    #     :param document: Document to update in the project
-    #     """
-    #     current_status = document.dataset_status
-    #
-    #     prj_docs = {
-    #         0: self.no_status_documents,
-    #         1: self.preparation_documents,
-    #         2: self.documents,
-    #         3: self.test_documents,
-    #         4: self.low_ocr_documents,
-    #     }
-    #
-    #     # by default the status is None (even if not in the no_status_documents)
-    #     previous_status = 0
-    #     project_documents = []
-    #
-    #     # get project list that contains the document
-    #     for previous_status, project_list in prj_docs.items():
-    #         if document in project_list:
-    #             project_documents = project_list
-    #             break
-    #
-    #     # update name and Category and get dataset status
-    #     for doc in project_documents:
-    #         if doc.id_ == document.id_:
-    #             doc.name = document.name
-    #             doc.category = document.category
-    #             break
-    #
-    #     # if the document is new to the project, just add it
-    #     if len(project_documents) == 0:
-    #         doc = document
-    #
-    #     # update project list if dataset status is different
-    #     if current_status != previous_status:
-    #         if doc in project_documents:
-    #             project_documents.remove(doc)
-    #         doc.dataset_status = current_status
-    #         self.add_document(doc)
-
     def get_meta(self):
         """
         Get the list of all Documents in the Project and their information.
@@ -2103,28 +2020,16 @@ class Project(Data):
 
     def get_categories(self):
         """Load Categories for all Label Sets in the Project."""
-        with open(self.label_sets_file_path, "r") as f:
-            label_sets_data = json.load(f)
-
-        for label_set_data in label_sets_data:
-            if label_set_data['is_default']:
-                category = Category(project=self, id_=label_set_data['id'], **label_set_data)
-                self.add_category(category)
-
         for label_set in self.label_sets:
             if label_set.is_default:
                 # the _default_of_label_set_ids are the label sets used by the category
-                category = self.get_category_by_id(label_set.id_)
-                label_set.add_category(category)
-                category.add_label_set(label_set)
+                pass  # todo ?
             else:
                 # the _default_of_label_set_ids are the categories the label set is used in
-                for category_id in label_set._default_of_label_set_ids:
-                    category = self.get_category_by_id(category_id)
+                for label_set_id in label_set._default_of_label_set_ids:
+                    category = self.get_category_by_id(label_set_id)
                     label_set.add_category(category)
                     category.add_label_set(label_set)
-
-        return self.categories
 
     def get_label_sets(self):
         """
@@ -2138,6 +2043,9 @@ class Project(Data):
 
         for label_set_data in label_sets_data:
             label_set = LabelSet(project=self, id_=label_set_data['id'], **label_set_data)
+            if label_set.is_default:
+                category = Category(project=self, id_=label_set_data['id'], **label_set_data)
+                self.add_category(category)
             self.add_label_set(label_set)
 
         return self.label_sets
