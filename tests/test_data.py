@@ -196,6 +196,49 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert self.prj.categories[0].id_ == 63
         assert self.prj.label_sets[0].categories[0].id_ == 63
 
+    def test_category_documents(self):
+        """Test documents category within a category."""
+        category = self.prj.get_category_by_id(63)
+        category_documents = category.documents()
+
+        assert len(category_documents) == 25
+        for document in category_documents:
+            assert document.category == category
+
+    def test_category_test_documents(self):
+        """Test test documents category within a category."""
+        category = self.prj.get_category_by_id(63)
+        category_test_documents = category.test_documents()
+
+        assert len(category_test_documents) == 3
+        for document in category_test_documents:
+            assert document.category == category
+
+    def test_label_annotations_per_category(self):
+        """Test annotations of a label within a category."""
+        category = self.prj.get_category_by_id(63)
+        category_label_sets = category.label_sets
+        label = category_label_sets[0].labels[0]
+
+        for annotation in label.annotations:
+            assert annotation.document.category == category
+
+    def test_document_annotations_per_category(self):
+        """Test annotations of a document within a category."""
+        category = self.prj.get_category_by_id(63)
+        for document in category.documents():
+            for annotation in document.annotations():
+                assert annotation.label_set == category or annotation.label_set in category.label_sets
+
+    def test_category_label_sets(self):
+        """Test label sets of a category."""
+        category = self.prj.get_category_by_id(63)
+        category_label_sets = category.label_sets
+
+        assert len(category_label_sets) > 0
+        for label_set in category_label_sets:
+            assert category in label_set.categories
+
     def test_label_set_multiple(self):
         """Test Label Set config that is set to multiple."""
         label_set = self.prj.get_label_set_by_name('Brutto-Bezug')
