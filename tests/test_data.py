@@ -60,6 +60,16 @@ class TestOfflineDataSetup(unittest.TestCase):
         annotation = Annotation(document=doc, spans=[span])
         self.assertEqual([span], annotation.spans)
 
+    def test_span_reference_to_annotation(self):
+        """Test Span reference to Annotation."""
+        # TODO: When a span is added to an Annotation it doesn't get the annotation reference (issue 8814)
+        prj = Project(id_=None)
+        doc = Document(project=prj)
+        span = Span(start_offset=1, end_offset=2)
+        annotation = Annotation(document=doc, spans=[span])
+        assert annotation.spans[0].annotation is not None
+        assert annotation.spans[0].x0 is not None
+
     def test_to_there_must_not_be_a_folder(self):
         """Add one Span to one Annotation."""
         prj = Project(id_=None)
