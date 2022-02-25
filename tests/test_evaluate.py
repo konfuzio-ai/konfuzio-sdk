@@ -42,8 +42,8 @@ class TestEvaluation(unittest.TestCase):
     def test_doc_on_doc_incl_multiline_annotation(self):
         """Test if a Document is 100 % equivalent even it has unrevised Annotations."""
         prj = Project(id_=TEST_PROJECT_ID)
-        doc_a = prj.documents[0]
-        doc_b = prj.documents[0]  # predicted
+        doc_a = prj.get_document_by_id(44823)
+        doc_b = prj.get_document_by_id(44823)  # predicted
         evaluation = compare(doc_a, doc_b)
         assert len(evaluation) == 24
         # for an Annotation which is human made, it is nan, so that above threshold is False
@@ -56,8 +56,8 @@ class TestEvaluation(unittest.TestCase):
     def test_doc_where_first_annotation_was_skipped(self):
         """Test if a Document is 100 % equivalent with first Annotation not existing for a certain Label."""
         prj = Project(id_=TEST_PROJECT_ID)
-        doc_a = prj.documents[0]
-        doc_b = prj.documents[0]  # predicted
+        doc_a = prj.get_document_by_id(44823)
+        doc_b = prj.get_document_by_id(44823)  # predicted
         doc_b.annotations()
         doc_b._annotations.pop(0)  # pop an Annotation that is correct in BOTH  Documents
         assert doc_a._annotations == doc_b._annotations  # first Annotation is removed in both  Documents
@@ -71,8 +71,8 @@ class TestEvaluation(unittest.TestCase):
     def test_doc_where_last_annotation_was_skipped(self):
         """Test if a Document is 100 % equivalent with last Annotation not existing for a certain Label."""
         prj = Project(id_=TEST_PROJECT_ID)
-        doc_a = prj.documents[0]
-        doc_b = prj.documents[0]  # predicted
+        doc_a = prj.get_document_by_id(44823)
+        doc_b = prj.get_document_by_id(44823)  # predicted
         doc_b.annotations()
         doc_b._annotations.pop(11)  # pop an Annotation that is correct in BOTH  Documents
         assert doc_a._annotations == doc_b._annotations  # last Annotation is removed in both  Documents
@@ -86,7 +86,7 @@ class TestEvaluation(unittest.TestCase):
     def test_if_first_multiline_annotation_is_missing_in_b(self):
         """Test if a Document is equivalent if first Annotation is missing."""
         prj = Project(id_=TEST_PROJECT_ID)
-        doc_a = prj.documents[0]
+        doc_a = prj.get_document_by_id(44823)
         doc_b = Document(project=prj)
         for annotation in doc_a.annotations()[1:]:
             doc_b.add_annotation(annotation)
@@ -102,7 +102,7 @@ class TestEvaluation(unittest.TestCase):
     def test_doc_where_first_annotation_is_missing_in_a(self):
         """Test if a Document is equivalent if first Annotation is not present."""
         prj = Project(id_=TEST_PROJECT_ID)
-        doc_b = prj.documents[0]
+        doc_b = prj.get_document_by_id(44823)
         doc_a = Document(project=prj)
         # use only correct Annotations
         for annotation in doc_b.annotations()[1:]:
@@ -137,7 +137,7 @@ class TestEvaluation(unittest.TestCase):
     def test_doc_where_first_annotation_from_all_is_missing_in_a(self):
         """Test if a Document is equivalent if all Annotation are not present and feedback required are included."""
         prj = Project(id_=TEST_PROJECT_ID)
-        doc_b = prj.documents[0]
+        doc_b = prj.get_document_by_id(44823)
         doc_a = Document(project=prj)
         # use correct Annotations and feedback required ones
         for annotation in doc_b.annotations(use_correct=False)[1:]:
@@ -154,7 +154,7 @@ class TestEvaluation(unittest.TestCase):
     def test_doc_where_last_annotation_is_missing_in_b(self):
         """Test if a Document is equivalent if last Annotation is missing."""
         prj = Project(id_=TEST_PROJECT_ID)
-        doc_a = prj.documents[0]
+        doc_a = prj.get_document_by_id(44823)
         doc_b = Document(project=prj)
         # use correct Annotations and feedback required ones
         for annotation in doc_a.annotations(use_correct=False)[:-1]:
@@ -170,7 +170,7 @@ class TestEvaluation(unittest.TestCase):
     def test_doc_where_last_annotation_is_missing_in_a(self):
         """Test if a Document is equivalent if last Annotation is not present."""
         prj = Project(id_=TEST_PROJECT_ID)
-        doc_b = prj.documents[0]
+        doc_b = prj.get_document_by_id(44823)
         doc_a = Document(project=prj)
         # use correct Annotations and feedback required ones
         for annotation in doc_b.annotations(use_correct=False)[:-1]:
@@ -187,7 +187,7 @@ class TestEvaluation(unittest.TestCase):
         """Support to evaluate that nothing is found in a document."""
         prj = Project(id_=TEST_PROJECT_ID)
         doc_a = Document(project=prj)
-        doc_b = prj.documents[0]
+        doc_b = prj.get_document_by_id(44823)
         evaluation = compare(doc_a, doc_b)
         assert len(evaluation) == 25
         assert evaluation["true_positive"].sum() == 0
@@ -199,7 +199,7 @@ class TestEvaluation(unittest.TestCase):
     def test_nothing_can_be_predicted(self):
         """Support to evaluate that nothing must be found in a document."""
         prj = Project(id_=TEST_PROJECT_ID)
-        doc_a = prj.documents[0]
+        doc_a = prj.get_document_by_id(44823)
         doc_b = Document(project=prj)
         evaluation = compare(doc_a, doc_b)
         assert len(evaluation) == 25  # we evaluate on span level an one annotation is multiline
@@ -217,7 +217,7 @@ class TestEvaluation(unittest.TestCase):
         """
         # todo: this logic is a view logic on the document: shouldn't this go into the Annotations function
         prj = Project(id_=TEST_PROJECT_ID)
-        doc_a = prj.documents[0]
+        doc_a = prj.get_document_by_id(44823)
         doc_b = Document(project=prj)
 
         found = False
@@ -254,7 +254,7 @@ class TestEvaluation(unittest.TestCase):
         All Annotations expected for that Annotation Set will be counted as false negatives.
         """
         prj = Project(id_=TEST_PROJECT_ID)
-        doc_a = prj.documents[20]  # doc ID 44859
+        doc_a = prj.get_document_by_id(44859)
         doc_b = Document(project=prj)
         doc_a.annotations()
 
@@ -284,7 +284,7 @@ class TestEvaluation(unittest.TestCase):
         The Annotations in the extra Annotation Set will be counted as false positives.
         """
         prj = Project(id_=TEST_PROJECT_ID)
-        doc_online = prj.documents[20]  # doc ID 44859
+        doc_online = prj.get_document_by_id(44859)
         doc_a = Document(project=prj)
         doc_b = Document(project=prj)
         doc_online.annotations()
@@ -329,7 +329,7 @@ class TestEvaluation(unittest.TestCase):
         Those annotations predicted with the wrong Annotation Set are considered false positives.
         """
         prj = Project(id_=TEST_PROJECT_ID)
-        doc_a = prj.documents[4]  # doc ID 44841
+        doc_a = prj.get_document_by_id(44841)
         doc_b = Document(project=prj)
 
         for annotation in doc_a.annotations(use_correct=False):
@@ -362,7 +362,7 @@ class TestEvaluation(unittest.TestCase):
         annotation is predicted as false negative.
         """
         prj = Project(id_=TEST_PROJECT_ID)
-        doc_a = prj.documents[4]  # doc ID 44841
+        doc_a = prj.get_document_by_id(44841)
         doc_b = Document(project=prj)
 
         # skip last multiple annotation from Steuer
@@ -397,7 +397,7 @@ class TestEvaluation(unittest.TestCase):
         TODO: review
         """
         prj = Project(id_=TEST_PROJECT_ID)
-        doc_a = prj.documents[4]  # doc ID 44841
+        doc_a = prj.get_document_by_id(44841)
         doc_b = Document(project=prj)
 
         new_annotation = deepcopy(doc_a.annotations(use_correct=False)[1])
@@ -431,7 +431,7 @@ class TestEvaluation(unittest.TestCase):
         TODO: review
         """
         prj = Project(id_=TEST_PROJECT_ID)
-        doc_a = prj.documents[4]  # doc ID 44841
+        doc_a = prj.get_document_by_id(44841)
         doc_b = Document(project=prj)
 
         new_annotation = deepcopy(doc_a.annotations(use_correct=False)[0])
@@ -465,7 +465,7 @@ class TestEvaluation(unittest.TestCase):
         TODO: review
         """
         prj = Project(id_=TEST_PROJECT_ID)
-        doc_a = prj.documents[4]  # doc ID 44841
+        doc_a = prj.get_document_by_id(44841)
         doc_b = Document(project=prj)
 
         new_annotation = deepcopy(doc_a.annotations(use_correct=False)[0])
@@ -496,7 +496,7 @@ class TestEvaluation(unittest.TestCase):
         The Annotation Set cannot be determined by the mode of the Annotation Set IDs.
         """
         prj = Project(id_=TEST_PROJECT_ID)
-        doc_a = prj.documents[4]  # doc ID 44841
+        doc_a = prj.get_document_by_id(44841)
         doc_b = Document(project=prj)
 
         # 1st annotation from 1st Annotation Set Brutto-Bezug belonging to the 2nd Annotation Set
@@ -537,7 +537,7 @@ class TestEvaluation(unittest.TestCase):
         Set.
         """
         prj = Project(id_=TEST_PROJECT_ID)
-        doc_a = prj.documents[4]  # doc ID 44841
+        doc_a = prj.get_document_by_id(44841)
         doc_b = Document(project=prj)
 
         # skip 1 annotation from an Annotation Set that is in the same line as other Annotation Set
@@ -562,7 +562,7 @@ class TestEvaluation(unittest.TestCase):
         TODO: review
         """
         prj = Project(id_=TEST_PROJECT_ID)
-        _ = prj.documents[0]
+        _ = prj.get_document_by_id(44823)
         _ = Document(project=prj)
 
     @unittest.skip(reason='Waiting to be able toe specify the Extraction AI model version.')
