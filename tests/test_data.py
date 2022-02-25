@@ -578,11 +578,27 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_get_text_for_doc_needing_update(self):
         """Test get text from document that needs update."""
         prj = Project(id_=TEST_PROJECT_ID)
-        doc = Document(id_=214414, project=prj, needs_update=True)
+        doc = Document(id_=214414, project=prj, needs_update=True, status=[2, 'Done'])
+
+        for file in glob.glob(os.path.join(prj.documents_folder, str(doc.id_), '*')):
+            os.remove(file)
 
         assert len(os.listdir(os.path.join(prj.documents_folder, str(doc.id_)))) == 0
-        assert self.assertTrue(doc.needs_update)
+        self.assertTrue(doc.needs_update)
         assert isinstance(doc.text, str)
+
+    def test_get_annotations_for_doc_needing_update(self):
+        """Test get annotations from document that needs update."""
+        prj = Project(id_=TEST_PROJECT_ID)
+        doc = Document(id_=214414, project=prj, needs_update=True, status=[2, 'Done'])
+
+        for file in glob.glob(os.path.join(prj.documents_folder, str(doc.id_), '*')):
+            os.remove(file)
+
+        assert len(os.listdir(os.path.join(prj.documents_folder, str(doc.id_)))) == 0
+        self.assertTrue(doc.needs_update)
+        assert isinstance(doc.annotations(use_correct=False), list)
+        assert len(doc.annotations(use_correct=False)) > 0
 
     def test_get_text_for_doc_not_previous_initialized(self):
         """Test get text from an existing document not previously initialized."""
