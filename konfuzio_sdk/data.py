@@ -258,6 +258,7 @@ class Category(LabelSet):
         self.categories = []
         self.project.add_category(self)
         self.label_sets = []
+        # TODO: does the category need to start from the Label Set? Can it be independent?
         if self.labels:
             logger.error(f'{self} is a Category and should not have labels attached.')
 

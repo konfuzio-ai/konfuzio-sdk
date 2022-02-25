@@ -214,8 +214,8 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         for document in category_test_documents:
             assert document.category == category
 
-    def test_label_annotations_per_category(self):
-        """Test annotations of a label within a category."""
+    def test_category_annotations_by_label(self):
+        """Test getting annotations of a category by labels."""
         category = self.prj.get_category_by_id(63)
         category_label_sets = category.label_sets
         label = category_label_sets[0].labels[0]
@@ -223,12 +223,12 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         for annotation in label.annotations:
             assert annotation.document.category == category
 
-    def test_document_annotations_per_category(self):
-        """Test annotations of a document within a category."""
+    def test_category_annotations_by_document(self):
+        """Test getting annotations of a category by documents."""
         category = self.prj.get_category_by_id(63)
         for document in category.documents():
             for annotation in document.annotations():
-                assert annotation.label_set == category or annotation.label_set in category.label_sets
+                assert annotation.label_set in category.label_sets
 
     def test_category_label_sets(self):
         """Test label sets of a category."""
