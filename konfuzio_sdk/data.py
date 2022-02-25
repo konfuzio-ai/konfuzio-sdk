@@ -246,21 +246,18 @@ class LabelSet(Data):
     #     return evaluation_df
 
 
-class Category(LabelSet):
+class Category(Data):
     """A Category is used to group Documents."""
 
-    def __init__(self, is_default=True, has_multiple_annotation_sets=True, *args, **kwargs):
+    def __init__(self, project, id_: int = None, name: str = None, name_clean: str = None, *args, **kwargs):
         """Define a Category that is also a Label Set but cannot have other Categories associated to it."""
-        LabelSet.__init__(self, *args, **kwargs)
+
         self.id_local = next(Data.id_iter)
-        self.is_default = is_default
-        self.has_multiple_annotation_sets = has_multiple_annotation_sets
-        self.categories = []
-        self.project.add_category(self)
-        self.label_sets = []
-        # TODO: does the category need to start from the Label Set? Can it be independent?
-        if self.labels:
-            logger.error(f'{self} is a Category and should not have labels attached.')
+        self.id_ = id_
+        self.name = name
+        self.name_clean = name_clean
+        self.project: Project = project
+        self.label_sets: List[LabelSet] = []
 
     def documents(self):
         """Filter for Documents of this Category."""
@@ -2097,16 +2094,28 @@ class Project(Data):
 
     def get_categories(self):
         """Load Categories for all Label Sets in the Project."""
+        with open(self.label_sets_file_path, "r") as f:
+            label_sets_data = json.load(f)
+
+        for label_set_data in label_sets_data:
+            if label_set_data['is_default']:
+                category = Category(project=self, id_=label_set_data['id'], **label_set_data)
+                self.add_category(category)
+
         for label_set in self.label_sets:
             if label_set.is_default:
                 # the _default_of_label_set_ids are the label sets used by the category
-                pass  # todo ?
+                category = self.get_category_by_id(label_set.id_)
+                label_set.add_category(category)
+                category.add_label_set(label_set)
             else:
                 # the _default_of_label_set_ids are the categories the label set is used in
-                for label_set_id in label_set._default_of_label_set_ids:
-                    category = self.get_category_by_id(label_set_id)
+                for category_id in label_set._default_of_label_set_ids:
+                    category = self.get_category_by_id(category_id)
                     label_set.add_category(category)
                     category.add_label_set(label_set)
+
+        return self.categories
 
     def get_label_sets(self):
         """
@@ -2119,10 +2128,7 @@ class Project(Data):
             label_sets_data = json.load(f)
 
         for label_set_data in label_sets_data:
-            # todo add Label Sets to project / document - no duplicate check?
             label_set = LabelSet(project=self, id_=label_set_data['id'], **label_set_data)
-            if label_set.is_default:
-                Category(**label_set.__dict__)
             self.add_label_set(label_set)
 
         return self.label_sets

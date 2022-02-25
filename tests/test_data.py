@@ -257,15 +257,14 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_number_of_labels_of_label_set(self):
         """Test the number of Labels of the default Label Set."""
         label_set = self.prj.get_label_set_by_name('Lohnabrechnung')
-        assert label_set.categories == []  # defines a category
+        assert label_set.categories == [self.prj.get_category_by_id(label_set.id_)]  # defines a category
         assert label_set.labels.__len__() == 10
 
     def test_categories(self):
         """Test get Labels in the Project."""
         assert self.prj.categories.__len__() == 1
         assert self.prj.categories[0].name == 'Lohnabrechnung'
-        assert self.prj.categories[0].is_default
-        assert not self.prj.categories[0].has_multiple_annotation_sets
+        assert len(self.prj.categories[0].label_sets) == 5
 
     def test_get_images(self):
         """Test get paths to the images of the first training document."""
