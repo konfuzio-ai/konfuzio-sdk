@@ -274,6 +274,10 @@ class Category(Data):
         else:
             logger.error(f'{self} already has {label_set}, which cannot be added twice.')
 
+    def __repr__(self):
+        """Return string representation of the Category."""
+        return f"{self.name} ({self.id_})"
+
 
 class Label(Data):
     """A Label is the name of a group of individual pieces of information annotated in a type of document."""
@@ -921,9 +925,10 @@ class Annotation(Data):
         return result
 
     def add_span(self, span: Span):
-        """Add an Span to an Annotation."""
+        """Add a Span to an Annotation."""
         if span not in self._spans:
             self._spans.append(span)
+            span.annotation = self
         else:
             logger.error(f'In {self} the Span {span} is a duplicate and will not be added.')
         return self
