@@ -60,6 +60,16 @@ class TestOfflineDataSetup(unittest.TestCase):
         annotation = Annotation(document=doc, spans=[span])
         self.assertEqual([span], annotation.spans)
 
+    def test_span_reference_to_annotation(self):
+        """Test Span reference to Annotation."""
+        # TODO: When a span is added to an Annotation it doesn't get the annotation reference (issue 8814)
+        prj = Project(id_=None)
+        doc = Document(project=prj)
+        span = Span(start_offset=1, end_offset=2)
+        annotation = Annotation(document=doc, spans=[span])
+        assert annotation.spans[0].annotation is not None
+        assert annotation.spans[0].x0 is not None
+
     def test_to_there_must_not_be_a_folder(self):
         """Add one Span to one Annotation."""
         prj = Project(id_=None)
@@ -134,7 +144,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         cls.prj = Project(id_=46)
 
     def test_number_training_documents(self):
-        """Test the number of Documents in data set status test."""
+        """Test the number of Documents in data set status training."""
         assert len(self.prj.documents) == self.document_count
 
     def test_number_test_documents(self):
@@ -142,16 +152,16 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert len(self.prj.test_documents) == self.test_document_count
 
     def test_number_excluded_documents(self):
-        """Test the number of Documents in data set status test."""
+        """Test the number of Documents in data set status excluded."""
         assert len(self.prj.excluded_documents) == 1
 
     def test_all_labels_have_threshold(self):
-        """Test the number of Documents in data set status test."""
+        """Test that all labels have the attribute threshold."""
         for label in self.prj.labels:
             assert hasattr(label, 'threshold')
 
-    def test_number_preperation_documents(self):
-        """Test the number of Documents in data set status test."""
+    def test_number_preparation_documents(self):
+        """Test the number of Documents in data set status preparation."""
         assert len(self.prj.preparation_documents) == 0
 
     def test_annotation_of_label(self):
@@ -196,6 +206,49 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert self.prj.categories[0].id_ == 63
         assert self.prj.label_sets[0].categories[0].id_ == 63
 
+    def test_category_documents(self):
+        """Test documents category within a category."""
+        category = self.prj.get_category_by_id(63)
+        category_documents = category.documents()
+
+        assert len(category_documents) == 25
+        for document in category_documents:
+            assert document.category == category
+
+    def test_category_test_documents(self):
+        """Test test documents category within a category."""
+        category = self.prj.get_category_by_id(63)
+        category_test_documents = category.test_documents()
+
+        assert len(category_test_documents) == 3
+        for document in category_test_documents:
+            assert document.category == category
+
+    def test_category_annotations_by_label(self):
+        """Test getting annotations of a category by labels."""
+        category = self.prj.get_category_by_id(63)
+        category_label_sets = category.label_sets
+        label = category_label_sets[0].labels[0]
+
+        for annotation in label.annotations:
+            assert annotation.document.category == category
+
+    def test_category_annotations_by_document(self):
+        """Test getting annotations of a category by documents."""
+        category = self.prj.get_category_by_id(63)
+        for document in category.documents():
+            for annotation in document.annotations():
+                assert annotation.label_set in category.label_sets
+
+    def test_category_label_sets(self):
+        """Test label sets of a category."""
+        category = self.prj.get_category_by_id(63)
+        category_label_sets = category.label_sets
+
+        assert len(category_label_sets) > 0
+        for label_set in category_label_sets:
+            assert category in label_set.categories
+
     def test_label_set_multiple(self):
         """Test Label Set config that is set to multiple."""
         label_set = self.prj.get_label_set_by_name('Brutto-Bezug')
@@ -204,15 +257,14 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_number_of_labels_of_label_set(self):
         """Test the number of Labels of the default Label Set."""
         label_set = self.prj.get_label_set_by_name('Lohnabrechnung')
-        assert label_set.categories == []  # defines a category
+        assert label_set.categories == [self.prj.get_category_by_id(label_set.id_)]  # defines a category
         assert label_set.labels.__len__() == 10
 
     def test_categories(self):
         """Test get Labels in the Project."""
         assert self.prj.categories.__len__() == 1
         assert self.prj.categories[0].name == 'Lohnabrechnung'
-        assert self.prj.categories[0].is_default
-        assert not self.prj.categories[0].has_multiple_annotation_sets
+        assert len(self.prj.categories[0].label_sets) == 5
 
     def test_get_images(self):
         """Test get paths to the images of the first training document."""
