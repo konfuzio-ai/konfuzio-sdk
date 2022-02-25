@@ -929,6 +929,7 @@ class Annotation(Data):
         if span not in self._spans:
             self._spans.append(span)
             span.annotation = self
+            span.bbox()  # after annotation is set bbox can be calculated.
         else:
             logger.error(f'In {self} the Span {span} is a duplicate and will not be added.')
         return self
@@ -1549,24 +1550,27 @@ class Document(Data):
         elif is_file(self.bbox_file_path + '.zip', raise_exception=False):
             with zipfile.ZipFile(self.bbox_file_path + '.zip', "r") as archive:
                 bbox = json.loads(archive.read('bbox.json5'))
-        else:
+        elif self.status and self.status[0] == 2:
             logger.warning(f'Start downloading bbox files of all characters {self}.')
-            if self.status[0] == 2:
-                data = get_document_details(
-                    document_id=self.id_, project_id=self.project.id_, session=self.session, extra_fields="bbox"
-                )
-                bbox = data['bbox']
-                # Use the `zipfile` module
-                # `compresslevel` was added in Python 3.7
-                with zipfile.ZipFile(
-                    self.bbox_file_path + ".zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
-                ) as zip_file:
-                    # Dump JSON data
-                    dumped_JSON: str = json.dumps(bbox, indent=2, sort_keys=True)
-                    # Write the JSON data into `data.json` *inside* the ZIP file
-                    zip_file.writestr('bbox.json5', data=dumped_JSON)
-                    # Test integrity of compressed archive
-                    zip_file.testzip()
+            data = get_document_details(
+                document_id=self.id_, project_id=self.project.id_, session=self.session, extra_fields="bbox"
+            )
+            bbox = data['bbox']
+            # Use the `zipfile` module
+            # `compresslevel` was added in Python 3.7
+            with zipfile.ZipFile(
+                self.bbox_file_path + ".zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
+            ) as zip_file:
+                # Dump JSON data
+                dumped_JSON: str = json.dumps(bbox, indent=2, sort_keys=True)
+                # Write the JSON data into `data.json` *inside* the ZIP file
+                zip_file.writestr('bbox.json5', data=dumped_JSON)
+                # Test integrity of compressed archive
+                zip_file.testzip()
+        else:
+            logger.error(f'{self} does not have bboxes.')
+            return {}
+
         return bbox
 
     @property
