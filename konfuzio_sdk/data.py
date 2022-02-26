@@ -199,63 +199,12 @@ class LabelSet(Data):
         else:
             logger.error(f'{self} already has {label}, which cannot be added twice.')
 
-    # todo: In how far we need it
-    # def evaluate(self, doc_model):
-    #     """Evaluate templates."""
-    #     if self.is_default:
-    #         return None
-    #     if not self.has_multiple_sections:
-    #         return None
-    #     if not hasattr(self, 'pattern') or not self.pattern:
-    #         return None
-    #
-    #     evaluation_df = pandas.DataFrame()
-    #     for test_doc in self.Project.test_docs:
-    #         res = doc_model.extract(test_doc.text)
-    #         evaluation_df = self.evaluate_document_templates(test_doc, doc_model, evaluation_df, res)
-    #
-    # def evaluate_document_templates(
-    #     self, test_doc, doc_model, evaluation_df: pandas.DataFrame, res: Dict
-    # ) -> pandas.DataFrame:
-    #     """Evaluate templates for a  Document."""
-    #     if self.is_default:
-    #         return evaluation_df
-    #     if not self.has_multiple_sections:
-    #         return evaluation_df
-    #     item_annotations = [x for x in test_doc.annotations() if x.section_label.id_ == self.id_]
-    #     item_section_ids = set(x.section for x in item_annotations)
-    #
-    #     if self.name in res.keys() and len(item_section_ids) == len(res[self.name]):
-    #         evaluation = True
-    #         length = len(item_section_ids)
-    #         length_predicted = len(res[self.name])
-    #     else:
-    #         evaluation = False
-    #         length = len(item_section_ids)
-    #         length_predicted = len(res[self.name]) if self.name in res.keys() else 0
-    #
-    #     evaluation_df = evaluation_df.append(
-    #         {
-    #             'evaluation': evaluation,
-    #             'section_label': self.name,
-    #             ' Document': test_doc.id_,
-    #             'length': length,
-    #             'length_predicted': length_predicted,
-    #         },
-    #         ignore_index=True,
-    #     )
-    #     evaluation_df['document'] = evaluation_df.document.astype(int)
-    #     evaluation_df['length'] = evaluation_df.length.astype(int)
-    #     evaluation_df['length_predicted'] = evaluation_df.length_predicted.astype(int)
-    #     return evaluation_df
-
 
 class Category(Data):
     """A Category is used to group Documents."""
 
     def __init__(self, project, id_: int = None, name: str = None, name_clean: str = None, *args, **kwargs):
         """Define a Category that is also a Label Set but cannot have other Categories associated to it."""
-
         self.id_local = next(Data.id_iter)
         self.id_ = id_
         self.name = name
@@ -1214,7 +1163,7 @@ class Document(Data):
         self.txt_file_path = os.path.join(self.document_folder, "document.txt")
         self.hocr_file_path = os.path.join(self.document_folder, "document.hocr")
         self.pages_file_path = os.path.join(self.document_folder, "pages.json5")
-        self.bbox_file_path = os.path.join(self.document_folder, "bbox.json5")
+        self.bbox_file_path = os.path.join(self.document_folder, "bbox.zip")
         self.bio_scheme_file_path = os.path.join(self.document_folder, "bio_scheme.txt")
 
     def __repr__(self):
@@ -1254,7 +1203,7 @@ class Document(Data):
                 annotation_set=annotation_set,
                 bboxes=[annotation],
             )
-            self.add_annotation(anno)
+            # self.add_annotation(anno)
         return self
 
     # todo: Goes to Trainer extract AI method
@@ -1266,11 +1215,16 @@ class Document(Data):
         model = load_pickle(path_to_model)
 
         # build the doc from model results
-        virtual_doc = Document(
-            project=self.project, text=self.text, bbox=self.get_bbox(), number_of_pages=self.number_of_pages
-        )
-        extraction_result = model.extract(document=virtual_doc)
+        virtual_doc_for_extraction = Document(project=self.project, text=self.text, bbox=self.get_bbox())
+        extraction_result = model.extract(document=virtual_doc_for_extraction)
+        virtual_doc = self.extraction_result_to_document(extraction_result)
 
+        return compare(self, virtual_doc)
+
+    def extraction_result_to_document(self, extraction_result):
+        # TODO: not needed once extract returns a document
+
+        virtual_doc = Document(project=self.project, text=self.text, bbox=self.get_bbox())
         virtual_annotation_set_id = 0  # counter for accross mult. Annotation Set groups of a Label Set
 
         # define Annotation Set for the Category Label Set
@@ -1279,7 +1233,6 @@ class Document(Data):
             document=virtual_doc, label_set=category_label_set, id_=virtual_annotation_set_id
         )
 
-        # TODO: not needed once extract returns a document
         for label_or_label_set_name, information in extraction_result.items():
             if isinstance(information, pd.DataFrame):
                 # annotations belong to the default Annotation Set
@@ -1291,7 +1244,7 @@ class Document(Data):
                 virtual_doc.add_extractions_as_annotations(
                     label=label,
                     extractions=information,
-                    label_set=self.category,
+                    label_set=category_label_set,
                     annotation_set=virtual_default_annotation_set,
                 )
 
@@ -1306,7 +1259,7 @@ class Document(Data):
                     virtual_annotation_set = AnnotationSet(
                         document=virtual_doc, label_set=label_set, id_=virtual_annotation_set_id
                     )
-                    virtual_doc.add_annotation_set(virtual_annotation_set)
+                    # virtual_doc.add_annotation_set(virtual_annotation_set)
 
                     for label_name, extractions in entry.items():
                         label = self.project.get_label_by_name(label_name)
@@ -1316,8 +1269,7 @@ class Document(Data):
                             label_set=label_set,
                             annotation_set=virtual_annotation_set,
                         )
-
-        return compare(self, virtual_doc)
+        return virtual_doc
 
     def eval_dict(self, use_correct=False) -> dict:
         """Use this dict to evaluate Documents. The speciality: For ever Span of an Annotation create one entry."""
@@ -1568,31 +1520,22 @@ class Document(Data):
         if self._bbox:
             return self._bbox
         elif is_file(self.bbox_file_path, raise_exception=False):
-            with open(self.bbox_file_path, "r", encoding="utf-8") as f:
-                self._bbox = json.loads(f.read())
-            return self._bbox
-        elif is_file(self.bbox_file_path + '.zip', raise_exception=False):
-            with zipfile.ZipFile(self.bbox_file_path + '.zip', "r") as archive:
+            with zipfile.ZipFile(self.bbox_file_path, "r") as archive:
                 self._bbox = json.loads(archive.read('bbox.json5'))
             return self._bbox
         elif self.status and self.status[0] == 2:
             logger.warning(f'Start downloading bbox files of all characters {self}.')
-            data = get_document_details(
-                document_id=self.id_, project_id=self.project.id_, session=self.session, extra_fields="bbox"
-            )
-            bbox = data['bbox']
-            # Use the `zipfile` module
-            # `compresslevel` was added in Python 3.7
+            self._bbox = get_document_details(document_id=self.id_, project_id=self.project.id_, extra_fields="bbox")['bbox']
+            # Use the `zipfile` module: `compresslevel` was added in Python 3.7
             with zipfile.ZipFile(
-                self.bbox_file_path + ".zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
+                self.bbox_file_path, mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
             ) as zip_file:
                 # Dump JSON data
-                dumped_JSON: str = json.dumps(bbox, indent=2, sort_keys=True)
+                dumped: str = json.dumps(self._bbox, indent=2, sort_keys=True)
                 # Write the JSON data into `data.json` *inside* the ZIP file
-                zip_file.writestr('bbox.json5', data=dumped_JSON)
+                zip_file.writestr('bbox.json5', data=dumped)
                 # Test integrity of compressed archive
                 zip_file.testzip()
-            self._bbox = bbox
             return self._bbox
         else:
             logger.error(f'{self} does not have bboxes.')
@@ -2041,81 +1984,6 @@ class Project(Data):
         else:
             logger.error(f"{document} does exist in {self} and will not be added.")
 
-    # def add_document(self, document: Document):
-    #     """
-    #     Add document to project, if it does not exist.
-    #
-    #     :param document: Document to add in the project
-    #     """
-    #     if (
-    #             document
-    #             not in self.documents
-    #             + self.test_documents
-    #             + self.no_status_documents
-    #             + self.preparation_documents
-    #             + self.low_ocr_documents
-    #     ):
-    #         if document.dataset_status == 2:
-    #             self.documents.append(document)
-    #         elif document.dataset_status == 3:
-    #             self.test_documents.append(document)
-    #         elif document.dataset_status == 0:
-    #             self.no_status_documents.append(document)
-    #         elif document.dataset_status == 1:
-    #             self.preparation_documents.append(document)
-    #         elif document.dataset_status == 4:
-    #             self.low_ocr_documents.append(document)
-    #     return self
-
-    # def update_document(self, document):
-    #     """
-    #     Update document in the project.
-    #
-    #     Update can be in the dataset_status, name or Category.
-    #     First, we need to find the document (different list accordingly with dataset_status).
-    #     Then, if we are just updating the name or Category, we can change the fields in place.
-    #     If we are updating the document dataset status, we need to move the document from the project list.
-    #
-    #     :param document: Document to update in the project
-    #     """
-    #     current_status = document.dataset_status
-    #
-    #     prj_docs = {
-    #         0: self.no_status_documents,
-    #         1: self.preparation_documents,
-    #         2: self.documents,
-    #         3: self.test_documents,
-    #         4: self.low_ocr_documents,
-    #     }
-    #
-    #     # by default the status is None (even if not in the no_status_documents)
-    #     previous_status = 0
-    #     project_documents = []
-    #
-    #     # get project list that contains the document
-    #     for previous_status, project_list in prj_docs.items():
-    #         if document in project_list:
-    #             project_documents = project_list
-    #             break
-    #
-    #     # update name and Category and get dataset status
-    #     for doc in project_documents:
-    #         if doc.id_ == document.id_:
-    #             doc.name = document.name
-    #             doc.category = document.category
-    #             break
-    #
-    #     # if the document is new to the project, just add it
-    #     if len(project_documents) == 0:
-    #         doc = document
-    #
-    #     # update project list if dataset status is different
-    #     if current_status != previous_status:
-    #         if doc in project_documents:
-    #             project_documents.remove(doc)
-    #         doc.dataset_status = current_status
-    #         self.add_document(doc)
-
     def get_meta(self):
         """
         Get the list of all Documents in the Project and their information.
@@ -2148,8 +2016,6 @@ class Project(Data):
                     category = self.get_category_by_id(category_id)
                     label_set.add_category(category)
                     category.add_label_set(label_set)
-
-        return self.categories
 
     def get_label_sets(self):
         """
