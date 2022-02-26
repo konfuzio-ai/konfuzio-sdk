@@ -67,7 +67,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         span = Span(start_offset=1, end_offset=2)
         annotation = Annotation(document=doc, spans=[span])
         assert annotation.spans[0].annotation is not None
-        assert annotation.spans[0].x0 is not None  # This is failing as the test document does not have a bbox.
+        assert annotation.spans[0].x0 is None  # Span bboxes must be explictly loaded using span.bbox()
 
     def test_to_there_must_not_be_a_folder(self):
         """Add one Span to one Annotation."""
@@ -83,14 +83,47 @@ class TestOfflineDataSetup(unittest.TestCase):
         annotation = Annotation(document=doc, spans=[span, span])
         self.assertEqual([span], annotation.spans)
 
+    def test_add_duplicated_annotation(self):
+        """Add one Span as Annotation multiple times when document.id_ is None."""
+        prj = Project(id_=None)
+        doc = Document(project=prj)
+        label = Label(project=doc.project)
+        label_set = LabelSet(project=doc.project)
+        annotation_set = AnnotationSet(document=doc, label_set=label_set)
+
+        # Add annotation for the first time
+        span = Span(start_offset=1, end_offset=2)
+        Annotation(
+            document=doc,
+            is_correct=True,
+            label=label,
+            annotation_set=annotation_set,
+            label_set=label_set,
+            spans=[span]
+        )
+
+        # Add annotation for the second time, heere it should be skipped.
+        span = Span(start_offset=1, end_offset=2)
+        with self.assertRaises(ValueError):
+            Annotation(
+                document=doc,
+                is_correct=True,
+                label=label,
+                annotation_set=annotation_set,
+                label_set=label_set,
+                spans=[span]
+            )
+
+        self.assertEqual(len(doc.annotations()), 1)
+
     def test_to_add_an_annotation_twice_to_a_document(self):
         """Test to add the same Annotation twice to a Document."""
         prj = Project(id_=None)
         span = Span(start_offset=1, end_offset=2)
         doc = Document(project=prj)
         annotation = Annotation(document=doc, spans=[span])
-        doc.add_annotation(annotation)
-        doc.add_annotation(annotation)
+        with self.assertRaises(ValueError):
+            doc.add_annotation(annotation)
         self.assertEqual([annotation], doc.annotations(use_correct=False))
 
     def test_to_add_two_annotations_to_a_document(self):
@@ -229,6 +262,9 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         category_label_sets = category.label_sets
         label = category_label_sets[0].labels[0]
 
+        # todo label.annotations returns an unfiltered list of annotations, including annotations from documents without
+        # a category. It would be useful to be able to get the annotations of a label int the context of category (e.g.
+        # to fit a tokenizer for a label).
         for annotation in label.annotations:
             assert annotation.document.category == category
 

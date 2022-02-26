@@ -45,7 +45,11 @@ class Data:
 
     def __eq__(self, other) -> bool:
         """Compare any point of data with their ID, overwrite if needed."""
-        return self.id_ and other and other.id_ and self.id_ == other.id_
+        if self.id_ is None and other and other.id_ is None:
+            # Compare to virtual instances
+            return self.id_local == other.id_local
+        else:
+            return self.id_ and other and other.id_ and self.id_ == other.id_
 
     def __hash__(self):
         """Make any online or local concept hashablele. See https://stackoverflow.com/a/7152650."""
@@ -100,7 +104,7 @@ class AnnotationSet(Data):
     @property
     def start_offset(self):
         """Calculate earliest start based on all Annotations currently in this Annotation Set."""
-        return min((a.start_offset for a in self.annotations), default=None)
+        return min((s.start_offset for a in self.annotations for s in a.spans), default=None)
 
     @property
     def end_offset(self):
@@ -789,10 +793,8 @@ class Annotation(Data):
             self.annotation_set = None
             logger.debug(f'{self} in {self.document} created but without Annotation Set information.')
 
-        if self.document:
-            self.document.add_annotation(self)
         for span in spans or []:
-            self.add_span(span)
+            self._add_span(span)
 
         self.selection_bbox = kwargs.get("selection_bbox", None)
         # self.page_number = kwargs.get("page_number", None)
@@ -802,7 +804,7 @@ class Annotation(Data):
             for bbox in bboxes:
                 if "start_offset" in bbox.keys() and "end_offset" in bbox.keys():
                     sa = Span(start_offset=bbox["start_offset"], end_offset=bbox["end_offset"], annotation=self)
-                    self.add_span(sa)
+                    self._add_span(sa)
                 else:
                     logger.error(f'SDK cannot read bbox of Annotation {self.id_} in {self.document}: {bbox}')
         elif (
@@ -813,7 +815,7 @@ class Annotation(Data):
             # Legacy support for creating Annotations with a single offset
             bbox = kwargs.get('bbox', {})
             sa = Span(start_offset=kwargs.get("start_offset"), end_offset=kwargs.get("end_offset"), annotation=self)
-            self.add_span(sa)
+            self._add_span(sa)
 
             logger.warning(f'{self} is empty')
         else:
@@ -846,6 +848,10 @@ class Annotation(Data):
         self._tokens = []
         self._regex = None
 
+        # Call add_annotation to document at the end, so all attributes for duplicate checking are available.
+        if self.document:
+            self.document.add_annotation(self)
+
     def __repr__(self):
         """Return string representation."""
         if self.label and self.document:
@@ -859,11 +865,22 @@ class Annotation(Data):
     def __eq__(self, other):
         """We compare a Annotation based on it's Label, Label-Sets."""
         result = False
+        # TODO Here are two option on how to define __equal__
+        # (1) it could be a "real" duplicate based on label, label_set and spans
+        # (2) it could be mark spans only once as correct (in this case it could be used in the tokenizer for duplicate
+        # checking, if we go with (1) we need another method for duplicate cheking
+
+        # if self.document and other.document and self.document == other.document:
+        #     if self.label and other.label and self.label == other.label:
+        #         if self.label_set and other.label_set and self.label_set == other.label_set:
+        #             if self.spans == other.spans:
+        #                 result = True
+        # return result
+
         if self.document and other.document and self.document == other.document:
-            if self.label and other.label and self.label == other.label:
-                if self.label_set and other.label_set and self.label_set == other.label_set:
-                    if self.spans == other.spans:
-                        result = True
+            if self.is_correct == other.is_correct:
+                if self.spans == other.spans:
+                    result = True
         return result
 
     def __lt__(self, other):
@@ -924,12 +941,16 @@ class Annotation(Data):
                 result.append(sa.eval_dict())
         return result
 
-    def add_span(self, span: Span):
-        """Add a Span to an Annotation."""
+    def _add_span(self, span: Span):
+        """
+        Add a Span to an Annotation.
+
+        This is a private method and should only be called in __init__ as otherwise the duplicate check for annotations
+        is bypassed.
+        """
         if span not in self._spans:
             self._spans.append(span)
             span.annotation = self
-            span.bbox()  # after annotation is set bbox can be calculated.
         else:
             logger.error(f'In {self} the Span {span} is a duplicate and will not be added.')
         return self
@@ -1486,7 +1507,9 @@ class Document(Data):
             self._annotations.append(annotation)
         else:
             # todo raise NotImplementedError
-            logger.error(f'In {self} the {annotation} is a duplicate and will not be added.')
+            message = f'In {self} the {annotation} is a duplicate and will not be added.'
+            raise ValueError(message)
+
         return self
 
     def add_annotation_set(self, annotation_set: AnnotationSet):
@@ -1544,12 +1567,14 @@ class Document(Data):
         """
         if self._bbox:
             return self._bbox
-        if is_file(self.bbox_file_path, raise_exception=False):
+        elif is_file(self.bbox_file_path, raise_exception=False):
             with open(self.bbox_file_path, "r", encoding="utf-8") as f:
-                bbox = json.loads(f.read())
+                self._bbox = json.loads(f.read())
+            return self._bbox
         elif is_file(self.bbox_file_path + '.zip', raise_exception=False):
             with zipfile.ZipFile(self.bbox_file_path + '.zip', "r") as archive:
-                bbox = json.loads(archive.read('bbox.json5'))
+                self._bbox = json.loads(archive.read('bbox.json5'))
+            return self._bbox
         elif self.status and self.status[0] == 2:
             logger.warning(f'Start downloading bbox files of all characters {self}.')
             data = get_document_details(
@@ -1567,11 +1592,11 @@ class Document(Data):
                 zip_file.writestr('bbox.json5', data=dumped_JSON)
                 # Test integrity of compressed archive
                 zip_file.testzip()
+            self._bbox = bbox
+            return self._bbox
         else:
             logger.error(f'{self} does not have bboxes.')
             return {}
-
-        return bbox
 
     @property
     def text(self):
