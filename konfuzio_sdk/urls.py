@@ -121,7 +121,7 @@ def get_document_api_details_url(
     document_id: int, project_id: int, host: str = KONFUZIO_HOST, extra_fields='hocr,bbox'
 ) -> str:
     """
-    Generate URL to access the details of a Document in a project.
+    Generate URL to access the details of a Document in a Project.
 
     :param document_id: ID of the Document as integer
     :param project_id: ID of the project
