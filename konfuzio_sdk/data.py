@@ -123,7 +123,7 @@ class LabelSet(Data):
         name: str = None,
         name_clean: str = None,
         is_default=False,
-        categories=None,
+        categories=[],
         has_multiple_annotation_sets=False,
         **kwargs,
     ):
@@ -1242,7 +1242,12 @@ class Document(Data):
         model = load_pickle(path_to_model)
 
         # build the doc from model results
-        virtual_doc_for_extraction = Document(project=self.project, text=self.text, bbox=self.get_bbox())
+        virtual_doc_for_extraction = Document(
+            project=self.project,
+            text=self.text,
+            bbox=self.get_bbox(),
+            category=self.category
+        )
         extraction_result = model.extract(document=virtual_doc_for_extraction)
         virtual_doc = self.extraction_result_to_document(extraction_result)
 

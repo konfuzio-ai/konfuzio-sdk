@@ -754,11 +754,16 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         """
         prj = Project(id_=TEST_PROJECT_ID)
         label = Label(project=prj)
-        doc = Document(text='', project=prj)
+        category = prj.categories[0]
+        # Adding an empty annotation requires to add empty label_set to to a category.
+        doc = Document(text='', project=prj, category=category)
         label_set = LabelSet(project=prj)
+        label_set.add_category(category=category)
+        category.add_label_set(label_set)
         annotation_set = AnnotationSet(document=doc, label_set=label_set)
+        span = Span(start_offset=1, end_offset=2)
         annotation = Annotation(
-            label=label, annotation_set=annotation_set, is_correct=True, label_set=label_set, document=doc
+            label=label, annotation_set=annotation_set, is_correct=True, label_set=label_set, document=doc, spans=[span]
         )
         self.assertTrue(annotation in doc.annotations())
 
