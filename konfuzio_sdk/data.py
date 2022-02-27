@@ -123,7 +123,7 @@ class LabelSet(Data):
         name: str = None,
         name_clean: str = None,
         is_default=False,
-        categories=None,
+        categories=[],
         has_multiple_annotation_sets=False,
         **kwargs,
     ):
@@ -1203,15 +1203,14 @@ class Document(Data):
         self, label: Label, extractions, label_set: LabelSet, annotation_set: AnnotationSet
     ):
         """Add the extraction of a model to the document."""
-        annotations = extractions[extractions['Accuracy'] > 0.1][
-            ['Start', 'End', 'Accuracy', 'page_index', 'x0', 'x1', 'y0', 'y1', 'top', 'bottom']
-        ].sort_values(by='Accuracy', ascending=False)
-        annotations.rename(columns={'Start': 'start_offset', 'End': 'end_offset'}, inplace=True)
+        annotations = extractions[extractions['confidence'] > 0.1][
+            ['start_offset', 'end_offset', 'confidence', 'page_index', 'x0', 'x1', 'y0', 'y1', 'top', 'bottom']
+        ].sort_values(by='confidence', ascending=False)
         for annotation in annotations.to_dict('records'):  # todo ask Ana: are Start and End always ints
             _ = Annotation(
                 document=self,
                 label=label,
-                accuracy=annotation['Accuracy'],
+                accuracy=annotation['confidence'],
                 label_set=label_set,
                 annotation_set=annotation_set,
                 bboxes=[annotation],
@@ -1227,7 +1226,9 @@ class Document(Data):
         model = load_pickle(path_to_model)
 
         # build the doc from model results
-        virtual_doc_for_extraction = Document(project=self.project, text=self.text, bbox=self.get_bbox())
+        virtual_doc_for_extraction = Document(
+            project=self.project, text=self.text, bbox=self.get_bbox(), category=self.category
+        )
         extraction_result = model.extract(document=virtual_doc_for_extraction)
         virtual_doc = self.extraction_result_to_document(extraction_result)
 
@@ -1236,7 +1237,7 @@ class Document(Data):
     # todo: Goes to Trainer extract AI method
     def extraction_result_to_document(self, extraction_result):
         """Return a virtual Document annotated with AI Model output."""
-        virtual_doc = Document(project=self.project, text=self.text, bbox=self.get_bbox())
+        virtual_doc = Document(project=self.project, text=self.text, bbox=self.get_bbox(), category=self.category)
         virtual_annotation_set_id = 0  # counter for accross mult. Annotation Set groups of a Label Set
 
         # define Annotation Set for the Category Label Set: todo: this is unclear from API side
@@ -1295,6 +1296,10 @@ class Document(Data):
                 result += annotation.eval_dict
 
         return result
+
+    def check_bbox(self) -> bool:
+        """Check if bbox matches text."""
+        return all([self.text[int(k)] == v['text'] for k, v in self.get_bbox().items()])
 
     @property
     def is_online(self) -> Optional[int]:

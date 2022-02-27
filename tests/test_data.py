@@ -678,6 +678,14 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.assertEqual(24, len(annotations))
         # assert annotations[2].offset_string == ['4']
 
+    def test_document_check_bbox(self):
+        """Test bbox check."""
+        doc = self.prj.get_document_by_id(44842)
+        virtual_doc = Document(text=doc.text, bbox=doc.get_bbox(), project=doc.project)
+        self.assertTrue(virtual_doc.check_bbox())
+        virtual_doc._text = '123' + virtual_doc.text  # Change text to bring bbox out of sync.
+        self.assertFalse(virtual_doc.check_bbox())
+
     @unittest.skip(reason='Waiting for API to support to add to default Annotation Set')
     def test_document_add_new_annotation(self):
         """Test adding a new annotation."""
@@ -782,7 +790,12 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert len(prj._documents) == 42
 
     def test_create_empty_annotation(self):
-        """Create an empty Annotation and get the start offset."""
+        """
+        Create an empty Annotation and get the start offset.
+
+        The empty annotation should be added to the document as this represents the way the tokenizer
+        creates empty annotations.
+        """
         prj = Project(id_=TEST_PROJECT_ID)
         label = Label(project=prj)
         doc = Document(text='', project=prj, category=prj.get_category_by_id(63))
