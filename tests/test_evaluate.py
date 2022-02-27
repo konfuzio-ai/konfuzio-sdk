@@ -120,11 +120,8 @@ class TestEvaluation(unittest.TestCase):
     def test_only_unrevised_annotations(self):
         """Test to evaluate on a Document that has only unrevised Annotations."""
         prj = Project(id_=TEST_PROJECT_ID)
-        for document in prj.no_status_documents:
-            if document.id_ == 137234:
-                doc_a = document
-
-        doc_b = Document(project=prj)
+        doc_a = prj.get_document_by_id(137234)
+        doc_b = Document(project=prj, category=doc_a)
 
         assert len(doc_a.annotations()) == len(doc_b.annotations()) == 0
         evaluation = compare(doc_a, doc_b, only_use_correct=True)
