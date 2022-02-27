@@ -48,7 +48,7 @@ class Data:
         return self.id_ and other and other.id_ and self.id_ == other.id_
 
     def __hash__(self):
-        """Make any online or local concept hashablele. See https://stackoverflow.com/a/7152650."""
+        """Make any online or local concept hashable. See https://stackoverflow.com/a/7152650."""
         return hash(str(self.id_local))
 
     # todo review function to be defined as @abstractmethod
@@ -699,7 +699,7 @@ class Annotation(Data):
         self.translated_string = translated_string
         self.document = document
         self.id_ = id_  # Annotations can have None id_, if they are not saved online and are only available locally
-        self._spans = []
+        self._spans: List[Span] = []
 
         if accuracy:  # its a confidence
             self.confidence = accuracy
@@ -876,9 +876,8 @@ class Annotation(Data):
     def add_span(self, span: Span):
         """Add a Span to an Annotation."""
         if span not in self._spans:
-            self._spans.append(span)
             span.annotation = self
-            span.bbox()  # after annotation is set bbox can be calculated.
+            self._spans.append(span)
         else:
             logger.error(f'In {self} the Span {span} is a duplicate and will not be added.')
         return self
@@ -1064,7 +1063,7 @@ class Annotation(Data):
                 logger.exception(response.text)
 
     @property
-    def spans(self):
+    def spans(self) -> List[Span]:
         """Return default entry to get all Spans of the Annotation."""
         return self._spans
 
