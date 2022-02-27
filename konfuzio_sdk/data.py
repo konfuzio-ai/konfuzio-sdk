@@ -1311,6 +1311,10 @@ class Document(Data):
 
         return result
 
+    def check_bbox(self) -> bool:
+        """Check if bbox matches text."""
+        return all([self.text[int(k)] == v['text'] for k, v in self.get_bbox().items()])
+
     @property
     def is_online(self) -> Optional[int]:
         """Define if the Document is saved to the server."""
