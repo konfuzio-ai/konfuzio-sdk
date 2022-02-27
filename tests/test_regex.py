@@ -305,7 +305,7 @@ class TestRegexGenerator(unittest.TestCase):
         assert len(analyzed_label.regex(categories=[self.category])) == 1
         # we now use the f_score to balance the annotation_precision and the document_recall
         # thereby we find the top regex easily: we only need one regex to match all findings
-        for document in self.prj.documents:
+        for document in self.category.documents():
             annos = document.annotations(label=analyzed_label)
             for auto_regex in analyzed_label.regex(categories=[self.category]):
                 findings = re.findall(auto_regex, document.text)
