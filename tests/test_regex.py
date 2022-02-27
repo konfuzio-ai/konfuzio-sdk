@@ -180,6 +180,7 @@ class TestTokens(unittest.TestCase):
         }
         new_label = Label(project=self.prj, **label_data)
         self.prj.add_label(new_label)
+        category = self.prj.get_category_by_id(63)
         doc = self.prj.documents[0]
 
         new_anno = Annotation(
@@ -194,12 +195,12 @@ class TestTokens(unittest.TestCase):
             # annotation_set=doc.get_annotation_set_by_id()
         )
 
-        assert len(new_label.annotations) == 1
+        assert len(new_label.annotations(categories=[category])) == 1
 
         assert new_anno.offset_string == ['Dezember 2018']
-        assert len(new_anno.tokens()) == 1
+        assert len(new_anno.tokens(categories=[category])) == 1
 
-        regex = new_anno.tokens()[0]['regex']
+        regex = new_anno.tokens(categories=[category])[0]['regex']
         assert '_W_' in regex
         assert '_F_' not in regex
         assert '_N_' not in regex
@@ -215,22 +216,24 @@ class TestTokens(unittest.TestCase):
     def test_label_keyword_token(self):
         """Extract value for Steuerklasse."""
         label = next(x for x in self.prj.labels if x.name == 'Steuerklasse')
-        assert label.tokens()
-        tokens = sorted(label.tokens())
+        category = self.prj.get_category_by_id(63)
+        assert label.tokens(categories=[category])
+        tokens = sorted(label.tokens(categories=[category]))
         assert len(tokens) == 1
 
     def test_label_plz_token(self):
         """Extract all tax gross amounts of all payslips."""
         label = self.prj.get_label_by_name('Steuer-Brutto')
-        tokens = label.tokens()
+        category = self.prj.get_category_by_id(63)
+        tokens = label.tokens(categories=[category])
         assert len(tokens) == 4
         assert '(?P<SteuerBrutto_N_' in tokens[0]
 
     def test_label_token_auszahlungsbetrag(self):
         """Return the summary of all regex needed to get the wage."""
         label = self.prj.get_label_by_name('Auszahlungsbetrag')
-
-        tokens = sorted(label.tokens())
+        category = self.prj.get_category_by_id(63)
+        tokens = sorted(label.tokens(categories=[category]))
         assert len(tokens) == 3
         assert '(?P<Auszahlungsbetrag_' in tokens[0]
         assert '(?P<Auszahlungsbetrag_' in tokens[1]
@@ -241,16 +244,18 @@ class TestTokens(unittest.TestCase):
 
     def test_label_empty_annotations(self):
         """Empty Annotations should not create regex."""
+        category = self.prj.get_category_by_id(63)
         try:
-            label = next(x for x in self.prj.labels if len(x.annotations) == 0)
-            assert sorted(label.tokens()) == []
+            label = next(x for x in self.prj.labels if len(x.annotations(categories=[category])) == 0)
+            assert sorted(label.tokens(categories=[category])) == []
         except StopIteration:
             pass
 
     @pytest.mark.skip("Line breaks are not supported.")
     def test_linebreaks_in_tokens(self):
         """Calculate a Annotation that has line breaks."""
-        label = next(x for x in self.prj.labels if len(x.annotations) == 0)
+        category = self.prj.get_category_by_id(63)
+        label = next(x for x in self.prj.labels if len(x.annotations(categories=[category])) == 0)
         doc = self.prj.documents[0]
         new_anno_1 = Annotation(
             start_offset=177,
@@ -263,11 +268,11 @@ class TestTokens(unittest.TestCase):
             accuracy=0.98765431,
             document=doc,
         )
-        tokens = new_anno_1.tokens()
+        tokens = new_anno_1.tokens(categories=[category])
         assert len(tokens) == 3
-        assert new_anno_1.tokens()[0]['regex'] == '(?P<EMPTY_LABEL_W_None_fallback>\n[ ]+)'
-        assert new_anno_1.tokens()[1]['regex'] == '(?P<EMPTY_LABEL_N_None_fallback>\n[ ]+)'
-        assert new_anno_1.tokens()[2]['regex'] == '(?P<EMPTY_LABEL_F_None_fallback>\n[ ]+)'
+        assert new_anno_1.tokens(categories=[category])[0]['regex'] == '(?P<EMPTY_LABEL_W_None_fallback>\n[ ]+)'
+        assert new_anno_1.tokens(categories=[category])[1]['regex'] == '(?P<EMPTY_LABEL_N_None_fallback>\n[ ]+)'
+        assert new_anno_1.tokens(categories=[category])[2]['regex'] == '(?P<EMPTY_LABEL_F_None_fallback>\n[ ]+)'
 
 
 class TestRegexGenerator(unittest.TestCase):
@@ -280,28 +285,29 @@ class TestRegexGenerator(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Load the Project data from the Konfuzio Host."""
         cls.prj = Project(id_=46)
+        cls.category = cls.prj.get_category_by_id(63)
         assert len(cls.prj.documents) == cls.document_count
-        assert len(cls.prj.get_label_by_id(867).correct_annotations) == cls.correct_annotations
+        assert len(cls.prj.get_label_by_id(867).annotations(categories=[cls.category])) == cls.correct_annotations
 
     @classmethod
     def tearDownClass(cls) -> None:
         """Check that no local data was changed by the tests."""
         assert len(cls.prj.documents) == cls.document_count
-        assert len(cls.prj.get_label_by_id(867).correct_annotations) == cls.correct_annotations
+        assert len(cls.prj.get_label_by_id(867).annotations(categories=[cls.category])) == cls.correct_annotations
         # cls.prj.delete()
 
     def test_regex_single_annotation_in_row(self):
         """Build a simple extraction for an amount."""
         analyzed_label = self.prj.get_label_by_name('Auszahlungsbetrag')
         for label in self.prj.labels:
-            label.regex(update=True)
+            label.regex(categories=[self.category], update=True)
 
-        assert len(analyzed_label.regex()) == 1
+        assert len(analyzed_label.regex(categories=[self.category])) == 1
         # we now use the f_score to balance the annotation_precision and the document_recall
         # thereby we find the top regex easily: we only need one regex to match all findings
         for document in self.prj.documents:
             annos = document.annotations(label=analyzed_label)
-            for auto_regex in analyzed_label.regex():
+            for auto_regex in analyzed_label.regex(categories=[self.category]):
                 findings = re.findall(auto_regex, document.text)
                 clean_findings = set([item for sublist in findings for item in sublist])
                 for anno in annos:
@@ -314,7 +320,7 @@ class TestRegexGenerator(unittest.TestCase):
         document = self.prj.get_document_by_id(44823)
         assert len(document.annotations()) == 19
         # new functionality let you create a regex for a region in a document, from 950 to 1500 character
-        regex = document.regex(start_offset=950, end_offset=1500)[0]
+        regex = document.regex(start_offset=950, end_offset=1500, categories=[self.category])[0]
         # in this Document region we will use 2 times the regex tokens for Ort, each uses two tokens
         assert regex.count('(?P<Personalausweis_') == 1
 
@@ -323,15 +329,16 @@ class TestRegexGenerator(unittest.TestCase):
         """Todo add a test if two annotated offsets are connected to each other "please pay <GrossAmount><Currency>."""
         # first name and last name are in one line in the document:
         first_names = self.prj.get_label_by_name('Vorname')
-        assert len(first_names.annotations) == 27
-        assert len(first_names.tokens()) == 1
+        category = self.prj.get_category_by_id(63)
+        assert len(first_names.annotations(categories=[category])) == 27
+        assert len(first_names.tokens(categories=[category])) == 1
         token_three_names = '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)'
-        assert (token_three_names in s for s in first_names.tokens())
+        assert (token_three_names in s for s in first_names.tokens(categories=[category]))
         token_two_names = '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)'
 
-        assert (token_two_names in s for s in first_names.tokens())
+        assert (token_two_names in s for s in first_names.tokens(categories=[self.category]))
 
-        proposals = first_names.find_regex()
+        proposals = first_names.find_regex(categories=[category])
         assert len(proposals) == 2 + 3  # The default entity regexes
 
         male_first_name = proposals[0]
@@ -376,15 +383,17 @@ class TestRegexGenerator(unittest.TestCase):
     def test_wage_regex(self):
         """Return the regex for the tax class regex."""
         tax = next(x for x in self.prj.labels if x.name == 'Steuerklasse')
-        regex = tax.find_regex()[0]
+        category = self.prj.get_category_by_id(63)
+        regex = tax.find_regex(categories=[category])[0]
         assert '(?P<Steuerklasse_' in regex
 
     @unittest.skip('We do not support multiple Annotations in one offset for now')
     def test_regex_second_annotation_in_row(self):
         """Delete the last character of the regex solution as only for some runs it will contain a line break."""
         last_names = self.prj.get_label_by_name('Vorname')
-        assert len(last_names.find_regex()) == 1
-        last_name_regex = last_names.find_regex()[0]
+        category = self.prj.get_category_by_id(63)
+        assert len(last_names.find_regex(categories=[category])) == 1
+        last_name_regex = last_names.find_regex(categories=[category])[0]
         assert '(?P<Vorname_' in last_name_regex
         # assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in last_name_regex
         assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in last_name_regex

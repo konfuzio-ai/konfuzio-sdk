@@ -79,8 +79,7 @@ class AnnotationSet(Data):
         self.id_ = id_
         self.label_set: LabelSet = label_set
         self.document: Document = document  # we don't add it to the Document as it's added via get_annotations
-        if document:
-            document.add_annotation_set(self)
+        document.add_annotation_set(self)
 
     def __repr__(self):
         """Return string representation of the Annotation Set."""
@@ -95,7 +94,8 @@ class AnnotationSet(Data):
     def annotations(self):
         """All Annotations currently in this Annotation Set."""
         related_annotation = []
-        # todo discuss [x for x in self.document.annotations() if x.label]:
+        # todo 1: discuss [x for x in self.document.annotations() if x.label]:
+        # todo 2: add option to filter out "TOP" Annotations for Labels.multiple = False
         for annotation in self.document.annotations():
             if annotation.annotation_set == self:
                 related_annotation.append(annotation)
@@ -184,7 +184,7 @@ class LabelSet(Data):
         if category not in self.categories:
             self.categories.append(category)
         else:
-            logger.error(f'{self} already has category {category}.')
+            raise ValueError(f'In {self} the {category} is a duplicate and will not be added.')
 
     def add_label(self, label):
         """
@@ -195,7 +195,7 @@ class LabelSet(Data):
         if label not in self.labels:
             self.labels.append(label)
         else:
-            logger.error(f'{self} already has {label}, which cannot be added twice.')
+            raise ValueError(f'In {self} the {label} is a duplicate and will not be added.')
 
 
 class Category(Data):
@@ -223,7 +223,7 @@ class Category(Data):
         if label_set not in self.label_sets:
             self.label_sets.append(label_set)
         else:
-            logger.error(f'{self} already has {label_set}, which cannot be added twice.')
+            raise ValueError(f'In {self} the {label_set} is a duplicate and will not be added.')
 
     def __repr__(self):
         """Return string representation of the Category."""
@@ -258,8 +258,6 @@ class Label(Data):
         :param description: Description of the label
         :param label_sets: Label sets that use this label
         """
-        if label_sets is None:
-            label_sets = []
         self.id_local = next(Data.id_iter)
         self.id_ = id_
         self.name = text
@@ -270,8 +268,11 @@ class Label(Data):
         self.threshold = threshold
         self.project: Project = project
         project.add_label(self)  # todo add feature as described in TestSeparateLabels
-        if label_sets:  # todo add feature as described in TestSeparateLabels
-            [x.add_label(self) for x in label_sets]
+
+        if label_sets is None:
+            self.label_sets = []
+        else:  # todo add feature as described in TestSeparateLabels
+            [label_set.add_label(self) for label_set in label_sets]
 
         # Regex features
         self._tokens = None
@@ -284,7 +285,7 @@ class Label(Data):
 
     def __repr__(self):
         """Return string representation."""
-        return self.name
+        return f'Label: {self.name}'
 
     def __lt__(self, other: 'Label'):
         """If we sort spans we do so by start offset."""
@@ -294,31 +295,34 @@ class Label(Data):
             logger.error(f'Cannot sort {self} and {other}.')
             return False
 
-    @property
-    def label_sets(self) -> List[LabelSet]:
-        """Get the Label Sets in which this Label is used."""
-        label_sets = [x for x in self.project.label_sets if self in x.labels]
-        return label_sets
+    # @property
+    # def label_sets(self) -> List[LabelSet]:
+    #     """Get the Label Sets in which this Label is used."""
+    #     label_sets = [x for x in self.project.label_sets if self in x.labels]
+    #     return label_sets
 
-    @property
-    def translations(self):
-        """Create a translation dictionary between offset string and business relevant representation."""
-        return {
-            annotation.offset_string: annotation.translated_string
-            for annotation in self.annotations
-            if annotation.translated_string
-        }
+    # @property
+    # def translations(self):
+    #     """Create a translation dictionary between offset string and business relevant representation."""
+    #     return {
+    #         annotation.offset_string: annotation.translated_string
+    #         for annotation in self.annotations
+    #         if annotation.translated_string
+    #     }
 
-    @property
-    def annotations(self):
-        """
-        Add Annotation to Label.
-
-        :return: Annotations
-        """
+    def annotations(self, categories: List[Category], use_correct=True):
+        """Return related Annotations. Consider that one Label can be used across Label Sets in multiple Categories."""
         annotations = []
-        for document in self.project.documents:
-            annotations += document.annotations(label=self)
+        for category in categories:
+            for document in category.documents():
+                if document.category is None:
+                    print(1)
+                for annotation in document.annotations(label=self):
+                    if use_correct and annotation.is_correct:
+                        annotations.append(annotation)
+                    elif not use_correct:
+                        annotations.append(annotation)
+
         return annotations
 
     def add_label_set(self, label_set: "LabelSet"):
@@ -330,29 +334,20 @@ class Label(Data):
         if label_set not in self.label_sets:
             self.label_sets.append(label_set)
         else:
-            logger.warning(f'{self} already has Label Set {label_set}.')
-        return self
+            raise ValueError(f'In {self} the {label_set} is a duplicate and will not be added.')
 
-    @property
-    def correct_annotations(self):
-        """Return correct Annotations."""
-        if not self._correct_annotations:
-            logger.info(f'Find all correct Annotations of {self}.')
-            self._correct_annotations = [annotation for annotation in self.annotations if annotation.is_correct]
-        return self._correct_annotations
-
-    @property
-    def documents(self) -> List["Document"]:
-        """Return all Documents which contain Annotations of this Label."""
-        relevant_id = list(set([anno.document.id_ for anno in self.annotations]))
-        return [doc for doc in self.project.documents if (doc.id_ in relevant_id)]
+    # @property
+    # def documents(self) -> List["Document"]:
+    #     """Return all Documents which contain Annotations of this Label."""
+    #     relevant_id = list(set([anno.document.id_ for anno in self.annotations]))
+    #     return [doc for doc in self.project.documents if (doc.id_ in relevant_id)]
 
     # todo move to regex.py so it runs on a list of Annotations, run on Annotations
-    def find_tokens(self):
+    def find_tokens(self, categories: List[Category]):
         """Calculate the regex token of a label, which matches all offset_strings of all correct Annotations."""
         self._evaluations = []  # used to do the duplicate check on Annotation level
-        for annotation in self.correct_annotations:
-            self._evaluations += annotation.tokens()
+        for annotation in self.annotations(categories=categories):
+            self._evaluations += annotation.tokens(categories=categories)
         try:
             tokens = get_best_regex(self._evaluations, log_stats=True)
         except ValueError:
@@ -360,14 +355,14 @@ class Label(Data):
             tokens = []
         return tokens
 
-    def tokens(self, update=False) -> List[str]:
+    def tokens(self, categories: List[Category], update=False) -> List[str]:
         """Calculate tokens to be used in the regex of the Label."""
         if not self._tokens or update:
             self.tokens_file_path = os.path.join(self.project.regex_folder, f'{self.name_clean}_tokens.json5')
             if not is_file(self.tokens_file_path, raise_exception=False) or update:
 
                 logger.info(f'Build tokens for Label {self.name}.')
-                self._tokens = self.find_tokens()
+                self._tokens = self.find_tokens(categories=categories)
 
                 with open(self.tokens_file_path, 'w') as f:
                     json.dump(self._tokens, f, indent=2, sort_keys=True)
@@ -377,27 +372,27 @@ class Label(Data):
                     self._tokens = json.load(f)
         return self._tokens
 
-    def check_tokens(self):
+    def check_tokens(self, categories: List[Category]):
         """Check if a list of regex do find the annotations. Log Annotations that we cannot find."""
         not_found = []
-        for annotation in self.correct_annotations:
+        for annotation in self.annotations(categories=categories):
             for span in annotation.spans:
                 valid_offset = span.offset_string.replace('\n', '').replace('\t', '').replace('\f', '').replace(' ', '')
-                if valid_offset and span not in annotation.regex_annotation_generator(self.tokens()):
+                created_regex = annotation.regex_annotation_generator(self.tokens(categories=categories))
+                if valid_offset and span not in created_regex:
                     logger.error(
                         f'Please check Annotation ({span.annotation.get_link()}) >>{repr(span.offset_string)}<<.'
                     )
                     not_found.append(span)
         return not_found
 
-    @property
-    def combined_tokens(self):
+    def combined_tokens(self, categories: List[Category]):
         """Create one OR Regex for all relevant Annotations tokens."""
         if not self._combined_tokens:
-            self._combined_tokens = merge_regex(self.tokens())
+            self._combined_tokens = merge_regex(self.tokens(categories=categories))
         return self._combined_tokens
 
-    def evaluate_regex(self, regex, filtered_group=None, regex_quality=0):
+    def evaluate_regex(self, regex, categories: List[Category], filtered_group=None, regex_quality=0):
         """
         Evaluate a regex on overall Project data.
 
@@ -416,10 +411,10 @@ class Label(Data):
                   Project.documents: 2  --> Document recall 100%
 
         """
-        evaluations = [
-            document.evaluate_regex(regex=regex, filtered_group=filtered_group, label=self)
-            for document in self.project.documents
-        ]
+        evaluations = []
+        for category in categories:
+            for document in category.documents():
+                evaluations.append(document.evaluate_regex(regex=regex, filtered_group=filtered_group, label=self))
 
         total_findings = sum(evaluation['count_total_findings'] for evaluation in evaluations)
         correct_findings = [finding for evaluation in evaluations for finding in evaluation['correct_findings']]
@@ -432,7 +427,7 @@ class Label(Data):
             annotation_precision = 0
 
         try:
-            annotation_recall = total_correct_findings / len(self.correct_annotations)
+            annotation_recall = total_correct_findings / len(self.annotations(categories=categories))
         except ZeroDivisionError:
             annotation_recall = 0
 
@@ -459,17 +454,20 @@ class Label(Data):
         else:
             return {}
 
-    def find_regex(self) -> List[str]:
+    def find_regex(self, categories: List[Category]) -> List[str]:
         """Find the best combination of regex in the list of all regex proposed by Annotations."""
-        if not self.correct_annotations:
+        if not self.annotations(categories=categories):
             logger.warning(f'{self} has no correct annotations.')
             return []
 
         # todo: start duplicate check
         regex_made = []
-        for annotation in self.annotations:
+        all_annotations = self.annotations(categories=categories, use_correct=False)
+        for annotation in all_annotations:
             for span in annotation._spans:
-                proposals = annotation.document.regex(start_offset=span.start_offset, end_offset=span.end_offset)
+                proposals = annotation.document.regex(
+                    start_offset=span.start_offset, end_offset=span.end_offset, categories=categories
+                )
                 for proposal in proposals:
                     regex_to_remove_groupnames = re.compile('<.*?>')
                     regex_found = [re.sub(regex_to_remove_groupnames, '', reg) for reg in regex_made]
@@ -478,12 +476,17 @@ class Label(Data):
                         regex_made.append(proposal)
 
         logger.info(
-            f'For Label {self.name} we found {len(regex_made)} regex proposals for {len(self.correct_annotations)}'
-            f' annotations.'
+            f'For Label {self.name} we found {len(regex_made)} regex proposals for {len(all_annotations)} annotations.'
         )
 
-        evaluations = [self.evaluate_regex(_regex_made, f'{self.name_clean}_') for _regex_made in regex_made]
-        logger.info(f'We compare {len(evaluations)} regex for {len(self.correct_annotations)} correct Annotations.')
+        evaluations = [
+            self.evaluate_regex(_regex_made, categories=categories, filtered_group=f'{self.name_clean}_')
+            for _regex_made in regex_made
+        ]
+        logger.info(
+            f'We compare {len(evaluations)} regex for {len(self.annotations(categories=categories))} correct'
+            f' Annotations.'
+        )
 
         try:
             logger.info(f'Evaluate {self} for best regex.')
@@ -518,12 +521,12 @@ class Label(Data):
         #         logger.error(f'{annotation} could not be found by any regex.')
         return best_regex
 
-    def regex(self, update=False) -> List:
+    def regex(self, categories: List[Category], update=False) -> List:
         """Calculate regex to be used in the LabelExtractionModel."""
         if not self._regex or update:
             if not is_file(self.regex_file_path, raise_exception=False) or update:
                 logger.info(f'Build regexes for Label {self.name}.')
-                self._regex = self.find_regex()
+                self._regex = self.find_regex(categories=categories)
                 with open(self.regex_file_path, 'w') as f:
                     json.dump(self._regex, f, indent=2, sort_keys=True)
             else:
@@ -578,7 +581,7 @@ class Span(Data):
         :param annotation: The Annotation the Span belong to
         """
         if start_offset == end_offset:
-            logger.warning(f"You created a {self.__class__.__name__} with start {start_offset} and no Text.")
+            raise ValueError(f"You cannot created a {self.__class__.__name__} with start {start_offset} and no Text.")
         self.id_local = next(Data.id_iter)
         self.annotation = annotation
         self.start_offset = start_offset
@@ -590,6 +593,9 @@ class Span(Data):
         self.x1 = None
         self.y0 = None
         self.y1 = None
+
+        if annotation:
+            annotation.add_span(self)
 
     def __eq__(self, other) -> bool:
         """Compare any point of data with their position is equal."""
@@ -624,7 +630,7 @@ class Span(Data):
     @property
     def line_index(self) -> int:
         """Calculate the index of the page on which the span starts, first page has index 0."""
-        return self.annotation.document.text[0: self.start_offset].count('\n')
+        return self.annotation.document.text[0 : self.start_offset].count('\n')
 
     @property
     def normalized(self):
@@ -641,7 +647,7 @@ class Span(Data):
 
     def eval_dict(self):
         """Return any information needed to evaluate the Span."""
-        if self.start_offset == 0 and self.end_offset == 0:
+        if self.start_offset == -1 and self.end_offset == 0:
             eval = {
                 "id_local": None,
                 "id_": None,
@@ -754,7 +760,7 @@ class Annotation(Data):
             logger.debug(f'{self} in {self.document} created but without Annotation Set information.')
 
         for span in spans or []:
-            self._add_span(span)
+            self.add_span(span)
 
         self.selection_bbox = kwargs.get("selection_bbox", None)
         # self.page_number = kwargs.get("page_number", None)
@@ -763,10 +769,9 @@ class Annotation(Data):
         if bboxes and len(bboxes) > 0:
             for bbox in bboxes:
                 if "start_offset" in bbox.keys() and "end_offset" in bbox.keys():
-                    sa = Span(start_offset=bbox["start_offset"], end_offset=bbox["end_offset"], annotation=self)
-                    self._add_span(sa)
+                    Span(start_offset=bbox["start_offset"], end_offset=bbox["end_offset"], annotation=self)
                 else:
-                    logger.error(f'SDK cannot read bbox of Annotation {self.id_} in {self.document}: {bbox}')
+                    ValueError(f'SDK cannot read bbox of Annotation {self.id_} in {self.document}: {bbox}')
         elif (
             bboxes is None
             and kwargs.get("start_offset", None) is not None
@@ -775,7 +780,7 @@ class Annotation(Data):
             # Legacy support for creating Annotations with a single offset
             bbox = kwargs.get('bbox', {})
             sa = Span(start_offset=kwargs.get("start_offset"), end_offset=kwargs.get("end_offset"), annotation=self)
-            self._add_span(sa)
+            self.add_span(sa)
 
             logger.warning(f'{self} is empty')
         else:
@@ -809,7 +814,6 @@ class Annotation(Data):
         self._regex = None
 
         # Call add_annotation to document at the end, so all attributes for duplicate checking are available.
-        # todo: @FZ please add test so this stays at this point of th init.
         self.document.add_annotation(self)
 
         if not self.document or not self.label_set or not self.label:
@@ -826,31 +830,25 @@ class Annotation(Data):
             return f"{self.__class__.__name__} without Label ({self.start_offset}, {self.end_offset})"
 
     def __eq__(self, other):
-        """We compare a Annotation based on it's Label, Label-Sets."""
+        """We compare an Annotation based on it's Label, Label-Sets if it's online otherwise on the id_local."""
         result = False
-        # TODO Here are two option on how to define __equal__
-        # (1) it could be a "real" duplicate based on label, label_set and spans
-        # (2) it could be mark spans only once as correct (in this case it could be used in the tokenizer for duplicate
-        # checking, if we go with (1) we need another method for duplicate checking
+        if self.id_ is None and other and other.id_ is None:
+            # Compare to virtual instances
+            return self.id_local == other.id_local
+        else:
+            if self.document and other.document and self.document == other.document:
+                if self.label and other.label and self.label == other.label:
+                    if self.label_set and other.label_set and self.label_set == other.label_set:
+                        if self.spans == other.spans:
+                            result = True
 
+        # todo why?
         # if self.document and other.document and self.document == other.document:
         #    if self.is_correct == other.is_correct:
         #        if self.spans == other.spans:
         #            result = True
         # return result
 
-        # if self.document and other.document and self.document == other.document:
-        #     if self.label and other.label and self.label == other.label:
-        #         if self.label_set and other.label_set and self.label_set == other.label_set:
-        #             if self.spans == other.spans:
-        #                 result = True
-        # return result
-
-        if self.document and other.document and self.document == other.document:
-            if self.label and other.label and self.label == other.label:
-                if self.label_set and other.label_set and self.label_set == other.label_set:
-                    if self.spans == other.spans:
-                        result = True
         return result
 
     def __lt__(self, other):
@@ -905,26 +903,21 @@ class Annotation(Data):
         """Calculate the Span information to evaluate the Annotation."""
         result = []
         if not self._spans:
-            result.append(Span(start_offset=0, end_offset=0).eval_dict())
+            result.append(Span(start_offset=-1, end_offset=0).eval_dict())
         else:
             for sa in self._spans:
                 result.append(sa.eval_dict())
         return result
 
-    def _add_span(self, span: Span):
-        """
-        Add a Span to an Annotation.
-
-        This is a private method and should only be called in __init__ as otherwise the duplicate check for annotations
-        is bypassed.
-        """
+    def add_span(self, span: Span):
+        """Add a Span to an Annotation incl. a duplicate check per Annotation."""
         if span not in self._spans:
             self._spans.append(span)
-            if span.annotation is not None:
-                logger.error(f'{span} is added to {self} however it was assigned to {span.annotation} before.')
+            if span.annotation is not None and span.annotation != self:
+                raise ValueError(f'{span} is added to {self} however it was assigned to {span.annotation} before.')
             span.annotation = self
         else:
-            logger.error(f'In {self} the Span {span} is a duplicate and will not be added.')
+            raise ValueError(f'In {self} the {span} is a duplicate and will not be added.')
         return self
 
     def get_link(self):
@@ -1018,36 +1011,13 @@ class Annotation(Data):
         for regex in regex_list:
             dict_spans = regex_spans(doctext=self.document.text, regex=regex)
             for offset in list(set((x['start_offset'], x['end_offset']) for x in dict_spans)):
-                span = Span(start_offset=offset[0], end_offset=offset[1], annotation=self)
-                spans.append(span)
+                try:
+                    span = Span(start_offset=offset[0], end_offset=offset[1], annotation=self)
+                    spans.append(span)
+                except ValueError as e:
+                    logger.error(str(e))
         spans.sort()
         return spans
-
-    # def toJSON(self):
-    #     """Convert Annotation to dict."""
-    #     res_dict = {
-    #         'start_offset': self.start_offset,
-    #         'end_offset': self.end_offset,
-    #         'label': self.label.id_,
-    #         'revised': self.revised,
-    #         'annotation_set': self.annotation_set,
-    #         'label_set_id': self.label_set.id_,
-    #         'accuracy': self.confidence,
-    #         'is_correct': self.is_correct,
-    #     }
-    #
-    #     res = {k: v for k, v in res_dict.items() if v is not None}
-    #     return res
-
-    # @property
-    # def page_index(self) -> int:
-    #     """Calculate the index of the page on which the Annotation starts, first page has index 0."""
-    #     return self.document.text[0: self.start_offset].count('\f')
-    #
-    # @property
-    # def line_index(self) -> int:
-    #     """Calculate the index of the page on which the Annotation starts, first page has index 0."""
-    #     return self.document.text[0: self.start_offset].count('\n')
 
     def token_append(self, evaluation, new_regex):
         """Append token if it is not a duplicate."""
@@ -1059,7 +1029,7 @@ class Annotation(Data):
         else:
             logger.info(f'Annotation Token {repr(new_matcher)} or regex {repr(new_regex)} does exist.')
 
-    def tokens(self) -> List:
+    def tokens(self, categories: List[Category]) -> List:
         """Create a list of potential tokens based on this annotation."""
         if not self._tokens:
             for span in self._spans:
@@ -1069,30 +1039,45 @@ class Annotation(Data):
 
                 # the original string, with harmonized whitespaces
                 regex_w = f'(?P<{self.label.name_clean}_W_{self.id_}_{span.start_offset}>{harmonized_whitespace})'
-                evaluation_w = self.label.evaluate_regex(regex_w, regex_quality=0)
+                evaluation_w = self.label.evaluate_regex(regex_w, regex_quality=0, categories=categories)
                 if evaluation_w['total_correct_findings'] > 1:
                     self.token_append(evaluation=evaluation_w, new_regex=regex_w)
                 # the original string, numbers replaced
                 if harmonized_whitespace != numbers_replaced:
                     regex_n = f'(?P<{self.label.name_clean}_N_{self.id_}_{span.start_offset}>{numbers_replaced})'
-                    self.token_append(evaluation=self.label.evaluate_regex(regex_n, regex_quality=1), new_regex=regex_n)
+                    self.token_append(
+                        evaluation=self.label.evaluate_regex(regex_n, regex_quality=1, categories=categories),
+                        new_regex=regex_n,
+                    )
                 # numbers and characters replaced
                 if numbers_replaced != full_replacement:
                     regex_f = f'(?P<{self.label.name_clean}_F_{self.id_}_{span.start_offset}>{full_replacement})'
-                    self.token_append(evaluation=self.label.evaluate_regex(regex_f, regex_quality=2), new_regex=regex_f)
+                    self.token_append(
+                        evaluation=self.label.evaluate_regex(regex_f, regex_quality=2, categories=categories),
+                        new_regex=regex_f,
+                    )
                 if not self._tokens:  # fallback if every proposed token is equal
                     regex_w = f'(?P<{self.label.name_clean}_W_{self.id_}_fallback>{harmonized_whitespace})'
-                    self.token_append(evaluation=self.label.evaluate_regex(regex_w, regex_quality=0), new_regex=regex_w)
+                    self.token_append(
+                        evaluation=self.label.evaluate_regex(regex_w, regex_quality=0, categories=categories),
+                        new_regex=regex_w,
+                    )
 
                     regex_n = f'(?P<{self.label.name_clean}_N_{self.id_}_fallback>{numbers_replaced})'
-                    self.token_append(evaluation=self.label.evaluate_regex(regex_n, regex_quality=1), new_regex=regex_n)
+                    self.token_append(
+                        evaluation=self.label.evaluate_regex(regex_n, regex_quality=1, categories=categories),
+                        new_regex=regex_n,
+                    )
                     regex_f = f'(?P<{self.label.name_clean}_F_{self.id_}_fallback>{full_replacement})'
-                    self.token_append(evaluation=self.label.evaluate_regex(regex_f, regex_quality=2), new_regex=regex_f)
+                    self.token_append(
+                        evaluation=self.label.evaluate_regex(regex_f, regex_quality=2, categories=categories),
+                        new_regex=regex_f,
+                    )
         return self._tokens
 
-    def regex(self):
+    def regex(self, categories: List[Category]):
         """Return regex of this annotation."""
-        return self.label.combined_tokens
+        return self.label.combined_tokens(categories=categories)
 
     def delete(self) -> None:
         """Delete Annotation online."""
@@ -1146,6 +1131,8 @@ class Document(Data):
         :param dataset_status: Dataset status of the Document (e.g. training)
         :param updated_at: Updated information
         :param bbox: Bounding box information per character in the PDF (dict)
+        :param update: Annotations, Annotation Sets will not be loaded by default. True will load it from the API.
+                        False from local files
         :param number_of_pages: Number of pages in the document
         """
         self.id_local = next(Data.id_iter)
@@ -1155,7 +1142,7 @@ class Document(Data):
         self.file_url = file_url
         self.is_dataset = is_dataset
         self.dataset_status = dataset_status
-        self._update = update  # the default is None: True will load it from the API, False from local files
+        self._update = update
 
         if project and category_template:
             self.category = project.get_category_by_id(category_template)
@@ -1229,8 +1216,6 @@ class Document(Data):
                 annotation_set=annotation_set,
                 bboxes=[annotation],
             )
-            # todo: ask Flo why commented out?
-            # self.add_annotation(anno)
         return self
 
     # todo: Goes to Trainer extract AI method
@@ -1304,7 +1289,7 @@ class Document(Data):
         result = []
         annotations = self.annotations(use_correct=use_correct)
         if not annotations:  # if there are no annotations in this Documents
-            result.append(Span(start_offset=0, end_offset=0).eval_dict())
+            result.append(Span(start_offset=-1, end_offset=0).eval_dict())
         else:
             for annotation in annotations:
                 result += annotation.eval_dict
@@ -1336,16 +1321,7 @@ class Document(Data):
         :param use_correct: If to filter by correct annotations.
         :return: Annotations in the document.
         """
-        # make sure the Document has all required information
-        if self._update is None:
-            pass
-        elif self._update:
-            self.update()
-            self._update = None  # Make sure we don't repeat to load once loaded.
-        else:
-            self.get_annotations()  # get_annotations has a fallback, if you deleted the raw json files
-            self._update = None  # Make sure we don't repeat to load once loaded.
-
+        self.get_annotations()
         annotations = []
         add = False
         for annotation in self._annotations:
@@ -1456,7 +1432,7 @@ class Document(Data):
 
         :param update: Update the downloaded information even it is already available
         """
-        if self.status[0] == 2:
+        if self.status and self.status[0] == 2:
             data = get_document_details(document_id=self.id_, project_id=self.project.id_, session=self.session)
 
             # write a file, even there are no annotations to support offline work
@@ -1486,24 +1462,22 @@ class Document(Data):
         if annotation not in self._annotations:
             # Hotfix Text Annotation Server:
             #  Annotation belongs to a Label / Label Set that does not relate to the Category of the Document.
-            # logger.debug('You are using a hotfix for API results from Konfuzio Server.')
+            logger.debug('You are using a hotfix for API results from Konfuzio Server.')
             if self.category is not None:
                 if annotation.label_set and annotation.label_set.categories:
                     if self.category in annotation.label_set.categories:
                         self._annotations.append(annotation)
                     else:
-                        logger.error(
+                        raise ValueError(
                             f'We cannot add {annotation} related to {annotation.label_set.categories} to {self} '
                             f'as the document has {self.category}'
                         )
                 else:
-                    logger.error(f'{annotation} has Label Set None, which cannot be added to {self}.')
+                    raise ValueError(f'{annotation} uses Label Set without Category, which cannot be added to {self}.')
             else:
-                logger.error(f'We cannot add {annotation} to {self} where the category is {self.category}')
+                raise ValueError(f'We cannot add {annotation} to {self} where the category is {self.category}')
         else:
-            message = f'In {self} the {annotation} is a duplicate and will not be added.'
-            # todo: add ValueError to all add_* methods
-            raise ValueError(message)
+            raise ValueError(f'In {self} the {annotation} is a duplicate and will not be added.')
 
         return self
 
@@ -1512,12 +1486,9 @@ class Document(Data):
         if annotation_set.document and annotation_set.document != self:
             raise ValueError('One Annotation Set must only belong to one document.')
         if annotation_set not in self._annotation_sets:
-            # todo: skip Annotation Sets that don't belong to the Category: not possible via current API
-            # if annotation_set.label_set.category == self.category:
             self._annotation_sets.append(annotation_set)
         else:
-            # todo raise NotImplementedError
-            logger.error(f'In {self} the {annotation_set} is a duplicate and will not be added.')
+            raise ValueError(f'In {self} the {annotation_set} is a duplicate and will not be added.')
         return self
 
     def get_annotation_set_by_id(self, id_: int) -> AnnotationSet:
@@ -1676,7 +1647,6 @@ class Document(Data):
         """Update document information."""
         self.delete()
         self.download_document_details()
-        self.get_annotations()
         return self
 
     def delete(self):
@@ -1689,7 +1659,9 @@ class Document(Data):
         self._annotations = []
         self._annotation_sets = []
 
-    def regex(self, start_offset: int, end_offset: int, max_findings_per_page=15) -> List[str]:
+    def regex(
+        self, start_offset: int, end_offset: int, categories: List[Category], max_findings_per_page=15
+    ) -> List[str]:
         """Suggest a list of regex which can be used to get the Span of a document."""
         proposals = []
         regex_to_remove_groupnames = re.compile('<.*?>')
@@ -1698,7 +1670,7 @@ class Document(Data):
             for spacer in [1, 3, 5, 15]:
                 before_regex = suggest_regex_for_string(self.text[start_offset - spacer ** 2 : start_offset])
                 after_regex = suggest_regex_for_string(self.text[end_offset : end_offset + spacer])
-                proposal = before_regex + annotation.regex() + after_regex
+                proposal = before_regex + annotation.regex(categories=categories) + after_regex
 
                 # check for duplicates
                 regex_found = [re.sub(regex_to_remove_groupnames, '', reg) for reg in proposals]
@@ -1765,52 +1737,39 @@ class Document(Data):
             'correct_findings': correct_findings,
         }
 
-    def get_annotations(self):
-        """
-        Get Annotations of the Document.
+    def get_annotations(self) -> List[Annotation]:
+        """Get Annotations of the Document."""
+        annotation_file_exists = is_file(self.annotation_file_path, raise_exception=False)
+        annotation_set_file_exists = is_file(self.annotation_set_file_path, raise_exception=False)
 
-        :param update: Update the downloaded information even it is already available
-        :return: Annotations
-        """
-        # Check JSON for Annotation Sets as a fallback if update is False or None but the files do not exist
-        if not is_file(self.annotation_set_file_path, raise_exception=False) or not is_file(
-            self.annotation_file_path, raise_exception=False
-        ):
-            self.update()
+        if self.id_ and (not annotation_file_exists or not annotation_set_file_exists or self._update):
+            self.update()  # delete the meta of the document details and download them again
+            self._update = None  # Make sure we don't repeat to load once updated.
 
-        with open(self.annotation_set_file_path, "r") as f:
-            raw_annotation_sets = json.load(f)
+        # todo: for documents without Annotations we eagerly check if we can load them, as `not [] == True`
+        if self._update or (self.id_ and (not self._annotations or not self._annotation_sets)):
+            self._annotations = []  # clean Annotations to not create duplicates
+            self._annotation_sets = []  # clean Annotation Sets to not create duplicates
+            with open(self.annotation_set_file_path, "r") as f:
+                raw_annotation_sets = json.load(f)
 
-        # first load all Annotation Sets before we create Annotations
-        for raw_annotation_set in raw_annotation_sets:
-            # todo add parent to define default Annotation Set
-            _ = AnnotationSet(
-                id_=raw_annotation_set["id"],
-                document=self,
-                label_set=self.project.get_label_set_by_id(raw_annotation_set["section_label"]),
-            )
+            # first load all Annotation Sets before we create Annotations
+            for raw_annotation_set in raw_annotation_sets:
+                # todo add parent to define default Annotation Set
+                _ = AnnotationSet(
+                    id_=raw_annotation_set["id"],
+                    document=self,
+                    label_set=self.project.get_label_set_by_id(raw_annotation_set["section_label"]),
+                )
 
-        with open(self.annotation_file_path, 'r') as f:
-            raw_annotations = json.load(f)
+            with open(self.annotation_file_path, 'r') as f:
+                raw_annotations = json.load(f)
 
-        for raw_annotation in raw_annotations:
-            raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
-            raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
-            _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
-            # if raw_annotation["custom_offset_string"]:
-            #     real_string = self.text[raw_annotation['start_offset'] : raw_annotation['end_offset']]
-            #     if real_string == raw_annotation['offset_string']:
-            #
-            #         # self.add_annotation(annotation)
-            #     else:
-            #         logger.warning(
-            #             f'Annotation {raw_annotation["id"]} has custom string and is not used '
-            #             f'in training {KONFUZIO_HOST}/a/{raw_annotation["id"]}.'
-            #         )
-            # else:
-            #
-            #
-            #     self.add_annotation(Annotation(document=self, id_=raw_annotation['id'], **raw_annotation))
+            for raw_annotation in raw_annotations:
+                raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
+                raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
+                _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
+            self._update = None  # Make sure we don't repeat to load once loaded.
 
         return self._annotations
 
@@ -1983,7 +1942,7 @@ class Project(Data):
         if label_set not in self.label_sets:
             self.label_sets.append(label_set)
         else:
-            logger.error(f'{self} already has Label Set {label_set}.')
+            raise ValueError(f'In {self} the {label_set} is a duplicate and will not be added.')
 
     def add_category(self, category: Category):
         """
@@ -1994,7 +1953,7 @@ class Project(Data):
         if category not in self.categories:
             self.categories.append(category)
         else:
-            logger.error(f'{self} already has category {category}.')
+            raise ValueError(f'In {self} the {category} is a duplicate and will not be added.')
 
     def add_label(self, label: Label):
         """
@@ -2005,13 +1964,15 @@ class Project(Data):
         # todo raise NotImplementedError  # There is no reason to add a Label to a Project
         if label not in self.labels:
             self.labels.append(label)
+        else:
+            raise ValueError(f'In {self} the {label} is a duplicate and will not be added.')
 
     def add_document(self, document: Document):
         """Add document to Project, if it does not exist."""
         if document not in self._documents:
             self._documents.append(document)
         else:
-            logger.error(f"{document} does exist in {self} and will not be added.")
+            raise ValueError(f'In {self} the {document} is a duplicate and will not be added.')
 
     def get_meta(self):
         """
@@ -2046,12 +2007,14 @@ class Project(Data):
         with open(self.label_sets_file_path, "r") as f:
             label_sets_data = json.load(f)
 
+        self.label_sets = []  # clean up Label Sets to not create duplicates
+        self.categories = []  # clean up Labels to not create duplicates
         for label_set_data in label_sets_data:
             label_set = LabelSet(project=self, id_=label_set_data['id'], **label_set_data)
             if label_set.is_default:
                 category = Category(project=self, id_=label_set_data['id'], **label_set_data)
                 category.label_sets.append(label_set)
-                label_set.categories.append(category)  # todo: Konfuzio Server mixes the concepts, we use two instances
+                label_set.categories.append(category)  # Konfuzio Server mixes the concepts, we use two instances
                 self.add_category(category)
             self.add_label_set(label_set)
 
@@ -2066,7 +2029,7 @@ class Project(Data):
         """
         with open(self.labels_file_path, "r") as f:
             labels_data = json.load(f)
-        # todo clean Labels before reading from file?
+        self.labels = []  # clean up Labels to not create duplicates
         for label_data in labels_data:
             # Remove the project from label_data
             label_data.pop("project", None)
@@ -2081,6 +2044,7 @@ class Project(Data):
         :param document_data: Document data
         :param update: Update the downloaded information even it is already available
         """
+        self._documents = []  # clean up Documents to not create duplicates
         for document_data in self.meta_data:
             if document_data['status'][0] == 2:  # NOQA - hotfix for Text Annotation Server # todo add test
                 new_date = document_data["updated_at"]
@@ -2091,7 +2055,6 @@ class Project(Data):
                 else:
                     new = True
                     updated = None
-
                 if updated:
                     doc = Document(project=self, update=True, id_=document_data['id'], **document_data)
                     logger.info(f'{doc} was updated, we will download it again as soon you use it.')
@@ -2101,7 +2064,6 @@ class Project(Data):
                 else:
                     doc = Document(project=self, update=False, id_=document_data['id'], **document_data)
                     logger.debug(f'Load local version of {doc} from {new_date}.')
-                self.add_document(doc)
 
     def get_document_by_id(self, document_id: int) -> Document:
         """Return document by it's ID."""
@@ -2159,7 +2121,6 @@ class Project(Data):
         for category in self.categories:
             if category.id_ == id_:
                 return category
-
         raise IndexError
 
     def check_normalization(self):
