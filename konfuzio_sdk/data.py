@@ -1216,15 +1216,14 @@ class Document(Data):
         self, label: Label, extractions, label_set: LabelSet, annotation_set: AnnotationSet
     ):
         """Add the extraction of a model to the document."""
-        annotations = extractions[extractions['Accuracy'] > 0.1][
-            ['Start', 'End', 'Accuracy', 'page_index', 'x0', 'x1', 'y0', 'y1', 'top', 'bottom']
-        ].sort_values(by='Accuracy', ascending=False)
-        annotations.rename(columns={'Start': 'start_offset', 'End': 'end_offset'}, inplace=True)
+        annotations = extractions[extractions['confidence'] > 0.1][
+            ['start_offset', 'end_offset', 'confidence', 'page_index', 'x0', 'x1', 'y0', 'y1', 'top', 'bottom']
+        ].sort_values(by='confidence', ascending=False)
         for annotation in annotations.to_dict('records'):  # todo ask Ana: are Start and End always ints
             _ = Annotation(
                 document=self,
                 label=label,
-                accuracy=annotation['Accuracy'],
+                accuracy=annotation['confidence'],
                 label_set=label_set,
                 annotation_set=annotation_set,
                 bboxes=[annotation],
