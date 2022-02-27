@@ -1255,7 +1255,7 @@ class Document(Data):
     # todo: Goes to Trainer extract AI method
     def extraction_result_to_document(self, extraction_result):
         """Return a virtual Document annotated with AI Model output."""
-        virtual_doc = Document(project=self.project, text=self.text, bbox=self.get_bbox())
+        virtual_doc = Document(project=self.project, text=self.text, bbox=self.get_bbox(), category=self.category)
         virtual_annotation_set_id = 0  # counter for accross mult. Annotation Set groups of a Label Set
 
         # define Annotation Set for the Category Label Set: todo: this is unclear from API side
