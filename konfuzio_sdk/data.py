@@ -616,6 +616,11 @@ class Span(Data):
         return self
 
     @property
+    def line_index(self) -> int:
+        """Calculate the index of the page on which the span starts, first page has index 0."""
+        return self.annotation.document.text[0: self.start_offset].count('\n')
+
+    @property
     def normalized(self):
         """Normalize the offset string."""
         return normalize(self.offset_string, self.annotation.label.data_type)

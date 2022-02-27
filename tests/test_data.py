@@ -451,6 +451,13 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert doc.annotations()[0].is_online
         assert not doc.annotations()[0].save()  # Save returns False because Annotation is already online.
 
+    def test_span_line_index_in_document(self):
+        """Test line_index of span."""
+        doc = self.prj.get_document_by_id(44842)
+        annotation = Annotation(document=doc)
+        span = Span(start_offset=1, end_offset=len(doc.text), annotation=annotation)
+        assert span.line_index == 0
+
     def test_annotation_sets_in_document(self):
         """Test number of Annotation Sets in a specific Document in the test Project."""
         doc = self.prj.get_document_by_id(44842)
