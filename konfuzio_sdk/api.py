@@ -475,7 +475,7 @@ def get_results_from_segmentation(doc_id: int, project_id: int, session=_konfuzi
     """Get bbox results from segmentation endpoint.
 
     :param doc_id: ID of the document
-    :param project_id: ID of the project.
+    :param project_id: ID of the Project.
     :param session: Konfuzio session with Retry and Timeout policy
     """
     segmentation_url = get_document_segmentation_details_url(doc_id, project_id)

@@ -274,20 +274,20 @@ class TestRegexGenerator(unittest.TestCase):
     """Test to create regex based on data online."""
 
     document_count = 27
-    correct_annotations = 25
+    correct_annotations = 24
 
     @classmethod
     def setUpClass(cls) -> None:
         """Load the Project data from the Konfuzio Host."""
         cls.prj = Project(id_=46)
         assert len(cls.prj.documents) == cls.document_count
-        assert len(cls.prj.labels[0].correct_annotations) == cls.correct_annotations
+        assert len(cls.prj.get_label_by_id(867).correct_annotations) == cls.correct_annotations
 
     @classmethod
     def tearDownClass(cls) -> None:
         """Check that no local data was changed by the tests."""
         assert len(cls.prj.documents) == cls.document_count
-        assert len(cls.prj.labels[0].correct_annotations) == cls.correct_annotations
+        assert len(cls.prj.get_label_by_id(867).correct_annotations) == cls.correct_annotations
         # cls.prj.delete()
 
     def test_regex_single_annotation_in_row(self):
@@ -311,12 +311,12 @@ class TestRegexGenerator(unittest.TestCase):
     def test_two_annotations_with_same_label_close_to_each_other(self):
         """Test that any text to regex subset works, even if the text contains two Annotations with the same label."""
         # previously this resulted in "sre_constants.error: redefinition of group name" error
-        document = self.prj.documents[-2]
-        assert len(document.annotations()) == 28
+        document = self.prj.get_document_by_id(44823)
+        assert len(document.annotations()) == 19
         # new functionality let you create a regex for a region in a document, from 950 to 1500 character
         regex = document.regex(start_offset=950, end_offset=1500)[0]
         # in this Document region we will use 2 times the regex tokens for Ort, each uses two tokens
-        assert regex.count('(?P<Vorname_') == 1
+        assert regex.count('(?P<Personalausweis_') == 1
 
     @unittest.skip('We do not support multiple Annotations in one offset for now')
     def test_regex_first_annotation_in_row(self):

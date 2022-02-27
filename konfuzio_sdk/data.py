@@ -45,7 +45,11 @@ class Data:
 
     def __eq__(self, other) -> bool:
         """Compare any point of data with their ID, overwrite if needed."""
-        return self.id_ and other and other.id_ and self.id_ == other.id_
+        if self.id_ is None and other and other.id_ is None:
+            # Compare to virtual instances
+            return self.id_local == other.id_local
+        else:
+            return self.id_ and other and other.id_ and self.id_ == other.id_
 
     def __hash__(self):
         """Make any online or local concept hashable. See https://stackoverflow.com/a/7152650."""
@@ -100,7 +104,7 @@ class AnnotationSet(Data):
     @property
     def start_offset(self):
         """Calculate earliest start based on all Annotations currently in this Annotation Set."""
-        return min((a.start_offset for a in self.annotations), default=None)
+        return min((s.start_offset for a in self.annotations for s in a.spans), default=None)
 
     @property
     def end_offset(self):
@@ -161,13 +165,11 @@ class LabelSet(Data):
         self.project: Project = project
         self.labels: List[Label] = []
 
+        # todo the following lines are optional and serve as "separate_labels"
         for label in labels:
             if isinstance(label, int):
                 label = self.project.get_label_by_id(id_=label)
             self.add_label(label)
-        # todo why?
-        self.has_multiple_sections = self.has_multiple_annotation_sets
-        # self.default_templates = self.categories
 
     def __repr__(self):
         """Return string representation of the Label Set."""
@@ -267,8 +269,8 @@ class Label(Data):
         self.has_multiple_top_candidates = has_multiple_top_candidates
         self.threshold = threshold
         self.project: Project = project
-        project.add_label(self)
-        if label_sets:  # todo why?
+        project.add_label(self)  # todo add feature as described in TestSeparateLabels
+        if label_sets:  # todo add feature as described in TestSeparateLabels
             [x.add_label(self) for x in label_sets]
 
         # Regex features
@@ -284,8 +286,16 @@ class Label(Data):
         """Return string representation."""
         return self.name
 
+    def __lt__(self, other: 'Label'):
+        """If we sort spans we do so by start offset."""
+        try:
+            return self.name < other.name
+        except TypeError:
+            logger.error(f'Cannot sort {self} and {other}.')
+            return False
+
     @property
-    def label_sets(self):
+    def label_sets(self) -> List[LabelSet]:
         """Get the Label Sets in which this Label is used."""
         label_sets = [x for x in self.project.label_sets if self in x.labels]
         return label_sets
@@ -738,10 +748,8 @@ class Annotation(Data):
             self.annotation_set = None
             logger.debug(f'{self} in {self.document} created but without Annotation Set information.')
 
-        if self.document:
-            self.document.add_annotation(self)
         for span in spans or []:
-            self.add_span(span)
+            self._add_span(span)
 
         self.selection_bbox = kwargs.get("selection_bbox", None)
         # self.page_number = kwargs.get("page_number", None)
@@ -751,7 +759,7 @@ class Annotation(Data):
             for bbox in bboxes:
                 if "start_offset" in bbox.keys() and "end_offset" in bbox.keys():
                     sa = Span(start_offset=bbox["start_offset"], end_offset=bbox["end_offset"], annotation=self)
-                    self.add_span(sa)
+                    self._add_span(sa)
                 else:
                     logger.error(f'SDK cannot read bbox of Annotation {self.id_} in {self.document}: {bbox}')
         elif (
@@ -762,7 +770,7 @@ class Annotation(Data):
             # Legacy support for creating Annotations with a single offset
             bbox = kwargs.get('bbox', {})
             sa = Span(start_offset=kwargs.get("start_offset"), end_offset=kwargs.get("end_offset"), annotation=self)
-            self.add_span(sa)
+            self._add_span(sa)
 
             logger.warning(f'{self} is empty')
         else:
@@ -795,6 +803,13 @@ class Annotation(Data):
         self._tokens = []
         self._regex = None
 
+        # Call add_annotation to document at the end, so all attributes for duplicate checking are available.
+        # todo: @FZ please add test so this stays at this point of th init.
+        self.document.add_annotation(self)
+
+        if not self.document or not self.label_set or not self.label:
+            raise NotImplementedError
+
     def __repr__(self):
         """Return string representation."""
         if self.label and self.document:
@@ -808,6 +823,24 @@ class Annotation(Data):
     def __eq__(self, other):
         """We compare a Annotation based on it's Label, Label-Sets."""
         result = False
+        # TODO Here are two option on how to define __equal__
+        # (1) it could be a "real" duplicate based on label, label_set and spans
+        # (2) it could be mark spans only once as correct (in this case it could be used in the tokenizer for duplicate
+        # checking, if we go with (1) we need another method for duplicate checking
+
+        # if self.document and other.document and self.document == other.document:
+        #    if self.is_correct == other.is_correct:
+        #        if self.spans == other.spans:
+        #            result = True
+        # return result
+
+        # if self.document and other.document and self.document == other.document:
+        #     if self.label and other.label and self.label == other.label:
+        #         if self.label_set and other.label_set and self.label_set == other.label_set:
+        #             if self.spans == other.spans:
+        #                 result = True
+        # return result
+
         if self.document and other.document and self.document == other.document:
             if self.label and other.label and self.label == other.label:
                 if self.label_set and other.label_set and self.label_set == other.label_set:
@@ -873,11 +906,18 @@ class Annotation(Data):
                 result.append(sa.eval_dict())
         return result
 
-    def add_span(self, span: Span):
-        """Add a Span to an Annotation."""
+    def _add_span(self, span: Span):
+        """
+        Add a Span to an Annotation.
+
+        This is a private method and should only be called in __init__ as otherwise the duplicate check for annotations
+        is bypassed.
+        """
         if span not in self._spans:
-            span.annotation = self
             self._spans.append(span)
+            if span.annotation is not None:
+                logger.error(f'{span} is added to {self} however it was assigned to {span.annotation} before.')
+            span.annotation = self
         else:
             logger.error(f'In {self} the Span {span} is a duplicate and will not be added.')
         return self
@@ -1081,7 +1121,8 @@ class Document(Data):
         is_dataset: bool = None,
         dataset_status: int = None,
         updated_at: tzinfo = None,
-        category_template: int = None,
+        category_template: int = None,  # fix for Konfuzio Server API, it's actually a id of a Category
+        category: Category = None,
         text: str = None,
         bbox: dict = None,
         update: bool = None,
@@ -1113,6 +1154,8 @@ class Document(Data):
 
         if project and category_template:
             self.category = project.get_category_by_id(category_template)
+        elif category:
+            self.category = category
         else:
             self.category = None
 
@@ -1124,7 +1167,7 @@ class Document(Data):
         self.name = data_file_name
         self.status = status  # status of document online
         self.project = project
-        # project.add_document(self)  # check for duplicates by ID before adding the Document to the project
+        project.add_document(self)  # check for duplicates by ID before adding the Document to the project
 
         # use hidden variables to store low volume information in instance
         self._text = text
@@ -1146,7 +1189,7 @@ class Document(Data):
 
     def __repr__(self):
         """Return the name of the Document incl. the ID."""
-        return f"{self.name}: {self.id_}"
+        return f"Document {self.name} ({self.id_})"
 
     @property
     def file_path(self):
@@ -1173,7 +1216,7 @@ class Document(Data):
         ].sort_values(by='Accuracy', ascending=False)
         annotations.rename(columns={'Start': 'start_offset', 'End': 'end_offset'}, inplace=True)
         for annotation in annotations.to_dict('records'):  # todo ask Ana: are Start and End always ints
-            anno = Annotation(
+            _ = Annotation(
                 document=self,
                 label=label,
                 accuracy=annotation['Accuracy'],
@@ -1181,7 +1224,8 @@ class Document(Data):
                 annotation_set=annotation_set,
                 bboxes=[annotation],
             )
-            self.add_annotation(anno)
+            # todo: ask Flo why commented out?
+            # self.add_annotation(anno)
         return self
 
     # todo: Goes to Trainer extract AI method
@@ -1193,20 +1237,24 @@ class Document(Data):
         model = load_pickle(path_to_model)
 
         # build the doc from model results
-        virtual_doc = Document(
-            project=self.project, text=self.text, bbox=self.get_bbox(), number_of_pages=self.number_of_pages
-        )
-        extraction_result = model.extract(document=virtual_doc)
+        virtual_doc_for_extraction = Document(project=self.project, text=self.text, bbox=self.get_bbox())
+        extraction_result = model.extract(document=virtual_doc_for_extraction)
+        virtual_doc = self.extraction_result_to_document(extraction_result)
 
+        return compare(self, virtual_doc)
+
+    # todo: Goes to Trainer extract AI method
+    def extraction_result_to_document(self, extraction_result):
+        """Return a virtual Document annotated with AI Model output."""
+        virtual_doc = Document(project=self.project, text=self.text, bbox=self.get_bbox())
         virtual_annotation_set_id = 0  # counter for accross mult. Annotation Set groups of a Label Set
 
-        # define Annotation Set for the Category Label Set
+        # define Annotation Set for the Category Label Set: todo: this is unclear from API side
         category_label_set = self.project.get_label_set_by_id(self.category.id_)
         virtual_default_annotation_set = AnnotationSet(
             document=virtual_doc, label_set=category_label_set, id_=virtual_annotation_set_id
         )
 
-        # TODO: not needed once extract returns a document
         for label_or_label_set_name, information in extraction_result.items():
             if isinstance(information, pd.DataFrame):
                 # annotations belong to the default Annotation Set
@@ -1218,7 +1266,7 @@ class Document(Data):
                 virtual_doc.add_extractions_as_annotations(
                     label=label,
                     extractions=information,
-                    label_set=self.category,
+                    label_set=category_label_set,
                     annotation_set=virtual_default_annotation_set,
                 )
 
@@ -1233,7 +1281,8 @@ class Document(Data):
                     virtual_annotation_set = AnnotationSet(
                         document=virtual_doc, label_set=label_set, id_=virtual_annotation_set_id
                     )
-                    virtual_doc.add_annotation_set(virtual_annotation_set)
+                    # todo: ask Flo why commented out
+                    # virtual_doc.add_annotation_set(virtual_annotation_set)
 
                     for label_name, extractions in entry.items():
                         label = self.project.get_label_by_name(label_name)
@@ -1243,8 +1292,7 @@ class Document(Data):
                             label_set=label_set,
                             annotation_set=virtual_annotation_set,
                         )
-
-        return compare(self, virtual_doc)
+        return virtual_doc
 
     def eval_dict(self, use_correct=False) -> dict:
         """Use this dict to evaluate Documents. The speciality: For ever Span of an Annotation create one entry."""
@@ -1431,14 +1479,33 @@ class Document(Data):
         :return: Input annotation.
         """
         if annotation not in self._annotations:
-            self._annotations.append(annotation)
+            # Hotfix Text Annotation Server:
+            #  Annotation belongs to a Label / Label Set that does not relate to the Category of the Document.
+            # logger.debug('You are using a hotfix for API results from Konfuzio Server.')
+            if self.category is not None:
+                if annotation.label_set and annotation.label_set.categories:
+                    if self.category in annotation.label_set.categories:
+                        self._annotations.append(annotation)
+                    else:
+                        logger.error(
+                            f'We cannot add {annotation} related to {annotation.label_set.categories} to {self} '
+                            f'as the document has {self.category}'
+                        )
+                else:
+                    logger.error(f'{annotation} has Label Set None, which cannot be added to {self}.')
+            else:
+                logger.error(f'We cannot add {annotation} to {self} where the category is {self.category}')
         else:
-            # todo raise NotImplementedError
-            logger.error(f'In {self} the {annotation} is a duplicate and will not be added.')
+            message = f'In {self} the {annotation} is a duplicate and will not be added.'
+            # todo: add ValueError to all add_* methods
+            raise ValueError(message)
+
         return self
 
     def add_annotation_set(self, annotation_set: AnnotationSet):
         """Add the Annotation Sets to the document."""
+        if annotation_set.document and annotation_set.document != self:
+            raise ValueError('One Annotation Set must only belong to one document.')
         if annotation_set not in self._annotation_sets:
             # todo: skip Annotation Sets that don't belong to the Category: not possible via current API
             # if annotation_set.label_set.category == self.category:
@@ -1554,12 +1621,12 @@ class Document(Data):
                     document_id=self.id_, project_id=self.project.id_, session=self.session, extra_fields="hocr"
                 )
 
-            if 'hocr' in data.keys() and data['hocr']:
-                self._hocr = data['hocr']
-                with open(self.hocr_file_path, "w", encoding="utf-8") as f:
-                    f.write(self._hocr)
-            else:
-                logger.warning(f'Please enable HOCR in {self.project} and upload {self} again to create HOCR.')
+                if 'hocr' in data.keys() and data['hocr']:
+                    self._hocr = data['hocr']
+                    with open(self.hocr_file_path, "w", encoding="utf-8") as f:
+                        f.write(self._hocr)
+                else:
+                    logger.warning(f'Please enable HOCR in {self.project} and upload {self} again to create HOCR.')
 
         return self._hocr
 
@@ -1616,28 +1683,6 @@ class Document(Data):
         pathlib.Path(self.document_folder).mkdir(parents=True, exist_ok=True)
         self._annotations = []
         self._annotation_sets = []
-
-    # def regex_new(self, label, start_offset: int, end_offset: int, max_findings_per_page=15) -> List[str]:
-    #     """Suggest a list of regex which can be used to get the specified offset of a document."""
-    #     proposals = []
-    #     for spacer in [0, 1, 3, 5, 8, 10]:
-    #         proposal = ''
-    #         for annotation in self.annotations():
-    #             for span in annotation._spans:
-    #                 proposal += f'(?:(?P<{label.name_clean}_SUGGEST>{suggest_regex_for_string(span.offset_string)}))'
-    #
-    #         # do not add duplicates
-    #         if re.sub(r'_\d+\>', r'\>', proposal) not in [re.sub(r'_\d+\>', r'\>', cor) for cor in proposals]:
-    #             try:
-    #                 num_matches = len(re.findall(proposal, self.text))
-    #                 if num_matches / (self.text.count('\f') + 1) < max_findings_per_page:
-    #                     proposals.append(proposal)
-    #                 else:
-    #                    logger.info(f'Skip to evaluate regex {repr(proposal)} as it finds {num_matches} in {self}.')
-    #             except re.error:
-    #                 logger.error('Not able to run regex. Probably the same token is used twice in proposal.')
-    #
-    #     return proposals
 
     def regex(self, start_offset: int, end_offset: int, max_findings_per_page=15) -> List[str]:
         """Suggest a list of regex which can be used to get the Span of a document."""
@@ -1808,7 +1853,7 @@ class Project(Data):
 
         :param id_: ID of the project
         :param project_folder: Set a project_older if empty "data_<id_>" will be used.
-        :param init_objects: Initialize objects of ths project.
+        :param init_objects: Initialize objects of ths Project.
         """
         self.id_local = next(Data.id_iter)
         self.id_ = id_  # A Project with None ID is not retrieved from the HOST
@@ -1835,6 +1880,11 @@ class Project(Data):
     def documents(self):
         """Return Documents with status training."""
         return [doc for doc in self._documents if doc.dataset_status == 2]
+
+    @property
+    def virtual_documents(self):
+        """Return Documents created virtually."""
+        return [doc for doc in self._documents if doc.dataset_status is None or doc.id_ is None]
 
     @property
     def test_documents(self):
@@ -1947,6 +1997,7 @@ class Project(Data):
 
         :param label: Label to add in the Project
         """
+        # todo raise NotImplementedError  # There is no reason to add a Label to a Project
         if label not in self.labels:
             self.labels.append(label)
 
@@ -1961,7 +2012,7 @@ class Project(Data):
         """
         Get the list of all Documents in the Project and their information.
 
-        :return: Information of the Documents in the project.
+        :return: Information of the Documents in the Project.
         """
         with open(self.meta_file_path, "r") as f:
             self.meta_data = json.load(f)
@@ -1977,15 +2028,15 @@ class Project(Data):
                 # the _default_of_label_set_ids are the categories the label set is used in
                 for label_set_id in label_set._default_of_label_set_ids:
                     category = self.get_category_by_id(label_set_id)
-                    label_set.add_category(category)
+                    label_set.add_category(category)  # The Label Set is linked to a Category it created
                     category.add_label_set(label_set)
 
     def get_label_sets(self):
         """
-        Get Label Sets in the project.
+        Get Label Sets in the Project.
 
         :param update: Update the downloaded information even it is already available
-        :return: Label Sets in the project.
+        :return: Label Sets in the Project.
         """
         with open(self.label_sets_file_path, "r") as f:
             label_sets_data = json.load(f)
@@ -1994,6 +2045,8 @@ class Project(Data):
             label_set = LabelSet(project=self, id_=label_set_data['id'], **label_set_data)
             if label_set.is_default:
                 category = Category(project=self, id_=label_set_data['id'], **label_set_data)
+                category.label_sets.append(label_set)
+                label_set.categories.append(category)  # todo: Konfuzio Server mixes the concepts, we use two instances
                 self.add_category(category)
             self.add_label_set(label_set)
 
@@ -2001,10 +2054,10 @@ class Project(Data):
 
     def get_labels(self):
         """
-        Get ID and name of any Label in the project.
+        Get ID and name of any Label in the Project.
 
         :param update: Update the downloaded information even it is already available
-        :return: Labels in the project.
+        :return: Labels in the Project.
         """
         with open(self.labels_file_path, "r") as f:
             labels_data = json.load(f)

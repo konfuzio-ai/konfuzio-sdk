@@ -87,7 +87,7 @@ class TestEvaluation(unittest.TestCase):
         """Test if a Document is equivalent if first Annotation is missing."""
         prj = Project(id_=TEST_PROJECT_ID)
         doc_a = prj.get_document_by_id(44823)
-        doc_b = Document(project=prj)
+        doc_b = Document(project=prj, category=doc_a.category)
         for annotation in doc_a.annotations()[1:]:
             doc_b.add_annotation(annotation)
 
@@ -103,7 +103,7 @@ class TestEvaluation(unittest.TestCase):
         """Test if a Document is equivalent if first Annotation is not present."""
         prj = Project(id_=TEST_PROJECT_ID)
         doc_b = prj.get_document_by_id(44823)
-        doc_a = Document(project=prj)
+        doc_a = Document(project=prj, category=doc_b.category)
         # use only correct Annotations
         for annotation in doc_b.annotations()[1:]:
             doc_a.add_annotation(annotation)
@@ -138,7 +138,7 @@ class TestEvaluation(unittest.TestCase):
         """Test if a Document is equivalent if all Annotation are not present and feedback required are included."""
         prj = Project(id_=TEST_PROJECT_ID)
         doc_b = prj.get_document_by_id(44823)
-        doc_a = Document(project=prj)
+        doc_a = Document(project=prj, category=doc_b.category)
         # use correct Annotations and feedback required ones
         for annotation in doc_b.annotations(use_correct=False)[1:]:
             doc_a.add_annotation(annotation)
@@ -155,7 +155,7 @@ class TestEvaluation(unittest.TestCase):
         """Test if a Document is equivalent if last Annotation is missing."""
         prj = Project(id_=TEST_PROJECT_ID)
         doc_a = prj.get_document_by_id(44823)
-        doc_b = Document(project=prj)
+        doc_b = Document(project=prj, category=doc_a.category)
         # use correct Annotations and feedback required ones
         for annotation in doc_a.annotations(use_correct=False)[:-1]:
             doc_b.add_annotation(annotation)
@@ -171,7 +171,7 @@ class TestEvaluation(unittest.TestCase):
         """Test if a Document is equivalent if last Annotation is not present."""
         prj = Project(id_=TEST_PROJECT_ID)
         doc_b = prj.get_document_by_id(44823)
-        doc_a = Document(project=prj)
+        doc_a = Document(project=prj, category=doc_b.category)
         # use correct Annotations and feedback required ones
         for annotation in doc_b.annotations(use_correct=False)[:-1]:
             doc_a.add_annotation(annotation)
@@ -218,7 +218,7 @@ class TestEvaluation(unittest.TestCase):
         # todo: this logic is a view logic on the document: shouldn't this go into the Annotations function
         prj = Project(id_=TEST_PROJECT_ID)
         doc_a = prj.get_document_by_id(44823)
-        doc_b = Document(project=prj)
+        doc_b = Document(project=prj, category=doc_a.category)
 
         found = False
         for annotation in doc_a.annotations(use_correct=False):
@@ -243,6 +243,7 @@ class TestEvaluation(unittest.TestCase):
         #  as multiple True
         raise NotImplementedError
 
+    @unittest.skip(reason='Invalid reuse of Annotations across documents.')
     def test_doc_with_missing_annotation_set(self):
         """
         Test if a Document is equivalent if an Annotation Set is missing.
@@ -255,7 +256,7 @@ class TestEvaluation(unittest.TestCase):
         """
         prj = Project(id_=TEST_PROJECT_ID)
         doc_a = prj.get_document_by_id(44859)
-        doc_b = Document(project=prj)
+        doc_b = Document(project=prj, category=doc_a.category)
         doc_a.annotations()
 
         # TODO: should annotation_sets have the same behaviour as Annotations? issue #8739
@@ -272,6 +273,7 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 1
 
+    @unittest.skip(reason='Invalid reuse of Annotations across documents.')
     def test_doc_with_extra_annotation_set(self):
         """
         Test if a Document is equivalent if there is one more Annotation Set than the correct ones.
@@ -285,8 +287,8 @@ class TestEvaluation(unittest.TestCase):
         """
         prj = Project(id_=TEST_PROJECT_ID)
         doc_online = prj.get_document_by_id(44859)
-        doc_a = Document(project=prj)
-        doc_b = Document(project=prj)
+        doc_a = Document(project=prj, category=doc_online.category)
+        doc_b = Document(project=prj, category=doc_online.category)
         doc_online.annotations()
 
         # TODO: should annotation_sets have the same behaviour as Annotations? issue #8739
@@ -319,6 +321,7 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation["false_positive"].sum() == 5
         assert evaluation["false_negative"].sum() == 0
 
+    @unittest.skip(reason='Invalid reuse of Annotations across documents.')
     def test_doc_with_annotation_set_with_multiple_label_that_should_be_split(self):
         """
         Test if a Document is equivalent if one Annotation Set is predicted instead of two.
@@ -330,7 +333,7 @@ class TestEvaluation(unittest.TestCase):
         """
         prj = Project(id_=TEST_PROJECT_ID)
         doc_a = prj.get_document_by_id(44841)
-        doc_b = Document(project=prj)
+        doc_b = Document(project=prj, category=doc_a.category)
 
         for annotation in doc_a.annotations(use_correct=False):
             # replace 1st Steuer Annotation Set (ID 679457) with 2nd (ID 679458)
@@ -350,6 +353,7 @@ class TestEvaluation(unittest.TestCase):
         # and the user only needs 5 actions to correct it
         assert evaluation["false_negative"].sum() == 0
 
+    @unittest.skip(reason='Invalid reuse of Annotations across documents.')
     def test_doc_with_annotation_set_with_multiple_label_that_should_be_split_and_one_annotation_missing(self):
         """
         Test if a Document is equivalent if 1 Annotation Set is predicted instead of 2 and 1 annotation is missing.
@@ -363,7 +367,7 @@ class TestEvaluation(unittest.TestCase):
         """
         prj = Project(id_=TEST_PROJECT_ID)
         doc_a = prj.get_document_by_id(44841)
-        doc_b = Document(project=prj)
+        doc_b = Document(project=prj, category=doc_a.category)
 
         # skip last multiple annotation from Steuer
         for annotation in doc_a.annotations(use_correct=False)[:-7] + doc_a.annotations(use_correct=False)[-6:]:
@@ -398,7 +402,7 @@ class TestEvaluation(unittest.TestCase):
         """
         prj = Project(id_=TEST_PROJECT_ID)
         doc_a = prj.get_document_by_id(44841)
-        doc_b = Document(project=prj)
+        doc_b = Document(project=prj, category=doc_a.category)
 
         new_annotation = deepcopy(doc_a.annotations(use_correct=False)[1])
         # keep the offset string but change the start and end offsets
@@ -432,7 +436,7 @@ class TestEvaluation(unittest.TestCase):
         """
         prj = Project(id_=TEST_PROJECT_ID)
         doc_a = prj.get_document_by_id(44841)
-        doc_b = Document(project=prj)
+        doc_b = Document(project=prj, category=doc_a.category)
 
         new_annotation = deepcopy(doc_a.annotations(use_correct=False)[0])
         # keep the offset string but change the start and end offsets
@@ -466,7 +470,7 @@ class TestEvaluation(unittest.TestCase):
         """
         prj = Project(id_=TEST_PROJECT_ID)
         doc_a = prj.get_document_by_id(44841)
-        doc_b = Document(project=prj)
+        doc_b = Document(project=prj, category=doc_a.category)
 
         new_annotation = deepcopy(doc_a.annotations(use_correct=False)[0])
         # keep the offset string but change the start and end offsets
@@ -488,6 +492,7 @@ class TestEvaluation(unittest.TestCase):
         # offsets
         assert evaluation["false_negative"].sum() == 1
 
+    @unittest.skip(reason='Invalid reuse of Annotations across documents.')
     def test_doc_with_annotation_set_with_each_annotation_belonging_to_different_annotation_sets(self):
         """
         Test a Document where each annotation from a certain Annotation Set is predicted with different Annotation Sets.
@@ -497,7 +502,7 @@ class TestEvaluation(unittest.TestCase):
         """
         prj = Project(id_=TEST_PROJECT_ID)
         doc_a = prj.get_document_by_id(44841)
-        doc_b = Document(project=prj)
+        doc_b = Document(project=prj, category=doc_a.category)
 
         # 1st annotation from 1st Annotation Set Brutto-Bezug belonging to the 2nd Annotation Set
         new_annotation_1 = deepcopy(doc_a.annotations(use_correct=False)[6])
@@ -529,6 +534,7 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation["false_positive"].sum() == 2
         assert evaluation["false_negative"].sum() == 0
 
+    @unittest.skip(reason='Invalid reuse of Annotations across documents.')
     def test_doc_with_missing_annotation_in_a_line_with_multiple_annotation_sets(self):
         """
         Test is a Document is equivalent if an annotation is missing in a line where exists another Annotation Set.
@@ -538,7 +544,7 @@ class TestEvaluation(unittest.TestCase):
         """
         prj = Project(id_=TEST_PROJECT_ID)
         doc_a = prj.get_document_by_id(44841)
-        doc_b = Document(project=prj)
+        doc_b = Document(project=prj, category=doc_a.category)
 
         # skip 1 annotation from an Annotation Set that is in the same line as other Annotation Set
         for annotation in doc_a.annotations(use_correct=False)[:28] + doc_a.annotations(use_correct=False)[29:]:

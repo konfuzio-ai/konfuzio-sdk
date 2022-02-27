@@ -15,6 +15,7 @@ from konfuzio_sdk.data import (
     Data,
     Span,
     download_training_and_test_data,
+    Category,
 )
 from konfuzio_sdk.utils import is_file
 
@@ -27,80 +28,145 @@ TEST_DOCUMENT_ID = 44823
 class TestOfflineDataSetup(unittest.TestCase):
     """Test data features without real data."""
 
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Initialize the test Project."""
+        cls.project = Project(id_=None)
+        cls.label = Label(project=cls.project)
+        cls.category = Category(project=cls.project, id_=1)
+        cls.document = Document(project=cls.project, category=cls.category)
+        cls.label_set = LabelSet(project=cls.project, categories=[cls.category])
+        cls.label_set.add_label(cls.label)
+        cls.annotation_set = AnnotationSet(document=cls.document, label_set=cls.label_set)
+        assert len(cls.project.virtual_documents) == 1
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """Control the number of Documents created in the Test."""
+        assert len(cls.project.virtual_documents) == 9
+
+    def test_category_of_document(self):
+        """Test if setup worked."""
+        assert self.document.category == self.category
+
     def test_to_add_label_to_Project(self):
         """Add one Label to a Project."""
-        prj = Project(id_=None)
-        label = Label(project=prj)
-        prj.add_label(label)
-        self.assertEqual([label], prj.labels)
-
-    def test_to_add_label_twice_to_a_project(self):
-        """Add the same Label twice to a Project."""
-        prj = Project(id_=None)
-        label = Label(project=prj)
-        prj.add_label(label)
-        prj.add_label(label)
-        self.assertEqual([label], prj.labels)
-
-    def test_to_add_two_labels_to_a_project(self):
-        """Add two Labels to a Project."""
-        prj = Project(id_=None)
-        first_label = Label(project=prj)
-        second_label = Label(project=prj)
-        prj.add_label(first_label)
-        prj.add_label(second_label)
-        self.assertEqual([first_label, second_label], prj.labels)
+        # with self.assertRaises(NotImplementedError):
+        # todo add feature as described in TestSeparateLabels
+        self.project.add_label(self.label)
 
     def test_to_add_spans_to_annotation(self):
         """Add one Span to one Annotation."""
-        prj = Project(id_=None)
-        doc = Document(project=prj)
+        document = Document(project=self.project, category=self.category)
         span = Span(start_offset=1, end_offset=2)
-        annotation = Annotation(document=doc, spans=[span])
+        annotation = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
         self.assertEqual([span], annotation.spans)
 
     def test_span_reference_to_annotation(self):
         """Test Span reference to Annotation."""
-        prj = Project(id_=None)
-        doc = Document(project=prj)
+        document = Document(project=self.project, category=self.category)
         span = Span(start_offset=1, end_offset=2)
-        annotation = Annotation(document=doc, spans=[span])
+        annotation = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
         assert annotation.spans[0].annotation is not None
-        # assert annotation.spans[0].x0 is not None  # This is failing as the test document does not have a bbox.
+        assert annotation.spans[0].x0 is None  # Span bboxes must be explicitly loaded using span.bbox()
+        # Here this would be failing even when calling span.bbox() as the test document does not have a bbox.
 
     def test_to_there_must_not_be_a_folder(self):
         """Add one Span to one Annotation."""
-        prj = Project(id_=None)
-        doc = Document(project=prj)
-        assert not os.path.isdir(doc.document_folder)
+        assert not os.path.isdir(self.document.document_folder)
 
     def test_to_add_two_spans_to_annotation(self):
         """Add one Span to one Annotation."""
-        prj = Project(id_=None)
-        doc = Document(project=prj)
+        document = Document(project=self.project, category=self.category)
         span = Span(start_offset=1, end_offset=2)
-        annotation = Annotation(document=doc, spans=[span, span])
+        annotation = Annotation(document=document, spans=[span, span], label=self.label, label_set=self.label_set)
         self.assertEqual([span], annotation.spans)
+
+    def test_to_add_annotation_set_of_another_document(self):
+        """One Annotation Set must only belong to one document."""
+        document = Document(project=self.project, category=self.category)
+        with self.assertRaises(ValueError):
+            document.add_annotation_set(self.annotation_set)
+
+    def test_to_add_annotation_to_none_category_document(self):
+        """A Document with Category None must not contain Annotations."""
+        document = Document(project=self.project)
+        annotation_set = AnnotationSet(document=document, label_set=self.label_set)
+
+        # Add annotation for the first time
+        span = Span(start_offset=1, end_offset=2)
+        annotation = Annotation(
+            document=document,
+            is_correct=True,
+            label=self.label,
+            annotation_set=annotation_set,
+            label_set=self.label_set,
+            spans=[span],
+        )
+        # add annotation in addition in an explicit way
+        document.add_annotation(annotation)
+        self.assertEqual(document.annotations(), [])
+
+    def test_add_duplicated_annotation(self):
+        """Add one Span as Annotation multiple times when document.id_ is None."""
+        document = Document(project=self.project, category=self.category)
+        span = Span(start_offset=1, end_offset=2)
+        Annotation(
+            document=document,
+            is_correct=True,
+            label=self.label,
+            annotation_set=self.annotation_set,
+            label_set=self.label_set,
+            spans=[span],
+        )
+
+        # Add annotation for the second time, heere it should be skipped.
+        span = Span(start_offset=1, end_offset=2)
+        with self.assertRaises(ValueError):
+            Annotation(
+                document=document,
+                is_correct=True,
+                label=self.label,
+                annotation_set=self.annotation_set,
+                label_set=self.label_set,
+                spans=[span],
+            )
+
+        self.assertEqual(len(document.annotations()), 1)
 
     def test_to_add_an_annotation_twice_to_a_document(self):
         """Test to add the same Annotation twice to a Document."""
-        prj = Project(id_=None)
+        document = Document(project=self.project, category=self.category)
         span = Span(start_offset=1, end_offset=2)
-        doc = Document(project=prj)
-        annotation = Annotation(document=doc, spans=[span])
-        doc.add_annotation(annotation)
-        doc.add_annotation(annotation)
-        self.assertEqual([annotation], doc.annotations(use_correct=False))
+        annotation = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
+        with self.assertRaises(ValueError):
+            document.add_annotation(annotation)
+        self.assertEqual([annotation], document.annotations(use_correct=False))
 
     def test_to_add_two_annotations_to_a_document(self):
         """Test to add an the same Annotation twice to a Document."""
-        prj = Project(id_=None)
+        document = Document(project=self.project, category=self.category)
         first_span = Span(start_offset=1, end_offset=2)
         second_span = Span(start_offset=2, end_offset=3)
-        doc = Document(project=prj)
-        first_annotation = Annotation(document=doc, spans=[first_span])
-        second_annotation = Annotation(document=doc, spans=[first_span, second_span])
-        self.assertEqual([first_annotation, second_annotation], doc.annotations(use_correct=False))
+        first_annotation = Annotation(document=document, spans=[first_span], label_set=self.label_set, label=self.label)
+        second_annotation = Annotation(
+            document=document, spans=[first_span, second_span], label_set=self.label_set, label=self.label
+        )
+        self.assertEqual([first_annotation, second_annotation], document.annotations(use_correct=False))
+
+
+class TestSeparateLabels(unittest.TestCase):
+    """Test the feature create separated Labels per Label Set."""
+
+    @unittest.skip(reason='Feature needed')
+    def test_normal_setup(self):
+        """Labels are initialized by the Project can be reused by Label Sets."""
+        raise NotImplementedError
+
+    @unittest.skip(reason='Feature needed')
+    def test_separat_setup(self):
+        """Labels are initialized by the Project cannot be reused by Label Sets."""
+        raise NotImplementedError
 
 
 class TestKonfuzioDataCustomPath(unittest.TestCase):
@@ -135,7 +201,11 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     document_count = 27
     test_document_count = 3
-    annotations_correct = 25
+    annotations_correct = 24
+    # 24 created by human
+    # https://app.konfuzio.com/admin/server/sequenceannotation/?document__dataset_status__exact=2&label__id__exact=867&project=46&status=3
+    # 1 Created by human and revised by human, but on a document that has no category
+    # https://app.konfuzio.com/admin/server/sequenceannotation/?document__dataset_status__exact=2&label__id__exact=867&project=46&status=1
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -145,6 +215,12 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_number_training_documents(self):
         """Test the number of Documents in data set status training."""
         assert len(self.prj.documents) == self.document_count
+
+    def test_document_with_no_category_must_have_no_annotations(self):
+        """Test if we skip Annotations in no Category Documents."""
+        document = self.prj.get_document_by_id(44864)
+        assert document.category is None
+        assert len(document.annotations()) == 0
 
     def test_number_test_documents(self):
         """Test the number of Documents in data set status test."""
@@ -229,6 +305,9 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         category_label_sets = category.label_sets
         label = category_label_sets[0].labels[0]
 
+        # todo label.annotations returns an unfiltered list of annotations, including annotations from documents without
+        # a category. It would be useful to be able to get the annotations of a label int the context of category (e.g.
+        # to fit a tokenizer for a label).
         for annotation in label.annotations:
             if annotation.document.category is not None:
                 assert annotation.document.category == category
@@ -258,15 +337,18 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_number_of_labels_of_label_set(self):
         """Test the number of Labels of the default Label Set."""
         label_set = self.prj.get_label_set_by_name('Lohnabrechnung')
-        # assert label_set.categories == [self.prj.get_category_by_id(label_set.id_)]  # defines a category
+        # assert label_set.categories ==     [self.prj.get_category_by_id(label_set.id_)]  # defines a category
         assert label_set.labels.__len__() == 10
 
     def test_categories(self):
         """Test get Labels in the Project."""
         assert self.prj.categories.__len__() == 1
         assert self.prj.categories[0].name == 'Lohnabrechnung'
+        # We have 5 Label Sets, Lohnabrechnung is Category and a Label Set as it hold labels, however a Category
+        # cannot hold labels
         assert sorted([label_set.name for label_set in self.prj.categories[0].label_sets]) == [
             'Brutto-Bezug',
+            'Lohnabrechnung',
             'Netto-Bezug',
             'Steuer',
             'Verdiensibescheinigung',
@@ -296,8 +378,11 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_get_bbox(self):
         """Test to get BoundingBox of Text offset."""
+        prj = Project(id_=TEST_PROJECT_ID)  # new init to not add data to self.prj
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
-        annotation = Annotation(document=doc)
+        label_set = LabelSet(project=self.prj)
+        label = Label(project=prj)
+        annotation = Annotation(document=doc, label_set=label_set, label=label)
         span = Span(start_offset=44, end_offset=65, annotation=annotation)
         span.bbox()
         self.assertEqual(span.top, 23.849)
@@ -369,7 +454,26 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_labels(self):
         """Test get Labels in the Project."""
-        assert len(self.prj.labels) == 18
+        assert [label.name for label in sorted(self.prj.labels)] == [
+            'Austellungsdatum',
+            'Auszahlungsbetrag',
+            'Bank inkl. IBAN',
+            'Betrag',
+            'Bezeichnung',
+            'EMPTY_LABEL',
+            'Faktor',
+            'Gesamt-Brutto',
+            'Lohnart',
+            'Menge',
+            'Nachname',
+            'Netto-Verdienst',
+            'Personalausweis',
+            'Sozialversicherung',
+            'Steuer-Brutto',
+            'Steuerklasse',
+            'Steuerrechtliche Abzüge',
+            'Vorname',
+        ]
 
     def test_project(self):
         """Test basic properties of the Project object."""
@@ -398,7 +502,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.assertEqual(len(self.prj.labels[0].correct_annotations), self.annotations_correct)
         assert len(doc.text) == 4793
         assert is_file(doc.txt_file_path)
-        assert is_file(doc.bbox_file_path)
+        # assert is_file(doc.bbox_file_path) bbox is not loaded at this point.
         assert is_file(doc.annotation_file_path)
         assert is_file(doc.annotation_set_file_path)
 
