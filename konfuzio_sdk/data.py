@@ -840,6 +840,8 @@ class Document(Data):
 
             with open(self.bio_scheme_file_path, 'w', encoding="utf-8") as f:
                 for word, tag in converted_text:
+                    if " " in tag:  # there shouldn't be spaces in BIO labels
+                        tag = tag.replace(" ", "_")
                     f.writelines(word + ' ' + tag + '\n')
                 f.writelines('\n')
 
@@ -850,6 +852,8 @@ class Document(Data):
                 if line == '\n':
                     continue
                 word, tag = line.replace('\n', '').split(' ')
+                if "_" in tag:  # get the space back
+                    tag = tag.replace("_", " ")
                 bio_annotations.append((word, tag))
 
         return bio_annotations
