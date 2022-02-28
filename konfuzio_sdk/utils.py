@@ -232,7 +232,9 @@ def convert_to_bio_scheme(text: str, annotations: List) -> List[Tuple[str, str]]
         temp_str = text[start:end]
         tmp_list = nltk.word_tokenize(temp_str)
 
-        if len(tmp_list) > 1:
+        if len(tmp_list) == 0:
+            continue
+        elif len(tmp_list) > 1:
             tagged_entities.append((tmp_list[0], 'B-' + label_name))
             for w in tmp_list[1:]:
                 tagged_entities.append((w, 'I-' + label_name))
