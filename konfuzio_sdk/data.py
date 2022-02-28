@@ -823,11 +823,11 @@ class Annotation(Data):
         """Return string representation."""
         if self.label and self.document:
             span_str = ', '.join(f'{x.start_offset, x.end_offset}' for x in self._spans)
-            return f"{self.__class__.__name__} {self.label.name} {span_str}"
+            return f"Annotation ({self.get_link()}) {self.label.name} {span_str}"
         elif self.label:
-            return f"{self.__class__.__name__} {self.label.name} ({self._spans})"
+            return f"Annotation ({self.get_link()}) {self.label.name} ({self._spans})"
         else:
-            return f"{self.__class__.__name__} without Label ({self.start_offset}, {self.end_offset})"
+            return f"Annotation ({self.get_link()}) without Label ({self.start_offset}, {self.end_offset})"
 
     def __eq__(self, other):
         """We compare an Annotation based on it's Label, Label-Sets if it's online otherwise on the id_local."""
