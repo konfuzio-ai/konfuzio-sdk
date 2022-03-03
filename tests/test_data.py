@@ -43,7 +43,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 10
+        assert len(cls.project.virtual_documents) == 12
 
     def test_category_of_document(self):
         """Test if setup worked."""
@@ -80,6 +80,34 @@ class TestOfflineDataSetup(unittest.TestCase):
     def test_to_there_must_not_be_a_folder(self):
         """Check that a virtual Document has now folder."""
         assert not os.path.isdir(self.document.document_folder)
+
+    def test_create_new_annotation_in_document(self):
+        """Add new annotation to a document."""
+        document = Document(project=self.project, category=self.category)
+        span = Span(start_offset=1, end_offset=2)
+
+        annotation = Annotation(
+            document=document,
+            is_correct=True,
+            label=self.label,
+            annotation_set=self.annotation_set,
+            label_set=self.label_set,
+            spans=[span],
+        )
+
+        document_annotations = document.annotations()
+        annotation_set_annotations = self.annotation_set.annotations
+        assert annotation in document_annotations
+        # TODO: annotation is not added to annotation set even if we pass it in the initialization
+        assert annotation in annotation_set_annotations
+
+    def test_create_new_annotation_set_in_document(self):
+        """Add new annotation set to a document."""
+        document = Document(project=self.project, category=self.category)
+        annotation_set = AnnotationSet(document=document, label_set=self.label_set)
+
+        document_annotation_sets = document.annotation_sets
+        assert annotation_set in document_annotation_sets
 
     def test_to_add_two_spans_to_annotation(self):
         """Add one Span to one Annotation."""
