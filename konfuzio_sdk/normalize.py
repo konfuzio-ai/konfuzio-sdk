@@ -124,148 +124,138 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
 
     ln = len(offset_string)
 
-    try:
-        # check for 1.234,56
-        if (
-            '.' in offset_string
-            and offset_string.count(',') == 1
-            and offset_string.index('.') < offset_string.index(',')
-        ):
-            _float = float(offset_string.replace('.', '').replace(',', '.'))  # => 1234.56
-            _float = abs(_float)
-            normalization = _float
-        # check for 1,234.56
-        elif '.' in offset_string and ',' in offset_string and offset_string.index(',') < offset_string.index('.'):
-            _float = float(offset_string.replace(',', ''))  # => 1234.56
-            _float = abs(_float)
-            normalization = _float
-        # check for 1,234,56
-        elif (
-            ln > 6
-            and offset_string.count(',') == 2
-            and offset_string.count('.') == 0
-            and offset_string[-3] == ','
-            and offset_string[-7] == ','
-        ):
-            offset_string = offset_string[:-3] + '.' + offset_string[-2:]  # => 1,234.56
-            _float = float(offset_string.replace(',', ''))  # => 1234.56
-            _float = abs(_float)
-            normalization = _float
-        # check for 1.234.56
-        elif ln > 6 and offset_string.count('.') >= 2 and offset_string[-3] == '.' and offset_string[-7] == '.':
-            offset_string = offset_string.replace('.', '')  # => 123456
-            _float = float(offset_string[:-2] + '.' + offset_string[-2:])  # => 1234.56
-            _float = abs(_float)
-            normalization = _float
-        # check for 1.967.
-        elif ln > 5 and offset_string.count('.') == 2 and offset_string[-1] == '.' and offset_string[-5] == '.':
-            offset_string = offset_string.replace('.', '')  # => 123456
-            _float = float(offset_string)
-            _float = abs(_float)
-            normalization = _float
-        # check for 1.234.567
-        elif ln > 7 and offset_string.count('.') >= 2 and offset_string[-4] == '.' and offset_string[-8] == '.':
-            offset_string = offset_string.replace('.', '')  # => 1234567
-            _float = float(offset_string)
-            _float = abs(_float)
-            normalization = _float
-        # check for 3.456,814,75
-        elif ln > 7 and offset_string.count(',') == 2 and offset_string[-3] == ',' and offset_string[-7] == ',':
-            offset_string = offset_string.replace(',', '').replace('.', '')  # => 1234567
-            _float = float(offset_string) / 100.0
-            _float = abs(_float)
-            normalization = _float
-        # check for 1,234,567
-        elif ln > 7 and offset_string.count(',') == 2 and offset_string[-4] == ',' and offset_string[-8] == ',':
-            offset_string = offset_string.replace(',', '')  # => 1234567
-            _float = float(offset_string)
-            _float = abs(_float)
-            normalization = _float
-        # check for 12,34 (comma is third last char).
-        elif (
-            ',' in offset_string
-            and (len(offset_string) - offset_string.index(',')) == 3
-            and offset_string.replace(',', '').isdigit()
-        ):
-            _float = float(offset_string.replace(',', '.'))  # => 12.34
-            _float = abs(_float)
-            normalization = _float
-        # check for 12.34 (dot is third last char).
-        elif '.' in offset_string and (len(offset_string) - offset_string.index('.')) == 3:
-            _float = float(offset_string)  # => 12.34
-            _float = abs(_float)
-            normalization = _float
-        # check for 12,3 (comma is second last char).
-        elif (
-            ',' in offset_string
-            and (len(offset_string) - offset_string.index(',')) == 2
-            and offset_string.replace(',', '').isdigit()
-        ):
-            _float = float(offset_string.replace(',', '.'))  # => 12.3
-            _float = abs(_float)
-            normalization = _float
-        # check for 12.3 (dot is second last char).
-        elif '.' in offset_string and (len(offset_string) - offset_string.index('.')) == 2:
-            _float = float(offset_string)  # => 12.3
-            _float = abs(_float)
-            normalization = _float
-        # check for 500,000 (comma is forth last char).
-        elif (
-            ln > 0
-            and ',' in offset_string
-            and (len(offset_string) - offset_string.index(',')) == 4
-            and offset_string.replace(',', '').isdigit()
-            and not offset_string[0] == ','
-        ):
-            _float = float(offset_string.replace(',', ''))  # => 500000
-            _float = abs(_float)
-            normalization = _float
-        # check for 500.000
-        elif (
-            ln > 4
-            and '.' in offset_string
-            and offset_string[-4] == '.'
-            and offset_string.replace('.', '').isdigit()
-            and offset_string.count('.') == 1
-        ):
-            normalization = abs(float(offset_string.replace('.', '')))
-        # check for 5000 (only numbers)
-        elif offset_string.isdigit():
-            _float = float(offset_string)
-            _float = abs(_float)
-            normalization = _float
-        # check for 159,;03 (obscured edge case)
-        elif (
-            ln > 3
-            and ';' in offset_string
-            and ',' in offset_string
-            and offset_string[-3] == ';'
-            and offset_string[-4] == ','
-        ):
-            _float = float(offset_string.replace(',', '.').replace(';', ''))  # => 159.03
-            _float = abs(_float)
-            normalization = _float
-        # # check for “71,90 (obscured edge case)
-        # elif offset_string[0] == '“' and offset_string[-3] == ',':
-        #     _float = float(offset_string.replace('“', '').replace(',','.'))  # => 71.90
-        #     _float = abs(_float)
-        #     normalization = _float
-        # check for ,22,95 (obscured edge case)
-        elif (
-            ln > 2 and offset_string[0] == '‚' and offset_string[-3] == ','
-        ):  # first comma is a very different comma ('‚' != ',')
-            _float = float(offset_string[1:].replace(',', '.'))  # => 22.95
-            _float = abs(_float)
-            normalization = _float
-        else:
-            logger.warning(
-                'Could not convert >>' + offset_string + '<< to positive/absolute float (no conversion case found)'
-            )
-    except ValueError:
+    # check for 1.234,56
+    if '.' in offset_string and offset_string.count(',') == 1 and offset_string.index('.') < offset_string.index(','):
+        _float = float(offset_string.replace('.', '').replace(',', '.'))  # => 1234.56
+        _float = abs(_float)
+        normalization = _float
+    # check for 1,234.56
+    elif '.' in offset_string and ',' in offset_string and offset_string.index(',') < offset_string.index('.'):
+        _float = float(offset_string.replace(',', ''))  # => 1234.56
+        _float = abs(_float)
+        normalization = _float
+    # check for 1,234,56
+    elif (
+        ln > 6
+        and offset_string.count(',') == 2
+        and offset_string.count('.') == 0
+        and offset_string[-3] == ','
+        and offset_string[-7] == ','
+    ):
+        offset_string = offset_string[:-3] + '.' + offset_string[-2:]  # => 1,234.56
+        _float = float(offset_string.replace(',', ''))  # => 1234.56
+        _float = abs(_float)
+        normalization = _float
+    # check for 1.234.56
+    elif ln > 6 and offset_string.count('.') >= 2 and offset_string[-3] == '.' and offset_string[-7] == '.':
+        offset_string = offset_string.replace('.', '')  # => 123456
+        _float = float(offset_string[:-2] + '.' + offset_string[-2:])  # => 1234.56
+        _float = abs(_float)
+        normalization = _float
+    # check for 1.967.
+    elif ln > 5 and offset_string.count('.') == 2 and offset_string[-1] == '.' and offset_string[-5] == '.':
+        offset_string = offset_string.replace('.', '')  # => 123456
+        _float = float(offset_string)
+        _float = abs(_float)
+        normalization = _float
+    # check for 1.234.567
+    elif ln > 7 and offset_string.count('.') >= 2 and offset_string[-4] == '.' and offset_string[-8] == '.':
+        offset_string = offset_string.replace('.', '')  # => 1234567
+        _float = float(offset_string)
+        _float = abs(_float)
+        normalization = _float
+    # check for 3.456,814,75
+    elif ln > 7 and offset_string.count(',') == 2 and offset_string[-3] == ',' and offset_string[-7] == ',':
+        offset_string = offset_string.replace(',', '').replace('.', '')  # => 1234567
+        _float = float(offset_string) / 100.0
+        _float = abs(_float)
+        normalization = _float
+    # check for 1,234,567
+    elif ln > 7 and offset_string.count(',') == 2 and offset_string[-4] == ',' and offset_string[-8] == ',':
+        offset_string = offset_string.replace(',', '')  # => 1234567
+        _float = float(offset_string)
+        _float = abs(_float)
+        normalization = _float
+    # check for 12,34 (comma is third last char).
+    elif (
+        ',' in offset_string
+        and (len(offset_string) - offset_string.index(',')) == 3
+        and offset_string.replace(',', '').isdigit()
+    ):
+        _float = float(offset_string.replace(',', '.'))  # => 12.34
+        _float = abs(_float)
+        normalization = _float
+    # check for 12.34 (dot is third last char).
+    elif '.' in offset_string and (len(offset_string) - offset_string.index('.')) == 3:
+        _float = float(offset_string)  # => 12.34
+        _float = abs(_float)
+        normalization = _float
+    # check for 12,3 (comma is second last char).
+    elif (
+        ',' in offset_string
+        and (len(offset_string) - offset_string.index(',')) == 2
+        and offset_string.replace(',', '').isdigit()
+    ):
+        _float = float(offset_string.replace(',', '.'))  # => 12.3
+        _float = abs(_float)
+        normalization = _float
+    # check for 12.3 (dot is second last char).
+    elif '.' in offset_string and (len(offset_string) - offset_string.index('.')) == 2:
+        _float = float(offset_string)  # => 12.3
+        _float = abs(_float)
+        normalization = _float
+    # check for 500,000 (comma is forth last char).
+    elif (
+        ln > 0
+        and ',' in offset_string
+        and (len(offset_string) - offset_string.index(',')) == 4
+        and offset_string.replace(',', '').isdigit()
+        and not offset_string[0] == ','
+    ):
+        _float = float(offset_string.replace(',', ''))  # => 500000
+        _float = abs(_float)
+        normalization = _float
+    # check for 500.000
+    elif (
+        ln > 4
+        and '.' in offset_string
+        and offset_string[-4] == '.'
+        and offset_string.replace('.', '').isdigit()
+        and offset_string.count('.') == 1
+    ):
+        normalization = abs(float(offset_string.replace('.', '')))
+    # check for 5000 (only numbers)
+    elif offset_string.isdigit():
+        _float = float(offset_string)
+        _float = abs(_float)
+        normalization = _float
+    # check for 159,;03 (obscured edge case)
+    elif (
+        ln > 3
+        and ';' in offset_string
+        and ',' in offset_string
+        and offset_string[-3] == ';'
+        and offset_string[-4] == ','
+    ):
+        _float = float(offset_string.replace(',', '.').replace(';', ''))  # => 159.03
+        _float = abs(_float)
+        normalization = _float
+    # # check for “71,90 (obscured edge case)
+    # elif offset_string[0] == '“' and offset_string[-3] == ',':
+    #     _float = float(offset_string.replace('“', '').replace(',','.'))  # => 71.90
+    #     _float = abs(_float)
+    #     normalization = _float
+    # check for ,22,95 (obscured edge case)
+    elif (
+        ln > 2 and offset_string[0] == '‚' and offset_string[-3] == ','
+    ):  # first comma is a very different comma ('‚' != ',')
+        _float = float(offset_string[1:].replace(',', '.'))  # => 22.95
+        _float = abs(_float)
+        normalization = _float
+    else:
         logger.warning(
             'Could not convert >>' + offset_string + '<< to positive/absolute float (no conversion case found)'
         )
-        pass
 
     # handles the case when normalization is >float32 maximum size
     # TODO: handle the underflow case, i.e. normalization is a very small number
@@ -439,69 +429,59 @@ def _check_for_dates_with_day_count(offset_string: str, org_str: str, month_dict
     ):
         offset_string = offset_string[0:10]
 
-    try:
-        # check for 2001-01-01
-        if len(offset_string) == 10 and offset_string[4] == '-' and offset_string[7] == '-':
-            _date = f'{offset_string[8:10]}.{offset_string[5:7]}.{offset_string[0:4]}'
-            translation = _date
-        # check for 01.01.2001
-        elif len(offset_string) == 10 and offset_string[2] == '.' and offset_string[5] == '.':
-            _date = offset_string  # => 01.01.2001
-            translation = _date
-        # check for 01/01/2001
-        elif len(offset_string) == 10 and offset_string[2] == '/' and offset_string[5] == '/':
-            _date = offset_string.replace('/', '.')  # => 01.01.2001
-            translation = _date
-        # check for 01-01-2001
-        elif len(offset_string) == 10 and offset_string[2] == '-' and offset_string[5] == '-':
-            _date = offset_string.replace('-', '.')  # => 01.01.2001
-            translation = _date
-        # check for 01.01.01
-        elif (
-            len(offset_string) == 8
-            and offset_string[2] == '.'
-            and offset_string[5] == '.'
-            and offset_string[6:].isdigit()
-        ):
-            year_num = int(offset_string[6:])
+    # check for 2001-01-01
+    if len(offset_string) == 10 and offset_string[4] == '-' and offset_string[7] == '-':
+        _date = f'{offset_string[8:10]}.{offset_string[5:7]}.{offset_string[0:4]}'
+        translation = _date
+    # check for 01.01.2001
+    elif len(offset_string) == 10 and offset_string[2] == '.' and offset_string[5] == '.':
+        _date = offset_string  # => 01.01.2001
+        translation = _date
+    # check for 01/01/2001
+    elif len(offset_string) == 10 and offset_string[2] == '/' and offset_string[5] == '/':
+        _date = offset_string.replace('/', '.')  # => 01.01.2001
+        translation = _date
+    # check for 01-01-2001
+    elif len(offset_string) == 10 and offset_string[2] == '-' and offset_string[5] == '-':
+        _date = offset_string.replace('-', '.')  # => 01.01.2001
+        translation = _date
+    # check for 01.01.01
+    elif (
+        len(offset_string) == 8 and offset_string[2] == '.' and offset_string[5] == '.' and offset_string[6:].isdigit()
+    ):
+        year_num = int(offset_string[6:])
 
-            if year_num > 50:
-                cent_num = 19
-            else:
-                cent_num = 20
-
-            translation = offset_string[:6] + str(cent_num) + offset_string[6:]
-        # check for 01/01/01
-        elif (
-            len(offset_string) == 8
-            and offset_string[2] == '/'
-            and offset_string[5] == '/'
-            and offset_string[6:].isdigit()
-        ):
-            year_num = int(offset_string[6:])
-
-            if year_num > 50:
-                cent_num = 19
-            else:
-                cent_num = 20
-
-            translation = (offset_string[:6] + str(cent_num) + offset_string[6:]).replace('/', '.')
-        # check for 01.01
-        elif len(offset_string) == 5 and offset_string[2] == '.':
-            _date = offset_string + '.0000'  # => 01.01.0000
-            translation = _date
-        # check for 01.01.
-        elif len(offset_string) == 6 and offset_string[2] == '.' and offset_string[5] == '.':
-            _date = offset_string + '0000'  # => 01.01.0000
-            translation = _date
-        # check for 2001-01-01
-        elif len(offset_string) == 10 and offset_string[-3] == '-' and offset_string[4] == '-':
-            translation = offset_string[-2:] + '.' + offset_string[5:7] + '.' + offset_string[:4]
+        if year_num > 50:
+            cent_num = 19
         else:
-            logger.warning('Could not convert >>' + offset_string + '<< to date (no conversion case found)')
-    except ValueError:
-        logger.warning('Could not convert >>' + offset_string + '<< to date (value error)')
-        pass
+            cent_num = 20
+
+        translation = offset_string[:6] + str(cent_num) + offset_string[6:]
+    # check for 01/01/01
+    elif (
+        len(offset_string) == 8 and offset_string[2] == '/' and offset_string[5] == '/' and offset_string[6:].isdigit()
+    ):
+        year_num = int(offset_string[6:])
+
+        if year_num > 50:
+            cent_num = 19
+        else:
+            cent_num = 20
+
+        translation = (offset_string[:6] + str(cent_num) + offset_string[6:]).replace('/', '.')
+    # check for 01.01
+    elif len(offset_string) == 5 and offset_string[2] == '.':
+        _date = offset_string + '.0000'  # => 01.01.0000
+        translation = _date
+    # check for 01.01.
+    elif len(offset_string) == 6 and offset_string[2] == '.' and offset_string[5] == '.':
+        _date = offset_string + '0000'  # => 01.01.0000
+        translation = _date
+    # check for 2001-01-01
+    elif len(offset_string) == 10 and offset_string[-3] == '-' and offset_string[4] == '-':
+        translation = offset_string[-2:] + '.' + offset_string[5:7] + '.' + offset_string[:4]
+    else:
+        logger.warning('Could not convert >>' + offset_string + '<< to date (no conversion case found)')
 
     translation = _final_date_check(translation)
 
@@ -594,27 +574,24 @@ def _convert_german_time_to_iso(date_string: str):
 
 def _final_date_check(date_string: str):
     """Validate the converted dates including appropriate errors."""
-    try:
-        if date_string:
-            if not (
-                len(date_string) == 10
-                and date_string[2] == '.'
-                and date_string[5] == '.'
-                and date_string[-4:].isdigit()
-                and date_string[:2].isdigit()
-                and date_string[3:5].isdigit()
-            ):
-                logger.warning('Could not convert >>' + date_string + '<< to date (date contains letters)')
-                date_string = None
-            elif (
-                not ((1900 < int(date_string[-4:]) < 2100) or int(date_string[-4:]) == 0)
-                or not (int(date_string[:2]) < 32)
-                or not (int(date_string[3:5]) < 13)
-            ):
-                logger.warning('Could not convert >>' + date_string + '<< to date (invalid date)')
-                date_string = None
-    except Exception:
-        date_string = None
+    if date_string:
+        if not (
+            len(date_string) == 10
+            and date_string[2] == '.'
+            and date_string[5] == '.'
+            and date_string[-4:].isdigit()
+            and date_string[:2].isdigit()
+            and date_string[3:5].isdigit()
+        ):
+            logger.warning('Could not convert >>' + date_string + '<< to date (date contains letters)')
+            date_string = None
+        elif (
+            not ((1900 < int(date_string[-4:]) < 2100) or int(date_string[-4:]) == 0)
+            or not (int(date_string[:2]) < 32)
+            or not (int(date_string[3:5]) < 13)
+        ):
+            logger.warning('Could not convert >>' + date_string + '<< to date (invalid date)')
+            date_string = None
     return date_string
 
 
@@ -643,18 +620,23 @@ def normalize_to_bool(offset_string: str):
 
 def normalize(offset_string, data_type):
     """Wrap all normalize functionality."""
-    if data_type in ['Positive Number', 'float_positive']:
-        result = normalize_to_positive_float(offset_string)
-    elif data_type in ['Number', 'float']:
-        result = normalize_to_float(offset_string)
-    elif data_type in ['Date', 'date']:
-        result = normalize_to_date(offset_string)
-    elif data_type in ['True/False', 'bool']:
-        result = normalize_to_bool(offset_string)  # bool not implemented yet.
-    elif data_type in ['percentage', 'Percentage']:
-        result = normalize_to_percentage(offset_string)
-    elif data_type in ['Text', 'str']:
-        result = offset_string
-    else:
-        result = None
+    try:
+        if data_type in ['Positive Number', 'float_positive']:
+            result = normalize_to_positive_float(offset_string)
+        elif data_type in ['Number', 'float']:
+            result = normalize_to_float(offset_string)
+        elif data_type in ['Date', 'date']:
+            result = normalize_to_date(offset_string)
+        elif data_type in ['True/False', 'bool']:
+            result = normalize_to_bool(offset_string)  # bool not implemented yet.
+        elif data_type in ['percentage', 'Percentage']:
+            result = normalize_to_percentage(offset_string)
+        elif data_type in ['Text', 'str']:
+            result = offset_string
+        else:
+            result = None
+    except Exception as e:  # NOQA
+        logger.error('Text >>' + offset_string + f'<< with data type {data_type} cannot be converted')
+        pass
+
     return result
