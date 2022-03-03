@@ -43,7 +43,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 12
+        assert len(cls.project.virtual_documents) == 11
 
     def test_category_of_document(self):
         """Test if setup worked."""
@@ -81,10 +81,64 @@ class TestOfflineDataSetup(unittest.TestCase):
         """Check that a virtual Document has now folder."""
         assert not os.path.isdir(self.document.document_folder)
 
-    def test_create_new_annotation_in_document(self):
+    def test_new_annotation_in_document_of_add_foreign_annotation_set(self):
         """Add new annotation to a document."""
-        document = Document(project=self.project, category=self.category)
+        project = Project(id_=None)
+        document = Document(project=project, category=self.category)
         span = Span(start_offset=1, end_offset=2)
+
+        with self.assertRaises(IndexError) as context:
+            _ = Annotation(
+                document=document,
+                is_correct=True,
+                label=self.label,
+                annotation_set=self.annotation_set,
+                label_set=self.label_set,
+                spans=[span],
+            )
+            assert 'Annotation Set None is not part of Document None' in context.exception
+
+    def test_new_annotation_in_annotation_set_of_document_of_add_foreign_annotation_set(self):
+        """Add new annotation to a document."""
+        project = Project(id_=None)
+        document = Document(project=project, category=self.category)
+        span = Span(start_offset=1, end_offset=2)
+
+        with self.assertRaises(IndexError) as context:
+            _ = Annotation(
+                document=document,
+                is_correct=True,
+                label=self.label,
+                annotation_set=self.annotation_set,
+                label_set=self.label_set,
+                spans=[span],
+            )
+            assert 'Annotation Set None is not part of Document None' in context.exception
+
+    def test_new_annotation_in_document(self):
+        """Add new annotation to a document."""
+        project = Project(id_=None)
+        document = Document(project=project, category=self.category)
+        span = Span(start_offset=1, end_offset=2)
+        annotation_set = AnnotationSet(document=document, label_set=self.label_set)
+
+        annotation = Annotation(
+            document=document,
+            is_correct=True,
+            label=self.label,
+            annotation_set=annotation_set,
+            label_set=self.label_set,
+            spans=[span],
+        )
+
+        assert annotation in document.annotations()
+
+    def test_new_annotation_in_annotation_set_of_document(self):
+        """Add new annotation to a document."""
+        project = Project(id_=None)
+        document = Document(project=project, category=self.category)
+        span = Span(start_offset=1, end_offset=2)
+        annotation_set = AnnotationSet(document=document, label_set=self.label_set)
 
         annotation = Annotation(
             document=document,
@@ -95,11 +149,7 @@ class TestOfflineDataSetup(unittest.TestCase):
             spans=[span],
         )
 
-        document_annotations = document.annotations()
-        annotation_set_annotations = self.annotation_set.annotations
-        assert annotation in document_annotations
-        # TODO: annotation is not added to annotation set even if we pass it in the initialization
-        assert annotation in annotation_set_annotations
+        assert annotation in annotation_set.annotations
 
     def test_create_new_annotation_set_in_document(self):
         """Add new annotation set to a document."""
@@ -570,6 +620,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert is_file(doc.annotation_file_path)
         assert is_file(doc.annotation_set_file_path)
 
+    @unittest.skip(reason='No update logic of project about new Annotation.')
     def test_annotations_in_document(self):
         """Test number and value of Annotations."""
         doc = self.prj.get_document_by_id(44842)

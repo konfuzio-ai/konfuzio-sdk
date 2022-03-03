@@ -23,7 +23,6 @@ from konfuzio_sdk.api import (
     get_project_details,
     post_document_annotation,
     delete_document_annotation,
-    create_label,
     get_document_details,
 )
 from konfuzio_sdk.evaluate import compare
@@ -123,7 +122,7 @@ class LabelSet(Data):
         name: str = None,
         name_clean: str = None,
         is_default=False,
-        categories=[],
+        categories=None,
         has_multiple_annotation_sets=False,
         **kwargs,
     ):
@@ -139,6 +138,8 @@ class LabelSet(Data):
         :param categories: Categories to which the Label Set belongs
         :param has_multiple_annotation_sets: Bool to allow the Label Set to have different Annotation Sets in a Document
         """
+        if categories is None:
+            categories = []
         if labels is None:
             labels = []
         self.id_local = next(Data.id_iter)
@@ -231,7 +232,7 @@ class Category(Data):
 
 
 class Label(Data):
-    """A Label is the name of a group of individual pieces of information annotated in a type of document."""
+    """A Label groups Annotations."""
 
     def __init__(
         self,
@@ -288,35 +289,18 @@ class Label(Data):
         return f'Label: {self.name}'
 
     def __lt__(self, other: 'Label'):
-        """If we sort spans we do so by start offset."""
+        """Sort Spans by start offset."""
         try:
             return self.name < other.name
         except TypeError:
             logger.error(f'Cannot sort {self} and {other}.')
             return False
 
-    # @property
-    # def label_sets(self) -> List[LabelSet]:
-    #     """Get the Label Sets in which this Label is used."""
-    #     label_sets = [x for x in self.project.label_sets if self in x.labels]
-    #     return label_sets
-
-    # @property
-    # def translations(self):
-    #     """Create a translation dictionary between offset string and business relevant representation."""
-    #     return {
-    #         annotation.offset_string: annotation.translated_string
-    #         for annotation in self.annotations
-    #         if annotation.translated_string
-    #     }
-
     def annotations(self, categories: List[Category], use_correct=True):
         """Return related Annotations. Consider that one Label can be used across Label Sets in multiple Categories."""
         annotations = []
         for category in categories:
             for document in category.documents():
-                if document.category is None:
-                    print(1)
                 for annotation in document.annotations(label=self):
                     if use_correct and annotation.is_correct:
                         annotations.append(annotation)
@@ -335,12 +319,6 @@ class Label(Data):
             self.label_sets.append(label_set)
         else:
             raise ValueError(f'In {self} the {label_set} is a duplicate and will not be added.')
-
-    # @property
-    # def documents(self) -> List["Document"]:
-    #     """Return all Documents which contain Annotations of this Label."""
-    #     relevant_id = list(set([anno.document.id_ for anno in self.annotations]))
-    #     return [doc for doc in self.project.documents if (doc.id_ in relevant_id)]
 
     # todo move to regex.py so it runs on a list of Annotations, run on Annotations
     def find_tokens(self, categories: List[Category]):
@@ -496,29 +474,6 @@ class Label(Data):
             best_regex = []
         # todo: end duplicate check
 
-        # for annotation in self.annotations:
-        #     for span in annotation._spans:
-        #         for regex in best_regex:
-        #             _, _, spans = generic_candidate_function(regex)(annotation.document.text)
-        #             if (span.start_offset, span.end_offset) in spans:
-        #                 break
-        #         else:
-        #             logger.error(f'Fallback regex added for >>{span}<<.')
-        #             _suggest = annotation.document.regex(span.start_offset, span.end_offset)
-        #             match = check_for_match(
-        #                 annotation.document.text, _suggest[:1], span.start_offset, span.end_offset
-        #             )
-        #             if match:
-        #                 best_regex += _suggest
-
-        # Final check.
-        # for annotation in self.annotations:
-        #     for regex in best_regex:
-        #         x = generic_candidate_function(regex)(annotation.document.text)
-        #         if (annotation.start_offset, annotation.end_offset) in x[2]:
-        #             break
-        #     else:
-        #         logger.error(f'{annotation} could not be found by any regex.')
         return best_regex
 
     def regex(self, categories: List[Category], update=False) -> List:
@@ -536,39 +491,33 @@ class Label(Data):
         logger.info(f'Regexes are ready for Label {self.name}.')
         return self._regex
 
-    def save(self) -> bool:
-        """
-        Save Label online.
-
-        If no Label Sets are specified, the Label is associated with the first default Label Set of the Project.
-
-        :return: True if the new Label was created.
-        """
-        new_label_added = False
-        try:
-            if len(self.label_sets) == 0:
-                prj_label_sets = self.project.label_sets
-                label_set = [t for t in prj_label_sets if t.is_default][0]
-                label_set.add_label(self)
-
-            response = create_label(
-                project_id=self.project.id_,
-                label_name=self.name,
-                description=self.description,
-                has_multiple_top_candidates=self.has_multiple_top_candidates,
-                data_type=self.data_type,
-                label_sets=self.label_sets,
-            )
-            self.id_ = response
-            new_label_added = True
-        except Exception:
-            logger.error(f"Not able to save Label {self.name}.")
-
-        return new_label_added
+    # def save(self) -> bool:
+    #     """
+    #     Save Label online.
+    #
+    #     If no Label Sets are specified, the Label is associated with the first default Label Set of the Project.
+    #
+    #     :return: True if the new Label was created.
+    #     """
+    #     if len(self.label_sets) == 0:
+    #         prj_label_sets = self.project.label_sets
+    #         label_set = [t for t in prj_label_sets if t.is_default][0]
+    #         label_set.add_label(self)
+    #
+    #     response = create_label(
+    #         project_id=self.project.id_,
+    #         label_name=self.name,
+    #         description=self.description,
+    #         has_multiple_top_candidates=self.has_multiple_top_candidates,
+    #         data_type=self.data_type,
+    #         label_sets=self.label_sets,
+    #     )
+    #
+    #     return True
 
 
 class Span(Data):
-    """An Span is a single sequence of characters."""
+    """An Span is a sequence of characters or whitespaces without line break."""
 
     def __init__(self, start_offset: int, end_offset: int, annotation=None):
         """
@@ -752,9 +701,11 @@ class Annotation(Data):
 
         # make sure an Annotation Set is available
         if isinstance(annotation_set_id, int):
-            self.annotation_set = self.document.get_annotation_set_by_id(annotation_set_id)
+            self.annotation_set: AnnotationSet = self.document.get_annotation_set_by_id(annotation_set_id)
         elif isinstance(annotation_set, AnnotationSet):
-            self.annotation_set = annotation_set
+            # it's is a save way to look up the annotation set first. Otherwise users can add annotation sets which
+            # do not relate to the document
+            self.annotation_set: AnnotationSet = self.document.get_annotation_set_by_id(annotation_set.id_)
         else:
             self.annotation_set = None
             logger.debug(f'{self} in {self.document} created but without Annotation Set information.')
@@ -841,13 +792,6 @@ class Annotation(Data):
                     if self.label_set and other.label_set and self.label_set == other.label_set:
                         if self.spans == other.spans:
                             result = True
-
-        # todo why?
-        # if self.document and other.document and self.document == other.document:
-        #    if self.is_correct == other.is_correct:
-        #        if self.spans == other.spans:
-        #            result = True
-        # return result
 
         return result
 
