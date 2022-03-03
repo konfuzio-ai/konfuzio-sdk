@@ -671,16 +671,15 @@ def get_missing_offsets(start_offset: int, end_offset: int, annotated_offsets: L
     :type end_offset:
     :type annotated_offsets: List[int]
 
-    ..todo: How do we handle tokens that are smaller / larger than the correct Annotations?
-            https://docs.google.com/document/d/1bxUgvX1OGG_fbQvDXW7gDVcgfKto1dgP94uTp5srFP4/edit
-
-     :Example:
+    .. todo::
+        How do we handle tokens that are smaller / larger than the correct Annotations? See
+        `link <https://docs.google.com/document/d/1bxUgvX1OGG_fbQvDXW7gDVcgfKto1dgP94uTp5srFP4/edit>`_
 
     >>> get_missing_offsets(start_offset=0, end_offset=170, annotated_offsets=[range(66, 78), range(159, 169)])
-    [range(0, 65), range(78, 158), range(169, 170)]
+    [range(0, 66), range(78, 159), range(169, 170)]
 
     """
-    # range makes sure that uvalid ranges are ignored: list(range(4,2)) == []
+    # range makes sure that invalid ranges are ignored: list(range(4,2)) == []
     annotated_characters: List[int] = sum([list(span) for span in annotated_offsets], [])
 
     # Create boolean list of size high-low+1, each index i representing whether (i+low)th element found or not.
