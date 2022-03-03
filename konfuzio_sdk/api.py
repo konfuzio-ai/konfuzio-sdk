@@ -59,8 +59,11 @@ def init_env(
     """
     Add the .env file to the working directory.
 
-    :param project_folder: Root folder of the Project where to place the .env file
-    :return: file content
+    :param user: Username to log in to the host
+    :param password: Password to log in to the host
+    :param host: URL of host.
+    :param working_directory: Directory where file should be added
+    :param file_ending: Ending of file.
     """
     token = _get_auth_token(user, password, host)
 
@@ -79,10 +82,9 @@ class TimeoutHTTPAdapter(HTTPAdapter):
 
     Documentation
     =============
-        * `Urllib3
-            <https://urllib3.readthedocs.io/en/latest/reference/urllib3.util.html#urllib3.util.Retry>`__
-        * `Blogpost with TimeoutHTTPAdapter idea
-            <https://findwork.dev/blog/advanced-usage-python-requests-timeouts-retries-hooks/>`__
+        * `Urllib3 <https://urllib3.readthedocs.io/en/latest/reference/urllib3.util.html#urllib3.util.Retry>`_
+        * TimeoutHTTPAdapter idea used from the following
+            `Blogpost <https://findwork.dev/blog/advanced-usage-python-requests-timeouts-retries-hooks/>`_
     """
 
     def __init__(self, timeout, *args, **kwargs):
@@ -100,7 +102,7 @@ class TimeoutHTTPAdapter(HTTPAdapter):
         return super().send(request, *args, **kwargs)
 
 
-def _konfuzio_session(token=KONFUZIO_TOKEN):
+def _konfuzio_session(token: str = KONFUZIO_TOKEN):
     """
     Create a session incl. base auth to the KONFUZIO_HOST.
 
@@ -110,7 +112,7 @@ def _konfuzio_session(token=KONFUZIO_TOKEN):
         total=5,
         status_forcelist=[429, 500, 502, 503, 504],
         backoff_factor=2,
-        method_whitelist=["HEAD", "GET", "PUT", "DELETE", "OPTIONS", "TRACE"],  # POST excluded
+        allowed_methods=["HEAD", "GET", "PUT", "DELETE", "OPTIONS", "TRACE"],  # POST excluded
     )
     session = requests.Session()
     session.mount('https://', adapter=TimeoutHTTPAdapter(max_retries=retry_strategy, timeout=120))
@@ -234,11 +236,11 @@ def post_document_annotation(
     """
     url = get_document_annotations_url(document_id, project_id=project_id)
 
-    bbox = kwargs.get('bbox', None)
+    # bbox = kwargs.get('bbox', None)
     custom_bboxes = kwargs.get('bboxes', None)
-    selection_bbox = kwargs.get('selection_bbox', None)
-    page_number = kwargs.get('page_number', None)
-    offset_string = kwargs.get('offset_string', None)
+    # selection_bbox = kwargs.get('selection_bbox', None)
+    # page_number = kwargs.get('page_number', None)
+    # offset_string = kwargs.get('offset_string', None)
     start_offset = kwargs.get('start_offset', None)
     end_offset = kwargs.get('end_offset', None)
 
@@ -258,25 +260,22 @@ def post_document_annotation(
     if start_offset is not None:
         data['start_offset'] = start_offset
 
-    if annotation_set:
-        data['section'] = annotation_set
-    else:
-        data['section'] = None
+    data['section'] = annotation_set
 
-    if page_number is not None:
-        data['page_number'] = page_number
-
-    if offset_string is not None:
-        data['offset_string'] = offset_string
-
-    if bbox is not None:
-        data['bbox'] = bbox
+    # if page_number is not None:
+    #     data['page_number'] = page_number
+    #
+    # if offset_string is not None:
+    #     data['offset_string'] = offset_string
+    #
+    # if bbox is not None:
+    #     data['bbox'] = bbox
+    #
+    # if selection_bbox is not None:
+    #     data['selection_bbox'] = selection_bbox
 
     if custom_bboxes is not None:
         data['custom_bboxes'] = custom_bboxes
-
-    if selection_bbox is not None:
-        data['selection_bbox'] = selection_bbox
 
     r = session.post(url, json=data)
     assert r.status_code == 201
@@ -302,36 +301,27 @@ def delete_document_annotation(document_id: int, annotation_id: int, project_id:
         return r
 
 
-def get_meta_of_files(project_id: int, session=_konfuzio_session()) -> List[dict]:
+def get_meta_of_files(project_id: int, limit: int = 1000, session=_konfuzio_session()) -> List[dict]:
     """
-    Get dictionary of previously uploaded Document names to Konfuzio API.
+    Get meta information of Documents in a Project.
 
-    Dataset_status:
-    NONE = 0
-    PREPARATION = 1
-    TRAINING = 2
-    TEST = 3
-    LOW_OCR_QUALITY = 4
-
-    :param project_id: ID of the project
+    :param project_id: ID of the Project
+    :param limit: Number of Documents per Page
     :param session: Konfuzio session with Retry and Timeout policy
     :return: Sorted Documents names in the format {id_: 'pdf_name'}.
     """
-    url = get_documents_meta_url(project_id=project_id)
+    url = get_documents_meta_url(project_id=project_id, limit=limit)
     result = []
+    r = session.get(url)
+    data = r.json()
+    result += data['results']
 
-    while True:
+    while 'next' in data.keys() and data['next']:
+        logger.info(f'Iterate on paginated {url}.')
+        url = data['next']
         r = session.get(url)
         data = r.json()
-        if isinstance(data, dict) and 'results' in data.keys():
-            result += data['results']
-            if 'next' in data.keys() and data['next']:
-                url = data['next']
-            else:
-                break
-        else:
-            result = data
-            break
+        result += data['results']
 
     sorted_documents = sorted(result, key=itemgetter('id'))
     return sorted_documents
@@ -353,6 +343,9 @@ def create_label(
     :param label_name: Name for the label
     :param label_sets: Label sets that use the label
     :param session: Konfuzio session with Retry and Timeout policy
+    :param description: Test to describe the label
+    :param has_multiple_top_candidates: If multiple Annotations can be correct in a single Annotation Set
+    :param data_type: Expected data type of any Span of Annotations related to this Label.
     :return: Label ID in the Konfuzio Server.
     """
     url = get_labels_url()

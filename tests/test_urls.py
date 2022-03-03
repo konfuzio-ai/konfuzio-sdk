@@ -46,8 +46,8 @@ class TestUrls(unittest.TestCase):
 
     def test_get_documents_meta_url(self):
         """Test function used to generate url to load meta information about Documents."""
-        document_meta_url = f"{KONFUZIO_HOST}/api/projects/{TEST_PROJECT_ID}/docs/"
-        self.assertEqual(get_documents_meta_url(project_id=TEST_PROJECT_ID), document_meta_url)
+        document_meta_url = f"{KONFUZIO_HOST}/api/projects/{TEST_PROJECT_ID}/docs/?limit=10"
+        self.assertEqual(document_meta_url, get_documents_meta_url(project_id=TEST_PROJECT_ID))
 
     def test_get_document_annotations_url(self):
         """Test function used to generate url to access Annotations from a document."""

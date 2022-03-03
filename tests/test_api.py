@@ -27,6 +27,7 @@ from konfuzio_sdk.api import (
     _get_auth_token,
     create_new_project,
     create_label,
+    TimeoutHTTPAdapter,
 )
 from konfuzio_sdk.utils import is_file
 
@@ -66,6 +67,20 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'priority_processing',
             'ocr_method',
         }
+
+    def test_get_meta_of_files_multiple_pages(self):
+        """Get the meta information of Document in a Project."""
+        get_meta_of_files(project_id=TEST_PROJECT_ID, limit=10)
+
+    @patch("requests.post")
+    def test_empty_project(self, function):
+        """Get the meta information of Documents if the Project is empty."""
+        function.return_value = {"count": 0, "next": None, "previous": None, "results": []}
+        get_meta_of_files(project_id=TEST_PROJECT_ID, limit=10)
+
+    def test_get_meta_of_files_one_page(self):
+        """Get the meta information of Documents in a Project."""
+        get_meta_of_files(project_id=TEST_PROJECT_ID, limit=1000000000)
 
     def test_documents_list(self):
         """Test to get Documents details."""
@@ -393,6 +408,42 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
         function.return_value = _Response()
         _get_auth_token('test', 'test')
+
+    def test_permission_error_with_none_token(self):
+        """Test to raise PermissionError."""
+        adapter = TimeoutHTTPAdapter(timeout=1)
+        # mock request
+
+        class _Request:
+            """Mock Request."""
+
+            headers = {'Authorization': 'Token None'}
+
+        with self.assertRaises(PermissionError) as context:
+            adapter.send(request=_Request())  # NOQA
+            assert 'is missing' in context.exception
+
+    @patch("requests.post")
+    def test_get_auth_token_connection_error(self, function):
+        """Test to run CLI."""
+        # mock response
+        class _Response:
+            """Mock requests POST response."""
+
+            status_code = 500
+
+            def json(self):
+                """Mock valid return."""
+                return {"token": "faketoken"}
+
+            def text(self):
+                """Mock the text in the response."""
+                return "Error"
+
+        function.return_value = _Response()
+        with self.assertRaises(ConnectionError) as context:
+            _get_auth_token('test', 'test')
+            assert 'HTTP Status 500' in context.exception
 
     @patch("requests.post")
     def test_patched_init_env(self, function):
