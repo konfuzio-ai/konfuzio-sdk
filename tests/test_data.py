@@ -450,7 +450,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
                 if not annotation.label_set.is_default:
                     assert annotation.label_set in category.label_sets
 
-    def test_category_label_sets(self):
+    def test_label_sets_of_category(self):
         """Test Label Sets of a Category."""
         category = self.prj.get_category_by_id(63)
         category_label_sets = category.label_sets
@@ -459,7 +459,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         for label_set in category_label_sets:
             assert category in label_set.categories
 
-    def test_category_labels(self):
+    def test_labels_of_category(self):
         """Test Labels of a Category."""
         category = self.prj.get_category_by_id(63)
         category_labels = category.labels
@@ -468,6 +468,15 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert len(category_labels) > 0
         for label in category_labels:
             assert category in label.categories
+
+    def test_label_sets_of_label(self):
+        """Test Label Sets of a Label."""
+        label = self.prj.get_label_by_id(861)  # Lohnart
+        label_sets = label.label_sets
+
+        # TODO: get Label Sets from Label #8843
+        # Lohnart is associated to Brutto-Bezug and Netto-Bezug
+        assert len(label_sets) == 2
 
     def test_label_set_multiple(self):
         """Test Label Set config that is set to multiple."""
