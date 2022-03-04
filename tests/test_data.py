@@ -412,7 +412,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert self.prj.label_sets[0].categories[0].id_ == 63
 
     def test_category_documents(self):
-        """Test documents category within a category."""
+        """Test category of Documents associated to a Category."""
         category = self.prj.get_category_by_id(63)
         category_documents = category.documents()
 
@@ -421,7 +421,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
             assert document.category == category
 
     def test_category_test_documents(self):
-        """Test test documents category within a category."""
+        """Test category of Test Documents associated to a Category."""
         category = self.prj.get_category_by_id(63)
         category_test_documents = category.test_documents()
 
@@ -430,7 +430,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
             assert document.category == category
 
     def test_category_annotations_by_label(self):
-        """Test getting annotations of a category by labels."""
+        """Test getting Annotations of a Category by Labels."""
         category = self.prj.get_category_by_id(63)
         category_label_sets = category.label_sets
         label = category_label_sets[0].labels[0]
@@ -443,7 +443,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
                 assert annotation.document.category == category
 
     def test_category_annotations_by_document(self):
-        """Test getting annotations of a category by documents."""
+        """Test getting Annotations of a Category by Documents."""
         category = self.prj.get_category_by_id(63)
         for document in category.documents():
             for annotation in document.annotations():
@@ -451,13 +451,23 @@ class TestKonfuzioDataSetup(unittest.TestCase):
                     assert annotation.label_set in category.label_sets
 
     def test_category_label_sets(self):
-        """Test label sets of a category."""
+        """Test Label Sets of a Category."""
         category = self.prj.get_category_by_id(63)
         category_label_sets = category.label_sets
 
         assert len(category_label_sets) > 0
         for label_set in category_label_sets:
             assert category in label_set.categories
+
+    def test_category_labels(self):
+        """Test Labels of a Category."""
+        category = self.prj.get_category_by_id(63)
+        category_labels = category.labels
+
+        # TODO: get Labels from Category #8842
+        assert len(category_labels) > 0
+        for label in category_labels:
+            assert category in label.categories
 
     def test_label_set_multiple(self):
         """Test Label Set config that is set to multiple."""
