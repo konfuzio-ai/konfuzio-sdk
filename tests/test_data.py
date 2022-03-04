@@ -280,13 +280,43 @@ class TestKonfuzioDataCustomPath(unittest.TestCase):
         prj.delete()
 
     def test_make_sure_text_is_downloaded_automatically(self):
-        """Test if a Text downloaded automatically."""
+        """Test if a Text is downloaded automatically."""
         prj = Project(id_=TEST_PROJECT_ID, project_folder='my_own_data')
         doc = prj.get_document_by_id(214414)
         self.assertFalse(is_file(doc.txt_file_path, raise_exception=False))
         self.assertEqual(None, doc._text)
         self.assertTrue(doc.text)
         self.assertTrue(is_file(doc.txt_file_path))
+        prj.delete()
+
+    def test_make_sure_annotations_are_downloaded_automatically(self):
+        """Test if Annotations are downloaded automatically."""
+        prj = Project(id_=TEST_PROJECT_ID, project_folder='my_own_data')
+        doc = prj.get_document_by_id(214414)
+        self.assertFalse(is_file(doc.annotation_file_path, raise_exception=False))
+        self.assertEqual([], doc._annotations)
+        self.assertTrue(doc.annotations())
+        self.assertTrue(is_file(doc.annotation_file_path))
+        prj.delete()
+
+    def test_make_sure_annotation_sets_are_downloaded_automatically(self):
+        """Test if Annotation Sets are downloaded automatically."""
+        prj = Project(id_=TEST_PROJECT_ID, project_folder='my_own_data')
+        doc = prj.get_document_by_id(214414)
+        self.assertFalse(is_file(doc.annotation_set_file_path, raise_exception=False))
+        self.assertEqual([], doc._annotation_sets)
+        self.assertTrue(doc.annotation_sets)
+        self.assertTrue(is_file(doc.annotation_set_file_path))
+        prj.delete()
+
+    def test_make_sure_pages_are_downloaded_automatically(self):
+        """Test if Pages are downloaded automatically."""
+        prj = Project(id_=TEST_PROJECT_ID, project_folder='my_own_data')
+        doc = prj.get_document_by_id(214414)
+        self.assertFalse(is_file(doc.pages_file_path, raise_exception=False))
+        self.assertEqual(None, doc._pages)
+        self.assertTrue(doc.pages)
+        self.assertTrue(is_file(doc.pages_file_path))
         prj.delete()
 
 
