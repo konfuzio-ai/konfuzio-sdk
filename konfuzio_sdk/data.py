@@ -1746,40 +1746,6 @@ class Document(Data):
 
         return self._annotations
 
-    # todo: please add tests before adding this functionality
-    # def check_annotations(self):
-    #     """Check for annotations width more values than allowed."""
-    #     labels = self.project.labels
-    #     # Labels that can only have 1 value.
-    #     labels_to_check = [label.name_clean for label in labels if not Label.has_multiple_top_candidates]
-    #
-    #     # Check is done per annotation_set.
-    #     for annotation_set in self.annotation_sets:
-    #         values_annotations = {}
-    #         for annotation in annotation_set.annotations:
-    #             annotation_label = annotation.label.name_clean
-    #
-    #             if annotation_label in labels_to_check:
-    #                 annotation_value = annotation.normalize
-    #
-    #                 if annotation.normalized is None:
-    #                     annotation_value = annotation.offset_string
-    #
-    #                 if annotation_label in values_annotations.keys():
-    #                     if annotation_value not in values_annotations[annotation_label]:
-    #                         values_annotations[annotation_label].extend([annotation_value])
-    #
-    #                 else:
-    #                     values_annotations[annotation_label] = [annotation_value]
-    #
-    #         for label, values in values_annotations.items():
-    #             if len(values) > 1:
-    #                 logger.info(
-    #                     f'[Warning] Doc {self.id_} - '
-    #                     f'AnnotationSet {annotation.label_set.name_clean} ({annotation.label_set.id_})- '
-    #                     f'Label "{label}" shouldn\'t have more than 1 value. Values = {values}'
-    #                 )
-
 
 class Project(Data):
     """Access the information of a Project."""
