@@ -296,6 +296,7 @@ class TestRegexGenerator(unittest.TestCase):
         assert len(cls.prj.get_label_by_id(867).annotations(categories=[cls.category])) == cls.correct_annotations
         # cls.prj.delete()
 
+    @unittest.skip(reason='Cumbersome and too slow.')
     def test_regex_single_annotation_in_row(self):
         """Build a simple extraction for an amount."""
         analyzed_label = self.prj.get_label_by_name('Auszahlungsbetrag')
