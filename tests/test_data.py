@@ -285,13 +285,43 @@ class TestKonfuzioDataCustomPath(unittest.TestCase):
         prj.delete()
 
     def test_make_sure_text_is_downloaded_automatically(self):
-        """Test if a Text downloaded automatically."""
+        """Test if a Text is downloaded automatically."""
         prj = Project(id_=TEST_PROJECT_ID, project_folder='my_own_data')
         doc = prj.get_document_by_id(214414)
         self.assertFalse(is_file(doc.txt_file_path, raise_exception=False))
         self.assertEqual(None, doc._text)
         self.assertTrue(doc.text)
         self.assertTrue(is_file(doc.txt_file_path))
+        prj.delete()
+
+    def test_make_sure_annotations_are_downloaded_automatically(self):
+        """Test if Annotations are downloaded automatically."""
+        prj = Project(id_=TEST_PROJECT_ID, project_folder='my_own_data')
+        doc = prj.get_document_by_id(214414)
+        self.assertFalse(is_file(doc.annotation_file_path, raise_exception=False))
+        self.assertEqual([], doc._annotations)
+        self.assertTrue(doc.annotations())
+        self.assertTrue(is_file(doc.annotation_file_path))
+        prj.delete()
+
+    def test_make_sure_annotation_sets_are_downloaded_automatically(self):
+        """Test if Annotation Sets are downloaded automatically."""
+        prj = Project(id_=TEST_PROJECT_ID, project_folder='my_own_data')
+        doc = prj.get_document_by_id(214414)
+        self.assertFalse(is_file(doc.annotation_set_file_path, raise_exception=False))
+        self.assertEqual([], doc._annotation_sets)
+        self.assertTrue(doc.annotation_sets)
+        self.assertTrue(is_file(doc.annotation_set_file_path))
+        prj.delete()
+
+    def test_make_sure_pages_are_downloaded_automatically(self):
+        """Test if Pages are downloaded automatically."""
+        prj = Project(id_=TEST_PROJECT_ID, project_folder='my_own_data')
+        doc = prj.get_document_by_id(214414)
+        self.assertFalse(is_file(doc.pages_file_path, raise_exception=False))
+        self.assertEqual(None, doc._pages)
+        self.assertTrue(doc.pages)
+        self.assertTrue(is_file(doc.pages_file_path))
         prj.delete()
 
 
@@ -387,7 +417,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert self.prj.label_sets[0].categories[0].id_ == 63
 
     def test_category_documents(self):
-        """Test documents category within a category."""
+        """Test category of Documents associated to a Category."""
         category = self.prj.get_category_by_id(63)
         category_documents = category.documents()
 
@@ -396,7 +426,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
             assert document.category == category
 
     def test_category_test_documents(self):
-        """Test test documents category within a category."""
+        """Test category of Test Documents associated to a Category."""
         category = self.prj.get_category_by_id(63)
         category_test_documents = category.test_documents()
 
@@ -405,7 +435,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
             assert document.category == category
 
     def test_category_annotations_by_label(self):
-        """Test getting annotations of a category by labels."""
+        """Test getting Annotations of a Category by Labels."""
         category = self.prj.get_category_by_id(63)
         category_label_sets = category.label_sets
         label = category_label_sets[0].labels[0]
@@ -418,21 +448,40 @@ class TestKonfuzioDataSetup(unittest.TestCase):
                 assert annotation.document.category == category
 
     def test_category_annotations_by_document(self):
-        """Test getting annotations of a category by documents."""
+        """Test getting Annotations of a Category by Documents."""
         category = self.prj.get_category_by_id(63)
         for document in category.documents():
             for annotation in document.annotations():
                 if not annotation.label_set.is_default:
                     assert annotation.label_set in category.label_sets
 
-    def test_category_label_sets(self):
-        """Test label sets of a category."""
+    def test_label_sets_of_category(self):
+        """Test Label Sets of a Category."""
         category = self.prj.get_category_by_id(63)
         category_label_sets = category.label_sets
 
         assert len(category_label_sets) > 0
         for label_set in category_label_sets:
             assert category in label_set.categories
+
+    def test_labels_of_category(self):
+        """Test Labels of a Category."""
+        category = self.prj.get_category_by_id(63)
+        category_labels = category.labels
+
+        # TODO: get Labels from Category #8842
+        assert len(category_labels) > 0
+        for label in category_labels:
+            assert category in label.categories
+
+    def test_label_sets_of_label(self):
+        """Test Label Sets of a Label."""
+        label = self.prj.get_label_by_id(861)  # Lohnart
+        label_sets = label.label_sets
+
+        # TODO: get Label Sets from Label #8843
+        # Lohnart is associated to Brutto-Bezug and Netto-Bezug
+        assert len(label_sets) == 2
 
     def test_label_set_multiple(self):
         """Test Label Set config that is set to multiple."""
