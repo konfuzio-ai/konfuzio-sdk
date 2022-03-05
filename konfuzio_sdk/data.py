@@ -284,6 +284,7 @@ class Label(Data):
         self._combined_tokens = None
         self.regex_file_path = os.path.join(self.project.regex_folder, f'{self.name_clean}.json5')
         self._correct_annotations = []
+        self._evaluations = []  # used to do the duplicate check on Annotation level
 
     def __repr__(self):
         """Return string representation."""
@@ -324,7 +325,6 @@ class Label(Data):
     # todo move to regex.py so it runs on a list of Annotations, run on Annotations
     def find_tokens(self, categories: List[Category]):
         """Calculate the regex token of a label, which matches all offset_strings of all correct Annotations."""
-        self._evaluations = []  # used to do the duplicate check on Annotation level
         for annotation in self.annotations(categories=categories):
             self._evaluations += annotation.tokens(categories=categories)
         try:
@@ -374,7 +374,7 @@ class Label(Data):
 
     def evaluate_regex(self, regex, categories: List[Category], filtered_group=None, regex_quality=0):
         """
-        Evaluate a regex on overall Project data.
+        Evaluate a regex on Categories.
 
         Type of regex allows you to group regex by generality
 
@@ -392,11 +392,17 @@ class Label(Data):
 
         """
         evaluations = []
+        documents = []
         for category in categories:
-            for document in category.documents():
-                evaluations.append(document.evaluate_regex(regex=regex, filtered_group=filtered_group, label=self))
+            documents += category.documents()
+
+        for document in documents:
+            # todo: potential time saver: make sure we did a duplicate check for the regex before we run the evaluation
+            evaluation = document.evaluate_regex(regex=regex, filtered_group=filtered_group, label=self)
+            evaluations.append(evaluation)
 
         total_findings = sum(evaluation['count_total_findings'] for evaluation in evaluations)
+        num_docs_matched = sum(evaluation['doc_matched'] for evaluation in evaluations)
         correct_findings = [finding for evaluation in evaluations for finding in evaluation['correct_findings']]
         total_correct_findings = sum(evaluation['count_total_correct_findings'] for evaluation in evaluations)
         processing_times = [evaluation['runtime'] for evaluation in evaluations]
@@ -412,11 +418,16 @@ class Label(Data):
             annotation_recall = 0
 
         try:
+            document_recall = num_docs_matched / len(documents)
+        except ZeroDivisionError:
+            document_recall = 0
+
+        try:
             f_score = 2 * (annotation_precision * annotation_recall) / (annotation_precision + annotation_recall)
         except ZeroDivisionError:
             f_score = 0
 
-        if self.project.documents:
+        if documents:
             evaluation = {
                 'regex': regex,
                 'regex_len': len(regex),  # the longer the regex the more conservative it is to use
@@ -424,12 +435,19 @@ class Label(Data):
                 'annotation_recall': annotation_recall,
                 'annotation_precision': annotation_precision,
                 'f1_score': f_score,
+                'document_recall': document_recall,
                 'regex_quality': regex_quality,
                 # other stats
                 'correct_findings': correct_findings,
                 'total_findings': total_findings,
+                'num_docs_matched': num_docs_matched,
                 'total_correct_findings': total_correct_findings,
             }
+            correct_matches_per_document = {
+                f'document_{evaluation["id"]}': evaluation['correct_findings'] for evaluation in evaluations
+            }
+            evaluation.update(correct_matches_per_document)  # add the matching info per document
+
             return evaluation
         else:
             return {}
@@ -982,60 +1000,35 @@ class Annotation(Data):
         spans.sort()
         return spans
 
-    def token_append(self, evaluation, new_regex):
+    def token_append(self, new_regex, regex_quality: int, categories: List[Category]):
         """Append token if it is not a duplicate."""
-        regex_to_remove_groupnames = re.compile('<.*?>')
-        matchers = [re.sub(regex_to_remove_groupnames, '', t['regex']) for t in self._tokens]
-        new_matcher = re.sub(regex_to_remove_groupnames, '', new_regex)
-        if new_matcher not in matchers:
+        regex_to_remove_group_names = re.compile('<.*?>')
+        previous_matchers = [re.sub(regex_to_remove_group_names, '', t['regex']) for t in self._tokens]
+        found_for_label = [re.sub(regex_to_remove_group_names, '', t['regex']) for t in (self.label._evaluations or [])]
+        new_matcher = re.sub(regex_to_remove_group_names, '', new_regex)
+        if new_matcher not in previous_matchers + found_for_label:  # only run evaluation if the token is truly new
+            evaluation = self.label.evaluate_regex(new_regex, regex_quality=regex_quality, categories=categories)
             self._tokens.append(evaluation)
+            logger.error(f'Added new regex Token {new_matcher}.')
         else:
-            logger.info(f'Annotation Token {repr(new_matcher)} or regex {repr(new_regex)} does exist.')
+            logger.debug(f'Annotation Token {repr(new_matcher)} or regex {repr(new_regex)} does exist.')
 
     def tokens(self, categories: List[Category]) -> List:
-        """Create a list of potential tokens based on this annotation."""
+        """Create a list of potential tokens based on this Annotation."""
         if not self._tokens:
-            for span in self._spans:
-                harmonized_whitespace = suggest_regex_for_string(span.offset_string, replace_numbers=False)
-                numbers_replaced = suggest_regex_for_string(span.offset_string)
-                full_replacement = suggest_regex_for_string(span.offset_string, replace_characters=True)
-
+            for span in self.spans:
                 # the original string, with harmonized whitespaces
+                harmonized_whitespace = suggest_regex_for_string(span.offset_string, replace_numbers=False)
                 regex_w = f'(?P<{self.label.name_clean}_W_{self.id_}_{span.start_offset}>{harmonized_whitespace})'
-                evaluation_w = self.label.evaluate_regex(regex_w, regex_quality=0, categories=categories)
-                if evaluation_w['total_correct_findings'] > 1:
-                    self.token_append(evaluation=evaluation_w, new_regex=regex_w)
-                # the original string, numbers replaced
-                if harmonized_whitespace != numbers_replaced:
-                    regex_n = f'(?P<{self.label.name_clean}_N_{self.id_}_{span.start_offset}>{numbers_replaced})'
-                    self.token_append(
-                        evaluation=self.label.evaluate_regex(regex_n, regex_quality=1, categories=categories),
-                        new_regex=regex_n,
-                    )
-                # numbers and characters replaced
-                if numbers_replaced != full_replacement:
-                    regex_f = f'(?P<{self.label.name_clean}_F_{self.id_}_{span.start_offset}>{full_replacement})'
-                    self.token_append(
-                        evaluation=self.label.evaluate_regex(regex_f, regex_quality=2, categories=categories),
-                        new_regex=regex_f,
-                    )
-                if not self._tokens:  # fallback if every proposed token is equal
-                    regex_w = f'(?P<{self.label.name_clean}_W_{self.id_}_fallback>{harmonized_whitespace})'
-                    self.token_append(
-                        evaluation=self.label.evaluate_regex(regex_w, regex_quality=0, categories=categories),
-                        new_regex=regex_w,
-                    )
-
-                    regex_n = f'(?P<{self.label.name_clean}_N_{self.id_}_fallback>{numbers_replaced})'
-                    self.token_append(
-                        evaluation=self.label.evaluate_regex(regex_n, regex_quality=1, categories=categories),
-                        new_regex=regex_n,
-                    )
-                    regex_f = f'(?P<{self.label.name_clean}_F_{self.id_}_fallback>{full_replacement})'
-                    self.token_append(
-                        evaluation=self.label.evaluate_regex(regex_f, regex_quality=2, categories=categories),
-                        new_regex=regex_f,
-                    )
+                self.token_append(new_regex=regex_w, regex_quality=0, categories=categories)
+                # the original string, with numbers replaced
+                numbers_replaced = suggest_regex_for_string(span.offset_string)
+                regex_n = f'(?P<{self.label.name_clean}_N_{self.id_}_{span.start_offset}>{numbers_replaced})'
+                self.token_append(new_regex=regex_n, regex_quality=1, categories=categories)
+                # the original string, with characters and numbers replaced
+                full_replacement = suggest_regex_for_string(span.offset_string, replace_characters=True)
+                regex_f = f'(?P<{self.label.name_clean}_F_{self.id_}_{span.start_offset}>{full_replacement})'
+                self.token_append(new_regex=regex_f, regex_quality=2, categories=categories)
         return self._tokens
 
     def regex(self, categories: List[Category]):
@@ -1591,43 +1584,6 @@ class Document(Data):
 
         return self._hocr
 
-    # todo: add real workflow to add a new document to a Project
-    # def save(self) -> bool:
-    #     """
-    #     Save or edit Document online.
-    #
-    #     :return: True if the new document was created or existing document was updated.
-    #     """
-    #     document_saved = False
-    #     category_id = None
-    #
-    #     if hasattr(self, "category") and self.category is not None:
-    #         category_id = self.category.id_
-    #
-    #     if not self.is_online:
-    #         response = upload_file_konfuzio_api(
-    #             filepath=self.file_path,
-    #             project_id=self.project.id_,
-    #             dataset_status=self.dataset_status,
-    #             category_id=category_id,
-    #         )
-    #         if response.status_code == 201:
-    #             self.id_ = json.loads(response.text)["id"]
-    #             document_saved = True
-    #         else:
-    #             logger.error(f"Not able to save document {self.file_path} online: {response.text}")
-    #     else:
-    #         response = update_file_konfuzio_api(
-    #             document_id=self.id_, file_name=self.name, dataset_status=self.dataset_status, category_id=category_id
-    #         )
-    #         if response.status_code == 200:
-    #             self.project.update_document(document=self)
-    #             document_saved = True
-    #         else:
-    #             logger.error(f"Not able to update document {self.id_} online: {response.text}")
-    #
-    #     return document_saved
-
     def update(self):
         """Update document information."""
         self.delete()
@@ -1716,20 +1672,58 @@ class Document(Data):
         except ZeroDivisionError:
             f1_score = 0
         return {
-            'id_': self.id_,
+            'id': self.id_local,
             'regex': regex,
             'runtime': processing_time,
             'count_total_findings': len(findings_in_document),
             'count_total_correct_findings': len(correct_findings),
             'count_correct_annotations': len(self.annotations(label=label)),
             'count_correct_annotations_not_found': len(correct_findings) - len(self.annotations(label=label)),
-            # 'doc_matched': len(correct_findings) > 0,
+            'doc_matched': len(correct_findings) > 0,
             'annotation_precision': annotation_precision,
             'document_recall': 0,  # keep this key to be able to use the function get_best_regex
             'annotation_recall': annotation_recall,
             'f1_score': f1_score,
             'correct_findings': correct_findings,
         }
+
+        # todo alternative: reuse evaluation logic by compare function
+        # internal_project = Project(id_=None)
+        # category = Category(project=internal_project)
+        # label_set = LabelSet(project=internal_project)
+        # dedicated_label = Label(project=internal_project, label_sets=[label_set], threshold=0)
+        #
+        # # correct document
+        # correct_document = Document(project=internal_project, category=category)
+        # annotation_set = AnnotationSet(document=correct_document, label_set=label_set)
+        # # collect correct Spans of this Label in the Document
+        # correct_spans = []
+        # for annotation in self.annotations(label=label):
+        #     for span in annotation.spans:
+        #         correct_spans.append(Span(start_offset=span.start_offset, end_offset=span.end_offset))
+        #     correct_spans += annotation.spans
+        # _ = Annotation(document=correct_document, annotation_set=annotation_set, confidence=1, is_correct=True,
+        #                label=dedicated_label, label_set=label_set, spans=correct_spans)
+        #
+        # # virtual document
+        # virtual_document = Document(project=internal_project, category=category)
+        # virtual_annotation_set = AnnotationSet(document=correct_document, label_set=label_set)
+        # # collect findings in Document
+        # start_time = time.time()
+        # findings_in_document = regex_spans(
+        #     doctext=self.text,
+        #     regex=regex,
+        #     keep_full_match=False,
+        #     filtered_group=filtered_group,  # filter by name of label: one regex can match multiple labels
+        # )
+        # processing_time = time.time() - start_time
+        # # todo incorporate processing time
+        #
+        # proposed_spans = []
+        # for finding in findings_in_document:
+        #     proposed_spans.append(Span(start_offset=finding['start_offset'], end_offset=finding['end_offset']))
+        # _ = Annotation(document=virtual_document, annotation_set=virtual_annotation_set, confidence=1,
+        #                is_correct=True, label=dedicated_label, label_set=label_set, spans=correct_spans)
 
     def get_annotations(self) -> List[Annotation]:
         """Get Annotations of the Document."""
