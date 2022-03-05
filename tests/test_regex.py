@@ -18,7 +18,7 @@ import unittest
 import pytest
 
 from konfuzio_sdk.regex import regex_spans
-from konfuzio_sdk.data import Project, Annotation, Label
+from konfuzio_sdk.data import Project, Annotation, Label, Category, LabelSet, Document, AnnotationSet, Span
 
 logger = logging.getLogger(__name__)
 
@@ -315,6 +315,7 @@ class TestRegexGenerator(unittest.TestCase):
                     for span in anno._spans:
                         assert span.offset_string in clean_findings
 
+    @unittest.skip(reason='Replace test by hardcoded data setup.')
     def test_two_annotations_with_same_label_close_to_each_other(self):
         """Test that any text to regex subset works, even if the text contains two Annotations with the same label."""
         # previously this resulted in "sre_constants.error: redefinition of group name" error
@@ -324,6 +325,119 @@ class TestRegexGenerator(unittest.TestCase):
         regex = document.regex(start_offset=950, end_offset=1500, categories=[self.category])[0]
         # in this Document region we will use 2 times the regex tokens for Ort, each uses two tokens
         assert regex.count('(?P<Personalausweis_') == 1
+
+    def test_offset_start_to_early(self):
+        """Test to calculate a regex."""
+        project = Project(id_=None)
+        category = Category(project=project)
+        document = Document(project=project, category=category, text="From 14.12.2021 to 1.1.2022.")
+        with self.assertRaises(IndexError) as context:
+            document.regex(start_offset=-1, end_offset=1500, categories=[category])
+            assert 'The offset must be a positive number' in context.exception
+
+    def test_two_annotations_out_of_text_scope(self):
+        """Test to calculate a regex."""
+        project = Project(id_=None)
+        category = Category(project=project)
+        document = Document(project=project, category=category, text="From 14.12.2021 to 1.1.2022.")
+        with self.assertRaises(IndexError) as context:
+            document.regex(start_offset=0, end_offset=1500, categories=[category])
+            assert 'The end offset must not exceed' in context.exception
+
+    def test_annotation_to_regex(self):
+        """Test to calculate a regex."""
+        project = Project(id_=None)
+        category = Category(project=project)
+        label_set = LabelSet(id_=33, project=project, categories=[category])
+        label = Label(
+            id_=22, text='Label Name', text_clean='LabeName', project=project, label_sets=[label_set], threshold=0.5
+        )
+        document = Document(project=project, category=category, text="From 14.12.2021 to 1.1.2022.", dataset_status=2)
+        span_1 = Span(start_offset=5, end_offset=15)
+        annotation_set_1 = AnnotationSet(id_=1, document=document, label_set=label_set)
+        _ = Annotation(
+            document=document,
+            is_correct=True,
+            annotation_set=annotation_set_1,
+            label=label,
+            label_set=label_set,
+            spans=[span_1],
+        )
+        regex = label.regex(categories=[category])
+        self.assertEqual([r'[ ]+(?:(?P<LabeName_N_None_5>\d\d\.\d\d\.\d\d\d\d))[ ]+'], regex)
+
+    def test_two_annotation_of_one_label_to_regex(self):
+        """Test to calculate a regex."""
+        project = Project(id_=None)
+        category = Category(project=project)
+        label_set = LabelSet(id_=33, project=project, categories=[category])
+        label = Label(
+            id_=22, text='Label Name', text_clean='LabeName', project=project, label_sets=[label_set], threshold=0.5
+        )
+        document = Document(project=project, category=category, text="From 14.12.2021 to 1.1.2022 .", dataset_status=2)
+        span_1 = Span(start_offset=5, end_offset=15)
+        annotation_set_1 = AnnotationSet(id_=1, document=document, label_set=label_set)
+        _ = Annotation(
+            document=document,
+            is_correct=True,
+            annotation_set=annotation_set_1,
+            label=label,
+            label_set=label_set,
+            spans=[span_1],
+        )
+
+        # second Annotation Set
+        span_2 = Span(start_offset=19, end_offset=27)
+        annotation_set_2 = AnnotationSet(id_=2, document=document, label_set=label_set)
+        _ = Annotation(
+            document=document,
+            is_correct=True,
+            annotation_set=annotation_set_2,
+            label=label,
+            label_set=label_set,
+            spans=[span_2],
+        )
+        regex = label.regex(categories=[category])
+        self.assertEqual([r'[ ]+(?:(?P<LabeName_N_None_5>\d\d\.\d\d\.\d\d\d\d))[ ]+'], regex)
+
+    def test_offset_to_regex(self):
+        """Test to calculate a regex."""
+        project = Project(id_=None)
+        category = Category(project=project)
+        label_set = LabelSet(id_=33, project=project, categories=[category])
+        label = Label(
+            id_=22, text='Label Name', text_clean='LabeName', project=project, label_sets=[label_set], threshold=0.5
+        )
+        document = Document(project=project, category=category, text="From 14.12.2021 to 1.1.2022 .", dataset_status=2)
+        span_1 = Span(start_offset=5, end_offset=15)
+        annotation_set_1 = AnnotationSet(id_=1, document=document, label_set=label_set)
+        _ = Annotation(
+            document=document,
+            is_correct=True,
+            annotation_set=annotation_set_1,
+            label=label,
+            label_set=label_set,
+            spans=[span_1],
+        )
+
+        # second Annotation Set
+        span_2 = Span(start_offset=19, end_offset=27)
+        annotation_set_2 = AnnotationSet(id_=2, document=document, label_set=label_set)
+        _ = Annotation(
+            document=document,
+            is_correct=True,
+            annotation_set=annotation_set_2,
+            label=label,
+            label_set=label_set,
+            spans=[span_2],
+        )
+        regex = document.regex(start_offset=4, end_offset=28, categories=[category])
+        expected = [
+            r'm(?:(?P<LabeName_N_None_5>\d\d\.\d\d\.\d\d\d\d))\.',
+            r'(?:(?P<LabeName_N_None_5>\d\d\.\d\d\.\d\d\d\d))\.',
+            r'From(?:(?P<LabeName_N_None_5>\d\d\.\d\d\.\d\d\d\d))\.',
+        ]
+        self.assertEqual(expected, regex)
 
     @unittest.skip('We do not support multiple Annotations in one offset for now')
     def test_regex_first_annotation_in_row(self):

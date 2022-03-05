@@ -49,6 +49,25 @@ class TestOfflineDataSetup(unittest.TestCase):
         """Test if setup worked."""
         assert self.document.category == self.category
 
+    def test_training_document_annotations_are_available(self):
+        """Test if the Label can access the new Annotation."""
+        project = Project(id_=None)
+        category = Category(project=project)
+        label_set = LabelSet(id_=33, project=project, categories=[category])
+        label = Label(id_=22, text='LabelName', project=project, label_sets=[label_set], threshold=0.5)
+        document = Document(project=project, category=category, text="From 14.12.2021 to 1.1.2022.", dataset_status=2)
+        span_1 = Span(start_offset=5, end_offset=15)
+        annotation_set_1 = AnnotationSet(id_=1, document=document, label_set=label_set)
+        annotation = Annotation(
+            document=document,
+            is_correct=True,
+            annotation_set=annotation_set_1,
+            label=label,
+            label_set=label_set,
+            spans=[span_1],
+        )
+        assert label.annotations(categories=[category]) == [annotation]
+
     def test_add_annotation_with_label_set_none(self):
         """Test to add an Annotation to a Document where the LabelSet is None."""
         project = Project(id_=None)
@@ -963,15 +982,11 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_create_list_of_regex_for_label_without_annotations(self):
         """Check regex build for empty Labels."""
-        try:
-            category = self.prj.get_category_by_id(63)
-            label = next(x for x in self.prj.labels if len(x.annotations(categories=[category])) == 0)
-            automated_regex_for_label = label.regex(categories=[category])
-            # There is no regex available.
-            assert len(automated_regex_for_label) == 0
-            is_file(label.regex_file_path)
-        except StopIteration:
-            pass
+        category = self.prj.get_category_by_id(63)
+        label = next(x for x in self.prj.labels if len(x.annotations(categories=[category])) == 0)
+        automated_regex_for_label = label.regex(categories=[category])
+        # There is no regex available.
+        assert len(automated_regex_for_label) == 0
 
     @unittest.skip(reason='Patch not supported by Text-Annotation Server.')
     def test_to_change_an_annotation_online(self):

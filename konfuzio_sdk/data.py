@@ -343,8 +343,9 @@ class Label(Data):
                 logger.info(f'Build tokens for Label {self.name}.')
                 self._tokens = self.find_tokens(categories=categories)
 
-                with open(self.tokens_file_path, 'w') as f:
-                    json.dump(self._tokens, f, indent=2, sort_keys=True)
+                if os.path.exists(self.regex_file_path):
+                    with open(self.tokens_file_path, 'w') as f:
+                        json.dump(self._tokens, f, indent=2, sort_keys=True)
             else:
                 logger.info(f'Load existing tokens for Label {self.name}.')
                 with open(self.tokens_file_path, 'r') as f:
@@ -483,8 +484,9 @@ class Label(Data):
             if not is_file(self.regex_file_path, raise_exception=False) or update:
                 logger.info(f'Build regexes for Label {self.name}.')
                 self._regex = self.find_regex(categories=categories)
-                with open(self.regex_file_path, 'w') as f:
-                    json.dump(self._regex, f, indent=2, sort_keys=True)
+                if os.path.exists(self.regex_file_path):
+                    with open(self.regex_file_path, 'w') as f:
+                        json.dump(self._regex, f, indent=2, sort_keys=True)
             else:
                 logger.info(f'Start loading existing regexes for Label {self.name}.')
                 with open(self.regex_file_path, 'r') as f:
@@ -1646,6 +1648,10 @@ class Document(Data):
         self, start_offset: int, end_offset: int, categories: List[Category], max_findings_per_page=15
     ) -> List[str]:
         """Suggest a list of regex which can be used to get the Span of a document."""
+        if start_offset < 0:
+            raise IndexError(f'The start offset must be a positive number but is {start_offset}')
+        if end_offset > len(self.text):
+            raise IndexError(f'The end offset must not exceed the text length of the Document but is {end_offset}')
         proposals = []
         regex_to_remove_groupnames = re.compile('<.*?>')
         annotations = self.annotations(start_offset=start_offset, end_offset=end_offset)
