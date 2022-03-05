@@ -1645,7 +1645,12 @@ class Document(Data):
         self._annotation_sets = []
 
     def regex(
-        self, start_offset: int, end_offset: int, categories: List[Category], max_findings_per_page=15
+        self,
+        start_offset: int,
+        end_offset: int,
+        categories: List[Category],
+        search: List[int] = [1, 3, 5, 15],
+        max_findings_per_page=15,
     ) -> List[str]:
         """Suggest a list of regex which can be used to get the Span of a document."""
         if start_offset < 0:
@@ -1656,7 +1661,7 @@ class Document(Data):
         regex_to_remove_groupnames = re.compile('<.*?>')
         annotations = self.annotations(start_offset=start_offset, end_offset=end_offset)
         for annotation in annotations:
-            for spacer in [1, 3, 5, 15]:
+            for spacer in search:
                 before_regex = suggest_regex_for_string(self.text[start_offset - spacer ** 2 : start_offset])
                 after_regex = suggest_regex_for_string(self.text[end_offset : end_offset + spacer])
                 proposal = before_regex + annotation.regex(categories=categories) + after_regex
