@@ -340,11 +340,6 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
         create_label(project_id=0, label_name='', label_sets=[], session=_Session())
 
-    @unittest.skip(reason="Skip to iterate version of meta information of files, unclear when it paginates.")
-    def test_meta_file_pagination(self):
-        """Iterate over Urls with a next page and for empty Project without document."""
-        pass
-
     def test_create_new_project(self):
         """Test to create new Project."""
         # mock session

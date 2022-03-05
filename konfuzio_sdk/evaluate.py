@@ -56,6 +56,8 @@ def compare(doc_a, doc_b, only_use_correct=False) -> pd.DataFrame:
     :param only_use_correct: Unrevised feedback in doc_a is assumed to be correct.
     :return: Evaluation DataFrame
     """
+    if doc_a.category != doc_b.category:
+        raise ValueError(f'Categories of {doc_a} with {doc_a.category} and {doc_b} with {doc_a.category} do not match.')
     df_a = pd.DataFrame(doc_a.eval_dict(use_correct=only_use_correct))
     df_b = pd.DataFrame(doc_b.eval_dict(use_correct=False))
 
@@ -64,7 +66,7 @@ def compare(doc_a, doc_b, only_use_correct=False) -> pd.DataFrame:
     spans = spans[RELEVANT_FOR_EVALUATION]
 
     # add criteria to evaluate **spans**
-    spans["above_predicted_threshold"] = spans["confidence_predicted"] > spans["label_threshold_predicted"]
+    spans["above_predicted_threshold"] = spans["confidence_predicted"] >= spans["label_threshold_predicted"]
     spans["is_correct_label"] = spans["label_id"] == spans["label_id_predicted"]
     spans["is_correct_label_set"] = spans["label_set_id"] == spans["label_set_id_predicted"]
     # add check to evaluate multiline Annotations

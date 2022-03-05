@@ -195,8 +195,10 @@ class LabelSet(Data):
         """
         if label not in self.labels:
             self.labels.append(label)
+            label.add_label_set(self)
         else:
             raise ValueError(f'In {self} the {label} is a duplicate and will not be added.')
+        return self
 
 
 class Category(Data):
@@ -270,10 +272,9 @@ class Label(Data):
         self.project: Project = project
         project.add_label(self)  # todo add feature as described in TestSeparateLabels
 
-        if label_sets is None:
-            self.label_sets = []
-        else:  # todo add feature as described in TestSeparateLabels
-            self.label_sets = [label_set.add_label(self) for label_set in label_sets]
+        self.label_sets = []
+        for label_set in label_sets or []:
+            label_set.add_label(self)
 
         # Regex features
         self._tokens = None
@@ -531,6 +532,11 @@ class Span(Data):
         """
         if start_offset == end_offset:
             raise ValueError(f"You cannot created a {self.__class__.__name__} with start {start_offset} and no Text.")
+        elif end_offset < start_offset:
+            raise ValueError(
+                f"You cannot created a {self.__class__.__name__} with start {start_offset} which is later than"
+                f" end_offset {end_offset}."
+            )
         self.id_local = next(Data.id_iter)
         self.annotation = annotation
         self.start_offset = start_offset
@@ -644,6 +650,7 @@ class Annotation(Data):
         id_: int = None,
         spans=None,
         accuracy: float = None,
+        confidence: float = None,
         translated_string=None,
         *initial_data,
         **kwargs,
@@ -673,10 +680,14 @@ class Annotation(Data):
 
         if accuracy:  # its a confidence
             self.confidence = accuracy
-        elif self.id_ is not None and accuracy is None:  # todo hotfix: it's an online annotation crated by a human
+        elif confidence:
+            self.confidence = confidence
+        elif self.id_ is not None and accuracy is None:  # hotfix: it's an online annotation crated by a human
             self.confidence = 1
-        else:
+        elif accuracy is None and confidence is None:
             self.confidence = None
+        else:
+            raise ValueError('Annotation has an id_ but does not provide a confidence.')
 
         if isinstance(label, int):
             self.label: Label = self.document.project.get_label_by_id(label)
@@ -767,8 +778,14 @@ class Annotation(Data):
         # Call add_annotation to document at the end, so all attributes for duplicate checking are available.
         self.document.add_annotation(self)
 
-        if not self.document or not self.label_set or not self.label:
-            raise NotImplementedError
+        if not self.document:
+            raise NotImplementedError(f'{self} has no Document and cannot be created.')
+        if not self.label_set:
+            raise NotImplementedError(f'{self} has no Label Set and cannot be created.')
+        if not self.label:
+            raise NotImplementedError(f'{self} has no Label and cannot be created.')
+        if not self.spans:
+            raise NotImplementedError(f'{self} has no Spans and cannot be created.')
 
     def __repr__(self):
         """Return string representation."""
@@ -1039,7 +1056,7 @@ class Annotation(Data):
     @property
     def spans(self) -> List[Span]:
         """Return default entry to get all Spans of the Annotation."""
-        return self._spans
+        return sorted(self._spans)
 
 
 class Document(Data):
@@ -1250,9 +1267,23 @@ class Document(Data):
         """Define if the Document is saved to the server."""
         return self.id_ is not None
 
-    @property
     def annotation_sets(self):
         """Return Annotation Sets of Documents."""
+        if self._annotation_sets:
+            return self._annotation_sets
+        if not is_file(self.annotation_set_file_path, raise_exception=False):
+            self.download_document_details()
+        if is_file(self.annotation_set_file_path, raise_exception=False):
+            with open(self.annotation_set_file_path, "r") as f:
+                raw_annotation_sets = json.load(f)
+            # first load all Annotation Sets before we create Annotations
+            for raw_annotation_set in raw_annotation_sets:
+                # todo add parent to define default Annotation Set
+                _ = AnnotationSet(
+                    id_=raw_annotation_set["id"],
+                    document=self,
+                    label_set=self.project.get_label_set_by_id(raw_annotation_set["section_label"]),
+                )
         return self._annotation_sets
 
     def annotations(
@@ -1270,6 +1301,8 @@ class Document(Data):
         :param use_correct: If to filter by correct annotations.
         :return: Annotations in the document.
         """
+        if self.category is None:
+            raise ValueError(f'Document {self} without Category must not have Annotations')
         self.get_annotations()
         annotations = []
         add = False
@@ -1311,7 +1344,6 @@ class Document(Data):
             for missing in missings:
                 new_spans = []
                 offset_text = self.text[missing.start : missing.stop]
-                new_annotation = Annotation(document=self, label=no_label, label_set=default_label_set)
                 # we split Spans which apan multiple lines, so that one Span comprises one line
                 offset_of_offset = 0
                 line_breaks = [offset_line for offset_line in re.split(r'(\n)', offset_text) if offset_line != '']
@@ -1319,13 +1351,13 @@ class Document(Data):
                     start = missing.start + offset_of_offset
                     offset_of_offset += len(offset)
                     end = missing.start + offset_of_offset
-                    new_span = Span(start_offset=start, end_offset=end, annotation=new_annotation)
+                    new_span = Span(start_offset=start, end_offset=end)
                     new_spans.append(new_span)
-                if new_spans:
-                    new_annotation._spans = new_spans
-                    annotations.append(new_annotation)
 
-        return annotations
+                new_annotation = Annotation(document=self, label=no_label, label_set=default_label_set, spans=new_spans)
+                annotations.append(new_annotation)
+
+        return sorted(annotations)
 
     @property
     def document_folder(self):
@@ -1346,10 +1378,9 @@ class Document(Data):
             file_path = self.file_path
 
         if self.status[0] == 2 and (not file_path or not is_file(file_path, raise_exception=False) or update):
-            if not is_file(file_path, raise_exception=False) or update:
-                pdf_content = download_file_konfuzio_api(self.id_, ocr=ocr_version, session=self.session)
-                with open(file_path, "wb") as f:
-                    f.write(pdf_content)
+            pdf_content = download_file_konfuzio_api(self.id_, ocr=ocr_version, session=self.session)
+            with open(file_path, "wb") as f:
+                f.write(pdf_content)
 
         return file_path
 
@@ -1413,16 +1444,19 @@ class Document(Data):
             #  Annotation belongs to a Label / Label Set that does not relate to the Category of the Document.
             logger.debug('You are using a hotfix for API results from Konfuzio Server.')
             if self.category is not None:
-                if annotation.label_set and annotation.label_set.categories:
-                    if self.category in annotation.label_set.categories:
-                        self._annotations.append(annotation)
+                if annotation.label_set is not None:
+                    if annotation.label_set.categories:
+                        if self.category in annotation.label_set.categories:
+                            self._annotations.append(annotation)
+                        else:
+                            raise ValueError(
+                                f'We cannot add {annotation} related to {annotation.label_set.categories} to {self} '
+                                f'as the document has {self.category}'
+                            )
                     else:
-                        raise ValueError(
-                            f'We cannot add {annotation} related to {annotation.label_set.categories} to {self} '
-                            f'as the document has {self.category}'
-                        )
+                        raise ValueError(f'{annotation} uses Label Set without Category, cannot be added to {self}.')
                 else:
-                    raise ValueError(f'{annotation} uses Label Set without Category, which cannot be added to {self}.')
+                    raise ValueError(f'{annotation} has no Label Set, which cannot be added to {self}.')
             else:
                 raise ValueError(f'We cannot add {annotation} to {self} where the category is {self.category}')
         else:
@@ -1523,12 +1557,12 @@ class Document(Data):
     def pages(self):
         """Get Pages of document. Once loaded stored in memory."""
         if self._pages:
-            pass
-        elif is_file(self.pages_file_path, raise_exception=False):
+            return self._pages
+        if not is_file(self.pages_file_path, raise_exception=False):
+            self.download_document_details()
+        if is_file(self.pages_file_path, raise_exception=False):
             with open(self.pages_file_path, "r") as f:
                 self._pages = json.loads(f.read())
-        else:
-            logger.error(f'{self} does not provide information about pages.')
         return self._pages
 
     @property
@@ -1699,17 +1733,7 @@ class Document(Data):
         if self._update or (self.id_ and (not self._annotations or not self._annotation_sets)):
             self._annotations = []  # clean Annotations to not create duplicates
             self._annotation_sets = []  # clean Annotation Sets to not create duplicates
-            with open(self.annotation_set_file_path, "r") as f:
-                raw_annotation_sets = json.load(f)
-
-            # first load all Annotation Sets before we create Annotations
-            for raw_annotation_set in raw_annotation_sets:
-                # todo add parent to define default Annotation Set
-                _ = AnnotationSet(
-                    id_=raw_annotation_set["id"],
-                    document=self,
-                    label_set=self.project.get_label_set_by_id(raw_annotation_set["section_label"]),
-                )
+            self.annotation_sets()
 
             with open(self.annotation_file_path, 'r') as f:
                 raw_annotations = json.load(f)
@@ -1938,7 +1962,7 @@ class Project(Data):
         for label_set in self.label_sets:
             if label_set.is_default:
                 # the _default_of_label_set_ids are the label sets used by the category
-                pass  # todo ?
+                pass
             else:
                 # the _default_of_label_set_ids are the categories the label set is used in
                 for label_set_id in label_set._default_of_label_set_ids:

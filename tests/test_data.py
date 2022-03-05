@@ -49,6 +49,21 @@ class TestOfflineDataSetup(unittest.TestCase):
         """Test if setup worked."""
         assert self.document.category == self.category
 
+    def test_add_annotation_with_label_set_none(self):
+        """Test to add an Annotation to a Document where the LabelSet is None."""
+        project = Project(id_=None)
+        category = Category(project=project)
+        label_set = LabelSet(project=project, categories=[category])
+        label = Label(project=project, label_sets=[label_set])
+        # create a document A
+        document_a = Document(project=project, category=category)
+        _ = Span(start_offset=1, end_offset=2)
+        annotation_set_a = AnnotationSet(document=document_a, label_set=label_set)
+
+        with self.assertRaises(ValueError) as context:
+            Annotation(document=document_a, annotation_set=annotation_set_a, label=label)
+            assert 'has no Label Set' in context.exception
+
     def test_to_add_label_to_project(self):
         """Add one Label to a Project."""
         # with self.assertRaises(NotImplementedError):
@@ -58,7 +73,8 @@ class TestOfflineDataSetup(unittest.TestCase):
 
     def test_labl_has_label_sets(self):
         """Pass and store Label Sets."""
-        label = Label(project=self.project, label_sets=[self.label_set], text='Second Offline Label')
+        project = Project(id_=None)
+        label = Label(project=project, label_sets=[self.label_set], text='Second Offline Label')
         assert [ls.id_ for ls in label.label_sets] == [421]
 
     def test_to_add_label_to_project_twice(self):
@@ -160,9 +176,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         """Add new annotation set to a document."""
         document = Document(project=self.project, category=self.category)
         annotation_set = AnnotationSet(document=document, label_set=self.label_set)
-
-        document_annotation_sets = document.annotation_sets
-        assert annotation_set in document_annotation_sets
+        assert annotation_set in document.annotation_sets()
 
     def test_to_add_two_spans_to_annotation(self):
         """Add one Span to one Annotation."""
@@ -292,36 +306,6 @@ class TestKonfuzioDataCustomPath(unittest.TestCase):
         self.assertEqual(None, doc._text)
         self.assertTrue(doc.text)
         self.assertTrue(is_file(doc.txt_file_path))
-        prj.delete()
-
-    def test_make_sure_annotations_are_downloaded_automatically(self):
-        """Test if Annotations are downloaded automatically."""
-        prj = Project(id_=TEST_PROJECT_ID, project_folder='my_own_data')
-        doc = prj.get_document_by_id(214414)
-        self.assertFalse(is_file(doc.annotation_file_path, raise_exception=False))
-        self.assertEqual([], doc._annotations)
-        self.assertTrue(doc.annotations())
-        self.assertTrue(is_file(doc.annotation_file_path))
-        prj.delete()
-
-    def test_make_sure_annotation_sets_are_downloaded_automatically(self):
-        """Test if Annotation Sets are downloaded automatically."""
-        prj = Project(id_=TEST_PROJECT_ID, project_folder='my_own_data')
-        doc = prj.get_document_by_id(214414)
-        self.assertFalse(is_file(doc.annotation_set_file_path, raise_exception=False))
-        self.assertEqual([], doc._annotation_sets)
-        self.assertTrue(doc.annotation_sets)
-        self.assertTrue(is_file(doc.annotation_set_file_path))
-        prj.delete()
-
-    def test_make_sure_pages_are_downloaded_automatically(self):
-        """Test if Pages are downloaded automatically."""
-        prj = Project(id_=TEST_PROJECT_ID, project_folder='my_own_data')
-        doc = prj.get_document_by_id(214414)
-        self.assertFalse(is_file(doc.pages_file_path, raise_exception=False))
-        self.assertEqual(None, doc._pages)
-        self.assertTrue(doc.pages)
-        self.assertTrue(is_file(doc.pages_file_path))
         prj.delete()
 
 
@@ -467,21 +451,14 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_labels_of_category(self):
         """Test Labels of a Category."""
         category = self.prj.get_category_by_id(63)
-        category_labels = category.labels
-
-        # TODO: get Labels from Category #8842
-        assert len(category_labels) > 0
-        for label in category_labels:
-            assert category in label.categories
+        with self.assertRaises(AttributeError) as context:
+            category.labels
+            assert "'Category' object has no attribute 'labels'" in context.exception
 
     def test_label_sets_of_label(self):
         """Test Label Sets of a Label."""
-        label = self.prj.get_label_by_id(861)  # Lohnart
-        label_sets = label.label_sets
-
-        # TODO: get Label Sets from Label #8843
-        # Lohnart is associated to Brutto-Bezug and Netto-Bezug
-        assert len(label_sets) == 2
+        label: Label = self.prj.get_label_by_id(861)  # Lohnart
+        self.assertEqual(2, len(label.label_sets))
 
     def test_label_set_multiple(self):
         """Test Label Set config that is set to multiple."""
@@ -491,7 +468,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_number_of_labels_of_label_set(self):
         """Test the number of Labels of the default Label Set."""
         label_set = self.prj.get_label_set_by_name('Lohnabrechnung')
-        # assert label_set.categories ==     [self.prj.get_category_by_id(label_set.id_)]  # defines a category
+        # assert label_set.categories == [self.prj.get_category_by_id(label_set.id_)]  # defines a category
         assert label_set.labels.__len__() == 10
 
     def test_categories(self):
@@ -530,6 +507,36 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         doc.get_file()
         is_file(doc.ocr_file_path)
 
+    def test_make_sure_annotations_are_downloaded_automatically(self):
+        """Test if Annotations are downloaded automatically."""
+        prj = Project(id_=TEST_PROJECT_ID, project_folder='another')
+        doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
+        self.assertFalse(is_file(doc.annotation_file_path, raise_exception=False))
+        self.assertEqual([], doc._annotations)
+        self.assertTrue(doc.annotations())
+        self.assertTrue(is_file(doc.annotation_file_path))
+        prj.delete()
+
+    def test_make_sure_annotation_sets_are_downloaded_automatically(self):
+        """Test if Annotation Sets are downloaded automatically."""
+        prj = Project(id_=TEST_PROJECT_ID, project_folder='another2')
+        doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
+        self.assertFalse(is_file(doc.annotation_set_file_path, raise_exception=False))
+        self.assertEqual([], doc._annotation_sets)
+        self.assertTrue(doc.annotation_sets())
+        self.assertTrue(is_file(doc.annotation_set_file_path))
+        prj.delete()
+
+    def test_make_sure_pages_are_downloaded_automatically(self):
+        """Test if Pages are downloaded automatically."""
+        prj = Project(id_=TEST_PROJECT_ID, project_folder='another3')
+        doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
+        self.assertFalse(is_file(doc.pages_file_path, raise_exception=False))
+        self.assertEqual(None, doc._pages)
+        self.assertTrue(doc.pages)
+        self.assertTrue(is_file(doc.pages_file_path))
+        prj.delete()
+
     def test_add_label_set_without_category_to_document_with_category(self):
         """Test to add a Label Set without Category to a Document with a Category."""
         prj = Project(id_=TEST_PROJECT_ID)  # new init to not add data to self.prj
@@ -540,6 +547,14 @@ class TestKonfuzioDataSetup(unittest.TestCase):
             Annotation(document=doc, label_set=label_set, label=label)
             assert 'uses Label Set without Category' in context.exception
 
+    def test_get_annotations_set_without_category_to_document_with_category(self):
+        """Test to add a Label Set without Category to a Document with a Category."""
+        prj = Project(id_=TEST_PROJECT_ID)  # new init to not add data to self.prj
+        doc = prj.get_document_by_id(214414)
+        with self.assertRaises(ValueError) as context:
+            doc.annotations()
+            assert 'Document without Category must not have Annotations' in context.exception
+
     def test_get_bbox(self):
         """Test to get BoundingBox of Text offset."""
         prj = Project(id_=TEST_PROJECT_ID)  # new init to not add data to self.prj
@@ -547,7 +562,8 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert doc.category
         label_set = LabelSet(project=self.prj, categories=[doc.category])
         label = Label(project=prj)
-        annotation = Annotation(document=doc, label_set=label_set, label=label)
+        span = Span(start_offset=1, end_offset=2)
+        annotation = Annotation(document=doc, label_set=label_set, label=label, spans=[span])
         span = Span(start_offset=44, end_offset=65, annotation=annotation)
         span.bbox()
         self.assertEqual(span.top, 23.849)
@@ -689,14 +705,14 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         doc = self.prj.get_document_by_id(44842)
         label_set = LabelSet(project=self.prj, categories=[doc.category])
         label = Label(project=self.prj)
-        annotation = Annotation(document=doc, label_set=label_set, label=label)
-        span = Span(start_offset=1, end_offset=len(doc.text), annotation=annotation)
+        span = Span(start_offset=1, end_offset=2)
+        _ = Annotation(document=doc, label_set=label_set, label=label, spans=[span])
         assert span.line_index == 0
 
     def test_annotation_sets_in_document(self):
         """Test number of Annotation Sets in a specific Document in the test Project."""
         doc = self.prj.get_document_by_id(44842)
-        assert len(doc.annotation_sets) == 5
+        assert len(doc.annotation_sets()) == 5
 
     def test_get_annotation_set_after_removal(self):
         """Test get an annotation set that no longer exists."""
@@ -933,8 +949,9 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         label = Label(project=prj)
         doc = Document(text='', project=prj, category=prj.get_category_by_id(63))
         label_set = LabelSet(project=prj, categories=[prj.get_category_by_id(63)])
+        span = Span(start_offset=1, end_offset=2)
         annotation_set = AnnotationSet(document=doc, label_set=label_set)
-        _ = Annotation(label=label, annotation_set=annotation_set, label_set=label_set, document=doc)
+        _ = Annotation(label=label, annotation_set=annotation_set, label_set=label_set, document=doc, spans=[span])
 
     def test_get_annotations_for_offset_of_first_and_last_name(self):
         """Get Annotations for all offsets in the document."""
@@ -956,7 +973,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         except StopIteration:
             pass
 
-    @unittest.skip(reason='Waiting for Text-Annotation Documentation.')
+    @unittest.skip(reason='Patch not supported by Text-Annotation Server.')
     def test_to_change_an_annotation_online(self):
         """Test to update an Annotation from revised to not revised and back to revised."""
         doc = self.prj.get_document_by_id(44864)

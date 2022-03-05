@@ -1,14 +1,10 @@
 """Test the evaluation."""
-import os
 import unittest
-from copy import deepcopy
 
 from pandas import DataFrame
 
-from konfuzio_sdk.data import Project, Document
+from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span, LabelSet, Label, Category
 from konfuzio_sdk.evaluate import compare, grouped
-from konfuzio_sdk.urls import get_document_api_details_url
-from konfuzio_sdk.utils import is_file
 
 TEST_PROJECT_ID = 46
 
@@ -183,8 +179,8 @@ class TestEvaluation(unittest.TestCase):
     def test_nothing_should_be_predicted(self):
         """Support to evaluate that nothing is found in a document."""
         prj = Project(id_=TEST_PROJECT_ID)
-        doc_a = Document(project=prj)
         doc_b = prj.get_document_by_id(44823)
+        doc_a = Document(project=prj, category=doc_b.category)
         evaluation = compare(doc_a, doc_b)
         assert len(evaluation) == 25
         assert evaluation["true_positive"].sum() == 0
@@ -197,7 +193,7 @@ class TestEvaluation(unittest.TestCase):
         """Support to evaluate that nothing must be found in a document."""
         prj = Project(id_=TEST_PROJECT_ID)
         doc_a = prj.get_document_by_id(44823)
-        doc_b = Document(project=prj)
+        doc_b = Document(project=prj, category=doc_a.category)
         evaluation = compare(doc_a, doc_b)
         assert len(evaluation) == 25  # we evaluate on span level an one annotation is multiline
         assert evaluation["true_positive"].sum() == 0
@@ -233,368 +229,401 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 1
 
-    @unittest.skip(reason='Add support for doc.annotations(top_candidates=True) filter.')
-    def test_doc_with_multiple_top_Annotations(self):
-        """Support to evaluate all Annotations of one Label (mult.=T) in one Annotation-Set."""
-        # TODO: the test to be skipped should be the one with multiple False because we assume everything behaves
-        #  as multiple True
-        raise NotImplementedError
-
-    @unittest.skip(reason='Invalid reuse of Annotations across documents.')
     def test_doc_with_missing_annotation_set(self):
         """
-        Test if a Document is equivalent if an Annotation Set is missing.
+        Test if we detect an Annotation of a missing Annotation Set.
 
-        We create 1 copy of a Document online.
-        We copy all Annotation Sets except the last one - doc b.
-        Doc b will have a missing Annotation Set compared to doc a.
+        Prepare a Project with two Documents, where the first Document has two Annotation Set and the second Document
+        has one Annotation Set. However, one the Annotation in one of the Annotation Sets is correct, i.e. contains
+        a matching Span, has the correct Label, has the correct Label Set and it's confidence is equal or higher than
+        the threshold of the Label.
 
-        All Annotations expected for that Annotation Set will be counted as false negatives.
+        Missing Annotation must be evaluated as False Negatives.
         """
-        prj = Project(id_=TEST_PROJECT_ID)
-        doc_a = prj.get_document_by_id(44859)
-        doc_b = Document(project=prj, category=doc_a.category)
-        doc_a.annotations()
+        project = Project(id_=None)
+        category = Category(project=project)
+        label_set = LabelSet(id_=33, project=project, categories=[category])
+        label = Label(id_=22, project=project, label_sets=[label_set], threshold=0.5)
+        # create a Document A
+        document_a = Document(project=project, category=category)
+        # first Annotation Set
+        span_1 = Span(start_offset=1, end_offset=2)
+        annotation_set_a_1 = AnnotationSet(id_=1, document=document_a, label_set=label_set)
+        _ = Annotation(
+            id_=1,
+            document=document_a,
+            confidence=0.5,
+            is_correct=True,
+            annotation_set=annotation_set_a_1,
+            label=label,
+            label_set=label_set,
+            spans=[span_1],
+        )
+        # second Annotation Set
+        span_2 = Span(start_offset=3, end_offset=5)
+        annotation_set_a_2 = AnnotationSet(id_=2, document=document_a, label_set=label_set)
+        _ = Annotation(
+            id_=2,
+            document=document_a,
+            is_correct=True,
+            annotation_set=annotation_set_a_2,
+            label=label,
+            label_set=label_set,
+            spans=[span_2],
+        )
+        # create a Document B
+        span_3 = Span(start_offset=3, end_offset=5)
+        document_b = Document(project=project, category=category)
+        # with only one Annotation Set, so to say the first one, which then contains the correct Annotation which is in
+        # second Annotation Set. This test includes to test if we did not find the first Annotation Set.
+        annotation_set_b = AnnotationSet(id_=3, document=document_b, label_set=label_set)
+        _ = Annotation(
+            id_=3,
+            document=document_b,
+            confidence=0.5,
+            is_correct=True,
+            annotation_set=annotation_set_b,
+            label=label,
+            label_set=label_set,
+            spans=[span_3],
+        )
 
-        # TODO: should annotation_sets have the same behaviour as Annotations? issue #8739
-        for annotation_set in doc_a.annotation_sets[:-1]:
-            doc_b.add_annotation_set(annotation_set)
-
-            # TODO: add Annotations when adding an Annotation Set (issue #8740)
-            for annotation in annotation_set.annotations:
-                doc_b.add_annotation(annotation)
-
-        evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 31
-        assert evaluation["true_positive"].sum() == 30
+        evaluation = compare(document_a, document_b)
+        assert len(evaluation) == 2
+        assert evaluation["true_positive"].sum() == 1
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 1
 
-    @unittest.skip(reason='Invalid reuse of Annotations across documents.')
-    def test_doc_with_extra_annotation_set(self):
-        """
-        Test if a Document is equivalent if there is one more Annotation Set than the correct ones.
-
-        We create 2 copies of a Document online.
-        In copy 1 we keep all Annotation Sets - doc a
-        In copy 2 we remove one Annotation Set from the Label Set Brutto Bezug (multiple=True) - doc b
-        Doc b will have an extra Annotation Set compared to doc a.
-
-        The Annotations in the extra Annotation Set will be counted as false positives.
-        """
-        prj = Project(id_=TEST_PROJECT_ID)
-        doc_online = prj.get_document_by_id(44859)
-        doc_a = Document(project=prj, category=doc_online.category)
-        doc_b = Document(project=prj, category=doc_online.category)
-        doc_online.annotations()
-
-        # TODO: should annotation_sets have the same behaviour as Annotations? issue #8739
-        for annotation_set in doc_online.annotation_sets:
-            doc_b.add_annotation_set(annotation_set)
-
-            # TODO: add annotations when adding an Annotation Set (issue #8740)
-            for annotation in annotation_set.annotations:
-                doc_b.add_annotation(annotation)
-
-        # Last Annotation Set from Brutto Bezug removed
-        # TODO: should annotation_sets have the same behaviour as Annotations? issue #8739
-        for annotation_set in doc_online.annotation_sets[:-2] + [doc_online.annotation_sets[-1]]:
-            doc_a.add_annotation_set(annotation_set)
-
-            # TODO: add annotations when adding an Annotation Set (issue #8740)
-            for annotation in annotation_set.annotations:
-                doc_a.add_annotation(annotation)
-
-        # TODO:
-        #  add "delete" to AnnotationSet that also deletes the annotations that belong to that Annotation Set
-        #  add "delete" where the AnnotationSet can be specified by ID
-
-        assert len(doc_a.annotation_sets) == len(doc_b.annotation_sets) - 1
-        assert len(doc_b.annotation_sets[-2].annotations) > 0
-
-        evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 31
-        assert evaluation["true_positive"].sum() == 26
-        assert evaluation["false_positive"].sum() == 5
-        assert evaluation["false_negative"].sum() == 0
-
-    @unittest.skip(reason='Invalid reuse of Annotations across documents.')
-    def test_doc_with_annotation_set_with_multiple_label_that_should_be_split(self):
-        """
-        Test if a Document is equivalent if one Annotation Set is predicted instead of two.
-
-        Annotations that should be from different Annotation Sets, with the same Label Set, are predicted into a single
-        one. In this test case, the annotations considered are from a Label with multiple=True.
-
-        Those annotations predicted with the wrong Annotation Set are considered false positives.
-        """
-        prj = Project(id_=TEST_PROJECT_ID)
-        doc_a = prj.get_document_by_id(44841)
-        doc_b = Document(project=prj, category=doc_a.category)
-
-        for annotation in doc_a.annotations(use_correct=False):
-            # replace 1st Steuer Annotation Set (ID 679457) with 2nd (ID 679458)
-            new_annotation = deepcopy(annotation)
-            if annotation.annotation_set.id_ == 679457:
-                new_annotation.annotation_set.id_ = 679458
-
-            doc_b.add_annotation(new_annotation)
-
-        assert len(doc_b.annotations(use_correct=False)) == len(doc_a.annotations(use_correct=False))
-
-        evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 32
-        assert evaluation["true_positive"].sum() == 27
-        assert evaluation["false_positive"].sum() == 5
-        # We don't count the annotations for the Annotation Set missing because we would be duplicating the penalization
-        # and the user only needs 5 actions to correct it
-        assert evaluation["false_negative"].sum() == 0
-
-    @unittest.skip(reason='Invalid reuse of Annotations across documents.')
-    def test_doc_with_annotation_set_with_multiple_label_that_should_be_split_and_one_annotation_missing(self):
-        """
-        Test if a Document is equivalent if 1 Annotation Set is predicted instead of 2 and 1 annotation is missing.
-
-        Annotations that should be from different Annotation Sets, with the same Label Set, are predicted into a single
-        one. In this test case, the annotations considered are from a Label with multiple=True and one of them is
-        not predicted.
-
-        Those annotations predicted with the wrong Annotation Set are considered false positives and the missing
-        annotation is predicted as false negative.
-        """
-        prj = Project(id_=TEST_PROJECT_ID)
-        doc_a = prj.get_document_by_id(44841)
-        doc_b = Document(project=prj, category=doc_a.category)
-
-        # skip last multiple annotation from Steuer
-        for annotation in doc_a.annotations(use_correct=False)[:-7] + doc_a.annotations(use_correct=False)[-6:]:
-            # replace 1st Steuer Annotation Set (ID 679457) with 2nd (ID 679458)
-            new_annotation = deepcopy(annotation)
-            if annotation.annotation_set.id_ == 679457:
-                new_annotation.annotation_set.id_ = 679458
-
-            doc_b.add_annotation(new_annotation)
-
-        assert len(doc_b.annotations()) == len(doc_a.annotations()) - 1
-
-        evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 32
-        assert evaluation["true_positive"].sum() == 27
-        assert evaluation["false_positive"].sum() == 4
-        assert evaluation["false_negative"].sum() == 1
+    def test_documents_with_different_category(self):
+        """Test to not compare two Documents with different Categories."""
+        project = Project(id_=None)
+        category = Category(project=project)
+        document_a = Document(project=project, category=category)
+        another_category = Category(project=project)
+        document_b = Document(project=project, category=another_category)
+        with self.assertRaises(ValueError) as context:
+            compare(document_a, document_b)
+            assert 'do not match' in context.exception
 
     def test_doc_with_annotation_with_wrong_offsets(self):
         """
-        Test a Document with an annotation that has the correct offset string and classification but the wrong offsets.
+        Test a Document where the Annotation has a Span with wrong offsets.
 
-        This means that the AI got it from the wrong position in the document.
-        The offset string, Annotation Set,Labeland Label Set are correct but the start and end offsets are wrong.
-
-        It is counted as FP because does not match any correct annotation and as FN because there was no correct
-        prediction for the annotation in the document.
-
-        We are double penalizing the AI, however to correct this, the user needs to reject the predicted annotation and
-        create a new one (2 actions).
-        TODO: review
+        It is counted as FP because does not match any correct Annotation and as FN because there was no correct
+        prediction for the Annotation in the Document. We are double penalizing here.
         """
-        prj = Project(id_=TEST_PROJECT_ID)
-        doc_a = prj.get_document_by_id(44841)
-        doc_b = Document(project=prj, category=doc_a.category)
+        project = Project(id_=None)
+        category = Category(project=project)
+        label_set = LabelSet(id_=33, project=project, categories=[category])
+        label = Label(id_=22, project=project, label_sets=[label_set], threshold=0.5)
+        # create a Document A
+        document_a = Document(project=project, category=category)
+        # first Annotation Set
+        span_1 = Span(start_offset=1, end_offset=2)
+        annotation_set_a_1 = AnnotationSet(id_=1, document=document_a, label_set=label_set)
+        _ = Annotation(
+            id_=1,
+            document=document_a,
+            confidence=0.5,
+            is_correct=True,
+            annotation_set=annotation_set_a_1,
+            label=label,
+            label_set=label_set,
+            spans=[span_1],
+        )
+        # create a Document B
+        document_b = Document(project=project, category=category)
+        span_3 = Span(start_offset=3, end_offset=5)
+        annotation_set_b = AnnotationSet(id_=3, document=document_b, label_set=label_set)
+        _ = Annotation(
+            id_=3,
+            document=document_b,
+            confidence=0.5,
+            annotation_set=annotation_set_b,
+            label=label,
+            label_set=label_set,
+            spans=[span_3],
+        )
 
-        new_annotation = deepcopy(doc_a.annotations(use_correct=False)[1])
-        # keep the offset string but change the start and end offsets
-        assert new_annotation.offset_string == ['00600']
-        new_annotation.spans[0].start_offset = 79
-        new_annotation.spans[0].end_offset = 84
-        doc_b.add_annotation(new_annotation)
-
-        for annotation in [doc_a.annotations(use_correct=False)[0]] + doc_a.annotations(use_correct=False)[2:]:
-            doc_b.add_annotation(annotation)
-
-        assert len(doc_b.annotations()) == len(doc_a.annotations())
-
-        evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 33
-        assert evaluation["true_positive"].sum() == 31
+        evaluation = compare(document_a, document_b)
+        assert len(evaluation) == 2
+        assert evaluation["true_positive"].sum() == 0
         assert evaluation["false_positive"].sum() == 1
-        # We get 1 false negative. However, it's already counted as FP. Nevertheless, the user needs to reject the
-        # the predicted one and create a new one even if the Label, Label Set and Annotation Set are correct
         assert evaluation["false_negative"].sum() == 1
 
-    def test_doc_with_annotation_with_incomplete_offsets(self):
+    def test_doc_with_one_missing_span_of_two_in_one_annotation(self):
         """
-        Test a Document with an annotation that has incomplete offsets (last character missing).
+        Test a Document where the Annotation has two Spans and one Span has a wrong offsets.
 
-        It is counted as FP because does not match any correct annotation and as FN because there was no correct
-        prediction for the annotation in the document.
-
-        We are double penalizing the AI, however to correct this, the user only needs to adjust the offsets.
-        TODO: review
+        It is counted as FP because does not match any correct Annotation and as FN because there was no correct
+        prediction for the Annotation in the Document. We are double penalizing here.
         """
-        prj = Project(id_=TEST_PROJECT_ID)
-        doc_a = prj.get_document_by_id(44841)
-        doc_b = Document(project=prj, category=doc_a.category)
+        project = Project(id_=None)
+        category = Category(project=project)
+        label_set = LabelSet(id_=33, project=project, categories=[category])
+        label = Label(id_=22, project=project, label_sets=[label_set], threshold=0.5)
+        # create a Document A
+        document_a = Document(project=project, category=category)
+        # first Annotation Set
+        span_1_1 = Span(start_offset=1, end_offset=2)
+        span_1_2 = Span(start_offset=2, end_offset=3)
+        annotation_set_a_1 = AnnotationSet(id_=1, document=document_a, label_set=label_set)
+        _ = Annotation(
+            id_=1,
+            document=document_a,
+            confidence=0.5,
+            is_correct=True,
+            annotation_set=annotation_set_a_1,
+            label=label,
+            label_set=label_set,
+            spans=[span_1_1, span_1_2],
+        )
+        # create a Document B
+        document_b = Document(project=project, category=category)
+        span_3_1 = Span(start_offset=2, end_offset=5)
+        span_3_2 = Span(start_offset=1, end_offset=2)
+        annotation_set_b = AnnotationSet(id_=3, document=document_b, label_set=label_set)
+        _ = Annotation(
+            id_=3,
+            document=document_b,
+            confidence=0.5,
+            is_correct=True,
+            annotation_set=annotation_set_b,
+            label=label,
+            label_set=label_set,
+            spans=[span_3_1, span_3_2],
+        )
 
-        new_annotation = deepcopy(doc_a.annotations(use_correct=False)[0])
-        # keep the offset string but change the start and end offsets
-        assert new_annotation.offset_string == ['03.01.2018']
-        new_annotation.spans[0].end_offset = new_annotation.spans[0].end_offset - 1
-        doc_b.add_annotation(new_annotation)
-
-        for annotation in doc_a.annotations(use_correct=False)[1:]:
-            doc_b.add_annotation(annotation)
-
-        assert len(doc_b.annotations()) == len(doc_a.annotations())
-
-        evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 33
-        assert evaluation["true_positive"].sum() == 31
+        evaluation = compare(document_a, document_b)
+        assert len(evaluation) == 3
+        assert evaluation["true_positive"].sum() == 1
         assert evaluation["false_positive"].sum() == 1
-        # We get 1 false negative. However, it's already counted as FP. Nevertheless, the user needs to adjust the
-        # offsets
         assert evaluation["false_negative"].sum() == 1
 
-    def test_doc_with_annotation_with_wrong_offsets_and_wrong_classification(self):
+    def test_doc_with_extra_annotation_set(self):
         """
-        Test a Document with a wrong annotation (wrong offsets + wrong classification).
+        Test if we detect an Annotation of a missing Annotation Set.
 
-        It is counted as FP because does not match any correct annotation and as FN because there was no correct
-        prediction for the annotation in the document.
+        Prepare a Project with two Documents, where the first Document has two Annotation Set and the second Document
+        has tow Annotation Sets. However, only one Annotation in one of the Annotation Sets is correct, i.e. contains
+        a matching Span, has the correct Label, has the correct Label Set and it's confidence is equal or higher than
+        the threshold of the Label.
 
-        We are double penalizing the AI, however to correct this, the user needs to reject the predicted annotation and
-        create a new one (2 actions).
-        TODO: review
+        Annotations above threshold in wrong Annotation Set must be considered as False Positives.
         """
-        prj = Project(id_=TEST_PROJECT_ID)
-        doc_a = prj.get_document_by_id(44841)
-        doc_b = Document(project=prj, category=doc_a.category)
+        project = Project(id_=None)
+        category = Category(project=project)
+        label_set = LabelSet(id_=33, project=project, categories=[category])
+        label = Label(id_=22, project=project, label_sets=[label_set], threshold=0.5)
+        # create a Document A
+        document_a = Document(project=project, category=category)
+        # first Annotation Set
+        span_1 = Span(start_offset=1, end_offset=2)
+        annotation_set_a_1 = AnnotationSet(id_=1, document=document_a, label_set=label_set)
+        _ = Annotation(
+            id_=1,
+            document=document_a,
+            confidence=0.5,
+            is_correct=True,
+            annotation_set=annotation_set_a_1,
+            label=label,
+            label_set=label_set,
+            spans=[span_1],
+        )
+        # second Annotation Set
+        span_2 = Span(start_offset=3, end_offset=5)
+        annotation_set_a_2 = AnnotationSet(id_=2, document=document_a, label_set=label_set)
+        _ = Annotation(
+            id_=2,
+            document=document_a,
+            is_correct=True,
+            annotation_set=annotation_set_a_2,
+            label=label,
+            label_set=label_set,
+            spans=[span_2],
+        )
+        # create a Document B
+        document_b = Document(project=project, category=category)
+        # first Annotation Set
+        span_3 = Span(start_offset=3, end_offset=5)
+        annotation_set_b_1 = AnnotationSet(id_=3, document=document_b, label_set=label_set)
+        _ = Annotation(
+            id_=3,
+            document=document_b,
+            confidence=0.5,
+            is_correct=True,
+            annotation_set=annotation_set_b_1,
+            label=label,
+            label_set=label_set,
+            spans=[span_3],
+        )
+        # second Annotation Set
+        span_4 = Span(start_offset=30, end_offset=50)
+        annotation_set_b_2 = AnnotationSet(id_=4, document=document_b, label_set=label_set)
+        _ = Annotation(
+            id_=3,
+            document=document_b,
+            confidence=0.5,
+            is_correct=True,
+            annotation_set=annotation_set_b_2,
+            label=label,
+            label_set=label_set,
+            spans=[span_4],
+        )
 
-        new_annotation = deepcopy(doc_a.annotations(use_correct=False)[0])
-        # keep the offset string but change the start and end offsets
-        assert new_annotation.offset_string == ['03.01.2018']
-        new_annotation.spans[0].start_offset = 79
-        new_annotation.spans[0].end_offset = 84
-        doc_b.add_annotation(new_annotation)
-
-        for annotation in doc_a.annotations(use_correct=False)[1:]:
-            doc_b.add_annotation(annotation)
-
-        assert len(doc_b.annotations()) == len(doc_a.annotations())
-
-        evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 33
-        assert evaluation["true_positive"].sum() == 31
+        evaluation = compare(document_a, document_b)
+        assert len(evaluation) == 3
+        assert evaluation["true_positive"].sum() == 1
         assert evaluation["false_positive"].sum() == 1
-        # We get 1 false negative. However, it's already counted as FP. Nevertheless, the user needs to adjust the
-        # offsets
         assert evaluation["false_negative"].sum() == 1
 
-    @unittest.skip(reason='Invalid reuse of Annotations across documents.')
-    def test_doc_with_annotation_set_with_each_annotation_belonging_to_different_annotation_sets(self):
+    def test_doc_with_annotations_wrongly_grouped_in_one_annotation_set(self):
         """
-        Test a Document where each annotation from a certain Annotation Set is predicted with different Annotation Sets.
+        Test to detect that two Annotations are correct but not grouped into the separate Annotation Sets.
 
-        Each annotation in a certain Annotation Set is predicted as belonging to a different Annotation Set.
-        The Annotation Set cannot be determined by the mode of the Annotation Set IDs.
+        Prepare a Project with two Documents, where the first Document has two Annotation Set and the second Document
+        has tow Annotation Sets. However, only one Annotation in one of the Annotation Sets is correct, i.e. contains
+        a matching Span, has the correct Label, has the correct Label Set and it's confidence is equal or higher than
+        the threshold of the Label.
+
+        Annotations in the wrong Annotation Set must be evaluated as False Positive.
         """
-        prj = Project(id_=TEST_PROJECT_ID)
-        doc_a = prj.get_document_by_id(44841)
-        doc_b = Document(project=prj, category=doc_a.category)
+        project = Project(id_=None)
+        category = Category(project=project)
+        label_set = LabelSet(id_=33, project=project, categories=[category])
+        label = Label(id_=22, project=project, label_sets=[label_set], threshold=0.5)
+        # create a Document A
+        document_a = Document(project=project, category=category)
+        # first Annotation Set
+        span_1 = Span(start_offset=1, end_offset=2)
+        annotation_set_a_1 = AnnotationSet(id_=1, document=document_a, label_set=label_set)
+        _ = Annotation(
+            id_=1,
+            document=document_a,
+            confidence=0.5,
+            is_correct=True,
+            annotation_set=annotation_set_a_1,
+            label=label,
+            label_set=label_set,
+            spans=[span_1],
+        )
+        # second Annotation Set
+        span_2 = Span(start_offset=3, end_offset=5)
+        annotation_set_a_2 = AnnotationSet(id_=2, document=document_a, label_set=label_set)
+        _ = Annotation(
+            id_=2,
+            document=document_a,
+            is_correct=True,
+            annotation_set=annotation_set_a_2,
+            label=label,
+            label_set=label_set,
+            spans=[span_2],
+        )
+        # create a Document B
+        document_b = Document(project=project, category=category)
+        # first Annotation Set
+        span_3 = Span(start_offset=1, end_offset=2)
+        annotation_set_b_1 = AnnotationSet(id_=3, document=document_b, label_set=label_set)
+        _ = Annotation(
+            id_=3,
+            document=document_b,
+            confidence=0.5,
+            is_correct=True,
+            annotation_set=annotation_set_b_1,
+            label=label,
+            label_set=label_set,
+            spans=[span_3],
+        )
+        # second Annotation added to the same Annotation Set
+        span_4 = Span(start_offset=3, end_offset=5)
+        _ = Annotation(
+            id_=3,
+            document=document_b,
+            confidence=0.5,
+            is_correct=True,
+            annotation_set=annotation_set_b_1,
+            label=label,
+            label_set=label_set,
+            spans=[span_4],
+        )
 
-        # 1st annotation from 1st Annotation Set Brutto-Bezug belonging to the 2nd Annotation Set
-        new_annotation_1 = deepcopy(doc_a.annotations(use_correct=False)[6])
-        # keep the annotation but change the Annotation Set ID
-        assert new_annotation_1.offset_string == ['2020']
-        new_annotation_1.annotation_set.id_ = 79165 + 10
-        doc_b.add_annotation(new_annotation_1)
-
-        # 3rd annotation from 1st Annotation Set Brutto-Bezug belonging to the 3rd Annotation Set
-        new_annotation_2 = deepcopy(doc_a.annotations(use_correct=False)[8])
-        # keep the annotation but change the Annotation Set ID
-        assert new_annotation_2.offset_string == ['2.285,50']
-        new_annotation_2.annotation_set.id_ = 79166 + 10
-        doc_b.add_annotation(new_annotation_2)
-
-        for annotation in (
-            doc_a.annotations(use_correct=False)[:6]
-            + [doc_a.annotations(use_correct=False)[7]]
-            + doc_a.annotations(use_correct=False)[9:]
-        ):
-            new_annotation = deepcopy(annotation)
-            new_annotation.annotation_set.id_ = new_annotation.annotation_set.id_ + 10
-            doc_b.add_annotation(new_annotation)
-
-        assert len(doc_b.annotations()) == len(doc_a.annotations())
-        evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 32
-        assert evaluation["true_positive"].sum() == 30
-        assert evaluation["false_positive"].sum() == 2
+        evaluation = compare(document_a, document_b)
+        assert len(evaluation) == 2
+        assert evaluation["true_positive"].sum() == 1
+        assert evaluation["false_positive"].sum() == 1
         assert evaluation["false_negative"].sum() == 0
 
-    @unittest.skip(reason='Invalid reuse of Annotations across documents.')
-    def test_doc_with_missing_annotation_in_a_line_with_multiple_annotation_sets(self):
-        """
-        Test is a Document is equivalent if an annotation is missing in a line where exists another Annotation Set.
+    def test_to_evaluate_annotations_in_one_line_belonging_to_two_annotation_sets(self):
+        """Test to evaluate two Annotations where each one belongs to a different Annotation Set."""
+        project = Project(id_=None)
+        category = Category(project=project)
+        label_set = LabelSet(id_=33, project=project, categories=[category])
+        label = Label(id_=22, project=project, label_sets=[label_set], threshold=0.5)
+        # create a Document A
+        document_a = Document(project=project, text='ab\n', category=category)
+        # first Annotation Set
+        span_1 = Span(start_offset=0, end_offset=1)
+        annotation_set_a_1 = AnnotationSet(id_=1, document=document_a, label_set=label_set)
+        _ = Annotation(
+            id_=1,
+            document=document_a,
+            confidence=0.5,
+            is_correct=True,
+            annotation_set=annotation_set_a_1,
+            label=label,
+            label_set=label_set,
+            spans=[span_1],
+        )
+        # second Annotation Set
+        span_2 = Span(start_offset=1, end_offset=2)
+        annotation_set_a_2 = AnnotationSet(id_=2, document=document_a, label_set=label_set)
+        _ = Annotation(
+            id_=2,
+            document=document_a,
+            is_correct=True,
+            annotation_set=annotation_set_a_2,
+            label=label,
+            label_set=label_set,
+            spans=[span_2],
+        )
 
-        In this test case, there are two annotations where each one belongs to an Annotation Set from a different Label
-        Set.
-        """
-        prj = Project(id_=TEST_PROJECT_ID)
-        doc_a = prj.get_document_by_id(44841)
-        doc_b = Document(project=prj, category=doc_a.category)
+        # create a Document B
+        document_b = Document(project=project, text='ab\n', category=category)
+        # first Annotation Set
+        span_3 = Span(start_offset=0, end_offset=1)
+        annotation_set_b_1 = AnnotationSet(id_=3, document=document_b, label_set=label_set)
+        _ = Annotation(
+            id_=3,
+            document=document_b,
+            confidence=0.5,
+            is_correct=True,
+            annotation_set=annotation_set_b_1,
+            label=label,
+            label_set=label_set,
+            spans=[span_3],
+        )
+        # second Annotation added to the same Annotation Set
+        annotation_set_b_2 = AnnotationSet(id_=4, document=document_b, label_set=label_set)
+        span_4 = Span(start_offset=1, end_offset=2)
+        _ = Annotation(
+            id_=4,
+            document=document_b,
+            confidence=0.5,
+            is_correct=True,
+            annotation_set=annotation_set_b_2,
+            label=label,
+            label_set=label_set,
+            spans=[span_4],
+        )
 
-        # skip 1 annotation from an Annotation Set that is in the same line as other Annotation Set
-        for annotation in doc_a.annotations(use_correct=False)[:28] + doc_a.annotations(use_correct=False)[29:]:
-            doc_b.add_annotation(annotation)
-
-        assert len(doc_b.annotations()) == len(doc_a.annotations()) - 1
-
-        evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 32
-        assert evaluation["true_positive"].sum() == 31
+        evaluation = compare(document_a, document_b)
+        assert len(evaluation) == 2
+        assert evaluation["true_positive"].sum() == 2
         assert evaluation["false_positive"].sum() == 0
-        assert evaluation["false_negative"].sum() == 1
+        assert evaluation["false_negative"].sum() == 0
 
-    @unittest.skip(reason="Cannot load Project with custom strings with current changes.")
-    def test_doc_with_custom_offset_string(self):
-        """
-        Test a Document with an annotation that has a custom offset string.
-
-        These annotations are not used for training so they should not be counted for evaluation.
-        How would they be handled in the evaluation?
-        TODO: review
-        """
-        prj = Project(id_=TEST_PROJECT_ID)
-        _ = prj.get_document_by_id(44823)
-        _ = Document(project=prj)
-
-    @unittest.skip(reason='Waiting to be able toe specify the Extraction AI model version.')
-    def test_compare_extractions_available_online_to_the_current_version(self):
-        """Compare a version of the online available extraction to the status quo of the human doc."""
-        prj = Project(id_=TEST_PROJECT_ID)
-        doc_human = prj.documents[-1]
-        online = get_document_api_details_url(doc_human.id_)
-        doc_online = Document(project=prj)
-        doc_online = doc_online.get_from_online(online)
-        compare(doc_human, doc_online)
-
-    @unittest.skip(reason='Waiting for new trainer ai model build.')
-    def test_compare_extractions_to_a_real_doc(self):
-        """Test to compare the results of an extraction model to the human annotations."""
-        prj = Project(id_=TEST_PROJECT_ID)
-        human_doc = prj.get_document_by_id(44823)
-        path_to_model = os.path.join(os.getcwd(), "lohnabrechnung.pkl")
-        if is_file(file_path=path_to_model, raise_exception=False):
-            evaluation = human_doc.evaluate_extraction_model(path_to_model)
-            self.assertEqual(10, evaluation["true_positive"].sum())
-            self.assertEqual(1, evaluation["false_positive"].sum())
-            self.assertEqual(9, evaluation["false_negative"].sum())
-            self.assertEqual(1519, evaluation['start_offset'][6])
-            self.assertEqual(1552, evaluation['end_offset'][18])
-
-
-def test_grouped():
-    """Test if group catches all relevant errors."""
-    grouped(DataFrame([[True, 'a'], [False, 'b']], columns=['is_correct', 'target']), target='target')
-    grouped(DataFrame([[False, 'a'], [False, 'b']], columns=['is_correct', 'target']), target='target')
-    grouped(DataFrame([[None, 'a'], [None, 'b']], columns=['is_correct', 'target']), target='target')
+    def test_grouped(self):
+        """Test if group catches all relevant errors."""
+        grouped(DataFrame([[True, 'a'], [False, 'b']], columns=['is_correct', 'target']), target='target')
+        grouped(DataFrame([[False, 'a'], [False, 'b']], columns=['is_correct', 'target']), target='target')
+        grouped(DataFrame([[None, 'a'], [None, 'b']], columns=['is_correct', 'target']), target='target')
