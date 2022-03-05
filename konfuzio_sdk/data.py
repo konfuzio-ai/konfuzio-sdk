@@ -273,7 +273,7 @@ class Label(Data):
         if label_sets is None:
             self.label_sets = []
         else:  # todo add feature as described in TestSeparateLabels
-            [label_set.add_label(self) for label_set in label_sets]
+            self.label_sets = [label_set.add_label(self) for label_set in label_sets]
 
         # Regex features
         self._tokens = None

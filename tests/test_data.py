@@ -35,7 +35,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         cls.label = Label(project=cls.project, text='First Offline Label')
         cls.category = Category(project=cls.project, id_=1)
         cls.document = Document(project=cls.project, category=cls.category)
-        cls.label_set = LabelSet(project=cls.project, categories=[cls.category])
+        cls.label_set = LabelSet(project=cls.project, categories=[cls.category], id_=421)
         cls.label_set.add_label(cls.label)
         cls.annotation_set = AnnotationSet(document=cls.document, label_set=cls.label_set)
         assert len(cls.project.virtual_documents) == 1
@@ -55,6 +55,11 @@ class TestOfflineDataSetup(unittest.TestCase):
         # todo add feature as described in TestSeparateLabels
         _ = Label(project=self.project, text='Second Offline Label')
         assert sorted([label.name for label in self.project.labels]) == ['First Offline Label', 'Second Offline Label']
+
+    def test_labl_has_label_sets(self):
+        """Pass and store Label Sets."""
+        label = Label(project=self.project, label_sets=[self.label_set], text='Second Offline Label')
+        assert [ls.id_ for ls in label.label_sets] == [421]
 
     def test_to_add_label_to_project_twice(self):
         """Add an existing Label to a Project."""
