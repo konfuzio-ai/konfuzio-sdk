@@ -751,10 +751,14 @@ class TestKonfuzioDataSetup(unittest.TestCase):
             # trying to get an annotation set that no longer exists
             _ = doc.get_annotation_set_by_id(annotation_set_id)
 
+    def test_name_of_category(self):
+        """Test the name of the Category."""
+        doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
+        assert doc.category.name == 'Lohnabrechnung'
+
     def test_document_with_multiline_annotation(self):
         """Test properties of a specific Documents in the test Project."""
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
-        assert doc.category.name == 'Lohnabrechnung'
         label = self.prj.get_label_by_id(867)
         annotations = label.annotations(categories=[self.prj.get_category_by_id(63)])
         self.assertEqual(len(annotations), self.annotations_correct)
@@ -775,7 +779,9 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.assertEqual(169, doc.annotations()[0]._spans[1].end_offset)
         self.assertEqual(len(doc.annotations()), 19)
         self.assertTrue(doc.annotations()[0].is_online)
-        self.assertTrue(not doc.annotations()[0].save())  # Save returns False because Annotation is already online.
+        with self.assertRaises(ValueError) as context:
+            doc.annotations()[0].save()
+            assert 'cannot update Annotations once saved online' in context.exception
 
     def test_add_document_twice(self):
         """Test adding same Document twice."""

@@ -236,7 +236,7 @@ def convert_to_bio_scheme(text: str, annotations: List) -> List[Tuple[str, str]]
     return tagged_entities
 
 
-def slugify(value, allow_unicode=False):
+def slugify(value):
     """
     Taken from https://github.com/django/django/blob/master/django/utils/text.py.
 
@@ -246,10 +246,7 @@ def slugify(value, allow_unicode=False):
     trailing whitespace, dashes, and underscores.
     """
     value = str(value)
-    if allow_unicode:
-        value = unicodedata.normalize('NFKC', value)
-    else:
-        value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
+    value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
     value = re.sub(r'[^\:\.\w\s-]', '', value.lower())
     return re.sub(r'[-\s\:\.]+', '-', value).replace('-_', '_')
 
