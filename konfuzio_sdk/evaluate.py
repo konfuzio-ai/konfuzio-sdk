@@ -14,6 +14,8 @@ RELEVANT_FOR_EVALUATION = [
     "revised",  # we need it to filter feedback required Annotations
     "annotation_set_id",
     "label_set_id",
+    "document_id",
+    "document_id_local",
     # "id__predicted", we don't care of the id_ see "id_"
     "confidence_predicted",  # we care about the confidence of the prediction # todo rename to confidence
     # "start_offset_predicted", only relevant for the merge
@@ -24,6 +26,8 @@ RELEVANT_FOR_EVALUATION = [
     # "revised_predicted",  # it's a prediction so we ignore if it is revised
     "annotation_set_id_predicted",
     "label_set_id_predicted",
+    "document_id_predicted",
+    "document_id_local_predicted",
 ]
 
 
@@ -33,14 +37,9 @@ def grouped(group, target: str):
     # all rows where is_correct is nan relate to an element which has no correct element partner
     correct = group["is_correct"].fillna(False)  # so fill nan with False as .loc will need boolean
 
-    # if correct.isnull().all():  # todo: rmv code - based on the tests this is not needed
-    #     # there is no correct element we can map on, all nan values
-    #     group[verbose_validation_column_name] = 0
-    if len(group.loc[correct][target]) == 0:
-        # there is no "correct" element in the group, however the predicted grouping is correct
+    if len(group.loc[correct][target]) == 0:  # no "correct" element in the group, but the predicted grouping is correct
         group[verbose_validation_column_name] = group[target].mode(dropna=False)[0]
-    else:
-        # get the most frequent annotation_set_id from the *correct* Annotations in this group
+    else:  # get the most frequent annotation_set_id from the *correct* Annotations in this group
         group[verbose_validation_column_name] = group.loc[correct][target].mode(dropna=False)[0]
 
     validation_column_name = f"is_correct_{target}"
