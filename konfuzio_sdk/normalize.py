@@ -7,26 +7,18 @@ from typing import Dict, Optional
 logger = logging.getLogger(__name__)
 
 
-def normalize_to_float(offset_string: str) -> Optional[float]:
-    """Given an offset_string: str this function tries to translate the offset-string to a number."""
+def _get_is_negative(offset_string: str) -> bool:
+    """Check if a string has a negative sign."""
     is_negative = False
-
-    if offset_string in ['-', '-,-', '-,--', '--,--', '--,-', '-.-', '-.--', '--.--', '--.-']:
-        return 0.0
-
     if offset_string.count('-') > 0 or offset_string.count('–'):
         if offset_string.count('-') == 1 or offset_string.count('–') == 1:
             is_negative = True
-        else:
-            return None
 
     if offset_string.count('S') > 0:
         if offset_string.count('S') == 1 and offset_string[-1] == "S" and is_negative is False:
             is_negative = True
-        else:
-            return None
 
-    offset_string = (
+    offset_string_negative_check = (
         offset_string.replace(' ', '')
         .replace('"', '')
         .replace('„', '')
@@ -36,13 +28,19 @@ def normalize_to_float(offset_string: str) -> Optional[float]:
         .replace('€', '')
     )
 
-    if len(offset_string) > 2:
-        if offset_string[0] == '(' and offset_string[-1] == ')':
+    if len(offset_string_negative_check) > 2:
+        if offset_string_negative_check[0] == '(' and offset_string_negative_check[-1] == ')':
             is_negative = True
 
+    return is_negative
+
+
+def normalize_to_float(offset_string: str) -> Optional[float]:
+    """Given an offset_string: str this function tries to translate the offset-string to a number."""
     normalization = _normalize_string_to_absolute_float(offset_string)
 
     if normalization:
+        is_negative = _get_is_negative(offset_string)
         normalization = normalization * (-1) ** int(is_negative)
 
     return normalization
@@ -50,21 +48,15 @@ def normalize_to_float(offset_string: str) -> Optional[float]:
 
 def normalize_to_positive_float(offset_string: str) -> Optional[float]:
     """Given an offset_string this function tries to translate the offset-string to an absolute number (ignores +/-)."""
-    offset_string = (
-        offset_string.replace(' ', '')
-        .replace('+', '')
-        .replace('-', '')
-        .replace('–', '')
-        .replace('"', '')
-        .replace('„', '')
-    )
-
     return _normalize_string_to_absolute_float(offset_string)
 
 
 def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
     """Given a string tries to translate that into an absolute float. SHOULD NOT BE CALLED DIRECTLY."""
     normalization = None
+
+    if offset_string in ['-', '-,-', '-,--', '--,--', '--,-', '-.-', '-.--', '--.--', '--.-']:
+        return 0.0
 
     if offset_string.lower() in ['nil', 'kein', 'keinen', 'keiner', 'none']:
         return 0
@@ -116,6 +108,13 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
         .replace('(', '')
         .replace(')', '')
         .replace('|', '')
+        .replace(' ', '')
+        .replace('"', '')
+        .replace('„', '')
+        .replace('+', '')
+        .replace('-', '')
+        .replace('–', '')
+        .replace('€', '')
     )
 
     if len(offset_string) > 1:

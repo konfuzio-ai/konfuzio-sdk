@@ -179,7 +179,9 @@ test_data_numbers = [
     ('€54.314', 54314, 93255),
     ('–100', -100, 109610),
     ('3.456,814,75', 3456814.75, 110383),
-    ('NIL', 0, None)
+    ('NIL', 0, 0),
+    ('abcdef', None, 0)
+    # ('Woch.Arb.Zt.', None, 0), TODO this raises uncaught ValuError
     # ('12.', 12.0, 0), undefined test cases:
     # ('1.', 1.0, 0),
     # ('.', None, 0),
