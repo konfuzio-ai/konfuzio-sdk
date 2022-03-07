@@ -11,7 +11,6 @@ import time
 from typing import Optional, List, Union, Tuple
 
 import dateutil.parser
-import pandas as pd
 from tqdm import tqdm
 
 from konfuzio_sdk import KONFUZIO_HOST
@@ -24,7 +23,6 @@ from konfuzio_sdk.api import (
     delete_document_annotation,
     get_document_details,
 )
-from konfuzio_sdk.evaluate import compare
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_spans, suggest_regex_for_string, merge_regex
 from konfuzio_sdk.utils import get_bbox, get_missing_offsets
@@ -53,7 +51,7 @@ class Data:
         """Make any online or local concept hashable. See https://stackoverflow.com/a/7152650."""
         return hash(str(self.id_local))
 
-    # todo review function to be defined as @abstractmethod
+    # todo require to overwrite lose_weight via @abstractmethod
     def lose_weight(self):
         """Delete data of the instance."""
         if self.project:
@@ -163,7 +161,7 @@ class LabelSet(Data):
         self.project: Project = project
         self.labels: List[Label] = []
 
-        # todo the following lines are optional and serve as "separate_labels"
+        # todo allow to create Labels either on Project or Label Set level, so they are (not) shared among Label Sets.
         for label in labels:
             if isinstance(label, int):
                 label = self.project.get_label_by_id(id_=label)
@@ -238,12 +236,12 @@ class Label(Data):
         project,
         id_: Union[int, None] = None,
         text: str = None,
-        get_data_type_display: str = None,
+        get_data_type_display: str = 'Text',
         text_clean: str = None,
         description: str = None,
         label_sets=None,
         has_multiple_top_candidates: bool = False,
-        threshold: float = None,  # todo should we really add the default 0.1?
+        threshold: float = None,
         *initial_data,
         **kwargs,
     ):
@@ -267,7 +265,7 @@ class Label(Data):
         self.has_multiple_top_candidates = has_multiple_top_candidates
         self.threshold = threshold
         self.project: Project = project
-        project.add_label(self)  # todo add feature as described in TestSeparateLabels
+        project.add_label(self)
 
         self.label_sets = []
         for label_set in label_sets or []:
@@ -579,7 +577,6 @@ class Span(Data):
 
     def __lt__(self, other: 'Span'):
         """If we sort spans we do so by start offset."""
-        # todo check for overlapping
         return self.start_offset < other.start_offset
 
     def __repr__(self):
@@ -627,6 +624,9 @@ class Span(Data):
                 "start_offset": 0,  # to support compare function to evaluate True and False
                 "end_offset": 0,  # to support compare function to evaluate True and False
                 "is_correct": None,
+                "created_by": None,
+                "revised_by": None,
+                "custom_offset_string": None,
                 "revised": None,
                 "label_threshold": None,
                 "label_id": None,
@@ -643,6 +643,9 @@ class Span(Data):
                 "start_offset": self.start_offset,  # to support multiline
                 "end_offset": self.end_offset,  # to support multiline
                 "is_correct": self.annotation.is_correct,
+                "created_by": self.annotation.created_by,
+                "revised_by": self.annotation.revised_by,
+                "custom_offset_string": self.annotation.custom_offset_string,
                 "revised": self.annotation.revised,
                 "label_threshold": self.annotation.label.threshold,  # todo: allow to optimize threshold
                 "label_id": self.annotation.label.id_,
@@ -655,7 +658,7 @@ class Span(Data):
 
 
 class Annotation(Data):
-    """Hold information that a Label and Annotation Set has been assigned to and combines Spans."""
+    """Hold information that a Label, Labe Set and Annotation Set has been assigned to and combines Spans."""
 
     def __init__(
         self,
@@ -672,8 +675,12 @@ class Annotation(Data):
         spans=None,
         accuracy: float = None,
         confidence: float = None,
-        translated_string=None,
-        *initial_data,
+        created_by: int = None,
+        revised_by: int = None,
+        translated_string: str = None,
+        custom_offset_string: bool = False,
+        offset_string: str = False,
+        *args,
         **kwargs,
     ):
         """
@@ -688,6 +695,7 @@ class Annotation(Data):
         :param annotation: Annotation Set of the Document where the Label belongs
         :param label_set_text: Name of the Label Set where the Label belongs
         :param translated_string: Translated string
+        :param custom_offset_string: String as edited by a user
         :param label_set_id: ID of the Label Set where the Label belongs
         """
         self.id_local = next(Data.id_iter)
@@ -696,6 +704,12 @@ class Annotation(Data):
         self.normalized = normalized
         self.translated_string = translated_string
         self.document = document
+        self.created_by = created_by
+        self.revised_by = revised_by
+        if custom_offset_string:
+            self.custom_offset_string = offset_string
+        else:
+            self.custom_offset_string = None
         self.id_ = id_  # Annotations can have None id_, if they are not saved online and are only available locally
         self._spans: List[Span] = []
 
@@ -745,8 +759,8 @@ class Annotation(Data):
             self.add_span(span)
 
         self.selection_bbox = kwargs.get("selection_bbox", None)
-        # self.page_number = kwargs.get("page_number", None)
 
+        # TODO START LEGACY to support multiline Annotations
         bboxes = kwargs.get("bboxes", None)
         if bboxes and len(bboxes) > 0:
             for bbox in bboxes:
@@ -765,12 +779,7 @@ class Annotation(Data):
             self.add_span(sa)
 
             logger.warning(f'{self} is empty')
-        else:
-            logger.debug(f'{self} created but without bbox information.')
-            # raise NotImplementedError
-            # todo is it ok to have no bbox ? raise NotImplementedError
 
-        # TODO START LEGACY -
         self.top = None
         self.top = None
         self.x0 = None
@@ -786,10 +795,10 @@ class Annotation(Data):
             self.y0 = bbox.get('y0')
             self.y1 = bbox.get('y1')
 
-        self.bboxes = kwargs.get('bboxes', None)  # todo: smoothen implementation of multiple bboxes
+        self.bboxes = kwargs.get('bboxes', None)
         self.selection_bbox = kwargs.get('selection_bbox', None)
         self.page_number = kwargs.get('page_number', None)
-        # TODO END LEGACY -
+        # END LEGACY -
 
         # regex features
         self._tokens = []
@@ -834,7 +843,6 @@ class Annotation(Data):
 
     def __lt__(self, other):
         """If we sort Annotations we do so by start offset."""
-        # logger.warning('Legacy: Annotations can not be sorted consistently by start offset.')
         return min([span.start_offset for span in self.spans]) < min([span.start_offset for span in other.spans])
 
     def __hash__(self):
@@ -873,8 +881,10 @@ class Annotation(Data):
     @property
     def offset_string(self) -> List[str]:
         """View the string representation of the Annotation."""
-        if self.document.text:
+        if not self.custom_offset_string and self.document.text:
             result = [span.offset_string for span in self.spans]
+        elif self.custom_offset_string:
+            result = self.offset_string_api
         else:
             result = []
         return result
@@ -1154,93 +1164,6 @@ class Document(Data):
         """Calculate the number of pages."""
         return len(self.text.split('\f'))
 
-    # todo goes to Trainer extract Method of AI Models
-    def add_extractions_as_annotations(
-        self, label: Label, extractions, label_set: LabelSet, annotation_set: AnnotationSet
-    ):
-        """Add the extraction of a model to the document."""
-        annotations = extractions[extractions['confidence'] > 0.1][
-            ['start_offset', 'end_offset', 'confidence', 'page_index', 'x0', 'x1', 'y0', 'y1', 'top', 'bottom']
-        ].sort_values(by='confidence', ascending=False)
-        for annotation in annotations.to_dict('records'):  # todo ask Ana: are Start and End always ints
-            _ = Annotation(
-                document=self,
-                label=label,
-                accuracy=annotation['confidence'],
-                label_set=label_set,
-                annotation_set=annotation_set,
-                bboxes=[annotation],
-            )
-        return self
-
-    # todo: Goes to Trainer extract AI method
-    def evaluate_extraction_model(self, path_to_model: str):
-        """Run and evaluate model on this document."""
-        # todo: tbd local import to prevent circular import - Can only be used by konfuzio Trainer users
-        from konfuzio.load_data import load_pickle
-
-        model = load_pickle(path_to_model)
-
-        # build the doc from model results
-        virtual_doc_for_extraction = Document(
-            project=self.project, text=self.text, bbox=self.get_bbox(), category=self.category
-        )
-        extraction_result = model.extract(document=virtual_doc_for_extraction)
-        virtual_doc = self.extraction_result_to_document(extraction_result)
-
-        return compare(self, virtual_doc)
-
-    # todo: Goes to Trainer extract AI method
-    def extraction_result_to_document(self, extraction_result):
-        """Return a virtual Document annotated with AI Model output."""
-        virtual_doc = Document(project=self.project, text=self.text, bbox=self.get_bbox(), category=self.category)
-        virtual_annotation_set_id = 0  # counter for accross mult. Annotation Set groups of a Label Set
-
-        # define Annotation Set for the Category Label Set: todo: this is unclear from API side
-        category_label_set = self.project.get_label_set_by_id(self.category.id_)
-        virtual_default_annotation_set = AnnotationSet(
-            document=virtual_doc, label_set=category_label_set, id_=virtual_annotation_set_id
-        )
-
-        for label_or_label_set_name, information in extraction_result.items():
-            if isinstance(information, pd.DataFrame):
-                # annotations belong to the default Annotation Set
-                # add default Annotation Set if there is any prediction for it
-                if virtual_default_annotation_set not in virtual_doc.annotation_sets:
-                    virtual_doc.add_annotation_set(virtual_default_annotation_set)
-
-                label = self.project.get_label_by_name(label_or_label_set_name)
-                virtual_doc.add_extractions_as_annotations(
-                    label=label,
-                    extractions=information,
-                    label_set=category_label_set,
-                    annotation_set=virtual_default_annotation_set,
-                )
-
-            else:  # process multi Annotation Sets where multiline is True
-                label_set = self.project.get_label_set_by_name(label_or_label_set_name)
-
-                if not isinstance(information, list):
-                    information = [information]
-
-                for entry in information:  # represents one of pot. multiple annotation-sets belonging of one LabelSet
-                    virtual_annotation_set_id += 1
-                    virtual_annotation_set = AnnotationSet(
-                        document=virtual_doc, label_set=label_set, id_=virtual_annotation_set_id
-                    )
-                    # todo: ask Flo why commented out
-                    # virtual_doc.add_annotation_set(virtual_annotation_set)
-
-                    for label_name, extractions in entry.items():
-                        label = self.project.get_label_by_name(label_name)
-                        virtual_doc.add_extractions_as_annotations(
-                            label=label,
-                            extractions=extractions,
-                            label_set=label_set,
-                            annotation_set=virtual_annotation_set,
-                        )
-        return virtual_doc
-
     def eval_dict(self, use_correct=False) -> List[dict]:
         """Use this dict to evaluate Documents. The speciality: For ever Span of an Annotation create one entry."""
         result = []
@@ -1273,7 +1196,6 @@ class Document(Data):
                 raw_annotation_sets = json.load(f)
             # first load all Annotation Sets before we create Annotations
             for raw_annotation_set in raw_annotation_sets:
-                # todo add parent to define default Annotation Set
                 _ = AnnotationSet(
                     id_=raw_annotation_set["id"],
                     document=self,
@@ -1679,44 +1601,6 @@ class Document(Data):
             'f1_score': f1_score,
             'correct_findings': correct_findings,
         }
-
-        # todo alternative: reuse evaluation logic by compare function
-        # internal_project = Project(id_=None)
-        # category = Category(project=internal_project)
-        # label_set = LabelSet(project=internal_project)
-        # dedicated_label = Label(project=internal_project, label_sets=[label_set], threshold=0)
-        #
-        # # correct document
-        # correct_document = Document(project=internal_project, category=category)
-        # annotation_set = AnnotationSet(document=correct_document, label_set=label_set)
-        # # collect correct Spans of this Label in the Document
-        # correct_spans = []
-        # for annotation in self.annotations(label=label):
-        #     for span in annotation.spans:
-        #         correct_spans.append(Span(start_offset=span.start_offset, end_offset=span.end_offset))
-        #     correct_spans += annotation.spans
-        # _ = Annotation(document=correct_document, annotation_set=annotation_set, confidence=1, is_correct=True,
-        #                label=dedicated_label, label_set=label_set, spans=correct_spans)
-        #
-        # # virtual document
-        # virtual_document = Document(project=internal_project, category=category)
-        # virtual_annotation_set = AnnotationSet(document=correct_document, label_set=label_set)
-        # # collect findings in Document
-        # start_time = time.time()
-        # findings_in_document = regex_spans(
-        #     doctext=self.text,
-        #     regex=regex,
-        #     keep_full_match=False,
-        #     filtered_group=filtered_group,  # filter by name of label: one regex can match multiple labels
-        # )
-        # processing_time = time.time() - start_time
-        # # todo incorporate processing time
-        #
-        # proposed_spans = []
-        # for finding in findings_in_document:
-        #     proposed_spans.append(Span(start_offset=finding['start_offset'], end_offset=finding['end_offset']))
-        # _ = Annotation(document=virtual_document, annotation_set=virtual_annotation_set, confidence=1,
-        #                is_correct=True, label=dedicated_label, label_set=label_set, spans=correct_spans)
 
     def get_annotations(self) -> List[Annotation]:
         """Get Annotations of the Document."""

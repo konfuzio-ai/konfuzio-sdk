@@ -85,8 +85,6 @@ class TestOfflineDataSetup(unittest.TestCase):
 
     def test_to_add_label_to_project(self):
         """Add one Label to a Project."""
-        # with self.assertRaises(NotImplementedError):
-        # todo add feature as described in TestSeparateLabels
         _ = Label(project=self.project, text='Second Offline Label')
         assert sorted([label.name for label in self.project.labels]) == ['First Offline Label', 'Second Offline Label']
 
@@ -442,10 +440,6 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         category = self.prj.get_category_by_id(63)
         category_label_sets = category.label_sets
         label = category_label_sets[0].labels[0]
-
-        # todo label.annotations returns an unfiltered list of annotations, including annotations from documents without
-        # a category. It would be useful to be able to get the annotations of a label int the context of category (e.g.
-        # to fit a tokenizer for a label).
         for annotation in label.annotations(categories=[category]):
             if annotation.document.category is not None:
                 assert annotation.document.category == category
@@ -772,7 +766,6 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         # https://app.konfuzio.com/admin/server/sequenceannotation/?document_id=44823&project=46
         self.assertEqual(len(doc.annotations(use_correct=False)), 22)
         # a multiline Annotation in the top right corner, see https://app.konfuzio.com/a/4419937
-        # todo improve multiline support
         self.assertEqual(66, doc.annotations()[0]._spans[0].start_offset)
         self.assertEqual(78, doc.annotations()[0]._spans[0].end_offset)
         self.assertEqual(159, doc.annotations()[0]._spans[1].start_offset)
@@ -816,26 +809,18 @@ class TestKonfuzioDataSetup(unittest.TestCase):
                 anno = annotation.eval_dict[0]
 
         assert anno["confidence"] == 1.0
-        # assert anno["created_by"] ==  todo: support this variable provided via API in the Annotation
-        # assert anno["custom_offset_string"] ==   todo: support this variable provided via API in the Annotation
-        assert anno["end_offset"] == 366  # todo support multiline Annotations
-        # assert anno["get_created_by"] == "ana@konfuzio.com"  todo: support this variable provided via API
-        # assert anno["get_revised_by"] == "n/a" todo: support this variable provided via API in the Annotation
+        assert anno["created_by"] == 59
+        assert not anno["custom_offset_string"]
+        assert anno["end_offset"] == 366
         assert anno["is_correct"]
         assert anno["label_id"] == 860  # original REST API calls it "label" however means label_id
-        # assert anno["label_data_type"] == "Text"  # todo add to evaluation
-        # assert anno["label_text"] ==  not supported in SDK but in REST API
         assert anno["label_threshold"] == 0.1
-        # assert anno["normalized"] == '1'  # todo normalized is not really normalized data, e.g. for dates
-        # assert anno["offset_string"] ==  # todo not supported by SDK but REST API
-        # assert anno["offset_string_original"] ==  # todo not supported by SDK but REST API
+        assert anno["custom_offset_string"] is None
         assert not anno["revised"]
-        # self.assertIsNone(anno["revised_by"])   # todo not supported by SDK but REST API
+        assert anno["revised_by"] is None
         assert anno["annotation_set_id"] == 78730  # v2 REST API calls it still section
         assert anno["label_set_id"] == 63  # v2 REST API call it still section_label_id
-        # assert anno["annotation_set_text"] == "Lohnabrechnung"  # v2 REST API call it still section_label_text
         assert anno["start_offset"] == 365
-        # self.assertIsNone(anno["translated_string"])  # todo: how to translate null in a meaningful way
 
     def test_document_annotations_filter(self):
         """Test Annotations filter."""
@@ -850,7 +835,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert doc.text[395:396] == '4'
         annotations = doc.annotations()
         self.assertEqual(24, len(annotations))
-        # assert annotations[2].offset_string == ['4']
+        assert annotations[2].offset_string == ['4']
 
     def test_document_check_bbox(self):
         """Test bbox check."""

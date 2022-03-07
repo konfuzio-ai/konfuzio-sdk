@@ -108,7 +108,6 @@ class TestEvaluation(unittest.TestCase):
         assert len(doc_a.annotations()) == len(doc_b.annotations()) - 1
         evaluation = compare(doc_a, doc_b)
         assert len(evaluation) == 24  # 2 annotations are false and two have feedback required
-        # TODO: add feedback required again
         assert evaluation["true_positive"].sum() == 19
         assert evaluation["false_positive"].sum() == 4  # 1 multiline (2 lines == 2 Annotations) + 2 feedback required
         assert evaluation["false_negative"].sum() == 0
@@ -122,7 +121,6 @@ class TestEvaluation(unittest.TestCase):
         assert len(doc_a.annotations()) == len(doc_b.annotations()) == 0
         evaluation = compare(doc_a, doc_b, only_use_correct=True)
         assert len(evaluation) == 1  # placeholder
-        # TODO: add feedback required again
         assert evaluation["true_positive"].sum() == 0
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 0
