@@ -507,6 +507,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_get_images(self):
         """Test get paths to the images of the first training document."""
         self.prj.documents[0].get_images()
+        # TODO assert image sizes
         assert len(self.prj.documents[0].image_paths) == len(self.prj.documents[0].pages)
 
     def test_get_file(self):
@@ -588,6 +589,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.assertEqual(span.top, 23.849)
         self.assertEqual(span.bottom, 32.849)
         self.assertEqual(span.page_index, 0)
+        self.assertEqual(span.line_index, 0)
         self.assertEqual(span.x0, 426.0)
         self.assertEqual(span.x1, 442.8)
         self.assertEqual(span.y0, 808.831)
@@ -726,6 +728,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         label = Label(project=self.prj)
         span = Span(start_offset=1, end_offset=2)
         _ = Annotation(document=doc, label_set=label_set, label=label, spans=[span])
+        assert span.page_index == 0
         assert span.line_index == 0
 
     def test_annotation_sets_in_document(self):
@@ -835,6 +838,18 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert anno["label_set_id"] == 63  # v2 REST API call it still section_label_id
         # assert anno["annotation_set_text"] == "Lohnabrechnung"  # v2 REST API call it still section_label_text
         assert anno["start_offset"] == 365
+        assert anno['page_width'] == 595.2
+        assert anno['page_height'] == 841.68
+        assert anno['x0'] == None
+        assert anno['x1'] == None
+        assert anno['y0'] == None
+        assert anno['y1'] == None
+        assert anno['x0_relative'] == None
+        assert anno['x1_relative'] == None
+        assert anno['y0_relative'] == None
+        assert anno['y1_relative'] == None
+        assert anno['page_index'] == 0
+        assert anno['page_index_relative'] == None
         # self.assertIsNone(anno["translated_string"])  # todo: how to translate null in a meaningful way
 
     def test_document_annotations_filter(self):

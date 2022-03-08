@@ -8,9 +8,16 @@ from konfuzio_sdk.normalize import (
     normalize_to_float,
     normalize_to_bool,
     normalize_to_percentage,
+    normalize,
 )
 
 logger = logging.getLogger(__name__)
+
+
+def test_normalize_with_invalid_string():
+    """Normalize should not raise an exception."""
+    result = normalize('Woch.Arb.Zt', 'float')
+    assert result is None
 
 
 def test_date_with_only_one_digit_in_front_and_only_two_for_the_year():
