@@ -43,7 +43,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 12
+        assert len(cls.project.virtual_documents) == 14
 
     def test_category_of_document(self):
         """Test if setup worked."""
@@ -114,6 +114,32 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert annotation.spans[0].annotation is not None
         assert annotation.spans[0].x0 is None  # Span bboxes must be explicitly loaded using span.bbox()
         # Here this would be failing even when calling span.bbox() as the test document does not have a bbox.
+
+    def test_get_span_bbox_with_characters_without_height(self):
+        """Test get the bbox of a Span where the characters do not have height (OCR problem)."""
+        document_bbox = {
+            '1': {'x0': 0, 'x1': 1, 'y0': 1, 'y1': 1, 'top': 10, 'bottom': 11, 'page_number': 1},
+        }
+        document = Document(project=self.project, category=self.category, text='hello', bbox=document_bbox)
+        span = Span(start_offset=1, end_offset=2)
+        _ = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
+
+        with self.assertRaises(ValueError) as context:
+            span.bbox()
+            assert 'coordinate y1 should be bigger than y0.' in context.exception
+
+    def test_get_span_bbox_with_characters_without_width(self):
+        """Test get the bbox of a Span where the characters do not have width (OCR problem)."""
+        document_bbox = {
+            '1': {'x0': 1, 'x1': 1, 'y0': 0, 'y1': 1, 'top': 10, 'bottom': 11, 'page_number': 1},
+        }
+        document = Document(project=self.project, category=self.category, text='hello', bbox=document_bbox)
+        span = Span(start_offset=1, end_offset=2)
+        _ = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
+
+        with self.assertRaises(ValueError) as context:
+            span.bbox()
+            assert 'coordinate x1 should be bigger than x0.' in context.exception
 
     def test_to_there_must_not_be_a_folder(self):
         """Check that a virtual Document has now folder."""

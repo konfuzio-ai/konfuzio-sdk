@@ -599,10 +599,10 @@ class Span(Data):
             self.y1 = b['y1']
 
             if self.x0 and self.x1 and not self.x0 < self.x1:
-                raise ValueError(f'Span {self}: coordinate x1 {self.x1} should be bigger than x0 {self.x0}.')
+                raise ValueError(f'{self}: coordinate x1 should be bigger than x0. x0: {self.x0}, x1: {self.x1}.')
 
             if self.y0 and self.y1 and not self.y0 < self.y1:
-                raise ValueError(f'Span {self}: coordinate y1 {self.y1} should be bigger than y0 {self.y0}.')
+                raise ValueError(f'{self}: coordinate y1 should be bigger than y0. y0: {self.y0}, y1: {self.y1}.')
 
             if self.page_index is not None and not (self.x1 < self.page_width) or not (self.y1 < self.page_height):
                 raise ValueError(f'Span {self}: bounding box of span is located outside of the page.')
