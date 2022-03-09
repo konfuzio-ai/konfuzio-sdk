@@ -449,7 +449,7 @@ class TestRegexGenerator(unittest.TestCase):
 
     @unittest.skip('We do not support multiple Annotations in one offset for now')
     def test_regex_first_annotation_in_row(self):
-        """Todo add a test if two annotated offsets are connected to each other "please pay <GrossAmount><Currency>."""
+        """Add a test if two annotated offsets are connected to each other "please pay <GrossAmount><Currency>."""
         # first name and last name are in one line in the document:
         first_names = self.prj.get_label_by_name('Vorname')
         category = self.prj.get_category_by_id(63)

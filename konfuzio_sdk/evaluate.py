@@ -5,7 +5,7 @@ import pandas as pd
 RELEVANT_FOR_EVALUATION = [
     "id_local",  # needed to group spans in Annotations
     "id_",  # even we won't care of the id_, as the ID is defined by the start and end span
-    # "confidence", we don't care about the confidence of doc_a  # todo rename to confidence
+    # "confidence", we don't care about the confidence of doc_a
     "start_offset",  # only relevant for the merge but allows to track multiple sequences per annotation
     "end_offset",  # only relevant for the merge but allows to track multiple sequences per annotation
     "is_correct",  # we care if it is correct, humans create Annotations without confidence
@@ -17,7 +17,7 @@ RELEVANT_FOR_EVALUATION = [
     "document_id",
     "document_id_local",
     # "id__predicted", we don't care of the id_ see "id_"
-    "confidence_predicted",  # we care about the confidence of the prediction # todo rename to confidence
+    "confidence_predicted",  # we care about the confidence of the prediction
     # "start_offset_predicted", only relevant for the merge
     # "end_offset_predicted", only relevant for the merge
     # "is_correct_predicted", # it's a prediction so we don't know if it is correct
