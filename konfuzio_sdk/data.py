@@ -1203,7 +1203,6 @@ class Document(Data):
         self.file_url = file_url
         self.is_dataset = is_dataset
         self.dataset_status = dataset_status
-        self._pages = pages
         self._update = update
 
         if project and category_template:
@@ -1227,7 +1226,7 @@ class Document(Data):
         self._text = text
         self._bbox = bbox
         self._hocr = None
-        self._pages = None
+        self._pages = pages
 
         # prepare local setup for document
         if self.id_:

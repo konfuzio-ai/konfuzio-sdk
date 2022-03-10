@@ -43,7 +43,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 13
+        assert len(cls.project.virtual_documents) == 14
 
     def test_category_of_document(self):
         """Test if setup worked."""
@@ -228,6 +228,24 @@ class TestOfflineDataSetup(unittest.TestCase):
         )
 
         assert annotation in annotation_set.annotations
+
+    def test_create_document_with_pages(self):
+        """Add new annotation set to a document."""
+        page_list = [{
+            "id": 1,
+            "image": "/page/show-image/1/",
+            "number": 1,
+            "original_size": [
+                595.2,
+                841.68
+            ],
+            "size": [
+                1414,
+                2000
+            ]
+        }]
+        document = Document(project=self.project, category=self.category, pages=page_list)
+        assert document.pages == page_list
 
     def test_create_new_annotation_set_in_document(self):
         """Add new annotation set to a document."""
