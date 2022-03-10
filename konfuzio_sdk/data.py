@@ -1173,6 +1173,7 @@ class Document(Data):
         category: Category = None,
         text: str = None,
         bbox: dict = None,
+        pages: list = None,
         update: bool = None,
         *args,
         **kwargs,
@@ -1189,6 +1190,7 @@ class Document(Data):
         :param dataset_status: Dataset status of the Document (e.g. training)
         :param updated_at: Updated information
         :param bbox: Bounding box information per character in the PDF (dict)
+        :param pages: List of page sizes.
         :param update: Annotations, Annotation Sets will not be loaded by default. True will load it from the API.
                         False from local files
         :param number_of_pages: Number of pages in the document
@@ -1200,6 +1202,7 @@ class Document(Data):
         self.file_url = file_url
         self.is_dataset = is_dataset
         self.dataset_status = dataset_status
+        self._pages = pages
         self._update = update
 
         if project and category_template:
