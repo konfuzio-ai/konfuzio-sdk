@@ -594,7 +594,7 @@ class Span(Data):
         if self.annotation:
             b = get_bbox(self.annotation.document.get_bbox(), self.start_offset, self.end_offset)
             # self.page_index = b['page_index']
-            # "page_index" depends on the document text and should be independen from bboxes.
+            # "page_index" depends on the document text and should be independent of bboxes.
             self.top = b['top']
             self.bottom = b['bottom']
             self.x0 = b['x0']
@@ -602,12 +602,17 @@ class Span(Data):
             self.y0 = b['y0']
             self.y1 = b['y1']
 
-            if self.page_index is not None \
-                    and not (self.x0 < self.x1 < self.page_width) or  not (self.y0 < self.y1 < self.page_height):
-                raise ValueError(f'Bounding box of span is located outside of the page.')
+            if self.x0 and self.x1 and not self.x0 < self.x1:
+                raise ValueError(f'{self}: coordinate x1 should be bigger than x0. x0: {self.x0}, x1: {self.x1}.')
+
+            if self.y0 and self.y1 and not self.y0 < self.y1:
+                raise ValueError(f'{self}: coordinate y1 should be bigger than y0. y0: {self.y0}, y1: {self.y1}.')
+
+            if self.page_index is not None and not (self.x1 < self.page_width) or not (self.y1 < self.page_height):
+                raise ValueError(f'Span {self}: bounding box of span is located outside of the page.')
 
     @property
-    def line_index(self) -> int: # TODO line_index might not be needed.
+    def line_index(self) -> int:  # TODO line_index might not be needed.
         """Calculate the index of the line on which the span starts, first line has index 0."""
         if self.annotation and self.annotation.document.pages:
             if self._line_index is not None:
@@ -633,13 +638,15 @@ class Span(Data):
             return self.annotation.document.pages[self.page_index]['original_size'][0]
         else:
             return None
+
     @property
     def page_height(self) -> Optional[float]:
         """Get width of the page of the Span. Used to calculate relative position on page."""
         if self.page_index is not None:
             return self.annotation.document.pages[self.page_index]['original_size'][1]
         else:
-            return  None
+            return None
+
     @property
     def normalized(self):
         """Normalize the offset string."""
