@@ -43,7 +43,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 14
+        assert len(cls.project.virtual_documents) == 13
 
     def test_category_of_document(self):
         """Test if setup worked."""
@@ -332,6 +332,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         project.add_category(category)
         label_set = LabelSet(project=project)
         project.add_label_set(label_set)
+        label = Label(project=project, label_sets=[label_set])
         project.lose_weight()
         assert project.session is None
         assert project.categories[0].session is None
