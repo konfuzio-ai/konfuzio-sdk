@@ -100,6 +100,10 @@ class AnnotationSet(Data):
         return min((s.start_offset for a in self.annotations for s in a.spans), default=None)
 
     @property
+    def start_line_index(self):
+        return self.document.text[0 : self.start_offset].count('\n')
+
+    @property
     def end_offset(self):
         """Calculate the end based on all Annotations currently in this Annotation Set."""
         return max((a.end_offset for a in self.annotations), default=None)
@@ -605,11 +609,12 @@ class Span(Data):
     @property
     def line_index(self) -> int: # TODO line_index might not be needed.
         """Calculate the index of the line on which the span starts, first line has index 0."""
-        if self._line_index is not None:
-            return self._line_index
-        else:
-            self._line_index = self.annotation.document.text[0 : self.start_offset].count('\n')
-            return self._line_index
+        if self.annotation and self.annotation.document.pages:
+            if self._line_index is not None:
+                return self._line_index
+            else:
+                self._line_index = self.annotation.document.text[0 : self.start_offset].count('\n')
+                return self._line_index
 
     @property
     def page_index(self) -> Optional[int]:
@@ -678,6 +683,7 @@ class Span(Data):
                 "page_width": 0,
                 "page_heigth": 0,
                 "page_index": 0,
+                "line_index": 0,
                 # "area": 0,
             }
         else:
@@ -708,6 +714,7 @@ class Span(Data):
                 "page_width": self.page_width,
                 "page_height": self.page_height,
                 "page_index": self.page_index,
+                "line_index": self.line_index,  # used by label_set clf
                 # "area": self.x0 * self.x1,  # TODO What does this feature represent? Is self.x0 and self.x1 always
                 # not None here.
             }
@@ -1238,9 +1245,14 @@ class Document(Data):
         return os.path.join(self.document_folder, amend_file_name(self.name, append_text="ocr", new_extension=".pdf"))
 
     @property
-    def number_of_pages(self):
+    def number_of_pages(self) -> int:
         """Calculate the number of pages."""
         return len(self.text.split('\f'))
+
+    @property
+    def number_of_lines(self) -> int:
+        """Calculate the number of lines."""
+        return len(self.text.replace('\f', '\n').split('\n'))
 
     def eval_dict(self, use_correct=False) -> List[dict]:
         """Use this dict to evaluate Documents. The speciality: For every Span of an Annotation create one entry."""

@@ -650,6 +650,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert new_doc.text
         assert new_doc.get_bbox()
         assert new_doc.number_of_pages == 1
+        assert new_doc.number_of_lines == 70
 
     def test_category_of_document(self):
         """Test to download a file which includes a whitespace in the name."""
@@ -853,6 +854,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert anno['x1_relative'] == None
         assert anno['y0_relative'] == None
         assert anno['y1_relative'] == None
+        assert anno['line_index'] == 4
         assert anno['page_index'] == 0
         assert anno['page_index_relative'] == 0
 
