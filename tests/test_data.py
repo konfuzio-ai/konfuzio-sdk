@@ -117,9 +117,7 @@ class TestOfflineDataSetup(unittest.TestCase):
 
     def test_get_span_bbox_with_characters_without_height(self):
         """Test get the bbox of a Span where the characters do not have height (OCR problem)."""
-        document_bbox = {
-            '1': {'x0': 0, 'x1': 1, 'y0': 1, 'y1': 1, 'top': 10, 'bottom': 11, 'page_number': 1},
-        }
+        document_bbox = {'1': {'x0': 0, 'x1': 1, 'y0': 1, 'y1': 1, 'top': 10, 'bottom': 11, 'page_number': 1}}
         document = Document(project=self.project, category=self.category, text='hello', bbox=document_bbox)
         span = Span(start_offset=1, end_offset=2)
         _ = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
@@ -130,9 +128,7 @@ class TestOfflineDataSetup(unittest.TestCase):
 
     def test_get_span_bbox_with_characters_without_width(self):
         """Test get the bbox of a Span where the characters do not have width (OCR problem)."""
-        document_bbox = {
-            '1': {'x0': 1, 'x1': 1, 'y0': 0, 'y1': 1, 'top': 10, 'bottom': 11, 'page_number': 1},
-        }
+        document_bbox = {'1': {'x0': 1, 'x1': 1, 'y0': 0, 'y1': 1, 'top': 10, 'bottom': 11, 'page_number': 1}}
         document = Document(project=self.project, category=self.category, text='hello', bbox=document_bbox)
         span = Span(start_offset=1, end_offset=2)
         _ = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
@@ -196,6 +192,24 @@ class TestOfflineDataSetup(unittest.TestCase):
         )
 
         assert annotation in document.annotations()
+
+    def test_new_annotation_in_document_with_confidence_zero(self):
+        """Add new annotation to a document with confidence of 0.0."""
+        project = Project(id_=None)
+        document = Document(project=project, category=self.category)
+        span = Span(start_offset=1, end_offset=2)
+        annotation_set = AnnotationSet(document=document, label_set=self.label_set)
+
+        annotation = Annotation(
+            document=document,
+            label=self.label,
+            annotation_set=annotation_set,
+            label_set=self.label_set,
+            spans=[span],
+            confidence=0.0,
+        )
+
+        assert annotation in document.annotations(use_correct=False)
 
     def test_new_annotation_in_annotation_set_of_document(self):
         """Add new annotation to a document."""
@@ -316,8 +330,6 @@ class TestOfflineDataSetup(unittest.TestCase):
         project = Project(id_=None)
         category = Category(project=project, id_=None)
         project.add_category(category)
-        document = Document(project=self.project, category=category)
-        label = Label(project=project)
         label_set = LabelSet(project=project)
         project.add_label_set(label_set)
         project.lose_weight()
@@ -872,14 +884,14 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
         assert anno['page_width'] == 595.2
         assert anno['page_height'] == 841.68
-        assert anno['x0'] == None
-        assert anno['x1'] == None
-        assert anno['y0'] == None
-        assert anno['y1'] == None
-        assert anno['x0_relative'] == None
-        assert anno['x1_relative'] == None
-        assert anno['y0_relative'] == None
-        assert anno['y1_relative'] == None
+        assert anno['x0'] is None
+        assert anno['x1'] is None
+        assert anno['y0'] is None
+        assert anno['y1'] is None
+        assert anno['x0_relative'] is None
+        assert anno['x1_relative'] is None
+        assert anno['y0_relative'] is None
+        assert anno['y1_relative'] is None
         assert anno['line_index'] == 4
         assert anno['page_index'] == 0
         assert anno['page_index_relative'] == 0

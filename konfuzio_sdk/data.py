@@ -101,6 +101,7 @@ class AnnotationSet(Data):
 
     @property
     def start_line_index(self):
+        """Calculate starting line of this Annotation Set."""
         return self.document.text[0 : self.start_offset].count('\n')
 
     @property
@@ -805,9 +806,9 @@ class Annotation(Data):
         self.id_ = id_  # Annotations can have None id_, if they are not saved online and are only available locally
         self._spans: List[Span] = []
 
-        if accuracy:  # its a confidence
+        if accuracy is not None:  # its a confidence
             self.confidence = accuracy
-        elif confidence:
+        elif confidence is not None:
             self.confidence = confidence
         elif self.id_ is not None and accuracy is None:  # hotfix: it's an online annotation crated by a human
             self.confidence = 1
