@@ -96,7 +96,7 @@ class AnnotationSet(Data):
 
     @property
     def start_offset(self):
-        """Calculate earliest start based on all Annotations currently in this Annotation Set."""
+        """Calculate the earliest start based on all Annotations currently in this Annotation Set."""
         return min((s.start_offset for a in self.annotations for s in a.spans), default=None)
 
     @property
@@ -378,7 +378,7 @@ class Label(Data):
         Type of regex allows you to group regex by generality
 
         Example:
-            Three Annotations about the birth date in two Documents and one regex to be evaluated
+            Three Annotations about the birthdate in two Documents and one regex to be evaluated
             1.doc: "My was born at the 12th of December 1980, you could also say 12.12.1980." (2 Annotations)
             2.doc: "My was born at 12.06.1997." (1 Annotations)
             regex: dd.dd.dddd (without escaped characters for easier reading)
@@ -537,7 +537,7 @@ class Label(Data):
 
 
 class Span(Data):
-    """An Span is a sequence of characters or whitespaces without line break."""
+    """A Span is a sequence of characters or whitespaces without line break."""
 
     def __init__(self, start_offset: int, end_offset: int, annotation=None):
         """
@@ -567,7 +567,7 @@ class Span(Data):
         self.y0 = None
         self.y1 = None
 
-        # use hidden variables calculated informations in instance
+        # use hidden variables calculated information in instance
         self._page_index = None
         self._line_index = None
 
@@ -689,7 +689,7 @@ class Span(Data):
                 "y0": 0,
                 "y1": 0,
                 "page_width": 0,
-                "page_heigth": 0,
+                "page_height": 0,
                 "page_index": 0,
                 "line_index": 0,
                 # "area": 0,
@@ -751,7 +751,7 @@ class Span(Data):
 
 
 class Annotation(Data):
-    """Hold information that a Label, Labe Set and Annotation Set has been assigned to and combines Spans."""
+    """Hold information that a Label, Label Set and Annotation Set has been assigned to and combines Spans."""
 
     def __init__(
         self,
@@ -841,7 +841,7 @@ class Annotation(Data):
         if isinstance(annotation_set_id, int):
             self.annotation_set: AnnotationSet = self.document.get_annotation_set_by_id(annotation_set_id)
         elif isinstance(annotation_set, AnnotationSet):
-            # it's is a save way to look up the annotation set first. Otherwise users can add annotation sets which
+            # it's a save way to look up the annotation set first. Otherwise users can add annotation sets which
             # do not relate to the document
             self.annotation_set: AnnotationSet = self.document.get_annotation_set_by_id(annotation_set.id_)
         else:
@@ -956,13 +956,13 @@ class Annotation(Data):
 
     @property
     def start_offset(self) -> int:
-        """Legacy: One Annotations can have multiple start offsets."""
+        """Legacy: One Annotation can have multiple start offsets."""
         logger.warning('You use start_offset on Annotation Level which is legacy.')
         return min([sa.start_offset for sa in self._spans], default=None)
 
     @property
     def end_offset(self) -> int:
-        """Legacy: One Annotations can have multiple end offsets."""
+        """Legacy: One Annotation can have multiple end offsets."""
         logger.warning('You use end_offset on Annotation Level which is legacy.')
         return max([sa.end_offset for sa in self._spans], default=None)
 
@@ -1170,7 +1170,7 @@ class Document(Data):
         is_dataset: bool = None,
         dataset_status: int = None,
         updated_at: str = None,
-        category_template: int = None,  # fix for Konfuzio Server API, it's actually a id of a Category
+        category_template: int = None,  # fix for Konfuzio Server API, it's actually an ID of a Category
         category: Category = None,
         text: str = None,
         bbox: dict = None,
@@ -1180,7 +1180,7 @@ class Document(Data):
         **kwargs,
     ):
         """
-        Create a Document and link it to it's Project.
+        Create a Document and link it to its Project.
 
         :param id_: ID of the Document
         :param project: Project where the Document belongs to
@@ -1361,7 +1361,7 @@ class Document(Data):
             for missing in missings:
                 new_spans = []
                 offset_text = self.text[missing.start : missing.stop]
-                # we split Spans which apan multiple lines, so that one Span comprises one line
+                # we split Spans which span multiple lines, so that one Span comprises one line
                 offset_of_offset = 0
                 line_breaks = [offset_line for offset_line in re.split(r'(\n)', offset_text) if offset_line != '']
                 for offset in line_breaks:
@@ -1506,7 +1506,7 @@ class Document(Data):
         Get the text of the Document in the BIO scheme.
 
         :param update: Update the bio annotations even they are already available
-        :return: list of tuples with each word in the text an the respective label
+        :return: list of tuples with each word in the text and the respective label
         """
         # if not is_file(self.bio_scheme_file_path, raise_exception=False) or update:
         annotations_in_doc = []
@@ -1777,7 +1777,7 @@ class Project(Data):
 
     @property
     def excluded_documents(self):
-        """Return Documents wich have been excluded."""
+        """Return Documents which have been excluded."""
         return [doc for doc in self._documents if doc.dataset_status == 4]
 
     @property
@@ -1971,7 +1971,7 @@ class Project(Data):
                     logger.debug(f'Load local version of {doc} from {new_date}.')
 
     def get_document_by_id(self, document_id: int) -> Document:
-        """Return Document by it's ID."""
+        """Return Document by its ID."""
         for document in self._documents:
             if document.id_ == document_id:
                 return document
