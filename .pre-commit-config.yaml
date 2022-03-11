@@ -1,21 +1,4 @@
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.3.0
-    hooks:
-    -   id: end-of-file-fixer
-    -   id: trailing-whitespace
-        exclude: ^README.md
-
--   repo: https://gitlab.com/pycqa/flake8
-    rev: 3.9.0
-    hooks:
-    -   id: flake8
-
--   repo: https://github.com/pycqa/pydocstyle
-    rev: 4.0.0
-    hooks:
-    -   id: pydocstyle
-        exclude: ^README.md
 
 -   repo: https://github.com/psf/black
     rev: 19.3b0
@@ -23,3 +6,14 @@ repos:
     -   id: black
         args: [--line-length, "120", --skip-string-normalization]
         exclude: ^README.md
+
+-   repo: https://github.com/pycqa/pydocstyle
+    rev: 4.0.0
+    hooks:
+    -   id: pydocstyle
+        exclude: ^README.md
+
+-   repo: https://gitlab.com/pycqa/flake8
+    rev: 3.9.0
+    hooks:
+    -   id: flake8

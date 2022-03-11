@@ -1,15 +1,15 @@
 """Connect to the Konfuzio Server to receive or send data."""
 
-import io
 import json
 import logging
 import os
-import time
 from operator import itemgetter
 from typing import List, Union
-from urllib.parse import urlparse
 
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3 import Retry
+
 from konfuzio_sdk import KONFUZIO_HOST, KONFUZIO_TOKEN
 from konfuzio_sdk.urls import (
     get_auth_token_url,
@@ -25,13 +25,15 @@ from konfuzio_sdk.urls import (
     get_document_url,
     get_document_segmentation_details_url,
     get_labels_url,
+    get_update_ai_model_url,
+    get_create_ai_model_url,
 )
-from konfuzio_sdk.utils import is_file, load_image
+from konfuzio_sdk.utils import is_file
 
 logger = logging.getLogger(__name__)
 
 
-def get_auth_token(username, password, host):
+def _get_auth_token(username, password, host=KONFUZIO_HOST) -> str:
     """
     Generate the authentication token for the user.
 
@@ -40,266 +42,207 @@ def get_auth_token(username, password, host):
     url = get_auth_token_url(host)
     user_credentials = {"username": username, "password": password}
     r = requests.post(url, json=user_credentials)
-    return r
+    if r.status_code == 200:
+        token = r.json()['token']
+    elif r.status_code in [403, 400]:
+        raise PermissionError(
+            "[ERROR] Your credentials are not correct! Please run init again and provide the correct credentials."
+        )
+    else:
+        raise ConnectionError(f'HTTP Status {r.status_code}: {r.text}')
+    return token
 
 
-def get_project_list(token, host):
+def init_env(
+    user: str, password: str, host: str = KONFUZIO_HOST, working_directory=os.getcwd(), file_ending: str = ".env"
+):
     """
-    Get the list of all projects for the user.
+    Add the .env file to the working directory.
 
-    :return: Response object
+    :param user: Username to log in to the host
+    :param password: Password to log in to the host
+    :param host: URL of host.
+    :param working_directory: Directory where file should be added
+    :param file_ending: Ending of file.
     """
-    session = requests.Session()
-    session.headers.update({'Authorization': f'Token {token}'})
-    url = get_projects_list_url(host)
-    r = session.get(url=url)
-    return r
+    token = _get_auth_token(user, password, host)
+
+    with open(os.path.join(working_directory, file_ending), "w") as f:
+        f.write(f"KONFUZIO_HOST = {host}\n")
+        f.write(f"KONFUZIO_USER = {user}\n")
+        f.write(f"KONFUZIO_TOKEN = {token}\n")
+
+    print("[SUCCESS] SDK initialized!")
+
+    return True
 
 
-def create_new_project(project_name, token=None, host=None):
+class TimeoutHTTPAdapter(HTTPAdapter):
+    """Combine a retry strategy with a timeout strategy.
+
+    Documentation
+    =============
+        * `Urllib3 <https://urllib3.readthedocs.io/en/latest/reference/urllib3.util.html#urllib3.util.Retry>`_
+        * TimeoutHTTPAdapter idea used from the following
+            `Blogpost <https://findwork.dev/blog/advanced-usage-python-requests-timeouts-retries-hooks/>`_
     """
-    Create a new project for the user.
 
-    :return: Response object
-    """
-    session = konfuzio_session(token)
-    url = get_projects_list_url(host)
-    new_project_data = {"name": project_name}
-    r = session.post(url=url, json=new_project_data)
-    return r
+    def __init__(self, timeout, *args, **kwargs):
+        """Force to init with timout policy."""
+        self.timeout = timeout
+        super().__init__(*args, **kwargs)
 
-
-def get_project_name_from_id(project_id: int, host: str) -> str:
-    """
-    Get the project name given the project_id.
-
-    :param project_id: ID of the project
-    :return: Name of the project in JSON format.
-    """
-    session = konfuzio_session()
-    url = get_project_url(project_id, host)
-    r = session.get(url=url)
-    return r.json()['name']
+    def send(self, request, *args, **kwargs):
+        """Use timeout policy if not otherwise declared."""
+        if request.headers['Authorization'] == 'Token None':
+            raise PermissionError(f'Your Token to connect to {KONFUZIO_HOST} is missing, e.g. use "konfuzio_sdk init"')
+        timeout = kwargs.get("timeout")
+        if timeout is None:
+            kwargs["timeout"] = self.timeout
+        return super().send(request, *args, **kwargs)
 
 
-def retry_get(session, url):
-    """
-    Workaround to avoid exceptions in case the server does not respond.
-
-    :param session: Working session
-    :param url: Url of the endpoint
-    :return: Response.
-    """
-    # Retry if server is down.
-    retry_count = 0
-
-    while True:
-        try:
-            r = session.get(url=url, timeout=10.0)
-        except requests.RequestException:
-            logger.warning(f'Retry to get url >>{url}<<')
-            retry_count += 1
-            if retry_count >= 10:
-                raise
-            time.sleep(15)
-            continue
-
-        try:
-            r.raise_for_status()
-            break
-        except requests.exceptions.HTTPError:
-            if 401 <= r.status_code <= 403:
-                raise ConnectionError(f'Problem with credentials: {json.loads(r.text)["detail"]}')
-
-            elif r.status_code == 404:
-                if not is_file(os.getcwd() + '/.env', raise_exception=False):
-                    raise ConnectionError('.env file does not exist! Run "konfuzio_sdk init" to create it.')
-                else:
-                    raise ConnectionError(f'Unknown issue: {json.loads(r.text)["detail"]}')
-
-            elif r.status_code == 500:
-                raise TimeoutError(f'Problem with server: {json.loads(r.text)["detail"]} even after 10 retries')
-
-            else:
-                logger.warning(f'Retry to get url >>{url}<<')
-                retry_count += 1
-                if retry_count >= 10:
-                    raise TimeoutError(f'Unknown issue even after 10 retries {json.loads(r.text)["detail"]}')
-                time.sleep(15)
-    return r
-
-
-def get_csrf(session):
-    """
-    Get new CSRF from the host.
-
-    :param session: Working session
-    :return: New CSRF token.
-    """
-    login = session.get(KONFUZIO_HOST)
-    csrf_token = login.cookies['csrftoken']
-    return csrf_token
-
-
-def konfuzio_session(token=None):
+def _konfuzio_session(token: str = KONFUZIO_TOKEN):
     """
     Create a session incl. base auth to the KONFUZIO_HOST.
 
     :return: Request session.
     """
-    if not token:
-        token = KONFUZIO_TOKEN
+    retry_strategy = Retry(
+        total=5,
+        status_forcelist=[429, 500, 502, 503, 504],
+        backoff_factor=2,
+        allowed_methods=["HEAD", "GET", "PUT", "DELETE", "OPTIONS", "TRACE"],  # POST excluded
+    )
     session = requests.Session()
+    session.mount('https://', adapter=TimeoutHTTPAdapter(max_retries=retry_strategy, timeout=120))
     session.headers.update({'Authorization': f'Token {token}'})
     return session
 
 
-def get_document_details(document_id, session=konfuzio_session(), extra_fields: str = 'bbox,hocr'):
+def get_project_list(session=_konfuzio_session()):
+    """
+    Get the list of all Projects for the user.
+
+    :param session: Konfuzio session with Retry and Timeout policy
+    :return: Response object
+    """
+    url = get_projects_list_url()
+    r = session.get(url=url)
+    return r.json()
+
+
+def get_project_details(project_id: int, session=_konfuzio_session()) -> dict:
+    """
+    Get Label Sets available in Project.
+
+    :param project_id: ID of the Project
+    :param session: Konfuzio session with Retry and Timeout policy
+    :return: Sorted Label Sets.
+    """
+    url = get_project_url(project_id=project_id)
+    r = session.get(url=url)
+    r.raise_for_status()
+    return r.json()
+
+
+def create_new_project(project_name, session=_konfuzio_session()):
+    """
+    Create a new Project for the user.
+
+    :param project_name: name of the project you want to create
+    :param session: Konfuzio session with Retry and Timeout policy
+    :return: Response object
+    """
+    url = get_projects_list_url()
+    new_project_data = {"name": project_name}
+    r = session.post(url=url, json=new_project_data)
+
+    if r.status_code == 201:
+        project_id = r.json()["id"]
+        print(f"Project {project_name} (ID {project_id}) was created successfully!")
+        return project_id
+    else:
+        raise PermissionError(
+            f'HTTP Status {r.status_code}: The project {project_name} was not created, please check'
+            f' your permissions. Error {r.json()}'
+        )
+
+
+def get_document_details(document_id: int, project_id: int, session=_konfuzio_session(), extra_fields: str = ''):
     """
     Use the text-extraction server to retrieve the data from a document.
 
     :param document_id: ID of the document
-    :param session: Session to connect to the server
+    :param project_id: ID of the Project
+    :param session: Konfuzio session with Retry and Timeout policy
+    :param extra_fields: Retrieve bounding boxes and HOCR from document, too. Can be "bbox,hocr", it's a hotfix
     :return: Data of the document.
     """
-    url = get_document_api_details_url(document_id, include_extractions=False, extra_fields=extra_fields)
-    r = retry_get(session, url)
-    data = json.loads(r.text)
-    text = data["text"]
-    annotations = data["annotations"]
-    annotations_sets = data["sections"]
-    if text is None:
-        logger.warning(f'Document with ID {document_id} does not contain any text, check OCR status.')
-    else:
-        logger.info(
-            f'Document with ID {document_id} contains {len(text)} characters '
-            f'and {len(annotations)} annotations in {len(annotations_sets)} annotation sets.'
-        )
-
-    return data
+    url = get_document_api_details_url(document_id=document_id, project_id=project_id, extra_fields=extra_fields)
+    r = session.get(url)
+    return r.json()
 
 
-def get_document_text(document_id, session=konfuzio_session()):
-    """
-    Use the text-extraction server to retrieve the text found in the document.
-
-    :param document_id: ID of the file
-    :param session: Session to connect to the server
-    :return: Document text.
-    """
-    url = get_document_api_details_url(document_id)
-    r = retry_get(session, url)
-    text = r.json()['text']
-    if text is None:
-        logger.warning(f'Document with ID {document_id} does not contain any text, check OCR status.')
-    else:
-        logger.info(f'Document with ID {document_id} contains {len(text)} characters.')
-
-    return text
-
-
-def get_document_hocr(document_id, session=konfuzio_session()):
-    """
-    Use the text-extraction server to retrieve the hOCR data.
-
-    :param document_id: ID of the file
-    :param session: Session to connect to the server
-    :return: hOCR data of the document.
-    """
-    url = get_document_api_details_url(document_id, extra_fields='bbox,hocr')
-    r = retry_get(session, url)
-    hocr = r.json()['hocr']
-    if hocr is None:
-        logger.warning(f'Document with ID {document_id} does not contain hocr.')
-    else:
-        logger.info(f'Document with ID {document_id} contains {len(hocr)} characters.')
-
-    return hocr
-
-
-def get_document_annotations(document_id, include_extractions=False, session=konfuzio_session()):
-    """
-    Use the text-extraction server to retrieve human revised annotations.
-
-    :param document_id: ID of the file
-    :param include_extractions: Bool to include extractions
-    :param session: Session to connect to the server
-    :return: Sorted annotations.
-    """
-    url = get_document_api_details_url(document_id, include_extractions=include_extractions)
-    r = retry_get(session, url)
-    annotations = r.json()['annotations']
-    not_custom_annotations = annotations
-    revised_annotations_and_extractions = [
-        x for x in not_custom_annotations if x['revised'] or x['is_correct'] or not x['id']
-    ]
-    sorted_annotations = sorted(
-        revised_annotations_and_extractions, key=lambda x: (x.get('start_offset') is None, x.get('start_offset'))
-    )
-    logger.info(f'Document with ID {document_id} contains {len(sorted_annotations)} annotations.')
-
-    return sorted_annotations
-
-
-def post_document_bulk_annotation(document_id: int, annotation_list, session=konfuzio_session()):
-    """
-    Add a list of annotations to an existing document.
-
-    :param document_id: ID of the file
-    :param annotation_list: List of annotations
-    :param session: Session to connect to the server
-    :return: Response status.
-    """
-    url = get_document_annotations_url(document_id)
-    r = session.post(url, json=annotation_list)
-    r.raise_for_status()
-    return r
+# def post_document_bulk_annotation(document_id: int, project_id: int, annotation_list, session=_konfuzio_session()):
+#     """
+#     Add a list of Annotations to an existing document.
+#
+#     :param document_id: ID of the file
+#     :param project_id: ID of the project
+#     :param annotation_list: List of Annotations
+#     :param session: Konfuzio session with Retry and Timeout policy
+#     :return: Response status.
+#     """
+#     url = get_document_annotations_url(document_id, project_id=project_id)
+#     r = session.post(url, json=annotation_list)
+#     r.raise_for_status()
+#     return r
 
 
 def post_document_annotation(
     document_id: int,
-    start_offset: int,
-    end_offset: int,
+    project_id: int,
     label_id: int,
     label_set_id: int,
-    accuracy: float,
+    confidence: Union[float, None] = None,
     revised: bool = False,
     is_correct: bool = False,
     annotation_set=None,
-    define_annotation_set=True,
-    session=konfuzio_session(),
+    session=_konfuzio_session(),
     **kwargs,
 ):
     """
-    Add an annotation to an existing document.
+    Add an Annotation to an existing document.
 
-    For the annotation set definition, we can:
-    - define the annotation set id where the annotation should belong
+    For the Annotation Set definition, we can:
+    - define the Annotation Set id_ where the Annotation should belong
     (annotation_set=x (int), define_annotation_set=True)
-    - pass it as None and a new annotation set will be created
+    - pass it as None and a new Annotation Set will be created
     (annotation_set=None, define_annotation_set=True)
-    - do not pass the annotation set field and a new annotation set will be created if does not exist any or the
-    annotation will be added to the previous annotation set created (define_annotation_set=False)
+    - do not pass the Annotation Set field and a new Annotation Set will be created if does not exist any or the
+    Annotation will be added to the previous Annotation Set created (define_annotation_set=False)
 
     :param document_id: ID of the file
-    :param start_offset: Start offset of the annotation
-    :param end_offset: End offset of the annotation
-    :param label_id: ID of the label.
-    :param label_set_id: ID of the label set where the annotation belongs
-    :param accuracy: Accuracy of the annotation
-    :param revised: If the annotation is revised or not (bool)
-    :param is_correct: If the annotation is corrected or not (bool)
-    :param annotation_set: Annotation set to connect to the server
-    :param define_annotation_set: If to define the annotation set (bool)
+    :param project_id: ID of the project
+    :param label_id: ID of the Label
+    :param label_set_id: ID of the Label Set where the Annotation belongs
+    :param confidence: Confidence of the Annotation still called Accuracy by text-annotation
+    :param revised: If the Annotation is revised or not (bool)
+    :param is_correct: If the Annotation is corrected or not (bool)
+    :param annotation_set: Annotation Set to connect to the server
+    :param session: Konfuzio session with Retry and Timeout policy
     :return: Response status.
     """
-    url = get_document_annotations_url(document_id)
+    url = get_document_annotations_url(document_id, project_id=project_id)
 
-    bbox = kwargs.get('bbox', None)
+    # bbox = kwargs.get('bbox', None)
     custom_bboxes = kwargs.get('bboxes', None)
-    selection_bbox = kwargs.get('selection_bbox', None)
-    page_number = kwargs.get('page_number', None)
-    offset_string = kwargs.get('offset_string', None)
+    # selection_bbox = kwargs.get('selection_bbox', None)
+    # page_number = kwargs.get('page_number', None)
+    # offset_string = kwargs.get('offset_string', None)
+    start_offset = kwargs.get('start_offset', None)
+    end_offset = kwargs.get('end_offset', None)
 
     data = {
         'start_offset': start_offset,
@@ -307,111 +250,106 @@ def post_document_annotation(
         'label': label_id,
         'revised': revised,
         'section_label_id': label_set_id,
-        'accuracy': accuracy,
+        'accuracy': confidence,
         'is_correct': is_correct,
     }
 
-    if define_annotation_set:
-        data['section'] = annotation_set
+    if end_offset:
+        data['end_offset'] = end_offset
 
-    if page_number is not None:
-        data['page_number'] = page_number
+    if start_offset is not None:
+        data['start_offset'] = start_offset
 
-    if offset_string is not None:
-        data['offset_string'] = offset_string
+    data['section'] = annotation_set
 
-    if bbox is not None:
-        data['bbox'] = bbox
+    # if page_number is not None:
+    #     data['page_number'] = page_number
+    #
+    # if offset_string is not None:
+    #     data['offset_string'] = offset_string
+    #
+    # if bbox is not None:
+    #     data['bbox'] = bbox
+    #
+    # if selection_bbox is not None:
+    #     data['selection_bbox'] = selection_bbox
 
     if custom_bboxes is not None:
         data['custom_bboxes'] = custom_bboxes
 
-    if selection_bbox is not None:
-        data['selection_bbox'] = selection_bbox
-
     r = session.post(url, json=data)
+    assert r.status_code == 201
     return r
 
 
-def delete_document_annotation(document_id: int, annotation_id: int, session=konfuzio_session()):
+def delete_document_annotation(document_id: int, annotation_id: int, project_id: int, session=_konfuzio_session()):
     """
-    Delete a given annotation of the given document.
+    Delete a given Annotation of the given document.
 
     :param document_id: ID of the document
     :param annotation_id: ID of the annotation
-    :param session: Session to connect to the server.
+    :param project_id: ID of the project
+    :param session: Konfuzio session with Retry and Timeout policy
     :return: Response status.
     """
-    url = get_annotation_url(document_id=document_id, annotation_id=annotation_id)
+    url = get_annotation_url(document_id=document_id, annotation_id=annotation_id, project_id=project_id)
     r = session.delete(url)
-    return r
+    if r.status_code == 200:
+        # the text Annotation received negative feedback and copied the Annotation and created a new one
+        return json.loads(r.text)['id']
+    elif r.status_code == 204:
+        return r
 
 
-def get_meta_of_files(session=konfuzio_session()) -> List[dict]:
+def get_meta_of_files(project_id: int, limit: int = 1000, session=_konfuzio_session()) -> List[dict]:
     """
-    Get dictionary of previously uploaded document names to Konfuzio API.
+    Get meta information of Documents in a Project.
 
-    Dataset_status:
-    NONE = 0
-    PREPARATION = 1
-    TRAINING = 2
-    TEST = 3
-    LOW_OCR_QUALITY = 4
-
-    :param session: Session to connect to the server
-    :return: Sorted documents names in the format {id: 'pdf_name'}.
+    :param project_id: ID of the Project
+    :param limit: Number of Documents per Page
+    :param session: Konfuzio session with Retry and Timeout policy
+    :return: Sorted Documents names in the format {id_: 'pdf_name'}.
     """
-    url = get_documents_meta_url()
+    url = get_documents_meta_url(project_id=project_id, limit=limit)
     result = []
+    r = session.get(url)
+    data = r.json()
+    result += data['results']
 
-    while True:
-        r = retry_get(session, url)
+    while 'next' in data.keys() and data['next']:
+        logger.info(f'Iterate on paginated {url}.')
+        url = data['next']
+        r = session.get(url)
         data = r.json()
-        if isinstance(data, dict) and 'results' in data.keys():
-            result += data['results']
-            if 'next' in data.keys() and data['next']:
-                url = data['next']
-            else:
-                break
-        else:
-            result = data
-            break
+        result += data['results']
 
     sorted_documents = sorted(result, key=itemgetter('id'))
     return sorted_documents
 
 
-def get_project_labels(session=konfuzio_session()) -> List[dict]:
-    """
-    Get Labels available in project.
-
-    :param session: Session to connect to the server
-    :return: Sorted labels.
-    """
-    url = get_project_url()
-    r = retry_get(session, url)
-    sorted_labels = sorted(r.json()['labels'], key=itemgetter('id'))
-    return sorted_labels
-
-
 def create_label(
-    project_id: int, label_name: str, label_sets: list, session=konfuzio_session(), **kwargs
+    project_id: int,
+    label_name: str,
+    label_sets: list,
+    session=_konfuzio_session(),
+    description=None,
+    has_multiple_top_candidates=None,
+    data_type=None,
 ) -> List[dict]:
     """
-    Create a Label and associate it with labels sets.
+    Create a Label and associate it with Labels sets.
 
     :param project_id: Project ID where to create the label
     :param label_name: Name for the label
     :param label_sets: Label sets that use the label
-    :param session: Session to connect to the server
+    :param session: Konfuzio session with Retry and Timeout policy
+    :param description: Test to describe the label
+    :param has_multiple_top_candidates: If multiple Annotations can be correct in a single Annotation Set
+    :param data_type: Expected data type of any Span of Annotations related to this Label.
     :return: Label ID in the Konfuzio Server.
     """
     url = get_labels_url()
-    label_sets_ids = [label_set.id for label_set in label_sets]
-
-    description = kwargs.get('description', None)
-    has_multiple_top_candidates = kwargs.get('has_multiple_top_candidates', False)
-    data_type = kwargs.get('data_type', 'Text')
+    label_sets_ids = [label_set.id_ for label_set in label_sets]
 
     data = {
         "project": project_id,
@@ -424,38 +362,26 @@ def create_label(
 
     r = session.post(url=url, json=data)
 
-    assert r.status_code == requests.codes.created, f'Status of request: {r}'
+    assert r.status_code == 201
     label_id = r.json()['id']
     return label_id
-
-
-def get_project_label_sets(session=konfuzio_session()) -> List[dict]:
-    """
-    Get Label Sets available in project.
-
-    :param session: Session to connect to the server
-    :return: Sorted Label Sets.
-    """
-    url = get_project_url()
-    r = session.get(url=url)
-    r.raise_for_status()
-    sorted_label_sets = sorted(r.json()['section_labels'], key=itemgetter('id'))
-    return sorted_label_sets
 
 
 def upload_file_konfuzio_api(
     filepath: str,
     project_id: int,
-    session=konfuzio_session(),
     dataset_status: int = 0,
-    category_template_id: Union[None, int] = None,
+    session=_konfuzio_session(),
+    category_id: Union[None, int] = None,
 ):
     """
-    Upload file to Konfuzio API.
+    Upload Document to Konfuzio API.
 
     :param filepath: Path to file to be uploaded
-    :param session: Session to connect to the server
-    :param project_id: Project ID where to upload the document
+    :param project_id: ID of the project
+    :param session: Konfuzio session with Retry and Timeout policy
+    :param dataset_status: Set data set status of the document.
+    :param category_id: Define a Category the Document belongs to
     :return: Response status.
     """
     url = get_upload_document_url()
@@ -465,19 +391,19 @@ def upload_file_konfuzio_api(
         file_data = f.read()
 
     files = {"data_file": (os.path.basename(filepath), file_data, "multipart/form-data")}
-    data = {"project": project_id, "dataset_status": dataset_status, "category_template": category_template_id}
+    data = {"project": project_id, "dataset_status": dataset_status, "category_template": category_id}
 
     r = session.post(url=url, files=files, data=data)
     return r
 
 
-def delete_file_konfuzio_api(document_id: int, session=konfuzio_session()):
+def delete_file_konfuzio_api(document_id: int, session=_konfuzio_session()):
     """
     Delete Document by ID via Konfuzio API.
 
     :param document_id: ID of the document
-    :param session: Session to connect to the server
-    :return: File id in Konfuzio Server.
+    :param session: Konfuzio session with Retry and Timeout policy
+    :return: File id_ in Konfuzio Server.
     """
     url = get_document_url(document_id)
     data = {'id': document_id}
@@ -488,35 +414,36 @@ def delete_file_konfuzio_api(document_id: int, session=konfuzio_session()):
 
 
 def update_file_konfuzio_api(
-    document_id: int, file_name: str, dataset_status: int = 0, session=konfuzio_session(), **kwargs
+    document_id: int, file_name: str, dataset_status: int, session=_konfuzio_session(), **kwargs
 ):
     """
-    Update the dataset status of an existing document via Konfuzio API.
+    Update the dataset status of an existing Document via Konfuzio API.
 
     :param document_id: ID of the document
-    :param dataset_status: New dataset status
-    :param session: Session to connect to the server
+    :param file_name: New file name.
+    :param dataset_status: Change or keep dataset status. Get Document information first to keep the status.
+    :param session: Konfuzio session with Retry and Timeout policy
     :return: Response status.
     """
     url = get_document_url(document_id)
 
-    category_template_id = kwargs.get('category_template_id', None)
+    category_id = kwargs.get('category_template_id', None)
 
-    data = {"data_file_name": file_name, "dataset_status": dataset_status, "category_template": category_template_id}
+    data = {"data_file_name": file_name, "dataset_status": dataset_status, "category_template": category_id}
 
     r = session.patch(url=url, json=data)
-    return r
+    return json.loads(r.text)
 
 
-def download_file_konfuzio_api(document_id: int, ocr: bool = True, session=konfuzio_session()):
+def download_file_konfuzio_api(document_id: int, ocr: bool = True, session=_konfuzio_session()):
     """
-    Download file from the Konfuzio server using the document id.
+    Download file from the Konfuzio server using the Document id_.
 
     Django authentication is form-based, whereas DRF uses BasicAuth.
 
     :param document_id: ID of the document
     :param ocr: Bool to get the ocr version of the document
-    :param session: Session to connect to the server
+    :param session: Konfuzio session with Retry and Timeout policy
     :return: The downloaded file.
     """
     if ocr:
@@ -526,73 +453,58 @@ def download_file_konfuzio_api(document_id: int, ocr: bool = True, session=konfu
 
     r = session.get(url)
 
-    try:
-        r.raise_for_status()
-    except Exception:
-        if r.status_code != 200:
-            logger.exception("Requests error")
-            raise FileNotFoundError(json.loads(r.text)["detail"])
-
     content_type = r.headers.get('content-type')
     if content_type not in ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg']:
-        raise FileNotFoundError(f'CONTENT TYP of {document_id} is {content_type} and no PDF or image.')
+        logger.info(f'CONTENT TYP of {document_id} is {content_type} and no PDF or image.')
+
+    if r.status_code != 200:
+        raise FileNotFoundError(f'{document_id} cannot be found on the server.')
 
     logger.info(f'Downloaded file {document_id} from {KONFUZIO_HOST}.')
     return r.content
 
 
-def is_url_image(image_url):
-    """
-    Check if the URL will return an image.
-
-    :param image_url: URL of the image
-    :return: If the URL returns an image
-    """
-    image_formats = ("image/png", "image/jpeg", "image/jpg")
-    r = requests.head(image_url)
-    logger.info(f'{image_url} has content type {r.headers["content-type"]}')
-    if r.headers["content-type"] in image_formats:
-        return True
-    return False
-
-
-def download_images(urls: List[str] = None):
-    """
-    Download images by a list of urls.
-
-    :param urls: URLs of the images
-    :return: Downloaded images.
-    """
-    are_images = [is_url_image(url) for url in urls]
-    if not are_images[: sum(are_images)]:
-        raise NotImplementedError('Only images are supported')
-    downloads = [requests.get(url) for url in urls]
-    images = [load_image(io.BytesIO(download.content)) for download in downloads]
-    return images
-
-
-def is_url(url: str) -> bool:
-    """
-    Return true if the string is a valid URL.
-
-    :param url: String URL
-    :return: True if is a valid URL.
-    """
-    logger.info(url)
-    result = urlparse(url)
-    return all([result.scheme, result.netloc])
-
-
-def get_results_from_segmentation(doc_id: int, project_id: int, host: Union[str, None] = None) -> List[dict]:
+def get_results_from_segmentation(doc_id: int, project_id: int, session=_konfuzio_session()) -> List[List[dict]]:
     """Get bbox results from segmentation endpoint.
 
     :param doc_id: ID of the document
-    :param project_id: ID of the project.
+    :param project_id: ID of the Project.
+    :param session: Konfuzio session with Retry and Timeout policy
     """
-    session = konfuzio_session()
-
-    segmentation_url = get_document_segmentation_details_url(doc_id, project_id, host=host, action='segmentation')
-    response = retry_get(session, segmentation_url)
+    segmentation_url = get_document_segmentation_details_url(doc_id, project_id)
+    response = session.get(segmentation_url)
     segmentation_result = response.json()
 
     return segmentation_result
+
+
+def upload_ai_model(ai_model_path: str, category_ids: List[int] = None, session=_konfuzio_session()):  # noqa: F821
+    """
+    Upload an ai_model to the text-annotation server.
+
+    :param ai_model_path: Path to the ai_model
+    :param category_ids: define ids of Categories the model should become available after upload.
+    :param session: session to connect to server
+    :return:
+    """
+    url = get_create_ai_model_url()
+    if is_file(ai_model_path):
+        model_name = os.path.basename(ai_model_path)
+        with open(ai_model_path, 'rb') as f:
+            multipart_form_data = {'ai_model': (model_name, f)}
+            headers = {"Prefer": "respond-async"}
+            r = session.post(url, files=multipart_form_data, headers=headers)
+            r.raise_for_status()
+    data = r.json()
+    ai_model_id = data['id']
+    ai_model = data['ai_model']
+
+    if category_ids:
+        url = get_update_ai_model_url(ai_model_id)
+        data = {'templates': category_ids}
+        headers = {'content-type': 'application/json'}
+        response = session.patch(url, data=json.dumps(data), headers=headers)
+        response.raise_for_status()
+
+    logger.info(f'New ai_model uploaded {ai_model} to {url}')
+    return ai_model

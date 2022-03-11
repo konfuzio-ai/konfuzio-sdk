@@ -1,6 +1,11 @@
-.env
+.env*
 data
 konfuzio_sdk.egg-info
 .idea
 docs/build/
 *.pyc
+venv
+settings.py
+*.pkl
+*.tar.gz
+*data_*

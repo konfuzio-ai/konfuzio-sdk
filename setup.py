@@ -29,7 +29,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setuptools.setup(
     name="konfuzio_sdk",
-    version="0.1.15",
+    version="0.2.0",
     author='Helm & Nagel GmbH',
     author_email="info@helm-nagel.com",
     description="Konfuzio Software Development Kit",
@@ -43,11 +43,12 @@ setuptools.setup(
         'filetype',
         'nltk',
         'numpy',
-        'pandas',
+        'pandas==1.1.5',
         'Pillow',
         'python-dateutil',
         'python-decouple',
         'requests',
+        'regex',
         'tabulate',
         'tqdm',
     ],

@@ -1,1 +1,1 @@
-"""To run tests of konfuzio sdk package."""
+"""To run tests of konfuzio SDK package."""
