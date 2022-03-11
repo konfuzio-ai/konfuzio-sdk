@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<meta content="The Contribution Guide includes information on what you should follow to contribute to the SDK package." name="description" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+<meta content="How to contribute to the open source OCR, NLP and Computer Vision Python Package." name="description" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Contribution Guide &mdash; Konfuzio  documentation</title>
@@ -32,6 +32,7 @@
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
             <a href="../index.html" class="icon icon-home"> Konfuzio
+            <img src="../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -65,7 +66,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="coordinates_system.html">Coordinates System</a></li>
 <li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
-<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Konfuzio Trainer</span></p>
 <ul>
@@ -112,6 +112,7 @@
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
       <li>Contribution Guide</li>
       <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/sdk/contribution.md.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -121,6 +122,8 @@
              
   <section id="contribution-guide">
 <h1>Contribution Guide<a class="headerlink" href="#contribution-guide" title="Permalink to this headline">¶</a></h1>
+<p>First, please contact us via our <a class="reference external" href="https://konfuzio.com/en/contact/">contact form</a>. Some tests are data dependent.
+Please request access to this data. The access is free of charge and without any obligation.</p>
 <p>If you would like to contribute, please use the development installation and open a PR with your contributions.</p>
 <ul>
 <li><p>clone the project in your working directory</p>
@@ -129,22 +132,37 @@
 <li><p>go inside the project folder</p>
 <p><code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">document-ai-python-sdk</span></code></p>
 </li>
-<li><p>install it</p>
+<li><p>Install a project in editable mode (i.e. setuptools “develop mode”) from the current project path.</p>
 <p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.[dev]</span></code></p>
+</li>
+<li><p>initialize the connection to create an <code class="docutils literal notranslate"><span class="pre">.env</span></code> file that stores your credentials to later connect to the host of the
+Konfuzio Server</p>
+<p><code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span> <span class="pre">init</span></code></p>
+</li>
+<li><p>create a branch to work that allows you to create a pull request later on</p>
+<p><code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">checkout</span> <span class="pre">-b</span> <span class="pre">new_branch</span></code></p>
 </li>
 <li><p>use pre-commit</p>
 <p><code class="docutils literal notranslate"><span class="pre">pre-commit</span> <span class="pre">install</span></code></p>
 <p>Automatic inspections will run in your commits ensuring they match the code formatting of the repository.</p>
 </li>
+<li><p>Make sure your upstream repo is the original konfuzio-sdk repo:</p>
+<p><code class="docutils literal notranslate"><span class="pre">https://github.com/konfuzio-ai/document-ai-python-sdk.git</span></code></p>
+</li>
+<li><p>otherwise add it</p>
+<p><code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">remote</span> <span class="pre">add</span> <span class="pre">upstream</span> <span class="pre">https://github.com/konfuzio-ai/document-ai-python-sdk.git</span></code></p>
+</li>
+</ul>
+<p>Now you can start to make changes.</p>
+<ul>
 <li><p>commit your changes</p>
 <p><code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">commit</span> <span class="pre">-m</span> <span class="pre">&quot;message&quot;</span></code></p>
 </li>
 <li><p>push your changes to your remote branch</p>
 <p><code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">push</span></code></p>
 </li>
-<li><p>open a PR with your contributions. You can do it on the
-<a class="reference external" href="https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request">GitHub interface</a>.</p></li>
 </ul>
+<p>Once you push the changes to your repo, the Compare &amp; pull request button will appear in GitHub.</p>
 <p>Tests will automatically run for every commit you push to the GitHub project.
 You can also run them locally by executing <code class="docutils literal notranslate"><span class="pre">pytest</span></code> in your terminal from the root of this project.</p>
 <p>The files/folders listed below are ignored when you push your changes to the repository.</p>
@@ -321,7 +339,7 @@ its ID in the devcontainer.json file to be pre-installed with every rebuild).</p
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2021, Helm und Nagel GmbH.</p>
+    <p>&#169; Copyright 2022, Helm und Nagel GmbH.</p>
   </div>
 
    

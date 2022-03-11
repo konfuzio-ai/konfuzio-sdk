@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 <meta content="Documentation of the coordinates system of the bounding boxes used in Konfuzio and some simple examples of how to use it for visualization, for example." name="description" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -32,6 +32,7 @@
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
             <a href="../index.html" class="icon icon-home"> Konfuzio
+            <img src="../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -50,7 +51,6 @@
 <li class="toctree-l1"><a class="reference internal" href="contribution.html">Contribution Guide</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Coordinates System</a></li>
 <li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
-<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Konfuzio Trainer</span></p>
 <ul>
@@ -97,6 +97,7 @@
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
       <li>Coordinates System</li>
       <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/sdk/coordinates_system.md.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -119,7 +120,7 @@ The format is [width, height].</p>
 </dl>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
 
-<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">()</span>
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 <span class="c1"># first document uploaded</span>
 <span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="c1"># index of the page to test</span>
@@ -140,7 +141,7 @@ The following code can be used for this:</p>
 <span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
 
-<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">()</span>
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 <span class="c1"># first document uploaded</span>
 <span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="c1"># index of the page to test</span>
@@ -185,7 +186,7 @@ we can overlap them directly.</p>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.api</span> <span class="kn">import</span> <span class="n">get_results_from_segmentation</span>
 
-<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">()</span>
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 <span class="c1"># first document uploaded</span>
 <span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="c1"># index of the page to test</span>
@@ -194,7 +195,7 @@ we can overlap them directly.</p>
 <span class="n">document</span><span class="o">.</span><span class="n">get_images</span><span class="p">()</span>
 <span class="n">image_path</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">image_paths</span><span class="p">[</span><span class="n">page_index</span><span class="p">]</span>
 <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">image_path</span><span class="p">)</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">)</span>
-<span class="n">image_segmentation_bboxes</span> <span class="o">=</span> <span class="n">get_results_from_segmentation</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">my_project</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+<span class="n">image_segmentation_bboxes</span> <span class="o">=</span> <span class="n">get_results_from_segmentation</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">id_</span><span class="p">,</span> <span class="n">my_project</span><span class="o">.</span><span class="n">id_</span><span class="p">)</span>
 
 <span class="k">for</span> <span class="n">bbox</span> <span class="ow">in</span> <span class="n">image_segmentation_bboxes</span><span class="p">[</span><span class="n">page_index</span><span class="p">]:</span>
     <span class="n">pp1</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;x0&quot;</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;y0&quot;</span><span class="p">]))</span>
@@ -215,7 +216,7 @@ size used for the characters’ bbox.</p>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.api</span> <span class="kn">import</span> <span class="n">get_results_from_segmentation</span>
 
-<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">()</span>
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 <span class="c1"># first document uploaded</span>
 <span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="c1"># index of the page to test</span>
@@ -244,7 +245,7 @@ size used for the characters’ bbox.</p>
     <span class="n">pp2</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;x1&quot;</span><span class="p">]),</span> <span class="nb">int</span><span class="p">((</span><span class="n">height</span> <span class="o">-</span> <span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;y1&quot;</span><span class="p">])))</span>
     <span class="n">image</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">image</span><span class="p">),</span> <span class="n">pp1</span><span class="p">,</span> <span class="n">pp2</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
 
-<span class="n">image_segmentation_bboxes</span> <span class="o">=</span> <span class="n">get_results_from_segmentation</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">my_project</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+<span class="n">image_segmentation_bboxes</span> <span class="o">=</span> <span class="n">get_results_from_segmentation</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">id_</span><span class="p">,</span> <span class="n">my_project</span><span class="o">.</span><span class="n">id_</span><span class="p">)</span>
 
 <span class="k">for</span> <span class="n">bbox</span> <span class="ow">in</span> <span class="n">image_segmentation_bboxes</span><span class="p">[</span><span class="n">page_index</span><span class="p">]:</span>
     <span class="n">pp1</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;x0&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">factor_x</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;y0&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">factor_y</span><span class="p">))</span>
@@ -269,7 +270,7 @@ size used for the characters’ bbox.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2021, Helm und Nagel GmbH.</p>
+    <p>&#169; Copyright 2022, Helm und Nagel GmbH.</p>
   </div>
 
    

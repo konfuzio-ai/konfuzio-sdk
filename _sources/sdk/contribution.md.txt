@@ -1,7 +1,10 @@
 .. meta::
-   :description: The Contribution Guide includes information on what you should follow to contribute to the SDK package.
+   :description: How to contribute to the open source OCR, NLP and Computer Vision Python Package.
 
 # Contribution Guide
+
+First, please contact us via our [contact form](https://konfuzio.com/en/contact/). Some tests are data dependent.
+Please request access to this data. The access is free of charge and without any obligation.
 
 If you would like to contribute, please use the development installation and open a PR with your contributions.
 
@@ -13,15 +16,34 @@ If you would like to contribute, please use the development installation and ope
 
   `cd document-ai-python-sdk`
 
-* install it
+* Install a project in editable mode (i.e. setuptools “develop mode”) from the current project path.
 
   `pip install -e .[dev]`
+
+* initialize the connection to create an `.env` file that stores your credentials to later connect to the host of the
+  Konfuzio Server
+
+  `konfuzio_sdk init`
+
+* create a branch to work that allows you to create a pull request later on
+
+  `git checkout -b new_branch`
 
 * use pre-commit
 
   `pre-commit install`
 
   Automatic inspections will run in your commits ensuring they match the code formatting of the repository.
+
+* Make sure your upstream repo is the original konfuzio-sdk repo:
+
+  `https://github.com/konfuzio-ai/document-ai-python-sdk.git`
+
+* otherwise add it
+
+  `git remote add upstream https://github.com/konfuzio-ai/document-ai-python-sdk.git`
+
+Now you can start to make changes.
 
 * commit your changes
 
@@ -31,8 +53,7 @@ If you would like to contribute, please use the development installation and ope
 
   `git push`
 
-* open a PR with your contributions. You can do it on the
-[GitHub interface](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request).
+Once you push the changes to your repo, the Compare & pull request button will appear in GitHub.
 
 Tests will automatically run for every commit you push to the GitHub project.
 You can also run them locally by executing `pytest` in your terminal from the root of this project.

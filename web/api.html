@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 <meta content="Information about the Konfuzio Web Server including examples on how to use and communicate with it." name="description" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -32,6 +32,7 @@
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
             <a href="../index.html" class="icon icon-home"> Konfuzio
+            <img src="../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -50,7 +51,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../sdk/contribution.html">Contribution Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sdk/coordinates_system.html">Coordinates System</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sdk/changelog.html">Changelog</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sdk/faq.html">FAQ</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Konfuzio Trainer</span></p>
 <ul>
@@ -113,6 +113,7 @@
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
       <li>Konfuzio API Video Tutorial</li>
       <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/web/api.md.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -168,8 +169,8 @@ An API Token can be obtained here: <a class="reference external" href="https://a
 <span class="kn">from</span> <span class="nn">requests.auth</span> <span class="kn">import</span> <span class="n">HTTPBasicAuth</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
 
-<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">()</span>
-<span class="n">project_id</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">id</span>
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+<span class="n">project_id</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">id_</span>
 
 <span class="n">auth</span> <span class="o">=</span> <span class="n">HTTPBasicAuth</span><span class="p">(</span><span class="s1">&#39;USERNAME&#39;</span><span class="p">,</span> <span class="s1">&#39;PASSWORD&#39;</span><span class="p">)</span>
 
@@ -177,14 +178,14 @@ An API Token can be obtained here: <a class="reference external" href="https://a
 
 <span class="c1"># filepath - path to your local file</span>
 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-    <span class="n">file_data</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+   <span class="n">file_data</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
 
 <span class="n">files_data</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;data_file&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filepath</span><span class="p">),</span> <span class="n">file_data</span><span class="p">,</span> <span class="s2">&quot;multipart/form-data&quot;</span><span class="p">),</span>
+   <span class="s2">&quot;data_file&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filepath</span><span class="p">),</span> <span class="n">file_data</span><span class="p">,</span> <span class="s2">&quot;multipart/form-data&quot;</span><span class="p">),</span>
 <span class="p">}</span>
 
 <span class="c1"># sync = True to have directly the metadata of the file</span>
-<span class="c1"># PROJECT_ID - id of your project in app konfuzio</span>
+<span class="c1"># PROJECT_ID - id_ of your project in app konfuzio</span>
 <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;project&#39;</span><span class="p">:</span> <span class="n">project_id</span><span class="p">,</span> <span class="s1">&#39;sync&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">}</span>
 
 <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://app.konfuzio.com/api/v2/docs/&quot;</span><span class="p">,</span> <span class="n">auth</span><span class="o">=</span><span class="n">auth</span><span class="p">,</span> <span class="n">files</span><span class="o">=</span><span class="n">files_data</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
@@ -209,12 +210,12 @@ list, and figure. For each element, it is possible to get a classification and b
 <span class="kn">from</span> <span class="nn">requests.auth</span> <span class="kn">import</span> <span class="n">HTTPBasicAuth</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
 
-<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">()</span>
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 
-<span class="n">project_id</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">id</span>
+<span class="n">project_id</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">id_</span>
 <span class="c1"># first training document uploaded in the project</span>
 <span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">doc_id</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">id</span>
+<span class="n">doc_id</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">id_</span>
 
 <span class="n">auth</span> <span class="o">=</span> <span class="n">HTTPBasicAuth</span><span class="p">(</span><span class="s1">&#39;USERNAME&#39;</span><span class="p">,</span> <span class="s1">&#39;PASSWORD&#39;</span><span class="p">)</span>
 <span class="n">url</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;https://app.konfuzio.com/api/projects/{project_id}/docs/{doc_id}/segmentation/&#39;</span>
@@ -227,17 +228,17 @@ list, and figure. For each element, it is possible to get a classification and b
 <span class="n">image_path</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">image_paths</span><span class="p">[</span><span class="n">page_index</span><span class="p">]</span>
 <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">image_path</span><span class="p">)</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">)</span>
 
-<span class="n">color_code</span>  <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-               <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-               <span class="s1">&#39;list&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span>
-               <span class="s1">&#39;table&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-               <span class="s1">&#39;figure&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">)}</span>
+<span class="n">color_code</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+              <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+              <span class="s1">&#39;list&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span>
+              <span class="s1">&#39;table&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+              <span class="s1">&#39;figure&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">)}</span>
 
 <span class="k">for</span> <span class="n">bbox</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="n">page_index</span><span class="p">]:</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="n">bbox</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span>
-    <span class="n">pp1</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;x0&quot;</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;y0&quot;</span><span class="p">]))</span>
-    <span class="n">pp2</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;x1&quot;</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;y1&quot;</span><span class="p">]))</span>
-    <span class="n">image</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">image</span><span class="p">),</span> <span class="n">pp1</span><span class="p">,</span> <span class="n">pp2</span><span class="p">,</span> <span class="n">color_code</span><span class="p">[</span><span class="n">label</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+   <span class="n">label</span> <span class="o">=</span> <span class="n">bbox</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span>
+   <span class="n">pp1</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;x0&quot;</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;y0&quot;</span><span class="p">]))</span>
+   <span class="n">pp2</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;x1&quot;</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="s2">&quot;y1&quot;</span><span class="p">]))</span>
+   <span class="n">image</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">image</span><span class="p">),</span> <span class="n">pp1</span><span class="p">,</span> <span class="n">pp2</span><span class="p">,</span> <span class="n">color_code</span><span class="p">[</span><span class="n">label</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
@@ -296,44 +297,35 @@ decimal numbers, Konfuzio also takes care of this to display it in a uniform for
 The uniform chosen format uses the English/American standard.
 Hence, dots are used as a separation for decimal numbers and commas to mark the thousands with two decimal places.</p>
 <p>Note:</p>
-<p>The data type <strong>number should be used for annotations that are meant to be used as mathematical numbers</strong>.<span class="raw-html-m2r"><br></span>
+<p>The data type <strong>number should be used for annotations that are meant to be used as mathematical numbers</strong>.
 For example, phone numbers, house numbers and product numbers should have the data type text as they can contain
 alphabetical characters, leading zeros (that will be removed otherwise) and no mathematical operation should be applied to it (e.g. sum).</p>
-<p><strong>To give you specific examples with the outputs down below in the table:</strong><span class="raw-html-m2r"><br></span>
-1) Expressions only consisting of one or multiple dashes are translated into Zero:<span class="raw-html-m2r"><br></span>
+<p><strong>To give you specific examples with the outputs down below in the table:</strong>
+1) Expressions only consisting of one or multiple dashes are translated into Zero:
 e.g.: -,-</p>
-<p>2) For regular numbers, negative signs are placed in front of the digits; floats are displayed with two decimal places:<span class="raw-html-m2r"><br></span>
-e.g.: 59,00-<span class="raw-html-m2r"><br></span>
-e.g.: 786,71-<span class="raw-html-m2r"><br></span>
+<p>2) For regular numbers, negative signs are placed in front of the digits; floats are displayed with two decimal places:
+e.g.: 59,00-
+e.g.: 786,71-
 e.g.: (118.704)</p>
-<p>3) Absolute numbers are shown without negative or positive signs in the common format as described above:<span class="raw-html-m2r"><br></span>
-e.g.: 59,00-<span class="raw-html-m2r"><br></span>
-e.g.: 786,71-<span class="raw-html-m2r"><br></span>
-e.g.: -2.759,7°<span class="raw-html-m2r"><br></span>
+<p>3) Absolute numbers are shown without negative or positive signs in the common format as described above:
+e.g.: 59,00-
+e.g.: 786,71-
+e.g.: -2.759,7°
 e.g.: +159,;03</p>
-<p>4) Irrelevant signs and whitespaces are removed and it will be transformed into the unique format with a dot instead of a comma as the decimal separator:<span class="raw-html-m2r"><br></span>
-e.g.: :2.000, 08<span class="raw-html-m2r"><br></span>
-e.g.: -2.759,7°<span class="raw-html-m2r"><br></span>
-e.g.: €1.010.296<span class="raw-html-m2r"><br></span>
+<p>4) Irrelevant signs and whitespaces are removed and it will be transformed into the unique format with a dot instead of a comma as the decimal separator:
+e.g.: :2.000, 08
+e.g.: -2.759,7°
+e.g.: €1.010.296
 e.g.: 7,375,009+</p>
-<p>5) Written numbers are changed into a digits number format:<span class="raw-html-m2r"><br></span>
-e.g.: ein<span class="raw-html-m2r"><br></span>
+<p>5) Written numbers are changed into a digits number format:
+e.g.: ein
 e.g.: eleven</p>
-<p>5) Certain cases can’t be normalized from Konfuzio:<span class="raw-html-m2r"><br></span>
+<p>5) Certain cases can’t be normalized from Konfuzio:
 e.g.: 43.34.34</p>
-<p>6) The expression “NIL” meaning “nothing” is translated into 0; however, strings including this expression can’t be normalized:<span class="raw-html-m2r"><br></span>
-e.g.: NIL<span class="raw-html-m2r"><br></span>
+<p>6) The expression “NIL” meaning “nothing” is translated into 0; however, strings including this expression can’t be normalized:
+e.g.: NIL
 e.g.: StringThatIncludesNIL</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Input</p></th>
 <th class="head"><p>Example no.</p></th>
@@ -489,25 +481,16 @@ e.g.: StringThatIncludesNIL</p>
 <p>Konfuzio also handles percentage numbers of different formats and brings them into a machine-readable one.
 Percentage expressions are not displayed in the classic percentage format with the percentage sign %.
 The decimal number format without the percentage sign is used, but with a dot as a decimal separator and 4 decimal places.</p>
-<p><strong>To give you specific examples with the outputs down below in the table:</strong><span class="raw-html-m2r"><br></span>
+<p><strong>To give you specific examples with the outputs down below in the table:</strong>
 1) Digits that are separated by commas with two decimal places will be easily converted into a uniform format,
-either with or without the percentage sign in its original format:<span class="raw-html-m2r"><br></span>
-e.g.: 12,34<span class="raw-html-m2r"><br></span>
-e.g.: 12,34 %<span class="raw-html-m2r"><br></span>
-e.g.: 434,27%<span class="raw-html-m2r"><br></span>
-e.g.: 59,00-<span class="raw-html-m2r"><br></span>
-e.g.: 123,45<span class="raw-html-m2r"><br></span>
+either with or without the percentage sign in its original format:
+e.g.: 12,34
+e.g.: 12,34 %
+e.g.: 434,27%
+e.g.: 59,00-
+e.g.: 123,45
 e.g.: 0,00</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Input</p></th>
 <th class="head"><p>Example no.</p></th>
@@ -577,34 +560,25 @@ which then won’t be altered in this case. However, if another format is used, 
 <p>In the next step, it checks if a format consisting only of a month and a year is used or even just a year without any
 other date information besides that.</p>
 <p>Konfuzio recognizes written months either in German or English language and translates them into the ISO format.</p>
-<p><strong>To give you specific examples with the outputs down below in the table:</strong><span class="raw-html-m2r"><br></span>
-1) Dates, where the month is posted in a written expression with the year and the day as digits, can be transformed into the ISO format:<span class="raw-html-m2r"><br></span>
-e.g.: 1. November 2019<span class="raw-html-m2r"><br></span>
+<p><strong>To give you specific examples with the outputs down below in the table:</strong>
+1) Dates, where the month is posted in a written expression with the year and the day as digits, can be transformed into the ISO format:
+e.g.: 1. November 2019
 e.g.: 13 Mar 2020</p>
-<p>2) If the year is indicated with just two digits, it will also be recognized, even if it’s not separated with a sign like a dot or something similar:<span class="raw-html-m2r"><br></span>
-e.g.: 23.0919<span class="raw-html-m2r"><br></span>
+<p>2) If the year is indicated with just two digits, it will also be recognized, even if it’s not separated with a sign like a dot or something similar:
+e.g.: 23.0919
 e.g.: (29.03.2018)</p>
-<p>3) Given no information for the year, Konfuzio will assume 0000 by default:<span class="raw-html-m2r"><br></span>
+<p>3) Given no information for the year, Konfuzio will assume 0000 by default:
 e.g.: /04.12.</p>
-<p>4) If there is no information about the specific day, or even day and month, our application assumes the first day either of the respective year or year and month:<span class="raw-html-m2r"><br></span>
-e.g.: Oktober 2011<span class="raw-html-m2r"><br></span>
+<p>4) If there is no information about the specific day, or even day and month, our application assumes the first day either of the respective year or year and month:
+e.g.: Oktober 2011
 e.g.: 2001</p>
-<p>5) Date time values are translated into the iso format as well, but time values are removed:<span class="raw-html-m2r"><br></span>
+<p>5) Date time values are translated into the iso format as well, but time values are removed:
 e.g.: 1993-02-05T00:00:00</p>
-<p>6) Some cases can’t be identified correctly or uniquely. Thus, Konfuzio can’t transfer it into a date format and will return “None”:<span class="raw-html-m2r"><br></span>
-e.g.: 14132020<span class="raw-html-m2r"><br></span>
-e.g.: 23.0K.2010<span class="raw-html-m2r"><br></span>
+<p>6) Some cases can’t be identified correctly or uniquely. Thus, Konfuzio can’t transfer it into a date format and will return “None”:
+e.g.: 14132020
+e.g.: 23.0K.2010
 e.g.: 30.07.2.90</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Input</p></th>
 <th class="head"><p>Example no.</p></th>
@@ -715,41 +689,32 @@ e.g.: 30.07.2.90</p>
 <p>Our application is also able to translate certain expressions into boolean values, representing true or false values.
 This is based on certain pre-specified words. These words are representing positive or negative connoted responses
 with certain signal words which can be found down below in the _no<em>list</em> and _yes<em>list</em>.</p>
-<p>The pre-specified positive and negative (hence true and false) expressions:<span class="raw-html-m2r"><br></span>
-no_list = [‘NEIN’, ‘NICHT’, ‘KEIN’, ‘OHNE’, ‘NO’]<span class="raw-html-m2r"><br></span>
+<p>The pre-specified positive and negative (hence true and false) expressions:
+no_list = [‘NEIN’, ‘NICHT’, ‘KEIN’, ‘OHNE’, ‘NO’]
 yes_list = [‘VORHANDEN’, ‘JA’, ‘MIT’, ‘YES’]</p>
 <p>Given the following examples, you can recognize how certain expressions are clustered into either <em>False</em> or <em>True</em>
 boolean values. If the expression is including one of the <em>no</em> or <em>yes</em> words from above, Konfuzio allocates it
 to <em>True</em> or <em>False</em>.</p>
 <p>However, normalization is only possible if the signal words are the first word of the annotation to avoid false
 positives with word combinations of words from the _no<em>list</em> and _yes<em>list</em>, e.g. nicht vorhanden or mit ohne.</p>
-<p><strong>To give you specific examples with the outputs down below in the table:</strong><span class="raw-html-m2r"><br></span>
+<p><strong>To give you specific examples with the outputs down below in the table:</strong>
 1) The word <em>nicht</em> (<em>no</em>) will be assigned to <em>false</em>.</p>
 <ol class="arabic simple" start="2">
 <li><p>The expression <em>ja</em> (<em>yes</em>) will be translated into <em>true</em>.</p></li>
 </ol>
-<p>3) Expressions including the no or yes signal words can be translated, but only if the expression is starting with this word:<span class="raw-html-m2r"><br></span>
-e.g.: nicht versichert<span class="raw-html-m2r"><br></span>
-e.g.: not insured<span class="raw-html-m2r"><br></span>
-e.g.: ja versichert<span class="raw-html-m2r"><br></span>
+<p>3) Expressions including the no or yes signal words can be translated, but only if the expression is starting with this word:
+e.g.: nicht versichert
+e.g.: not insured
+e.g.: ja versichert
 e.g.: yes insured</p>
-<p>4) If the expression is not starting with the signal word, it can’t be translated as there is the possibility of a combination of positive and negative connotated words:<span class="raw-html-m2r"><br></span>
-e.g.: versichert: ja<span class="raw-html-m2r"><br></span>
-e.g.: insured: yes<span class="raw-html-m2r"><br></span>
-e.g.: versichert ja<span class="raw-html-m2r"><br></span>
+<p>4) If the expression is not starting with the signal word, it can’t be translated as there is the possibility of a combination of positive and negative connotated words:
+e.g.: versichert: ja
+e.g.: insured: yes
+e.g.: versichert ja
 e.g.: insured yes</p>
-<p>5) Annotations with more than 2 words can’t be normalized from Konfuzio:<span class="raw-html-m2r"><br></span>
+<p>5) Annotations with more than 2 words can’t be normalized from Konfuzio:
 e.g.: alleinstehend ohne Kind</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Input</p></th>
 <th class="head"><p>Example no.</p></th>
@@ -898,7 +863,7 @@ excel of your respective country.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2021, Helm und Nagel GmbH.</p>
+    <p>&#169; Copyright 2022, Helm und Nagel GmbH.</p>
   </div>
 
    

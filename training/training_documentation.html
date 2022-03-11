@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 <meta content="Documentation of the features of the trainer package including the contents structure and examples of how to use it." name="description" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -23,7 +23,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Changelog" href="changelog.html" />
-    <link rel="prev" title="FAQ" href="../sdk/faq.html" /> 
+    <link rel="prev" title="Changelog" href="../sdk/changelog.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -32,6 +32,7 @@
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
             <a href="../index.html" class="icon icon-home"> Konfuzio
+            <img src="../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -50,7 +51,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../sdk/contribution.html">Contribution Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sdk/coordinates_system.html">Coordinates System</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sdk/changelog.html">Changelog</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sdk/faq.html">FAQ</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Konfuzio Trainer</span></p>
 <ul class="current">
@@ -141,6 +141,7 @@
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
       <li>LabelSectionModel Examples</li>
       <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/training/training_documentation.md.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -160,7 +161,7 @@
 <span class="kn">from</span> <span class="nn">konfuzio.default_models</span> <span class="kn">import</span> <span class="n">LabelSectionModel</span>
 
 <span class="c1"># load the project</span>
-<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">()</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 
 <span class="c1"># create a default label section model from the project</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">LabelSectionModel</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
@@ -180,7 +181,7 @@
 <span class="kn">from</span> <span class="nn">konfuzio.default_models</span> <span class="kn">import</span> <span class="n">LabelSectionModel</span>
 <span class="kn">from</span> <span class="nn">konfuzio.tokenizers</span> <span class="kn">import</span> <span class="n">BPETokenizer</span>
 
-<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">()</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 
 <span class="c1"># specify a different tokenizer</span>
 <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">BPETokenizer</span><span class="p">()</span>
@@ -217,7 +218,7 @@
 <span class="kn">from</span> <span class="nn">konfuzio.default_models</span> <span class="kn">import</span> <span class="n">LabelSectionModel</span>
 
 <span class="c1"># load the project</span>
-<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">()</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 
 <span class="c1"># create a default label section model from the project</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">LabelSectionModel</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
@@ -254,7 +255,7 @@
 <span class="kn">from</span> <span class="nn">konfuzio.tokenizers</span> <span class="kn">import</span> <span class="n">BPETokenizer</span>
 
 <span class="c1"># load the project</span>
-<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">()</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 
 <span class="c1"># specify a different tokenizer</span>
 <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">BPETokenizer</span><span class="p">()</span>
@@ -313,7 +314,7 @@
         <span class="k">return</span> <span class="n">metrics</span>
 
 <span class="c1"># load the project</span>
-<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">()</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 
 <span class="c1"># can also use a custom tokenizer and model config here</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">CustomerSpecificModel</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
@@ -375,7 +376,7 @@
         <span class="k">return</span> <span class="n">label_classifier_metrics</span>
 
 <span class="c1"># load the project</span>
-<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">()</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 
 <span class="c1"># define model with custom build_label_classifier function</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">CustomerSpecificModel</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
@@ -770,7 +771,7 @@ We only need a <code class="docutils literal notranslate"><span class="pre">mult
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio.data</span> <span class="kn">import</span> <span class="n">Project</span>
 <span class="kn">from</span> <span class="nn">konfuzio.tokenizers</span> <span class="kn">import</span> <span class="n">PhraseMatcherTokenizer</span>
 <span class="kn">from</span> <span class="nn">konfuzio.tokenizers</span> <span class="kn">import</span> <span class="n">get_tokenizer</span>
-<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">()</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">get_tokenizer</span><span class="p">(</span><span class="s1">&#39;phrasematcher&#39;</span><span class="p">,</span> <span class="n">project</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -910,7 +911,7 @@ We only need a <code class="docutils literal notranslate"><span class="pre">mult
 <span class="kn">from</span> <span class="nn">konfuzio.default_models</span> <span class="kn">import</span> <span class="n">LabelSectionModel</span>
 
 <span class="c1"># load a project</span>
-<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">()</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 
 <span class="c1"># load the label classifier text module parameters from a given path</span>
 <span class="n">label_classifier_config</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;dropout_rate&#39;</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span>
@@ -1000,7 +1001,7 @@ AZURE_OCR_KEY = **********************
 <span class="kn">from</span> <span class="nn">konfuzio.default_models</span> <span class="kn">import</span> <span class="n">LabelSectionModel</span>
 
 <span class="c1"># load the project</span>
-<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">()</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 
 <span class="c1"># create a default label section model from the project</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">LabelSectionModel</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
@@ -1068,14 +1069,14 @@ AZURE_OCR_KEY = **********************
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../sdk/faq.html" class="btn btn-neutral float-left" title="FAQ" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../sdk/changelog.html" class="btn btn-neutral float-left" title="Changelog" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="changelog.html" class="btn btn-neutral float-right" title="Changelog" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2021, Helm und Nagel GmbH.</p>
+    <p>&#169; Copyright 2022, Helm und Nagel GmbH.</p>
   </div>
 
    
