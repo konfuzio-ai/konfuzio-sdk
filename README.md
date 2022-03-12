@@ -71,6 +71,8 @@ Find more explanations in the [Examples](https://dev.konfuzio.com/sdk/examples/e
 
 ## Regex
 
+**Pro Tip**: Read our technical blog post [Automated Regex](https://helm-nagel.com/Automated-Regex-Generation-based-on-examples) to find out how we use Regex to detect outliers in our annotated data.
+
 ```python
 from konfuzio_sdk.regex import suggest_regex_for_string
 from konfuzio_sdk.data import Project, Label
