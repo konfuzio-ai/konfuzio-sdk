@@ -234,10 +234,10 @@ file_name_append_data = [
 def test_append_text_to_filename(file_path, expected_result, expected_error):
     """Test if we detect the correct file name."""
     with expected_error:
-        assert amend_file_path(file_path, 'ocr') == expected_result
+        assert amend_file_name(file_path, 'ocr') == expected_result
 
 
-file_name_append_data = [
+file_path_append_data = [
     # text embeddings all over the text
     ('/tmp/text_embeddings_0639187398.pdf', '/tmp/text_embeddings_0639187398_ocr.pdf', does_not_raise()),
     # text embeddings only on some pages of the text
@@ -248,7 +248,7 @@ file_name_append_data = [
 ]
 
 
-@pytest.mark.parametrize("file_path, expected_result, expected_error", file_name_append_data)
+@pytest.mark.parametrize("file_path, expected_result, expected_error", file_path_append_data)
 def test_append_text_to_amend_file_path(file_path, expected_result, expected_error):
     """Test if we detect the correct file path."""
     with expected_error:
