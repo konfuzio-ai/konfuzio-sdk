@@ -183,6 +183,24 @@
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="konfuzio_sdk.utils.amend_file_path">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.utils.</span></span><span class="sig-name descname"><span class="pre">amend_file_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">append_text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_extension</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.utils.amend_file_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Similar to amend_file_name however the file_name is interpreted as a full path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>new_extension</strong> – Change the file extension</p></li>
+<li><p><strong>file_path</strong> – Name of a file, e.g. file.pdf</p></li>
+<li><p><strong>append_text</strong> – Text you you want to append between file name ane extension</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>extended path to file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="konfuzio_sdk.utils.convert_to_bio_scheme">
 <span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.utils.</span></span><span class="sig-name descname"><span class="pre">convert_to_bio_scheme</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#konfuzio_sdk.utils.convert_to_bio_scheme" title="Permalink to this definition">¶</a></dt>
 <dd><p>Mark all the entities in the text as per the BIO scheme.</p>
