@@ -15,6 +15,7 @@ from konfuzio_sdk.utils import (
     map_offsets,
     get_sentences,
     amend_file_name,
+    amend_file_path,
     does_not_raise,
     get_missing_offsets,
     iter_before_and_after,
@@ -203,7 +204,7 @@ file_name_append_data = [
     ('/tmp/text_embeddings_0639187398.pdf', 'tmptext_embeddings_0639187398_ocr.pdf', does_not_raise()),
     # text embeddings only on some pages of the text
     ('only_some_pages_have_embeddings.tiff', 'only_some_pages_have_embeddings_ocr.tiff', does_not_raise()),
-    # two sots in a file name
+    # two dots in a file name
     ('only_some_pages._have_embeddings.tiff', 'only_some_pages_have_embeddings_ocr.tiff', does_not_raise()),
     ('2022-02-13 19:23:06.168728.tiff', '2022-02-13-19-23-06-168728_ocr.tiff', does_not_raise()),
     # empty file path
@@ -233,7 +234,26 @@ file_name_append_data = [
 def test_append_text_to_filename(file_path, expected_result, expected_error):
     """Test if we detect the correct file name."""
     with expected_error:
-        assert amend_file_name(file_path, 'ocr') == expected_result
+        assert amend_file_path(file_path, 'ocr') == expected_result
+
+
+file_name_append_data = [
+    # text embeddings all over the text
+    ('/tmp/text_embeddings_0639187398.pdf', '/tmp/text_embeddings_0639187398_ocr.pdf', does_not_raise()),
+    # text embeddings only on some pages of the text
+    ('only_some_pages_have_embeddings.tiff', 'only_some_pages_have_embeddings_ocr.tiff', does_not_raise()),
+    # two dots in a file name
+    ('only/_some_pages._have_embeddings.tiff', 'only/_some_pages_have_embeddings_ocr.tiff', does_not_raise()),
+    ('2022/-02-13 19:23:06.168728.tiff', '2022/-02-13-19-23-06-168728_ocr.tiff', does_not_raise()),
+]
+
+
+@pytest.mark.parametrize("file_path, expected_result, expected_error", file_name_append_data)
+def test_append_text_to_amend_file_path(file_path, expected_result, expected_error):
+    """Test if we detect the correct file path."""
+    with expected_error:
+        assert amend_file_path(file_path, 'ocr') == expected_result
+
 
 
 def test_corrupted_name():
