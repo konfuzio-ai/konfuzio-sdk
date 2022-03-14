@@ -281,16 +281,17 @@ def amend_file_name(file_name: str, append_text: str = '', new_extension: str = 
         raise ValueError(f'Name of file cannot be: {file_name}')
 
 
-def amend_file_path(file_name: str, append_text: str = '', new_extension: str = None):
+def amend_file_path(file_path: str, append_text: str = '', new_extension: str = None):
     """
     Similar to amend_file_name however the file_name is interpreted as a full path.
 
     :param new_extension: Change the file extension
     :param file_path: Name of a file, e.g. file.pdf
     :param append_text: Text you you want to append between file name ane extension
+
     :return: extended path to file
     """
-    split_file_path, split_file_name = os.path.split(file_name)
+    split_file_path, split_file_name = os.path.split(file_path)
     new_filename = amend_file_name(split_file_name, append_text, new_extension)
     return os.path.join(split_file_path, new_filename)
 
