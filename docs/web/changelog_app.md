@@ -8,6 +8,11 @@ All notable changes in the server of app.konfuzio.com will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
 
+## 2022-03-15_09-14-17
+
+### Changed
+- "Rerun extraction" via the user interface applies new annotations now also to training and test documents
+
 ## 2022-02-11_23-12-26
 
 ### Added 
