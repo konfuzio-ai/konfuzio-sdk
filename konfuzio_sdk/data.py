@@ -1198,8 +1198,8 @@ class Document(Data):
         """
         self.id_local = next(Data.id_iter)
         self.id_ = id_
-        self._annotations: List[Annotation] = []
-        self._annotation_sets: List[AnnotationSet] = []
+        self._annotations: List[Annotation] = None
+        self._annotation_sets: List[AnnotationSet] = None
         self.file_url = file_url
         self.is_dataset = is_dataset
         self.dataset_status = dataset_status
@@ -1287,7 +1287,7 @@ class Document(Data):
 
     def annotation_sets(self):
         """Return Annotation Sets of Documents."""
-        if self._annotation_sets:
+        if self._annotation_sets is not None:
             return self._annotation_sets
         if not is_file(self.annotation_set_file_path, raise_exception=False):
             self.download_document_details()
@@ -1301,6 +1301,8 @@ class Document(Data):
                     document=self,
                     label_set=self.project.get_label_set_by_id(raw_annotation_set["section_label"]),
                 )
+        elif self._annotation_sets is None:
+            self._annotation_sets = []  # Annotation sets cannot be loaded from Konfuzio Server
         return self._annotation_sets
 
     def annotations(
@@ -1450,6 +1452,8 @@ class Document(Data):
         :param annotation: Annotation to add in the document
         :return: Input annotation.
         """
+        if self._annotations is None:
+            self.annotations()
         if annotation not in self._annotations:
             # Hotfix Text Annotation Server:
             #  Annotation belongs to a Label / Label Set that does not relate to the Category of the Document.
@@ -1479,6 +1483,8 @@ class Document(Data):
         """Add the Annotation Sets to the document."""
         if annotation_set.document and annotation_set.document != self:
             raise ValueError('One Annotation Set must only belong to one document.')
+        if self._annotation_sets is None:
+            self._annotation_sets = []
         if annotation_set not in self._annotation_sets:
             self._annotation_sets.append(annotation_set)
         else:
@@ -1492,6 +1498,8 @@ class Document(Data):
         :param id_: ID of the Label Set to get.
         """
         result = None
+        if self._annotation_sets is None:
+            self.annotation_sets()
         for annotation_set in self._annotation_sets:
             if annotation_set.id_ == id_:
                 result = annotation_set
@@ -1613,8 +1621,8 @@ class Document(Data):
         except FileNotFoundError:
             pass
         pathlib.Path(self.document_folder).mkdir(parents=True, exist_ok=True)
-        self._annotations = []
-        self._annotation_sets = []
+        self._annotations = None
+        self._annotation_sets = None
 
     def regex(
         self, start_offset: int, end_offset: int, categories: List[Category], search=None, max_findings_per_page=15
@@ -1704,19 +1712,20 @@ class Document(Data):
 
     def get_annotations(self) -> List[Annotation]:
         """Get Annotations of the Document."""
-        annotation_file_exists = is_file(self.annotation_file_path, raise_exception=False)
-        annotation_set_file_exists = is_file(self.annotation_set_file_path, raise_exception=False)
-
-        if self.id_ and (not annotation_file_exists or not annotation_set_file_exists or self._update):
-            self.update()  # delete the meta of the Document details and download them again
-            self._update = None  # Make sure we don't repeat to load once updated.
-
         # todo: for Documents without Annotations we eagerly check if we can load them, as `not [] == True`
-        if self._update or (self.id_ and (not self._annotations or not self._annotation_sets)):
-            self._annotations = []  # clean Annotations to not create duplicates
-            self._annotation_sets = []  # clean Annotation Sets to not create duplicates
+        if self._update or (self.id_ and (self._annotations is None or self._annotation_sets is None)):
+
+            annotation_file_exists = is_file(self.annotation_file_path, raise_exception=False)
+            annotation_set_file_exists = is_file(self.annotation_set_file_path, raise_exception=False)
+
+            if self.id_ and (not annotation_file_exists or not annotation_set_file_exists or self._update):
+               self.update()  # delete the meta of the Document details and download them again
+               self._update = None  # Make sure we don't repeat to load once updated.
+
+            self._annotation_sets = None  # clean Annotation Sets to not create duplicates
             self.annotation_sets()
 
+            self._annotations = []  # clean Annotations to not create duplicates
             with open(self.annotation_file_path, 'r') as f:
                 raw_annotations = json.load(f)
 
@@ -1725,6 +1734,9 @@ class Document(Data):
                 raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
                 _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
             self._update = None  # Make sure we don't repeat to load once loaded.
+
+        if self._annotations is None:
+            self._annotations = []
 
         return self._annotations
 

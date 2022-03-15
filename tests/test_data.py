@@ -601,8 +601,9 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         prj = Project(id_=TEST_PROJECT_ID, project_folder='another')
         doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
         self.assertFalse(is_file(doc.annotation_file_path, raise_exception=False))
-        self.assertEqual([], doc._annotations)
+        self.assertEqual(None, doc._annotations)
         self.assertTrue(doc.annotations())
+        self.assertEqual(5, len(doc._annotation_sets))
         self.assertTrue(is_file(doc.annotation_file_path))
         prj.delete()
 
@@ -611,8 +612,9 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         prj = Project(id_=TEST_PROJECT_ID, project_folder='another2')
         doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
         self.assertFalse(is_file(doc.annotation_set_file_path, raise_exception=False))
-        self.assertEqual([], doc._annotation_sets)
+        self.assertEqual(None, doc._annotation_sets)
         self.assertTrue(doc.annotation_sets())
+        self.assertEqual(5, len(doc._annotation_sets))
         self.assertTrue(is_file(doc.annotation_set_file_path))
         prj.delete()
 
