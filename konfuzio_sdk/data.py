@@ -171,6 +171,14 @@ class LabelSet(Data):
                 label = self.project.get_label_by_id(id_=label)
             self.add_label(label)
 
+    def __lt__(self, other: 'LabelSet'):
+        """Sort Label Sets by name."""
+        try:
+            return self.name < other.name
+        except TypeError:
+            logger.error(f'Cannot sort {self} and {other}.')
+            return False
+
     def __repr__(self):
         """Return string representation of the Label Set."""
         return f"{self.name} ({self.id_})"
@@ -226,6 +234,14 @@ class Category(Data):
             self.label_sets.append(label_set)
         else:
             raise ValueError(f'In {self} the {label_set} is a duplicate and will not be added.')
+
+    def __lt__(self, other: 'Category'):
+        """Sort Categories by name."""
+        try:
+            return self.name < other.name
+        except TypeError:
+            logger.error(f'Cannot sort {self} and {other}.')
+            return False
 
     def __repr__(self):
         """Return string representation of the Category."""
@@ -1475,7 +1491,8 @@ class Document(Data):
             else:
                 raise ValueError(f'We cannot add {annotation} to {self} where the category is {self.category}')
         else:
-            raise ValueError(f'In {self} the {annotation} is a duplicate and will not be added.')
+            duplicated = [x for x in self._annotations if x == annotation]
+            raise ValueError(f'In {self} the {annotation} is a duplicate of {duplicated}and will not be added.')
 
         return self
 
