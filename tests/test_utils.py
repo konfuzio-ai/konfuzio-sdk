@@ -255,7 +255,6 @@ def test_append_text_to_amend_file_path(file_path, expected_result, expected_err
         assert amend_file_path(file_path, 'ocr') == expected_result
 
 
-
 def test_corrupted_name():
     """Test to convert an invalide file name to a valid file name."""
     assert amend_file_name('2022-02-13 19:23:06.168728.tiff') == '2022-02-13-19-23-06-168728.tiff'

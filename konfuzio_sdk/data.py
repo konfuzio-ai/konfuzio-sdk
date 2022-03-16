@@ -1729,15 +1729,13 @@ class Document(Data):
 
     def get_annotations(self) -> List[Annotation]:
         """Get Annotations of the Document."""
-        # todo: for Documents without Annotations we eagerly check if we can load them, as `not [] == True`
         if self._update or (self.id_ and (self._annotations is None or self._annotation_sets is None)):
-
             annotation_file_exists = is_file(self.annotation_file_path, raise_exception=False)
             annotation_set_file_exists = is_file(self.annotation_set_file_path, raise_exception=False)
 
             if self.id_ and (not annotation_file_exists or not annotation_set_file_exists or self._update):
-               self.update()  # delete the meta of the Document details and download them again
-               self._update = None  # Make sure we don't repeat to load once updated.
+                self.update()  # delete the meta of the Document details and download them again
+                self._update = None  # Make sure we don't repeat to load once updated.
 
             self._annotation_sets = None  # clean Annotation Sets to not create duplicates
             self.annotation_sets()
