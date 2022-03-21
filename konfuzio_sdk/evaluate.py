@@ -101,6 +101,8 @@ def compare(doc_a, doc_b, only_use_correct=False) -> pd.DataFrame:
 
     spans["false_negative"] = 1 * ((spans["is_correct"]) & (~spans["above_predicted_threshold"]))
 
+    spans["is_found_by_tokenizer"] = 1 * (spans["is_correct"] & spans["document_id_local_predicted"].notna())
+
     # one **span** cannot be assigned to more than one group, however can be a True Negative
     quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) <= 1).all()
     assert quality
