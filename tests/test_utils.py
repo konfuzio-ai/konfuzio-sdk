@@ -19,7 +19,7 @@ from konfuzio_sdk.utils import (
     does_not_raise,
     get_missing_offsets,
     get_paragraphs_by_line_space,
-    iter_before_and_after
+    iter_before_and_after,
 )
 
 TEST_STRING = "sample string"
@@ -266,53 +266,16 @@ class TestParagraphByLine(unittest.TestCase):
 
     text = 'a\nb'
     bboxes = {
-        '0': {
-            'x0': 0,
-            'x1': 10,
-            'y0': 200,
-            'y1': 210,
-            'top': 10,
-            'bottom': 290,
-            'line_number': 1,
-            'page_number': 1,
-        },
-        '2': {
-            'x0': 0,
-            'x1': 10,
-            'y0': 0,
-            'y1': 10,
-            'top': 210,
-            'bottom': 90,
-            'line_number': 3,
-            'page_number': 1,
-        },
+        '0': {'x0': 0, 'x1': 10, 'y0': 200, 'y1': 210, 'top': 10, 'bottom': 290, 'line_number': 1, 'page_number': 1},
+        '2': {'x0': 0, 'x1': 10, 'y0': 0, 'y1': 10, 'top': 210, 'bottom': 90, 'line_number': 3, 'page_number': 1},
     }
     invalid_bboxes = {
-        '0': {
-            'x0': 0,
-            'x1': 10,
-            'y0': 0,
-            'y1': 10,
-            'top': 210,
-            'bottom': 90,
-            'line_number': 1,
-            'page_number': 1,
-        },
-        '2': {
-            'x0': 0,
-            'x1': 10,
-            'y0': 200,
-            'y1': 210,
-            'top': 10,
-            'bottom': 290,
-            'line_number': 3,
-            'page_number': 1,
-        },
+        '0': {'x0': 0, 'x1': 10, 'y0': 0, 'y1': 10, 'top': 210, 'bottom': 90, 'line_number': 1, 'page_number': 1},
+        '2': {'x0': 0, 'x1': 10, 'y0': 200, 'y1': 210, 'top': 10, 'bottom': 290, 'line_number': 3, 'page_number': 1},
     }
 
     def test_get_paragraphs_by_line_space(self):
-        """Test split pargraphs by line space."""
-
+        """Test split paragraphs by line space."""
         paragraphs = get_paragraphs_by_line_space(text=self.text, bbox=self.bboxes)
         assert len(paragraphs) == 1  # One page in document.
 
@@ -330,8 +293,7 @@ class TestParagraphByLine(unittest.TestCase):
         assert len(paragraph_first_page) == 2
 
     def test_get_paragraphs_by_line_space_custom_height(self):
-        """Test split paragraphs by line space. """
-
+        """Test split paragraphs by line space."""
         # Low height for splitting will result in a single paragraph.
         paragraphs = get_paragraphs_by_line_space(text=self.text, bbox=self.bboxes, height=500)
         assert len(paragraphs) == 1  # One page in document.
@@ -344,13 +306,11 @@ class TestParagraphByLine(unittest.TestCase):
         assert paragraph_first_page[0][1]['start_offset'] == 2
         assert paragraph_first_page[0][1]['end_offset'] == 3
 
-
     def test_get_paragraphs_by_line_space_with_invalid_bbox(self):
-        """Test split paragraphs by line space. """
-
+        """Test split paragraphs by line space."""
         # Low height for splitting will result in a single paragraph.
         with self.assertRaises(ValueError):
-            paragraphs = get_paragraphs_by_line_space(text=self.text, bbox=self.invalid_bboxes)
+            _ = get_paragraphs_by_line_space(text=self.text, bbox=self.invalid_bboxes)
 
 
 class TestMissingOffsets(unittest.TestCase):

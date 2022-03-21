@@ -302,7 +302,7 @@ def get_paragraphs_by_line_space(
     height: Union[float, int] = None,
     # return_dataframe: bool = False,
     line_height_ration: float = 0.8,
-) -> Union[List[List[List[dict]]], Tuple[List[List[List[dict]]], 'DataFrame']]:
+) -> Union[List[List[List[dict]]], Tuple[List[List[List[dict]]]]]:
     """
     Split a text into paragraphs considering the space between the lines.
 
@@ -311,18 +311,16 @@ def get_paragraphs_by_line_space(
     :param bbox: Bounding boxes of the characters in the  Document
     :param text: Text of the document
     :param height: Threshold value for the distance between lines
-    :param return_dataframe: If to return a dataframe with the paragraph text and page number
-    # :param line_height_ration: Ratio of the result of median of the distance between lines as threshold
+    #:param return_dataframe: If to return a dataframe with the paragraph text and page number
+    :param line_height_ration: Ratio of the result of median of the distance between lines as threshold
     :return: List of with the paragraph information per page of the document.
     """
     # Add start_offset and end_offset to every bbox item.
-    import pandas as pd
     from statistics import median
 
     bbox = dict((k, dict(**v, start_offset=int(k), end_offset=int(k) + 1)) for (k, v) in bbox.items())
     page_numbers = set(int(box['page_number']) for box in bbox.values())
     document_structure = []
-    data = []
 
     if height is not None:
         if not (isinstance(height, int) or isinstance(height, float)):
@@ -334,9 +332,9 @@ def get_paragraphs_by_line_space(
 
         if height is None:
             line_threshold = round(
-                line_height_ration * median(
-                    box['y1'] - box['y0'] for box in bbox.values() if box['page_number'] == page_number
-                ), 6
+                line_height_ration
+                * median(box['y1'] - box['y0'] for box in bbox.values() if box['page_number'] == page_number),
+                6,
             )
         else:
             line_threshold = height
