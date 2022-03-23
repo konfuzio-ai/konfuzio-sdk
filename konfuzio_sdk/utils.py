@@ -296,112 +296,112 @@ def amend_file_path(file_path: str, append_text: str = '', new_extension: str = 
     return os.path.join(split_file_path, new_filename)
 
 
-def get_paragraphs_by_line_space(
-    bbox: dict,
-    text: str,
-    height: Union[float, int] = None,
-    # return_dataframe: bool = False,
-    line_height_ration: float = 0.8,
-) -> Union[List[List[List[dict]]], Tuple[List[List[List[dict]]]]]:
-    """
-    Split a text into paragraphs considering the space between the lines.
-
-    A paragraph consists in a list of lines. Each line corresponds to a dictionary.
-
-    :param bbox: Bounding boxes of the characters in the  Document
-    :param text: Text of the document
-    :param height: Threshold value for the distance between lines
-    #:param return_dataframe: If to return a dataframe with the paragraph text and page number
-    :param line_height_ration: Ratio of the result of median of the distance between lines as threshold
-    :return: List of with the paragraph information per page of the document.
-    """
-    # Add start_offset and end_offset to every bbox item.
-    from statistics import median
-
-    bbox = dict((k, dict(**v, start_offset=int(k), end_offset=int(k) + 1)) for (k, v) in bbox.items())
-    page_numbers = set(int(box['page_number']) for box in bbox.values())
-    document_structure = []
-
-    if height is not None:
-        if not (isinstance(height, int) or isinstance(height, float)):
-            raise Exception(f'Parameter must be of type int or float. It is {type(height)}.')
-
-    for page_number in page_numbers:
-        previous_y0 = None
-        paragraphs = []
-
-        if height is None:
-            line_threshold = round(
-                line_height_ration
-                * median(box['y1'] - box['y0'] for box in bbox.values() if box['page_number'] == page_number),
-                6,
-            )
-        else:
-            line_threshold = height
-
-        line_numbers = set(int(box['line_number']) for box in bbox.values() if box['page_number'] == page_number)
-        for line_number in line_numbers:
-            line_bboxes = list(
-                box for box in bbox.values() if box['page_number'] == page_number and box['line_number'] == line_number
-            )
-            max_y1 = max([x['y1'] for x in line_bboxes])
-            min_y0 = min([x['y0'] for x in line_bboxes])
-
-            max_x1 = max([x['x1'] for x in line_bboxes])
-            min_x0 = min([x['x0'] for x in line_bboxes])
-
-            min_top = min([x['top'] for x in line_bboxes])
-            max_bottom = max([x['bottom'] for x in line_bboxes])
-
-            start_offset = min(x['start_offset'] for x in line_bboxes)
-            end_offset = max(x['end_offset'] for x in line_bboxes)
-            _text = text[start_offset:end_offset]
-
-            # Do not create a paragraph for whitespaces.
-            if _text.replace(' ', '') == '':
-                continue
-
-            paragraph = {
-                'start_offset': start_offset,
-                'end_offset': end_offset,
-                'text': _text,
-                'line_bbox': {
-                    'x0': min_x0,
-                    'x1': max_x1,
-                    'y0': min_y0,
-                    'y1': max_y1,
-                    'top': min_top,
-                    'bottom': max_bottom,
-                    'page_index': page_number - 1,
-                },
-            }
-
-            if previous_y0 is not None and previous_y0 - max_y1 < 0:
-                raise ValueError('Order of offsets does not match order y coordinate.')
-
-            if previous_y0 is not None and previous_y0 - max_y1 < line_threshold:
-                paragraphs[-1].append(paragraph)
-            else:
-                paragraphs.append([paragraph])
-
-            previous_y0 = min_y0
-
-        document_structure.append(paragraphs)
-
-    return document_structure
-
-    #     for paragraph_ in paragraphs:
-    #         paragraph_text = [line['text'] + "\n" for line in paragraph_]
-    #         paragraph_text = ''.join(paragraph_text)
-    #         data.append({"page_number": page_number, "paragraph_text": paragraph_text})
-    #
-    # dataframe = pd.DataFrame(data=data)
-    #
-    # if return_dataframe:
-    #     return document_structure, dataframe
-    #
-    # else:
-    #     return document_structure
+# def get_paragraphs_by_line_space(
+#     bbox: dict,
+#     text: str,
+#     height: Union[float, int] = None,
+#     # return_dataframe: bool = False,
+#     line_height_ration: float = 0.8,
+# ) -> Union[List[List[List[dict]]], Tuple[List[List[List[dict]]]]]:
+#     """
+#     Split a text into paragraphs considering the space between the lines.
+#
+#     A paragraph consists in a list of lines. Each line corresponds to a dictionary.
+#
+#     :param bbox: Bounding boxes of the characters in the  Document
+#     :param text: Text of the document
+#     :param height: Threshold value for the distance between lines
+#     #:param return_dataframe: If to return a dataframe with the paragraph text and page number
+#     :param line_height_ration: Ratio of the result of median of the distance between lines as threshold
+#     :return: List of with the paragraph information per page of the document.
+#     """
+#     # Add start_offset and end_offset to every bbox item.
+#     from statistics import median
+#
+#     bbox = dict((k, dict(**v, start_offset=int(k), end_offset=int(k) + 1)) for (k, v) in bbox.items())
+#     page_numbers = set(int(box['page_number']) for box in bbox.values())
+#     document_structure = []
+#
+#     if height is not None:
+#         if not (isinstance(height, int) or isinstance(height, float)):
+#             raise Exception(f'Parameter must be of type int or float. It is {type(height)}.')
+#
+#     for page_number in page_numbers:
+#         previous_y0 = None
+#         paragraphs = []
+#
+#         if height is None:
+#             line_threshold = round(
+#                 line_height_ration
+#                 * median(box['y1'] - box['y0'] for box in bbox.values() if box['page_number'] == page_number),
+#                 6,
+#             )
+#         else:
+#             line_threshold = height
+#
+#         line_numbers = set(int(box['line_number']) for box in bbox.values() if box['page_number'] == page_number)
+#         for line_number in line_numbers:
+#             line_bboxes = list(
+#                 box for box in bbox.values() if box['page_number'] == page_number and box['line_number'] == line_number
+#             )
+#             max_y1 = max([x['y1'] for x in line_bboxes])
+#             min_y0 = min([x['y0'] for x in line_bboxes])
+#
+#             max_x1 = max([x['x1'] for x in line_bboxes])
+#             min_x0 = min([x['x0'] for x in line_bboxes])
+#
+#             min_top = min([x['top'] for x in line_bboxes])
+#             max_bottom = max([x['bottom'] for x in line_bboxes])
+#
+#             start_offset = min(x['start_offset'] for x in line_bboxes)
+#             end_offset = max(x['end_offset'] for x in line_bboxes)
+#             _text = text[start_offset:end_offset]
+#
+#             # Do not create a paragraph for whitespaces.
+#             if _text.replace(' ', '') == '':
+#                 continue
+#
+#             paragraph = {
+#                 'start_offset': start_offset,
+#                 'end_offset': end_offset,
+#                 'text': _text,
+#                 'line_bbox': {
+#                     'x0': min_x0,
+#                     'x1': max_x1,
+#                     'y0': min_y0,
+#                     'y1': max_y1,
+#                     'top': min_top,
+#                     'bottom': max_bottom,
+#                     'page_index': page_number - 1,
+#                 },
+#             }
+#
+#             if previous_y0 is not None and previous_y0 - max_y1 < 0:
+#                 raise ValueError('Order of offsets does not match order y coordinate.')
+#
+#             if previous_y0 is not None and previous_y0 - max_y1 < line_threshold:
+#                 paragraphs[-1].append(paragraph)
+#             else:
+#                 paragraphs.append([paragraph])
+#
+#             previous_y0 = min_y0
+#
+#         document_structure.append(paragraphs)
+#
+#     return document_structure
+#
+#     #     for paragraph_ in paragraphs:
+#     #         paragraph_text = [line['text'] + "\n" for line in paragraph_]
+#     #         paragraph_text = ''.join(paragraph_text)
+#     #         data.append({"page_number": page_number, "paragraph_text": paragraph_text})
+#     #
+#     # dataframe = pd.DataFrame(data=data)
+#     #
+#     # if return_dataframe:
+#     #     return document_structure, dataframe
+#     #
+#     # else:
+#     #     return document_structure
 
 
 def get_sentences(text: str, offsets_map: Union[dict, None] = None, language: str = 'german') -> List[dict]:
