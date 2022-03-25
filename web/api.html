@@ -320,9 +320,10 @@ e.g.: 7,375,009+</p>
 <p>5) Written numbers are changed into a digits number format:
 e.g.: ein
 e.g.: eleven</p>
-<p>5) Certain cases can’t be normalized from Konfuzio:
+<p>6) Certain cases can’t be normalized from Konfuzio:
 e.g.: 43.34.34</p>
-<p>6) The expression “NIL” meaning “nothing” is translated into 0; however, strings including this expression can’t be normalized:
+<p>7) The expressions “NIL”, “kein”, “keinen”, “keiner”, “None”, meaning “nothing” are translated into 0; however, strings
+including any of these expressions can’t be normalized:
 e.g.: NIL
 e.g.: StringThatIncludesNIL</p>
 <table class="docutils align-default">
@@ -458,15 +459,23 @@ e.g.: StringThatIncludesNIL</p>
 <td><p>null</p></td>
 </tr>
 <tr class="row-odd"><td><p>NIL</p></td>
-<td><p>6</p></td>
+<td><p>7</p></td>
 <td><p>yes</p></td>
 <td><p>0.0</p></td>
 <td><p>0</p></td>
 <td><p>string</p></td>
 <td><p>number</p></td>
 </tr>
-<tr class="row-even"><td><p>StringThatIncludesNIL</p></td>
-<td><p>6</p></td>
+<tr class="row-even"><td><p>keinen</p></td>
+<td><p>7</p></td>
+<td><p>yes</p></td>
+<td><p>0.0</p></td>
+<td><p>0</p></td>
+<td><p>string</p></td>
+<td><p>number</p></td>
+</tr>
+<tr class="row-odd"><td><p>StringThatIncludesNIL</p></td>
+<td><p>7</p></td>
 <td><p>no</p></td>
 <td><p>None</p></td>
 <td><p>null</p></td>
