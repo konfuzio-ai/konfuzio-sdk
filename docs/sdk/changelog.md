@@ -4,6 +4,51 @@
 
 # Changelog
 
+## 2022-03-11 v.0.2.0
+
+### Fixed
+- Renaming of "accuracy" to "confidence".
+
+### Changed
+- Initialization of the package without a specific project.
+No longer necessary to specify a project to initialize the package.
+- Now it is possible to load multiple projects in one Python process. 
+For that, it is necessary to specify the ID of the desired project when creating the project object 
+(my_project = Project(id_=project_ID)).
+- The name of the folder where the data of the project can be downloaded cannot be customized anymore. 
+The name is defined by "data_" followed by the project ID.
+- The data of the documents is downloaded only when requested. This data refers to the file with the text of the 
+document, the file with information about its pages, and the files with the annotations and annotation sets of the 
+document. You can have documents in the project that are not used in your code.
+Those files will be downloaded together when you:
+  - access the text of the document (document.text)
+  - access the pages of the document (document.pages)
+  - access the annotations of the document (document.annotations())
+  - access the annotation sets of the document (document.annotation_sets())
+  - update the document (document.update())
+  - call the method download_document_details (document.download_document_details())
+- The data for the test and training documents in the project can be downloaded via CLI with "export_project" 
+instead of "download_data".
+- The import of environment variables happens directly from the running environment or .env. 
+No longer necessary to have the file settings.py.
+- Start and end offsets of an Annotation defined on a Span level.
+- Expanded test coverage.
+- Update documentation.
+
+### Added
+- Concept of evaluation. The evaluation of a document can be done by comparing two versions of it: version A, 
+considered the correct one, and version B, the one to be evaluated. With this option you can:
+  - compare a version of the document with annotations created by an AI with the version of the document on the server
+  - compare versions of the document with annotations from different AIs.
+- Concept of Span: sequence of characters or whitespaces without a line break.
+An Annotation with multiple lines can now be described as an Annotation with multiple Spans.
+- Introduction of eval_dict that returns any information necessary for evaluation.
+The information is based on the Spans.
+- Option to locally create empty data structures (for testing proposes).
+- Normalization logic for a Span accordingly with the Annotation data type.
+- Regex logic. Now it's possible to build regexes based on the Annotations of a certain Label.
+- API endpoint to upload an AI model.
+
 ## 2021-11-24 v.0.1.15
 
 ### Fixed
@@ -12,7 +57,7 @@
 ## 2021-11-23 v.0.1.14
 
 ### Changed
-- Option to pass the Konfuzio Host to the segmentation endpoint
+- Option to pass the Konfuzio Host to the segmentation endpoint.
 
 ## 2021-11-18 v.0.1.13
 

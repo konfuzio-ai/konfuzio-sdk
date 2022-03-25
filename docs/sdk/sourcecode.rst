@@ -32,62 +32,58 @@ Data
 .. automodule:: konfuzio_sdk.data
 
 
-Data Class
-~~~~~~~~~~~
-.. autoclass:: Data
+Span
+~~~~
+
+.. autoclass:: Span
    :members:
    :noindex:
 
-Annotation Set Class
-~~~~~~~~~~~~~~~~~~~~
+
+Annotation
+~~~~~~~~~~
+.. autoclass:: Annotation
+   :members:
+   :noindex:
+
+
+Annotation Set
+~~~~~~~~~~~~~~
 .. autoclass:: AnnotationSet
    :members:
    :noindex:
 
-Label Set Class
-~~~~~~~~~~~~~~~
-.. autoclass:: LabelSet
-   :members:
-   :noindex:
 
-Category Class
-~~~~~~~~~~~~~~~
-.. autoclass:: Category
-   :members:
-   :noindex:
-
-Label Class
-~~~~~~~~~~~~~~~
+Label
+~~~~~
 
 .. autoclass:: Label
    :members:
    :noindex:
 
-Annotation Class
-~~~~~~~~~~~~~~~~~~
-.. autoclass:: Annotation
+Label Set
+~~~~~~~~~
+.. autoclass:: LabelSet
    :members:
    :noindex:
 
-Document Class
-~~~~~~~~~~~~~~~~~~
+Category
+~~~~~~~~
+.. autoclass:: Category
+   :members:
+   :noindex:
+
+Document
+~~~~~~~~
 .. autoclass:: Document
    :members:
    :noindex:
 
-Project CLass
-~~~~~~~~~~~~~~~
+Project
+~~~~~~~
 .. autoclass:: Project
    :members:
    :noindex:
-
-URLs
-------------
-
-`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/urls.py>`__
-
-.. automodule:: konfuzio_sdk.urls
-    :members:
 
 
 Utils

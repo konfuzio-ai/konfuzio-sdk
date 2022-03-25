@@ -5,7 +5,7 @@
 Retrieve all information available for your project:
 
 ```python
-my_project = Project()
+my_project = Project(id_=YOUR_PROJECT_ID)
 ```
 
 The information will be stored in the folder that you defined to allocate the data in the package initialization.

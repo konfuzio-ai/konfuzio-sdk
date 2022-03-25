@@ -4,6 +4,7 @@ import unittest
 
 import pytest
 from konfuzio_sdk import IMAGE_FILE, PDF_FILE, OFFICE_FILE
+from konfuzio_sdk.data import Project
 from konfuzio_sdk.utils import (
     get_id,
     get_timestamp,
@@ -13,13 +14,19 @@ from konfuzio_sdk.utils import (
     convert_to_bio_scheme,
     map_offsets,
     get_sentences,
+    amend_file_name,
+    amend_file_path,
+    does_not_raise,
+    get_missing_offsets,
+    get_paragraphs_by_line_space,
+    iter_before_and_after,
 )
 
 TEST_STRING = "sample string"
 FOLDER_ROOT = os.path.dirname(os.path.realpath(__file__))
-TEST_PDF_FILE = os.path.join(FOLDER_ROOT, 'test_data/pdf/1_test.pdf')
-TEST_IMAGE_FILE = os.path.join(FOLDER_ROOT, 'test_data/images/Konfuzio logo square.png')
-TEST_ZIP_FILE = os.path.join(FOLDER_ROOT, 'test_data/file-sample.docx')
+TEST_PDF_FILE = os.path.join(FOLDER_ROOT, 'test_data', 'pdf.pdf')
+TEST_IMAGE_FILE = os.path.join(FOLDER_ROOT, 'test_data', 'png.png')
+TEST_ZIP_FILE = os.path.join(FOLDER_ROOT, 'test_data', 'docx.docx')
 
 
 @pytest.mark.local
@@ -27,7 +34,7 @@ class TestUtils(unittest.TestCase):
     """Test utility functions."""
 
     def test_get_id(self):
-        """Test if the returned unique id is an instance of String."""
+        """Test if the returned unique id_ is an instance of String."""
         assert isinstance(get_id(TEST_STRING), int)
 
     def test_get_timestamp(self):
@@ -53,7 +60,7 @@ class TestUtils(unittest.TestCase):
         assert load_image(TEST_IMAGE_FILE) is not None
 
     def test_convert_to_bio_scheme(self):
-        """Test convertion to BIO scheme."""
+        """Test conversion to BIO scheme."""
         text = "Hello, it's Konfuzio."
         annotations = [(12, 20, 'Organization')]
         converted_text = convert_to_bio_scheme(text=text, annotations=annotations)
@@ -67,19 +74,19 @@ class TestUtils(unittest.TestCase):
         ]
 
     def test_convert_to_bio_scheme_no_annotations(self):
-        """Test convertion to BIO scheme without annotations."""
+        """Test conversion to BIO scheme without Annotations."""
         text = "Hello, it's Konfuzio."
         annotations = []
         converted_text = convert_to_bio_scheme(text=text, annotations=annotations)
         assert len(converted_text) == 6
-        assert all([annot[1] == 'O' for annot in converted_text])
+        assert all([annotation[1] == 'O' for annotation in converted_text])
 
     def test_convert_to_bio_scheme_no_text(self):
-        """Test convertion to BIO scheme without text."""
+        """Test conversion to BIO scheme without text."""
         text = ''
         annotations = [(12, 20, 'Organization')]
         converted_text = convert_to_bio_scheme(text=text, annotations=annotations)
-        self.assertIsNone(converted_text)
+        self.assertEqual(converted_text, [])
 
     def test_map_offsets(self):
         """Test creation of mapping between the position of the character and its offset."""
@@ -126,11 +133,11 @@ class TestUtils(unittest.TestCase):
             },
         ]
 
-        map = map_offsets(characters_bboxes)
+        my_map = map_offsets(characters_bboxes)
 
         expected_map = {0: 1000, 1: 1002}
 
-        assert map == expected_map
+        assert my_map == expected_map
 
     def test_get_sentences(self):
         """Test get sentences."""
@@ -191,3 +198,229 @@ class TestUtils(unittest.TestCase):
         assert sentences[1]['offset_string'] == 'This is a test.'
         assert sentences[1]['start_offset'] == 50
         assert sentences[1]['end_offset'] == 85
+
+
+file_name_append_data = [
+    # text embeddings all over the text
+    ('/tmp/text_embeddings_0639187398.pdf', 'tmptext_embeddings_0639187398_ocr.pdf', does_not_raise()),
+    # text embeddings only on some pages of the text
+    ('only_some_pages_have_embeddings.tiff', 'only_some_pages_have_embeddings_ocr.tiff', does_not_raise()),
+    # two dots in a file name
+    ('only_some_pages._have_embeddings.tiff', 'only_some_pages_have_embeddings_ocr.tiff', does_not_raise()),
+    ('2022-02-13 19:23:06.168728.tiff', '2022-02-13-19-23-06-168728_ocr.tiff', does_not_raise()),
+    # empty file path
+    (' ', False, pytest.raises(ValueError)),
+    # Current file name is already too long, 255 chr
+    (
+        '1qgjpzndwlawckhpjzpvlwxhwqywsjkixlnphihvwlfxtifjvzbqajcjlxdfclbtmstievnepcxubvmgc'
+        'uyhpvpujkinqahmxjxhbsdejuqvmzcsaqlmynykgaznembeuuhtjwzudsigfukdnkiatqpmgvxfsonthd'
+        'kbisiojrkulngipzxojkxgetqhgrrnigucneirfxothiekhxplfbbjxlxxyohdavatzoxuultcthjmdtt'
+        'qxyuvzfyddao',
+        False,
+        pytest.raises(OSError),
+    ),
+    # File name which will be generated is to long: 254 character
+    (
+        'qgjpzndwlawckhpjzpvlwxhwqywsjkixlnphihvwlfxtifjvzbqajcjlxdfclbtmstievnepcxubvmgcu'
+        'yhpvpujkinqahmxjxhbsdejuqvmzcsaqlmynykgaznembeuuhtjwzudsigfukdnkiatqpmgvxfsonthdk'
+        'bisiojrkulngipzxojkxgetqhgrrnigucneirfxothiekhxplfbbjxlxxyohdavatzoxuultcthjmdttq'
+        'xyuvzfyddao',
+        False,
+        pytest.raises(OSError),
+    ),
+]
+
+
+@pytest.mark.parametrize("file_path, expected_result, expected_error", file_name_append_data)
+def test_append_text_to_filename(file_path, expected_result, expected_error):
+    """Test if we detect the correct file name."""
+    with expected_error:
+        assert amend_file_name(file_path, 'ocr') == expected_result
+
+
+file_path_append_data = [
+    # text embeddings all over the text
+    ('/tmp/text_embeddings_0639187398.pdf', '/tmp/text_embeddings_0639187398_ocr.pdf', does_not_raise()),
+    # text embeddings only on some pages of the text
+    ('only_some_pages_have_embeddings.tiff', 'only_some_pages_have_embeddings_ocr.tiff', does_not_raise()),
+    # two dots in a file name
+    ('only/_some_pages._have_embeddings.tiff', 'only/_some_pages_have_embeddings_ocr.tiff', does_not_raise()),
+    ('2022/-02-13 19:23:06.168728.tiff', '2022/-02-13-19-23-06-168728_ocr.tiff', does_not_raise()),
+]
+
+
+@pytest.mark.parametrize("file_path, expected_result, expected_error", file_path_append_data)
+def test_append_text_to_amend_file_path(file_path, expected_result, expected_error):
+    """Test if we detect the correct file path."""
+    with expected_error:
+        assert amend_file_path(file_path, 'ocr') == expected_result
+
+
+def test_corrupted_name():
+    """Test to convert an invalide file name to a valid file name."""
+    assert amend_file_name('2022-02-13 19:23:06.168728.tiff') == '2022-02-13-19-23-06-168728.tiff'
+
+
+class TestParagraphByLine(unittest.TestCase):
+    """Test paragraph splitting by line height."""
+
+    text = 'a\nb'
+    bboxes = {
+        '0': {'x0': 0, 'x1': 10, 'y0': 200, 'y1': 210, 'top': 10, 'bottom': 290, 'line_number': 1, 'page_number': 1},
+        '2': {'x0': 0, 'x1': 10, 'y0': 0, 'y1': 10, 'top': 210, 'bottom': 90, 'line_number': 3, 'page_number': 1},
+    }
+    invalid_bboxes = {
+        '0': {'x0': 0, 'x1': 10, 'y0': 0, 'y1': 10, 'top': 210, 'bottom': 90, 'line_number': 1, 'page_number': 1},
+        '2': {'x0': 0, 'x1': 10, 'y0': 200, 'y1': 210, 'top': 10, 'bottom': 290, 'line_number': 3, 'page_number': 1},
+    }
+
+    def test_get_paragraphs_by_line_space(self):
+        """Test split paragraphs by line space."""
+        paragraphs = get_paragraphs_by_line_space(text=self.text, bbox=self.bboxes)
+        assert len(paragraphs) == 1  # One page in document.
+
+        paragraph_first_page = paragraphs[0]
+        assert len(paragraph_first_page) == 2  # Two paragraphs on first page.
+
+        assert len(paragraph_first_page[0]) == 1
+        assert paragraph_first_page[0][0]['start_offset'] == 0
+        assert paragraph_first_page[0][0]['end_offset'] == 1
+
+        assert len(paragraph_first_page[1]) == 1
+        assert paragraph_first_page[1][0]['start_offset'] == 2
+        assert paragraph_first_page[1][0]['end_offset'] == 3
+
+        assert len(paragraph_first_page) == 2
+
+    def test_get_paragraphs_by_line_space_custom_height(self):
+        """Test split paragraphs by line space."""
+        # Low height for splitting will result in a single paragraph.
+        paragraphs = get_paragraphs_by_line_space(text=self.text, bbox=self.bboxes, height=500)
+        assert len(paragraphs) == 1  # One page in document.
+
+        paragraph_first_page = paragraphs[0]
+        assert len(paragraph_first_page) == 1  # Two paragraphs on first page.
+
+        assert paragraph_first_page[0][0]['start_offset'] == 0
+        assert paragraph_first_page[0][0]['end_offset'] == 1
+        assert paragraph_first_page[0][1]['start_offset'] == 2
+        assert paragraph_first_page[0][1]['end_offset'] == 3
+
+    def test_get_paragraphs_by_line_space_with_invalid_bbox(self):
+        """Test split paragraphs by line space."""
+        # Low height for splitting will result in a single paragraph.
+        with self.assertRaises(ValueError):
+            _ = get_paragraphs_by_line_space(text=self.text, bbox=self.invalid_bboxes)
+
+
+class TestMissingOffsets(unittest.TestCase):
+    """Test to detect not labeled sequences."""
+
+    def test_find_missing_characters(self):
+        """Find the character offsets that are not annotated."""
+        prj = Project(46)
+        doc = prj.get_document_by_id(44823)
+        offsets = []
+        for annotation in doc.annotations(start_offset=0, end_offset=2000):
+            for span in annotation.spans:
+                offsets.append(range(span.start_offset, span.end_offset))
+
+        # character 66:78 and 159:169 belong to a multiline annotation, so it spans
+        # [66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168]
+        missing_offsets = get_missing_offsets(start_offset=0, end_offset=170, annotated_offsets=offsets)
+        assert missing_offsets == [range(0, 66), range(78, 159), range(169, 170)]
+
+    def test_find_missing_spans_unordered(self):
+        """Find the character offsets independent of the order."""
+        ordered = get_missing_offsets(
+            start_offset=0, end_offset=170, annotated_offsets=[range(66, 78), range(159, 169)]
+        )
+        unordered = get_missing_offsets(
+            start_offset=0, end_offset=170, annotated_offsets=[range(159, 169), range(66, 78)]
+        )
+        assert ordered == unordered
+
+    def test_overlapping_annotation(self):
+        """Test to incorporate a labeled sequence which is only partly included."""
+        missing = get_missing_offsets(start_offset=0, end_offset=16, annotated_offsets=[range(15, 17), range(6, 7)])
+        assert missing == [range(0, 6), range(7, 15)]
+
+    def test_annotation_start(self):
+        """Test to on a sequence which starts with an annotation."""
+        missing = get_missing_offsets(start_offset=0, end_offset=10, annotated_offsets=[range(5, 7), range(0, 3)])
+        assert missing == [range(3, 5), range(7, 10)]
+
+    def test_annotation_ends(self):
+        """
+        Test to on a sequence which ends with an annotation.
+
+        :Example:
+
+        # >>> "0123456789"[0:7]
+        '0123456'
+        # >>> "0123456789"[7:10]
+        '789'
+        """
+        missing = get_missing_offsets(start_offset=0, end_offset=10, annotated_offsets=[range(7, 10)])
+        assert missing == [range(0, 7)]
+
+    def test_empty_annotations(self):
+        """Test on an unlabeled sequence."""
+        missing = get_missing_offsets(start_offset=0, end_offset=160, annotated_offsets=[])
+        assert missing == [range(0, 160)]
+
+    def test_fully_labeled(self):
+        """Test on an labeled sequence."""
+        missing = get_missing_offsets(start_offset=0, end_offset=160, annotated_offsets=[range(0, 160)])
+        assert missing == []
+
+    def test_find_missing_spans_unordered_start_later(self):
+        """Find the character offsets independent of the order."""
+        ordered = get_missing_offsets(
+            start_offset=10, end_offset=170, annotated_offsets=[range(66, 78), range(159, 169)]
+        )
+        unordered = get_missing_offsets(
+            start_offset=10, end_offset=170, annotated_offsets=[range(159, 169), range(66, 78)]
+        )
+        assert ordered == unordered
+
+    def test_overlapping_annotation_start_later(self):
+        """Test to incorporate a labeled sequence which is only partly included."""
+        missing = get_missing_offsets(
+            start_offset=10, end_offset=160, annotated_offsets=[range(159, 169), range(66, 78)]
+        )
+        assert missing == [range(10, 66), range(78, 159)]
+
+    def test_annotation_start_start_later(self):
+        """Test to on a sequence which starts with an annotation."""
+        missing = get_missing_offsets(start_offset=2, end_offset=10, annotated_offsets=[range(5, 7), range(0, 3)])
+        assert missing == [range(3, 5), range(7, 10)]
+
+    def test_annotation_ends_start_later(self):
+        """Test to on a sequence which ends with an annotation."""
+        missing = get_missing_offsets(start_offset=2, end_offset=10, annotated_offsets=[range(7, 10)])
+        assert missing == [range(2, 7)]
+
+    def test_empty_annotations_start_later(self):
+        """Test on an unlabeled sequence."""
+        missing = get_missing_offsets(start_offset=100, end_offset=160, annotated_offsets=[])
+        assert missing == [range(100, 160)]
+
+    def test_fully_labeled_start_later(self):
+        """Test on an labeled sequence."""
+        missing = get_missing_offsets(start_offset=50, end_offset=160, annotated_offsets=[range(0, 160)])
+        assert missing == []
+
+    def test_one_character_missing(self):
+        """Test on an labeled sequence."""
+        missing = get_missing_offsets(start_offset=0, end_offset=10, annotated_offsets=[range(0, 5), range(6, 10)])
+        assert missing == [range(5, 6)]
+
+
+def test_iter_before_and_after():
+    """Test to get before and after element."""
+    for before, i, after in iter_before_and_after([1, 2, 3, 4, 5, 6]):
+        if before:
+            assert before + 1 == i
+        elif after:
+            assert after - 1 == i

@@ -1,48 +1,69 @@
-"""Validate cli functions."""
-
-import logging
-import os
-import unittest
+"""Validate CLI functions."""
+import sys
+from unittest import mock, TestCase
 from unittest.mock import patch
 
-import pytest
-
-from konfuzio_sdk.cli import init_env, data, init_settings
-
-logger = logging.getLogger(__name__)
-TEST_DOCUMENT = 44823
-ENV_FILE_EXAMPLE = '''KONFUZIO_HOST = https://app.konfuzio.com
-KONFUZIO_USER = test@gmail.com
-KONFUZIO_TOKEN = ""
-KONFUZIO_DATA_FOLDER = data
-KONFUZIO_PROJECT_ID = 46'''
+from konfuzio_sdk.cli import CLI_ERROR, main, credentials
 
 
-class TestCLItoDownloadData(unittest.TestCase):
-    """Test CLI functions."""
+class TestCLI(TestCase):
+    """Test the konfuzio_sdk CLI."""
 
-    @pytest.mark.skip(reason='Needs to generate a token with real credentials.')
-    @patch("builtins.input", side_effect=['test_email@gmail.com', 'https://app.konfuzio.com', 'data', '46'])
-    @patch("getpass.getpass", side_effect=['password'])
-    @pytest.mark.local
-    def test_init_env(self, mock_input1, mock_pass):
-        """Test the generation of .env file."""
-        generated_env = init_env(os.getcwd())
-        self.assertEqual(generated_env, ENV_FILE_EXAMPLE)
-        os.remove('.env')
+    def test_cli_error(self):
+        """Test if CLI print is available."""
+        assert "Please enter a valid command line option." in CLI_ERROR
 
-    @pytest.mark.local
-    def test_init_settings(self):
-        """Test the generation of settings.py file."""
-        init_settings(os.getcwd())
-        assert os.path.isfile('settings.py')
-        os.remove('settings.py')
+    def test_help(self):
+        """Test to run CLI."""
+        with mock.patch('sys.argv', ['file', '--help']):
+            assert main() == -1
 
-    def test_data(self):
-        """
-        Test the creation of folders for a specific document.
+    def test_without_input(self):
+        """Test to run CLI."""
+        with mock.patch('sys.argv', ['file', None]):
+            assert main() == -1
 
-        Creates temporarily a settings.py in the tests folder.
-        """
-        data()
-        assert os.path.isdir(os.path.join('data/pdf/44823'))
+    @patch('builtins.input', side_effect=['myuser', 'https://konfuzio.yourcompany.com'])
+    @patch("konfuzio_sdk.cli.getpass", side_effect=['pw'])
+    def test_username_password_custom_host(self, input, getpass):
+        """Test to init with custom Host. See https://stackoverflow.com/a/55580216 and 56401696 for patches."""
+        assert credentials() == ("myuser", "pw", "https://konfuzio.yourcompany.com")
+
+    @patch('builtins.input', side_effect=['myuser', ''])
+    @patch("konfuzio_sdk.cli.getpass", side_effect=['pw'])
+    def test_username_password_default_host(self, input, getpass):
+        """Test to init with default Host."""
+        assert credentials() == ("myuser", "pw", "https://app.konfuzio.com")
+
+    @patch('builtins.input', side_effect=['myuser', ''])
+    @patch("konfuzio_sdk.cli.getpass", side_effect=['pw'])
+    def test_init_project(self, input, getpass):
+        """Mock to init a Project without host."""
+        with mock.patch('sys.argv', ['file', 'init']):
+            with self.assertRaises(PermissionError) as e:
+                main()
+                assert 'credentials are not correct!' in str(e.exception)
+
+    def test_export_project(self):
+        """Test to run CLI."""
+        with mock.patch('sys.argv', ['file', 'export_project']):
+            assert main() == -1
+
+    def test_export_project_with_no_int(self):
+        """Test to run CLI."""
+        with mock.patch('sys.argv', ['file', 'export_project', 'xx']):
+            assert main() == -1
+
+    @patch("konfuzio_sdk.cli.download_training_and_test_data", return_value=None)
+    def test_export_project_with_int(self, download_function):
+        """Test to run CLI."""
+        sys.argv = ['file', 'export_project', '46']
+        main()
+        self.assertTrue(download_function.called)
+
+    @patch("konfuzio_sdk.cli.create_new_project", return_value=None)
+    def test_create_project(self, download_function):
+        """Test to run CLI."""
+        sys.argv = ['file', 'create_project', 'myproject']
+        main()
+        self.assertTrue(download_function.called)

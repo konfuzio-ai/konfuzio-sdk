@@ -8,15 +8,29 @@ All notable changes in the server of app.konfuzio.com will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
 
+## 2022-03-15_09-14-17
+
+### Changed
+- "Rerun extraction" via the user interface applies new annotations now also to training and test documents
+
+## 2022-02-11_23-12-26
+
+### Added 
+- Add option to filter for related annotation sets
+
+### Fixed
+- Sorting of annotation sets in the csv export
+- Document API endpoint returning declined annotations
+
 ## 2022-01-18_11-08-24
 
 ### Added
 - Added api_name to Label API
 
 ### Fixed
-- Link to documentation pag
+- Link to documentation page
 - Missing translation on document list page
-- Evaluation did not complete for AIs with a large amount of training data.
+- Evaluation did not complete for AIs with a large amount of training data
 
 ## 2021-12-11_14-33-57
 

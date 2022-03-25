@@ -14,16 +14,16 @@ To test our SDK you need to have an account in the Konfuzio Server and initializ
 
 The data structure of a project in Konfuzio Server includes:
 
-* Labels
+* Labels  
 A label is the name of a group of individual pieces of information found in a type of document.
 
-* Label Set
+* Label Set  
 A Label Set combines labels.
 
-* Training and Test documents
+* Training and Test documents  
 Based on the data from the training documents the AI learns what to do. These newly acquired capabilities are then applied to the test documents to sample check the quality of the AI model.
 
-* Annotations for documents
+* Annotations for documents  
 An annotation is a single piece of information that a label has been assigned to.
 
 
@@ -47,21 +47,21 @@ After the installation, initialize the package in your working directory with:
 
 `konfuzio_sdk init`
 
-This will require your credentials to access the Konfuzio Server and the project ID.
-You can check your project ID by selecting the project in the Projects tab. The id of the project is shown in the URL.
-It will also require a name of a folder where to allocate the data from your Konfuzio project.
-At the end, two files will be created in your working directory: `.env` and `settings.py`.
+This will require your credentials to access the Konfuzio Server.
+At the end, one file will be created in your working directory: `.env.
 
 The `.env` file contains the credentials to access the app and should not become public.
-The `settings.py` file defines constant variables that will be available in the project, including the ones you defined in the `.env`. This file should not be modified.
 
 ## 4. Download the data
 
-To download the data from your Konfuzio project, you can execute:
+To download the data from your Konfuzio project you need to specify the project ID.
+You can check your project ID by selecting the project in the Projects tab in the Web App.
+The ID of the project is shown in the URL.
 
-`konfuzio_sdk download_data`
+`konfuzio_sdk download_data 123`
 
-The data from the documents that you uploaded in your Konfuzio project will be downloaded to the folder that you provided in the previous step.
+The data from the documents that you uploaded in your Konfuzio project will be downloaded to a folder called "data_" 
+followed by the ID of the project.
 
 *Note*:
 Only documents in the training or test set are downloaded.
