@@ -24,7 +24,7 @@ from konfuzio_sdk.api import (
     get_document_details,
 )
 from konfuzio_sdk.normalize import normalize
-from konfuzio_sdk.regex import get_best_regex, regex_spans, suggest_regex_for_string, merge_regex
+from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
 from konfuzio_sdk.utils import get_bbox, get_missing_offsets
 from konfuzio_sdk.utils import is_file, convert_to_bio_scheme, amend_file_name
 
@@ -1107,7 +1107,7 @@ class Annotation(Data):
         """
         spans: List[Span] = []
         for regex in regex_list:
-            dict_spans = regex_spans(doctext=self.document.text, regex=regex)
+            dict_spans = regex_matches(doctext=self.document.text, regex=regex)
             for offset in list(set((x['start_offset'], x['end_offset']) for x in dict_spans)):
                 try:
                     span = Span(start_offset=offset[0], end_offset=offset[1], annotation=self)
@@ -1678,7 +1678,7 @@ class Document(Data):
     def evaluate_regex(self, regex, label: Label, filtered_group=None):
         """Evaluate a regex based on the Document."""
         start_time = time.time()
-        findings_in_document = regex_spans(
+        findings_in_document = regex_matches(
             doctext=self.text,
             regex=regex,
             keep_full_match=False,
