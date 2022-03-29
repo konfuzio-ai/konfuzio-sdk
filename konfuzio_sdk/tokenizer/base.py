@@ -2,6 +2,7 @@
 
 import abc
 import logging
+from typing import List
 
 import pandas as pd
 
@@ -19,7 +20,7 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
         """Fit the tokenizer accordingly with the Documents of the Category."""
 
     @abc.abstractmethod
-    def tokenize(self, document: Document) -> Document:
+    def tokenize(self, document: Document):
         """Create Annotations with 1 Span based on the result of the Tokenizer."""
 
     def evaluate(self, document: Document) -> pd.DataFrame:
@@ -35,24 +36,25 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
             project=document.category.project, text=document.text, bbox=document.get_bbox(), category=document.category
         )
 
-        virtual_doc = self.tokenize(virtual_doc)
+        self.tokenize(virtual_doc)
         return compare(document, virtual_doc)
 
 
-class DummyTokenizer(AbstractTokenizer):
-    """Implements the most basic tokenizer."""
+class ListTokenizer(AbstractTokenizer):
+    """Use multiple tokenizers."""
 
-    def fit(self, category: Category):
-        """Fit the tokenizer accordingly with the Documents of the Category."""
-        assert isinstance(category, Category)
-        return self
+    def __init__(self, tokenizers: List['AbstractTokenizer']):
+        """Initialize the list of tokenizers."""
+        self.tokenizers = tokenizers
+
+    def fit(self):
+        """Call fit on all tokenizers."""
+        for tokenizer in self.tokenizers:
+            tokenizer.fit()
 
     def tokenize(self, document: Document) -> Document:
-        """
-        Create Annotations with 1 Span based on the result of the Tokenizer.
+        """Run tokenize in the given order on a Document."""
+        for tokenizer in self.tokenizers:
+            tokenizer.tokenize()
 
-        :param document: Document to tokenize
-        :return: Document with Spans created by the Tokenizer.
-        """
-        assert isinstance(document, Document)
         return document
