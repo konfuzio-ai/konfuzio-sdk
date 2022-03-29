@@ -5,7 +5,7 @@ import unittest
 import pandas as pd
 
 from konfuzio_sdk.data import Project, Annotation, Document, Label, AnnotationSet, LabelSet, Span, Category
-from konfuzio_sdk.tokenizer import DummyTokenizer, AbstractTokenizer
+from konfuzio_sdk.tokenizer.base import AbstractTokenizer
 
 logger = logging.getLogger(__name__)
 
@@ -13,19 +13,20 @@ logger = logging.getLogger(__name__)
 class TestAbstractTokenizer(unittest.TestCase):
     """Test create an instance of the AbstractTokenizer."""
 
-    def test_create_instance(self):
-        """Test create instance of the AbstractTokenizer."""
-        with self.assertRaises(TypeError) as context:
-            _ = AbstractTokenizer()
-            assert "Can't instantiate abstract class AbstractTokenizer with abstract methods" in context
-
-
-class TestDummyTokenizer(unittest.TestCase):
-    """Test definition of the tokenizer."""
-
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the tokenizer and test setup."""
+        # DummyTokenizer definition
+
+        class DummyTokenizer(AbstractTokenizer):
+            def fit(self, category: Category):
+                assert isinstance(category, Category)
+                pass
+
+            def tokenize(self, document: Document):
+                assert isinstance(document, Document)
+                pass
+
         cls.tokenizer = DummyTokenizer()
 
         cls.project = Project(id_=None)
@@ -46,6 +47,12 @@ class TestDummyTokenizer(unittest.TestCase):
             spans=[cls.span],
         )
 
+    def test_create_instance(self):
+        """Test create instance of the AbstractTokenizer."""
+        with self.assertRaises(TypeError) as context:
+            _ = AbstractTokenizer()
+            assert "Can't instantiate abstract class AbstractTokenizer with abstract methods" in context
+
     def test_fit_input(self):
         """Test input for the fit of the tokenizer."""
         with self.assertRaises(AssertionError):
@@ -53,7 +60,7 @@ class TestDummyTokenizer(unittest.TestCase):
 
     def test_fit_output(self):
         """Test output for the fit of the tokenizer."""
-        assert self.tokenizer.fit(self.category) == self.tokenizer
+        self.assertIsNone(self.tokenizer.fit(self.category))
 
     def test_tokenize_input(self):
         """Test input for the tokenize method."""
@@ -61,8 +68,11 @@ class TestDummyTokenizer(unittest.TestCase):
             self.tokenizer.tokenize(self.project)
 
     def test_tokenize_output(self):
-        """Test output for the tokenize method."""
-        assert self.tokenizer.tokenize(self.document) == self.document
+        """Test output for the tokenize method - no Spans added with ."""
+        self.tokenizer.tokenize(self.document)
+        spans_after_tokenize = [annotation.spans for annotation in self.document.annotations()]
+        spans_after_tokenize = [item for sublist in spans_after_tokenize for item in sublist]
+        assert spans_after_tokenize == [self.span]
 
     def test_evaluate_input(self):
         """Test input for the evaluate method."""
