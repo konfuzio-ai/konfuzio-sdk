@@ -260,57 +260,57 @@ def test_corrupted_name():
     assert amend_file_name('2022-02-13 19:23:06.168728.tiff') == '2022-02-13-19-23-06-168728.tiff'
 
 
-@pytest.mark.skip('Need implementation of Line and Paragraph first.')
-class TestParagraphByLine(unittest.TestCase):
-    """Test paragraph splitting by line height."""
-
-    text = 'a\nb'
-    bboxes = {
-        '0': {'x0': 0, 'x1': 10, 'y0': 200, 'y1': 210, 'top': 10, 'bottom': 290, 'line_number': 1, 'page_number': 1},
-        '2': {'x0': 0, 'x1': 10, 'y0': 0, 'y1': 10, 'top': 210, 'bottom': 90, 'line_number': 3, 'page_number': 1},
-    }
-    invalid_bboxes = {
-        '0': {'x0': 0, 'x1': 10, 'y0': 0, 'y1': 10, 'top': 210, 'bottom': 90, 'line_number': 1, 'page_number': 1},
-        '2': {'x0': 0, 'x1': 10, 'y0': 200, 'y1': 210, 'top': 10, 'bottom': 290, 'line_number': 3, 'page_number': 1},
-    }
-
-    def test_get_paragraphs_by_line_space(self):
-        """Test split paragraphs by line space."""
-        paragraphs = get_paragraphs_by_line_space(text=self.text, bbox=self.bboxes)
-        assert len(paragraphs) == 1  # One page in document.
-
-        paragraph_first_page = paragraphs[0]
-        assert len(paragraph_first_page) == 2  # Two paragraphs on first page.
-
-        assert len(paragraph_first_page[0]) == 1
-        assert paragraph_first_page[0][0]['start_offset'] == 0
-        assert paragraph_first_page[0][0]['end_offset'] == 1
-
-        assert len(paragraph_first_page[1]) == 1
-        assert paragraph_first_page[1][0]['start_offset'] == 2
-        assert paragraph_first_page[1][0]['end_offset'] == 3
-
-        assert len(paragraph_first_page) == 2
-
-    def test_get_paragraphs_by_line_space_custom_height(self):
-        """Test split paragraphs by line space."""
-        # Low height for splitting will result in a single paragraph.
-        paragraphs = get_paragraphs_by_line_space(text=self.text, bbox=self.bboxes, height=500)
-        assert len(paragraphs) == 1  # One page in document.
-
-        paragraph_first_page = paragraphs[0]
-        assert len(paragraph_first_page) == 1  # Two paragraphs on first page.
-
-        assert paragraph_first_page[0][0]['start_offset'] == 0
-        assert paragraph_first_page[0][0]['end_offset'] == 1
-        assert paragraph_first_page[0][1]['start_offset'] == 2
-        assert paragraph_first_page[0][1]['end_offset'] == 3
-
-    def test_get_paragraphs_by_line_space_with_invalid_bbox(self):
-        """Test split paragraphs by line space."""
-        # Low height for splitting will result in a single paragraph.
-        with self.assertRaises(ValueError):
-            _ = get_paragraphs_by_line_space(text=self.text, bbox=self.invalid_bboxes)
+# @pytest.mark.skip('Need implementation of Line and Paragraph first.')
+# class TestParagraphByLine(unittest.TestCase):
+#     """Test paragraph splitting by line height."""
+#
+#     text = 'a\nb'
+#     bboxes = {
+#         '0': {'x0': 0, 'x1': 10, 'y0': 200, 'y1': 210, 'top': 10, 'bottom': 290, 'line_number': 1, 'page_number': 1},
+#         '2': {'x0': 0, 'x1': 10, 'y0': 0, 'y1': 10, 'top': 210, 'bottom': 90, 'line_number': 3, 'page_number': 1},
+#     }
+#     invalid_bboxes = {
+#         '0': {'x0': 0, 'x1': 10, 'y0': 0, 'y1': 10, 'top': 210, 'bottom': 90, 'line_number': 1, 'page_number': 1},
+#         '2': {'x0': 0, 'x1': 10, 'y0': 200, 'y1': 210, 'top': 10, 'bottom': 290, 'line_number': 3, 'page_number': 1},
+#     }
+#
+#     def test_get_paragraphs_by_line_space(self):
+#         """Test split paragraphs by line space."""
+#         paragraphs = get_paragraphs_by_line_space(text=self.text, bbox=self.bboxes)
+#         assert len(paragraphs) == 1  # One page in document.
+#
+#         paragraph_first_page = paragraphs[0]
+#         assert len(paragraph_first_page) == 2  # Two paragraphs on first page.
+#
+#         assert len(paragraph_first_page[0]) == 1
+#         assert paragraph_first_page[0][0]['start_offset'] == 0
+#         assert paragraph_first_page[0][0]['end_offset'] == 1
+#
+#         assert len(paragraph_first_page[1]) == 1
+#         assert paragraph_first_page[1][0]['start_offset'] == 2
+#         assert paragraph_first_page[1][0]['end_offset'] == 3
+#
+#         assert len(paragraph_first_page) == 2
+#
+#     def test_get_paragraphs_by_line_space_custom_height(self):
+#         """Test split paragraphs by line space."""
+#         # Low height for splitting will result in a single paragraph.
+#         paragraphs = get_paragraphs_by_line_space(text=self.text, bbox=self.bboxes, height=500)
+#         assert len(paragraphs) == 1  # One page in document.
+#
+#         paragraph_first_page = paragraphs[0]
+#         assert len(paragraph_first_page) == 1  # Two paragraphs on first page.
+#
+#         assert paragraph_first_page[0][0]['start_offset'] == 0
+#         assert paragraph_first_page[0][0]['end_offset'] == 1
+#         assert paragraph_first_page[0][1]['start_offset'] == 2
+#         assert paragraph_first_page[0][1]['end_offset'] == 3
+#
+#     def test_get_paragraphs_by_line_space_with_invalid_bbox(self):
+#         """Test split paragraphs by line space."""
+#         # Low height for splitting will result in a single paragraph.
+#         with self.assertRaises(ValueError):
+#             _ = get_paragraphs_by_line_space(text=self.text, bbox=self.invalid_bboxes)
 
 
 class TestMissingOffsets(unittest.TestCase):
