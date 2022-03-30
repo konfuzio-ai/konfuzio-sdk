@@ -62,9 +62,9 @@ class RegexTokenizer(AbstractTokenizer):
         return document
 
 
-# class WhitespaceSeparatedRegexTokenizer(RegexTokenizer):
-#     """Tokenizer based on a single regex."""
-#
-#     def __init__():
-#         """Initialize the WhitespaceSeparatedRegexTokenizer."""
-#         self.regex = r'[^ \n\t\f]+'
+class WhitespaceTokenizer(RegexTokenizer):
+    """Tokenizer based on a single regex."""
+
+    def __init__(self):
+        """Initialize the WhitespaceSeparatedRegexTokenizer."""
+        super().__init__(regex=r'[^ \n\t\f]+')
