@@ -1492,7 +1492,7 @@ class Document(Data):
                 raise ValueError(f'We cannot add {annotation} to {self} where the category is {self.category}')
         else:
             duplicated = [x for x in self._annotations if x == annotation]
-            raise ValueError(f'In {self} the {annotation} is a duplicate of {duplicated}and will not be added.')
+            raise ValueError(f'In {self} the {annotation} is a duplicate of {duplicated} and will not be added.')
 
         return self
 
