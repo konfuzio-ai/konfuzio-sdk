@@ -34,6 +34,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         cls.project = Project(id_=None)
         cls.label = Label(project=cls.project, text='First Offline Label')
         cls.category = Category(project=cls.project, id_=1)
+        cls.project.add_category(cls.category)
         cls.document = Document(project=cls.project, category=cls.category)
         cls.label_set = LabelSet(project=cls.project, categories=[cls.category], id_=421)
         cls.label_set.add_label(cls.label)
@@ -43,7 +44,44 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 14
+        assert len(cls.project.virtual_documents) == 15
+
+    def test_project_no_label(self):
+        """Test that no_label exists in the Labels of the Project and has the expected name."""
+        assert self.project.no_label in self.project.labels
+        assert self.project.no_label.name == "NO_LABEL"
+
+    def test_project_no_label_set(self):
+        """Test that no_label_set exists in the Label Sets of the Project."""
+        assert self.project.no_label_set in self.project.label_sets
+
+    def test_project_has_category(self):
+        """Test that no_label_set exists in the Label Sets of the Categories of the Project."""
+        assert self.category in self.project.categories
+
+    def test_project_no_label_set_in_all_categories(self):
+        """Test that no_label_set exists in the Label Sets of the Categories of the Project."""
+        for category in self.project.categories:
+            assert self.project.no_label_set in category.project.label_sets
+
+    def test_document_no_label_annotation_set_label_set(self):
+        """Test that Label Set of the no_label_annotation_set of the Document has the no_label_set of the Project."""
+        assert self.document.no_label_annotation_set.label_set == self.project.no_label_set
+
+    def test_document_no_label_annotations_after_update(self):
+        """Test that Annotations in the no_label_annotation_set of the Document are removed after update."""
+        document = Document(project=self.project, category=self.category)
+        span = Span(start_offset=0, end_offset=1)
+        _ = Annotation(
+            document=document,
+            annotation_set=document.no_label_annotation_set,
+            label=self.project.no_label,
+            label_set=self.project.no_label_set,
+            spans=[span],
+        )
+        assert document.annotations(use_correct=False).__len__() == 1
+        document.update()
+        assert document.annotations(use_correct=False).__len__() == 0
 
     def test_category_of_document(self):
         """Test if setup worked."""
@@ -86,9 +124,13 @@ class TestOfflineDataSetup(unittest.TestCase):
     def test_to_add_label_to_project(self):
         """Add one Label to a Project."""
         _ = Label(project=self.project, text='Second Offline Label')
-        assert sorted([label.name for label in self.project.labels]) == ['First Offline Label', 'Second Offline Label']
+        assert sorted([label.name for label in self.project.labels]) == [
+            'First Offline Label',
+            'NO_LABEL',
+            'Second Offline Label',
+        ]
 
-    def test_labl_has_label_sets(self):
+    def test_label_has_label_sets(self):
         """Pass and store Label Sets."""
         project = Project(id_=None)
         label = Label(project=project, label_sets=[self.label_set], text='Second Offline Label')
@@ -231,19 +273,15 @@ class TestOfflineDataSetup(unittest.TestCase):
 
     def test_create_document_with_pages(self):
         """Add new annotation set to a document."""
-        page_list = [{
-            "id": 1,
-            "image": "/page/show-image/1/",
-            "number": 1,
-            "original_size": [
-                595.2,
-                841.68
-            ],
-            "size": [
-                1414,
-                2000
-            ]
-        }]
+        page_list = [
+            {
+                "id": 1,
+                "image": "/page/show-image/1/",
+                "number": 1,
+                "original_size": [595.2, 841.68],
+                "size": [1414, 2000],
+            }
+        ]
         document = Document(project=self.project, category=self.category, pages=page_list)
         assert document.pages == page_list
 
@@ -349,7 +387,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         category = Category(project=project, id_=None)
         project.add_category(category)
         label_set = LabelSet(project=project)
-        project.add_label_set(label_set)
+        # project.add_label_set(label_set)
         Label(project=project, label_sets=[label_set])
         project.lose_weight()
         assert project.session is None
@@ -459,7 +497,8 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_number_of_label_sets(self):
         """Test Label Sets numbers."""
-        assert self.prj.label_sets.__len__() == 5
+        # Online Label Sets + no_label_set
+        assert self.prj.label_sets.__len__() == 6
 
     def test_check_tokens(self):
         """Test to find not matched Annotations."""
@@ -1105,7 +1144,6 @@ class TestFillOperation(unittest.TestCase):
         assert default_label_set.labels.__len__() == 10
         cls.annotations = cls.doc.annotations(start_offset=1498, end_offset=1590, fill=True)
         cls.sorted_spans = sorted([span for annotation in cls.annotations for span in annotation.spans])
-        assert default_label_set.labels.__len__() == 11
         cls.text = '198,34\n  Erna-Muster Eiermann                         KiSt      15,83   Solz        10,89\n  '
         assert cls.doc.text[1498:1590] == cls.text
 
