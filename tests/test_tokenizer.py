@@ -1,4 +1,4 @@
-"""Test tokenizer."""
+"""Test base tokenizers."""
 import logging
 import unittest
 
