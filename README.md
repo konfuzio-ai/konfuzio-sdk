@@ -100,7 +100,7 @@ assert regex == 'Date:[ ]+\\d\\d\\.\\d\\d\\.\\d\\d\\d\\d'
 
 ## Tokenizer
 
-Create a tokenizer based on a Regex and evaluate it on a Document level.
+Create a Tokenizer based on a Regex and evaluate it on a Document level.
 
 ```python
 from konfuzio_sdk.data import Project
@@ -112,14 +112,14 @@ document = my_project.get_document_by_id(document_id='YOUR_DOCUMENT_ID')
 # Define the Regex expression
 regex = r'[^ \n\t\f]+'
 
-# Build a tokenizer based on Regex 
+# Build a Tokenizer based on Regex 
 tokenizer = RegexTokenizer(regex=regex)
 assert tokenizer.regex == regex
 
-# Evaluate the tokenizer in a Document
+# Evaluate the Tokenizer in a Document
 evaluation = tokenizer.evaluate(document)
 
-# Ratio of correct Spans found by the tokenizer in the Document
+# Ratio of correct Spans found by the Tokenizer in the Document
 ratio_of_spans_found = evaluation.is_found_by_tokenizer.sum() / evaluation.is_correct.sum()
 
 ```
