@@ -995,6 +995,15 @@ Project.documents: 2  –&gt; Document recall 100%</p>
 
 <dl class="py property">
 <dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">no_label_annotation_set</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">konfuzio_sdk.data.AnnotationSet</span></em></dt>
+<dd><p>Return the Annotation Set for project.no_label Annotations.</p>
+<p>We need to load the Annotation Sets from Server first (call self.annotation_sets()).
+If we create the no_label_annotation_set in the first place, the data from the Server is not be loaded
+anymore because _annotation_sets will no longer be None.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number_of_lines</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em></dt>
 <dd><p>Calculate the number of lines.</p>
 </dd></dl>
@@ -1214,6 +1223,18 @@ Project.documents: 2  –&gt; Document recall 100%</p>
 <dt class="sig sig-object py">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_folder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em></dt>
 <dd><p>Calculate the model folder of the Project.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">no_label</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">konfuzio_sdk.data.Label</span></em></dt>
+<dd><p>Get the “No Label” which is used by a Tokenizer.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">no_label_set</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">konfuzio_sdk.data.Label</span></em></dt>
+<dd><p>Get the “No Label Set” which is used by a Tokenizer.</p>
 </dd></dl>
 
 <dl class="py property">
