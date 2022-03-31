@@ -88,14 +88,18 @@ class ListTokenizer(AbstractTokenizer):
         """Initialize the list of tokenizers."""
         self.tokenizers = tokenizers
 
-    def fit(self):
+    def fit(self, category: Category):
         """Call fit on all tokenizers."""
+        assert isinstance(category, Category)
+
         for tokenizer in self.tokenizers:
-            tokenizer.fit()
+            tokenizer.fit(category)
 
     def tokenize(self, document: Document) -> Document:
         """Run tokenize in the given order on a Document."""
+        assert isinstance(document, Document)
+
         for tokenizer in self.tokenizers:
-            tokenizer.tokenize()
+            tokenizer.tokenize(document)
 
         return document
