@@ -16,6 +16,7 @@ RELEVANT_FOR_EVALUATION = [
     "label_set_id",
     "document_id",
     "document_id_local",
+    "category_id",  # we need it to be able to run the evaluation of the tokenizer across Categoris
     # "id__predicted", we don't care of the id_ see "id_"
     "confidence_predicted",  # we care about the confidence of the prediction
     # "start_offset_predicted", only relevant for the merge

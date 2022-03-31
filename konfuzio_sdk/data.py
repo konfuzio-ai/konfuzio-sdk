@@ -704,6 +704,7 @@ class Span(Data):
                 "annotation_set_id": 0,  # to allow grouping to compare boolean
                 "document_id": 0,
                 "document_id_local": 0,
+                "category_id": 0,
                 "x0": 0,
                 "x1": 0,
                 "y0": 0,
@@ -735,6 +736,7 @@ class Span(Data):
                 "annotation_set_id": self.annotation.annotation_set.id_,
                 "document_id": self.annotation.document.id_,
                 "document_id_local": self.annotation.document.id_local,
+                "category_id": self.annotation.document.category.id_,
                 "x0": self.x0,
                 "x1": self.x1,
                 "y0": self.y0,
