@@ -1288,11 +1288,11 @@ class Document(Data):
     @property
     def no_label_annotation_set(self) -> AnnotationSet:
         """
-        Return Annotation Set for project.no_label Annotations.
+        Return the Annotation Set for project.no_label Annotations.
 
-        We need to load the Annotation Sets from Server first if they exist (call self.annotation_sets()).
-        If we create the no_label_annotation_set in the first place, the data from the Server cannot be loaded
-        anymore because _annotation_sets will no longer be None
+        We need to load the Annotation Sets from Server first (call self.annotation_sets()).
+        If we create the no_label_annotation_set in the first place, the data from the Server is not be loaded
+        anymore because _annotation_sets will no longer be None.
         """
         if self._no_label_annotation_set is None:
             self.annotation_sets()
@@ -1575,7 +1575,7 @@ class Document(Data):
 
         :return: Bounding box information per character in the document.
         """
-        if self._bbox:
+        if self._bbox is not None:
             return self._bbox
         elif is_file(self.bbox_file_path, raise_exception=False):
             with zipfile.ZipFile(self.bbox_file_path, "r") as archive:
@@ -1602,7 +1602,7 @@ class Document(Data):
     @property
     def text(self):
         """Get Document text. Once loaded stored in memory."""
-        if self._text:
+        if self._text is not None:
             return self._text
         if not is_file(self.txt_file_path, raise_exception=False):
             self.download_document_details()
@@ -1815,14 +1815,14 @@ class Project(Data):
 
     @property
     def no_label(self) -> Label:
-        """No label."""
+        """Get the "No Label" which is used by a Tokenizer."""
         if not self._no_label:
             self._no_label = Label(project=self, text='NO_LABEL', label_sets=[self.no_label_set])
         return self._no_label
 
     @property
     def no_label_set(self) -> Label:
-        """No label set."""
+        """Get the "No Label Set" which is used by a Tokenizer."""
         if not self._no_label_set:
             self._no_label_set = LabelSet(project=self, categories=self.categories)
         return self._no_label_set
@@ -1998,7 +1998,6 @@ class Project(Data):
                 category.label_sets.append(label_set)
                 label_set.categories.append(category)  # Konfuzio Server mixes the concepts, we use two instances
                 self.add_category(category)
-            # self.add_label_set(label_set)
 
         return self.label_sets
 
