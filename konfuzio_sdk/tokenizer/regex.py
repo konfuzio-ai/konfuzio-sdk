@@ -76,3 +76,11 @@ class ConnectedTextTokenizer(RegexTokenizer):
     def __init__(self):
         """Initialize the ConnectedTextTokenizer."""
         super().__init__(regex=r'(?:(?:[^ \t\n]+(?:[ \t][^ \t\n\:\,\.\!\?\-\_]+)*)+)')
+
+
+class ColonPrecededTokenizer(RegexTokenizer):
+    """Tokenizer based on text preceded by colon."""
+
+    def __init__(self):
+        """Initialize the ColonPrecededTokenizer."""
+        super().__init__(regex=r'(?:(?::[ \t])((?:[^ \t\n\:\,\.\!\?\-\_]+(?:[ \t][^ \t\n\:\,\.\!\?\-\_]+)*)+))')
