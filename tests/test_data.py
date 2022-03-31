@@ -124,13 +124,12 @@ class TestOfflineDataSetup(unittest.TestCase):
     def test_to_add_label_to_project(self):
         """Add one Label to a Project."""
         _ = Label(project=self.project, text='Fourth Offline Label')
-        # TODO: why do we order by name
         assert sorted([label.name for label in self.project.labels]) == [
             'First Offline Label',
+            'Fourth Offline Label',
             'NO_LABEL',
             'Second Offline Label',
             'Third Offline Label',
-            'Fourth Offline Label',
         ]
 
     def test_label_has_label_sets(self):
