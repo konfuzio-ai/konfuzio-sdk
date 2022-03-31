@@ -17,7 +17,7 @@ import unittest
 
 import pytest
 
-from konfuzio_sdk.regex import regex_spans
+from konfuzio_sdk.regex import regex_matches
 from konfuzio_sdk.data import Project, Annotation, Label, Category, LabelSet, Document, AnnotationSet, Span
 
 logger = logging.getLogger(__name__)
@@ -114,7 +114,7 @@ def test_merge_regex():
     my_regex = merge_regex([r'[a-z]+', r'\d+', r'[A-Z]+'])
     assert my_regex == r'(?:[a-z]+|[A-Z]+|\d+)'
     test_string = "39 gallons is the per capita consumption of softdrinks in US."
-    tokens = regex_spans(test_string, my_regex)
+    tokens = regex_matches(test_string, my_regex)
     assert len(tokens) == len(test_string.split(' '))
 
 
@@ -126,8 +126,8 @@ def test_regex_plausibility_compile_error():
 
 
 def test_regex_spans_with_invalid_regex_group_name():
-    """Test to run regex_spans with an invalid group name."""
-    result = regex_spans('I go home at 5 AM.', regex=r'(?P<9variable>\d)')
+    """Test to run regex_matches with an invalid group name."""
+    result = regex_matches('I go home at 5 AM.', regex=r'(?P<9variable>\d)')
     expected_result = [
         {
             'regex_used': "'(?P<_9variable>\\\\d)'",
@@ -472,7 +472,7 @@ class TestRegexGenerator(unittest.TestCase):
         assert '(?P<Nachname_' in male_first_name
         assert '>[A-ZÄÖÜ][a-zäöüß]+)' in male_first_name
         textcorpus = ''.join([doc.text for doc in self.prj.documents])
-        results_male = regex_spans(textcorpus, male_first_name, filtered_group=first_names.name)
+        results_male = regex_matches(textcorpus, male_first_name, filtered_group=first_names.name)
         assert [result['value'] for result in results_male] == [
             'Oskar-Muster',
             'Tillmannl-Muster',
@@ -492,7 +492,7 @@ class TestRegexGenerator(unittest.TestCase):
         assert '(?P<Nachname_' in female_first_name
         assert '>[A-ZÄÖÜ][a-zäöüß]+)' in female_first_name
         textcorpus = ''.join([doc.text for doc in self.prj.documents])
-        results_female = regex_spans(textcorpus, female_first_name, filtered_group=first_names.name)
+        results_female = regex_matches(textcorpus, female_first_name, filtered_group=first_names.name)
         assert [result['value'] for result in results_female] == [
             'Heike-Muster',
             'Cordula-Muster',
@@ -523,7 +523,7 @@ class TestRegexGenerator(unittest.TestCase):
         assert '(?P<Nachname_' in last_name_regex
         assert '>[A-ZÄÖÜ][a-zäöüß]+)' in last_name_regex
         textcorpus = ''.join([doc.text for doc in self.prj.documents])
-        results = regex_spans(textcorpus, last_name_regex, filtered_group=last_names.name)
+        results = regex_matches(textcorpus, last_name_regex, filtered_group=last_names.name)
         assert [result['value'] for result in results] == [
             'Förster',
             'Wissen',
@@ -550,7 +550,7 @@ class Test_named_group_multi_match:
     # overwrite all other Hansi ... matches, as Hansi was the key in the dictionary to aggregate his information (verbs)
     text = 'Hansi eats, Michael sleeps, Hansi works, Hansi repeats'
     rgx = r'(?P<Person>[A-Z][^ ]*) (?P<verb>[^ ,]*)'
-    results = regex_spans(text, rgx)
+    results = regex_matches(text, rgx)
 
     def test_number_of_matches(self):
         """Count the matches."""
@@ -702,7 +702,7 @@ class Test_match_by_named_regex:
 
     text = 'Hansi eats, Michael sleeps'
     rgx = r'(?P<Person>[A-Z][^ ]*) (?P<verb>[^ ,]*)'
-    results = regex_spans(text, rgx)
+    results = regex_matches(text, rgx)
 
     def test_number_of_matches(self):
         """Check the number of returned groups before checking every individually."""
@@ -788,7 +788,7 @@ class Test_multi_match_by_unamed_regex:
 
     text = 'Hansi eats, Michael sleeps, Hansi works, Hansi repeats'
     rgx = r'Hansi ([^ ]*),'
-    results = regex_spans(text, rgx)
+    results = regex_matches(text, rgx)
 
     def test_number_of_matches(self):
         """Check the number of returned groups before checking every individually."""
@@ -852,7 +852,7 @@ class Test_multi_match_by_ungrouped_regex:
 
     text = 'Hansi eats, Michael sleeps, Hansi works, Hansi repeats'
     rgx = r'Hansi [^ ]*,'
-    results = regex_spans(text, rgx)
+    results = regex_matches(text, rgx)
 
     def test_number_of_matches(self):
         """Check the number of returned groups before checking every individually."""
@@ -893,7 +893,7 @@ def test_regex_spans_runtime():
     """Profile time to calculate regex."""
     setup_code = textwrap.dedent(
         """
-    from konfuzio_sdk.regex import regex_spans
+    from konfuzio_sdk.regex import regex_matches
 
     text = 'Hansi eats, Michael sleeps, Hansi works, Hansi repeats, ' * 5000
     rgx = r'Hansi [^ ]*,'
@@ -901,7 +901,7 @@ def test_regex_spans_runtime():
     )
     test_code = textwrap.dedent(
         """
-    regex_spans(text, rgx)
+    regex_matches(text, rgx)
     """
     )
     runtime = timeit(stmt=test_code, setup=setup_code, number=10) / 10

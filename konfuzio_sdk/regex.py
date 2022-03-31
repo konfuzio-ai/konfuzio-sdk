@@ -151,11 +151,11 @@ def get_best_regex(evaluations: List, log_stats: bool = True, allow_zero_f1score
     return best_regex
 
 
-def regex_spans(
+def regex_matches(
     doctext: str, regex: str, start_chr: int = 0, flags=0, overlapped=False, keep_full_match=True, filtered_group=None
 ) -> List[Dict]:
     """
-    Convert a text with the help by one regex to Annotations.
+    Convert a text with the help by one regex to text offsets.
 
     A result of results is a full regex match, matches or (named) groups are separated by keys within this result. The
     function regexinfo in konfuzio.wrapper standardizes the information we keep per match.
@@ -164,7 +164,6 @@ def regex_spans(
     :param keep_full_match: Keep the information about the full regex even the regex contains groups
     :param overlapped: Allow regex to overlap, e.g. ' ([^ ]*) ' creates an overlap on ' my name '
     :param flags: Regex flag to compile regex
-    :param bbox: Bounding box information, which links the text position of a character to a bounding box
     :param doctext: A text you want to apply a rgx on
     :param regex: The regex, either with groups, named groups or just a regex
     :param start_chr: The start chr of the annotation_set, in case the text is a annotation_set within a text
@@ -266,7 +265,7 @@ def generic_candidate_function(regex, flags=0, overlapped=False, filtered_group=
         :param doctext: Text of the candidate
         :return: Tuple of list of candidates and other text chunks
         """
-        annotations = regex_spans(
+        annotations = regex_matches(
             doctext=doctext,
             regex=regex,
             flags=flags,

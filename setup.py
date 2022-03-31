@@ -36,7 +36,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     url="https://github.com/konfuzio-ai/document-ai-python-sdk",
-    packages=['konfuzio_sdk'],
+    packages=['konfuzio_sdk', 'konfuzio_sdk.tokenizer'],
     include_package_data=True,
     entry_points={'console_scripts': ['konfuzio_sdk=konfuzio_sdk.cli:main']},
     install_requires=[

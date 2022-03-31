@@ -24,7 +24,7 @@ from konfuzio_sdk.api import (
     get_document_details,
 )
 from konfuzio_sdk.normalize import normalize
-from konfuzio_sdk.regex import get_best_regex, regex_spans, suggest_regex_for_string, merge_regex
+from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
 from konfuzio_sdk.utils import get_bbox, get_missing_offsets
 from konfuzio_sdk.utils import is_file, convert_to_bio_scheme, amend_file_name
 
@@ -170,6 +170,10 @@ class LabelSet(Data):
             if isinstance(label, int):
                 label = self.project.get_label_by_id(id_=label)
             self.add_label(label)
+
+        project.add_label_set(self)
+        for category in self.categories:
+            category.add_label_set(self)
 
     def __lt__(self, other: 'LabelSet'):
         """Sort Label Sets by name."""
@@ -700,6 +704,7 @@ class Span(Data):
                 "annotation_set_id": 0,  # to allow grouping to compare boolean
                 "document_id": 0,
                 "document_id_local": 0,
+                "category_id": 0,
                 "x0": 0,
                 "x1": 0,
                 "y0": 0,
@@ -731,6 +736,7 @@ class Span(Data):
                 "annotation_set_id": self.annotation.annotation_set.id_,
                 "document_id": self.annotation.document.id_,
                 "document_id_local": self.annotation.document.id_local,
+                "category_id": self.annotation.document.category.id_,
                 "x0": self.x0,
                 "x1": self.x1,
                 "y0": self.y0,
@@ -943,10 +949,8 @@ class Annotation(Data):
             return self.id_local == other.id_local
         else:
             if self.document and other.document and self.document == other.document:
-                if self.label and other.label and self.label == other.label:
-                    if self.label_set and other.label_set and self.label_set == other.label_set:
-                        if self.spans == other.spans:
-                            result = True
+                if self.spans == other.spans:
+                    result = True
 
         return result
 
@@ -1107,7 +1111,7 @@ class Annotation(Data):
         """
         spans: List[Span] = []
         for regex in regex_list:
-            dict_spans = regex_spans(doctext=self.document.text, regex=regex)
+            dict_spans = regex_matches(doctext=self.document.text, regex=regex)
             for offset in list(set((x['start_offset'], x['end_offset']) for x in dict_spans)):
                 try:
                     span = Span(start_offset=offset[0], end_offset=offset[1], annotation=self)
@@ -1212,6 +1216,7 @@ class Document(Data):
                         False from local files
         :param number_of_pages: Number of pages in the document
         """
+        self._no_label_annotation_set = None
         self.id_local = next(Data.id_iter)
         self.id_ = id_
         self._annotations: List[Annotation] = None
@@ -1279,6 +1284,21 @@ class Document(Data):
     def number_of_lines(self) -> int:
         """Calculate the number of lines."""
         return len(self.text.replace('\f', '\n').split('\n'))
+
+    @property
+    def no_label_annotation_set(self) -> AnnotationSet:
+        """
+        Return the Annotation Set for project.no_label Annotations.
+
+        We need to load the Annotation Sets from Server first (call self.annotation_sets()).
+        If we create the no_label_annotation_set in the first place, the data from the Server is not be loaded
+        anymore because _annotation_sets will no longer be None.
+        """
+        if self._no_label_annotation_set is None:
+            self.annotation_sets()
+            self._no_label_annotation_set = AnnotationSet(document=self, label_set=self.project.no_label_set)
+
+        return self._no_label_annotation_set
 
     def eval_dict(self, use_correct=False) -> List[dict]:
         """Use this dict to evaluate Documents. The speciality: For every Span of an Annotation create one entry."""
@@ -1366,11 +1386,7 @@ class Document(Data):
                 add = False
 
         if fill:
-            # add a None Label to the default Label Set of the Document
             # todo: we cannot assure that the Document has a Category, so Annotations must not require label_set
-            default_label_set = self.project.get_label_set_by_id(self.category.id_)
-            no_label = Label(project=self.project, label_sets=[default_label_set])
-
             spans = [range(span.start_offset, span.end_offset) for anno in annotations for span in anno.spans]
             if end_offset is None:
                 end_offset = len(self.text)
@@ -1389,7 +1405,14 @@ class Document(Data):
                     new_span = Span(start_offset=start, end_offset=end)
                     new_spans.append(new_span)
 
-                new_annotation = Annotation(document=self, label=no_label, label_set=default_label_set, spans=new_spans)
+                new_annotation = Annotation(
+                    document=self,
+                    annotation_set=self.no_label_annotation_set,
+                    label=self.project.no_label,
+                    label_set=self.project.no_label_set,
+                    spans=new_spans,
+                )
+
                 annotations.append(new_annotation)
 
         return sorted(annotations)
@@ -1552,7 +1575,7 @@ class Document(Data):
 
         :return: Bounding box information per character in the document.
         """
-        if self._bbox:
+        if self._bbox is not None:
             return self._bbox
         elif is_file(self.bbox_file_path, raise_exception=False):
             with zipfile.ZipFile(self.bbox_file_path, "r") as archive:
@@ -1579,7 +1602,7 @@ class Document(Data):
     @property
     def text(self):
         """Get Document text. Once loaded stored in memory."""
-        if self._text:
+        if self._text is not None:
             return self._text
         if not is_file(self.txt_file_path, raise_exception=False):
             self.download_document_details()
@@ -1678,7 +1701,7 @@ class Document(Data):
     def evaluate_regex(self, regex, label: Label, filtered_group=None):
         """Evaluate a regex based on the Document."""
         start_time = time.time()
-        findings_in_document = regex_spans(
+        findings_in_document = regex_matches(
             doctext=self.text,
             regex=regex,
             keep_full_match=False,
@@ -1780,12 +1803,29 @@ class Project(Data):
         self.labels_file_path = os.path.join(self.project_folder, "labels.json5")
         self.label_sets_file_path = os.path.join(self.project_folder, "label_sets.json5")
 
+        self._no_label_set = None
+        self._no_label = None
+
         if self.id_ or self._project_folder:
             self.get(update=update)
 
     def __repr__(self):
         """Return string representation."""
         return f"Project {self.id_}"
+
+    @property
+    def no_label(self) -> Label:
+        """Get the "No Label" which is used by a Tokenizer."""
+        if not self._no_label:
+            self._no_label = Label(project=self, text='NO_LABEL', label_sets=[self.no_label_set])
+        return self._no_label
+
+    @property
+    def no_label_set(self) -> Label:
+        """Get the "No Label Set" which is used by a Tokenizer."""
+        if not self._no_label_set:
+            self._no_label_set = LabelSet(project=self, categories=self.categories)
+        return self._no_label_set
 
     @property
     def documents(self):
@@ -1958,7 +1998,6 @@ class Project(Data):
                 category.label_sets.append(label_set)
                 label_set.categories.append(category)  # Konfuzio Server mixes the concepts, we use two instances
                 self.add_category(category)
-            self.add_label_set(label_set)
 
         return self.label_sets
 
