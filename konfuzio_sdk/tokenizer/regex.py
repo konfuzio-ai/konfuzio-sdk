@@ -86,9 +86,17 @@ class ColonPrecededTokenizer(RegexTokenizer):
         super().__init__(regex=r'(?:(?::[ \t])((?:[^ \t\n\:\,\.\!\?\-\_]+(?:[ \t][^ \t\n\:\,\.\!\?\-\_]+)*)+))')
 
 
-class CapitalizedEntitiesTokenizer(RegexTokenizer):
+class CapitalizedTextTokenizer(RegexTokenizer):
     """Tokenizer based on capitalized text."""
 
     def __init__(self):
-        """Initialize the CapitalizedEntitiesTokenizer."""
+        """Initialize the CapitalizedTextTokenizer."""
         super().__init__(regex=r'(?:[A-ZÄÜÖß][a-zA-Z&]+(?=\s[A-ZÄÜÖß])(?:\s[A-Z&ÄÜÖß][a-zA-Z&]+)+)')
+
+
+class NonTextTokenizer(RegexTokenizer):
+    """Tokenizer based on non text - numbers and separators."""
+
+    def __init__(self):
+        """Initialize the NonTextTokenizer."""
+        super().__init__(regex=r'(?:(?:[A-Z\d]+[:\/. -]*\n?)+)')
