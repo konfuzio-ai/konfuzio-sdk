@@ -63,8 +63,16 @@ class RegexTokenizer(AbstractTokenizer):
 
 
 class WhitespaceTokenizer(RegexTokenizer):
-    """Tokenizer based on a single regex."""
+    """Tokenizer based on whitespaces."""
 
     def __init__(self):
         """Initialize the WhitespaceTokenizer."""
         super().__init__(regex=r'[^ \n\t\f]+')
+
+
+class ConnectedTextTokenizer(RegexTokenizer):
+    """Tokenizer based on text connected by 1 whitespace."""
+
+    def __init__(self):
+        """Initialize the ConnectedTextTokenizer."""
+        super().__init__(regex=r'(?:(?:[^ \t\n]+(?:[ \t][^ \t\n\:\,\.\!\?\-\_]+)*)+)')
