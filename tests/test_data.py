@@ -419,7 +419,6 @@ class TestOfflineDataSetup(unittest.TestCase):
         category = Category(project=project, id_=None)
         project.add_category(category)
         label_set = LabelSet(project=project)
-        # project.add_label_set(label_set)
         Label(project=project, label_sets=[label_set])
         project.lose_weight()
         assert project.session is None

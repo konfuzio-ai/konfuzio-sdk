@@ -100,7 +100,7 @@ class TestRegexTokenizer(unittest.TestCase):
         self.tokenizer.tokenize(document)
         no_label_annotations = document.annotations(use_correct=False, label=self.project.no_label)
         # tokenizer can create Annotations with Spans that overlap correct Spans
-        assert no_label_annotations.__len__() == document.annotations().__len__() == 1
+        assert len(no_label_annotations) == len(document.annotations()) == 1
         assert no_label_annotations[0].spans[0] == span
         # assert annotations[0].spans[0].created_by == "human"
 
@@ -120,7 +120,7 @@ class TestRegexTokenizer(unittest.TestCase):
 
         self.tokenizer.tokenize(document)
         no_label_annotations = document.annotations(use_correct=False, label=self.project.no_label)
-        assert no_label_annotations.__len__() == document.annotations().__len__() == 1
+        assert  len(no_label_annotations) == len(document.annotations()) == 1
         assert no_label_annotations[0].spans[0] != span
         # assert annotations[0].spans[0].created_by == self.__repr__()
 
@@ -128,7 +128,7 @@ class TestRegexTokenizer(unittest.TestCase):
         """Test tokenize a Document without text."""
         document = Document(project=self.project, category=self.category)
         self.tokenizer.tokenize(document)
-        assert document.annotations().__len__() == 0
+        assert len(document.annotations) == 0
 
     def test_evaluate_output_with_document(self):
         """Test output for the evaluate method with a Document with 1 Span."""
