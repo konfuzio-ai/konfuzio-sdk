@@ -66,5 +66,5 @@ class WhitespaceTokenizer(RegexTokenizer):
     """Tokenizer based on a single regex."""
 
     def __init__(self):
-        """Initialize the WhitespaceSeparatedRegexTokenizer."""
+        """Initialize the WhitespaceTokenizer."""
         super().__init__(regex=r'[^ \n\t\f]+')
