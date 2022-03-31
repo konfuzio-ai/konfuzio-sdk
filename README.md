@@ -98,6 +98,32 @@ regex = suggest_regex_for_string('Date: 20.05.2022')
 assert regex == 'Date:[ ]+\\d\\d\\.\\d\\d\\.\\d\\d\\d\\d'
 ```
 
+## Tokenizer
+
+Create a tokenizer based on a Regex and evaluate it on a Document level.
+
+```python
+from konfuzio_sdk.data import Project
+from konfuzio_sdk.tokenizer.regex import RegexTokenizer
+
+my_project = Project(id_='YOUR_PROJECT_ID')
+document = my_project.get_document_by_id(document_id='YOUR_DOCUMENT_ID')
+
+# Define the Regex expression
+regex = r'[^ \n\t\f]+'
+
+# Build a tokenizer based on Regex 
+tokenizer = RegexTokenizer(regex=regex)
+assert tokenizer.regex == regex
+
+# Evaluate the tokenizer in a Document
+evaluation = tokenizer.evaluate(document)
+
+# Ratio of correct Spans found by the tokenizer in the Document
+ratio_of_spans_found = evaluation.is_found_by_tokenizer.sum() / evaluation.is_correct.sum()
+
+```
+
 ## Add visual features to text
 
 Calculate the bounding box of a span by providing the start and end offset.
