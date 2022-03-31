@@ -123,11 +123,14 @@ class TestOfflineDataSetup(unittest.TestCase):
 
     def test_to_add_label_to_project(self):
         """Add one Label to a Project."""
-        _ = Label(project=self.project, text='Second Offline Label')
+        _ = Label(project=self.project, text='Fourth Offline Label')
+        # TODO: why do we order by name
         assert sorted([label.name for label in self.project.labels]) == [
             'First Offline Label',
             'NO_LABEL',
             'Second Offline Label',
+            'Third Offline Label',
+            'Fourth Offline Label',
         ]
 
     def test_label_has_label_sets(self):
@@ -372,7 +375,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     def test_to_add_annotation_with_same_span_offsets_but_different_label_to_a_document(self):
         """Test to add Annotation with a Span with the same offsets but different Label to a Document."""
         document = Document(project=self.project, category=self.category)
-        label = Label(project=self.project, text='Third Offline Label', label_sets=[self.label_set])
+        label = Label(project=self.project, text='Second Offline Label', label_sets=[self.label_set])
         span_1 = Span(start_offset=1, end_offset=2)
         _ = Annotation(id_=1, document=document, spans=[span_1], label=self.label, label_set=self.label_set)
         span_2 = Span(start_offset=1, end_offset=2)
