@@ -44,7 +44,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 18
+        assert len(cls.project.virtual_documents) == 17
 
     def test_project_no_label(self):
         """Test that no_label exists in the Labels of the Project and has the expected name."""
@@ -67,21 +67,6 @@ class TestOfflineDataSetup(unittest.TestCase):
     def test_document_no_label_annotation_set_label_set(self):
         """Test that Label Set of the no_label_annotation_set of the Document has the no_label_set of the Project."""
         assert self.document.no_label_annotation_set.label_set == self.project.no_label_set
-
-    def test_document_no_label_annotations_after_update(self):
-        """Test that Annotations in the no_label_annotation_set of the Document are removed after update."""
-        document = Document(project=self.project, category=self.category)
-        span = Span(start_offset=0, end_offset=1)
-        _ = Annotation(
-            document=document,
-            annotation_set=document.no_label_annotation_set,
-            label=self.project.no_label,
-            label_set=self.project.no_label_set,
-            spans=[span],
-        )
-        assert document.annotations(use_correct=False).__len__() == 1
-        document.update()
-        assert document.annotations(use_correct=False).__len__() == 0
 
     def test_category_of_document(self):
         """Test if setup worked."""
@@ -528,8 +513,8 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_number_of_label_sets(self):
         """Test Label Sets numbers."""
-        # Online Label Sets + no_label_set
-        assert self.prj.label_sets.__len__() == 6
+        # Online Label Sets + added during tests +  no_label_set
+        assert len(self.prj.label_sets) == 7
 
     def test_check_tokens(self):
         """Test to find not matched Annotations."""
@@ -809,6 +794,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
             'Gesamt-Brutto',
             'Lohnart',
             'Menge',
+            'NO_LABEL',  # Added for the Tokenizer
             'Nachname',
             'Netto-Verdienst',
             'Personalausweis',
@@ -926,6 +912,21 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             doc.annotations()[0].save()
             assert 'cannot update Annotations once saved online' in context.exception
+
+    def test_document_no_label_annotations_after_update(self):
+        """Test that Annotations in the no_label_annotation_set of the Document are removed after update."""
+        document = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
+        span = Span(start_offset=0, end_offset=1)
+        _ = Annotation(
+            document=document,
+            annotation_set=document.no_label_annotation_set,
+            label=self.prj.no_label,
+            label_set=self.prj.no_label_set,
+            spans=[span],
+        )
+        assert len(document.annotations(use_correct=False, label=self.prj.no_label)) == 1
+        document.update()
+        assert len(document.annotations(use_correct=False, label=self.prj.no_label)) == 0
 
     def test_add_document_twice(self):
         """Test adding same Document twice."""
