@@ -99,4 +99,4 @@ class NonTextTokenizer(RegexTokenizer):
 
     def __init__(self):
         """Initialize the NonTextTokenizer."""
-        super().__init__(regex=r'(?:(?:[A-Z\d]+[:\/. -]*\n?)+)')
+        super().__init__(regex=r'(?:(?:[A-Z\d]+[:\/. -]{0,2}\n?)+)')

@@ -284,8 +284,8 @@ class TestWhitespaceTokenizer(unittest.TestCase):
 
     def test_case_9_non_words_separated_by_whitespace(self):
         """Test output for the evaluate method with a Document with 1 Span."""
-        document = self._create_artificial_document(text="date 01. 01.  2022", offsets=[(5, 18)])
-        assert document.annotations()[0].offset_string == ["01. 01.  2022"]
+        document = self._create_artificial_document(text="date 01. 01. 2022", offsets=[(5, 17)])
+        assert document.annotations()[0].offset_string == ["01. 01. 2022"]
         result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 0
 
@@ -305,7 +305,7 @@ class TestWhitespaceTokenizer(unittest.TestCase):
 
     def test_case_12_date_with_month_in_the_beginning(self):
         """Test output for the evaluate method with a Document with 1 Span."""
-        document = self._create_artificial_document(text="code AB 12-3:200", offsets=[(5, 17)])
+        document = self._create_artificial_document(text="code AB 12-3:200", offsets=[(5, 16)])
         assert document.annotations()[0].offset_string == ["AB 12-3:200"]
         result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 0
@@ -469,8 +469,8 @@ class TestConnectedTextTokenizer(unittest.TestCase):
 
     def test_case_9_non_words_separated_by_whitespace(self):
         """Test output for the evaluate method with a Document with 1 Span."""
-        document = self._create_artificial_document(text="date 01. 01.  2022", offsets=[(5, 18)])
-        assert document.annotations()[0].offset_string == ["01. 01.  2022"]
+        document = self._create_artificial_document(text="date 01. 01. 2022", offsets=[(5, 17)])
+        assert document.annotations()[0].offset_string == ["01. 01. 2022"]
         result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 0
 
@@ -490,7 +490,7 @@ class TestConnectedTextTokenizer(unittest.TestCase):
 
     def test_case_12_date_with_month_in_the_beginning(self):
         """Test output for the evaluate method with a Document with 1 Span."""
-        document = self._create_artificial_document(text="code AB 12-3:200", offsets=[(5, 17)])
+        document = self._create_artificial_document(text="code AB 12-3:200", offsets=[(5, 16)])
         assert document.annotations()[0].offset_string == ["AB 12-3:200"]
         result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 0
@@ -635,8 +635,8 @@ class TestColonPrecededTokenizer(unittest.TestCase):
 
     def test_case_9_non_words_separated_by_whitespace(self):
         """Test output for the evaluate method with a Document with 1 Span."""
-        document = self._create_artificial_document(text="date 01. 01.  2022", offsets=[(5, 18)])
-        assert document.annotations()[0].offset_string == ["01. 01.  2022"]
+        document = self._create_artificial_document(text="date 01. 01. 2022", offsets=[(5, 17)])
+        assert document.annotations()[0].offset_string == ["01. 01. 2022"]
         result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 0
 
@@ -656,7 +656,7 @@ class TestColonPrecededTokenizer(unittest.TestCase):
 
     def test_case_12_date_with_month_in_the_beginning(self):
         """Test output for the evaluate method with a Document with 1 Span."""
-        document = self._create_artificial_document(text="code AB 12-3:200", offsets=[(5, 17)])
+        document = self._create_artificial_document(text="code AB 12-3:200", offsets=[(5, 16)])
         assert document.annotations()[0].offset_string == ["AB 12-3:200"]
         result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 0
@@ -811,8 +811,8 @@ class TestCapitalizedTextTokenizer(unittest.TestCase):
 
     def test_case_9_non_words_separated_by_whitespace(self):
         """Test output for the evaluate method with a Document with 1 Span."""
-        document = self._create_artificial_document(text="date 01. 01.  2022", offsets=[(5, 18)])
-        assert document.annotations()[0].offset_string == ["01. 01.  2022"]
+        document = self._create_artificial_document(text="date 01. 01. 2022", offsets=[(5, 17)])
+        assert document.annotations()[0].offset_string == ["01. 01. 2022"]
         result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 0
 
@@ -832,7 +832,7 @@ class TestCapitalizedTextTokenizer(unittest.TestCase):
 
     def test_case_12_date_with_month_in_the_beginning(self):
         """Test output for the evaluate method with a Document with 1 Span."""
-        document = self._create_artificial_document(text="code AB 12-3:200", offsets=[(5, 17)])
+        document = self._create_artificial_document(text="code AB 12-3:200", offsets=[(5, 16)])
         assert document.annotations()[0].offset_string == ["AB 12-3:200"]
         result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 0
@@ -925,10 +925,20 @@ class TestNonTextTokenizer(unittest.TestCase):
     # Tokenizer can find
     def test_case_9_non_words_separated_by_whitespace(self):
         """Test output for the evaluate method with a Document with 1 Span."""
-        document = self._create_artificial_document(text="date 01. 01.  2022", offsets=[(5, 18)])
-        assert document.annotations()[0].offset_string == ["01. 01.  2022"]
+        document = self._create_artificial_document(text="date 01. 01. 2022", offsets=[(5, 17)])
+        assert document.annotations()[0].offset_string == ["01. 01. 2022"]
         result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 1
+        assert (
+            result[result.is_found_by_tokenizer == 1].start_offset[0] == document.annotations()[0].spans[0].start_offset
+        )
+        assert result[result.is_found_by_tokenizer == 1].end_offset[0] == document.annotations()[0].spans[0].end_offset
+
+    def test_case_12_date_with_month_in_the_beginning(self):
+        """Test output for the evaluate method with a Document with 1 Span."""
+        document = self._create_artificial_document(text="code AB 12-3:200", offsets=[(5, 16)])
+        assert document.annotations()[0].offset_string == ["AB 12-3:200"]
+        result = self.tokenizer.evaluate(document)
         assert (
             result[result.is_found_by_tokenizer == 1].start_offset[0] == document.annotations()[0].spans[0].start_offset
         )
@@ -1013,13 +1023,6 @@ class TestNonTextTokenizer(unittest.TestCase):
         """Test output for the evaluate method with a Document with 1 Span."""
         document = self._create_artificial_document(text="date Jan 1, 2022 ", offsets=[(5, 16)])
         assert document.annotations()[0].offset_string == ["Jan 1, 2022"]
-        result = self.tokenizer.evaluate(document)
-        assert result.is_found_by_tokenizer.sum() == 0
-
-    def test_case_12_date_with_month_in_the_beginning(self):
-        """Test output for the evaluate method with a Document with 1 Span."""
-        document = self._create_artificial_document(text="code AB 12-3:200", offsets=[(5, 17)])
-        assert document.annotations()[0].offset_string == ["AB 12-3:200"]
         result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 0
 
