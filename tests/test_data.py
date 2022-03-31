@@ -44,7 +44,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 15
+        assert len(cls.project.virtual_documents) == 18
 
     def test_project_no_label(self):
         """Test that no_label exists in the Labels of the Project and has the expected name."""
@@ -358,6 +358,36 @@ class TestOfflineDataSetup(unittest.TestCase):
         with self.assertRaises(ValueError):
             document.add_annotation(annotation)
         self.assertEqual([annotation], document.annotations(use_correct=False))
+
+    def test_to_add_annotation_with_same_span_offsets_and_label_to_a_document(self):
+        """Test to add Annotation with a Span with the same offsets and same Label and Label Set to a Document."""
+        document = Document(project=self.project, category=self.category)
+        span_1 = Span(start_offset=1, end_offset=2)
+        _ = Annotation(id_=1, document=document, spans=[span_1], label=self.label, label_set=self.label_set)
+        span_2 = Span(start_offset=1, end_offset=2)
+        assert span_1 == span_2
+        with self.assertRaises(ValueError):
+            _ = Annotation(id_=2, document=document, spans=[span_2], label=self.label, label_set=self.label_set)
+
+    def test_to_add_annotation_with_same_span_offsets_but_different_label_to_a_document(self):
+        """Test to add Annotation with a Span with the same offsets but different Label to a Document."""
+        document = Document(project=self.project, category=self.category)
+        label = Label(project=self.project, text='Third Offline Label', label_sets=[self.label_set])
+        span_1 = Span(start_offset=1, end_offset=2)
+        _ = Annotation(id_=1, document=document, spans=[span_1], label=self.label, label_set=self.label_set)
+        span_2 = Span(start_offset=1, end_offset=2)
+        with self.assertRaises(ValueError):
+            _ = Annotation(id_=2, document=document, spans=[span_2], label=label, label_set=self.label_set)
+
+    def test_to_add_annotation_without_id_with_same_span_offsets_but_different_label_to_a_document(self):
+        """Test to add Annotation without ID with a Span with the same offsets but different Label to a Document."""
+        document = Document(project=self.project, category=self.category)
+        label = Label(project=self.project, text='Third Offline Label', label_sets=[self.label_set])
+        span_1 = Span(start_offset=1, end_offset=2)
+        _ = Annotation(id_=1, document=document, spans=[span_1], label=self.label, label_set=self.label_set)
+        span_2 = Span(start_offset=1, end_offset=2)
+        with self.assertRaises(ValueError):
+            _ = Annotation(document=document, spans=[span_2], label=label, label_set=self.label_set)
 
     def test_to_add_two_annotations_to_a_document(self):
         """Test to add an the same Annotation twice to a Document."""
