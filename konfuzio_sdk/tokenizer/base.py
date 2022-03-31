@@ -6,7 +6,7 @@ from typing import List
 
 import pandas as pd
 
-from konfuzio_sdk.data import Document, Category
+from konfuzio_sdk.data import Document, Category, Project
 from konfuzio_sdk.evaluate import compare
 
 logger = logging.getLogger(__name__)
@@ -38,6 +38,47 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
 
         self.tokenize(virtual_doc)
         return compare(document, virtual_doc)
+
+    def evaluate_category(self, category: Category) -> pd.DataFrame:
+        """Compare test Documents of a Category with their tokenized version.
+
+        :param category: Category to evaluate
+        :return: Evaluation DataFrame containing the evaluation of all Documents in the Category.
+        """
+        assert isinstance(category, Category)
+
+        if not category.test_documents():
+            raise ValueError(f"Category {category.__repr__()} has no test documents.")
+
+        evaluation = pd.DataFrame()
+        for document in category.test_documents():
+            evaluation = evaluation.append(self.evaluate(document))
+
+        return evaluation
+
+    def evaluate_project(self, project: Project) -> pd.DataFrame:
+        """Compare test Documents of the Categories in a Project with their tokenized version.
+
+        :param project: Project to evaluate
+        :return: Evaluation DataFrame containing the evaluation of all Documents in all Categories.
+        """
+        assert isinstance(project, Project)
+
+        if not project.categories:
+            raise ValueError(f"Project {project.__repr__()} has no Categories.")
+
+        if not project.test_documents:
+            raise ValueError(f"Project {project.__repr__()} has no test Documents.")
+
+        evaluation = pd.DataFrame()
+        for category in project.categories:
+            try:
+                evaluation = evaluation.append(self.evaluate_category(category))
+            except ValueError:
+                # Category may not have test Documents
+                continue
+
+        return evaluation
 
 
 class ListTokenizer(AbstractTokenizer):

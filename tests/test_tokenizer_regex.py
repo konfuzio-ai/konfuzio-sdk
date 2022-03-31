@@ -16,14 +16,15 @@ class TestRegexTokenizer(unittest.TestCase):
         """Initialize the tokenizer and test setup."""
         cls.project = Project(id_=None)
         cls.category = Category(project=cls.project, id_=1)
+        cls.category_2 = Category(project=cls.project, id_=2)
         cls.project.add_category(cls.category)
-        cls.document = Document(project=cls.project, category=cls.category, text="Good morning.")
-
-        cls.label_set = LabelSet(id_=2, project=cls.project, categories=[cls.category])
+        cls.project.add_category(cls.category_2)
+        cls.label_set = LabelSet(id_=2, project=cls.project, categories=[cls.category, cls.category_2])
         cls.label = Label(id_=3, text='LabelName', project=cls.project, label_sets=[cls.label_set])
+
+        cls.document = Document(project=cls.project, category=cls.category, text="Good morning.", dataset_status=3)
         annotation_set = AnnotationSet(id_=4, document=cls.document, label_set=cls.label_set)
         cls.span = Span(start_offset=0, end_offset=4)
-
         _ = Annotation(
             document=cls.document,
             is_correct=True,
@@ -31,6 +32,18 @@ class TestRegexTokenizer(unittest.TestCase):
             label=cls.label,
             label_set=cls.label_set,
             spans=[cls.span],
+        )
+
+        cls.document_2 = Document(project=cls.project, category=cls.category_2, text="Good day.", dataset_status=3)
+        annotation_set_2 = AnnotationSet(id_=5, document=cls.document_2, label_set=cls.label_set)
+        cls.span_2 = Span(start_offset=0, end_offset=4)
+        _ = Annotation(
+            document=cls.document_2,
+            is_correct=True,
+            annotation_set=annotation_set_2,
+            label=cls.label,
+            label_set=cls.label_set,
+            spans=[cls.span_2],
         )
 
         cls.regex = 'Good'
@@ -122,6 +135,29 @@ class TestRegexTokenizer(unittest.TestCase):
         result = self.tokenizer.evaluate(self.document)
         assert result.start_offset[0] == self.span.start_offset
         assert result.end_offset[0] == self.span.end_offset
+
+    def test_evaluate_category(self):
+        """Test evaluate a Category with a Document with 1 Span that can be found by the tokenizer."""
+        result = self.tokenizer.evaluate_category(self.category)
+        assert result.is_correct.sum() == 1
+        assert result.is_found_by_tokenizer.sum() == 1
+
+    def test_evaluate_project(self):
+        """Test evaluate a Project with Documents with 2 Spans that can be found by the tokenizer."""
+        result = self.tokenizer.evaluate_project(self.project)
+        assert result.is_correct.sum() == 2
+        assert result.is_found_by_tokenizer.sum() == 2
+        assert set(result.category_id.dropna().unique()) == {self.category.id_, self.category_2.id_}
+
+    def test_evaluate_project_output_offsets(self):
+        """Test evaluation offsets of a Project with Documents with 2 Spans that can be found by the tokenizer."""
+        result = self.tokenizer.evaluate_project(self.project)
+        result_doc_1 = result[result.document_id_local == self.document.id_local]
+        result_doc_2 = result[result.document_id_local == self.document_2.id_local]
+        assert result_doc_1.start_offset[0] == self.span.start_offset
+        assert result_doc_1.end_offset[0] == self.span.end_offset
+        assert result_doc_2.start_offset[0] == self.span_2.start_offset
+        assert result_doc_2.end_offset[0] == self.span_2.end_offset
 
 
 class TestWhitespaceTokenizer(unittest.TestCase):
