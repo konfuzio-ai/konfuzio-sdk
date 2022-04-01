@@ -178,8 +178,6 @@ class TestTemplateRegexTokenizer(unittest.TestCase):
         cls.label_set = LabelSet(id_=2, project=cls.project, categories=[cls.category])
         cls.label = Label(id_=3, text='test', project=cls.project, label_sets=[cls.label_set])
 
-        cls.tokenizer = WhitespaceTokenizer()
-
     def _create_artificial_document(self, text, offsets):
         document = Document(project=self.project, category=self.category, text=text)
         annotation_set = AnnotationSet(document=document, label_set=self.label_set)
@@ -200,6 +198,7 @@ class TestTemplateRegexTokenizer(unittest.TestCase):
 
 class TestWhitespaceTokenizer(TestTemplateRegexTokenizer):
     """Test the WhitespaceTokenizer."""
+    tokenizer = WhitespaceTokenizer()
 
     # Tokenizer cannot find
     def test_case_1_group_capitalized_words(self):
@@ -355,6 +354,7 @@ class TestWhitespaceTokenizer(TestTemplateRegexTokenizer):
 
 class TestConnectedTextTokenizer(TestTemplateRegexTokenizer):
     """Test the ConnectedTextTokenizer."""
+    tokenizer = ConnectedTextTokenizer()
 
     # Tokenizer can find
     def test_case_1_group_capitalized_words(self):
@@ -511,6 +511,8 @@ class TestConnectedTextTokenizer(TestTemplateRegexTokenizer):
 class TestColonPrecededTokenizer(TestTemplateRegexTokenizer):
     """Test the ColonPrecededTokenizer."""
 
+    tokenizer = ColonPrecededTokenizer()
+
     # Tokenizer cannot find
     def test_case_1_group_capitalized_words(self):
         """Test if tokenizer can find a group of words starting with a capitalized character."""
@@ -657,6 +659,7 @@ class TestColonPrecededTokenizer(TestTemplateRegexTokenizer):
 
 class TestCapitalizedTextTokenizer(TestTemplateRegexTokenizer):
     """Test the CapitalizedTextTokenizer."""
+    tokenizer = CapitalizedTextTokenizer()
 
     def test_case_1_group_capitalized_words(self):
         """Test if tokenizer can find a group of words starting with a capitalized character."""
@@ -811,6 +814,7 @@ class TestCapitalizedTextTokenizer(TestTemplateRegexTokenizer):
 
 class TestNonTextTokenizer(TestTemplateRegexTokenizer):
     """Test the NonTextTokenizer."""
+    tokenizer = NonTextTokenizer()
 
     # Tokenizer cannot find
     def test_case_1_group_capitalized_words(self):
