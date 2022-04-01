@@ -949,8 +949,9 @@ class Annotation(Data):
             return self.id_local == other.id_local
         else:
             if self.document and other.document and self.document == other.document:
-                if self.spans == other.spans:
-                    result = True
+                if self.is_correct == other.is_correct:
+                    if self.spans == other.spans:
+                        result = True
 
         return result
 
