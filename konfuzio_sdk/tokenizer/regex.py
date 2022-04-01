@@ -25,7 +25,7 @@ class RegexTokenizer(AbstractTokenizer):
         """
         assert isinstance(document, Document)
 
-        if not document.text:
+        if document.text is None:
             return document
 
         # t0 = time.monotonic()

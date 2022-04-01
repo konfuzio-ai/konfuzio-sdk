@@ -167,8 +167,7 @@ class TestRegexTokenizer(unittest.TestCase):
         assert result_doc_2.end_offset[0] == self.span_2.end_offset
 
 
-class TestWhitespaceTokenizer(unittest.TestCase):
-    """Test the WhitespaceTokenizer."""
+class TestTemplateRegexTokenizer(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -197,6 +196,9 @@ class TestWhitespaceTokenizer(unittest.TestCase):
         )
 
         return document
+
+class TestWhitespaceTokenizer(TestTemplateRegexTokenizer):
+    """Test the WhitespaceTokenizer."""
 
     # Tokenizer can find
     def test_case_6_group_non_words(self):
@@ -350,36 +352,8 @@ class TestWhitespaceTokenizer(unittest.TestCase):
         assert result.is_found_by_tokenizer.sum() == 0
 
 
-class TestConnectedTextTokenizer(unittest.TestCase):
+class TestConnectedTextTokenizer(TestTemplateRegexTokenizer):
     """Test the ConnectedTextTokenizer."""
-
-    @classmethod
-    def setUpClass(cls) -> None:
-        """Initialize the tokenizer and test setup."""
-        cls.project = Project(id_=None)
-        cls.category = Category(project=cls.project, id_=1)
-        cls.project.add_category(cls.category)
-        cls.label_set = LabelSet(id_=2, project=cls.project, categories=[cls.category])
-        cls.label = Label(id_=3, text='test', project=cls.project, label_sets=[cls.label_set])
-
-        cls.tokenizer = ConnectedTextTokenizer()
-
-    def _create_artificial_document(self, text, offsets):
-        document = Document(project=self.project, category=self.category, text=text)
-        annotation_set = AnnotationSet(document=document, label_set=self.label_set)
-        spans = []
-        for span_offsets in offsets:
-            spans.append(Span(start_offset=span_offsets[0], end_offset=span_offsets[1]))
-        _ = Annotation(
-            document=document,
-            is_correct=True,
-            annotation_set=annotation_set,
-            label=self.label,
-            label_set=self.label_set,
-            spans=spans,
-        )
-
-        return document
 
     # Tokenizer can find
     def test_case_1_group_capitalized_words(self):
@@ -533,37 +507,9 @@ class TestConnectedTextTokenizer(unittest.TestCase):
         assert result.is_found_by_tokenizer.sum() == 0
 
 
-class TestColonPrecededTokenizer(unittest.TestCase):
+class TestColonPrecededTokenizer(TestTemplateRegexTokenizer):
     """Test the ColonPrecededTokenizer."""
 
-    @classmethod
-    def setUpClass(cls) -> None:
-        """Initialize the tokenizer and test setup."""
-        cls.project = Project(id_=None)
-        cls.category = Category(project=cls.project, id_=1)
-        cls.project.add_category(cls.category)
-        cls.label_set = LabelSet(id_=2, project=cls.project, categories=[cls.category])
-        cls.label = Label(id_=3, text='test', project=cls.project, label_sets=[cls.label_set])
-
-        cls.tokenizer = ColonPrecededTokenizer()
-
-    def _create_artificial_document(self, text, offsets):
-        document = Document(project=self.project, category=self.category, text=text)
-        annotation_set = AnnotationSet(document=document, label_set=self.label_set)
-        spans = []
-        for span_offsets in offsets:
-            spans.append(Span(start_offset=span_offsets[0], end_offset=span_offsets[1]))
-        _ = Annotation(
-            document=document,
-            is_correct=True,
-            annotation_set=annotation_set,
-            label=self.label,
-            label_set=self.label_set,
-            spans=spans,
-        )
-
-        return document
-
     # Tokenizer can find
     def test_case_19_word_preceded_by_colon(self):
         """Test if tokenizer can find a word preceded by colon."""
@@ -708,38 +654,9 @@ class TestColonPrecededTokenizer(unittest.TestCase):
         assert result.is_found_by_tokenizer.sum() == 0
 
 
-class TestCapitalizedTextTokenizer(unittest.TestCase):
+class TestCapitalizedTextTokenizer(TestTemplateRegexTokenizer):
     """Test the CapitalizedTextTokenizer."""
 
-    @classmethod
-    def setUpClass(cls) -> None:
-        """Initialize the tokenizer and test setup."""
-        cls.project = Project(id_=None)
-        cls.category = Category(project=cls.project, id_=1)
-        cls.project.add_category(cls.category)
-        cls.label_set = LabelSet(id_=2, project=cls.project, categories=[cls.category])
-        cls.label = Label(id_=3, text='test', project=cls.project, label_sets=[cls.label_set])
-
-        cls.tokenizer = CapitalizedTextTokenizer()
-
-    def _create_artificial_document(self, text, offsets):
-        document = Document(project=self.project, category=self.category, text=text)
-        annotation_set = AnnotationSet(document=document, label_set=self.label_set)
-        spans = []
-        for span_offsets in offsets:
-            spans.append(Span(start_offset=span_offsets[0], end_offset=span_offsets[1]))
-        _ = Annotation(
-            document=document,
-            is_correct=True,
-            annotation_set=annotation_set,
-            label=self.label,
-            label_set=self.label_set,
-            spans=spans,
-        )
-
-        return document
-
-    # Tokenizer can find
     def test_case_1_group_capitalized_words(self):
         """Test if tokenizer can find a group of words starting with a capitalized character."""
         document = self._create_artificial_document(text="Company A&B GmbH  ", offsets=[(0, 16)])
@@ -891,36 +808,8 @@ class TestCapitalizedTextTokenizer(unittest.TestCase):
         assert result.is_found_by_tokenizer.sum() == 0
 
 
-class TestNonTextTokenizer(unittest.TestCase):
+class TestNonTextTokenizer(TestTemplateRegexTokenizer):
     """Test the NonTextTokenizer."""
-
-    @classmethod
-    def setUpClass(cls) -> None:
-        """Initialize the tokenizer and test setup."""
-        cls.project = Project(id_=None)
-        cls.category = Category(project=cls.project, id_=1)
-        cls.project.add_category(cls.category)
-        cls.label_set = LabelSet(id_=2, project=cls.project, categories=[cls.category])
-        cls.label = Label(id_=3, text='test', project=cls.project, label_sets=[cls.label_set])
-
-        cls.tokenizer = NonTextTokenizer()
-
-    def _create_artificial_document(self, text, offsets):
-        document = Document(project=self.project, category=self.category, text=text)
-        annotation_set = AnnotationSet(document=document, label_set=self.label_set)
-        spans = []
-        for span_offsets in offsets:
-            spans.append(Span(start_offset=span_offsets[0], end_offset=span_offsets[1]))
-        _ = Annotation(
-            document=document,
-            is_correct=True,
-            annotation_set=annotation_set,
-            label=self.label,
-            label_set=self.label_set,
-            spans=spans,
-        )
-
-        return document
 
     # Tokenizer can find
     def test_case_9_non_words_separated_by_whitespace(self):
