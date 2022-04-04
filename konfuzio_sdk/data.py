@@ -1355,7 +1355,7 @@ class Document(Data):
                 assignee = 1101  # duplicated-annotation@konfuzio.com
 
             elif "related to" in str(error_message):
-                assignee = 1103  # category-issue@konfuzio.com
+                assignee = 1118  # category-issue@konfuzio.com
 
             else:
                 raise ValueError('Error not expected.')
