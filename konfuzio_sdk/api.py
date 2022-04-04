@@ -413,7 +413,7 @@ def delete_file_konfuzio_api(document_id: int, session=_konfuzio_session()):
     return True
 
 
-def update_file_konfuzio_api(
+def update_document_konfuzio_api(
     document_id: int, file_name: str, dataset_status: int, session=_konfuzio_session(), **kwargs
 ):
     """

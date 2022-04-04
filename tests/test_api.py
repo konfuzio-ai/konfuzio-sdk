@@ -18,7 +18,7 @@ from konfuzio_sdk.api import (
     delete_document_annotation,
     delete_file_konfuzio_api,
     get_results_from_segmentation,
-    update_file_konfuzio_api,
+    update_document_konfuzio_api,
     get_project_list,
     get_document_details,
     get_project_details,
@@ -318,7 +318,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
     def test_update_file_konfuzio_api(self):
         """Update the name of a document."""
         timestamp = str(datetime.datetime.now())
-        result = update_file_konfuzio_api(document_id=214414, file_name=timestamp, dataset_status=0)
+        result = update_document_konfuzio_api(document_id=214414, file_name=timestamp, dataset_status=0)
         assert result['data_file_name'] == timestamp
 
     def test_create_label(self):
