@@ -1338,7 +1338,7 @@ class Document(Data):
                     document_id=self.id_,
                     file_name=self.name,
                     dataset_status=4,
-                    assignee=1101,  # bbox-issue@konfuzio.com
+                    assignee=1102,  # bbox-issue@konfuzio.com
                 )
 
         return valid
