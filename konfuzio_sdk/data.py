@@ -1355,9 +1355,11 @@ class Document(Data):
             valid = False
 
             if "is a duplicate of" in str(error_message):
+                logger.error(f'{self} has duplicated Annotations.')
                 assignee = 1101  # duplicated-annotation@konfuzio.com
 
             elif "related to" in str(error_message):
+                logger.error(f'{self} has Annotations from an incorrect Category.')
                 assignee = 1118  # category-issue@konfuzio.com
 
             else:
