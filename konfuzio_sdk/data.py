@@ -1335,7 +1335,10 @@ class Document(Data):
             if update_document:
                 # set the dataset status of the Document to Excluded
                 update_document_konfuzio_api(
-                    document_id=self.id_, dataset_status=4, assignee=1101  # bbox-issue@konfuzio.com
+                    document_id=self.id_,
+                    file_name=self.name,
+                    dataset_status=4,
+                    assignee=1101,  # bbox-issue@konfuzio.com
                 )
 
         return valid
@@ -1362,7 +1365,7 @@ class Document(Data):
 
         if update_document and assignee is not None:
             # set the dataset status of the Document to Excluded
-            update_document_konfuzio_api(document_id=self.id_, dataset_status=4, assignee=assignee)
+            update_document_konfuzio_api(document_id=self.id_, file_name=self.name, dataset_status=4, assignee=assignee)
 
         return valid
 
