@@ -375,8 +375,8 @@ Annotation will be added to the previous Annotation Set created (define_annotati
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="konfuzio_sdk.api.update_file_konfuzio_api">
-<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">update_file_konfuzio_api</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id:</span> <span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_status:</span> <span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.update_file_konfuzio_api" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="konfuzio_sdk.api.update_document_konfuzio_api">
+<span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.api.</span></span><span class="sig-name descname"><span class="pre">update_document_konfuzio_api</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id:</span> <span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_status:</span> <span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session=&lt;requests.sessions.Session</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#konfuzio_sdk.api.update_document_konfuzio_api" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the dataset status of an existing Document via Konfuzio API.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -868,8 +868,14 @@ Project.documents: 2  –&gt; Document recall 100%</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">check_bbox</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span></dt>
-<dd><p>Check if bbox matches text.</p>
+<span class="sig-name descname"><span class="pre">check_annotations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update_document</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span></dt>
+<dd><p>Check if Annotations are valid - no duplicates and correct Category.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">check_bbox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update_document</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span></dt>
+<dd><p>Check if bbox matches text and if coordinates are valid.</p>
 </dd></dl>
 
 <dl class="py method">
