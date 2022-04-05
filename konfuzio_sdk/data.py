@@ -22,6 +22,7 @@ from konfuzio_sdk.api import (
     post_document_annotation,
     delete_document_annotation,
     get_document_details,
+    update_document_konfuzio_api,
 )
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
@@ -1313,9 +1314,57 @@ class Document(Data):
 
         return result
 
-    def check_bbox(self) -> bool:
-        """Check if bbox matches text."""
-        return all([self.text[int(k)] == v['text'] for k, v in self.get_bbox().items()])
+    def check_bbox(self, update_document: bool = False) -> bool:
+        """Check if bbox matches text and if coordinates are valid."""
+        all_text = all([self.text[int(k)] == v['text'] for k, v in self.get_bbox().items()])
+        all_x = all([v['x1'] > v['x0'] for k, v in self.get_bbox().items()])
+        all_y = all([v['y1'] > v['y0'] for k, v in self.get_bbox().items()])
+        all_width = all(
+            [v['x1'] <= self.pages[v['page_number'] - 1]['original_size'][0] for k, v in self.get_bbox().items()]
+        )
+
+        all_height = all(
+            [v['y1'] <= self.pages[v['page_number'] - 1]['original_size'][1] for k, v in self.get_bbox().items()]
+        )
+
+        valid = all([all_text, all_x, all_y, all_width, all_height])
+
+        if not valid:
+            logger.error(f'{self} has invalid character bounding boxes.')
+
+            if update_document:
+                # set the dataset status of the Document to Excluded
+                update_document_konfuzio_api(
+                    document_id=self.id_, dataset_status=4, assignee=1101  # bbox-issue@konfuzio.com
+                )
+
+        return valid
+
+    def check_annotations(self, update_document: bool = False) -> bool:
+        """Check if Annotations are valid - no duplicates and correct Category."""
+        valid = True
+        assignee = None
+
+        try:
+            self.get_annotations()
+
+        except ValueError as error_message:
+            valid = False
+
+            if "is a duplicate of" in str(error_message):
+                assignee = 1101  # duplicated-annotation@konfuzio.com
+
+            elif "related to" in str(error_message):
+                assignee = 1118  # category-issue@konfuzio.com
+
+            else:
+                raise ValueError('Error not expected.')
+
+        if update_document and assignee is not None:
+            # set the dataset status of the Document to Excluded
+            update_document_konfuzio_api(document_id=self.id_, dataset_status=4, assignee=assignee)
+
+        return valid
 
     @property
     def is_online(self) -> Optional[int]:

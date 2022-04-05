@@ -413,7 +413,7 @@ def delete_file_konfuzio_api(document_id: int, session=_konfuzio_session()):
     return True
 
 
-def update_file_konfuzio_api(
+def update_document_konfuzio_api(
     document_id: int, file_name: str, dataset_status: int, session=_konfuzio_session(), **kwargs
 ):
     """
@@ -428,8 +428,14 @@ def update_file_konfuzio_api(
     url = get_document_url(document_id)
 
     category_id = kwargs.get('category_template_id', None)
+    assignee = kwargs.get('assignee', None)
 
-    data = {"data_file_name": file_name, "dataset_status": dataset_status, "category_template": category_id}
+    data = {
+        "data_file_name": file_name,
+        "dataset_status": dataset_status,
+        "category_template": category_id,
+        "assignee": assignee,
+    }
 
     r = session.patch(url=url, json=data)
     return json.loads(r.text)
