@@ -950,9 +950,17 @@ class Annotation(Data):
             return self.id_local == other.id_local
         else:
             if self.document and other.document and self.document == other.document:
-                if self.is_correct == other.is_correct:
-                    if self.spans == other.spans:
-                        result = True
+                if self.document and other.document and self.document == other.document:
+                    # Both are correct
+                    if self.is_correct and other.is_correct:
+                        if self.spans == other.spans:
+                            result = True
+
+                    # Both are not correct or one Annotation is correct and the other Annotation is not correct.
+                    else:
+                        if self.label == other.label:
+                            if self.spans == other.spans:
+                                result = True
 
         return result
 
