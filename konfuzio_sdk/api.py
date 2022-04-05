@@ -427,15 +427,16 @@ def update_document_konfuzio_api(
     """
     url = get_document_url(document_id)
 
+    data = {"data_file_name": file_name, "dataset_status": dataset_status}
+
     category_id = kwargs.get('category_template_id', None)
     assignee = kwargs.get('assignee', None)
 
-    data = {
-        "data_file_name": file_name,
-        "dataset_status": dataset_status,
-        "category_template": category_id,
-        "assignee": assignee,
-    }
+    if category_id is not None:
+        data.update({"category_template": category_id})
+
+    if assignee is not None:
+        data.update({"assignee": assignee})
 
     r = session.patch(url=url, json=data)
     return json.loads(r.text)
