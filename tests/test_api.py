@@ -325,6 +325,13 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         assert result['data_file_name'] == timestamp
         assert result['assignee'] == assignee
 
+    def test_update_document_konfuzio_api_no_changes(self):
+        """Update a document without providing information."""
+        data = get_document_details(document_id=214414, project_id=TEST_PROJECT_ID)
+        file_name = data['data_file_name']
+        result = update_document_konfuzio_api(document_id=214414)
+        assert result['data_file_name'] == file_name
+
     def test_create_label(self):
         """Create a label."""
         # mock session

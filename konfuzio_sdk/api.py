@@ -413,24 +413,27 @@ def delete_file_konfuzio_api(document_id: int, session=_konfuzio_session()):
     return True
 
 
-def update_document_konfuzio_api(
-    document_id: int, file_name: str, dataset_status: int, session=_konfuzio_session(), **kwargs
-):
+def update_document_konfuzio_api(document_id: int, session=_konfuzio_session(), **kwargs):
     """
-    Update the dataset status of an existing Document via Konfuzio API.
+    Update an existing Document via Konfuzio API.
 
     :param document_id: ID of the document
-    :param file_name: New file name.
-    :param dataset_status: Change or keep dataset status. Get Document information first to keep the status.
     :param session: Konfuzio session with Retry and Timeout policy
     :return: Response status.
     """
     url = get_document_url(document_id)
 
-    data = {"data_file_name": file_name, "dataset_status": dataset_status}
-
+    data = {}
+    file_name = kwargs.get('file_name', None)
+    dataset_status = kwargs.get('dataset_status', None)
     category_id = kwargs.get('category_template_id', None)
     assignee = kwargs.get('assignee', None)
+
+    if file_name is not None:
+        data.update({"data_file_name": file_name})
+
+    if dataset_status is not None:
+        data.update({"dataset_status": dataset_status})
 
     if category_id is not None:
         data.update({"category_template": category_id})
