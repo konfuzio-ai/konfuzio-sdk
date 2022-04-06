@@ -44,7 +44,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 24
+        assert len(cls.project.virtual_documents) == 25
 
     def test_project_no_label(self):
         """Test that no_label exists in the Labels of the Project and has the expected name."""
@@ -165,6 +165,20 @@ class TestOfflineDataSetup(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             span.bbox()
             assert 'coordinate x1 should be bigger than x0.' in context.exception
+
+    def test_get_span_bbox_with_unavailable_characters(self):
+        """Test get the bbox of a Span where the characters are unavailable."""
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 1, 'top': 10, 'bottom': 11, 'page_number': 1},
+            '2': {'x0': 1, 'x1': 2, 'y0': 0, 'y1': 1, 'top': 10, 'bottom': 11, 'page_number': 1},
+        }
+        document = Document(project=self.project, category=self.category, text='hello', bbox=document_bbox)
+        span = Span(start_offset=1, end_offset=2)
+        _ = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
+
+        with self.assertRaises(ValueError) as context:
+            span.bbox()
+            assert 'does not have available characters bounding boxes.' in context.exception
 
     def test_document_check_bbox_coordinates(self):
         """Test bbox check for coordinates with valid coordinates."""

@@ -615,6 +615,12 @@ class Span(Data):
         """Calculate the bounding box of a text sequence."""
         if self.annotation:
             b = get_bbox(self.annotation.document.get_bbox(), self.start_offset, self.end_offset)
+
+            if not any(b.values()):
+                # The Span is composed by characters that are treated as whitespaces and therefore the Document does
+                # not have the bounding boxes for those characters (e.g. '\x0c')
+                raise ValueError(f'{self} does not have available characters bounding boxes.')
+
             # self.page_index = b['page_index']
             # "page_index" depends on the document text and should be independent of bboxes.
             self.top = b['top']

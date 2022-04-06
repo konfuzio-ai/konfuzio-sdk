@@ -39,11 +39,11 @@ class RegexTokenizer(AbstractTokenizer):
                 # , created_by=self.__repr__
             )
 
-            # TODO: check that tokenizer does ot create empty spans
-            # TODO: check if bboxes of characters are available
-            # if document.text[span.start_offset: span.end_offset] == '':  # skip whitespace
-            #     logger.error(f'Whitespace entity entered training process.')
-            #     continue
+            try:
+                # check that bboxes of characters are available and therefore Span can have bbox
+                span.bbox()
+            except ValueError:
+                continue
 
             _ = Annotation(
                 document=document,
