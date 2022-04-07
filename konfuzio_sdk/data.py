@@ -610,7 +610,7 @@ class Span(Data):
         """Return string representation."""
         return f"{self.__class__.__name__} ({self.start_offset}, {self.end_offset})"
 
-    def bbox(self) -> 'Span':
+    def bbox(self):
         """Calculate the bounding box of a text sequence."""
         if self.annotation:
             b = get_bbox(self.annotation.document.get_bbox(), self.start_offset, self.end_offset)
@@ -624,13 +624,16 @@ class Span(Data):
             self.y1 = b['y1']
 
             if self.x0 and self.x1 and not self.x0 < self.x1:
-                raise ValueError(f'{self}: coordinate x1 should be bigger than x0. x0: {self.x0}, x1: {self.x1}.')
+                raise ValueError(f'{self}: coordinate x1 should be bigger than x0. '
+                                 f'x0: {self.x0}, x1: {self.x1}, document: {self.annotation.document}.')
 
             if self.y0 and self.y1 and not self.y0 < self.y1:
-                raise ValueError(f'{self}: coordinate y1 should be bigger than y0. y0: {self.y0}, y1: {self.y1}.')
+                raise ValueError(f'{self}: coordinate y1 should be bigger than y0.'
+                                 f' y0: {self.y0}, y1: {self.y1}, document: {self.annotation.document}.')
 
             if self.page_index is not None and not (self.x1 < self.page_width) or not (self.y1 < self.page_height):
-                raise ValueError(f'Span {self}: bounding box of span is located outside of the page.')
+                raise ValueError(f'Span {self}: bounding box of span is located outside of '
+                                 f'the page, document: {self.annotation.document}.')
 
     @property
     def line_index(self) -> int:  # TODO line_index might not be needed.
@@ -944,14 +947,14 @@ class Annotation(Data):
     def __eq__(self, other):
         """We compare an Annotation based on it's Label, Label-Sets if it's online otherwise on the id_local."""
         result = False
-        if self.id_ is None and other and other.id_ is None:
-            # Compare to virtual instances
-            return self.id_local == other.id_local
-        else:
-            if self.document and other.document and self.document == other.document:
-                if self.is_correct == other.is_correct:
-                    if self.spans == other.spans:
-                        result = True
+        # if self.id_ is None and other and other.id_ is None:
+        #     # Compare to virtual instances
+        #     return self.id_local == other.id_local
+        # else:
+        if self.document and other.document and self.document == other.document:
+            if self.is_correct == other.is_correct:
+                if self.spans == other.spans:
+                    result = True
 
         return result
 
@@ -1314,7 +1317,21 @@ class Document(Data):
         return result
 
     def check_bbox(self) -> bool:
-        """Check if bbox matches text."""
+        """
+        Check if every character in the document.text in part of the bbox and that every entry in document.bbox
+        has a match in the document text.
+        """
+        self._bbox = self.get_bbox()
+        for index, char in enumerate(self.text):
+            if char in [' ', '\f', '\n']:
+                continue
+            try:
+                if self.get_bbox()[str(index)]['text'] != char:
+                    return False
+            except KeyError:
+                return False
+
+        self._bbox = None
         return all([self.text[int(k)] == v['text'] for k, v in self.get_bbox().items()])
 
     @property
