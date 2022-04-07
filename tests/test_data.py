@@ -72,6 +72,26 @@ class TestOfflineDataSetup(unittest.TestCase):
         """Test if setup worked."""
         assert self.document.category == self.category
 
+    @unittest.skip(reason='Span validation.')
+    def test_span_negative_offset(self):
+        """Negative Span creation should not be possible."""
+        project = Project(id_=None)
+        category = Category(project=project)
+        label_set = LabelSet(id_=33, project=project, categories=[category])
+        label = Label(id_=22, text='LabelName', project=project, label_sets=[label_set], threshold=0.5)
+        document = Document(project=project, category=category, text="From 14.12.2021 to 1.1.2022.", dataset_status=2)
+        with self.assertRaises():
+            span_1 = Span(start_offset=-1, end_offset=2)
+            annotation_set_1 = AnnotationSet(id_=1, document=document, label_set=label_set)
+            annotation = Annotation(
+                document=document,
+                is_correct=True,
+                annotation_set=annotation_set_1,
+                label=label,
+                label_set=label_set,
+                spans=[span_1],
+            )
+
     def test_training_document_annotations_are_available(self):
         """Test if the Label can access the new Annotation."""
         project = Project(id_=None)
