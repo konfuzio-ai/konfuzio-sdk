@@ -18,7 +18,7 @@ from konfuzio_sdk.api import (
     delete_document_annotation,
     delete_file_konfuzio_api,
     get_results_from_segmentation,
-    update_file_konfuzio_api,
+    update_document_konfuzio_api,
     get_project_list,
     get_document_details,
     get_project_details,
@@ -315,11 +315,15 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         assert len(result[0]) == 5  # on the first page 5 elements can be found
         assert set([box["label"] for box in result[0]]) == {"text", "figure", "table", "title"}
 
-    def test_update_file_konfuzio_api(self):
-        """Update the name of a document."""
+    def test_update_document_konfuzio_api(self):
+        """Update the name and assignee of a document."""
         timestamp = str(datetime.datetime.now())
-        result = update_file_konfuzio_api(document_id=214414, file_name=timestamp, dataset_status=0)
+        assignee = 1043
+        result = update_document_konfuzio_api(
+            document_id=214414, file_name=timestamp, dataset_status=0, assignee=assignee
+        )
         assert result['data_file_name'] == timestamp
+        assert result['assignee'] == assignee
 
     def test_create_label(self):
         """Create a label."""

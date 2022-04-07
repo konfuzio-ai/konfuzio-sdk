@@ -44,7 +44,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 17
+        assert len(cls.project.virtual_documents) == 24
 
     def test_project_no_label(self):
         """Test that no_label exists in the Labels of the Project and has the expected name."""
@@ -185,6 +185,96 @@ class TestOfflineDataSetup(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             span.bbox()
             assert 'coordinate x1 should be bigger than x0.' in context.exception
+
+    def test_document_check_bbox_coordinates(self):
+        """Test bbox check for coordinates with valid coordinates."""
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 1, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
+        }
+        document = Document(
+            project=self.project,
+            category=self.category,
+            text='hello',
+            bbox=document_bbox,
+            pages=[{'original_size': (1, 1)}],
+        )
+        self.assertTrue(document.check_bbox())
+
+    def test_document_check_bbox_invalid_x_coordinates(self):
+        """Test bbox check with invalid x coordinates."""
+        document_bbox = {
+            '0': {'x0': 1, 'x1': 1, 'y0': 0, 'y1': 1, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
+        }
+        document = Document(
+            project=self.project,
+            category=self.category,
+            text='hello',
+            bbox=document_bbox,
+            pages=[{'original_size': (1, 1)}],
+        )
+        self.assertFalse(document.check_bbox())
+
+    def test_document_check_bbox_invalid_y_coordinates(self):
+        """Test bbox check with invalid y coordinates."""
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 0, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
+        }
+        document = Document(
+            project=self.project,
+            category=self.category,
+            text='hello',
+            bbox=document_bbox,
+            pages=[{'original_size': (1, 1)}],
+        )
+        self.assertFalse(document.check_bbox())
+
+    def test_document_check_bbox_invalid_width_coordinates(self):
+        """Test bbox check with invalid x coordinates regarding the page width."""
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 2, 'y0': 0, 'y1': 0, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
+        }
+        document = Document(
+            project=self.project,
+            category=self.category,
+            text='hello',
+            bbox=document_bbox,
+            pages=[{'original_size': (1, 1)}],
+        )
+        self.assertFalse(document.check_bbox())
+
+    def test_document_check_bbox_invalid_height_coordinates(self):
+        """Test bbox check with invalid x coordinates regarding the page height."""
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
+        }
+        document = Document(
+            project=self.project,
+            category=self.category,
+            text='hello',
+            bbox=document_bbox,
+            pages=[{'original_size': (1, 1)}],
+        )
+        self.assertFalse(document.check_bbox())
+
+    def test_document_check_duplicated_annotations(self):
+        """Test Annotations check when an error is raised due to duplicated Annotations by get_annotations."""
+        # overwriting get_annotations for test
+        class DocumentDuplicatedAnnotations(Document):
+            def get_annotations(self):
+                raise ValueError("is a duplicate of.")
+
+        document = DocumentDuplicatedAnnotations(project=self.project, category=self.category, text="hello")
+        self.assertFalse(document.check_annotations())
+
+    def test_document_check_category_annotations(self):
+        """Test Annotations check when an error is raised due to an incorrect Category by get_annotations."""
+        # overwriting get_annotations for test
+        class DocumentIncorrectCategoryAnnotations(Document):
+            def get_annotations(self):
+                raise ValueError("related to.")
+
+        document = DocumentIncorrectCategoryAnnotations(project=self.project, category=self.category, text="hello")
+        self.assertFalse(document.check_annotations())
 
     def test_to_there_must_not_be_a_folder(self):
         """Check that a virtual Document has now folder."""
@@ -1026,7 +1116,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_document_check_bbox(self):
         """Test bbox check."""
         doc = self.prj.get_document_by_id(44842)
-        virtual_doc = Document(text=doc.text, bbox=doc.get_bbox(), project=doc.project)
+        virtual_doc = Document(text=doc.text, bbox=doc.get_bbox(), project=doc.project, pages=doc.pages)
         self.assertTrue(virtual_doc.check_bbox())
         virtual_doc._text = '123' + virtual_doc.text  # Change text to bring bbox out of sync.
         self.assertFalse(virtual_doc.check_bbox())
