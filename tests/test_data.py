@@ -392,8 +392,12 @@ class TestOfflineDataSetup(unittest.TestCase):
                 "size": [1414, 2000],
             }
         ]
-        document = Document(project=self.project, category=self.category, pages=page_list)
-        assert document.pages == page_list
+        document = Document(project=self.project, category=self.category, pages=page_list, text='a')
+        assert len(document.pages) == len(page_list)
+        assert document.pages[0].image == page_list[0]["image"]
+        assert document.pages[0].number == page_list[0]["number"]
+        assert document.pages[0].original_size == page_list[0]["original_size"]
+        assert document.pages[0].size == page_list[0]["size"]
 
     def test_create_new_annotation_set_in_document(self):
         """Add new annotation set to a document."""
@@ -1008,7 +1012,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_assignee_of_document(self):
         """Test Assignee of a Document."""
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
-        assert doc.category.name == 1043  # Document has Assignee ch+test@konfuzio.com with user ID 1043
+        assert doc.assignee == 1043  # Document has Assignee ch+test@konfuzio.com with user ID 1043
 
     def test_document_with_multiline_annotation(self):
         """Test properties of a specific Documents in the test Project."""

@@ -8,7 +8,7 @@ import re
 import shutil
 import zipfile
 import time
-from typing import Optional, List, Union, Tuple
+from typing import Optional, List, Union, Tuple, Dict
 
 import dateutil.parser
 from tqdm import tqdm
@@ -672,7 +672,7 @@ class Span(Data):
     def page_width(self) -> Optional[float]:
         """Get width of the page of the Span. Used to calculate relative position on page."""
         if self.page_index is not None:
-            return self.annotation.document.pages[self.page_index]['original_size'][0]
+            return self.annotation.document.pages[self.page_index].original_size[0]
         else:
             return None
 
@@ -680,7 +680,7 @@ class Span(Data):
     def page_height(self) -> Optional[float]:
         """Get width of the page of the Span. Used to calculate relative position on page."""
         if self.page_index is not None:
-            return self.annotation.document.pages[self.page_index]['original_size'][1]
+            return self.annotation.document.pages[self.page_index].original_size[1]
         else:
             return None
 
@@ -1192,6 +1192,30 @@ class Annotation(Data):
         return sorted(self._spans)
 
 
+class Page(Data):
+    """Access the information about one Page of a document."""
+
+    def __init__(
+            self,
+            id_: Union[int, None] = None,
+            document: 'Document' = None,
+            start_offset: int = None,
+            end_offset: int = None,
+            number: int = None,
+            image: str = None,
+            original_size: Tuple[float, float] = None,
+            size: Tuple[float, float] = None
+    ):
+        self.id_ = id_
+        self.document = document
+        self.start_offset = start_offset
+        self.end_offset = end_offset
+        self.original_size = original_size
+        self.size = size
+        self.image = image
+        self.number = number
+
+
 class Document(Data):
     """Access the information about one document, which is available online."""
 
@@ -1236,6 +1260,7 @@ class Document(Data):
         self._no_label_annotation_set = None
         self.id_local = next(Data.id_iter)
         self.id_ = id_
+        self.assignee = assignee
         self._annotations: List[Annotation] = None
         self._annotation_sets: List[AnnotationSet] = None
         self.file_url = file_url
@@ -1265,7 +1290,10 @@ class Document(Data):
         self._text = text
         self._bbox = bbox
         self._hocr = None
-        self._pages = pages
+        self._pages = None
+
+        # Use Page to initialize Pages of this Document
+        self._load_pages(pages_data=pages)
 
         # prepare local setup for document
         if self.id_:
@@ -1318,6 +1346,36 @@ class Document(Data):
 
         return self._no_label_annotation_set
 
+    def _load_pages(self, pages_data: List[Dict]):
+        """Load Pages of document."""
+        if pages_data is not None:
+            _pages = []
+            page_texts = self.text.split('\f')
+            assert len(page_texts) == len(pages_data)
+
+            start_offset = 0
+
+            for page_index, page_data in enumerate(pages_data):
+                page_text = page_texts[page_index]
+                end_offset = start_offset + len(page_text)
+                if isinstance(page_data, Page):
+                    page = Page(
+                        id_=page_data.id_,
+                        number=page_data.number,
+                        size=page_data.size,
+                        original_size=page_data.original_size,
+                        start_offset=page_data.start_offset,
+                        end_offset=page_data.end_offset,
+                        document=self
+                    )
+                else:
+                    page_data['id_'] = page_data.pop('id', None)
+                    page = Page(**page_data, document=self, start_offset=start_offset, end_offset=end_offset)
+                _pages.append(page)
+                start_offset = end_offset + 1
+
+            self._pages = _pages
+
     def eval_dict(self, use_correct=False) -> List[dict]:
         """Use this dict to evaluate Documents. The speciality: For every Span of an Annotation create one entry."""
         result = []
@@ -1350,11 +1408,11 @@ class Document(Data):
         all_x = all([v['x1'] > v['x0'] for k, v in self.get_bbox().items()])
         all_y = all([v['y1'] > v['y0'] for k, v in self.get_bbox().items()])
         all_width = all(
-            [v['x1'] <= self.pages[v['page_number'] - 1]['original_size'][0] for k, v in self.get_bbox().items()]
+            [v['x1'] <= self.pages[v['page_number'] - 1].original_size[0] for k, v in self.get_bbox().items()]
         )
 
         all_height = all(
-            [v['y1'] <= self.pages[v['page_number'] - 1]['original_size'][1] for k, v in self.get_bbox().items()]
+            [v['y1'] <= self.pages[v['page_number'] - 1].original_size[1] for k, v in self.get_bbox().items()]
         )
 
         valid = all([all_x, all_y, all_width, all_height])
@@ -1536,14 +1594,14 @@ class Document(Data):
         """
         self.image_paths = []
         for page in self.pages:
-            if is_file(page["image"], raise_exception=False):
-                self.image_paths.append(page["image"])
+            if is_file(page.image, raise_exception=False):
+                self.image_paths.append(page.image)
             else:
-                page_path = os.path.join(self.document_folder, f'page_{page["number"]}.png')
+                page_path = os.path.join(self.document_folder, f'page_{page.number}.png')
                 self.image_paths.append(page_path)
 
                 if not is_file(page_path, raise_exception=False) or update:
-                    url = f'{KONFUZIO_HOST}{page["image"]}'
+                    url = f'{KONFUZIO_HOST}{page.image}'
                     res = self.session.get(url)
                     with open(page_path, "wb") as f:
                         f.write(res.content)
@@ -1706,7 +1764,8 @@ class Document(Data):
             self.download_document_details()
         if is_file(self.pages_file_path, raise_exception=False):
             with open(self.pages_file_path, "r") as f:
-                self._pages = json.loads(f.read())
+                pages_data = json.loads(f.read())
+            self._load_pages(pages_data)
         return self._pages
 
     @property
