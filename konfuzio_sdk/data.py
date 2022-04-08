@@ -1205,6 +1205,7 @@ class Document(Data):
         is_dataset: bool = None,
         dataset_status: int = None,
         updated_at: str = None,
+        assignee: int = None,
         category_template: int = None,  # fix for Konfuzio Server API, it's actually an ID of a Category
         category: Category = None,
         text: str = None,
@@ -1225,6 +1226,7 @@ class Document(Data):
         :param is_dataset: Is dataset or not. (bool)
         :param dataset_status: Dataset status of the Document (e.g. training)
         :param updated_at: Updated information
+        :param assignee: Assignee of the Document
         :param bbox: Bounding box information per character in the PDF (dict)
         :param pages: List of page sizes.
         :param update: Annotations, Annotation Sets will not be loaded by default. True will load it from the API.
@@ -1239,6 +1241,7 @@ class Document(Data):
         self.file_url = file_url
         self.is_dataset = is_dataset
         self.dataset_status = dataset_status
+        self.assignee = assignee
         self._update = update
 
         if project and category_template:

@@ -1005,6 +1005,11 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
         assert doc.category.name == 'Lohnabrechnung'
 
+    def test_assignee_of_document(self):
+        """Test Assignee of a Document."""
+        doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
+        assert doc.category.name == 1043  # Document has Assignee ch+test@konfuzio.com with user ID 1043
+
     def test_document_with_multiline_annotation(self):
         """Test properties of a specific Documents in the test Project."""
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
