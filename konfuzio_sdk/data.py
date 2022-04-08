@@ -1346,7 +1346,7 @@ class Document(Data):
 
         return self._no_label_annotation_set
 
-    def _load_pages(self, pages_data: List[Dict]):
+    def _load_pages(self, pages_data: List[Union[Dict, Page]]):
         """Load Pages of document."""
         if pages_data is not None:
             _pages = []
