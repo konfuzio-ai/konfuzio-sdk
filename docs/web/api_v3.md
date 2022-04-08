@@ -1,4 +1,4 @@
-# API v3
+# API Guide (v3)
 
 This document aims to provide developers with a high-level overview of what can be accomplished through the Konfuzio API v3. For a more thorough description of the available endpoints and their parameters and response, we invite you to browse our [Swagger documentation](http:/app.konfuzio.com/v3/swagger/), which also provides an OpenAPI specification that can be used to generate language-specific API clients.
 
@@ -39,13 +39,59 @@ An example workflow would look like:
 3. The endpoint returns a JSON-encoded request like `{"token": "bf20d992c0960876157b53745cdd86fad95e6ff4"}`.
 4. For any subsequent request, the user provides the HTTP header `Authorization: Token bf20d992c0960876157b53745cdd86fad95e6ff4`.
 
-#### CURL example
+#### cURL example
 
-Coming soon.
+To get a token:
+
+```
+curl --request POST \
+  --url https://app.konfuzio.com/api/v3/auth/ \
+  --header 'Content-Type: application/json' \
+  --data '{"username": "example@example.org", "password": "examplepassword"}'
+```
+
+To use the token:
+
+```
+curl --request GET \
+  --url https://app.konfuzio.com/api/v3/projects/ \
+  --header 'Authorization: Token bf20d992c0960876157b53745cdd86fad95e6ff4'
+```
 
 #### Python example
 
-Coming soon.
+To get a token:
+
+```python
+import requests
+
+url = "https://testing.konfuzio.com/api/v3/auth/"
+
+payload = {
+    "username": "example@example.org",
+    "password": "examplepassword"
+}
+
+response = requests.post(url, json=payload)
+
+print(response.json())
+```
+
+To use the token:
+
+```python
+import requests
+
+url = "https://testing.konfuzio.com/api/v3/projects/"
+
+headers = {
+    "Authorization": "Token bf20d992c0960876157b53745cdd86fad95e6ff4"
+}
+
+response = requests.get(url, headers=headers)
+
+print(response.json())
+```
 
 
 ## Response codes
@@ -107,35 +153,6 @@ For example, you can specify `?fields=id,created_at` to only return the `id` and
 Refer to the Swagger documentation for a specific endpoint to see if it supports using the `fields` parameter. When supported, any field in the response schema can be used in the `fields` parameter.
 
 
-# Guides and How-Tos
+## Guides and How-Tos
 
-## Setup a project with labels, label sets and categories
-
-Coming soon.
-
-## Create an annotation
-
-Coming soon.
-
-## Create training data and train the AI
-
-Coming soon.
-
-## Create your own document dashboard
-
-In cases where our [public documents and iframes](http://help.konfuzio.com/integrations/public-documents/) are not enough, you can build your own solution. Here we explain how you can easily build a read-only dashboard for your documents.
-
-### Start from our Vue.js code
-
-Our document dashboard is based on Vue.js and completely implemented via our [public API](https://app.konfuzio.com/api/). You can take our solution (public repo link?) and customize it to your needs. You will find a technical overview and component description in the repository's `README`.
-
-### Start from scratch
-
-If you're using React, Angular or other technologies, you can use our [public API](https://app.konfuzio.com/api/) to build your own solution.
-
-For feature parity with our read-only document dashboard, you only need to use two endpoints, and if you're only handling public documents, you don't need authentication for these two endpoints.
-
-* The **document detail** (link to swagger) endpoint provides general information about the document you're querying, as well as its extracted data. Most of the data you will need is inside the `annotation_sets` object of the response.
-* The **document page detail** (link to swagger) endpoint provides information about a document's page, including its `entites` (a list of words inside the page, with their coordinates) and its `page_image` (a URL you can use to load the image version of the page).
-
-For more advanced use cases, you can refer to our API help (link?) and/or contact support for guidance.
+Check our [API guides section](./api_guides.html) for practical examples on how to interact with the Konfuzio API
