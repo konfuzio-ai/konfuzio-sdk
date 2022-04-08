@@ -398,9 +398,9 @@ class TestWhitespaceTokenizer(TestTemplateRegexTokenizer):
         )
         assert result[result.is_found_by_tokenizer == 1].end_offset[0] == document.annotations()[0].spans[0].end_offset
 
-    def test_case_25_group_capitalized_words_with_non_capitalized_word_in_the_middle(self):
-        """Test if tokenizer can find a group of capitalized words with a non capitalized word in the middle."""
-        document = self._create_artificial_document(text="     Company und A&B GmbH,", offsets=[(5, 25)])
+    def test_case_25_group_words_within_whitespace_and_comma(self):
+        """Test if tokenizer can find a group of  words within whitespaces and comma."""
+        document = self._create_artificial_document(text="\n     Company und A&B GmbH,\n", offsets=[(6, 26)])
         assert document.annotations()[0].offset_string == ["Company und A&B GmbH"]
         result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 0
@@ -597,9 +597,9 @@ class TestConnectedTextTokenizer(TestTemplateRegexTokenizer):
         result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 0
 
-    def test_case_25_group_capitalized_words_with_non_capitalized_word_in_the_middle(self):
-        """Test if tokenizer can find a group of capitalized words with a non capitalized word in the middle."""
-        document = self._create_artificial_document(text="     Company und A&B GmbH,", offsets=[(5, 25)])
+    def test_case_25_group_words_within_whitespace_and_comma(self):
+        """Test if tokenizer can find a group of  words within whitespaces and comma."""
+        document = self._create_artificial_document(text="\n     Company und A&B GmbH,\n", offsets=[(6, 26)])
         assert document.annotations()[0].offset_string == ["Company und A&B GmbH"]
         result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 0
@@ -796,9 +796,9 @@ class TestColonPrecededTokenizer(TestTemplateRegexTokenizer):
         )
         assert result[result.is_found_by_tokenizer == 1].end_offset[0] == document.annotations()[0].spans[0].end_offset
 
-    def test_case_25_group_capitalized_words_with_non_capitalized_word_in_the_middle(self):
-        """Test if tokenizer can find a group of capitalized words with a non capitalized word in the middle."""
-        document = self._create_artificial_document(text="     Company und A&B GmbH,", offsets=[(5, 25)])
+    def test_case_25_group_words_within_whitespace_and_comma(self):
+        """Test if tokenizer can find a group of  words within whitespaces and comma."""
+        document = self._create_artificial_document(text="\n     Company und A&B GmbH,\n", offsets=[(6, 26)])
         assert document.annotations()[0].offset_string == ["Company und A&B GmbH"]
         result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 0
@@ -998,9 +998,9 @@ class TestCapitalizedTextTokenizer(TestTemplateRegexTokenizer):
         result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 0
 
-    def test_case_25_group_capitalized_words_with_non_capitalized_word_in_the_middle(self):
-        """Test if tokenizer can find a group of capitalized words with a non capitalized word in the middle."""
-        document = self._create_artificial_document(text="     Company und A&B GmbH,", offsets=[(5, 25)])
+    def test_case_25_group_words_within_whitespace_and_comma(self):
+        """Test if tokenizer can find a group of  words within whitespaces and comma."""
+        document = self._create_artificial_document(text="\n     Company und A&B GmbH,\n", offsets=[(6, 26)])
         assert document.annotations()[0].offset_string == ["Company und A&B GmbH"]
         result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 0
@@ -1204,9 +1204,9 @@ class TestNonTextTokenizer(TestTemplateRegexTokenizer):
         result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 0
 
-    def test_case_25_group_capitalized_words_with_non_capitalized_word_in_the_middle(self):
-        """Test if tokenizer can find a group of capitalized words with a non capitalized word in the middle."""
-        document = self._create_artificial_document(text="     Company und A&B GmbH,", offsets=[(5, 25)])
+    def test_case_25_group_words_within_whitespace_and_comma(self):
+        """Test if tokenizer can find a group of  words within whitespaces and comma."""
+        document = self._create_artificial_document(text="\n     Company und A&B GmbH,\n", offsets=[(6, 26)])
         assert document.annotations()[0].offset_string == ["Company und A&B GmbH"]
         result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 0
@@ -1394,9 +1394,9 @@ class TestNumbersTokenizer(TestTemplateRegexTokenizer):
         result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 0
 
-    def test_case_25_group_capitalized_words_with_non_capitalized_word_in_the_middle(self):
-        """Test if tokenizer can find a group of capitalized words with a non capitalized word in the middle."""
-        document = self._create_artificial_document(text="     Company und A&B GmbH,", offsets=[(5, 25)])
+    def test_case_25_group_words_within_whitespace_and_comma(self):
+        """Test if tokenizer can find a group of  words within whitespaces and comma."""
+        document = self._create_artificial_document(text="\n     Company und A&B GmbH,\n", offsets=[(6, 26)])
         assert document.annotations()[0].offset_string == ["Company und A&B GmbH"]
         result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 0
@@ -1550,11 +1550,7 @@ class TestLineUntilCommaTokenizer(TestTemplateRegexTokenizer):
         document = self._create_artificial_document(text="     Company A&B GmbH,", offsets=[(5, 21)])
         assert document.annotations()[0].offset_string == ["Company A&B GmbH"]
         result = self.tokenizer.evaluate(document)
-        assert result.is_found_by_tokenizer.sum() == 1
-        assert (
-            result[result.is_found_by_tokenizer == 1].start_offset[0] == document.annotations()[0].spans[0].start_offset
-        )
-        assert result[result.is_found_by_tokenizer == 1].end_offset[0] == document.annotations()[0].spans[0].end_offset
+        assert result.is_found_by_tokenizer.sum() == 0
 
     def test_case_21_group_of_numbers_preceded_by_capitalized_letter_and_punctuation(self):
         """Test if tokenizer can find a group of numbers preceded by a capitalized character and punctuation."""
@@ -1584,9 +1580,9 @@ class TestLineUntilCommaTokenizer(TestTemplateRegexTokenizer):
         result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 0
 
-    def test_case_25_group_capitalized_words_with_non_capitalized_word_in_the_middle(self):
-        """Test if tokenizer can find a group of capitalized words with a non capitalized word in the middle."""
-        document = self._create_artificial_document(text="     Company und A&B GmbH,", offsets=[(5, 25)])
+    def test_case_25_group_words_within_whitespace_and_comma(self):
+        """Test if tokenizer can find a group of  words within whitespaces and comma."""
+        document = self._create_artificial_document(text="\n     Company und A&B GmbH,\n", offsets=[(6, 26)])
         assert document.annotations()[0].offset_string == ["Company und A&B GmbH"]
         result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 1

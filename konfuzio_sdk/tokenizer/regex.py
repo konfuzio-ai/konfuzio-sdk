@@ -61,16 +61,20 @@ class RegexTokenizer(AbstractTokenizer):
                 # , created_by=self.__repr__
             )
 
-            _ = Annotation(
-                document=document,
-                annotation_set=document.no_label_annotation_set,
-                label=document.project.no_label,
-                label_set=document.project.no_label_set,
-                category=document.category,
-                is_correct=False,
-                revised=False,
-                spans=[span],
-            )
+            try:
+                _ = Annotation(
+                    document=document,
+                    annotation_set=document.no_label_annotation_set,
+                    label=document.project.no_label,
+                    label_set=document.project.no_label_set,
+                    category=document.category,
+                    is_correct=False,
+                    revised=False,
+                    spans=[span],
+                )
+            except ValueError:
+                logger.info(f'Tokenized Annotation for {span} not created.')
+                continue
 
         # TODO: add processing time to Document
         # document.add_process_step(self.__repr__, time.monotonic() - t0)
@@ -108,7 +112,7 @@ class CapitalizedTextTokenizer(RegexTokenizer):
 
     def __init__(self):
         """Initialize the CapitalizedTextTokenizer."""
-        super().__init__(regex=r'(?:[A-ZÄÜÖß][a-zA-Z&]+(?=\s[A-ZÄÜÖß])(?:\s[A-Z&ÄÜÖß][a-zA-Z&]+)+)')
+        super().__init__(regex=r'(?:[A-ZÄÜÖß][a-zA-Z&äöü]+(?=\s[A-ZÄÜÖß])(?:\s[A-Z&ÄÜÖß][a-zA-Z&äöü]+)+)')
 
 
 class NonTextTokenizer(RegexTokenizer):
@@ -166,4 +170,4 @@ class LineUntilCommaTokenizer(RegexTokenizer):
 
     def __init__(self):
         """Within a line match everything until ','."""
-        super().__init__(regex=r'(?:\s*([^.]*),)')
+        super().__init__(regex=r'\n\s*([^.]*),\n')
