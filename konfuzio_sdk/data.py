@@ -631,16 +631,22 @@ class Span(Data):
             self.y1 = b['y1']
 
             if self.x0 and self.x1 and not self.x0 < self.x1:
-                raise ValueError(f'{self}: coordinate x1 should be bigger than x0. '
-                                 f'x0: {self.x0}, x1: {self.x1}, document: {self.annotation.document}.')
+                raise ValueError(
+                    f'{self}: coordinate x1 should be bigger than x0. '
+                    f'x0: {self.x0}, x1: {self.x1}, document: {self.annotation.document}.'
+                )
 
             if self.y0 and self.y1 and not self.y0 < self.y1:
-                raise ValueError(f'{self}: coordinate y1 should be bigger than y0.'
-                                 f' y0: {self.y0}, y1: {self.y1}, document: {self.annotation.document}.')
+                raise ValueError(
+                    f'{self}: coordinate y1 should be bigger than y0.'
+                    f' y0: {self.y0}, y1: {self.y1}, document: {self.annotation.document}.'
+                )
 
             if self.page_index is not None and not (self.x1 < self.page_width) or not (self.y1 < self.page_height):
-                raise ValueError(f'Span {self}: bounding box of span is located outside of '
-                                 f'the page, document: {self.annotation.document}.')
+                raise ValueError(
+                    f'Span {self}: bounding box of span is located outside of '
+                    f'the page, document: {self.annotation.document}.'
+                )
 
     @property
     def line_index(self) -> int:  # TODO line_index might not be needed.
@@ -1329,8 +1335,10 @@ class Document(Data):
 
     def check_bbox(self, update_document: bool = False) -> bool:
         """
-        Check if every character in the document.text in part of the bbox and that every entry in document.bbox
-        has a match in the document text.
+        Check match between the text in the Document and its bounding boxes.
+
+        Check that every character in the text is part of the bbox dictionary and that each bbox has a match in the
+        document text. Also, validate the coordinates of the bounding boxes.
         """
         self._bbox = self.get_bbox()
         for index, char in enumerate(self.text):
@@ -1342,7 +1350,6 @@ class Document(Data):
             except KeyError:
                 return False
 
-        all_text = all([self.text[int(k)] == v['text'] for k, v in self.get_bbox().items()])
         all_x = all([v['x1'] > v['x0'] for k, v in self.get_bbox().items()])
         all_y = all([v['y1'] > v['y0'] for k, v in self.get_bbox().items()])
         all_width = all(
@@ -1353,7 +1360,7 @@ class Document(Data):
             [v['y1'] <= self.pages[v['page_number'] - 1]['original_size'][1] for k, v in self.get_bbox().items()]
         )
 
-        valid = all([all_text, all_x, all_y, all_width, all_height])
+        valid = all([all_x, all_y, all_width, all_height])
 
         if not valid:
             logger.error(f'{self} has invalid character bounding boxes.')

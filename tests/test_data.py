@@ -83,7 +83,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         with self.assertRaises():
             span_1 = Span(start_offset=-1, end_offset=2)
             annotation_set_1 = AnnotationSet(id_=1, document=document, label_set=label_set)
-            annotation = Annotation(
+            _ = Annotation(
                 document=document,
                 is_correct=True,
                 annotation_set=annotation_set_1,
@@ -207,7 +207,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         document = Document(
             project=self.project,
             category=self.category,
-            text='hello',
+            text='h',
             bbox=document_bbox,
             pages=[{'original_size': (1, 1)}],
         )
@@ -221,7 +221,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         document = Document(
             project=self.project,
             category=self.category,
-            text='hello',
+            text='h',
             bbox=document_bbox,
             pages=[{'original_size': (1, 1)}],
         )
@@ -235,7 +235,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         document = Document(
             project=self.project,
             category=self.category,
-            text='hello',
+            text='h',
             bbox=document_bbox,
             pages=[{'original_size': (1, 1)}],
         )
@@ -249,7 +249,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         document = Document(
             project=self.project,
             category=self.category,
-            text='hello',
+            text='h',
             bbox=document_bbox,
             pages=[{'original_size': (1, 1)}],
         )
@@ -263,7 +263,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         document = Document(
             project=self.project,
             category=self.category,
-            text='hello',
+            text='h',
             bbox=document_bbox,
             pages=[{'original_size': (1, 1)}],
         )
@@ -449,16 +449,16 @@ class TestOfflineDataSetup(unittest.TestCase):
 
         # Add annotation for the second time, heere it should be skipped.
         span = Span(start_offset=1, end_offset=2)
-        Annotation(
-            document=document,
-            is_correct=True,
-            label=self.label,
-            annotation_set=annotation_set,
-            label_set=self.label_set,
-            spans=[span],
-        )
-
-        self.assertEqual(len(document.annotations()), 2)
+        with self.assertRaises(ValueError) as context:
+            Annotation(
+                document=document,
+                is_correct=True,
+                label=self.label,
+                annotation_set=annotation_set,
+                label_set=self.label_set,
+                spans=[span],
+            )
+            assert "is a duplicate of" in context.exception
 
     def test_to_add_an_annotation_twice_to_a_document(self):
         """Test to add the same Annotation twice to a Document."""
