@@ -490,20 +490,21 @@ class TestOfflineDataSetup(unittest.TestCase):
         span_1 = Span(start_offset=1, end_offset=2)
         _ = Annotation(id_=1, document=document, spans=[span_1], label=self.label, label_set=self.label_set)
         span_2 = Span(start_offset=1, end_offset=2)
-        _ = Annotation(id_=2, document=document, spans=[span_2], label=label, label_set=self.label_set)
-        assert len(document.annotations(use_correct=False)) == 2
+        with self.assertRaises(ValueError):
+            _ = Annotation(id_=2, document=document, spans=[span_2], label=label, label_set=self.label_set)
 
     def test_to_add_two_annotations_to_a_document(self):
-        """Test to add an the same Annotation twice to a Document."""
+        """Test to add the same Annotation twice to a Document."""
         document = Document(project=self.project, category=self.category)
         first_span = Span(start_offset=1, end_offset=2)
         second_span = Span(start_offset=1, end_offset=2)
         third_span = Span(start_offset=2, end_offset=3)
-        first_annotation = Annotation(document=document, spans=[first_span], label_set=self.label_set, label=self.label)
-        second_annotation = Annotation(
-            document=document, spans=[second_span, third_span], label_set=self.label_set, label=self.label
-        )
-        self.assertEqual([first_annotation, second_annotation], document.annotations(use_correct=False))
+        _ = Annotation(document=document, spans=[first_span], label_set=self.label_set, label=self.label)
+        # first_span and second_span have the same offsets
+        with self.assertRaises(ValueError):
+            _ = Annotation(
+                document=document, spans=[second_span, third_span], label_set=self.label_set, label=self.label
+            )
 
     def test_to_reuse_spans_across_annotations(self):
         """Test if we find inconsistencies when one Span is assigned to a new Annotation."""

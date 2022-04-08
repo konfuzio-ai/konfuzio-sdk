@@ -962,15 +962,9 @@ class Annotation(Data):
         result = False
         if self.document and other.document and self.document == other.document:
             if self.document and other.document and self.document == other.document:
-                # Both are correct
-                if self.is_correct and other.is_correct:
-                    if self.spans == other.spans:
-                        result = True
-
-                # Both are not correct or one Annotation is correct and the other Annotation is not correct.
-                else:
-                    if self.label == other.label:
-                        if self.spans == other.spans:
+                for span_1 in self.spans:
+                    for span_2 in other.spans:
+                        if span_1 == span_2:
                             result = True
 
         return result
@@ -1856,6 +1850,8 @@ class Document(Data):
                 raw_annotations = json.load(f)
 
             for raw_annotation in raw_annotations:
+                if not raw_annotation['is_correct'] and raw_annotation['revised']:
+                    continue
                 raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
                 raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
                 _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
