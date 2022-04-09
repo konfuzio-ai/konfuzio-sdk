@@ -39,10 +39,11 @@ class RegexTokenizer(AbstractTokenizer):
         # for each Span, create an Annotation
         for span_info in spans_info:
 
-            if span_info['start_offset'] not in bbox_keys or span_info['end_offset'] - 1 not in bbox_keys:
-                logger.error(f'Regex {span_info["regex_used"]} create '
-                             f'start_offset or end_offset which is not part of the document bbox.')
-                continue
+            if bbox_keys:
+                if span_info['start_offset'] not in bbox_keys or span_info['end_offset'] - 1 not in bbox_keys:
+                    logger.error(f'Regex {span_info["regex_used"]} create '
+                                 f'start_offset or end_offset which is not part of the document bbox.')
+                    continue
 
             span = Span(
                 start_offset=span_info['start_offset'],

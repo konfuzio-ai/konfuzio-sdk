@@ -1381,7 +1381,6 @@ class Document(Data):
             update_document_konfuzio_api(document_id=self.id_, dataset_status=4, assignee=assignee)
 
         return valid
->>>>>>> ac364f2f490665d53de2fdf79ad7ae6e01ab733e
 
     @property
     def is_online(self) -> Optional[int]:

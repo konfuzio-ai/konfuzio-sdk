@@ -86,6 +86,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         data = get_meta_of_files(project_id=TEST_PROJECT_ID)
         assert data[0].keys() == {
             'id',
+            'assignee',
             'number_of_pages',
             'callback_url',
             'callback_status_code',

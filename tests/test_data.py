@@ -194,7 +194,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         document = Document(
             project=self.project,
             category=self.category,
-            text='hello',
+            text='h',
             bbox=document_bbox,
             pages=[{'original_size': (1, 1)}],
         )
