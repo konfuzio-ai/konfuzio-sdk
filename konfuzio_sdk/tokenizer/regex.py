@@ -1,9 +1,14 @@
 """Regex tokenizers."""
 import logging
+import time
+from itertools import groupby
+
+import pandas
 
 from konfuzio_sdk.data import Annotation, Document, Category, Span
+from konfuzio_sdk.evaluate import compare
 from konfuzio_sdk.regex import regex_matches
-from konfuzio_sdk.tokenizer.base import AbstractTokenizer
+from konfuzio_sdk.tokenizer.base import AbstractTokenizer, ListTokenizer, ProcessingStep
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +37,7 @@ class RegexTokenizer(AbstractTokenizer):
         if document.text is None:
             return document
 
-        # t0 = time.monotonic()
+        t0 = time.monotonic()
         bbox_keys = sorted([int(x) for x in list(document.get_bbox().keys())])
 
         if len(bbox_keys) == 0:
@@ -72,12 +77,13 @@ class RegexTokenizer(AbstractTokenizer):
                     revised=False,
                     spans=[span],
                 )
-            except ValueError:
-                logger.info(f'Tokenized Annotation for {span} not created.')
+            except ValueError as e:
+                logger.info(f'Tokenized Annotation for {span}(>>{span.offset_string}<<) not created, because of {e}.')
                 continue
 
         # TODO: add processing time to Document
         # document.add_process_step(self.__repr__, time.monotonic() - t0)
+        self.processing_steps.append(ProcessingStep(self, document, time.monotonic() - t0))
 
         return document
 
@@ -171,3 +177,57 @@ class LineUntilCommaTokenizer(RegexTokenizer):
     def __init__(self):
         """Within a line match everything until ','."""
         super().__init__(regex=r'\n\s*([^.]*),\n')
+
+
+class RegexMatcherTokenizer(ListTokenizer):
+    """This tokenizer applies a list of tokenizer and then uses an generic
+    regex approach to match the remaining unmatched Spans."""
+
+    def fit(self, category: Category):
+        """Call fit on all tokenizers."""
+        assert isinstance(category, Category)
+
+        for tokenizer in self.tokenizers:
+            tokenizer.fit(category)
+
+        # Use regex() to be able to tokenize remaining unmatched Spans.
+        documents = category.documents()
+
+        eval_list = []
+        for document in documents:
+            # Load Annotations before doing tokenization.
+            document.annotations()
+
+            # Check for missing tokens.
+            virtual_doc = Document(
+                text=document.text,
+                bbox=document.get_bbox(),
+                project=document.project,
+                category=document.category,
+                pages=document.pages
+            )
+            self.tokenize(virtual_doc)
+            df = compare(document, virtual_doc)
+            eval_list.append(df)
+
+        # Get unmatched Spans.
+        df = pandas.concat(eval_list)
+        spans_not_found_by_tokenizer = df[(df['is_correct']) & (df['is_found_by_tokenizer'] == 0)]
+        annotations_not_found_by_tokenizer = [
+            x
+            for document in documents
+            for x in document.annotations()
+            if x.id_ in list(spans_not_found_by_tokenizer['id_'].astype(int))
+        ]
+
+        # Add Regex tokenizers.
+        new_tokenizers = []
+        for label in set(x.label for x in annotations_not_found_by_tokenizer):
+            label_annotations = [x for x in annotations_not_found_by_tokenizer if x.label == label]
+            if label_annotations:
+                regexes = label.find_regex(categories=[category], annotations=label_annotations)
+                for regex in regexes:
+                    new_tokenizers.append(RegexTokenizer(regex))
+
+        self.tokenizers += new_tokenizers
+        logger.info(f'Added {new_tokenizers} to {self}.')

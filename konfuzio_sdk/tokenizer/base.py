@@ -12,8 +12,19 @@ from konfuzio_sdk.evaluate import compare
 logger = logging.getLogger(__name__)
 
 
+class ProcessingStep:
+    """Track runtime of Tokenizer functions."""
+
+    def __init__(self, tokenizer, document, runtime):
+        self.tokenizer = tokenizer
+        self.document = document
+        self.runtime = runtime
+
+
 class AbstractTokenizer(metaclass=abc.ABCMeta):
     """Abstract definition of a tokenizer."""
+
+    processing_steps = []
 
     @abc.abstractmethod
     def fit(self, category: Category):

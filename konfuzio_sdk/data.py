@@ -323,11 +323,8 @@ class Label(Data):
         annotations = []
         for category in categories:
             for document in category.documents():
-                for annotation in document.annotations(label=self):
-                    if use_correct and annotation.is_correct:
-                        annotations.append(annotation)
-                    elif not use_correct:
-                        annotations.append(annotation)
+                for annotation in document.annotations(label=self, use_correct=use_correct):
+                    annotations.append(annotation)
 
         return annotations
 
@@ -392,7 +389,8 @@ class Label(Data):
             self._combined_tokens = merge_regex(self.tokens(categories=categories))
         return self._combined_tokens
 
-    def evaluate_regex(self, regex, categories: List[Category], filtered_group=None, regex_quality=0):
+    def evaluate_regex(self, regex, categories: List[Category], annotations: List['Annotation'] = None,
+                       filtered_group=None, regex_quality=0):
         """
         Evaluate a regex on Categories.
 
@@ -418,7 +416,7 @@ class Label(Data):
 
         for document in documents:
             # todo: potential time saver: make sure we did a duplicate check for the regex before we run the evaluation
-            evaluation = document.evaluate_regex(regex=regex, filtered_group=filtered_group, label=self)
+            evaluation = document.evaluate_regex(regex=regex, filtered_group=filtered_group, label=self, annotations=annotations)
             evaluations.append(evaluation)
 
         total_findings = sum(evaluation['count_total_findings'] for evaluation in evaluations)
@@ -472,15 +470,21 @@ class Label(Data):
         else:
             return {}
 
-    def find_regex(self, categories: List[Category]) -> List[str]:
+    def find_regex(self, categories: List['Category'], annotations: List['Annotation'] = None) -> List[str]:
         """Find the best combination of regex in the list of all regex proposed by Annotations."""
-        if not self.annotations(categories=categories):
-            logger.warning(f'{self} has no correct annotations.')
-            return []
 
         # todo: start duplicate check
         regex_made = []
-        all_annotations = self.annotations(categories=categories, use_correct=False)
+        if annotations is not None:
+            assert all(x.label == self for x in annotations)
+            all_annotations = annotations
+        else:
+            all_annotations = self.annotations(categories=categories)
+
+        if not all_annotations:
+            logger.warning(f'{self} has no correct annotations.')
+            return []
+
         for annotation in all_annotations:
             for span in annotation._spans:
                 proposals = annotation.document.regex(
@@ -498,7 +502,8 @@ class Label(Data):
         )
 
         evaluations = [
-            self.evaluate_regex(_regex_made, categories=categories, filtered_group=f'{self.name_clean}_')
+            self.evaluate_regex(_regex_made, categories=categories, annotations=all_annotations,
+                                filtered_group=f'{self.name_clean}_')
             for _regex_made in regex_made
         ]
         logger.info(
@@ -516,7 +521,7 @@ class Label(Data):
 
         return best_regex
 
-    def regex(self, categories: List[Category], update=False) -> List:
+    def regex(self, categories: List[Category], annotations=None, update=False) -> List:
         """Calculate regex to be used in the LabelExtractionModel."""
         if not self._regex or update:
             if not is_file(self.regex_file_path, raise_exception=False) or update:
@@ -526,6 +531,8 @@ class Label(Data):
                     with open(self.regex_file_path, 'w') as f:
                         json.dump(self._regex, f, indent=2, sort_keys=True)
             else:
+                raise Exception(f'Regexes from file loaded for {self} which might '
+                                f'have been calculated for other category')
                 logger.info(f'Start loading existing regexes for Label {self.name}.')
                 with open(self.regex_file_path, 'r') as f:
                     self._regex = json.load(f)
@@ -962,10 +969,14 @@ class Annotation(Data):
         result = False
         if self.document and other.document and self.document == other.document:
             if self.document and other.document and self.document == other.document:
-                for span_1 in self.spans:
-                    for span_2 in other.spans:
-                        if span_1 == span_2:
-                            result = True
+                if self.is_correct and other.is_correct:
+                    for span_1 in self.spans:
+                        for span_2 in other.spans:
+                            if span_1 == span_2:
+                                return True
+                else:
+                    if self.spans == other.spans:
+                        return True
 
         return result
 
@@ -1468,7 +1479,7 @@ class Document(Data):
         """Return Annotation Sets of Documents."""
         if self._annotation_sets is not None:
             return self._annotation_sets
-        if not is_file(self.annotation_set_file_path, raise_exception=False):
+        if self.id_ and not is_file(self.annotation_set_file_path, raise_exception=False):
             self.download_document_details()
         if is_file(self.annotation_set_file_path, raise_exception=False):
             with open(self.annotation_set_file_path, "r") as f:
@@ -1842,7 +1853,7 @@ class Document(Data):
 
         return proposals
 
-    def evaluate_regex(self, regex, label: Label, filtered_group=None):
+    def evaluate_regex(self, regex, label: Label, annotations: List['Annotation'] = None, filtered_group=None):
         """Evaluate a regex based on the Document."""
         start_time = time.time()
         findings_in_document = regex_matches(
@@ -1856,6 +1867,9 @@ class Document(Data):
         correct_findings = []
 
         label_annotations = self.annotations(label=label)
+        if annotations is not None:
+            label_annotations = [x for x in label_annotations if x in annotations]
+
         for finding in findings_in_document:
             for annotation in label_annotations:
                 for span in annotation.spans:
@@ -2165,13 +2179,14 @@ class Project(Data):
         for document_data in self.meta_data:
             if document_data['status'][0] == 2:  # NOQA - hotfix for Text Annotation Server # todo add test
                 new_date = document_data["updated_at"]
+                new = True
+                updated = None
                 if self.old_meta_data:
-                    last_date = [d["updated_at"] for d in self.old_meta_data if d['id'] == document_data["id"]][0]
                     new = document_data["id"] not in [doc["id"] for doc in self.old_meta_data]
-                    updated = dateutil.parser.isoparse(new_date) > dateutil.parser.isoparse(last_date)
-                else:
-                    new = True
-                    updated = None
+                    if not new:
+                        last_date = [d["updated_at"] for d in self.old_meta_data if d['id'] == document_data["id"]][0]
+                        updated = dateutil.parser.isoparse(new_date) > dateutil.parser.isoparse(last_date)
+
                 if updated:
                     doc = Document(project=self, update=True, id_=document_data['id'], **document_data)
                     logger.info(f'{doc} was updated, we will download it again as soon you use it.')
