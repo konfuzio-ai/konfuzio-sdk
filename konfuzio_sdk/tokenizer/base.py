@@ -112,5 +112,6 @@ class ListTokenizer(AbstractTokenizer):
 
         for tokenizer in self.tokenizers:
             tokenizer.tokenize(document)
+            self.processing_steps.append(tokenizer.processing_steps)
 
         return document
