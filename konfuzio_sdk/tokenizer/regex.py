@@ -1,11 +1,11 @@
 """Regex tokenizers."""
 import logging
 import time
-from itertools import groupby
+from typing import Tuple
 
-import pandas
+import pandas as pd
 
-from konfuzio_sdk.data import Annotation, Document, Category, Span
+from konfuzio_sdk.data import Annotation, Document, Category, Span, Project
 from konfuzio_sdk.evaluate import compare
 from konfuzio_sdk.regex import regex_matches
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer, ListTokenizer, ProcessingStep
@@ -19,6 +19,7 @@ class RegexTokenizer(AbstractTokenizer):
     def __init__(self, regex: str):
         """Initialize the SingleRegexTokenizer."""
         self.regex = regex
+        self.processing_steps = []
 
     def fit(self, category: Category):
         """Fit the tokenizer accordingly with the Documents of the Category."""
@@ -55,7 +56,7 @@ class RegexTokenizer(AbstractTokenizer):
                 span_info['start_offset'] not in bbox_keys or span_info['end_offset'] - 1 not in bbox_keys
             ):
                 logger.error(
-                    f'Regex {span_info["regex_used"]} create '
+                    f'Regex {span_info["regex_used"]} created '
                     f'start_offset or end_offset which is not part of the document bbox.'
                 )
                 continue
@@ -83,7 +84,7 @@ class RegexTokenizer(AbstractTokenizer):
 
         # TODO: add processing time to Document
         # document.add_process_step(self.__repr__, time.monotonic() - t0)
-        self.processing_steps.append(ProcessingStep(self, document, time.monotonic() - t0))
+        self.processing_steps.append(ProcessingStep(self.__repr__(), document, time.monotonic() - t0))
 
         return document
 
@@ -180,8 +181,7 @@ class LineUntilCommaTokenizer(RegexTokenizer):
 
 
 class RegexMatcherTokenizer(ListTokenizer):
-    """This tokenizer applies a list of tokenizer and then uses an generic
-    regex approach to match the remaining unmatched Spans."""
+    """Applies a list of tokenizer and then uses an generic regex approach to match the remaining unmatched Spans."""
 
     def fit(self, category: Category):
         """Call fit on all tokenizers."""
@@ -204,14 +204,16 @@ class RegexMatcherTokenizer(ListTokenizer):
                 bbox=document.get_bbox(),
                 project=document.project,
                 category=document.category,
-                pages=document.pages
+                pages=document.pages,
             )
             self.tokenize(virtual_doc)
             df = compare(document, virtual_doc)
             eval_list.append(df)
 
+        self.reset_processing_steps()
+
         # Get unmatched Spans.
-        df = pandas.concat(eval_list)
+        df = pd.concat(eval_list)
         spans_not_found_by_tokenizer = df[(df['is_correct']) & (df['is_found_by_tokenizer'] == 0)]
         annotations_not_found_by_tokenizer = [
             x
@@ -229,5 +231,50 @@ class RegexMatcherTokenizer(ListTokenizer):
                 for regex in regexes:
                     new_tokenizers.append(RegexTokenizer(regex))
 
+            # clean information added during regex process
+            label.reset_regex()
+
         self.tokenizers += new_tokenizers
         logger.info(f'Added {new_tokenizers} to {self}.')
+
+    def evaluate_project(self, project: Project) -> Tuple[pd.DataFrame, pd.DataFrame]:
+        """Compare test Documents of the Categories in a Project with their tokenized version.
+
+        :param project: Project to evaluate
+        :return: Evaluation DataFrame containing the evaluation of all Documents in all Categories.
+        """
+        assert isinstance(project, Project)
+
+        if not project.categories:
+            raise ValueError(f"Project {project.__repr__()} has no Categories.")
+
+        if not project.test_documents:
+            raise ValueError(f"Project {project.__repr__()} has no test Documents.")
+
+        tokenizers = [
+            WhitespaceTokenizer(),
+            ConnectedTextTokenizer(),
+            ColonPrecededTokenizer(),
+            CapitalizedTextTokenizer(),
+            NonTextTokenizer(),
+        ]
+
+        evaluation = pd.DataFrame()
+        for category in project.categories:
+            try:
+                self.tokenizers = tokenizers
+                self.fit(category=category)
+                docs_evaluation, _ = self.evaluate_category(category)
+                evaluation = evaluation.append(docs_evaluation)
+            except ValueError as e:
+                # Category may not have test Documents
+                logger.info(f'Evaluation of the Tokenizer for {category} not possible, because of {e}.')
+                continue
+
+        data = {
+            'tokenizer_name': [x.tokenizer_name for x in self.processing_steps],
+            'document_id': [x.document_id for x in self.processing_steps],
+            'number_of_pages': [x.number_of_pages for x in self.processing_steps],
+            'runtime': [x.runtime for x in self.processing_steps],
+        }
+        return evaluation, pd.DataFrame(data)
