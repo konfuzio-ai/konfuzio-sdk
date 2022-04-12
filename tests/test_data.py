@@ -142,6 +142,34 @@ class TestOfflineDataSetup(unittest.TestCase):
         label = Label(project=project, label_sets=[self.label_set], text='Second Offline Label')
         assert [ls.id_ for ls in label.label_sets] == [421]
 
+    def test_label_reset_regex(self):
+        """Test if we can reset the attributes related with the regex."""
+        project = Project(id_=None)
+        category = Category(project=project)
+        label_set = LabelSet(id_=33, project=project, categories=[category])
+        label = Label(id_=22, text='LabelName', project=project, label_sets=[label_set], threshold=0.5)
+        document = Document(project=project, category=category, text="From 14.12.2021 to 1.1.2022.", dataset_status=2)
+        span_1 = Span(start_offset=0, end_offset=5)
+        annotation_set_1 = AnnotationSet(id_=1, document=document, label_set=label_set)
+        annotation = Annotation(
+            document=document,
+            is_correct=True,
+            annotation_set=annotation_set_1,
+            label=label,
+            label_set=label_set,
+            spans=[span_1],
+        )
+        label.find_regex(categories=[category], annotations=[annotation])
+        self.assertIsNotNone(label._combined_tokens)
+        label.reset_regex()
+        self.assertIsNone(label._combined_tokens)
+        self.assertIsNone(label.tokens_file_path)
+        self.assertIsNone(label._tokens)
+        assert len(label._regex) == 0
+        assert len(label._correct_annotations) == 0
+        assert len(label._evaluations) == 0
+        assert label.regex_file_path == os.path.join(label.project.regex_folder, f'{label.name_clean}.json5')
+
     def test_to_add_label_to_project_twice(self):
         """Add an existing Label to a Project."""
         with self.assertRaises(ValueError):

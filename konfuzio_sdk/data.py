@@ -389,8 +389,14 @@ class Label(Data):
             self._combined_tokens = merge_regex(self.tokens(categories=categories))
         return self._combined_tokens
 
-    def evaluate_regex(self, regex, categories: List[Category], annotations: List['Annotation'] = None,
-                       filtered_group=None, regex_quality=0):
+    def evaluate_regex(
+        self,
+        regex,
+        categories: List[Category],
+        annotations: List['Annotation'] = None,
+        filtered_group=None,
+        regex_quality=0,
+    ):
         """
         Evaluate a regex on Categories.
 
@@ -416,7 +422,9 @@ class Label(Data):
 
         for document in documents:
             # todo: potential time saver: make sure we did a duplicate check for the regex before we run the evaluation
-            evaluation = document.evaluate_regex(regex=regex, filtered_group=filtered_group, label=self, annotations=annotations)
+            evaluation = document.evaluate_regex(
+                regex=regex, filtered_group=filtered_group, label=self, annotations=annotations
+            )
             evaluations.append(evaluation)
 
         total_findings = sum(evaluation['count_total_findings'] for evaluation in evaluations)
@@ -472,7 +480,6 @@ class Label(Data):
 
     def find_regex(self, categories: List['Category'], annotations: List['Annotation'] = None) -> List[str]:
         """Find the best combination of regex in the list of all regex proposed by Annotations."""
-
         # todo: start duplicate check
         regex_made = []
         if annotations is not None:
@@ -502,8 +509,9 @@ class Label(Data):
         )
 
         evaluations = [
-            self.evaluate_regex(_regex_made, categories=categories, annotations=all_annotations,
-                                filtered_group=f'{self.name_clean}_')
+            self.evaluate_regex(
+                _regex_made, categories=categories, annotations=all_annotations, filtered_group=f'{self.name_clean}_'
+            )
             for _regex_made in regex_made
         ]
         logger.info(
@@ -531,13 +539,30 @@ class Label(Data):
                     with open(self.regex_file_path, 'w') as f:
                         json.dump(self._regex, f, indent=2, sort_keys=True)
             else:
-                raise Exception(f'Regexes from file loaded for {self} which might '
-                                f'have been calculated for other category')
+                raise Exception(
+                    f'Regexes from file loaded for {self} which might ' f'have been calculated for other category'
+                )
                 logger.info(f'Start loading existing regexes for Label {self.name}.')
                 with open(self.regex_file_path, 'r') as f:
                     self._regex = json.load(f)
         logger.info(f'Regexes are ready for Label {self.name}.')
         return self._regex
+
+    def reset_regex(self) -> None:
+        """Reset attributes populated by regex operations."""
+        if is_file(self.tokens_file_path, raise_exception=False):
+            os.remove(self.tokens_file_path)
+
+        if is_file(self.regex_file_path, raise_exception=False):
+            os.remove(self.regex_file_path)
+
+        self._tokens = None
+        self.tokens_file_path = None
+        self._regex: List[str] = []
+        self._combined_tokens = None
+        self.regex_file_path = os.path.join(self.project.regex_folder, f'{self.name_clean}.json5')
+        self._correct_annotations = []
+        self._evaluations = []
 
     # def save(self) -> bool:
     #     """
@@ -1207,16 +1232,17 @@ class Page(Data):
     """Access the information about one Page of a document."""
 
     def __init__(
-            self,
-            id_: Union[int, None] = None,
-            document: 'Document' = None,
-            start_offset: int = None,
-            end_offset: int = None,
-            number: int = None,
-            image: str = None,
-            original_size: Tuple[float, float] = None,
-            size: Tuple[float, float] = None
+        self,
+        id_: Union[int, None] = None,
+        document: 'Document' = None,
+        start_offset: int = None,
+        end_offset: int = None,
+        number: int = None,
+        image: str = None,
+        original_size: Tuple[float, float] = None,
+        size: Tuple[float, float] = None,
     ):
+        """Create a Page for a Document."""
         self.id_ = id_
         self.document = document
         self.start_offset = start_offset
@@ -1247,6 +1273,7 @@ class Document(Data):
         bbox: dict = None,
         pages: list = None,
         update: bool = None,
+        copy_of_id: Union[int, None] = None,
         *args,
         **kwargs,
     ):
@@ -1279,6 +1306,7 @@ class Document(Data):
         self.dataset_status = dataset_status
         self.assignee = assignee
         self._update = update
+        self.copy_of_id = copy_of_id
 
         if project and category_template:
             self.category = project.get_category_by_id(category_template)
@@ -1377,7 +1405,7 @@ class Document(Data):
                         original_size=page_data.original_size,
                         start_offset=page_data.start_offset,
                         end_offset=page_data.end_offset,
-                        document=self
+                        document=self,
                     )
                 else:
                     page_data['id_'] = page_data.pop('id', None)
