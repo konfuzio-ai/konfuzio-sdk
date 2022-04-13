@@ -181,7 +181,7 @@ class LineUntilCommaTokenizer(RegexTokenizer):
 
 
 class RegexMatcherTokenizer(ListTokenizer):
-    """Applies a list of tokenizer and then uses an generic regex approach to match the remaining unmatched Spans."""
+    """Applies a list of Tokenizers and then uses a generic regex approach to match the remaining unmatched Spans."""
 
     def fit(self, category: Category):
         """Call fit on all tokenizers."""
@@ -190,7 +190,6 @@ class RegexMatcherTokenizer(ListTokenizer):
         for tokenizer in self.tokenizers:
             tokenizer.fit(category)
 
-        # Use regex() to be able to tokenize remaining unmatched Spans.
         documents = category.documents()
 
         eval_list = []
@@ -198,7 +197,6 @@ class RegexMatcherTokenizer(ListTokenizer):
             # Load Annotations before doing tokenization.
             document.annotations()
 
-            # Check for missing tokens.
             virtual_doc = Document(
                 text=document.text,
                 bbox=document.get_bbox(),
@@ -231,7 +229,7 @@ class RegexMatcherTokenizer(ListTokenizer):
                 for regex in regexes:
                     new_tokenizers.append(RegexTokenizer(regex))
 
-            # clean information added during regex process
+            # clean information added during regex process to the Labels
             label.reset_regex()
 
         self.tokenizers += new_tokenizers
@@ -251,21 +249,22 @@ class RegexMatcherTokenizer(ListTokenizer):
         if not project.test_documents:
             raise ValueError(f"Project {project.__repr__()} has no test Documents.")
 
-        tokenizers = [
-            WhitespaceTokenizer(),
-            ConnectedTextTokenizer(),
-            ColonPrecededTokenizer(),
-            CapitalizedTextTokenizer(),
-            NonTextTokenizer(),
-        ]
-
-        evaluation = pd.DataFrame()
+        evaluation = []
         for category in project.categories:
             try:
-                self.tokenizers = tokenizers
-                self.fit(category=category)
-                docs_evaluation, _ = self.evaluate_category(category)
-                evaluation = evaluation.append(docs_evaluation)
+                category_tokenizer = RegexMatcherTokenizer(
+                    tokenizers=[
+                        WhitespaceTokenizer(),
+                        ConnectedTextTokenizer(),
+                        ColonPrecededTokenizer(),
+                        CapitalizedTextTokenizer(),
+                        NonTextTokenizer(),
+                    ]
+                )
+                category_tokenizer.fit(category=category)
+                docs_evaluation, _ = category_tokenizer.evaluate_category(category)
+                evaluation.append(docs_evaluation)
+                self.processing_steps.extend(category_tokenizer.processing_steps)
             except ValueError as e:
                 # Category may not have test Documents
                 logger.info(f'Evaluation of the Tokenizer for {category} not possible, because of {e}.')
@@ -277,4 +276,5 @@ class RegexMatcherTokenizer(ListTokenizer):
             'number_of_pages': [x.number_of_pages for x in self.processing_steps],
             'runtime': [x.runtime for x in self.processing_steps],
         }
+        evaluation = pd.concat(evaluation, ignore_index=True)
         return evaluation, pd.DataFrame(data)

@@ -82,10 +82,12 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
         if not category.test_documents():
             raise ValueError(f"Category {category.__repr__()} has no test documents.")
 
-        evaluation = pd.DataFrame()
+        evaluation = []
         for document in category.test_documents():
             doc_evaluation, _ = self.evaluate(document)
-            evaluation = evaluation.append(doc_evaluation)
+            evaluation.append(doc_evaluation)
+
+        evaluation = pd.concat(evaluation, ignore_index=True)
 
         data = {
             'tokenizer_name': [x.tokenizer_name for x in self.processing_steps],
@@ -110,11 +112,11 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
         if not project.test_documents:
             raise ValueError(f"Project {project.__repr__()} has no test Documents.")
 
-        evaluation = pd.DataFrame()
+        evaluation = []
         for category in project.categories:
             try:
                 docs_evaluation, _ = self.evaluate_category(category)
-                evaluation = evaluation.append(docs_evaluation)
+                evaluation.append(docs_evaluation)
             except ValueError as e:
                 # Category may not have test Documents
                 logger.info(f'Evaluation of the Tokenizer for {category} not possible, because of {e}.')
@@ -126,6 +128,7 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
             'number_of_pages': [x.number_of_pages for x in self.processing_steps],
             'runtime': [x.runtime for x in self.processing_steps],
         }
+        evaluation = pd.concat(evaluation, ignore_index=True)
         return evaluation, pd.DataFrame(data)
 
     def reset_processing_steps(self):
