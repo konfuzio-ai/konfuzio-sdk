@@ -29,9 +29,13 @@ handlers = [
     logging.StreamHandler()
 ]
 
-with open(LOG_FILE_PATH, "a") as f:
-    if f.writable():
-        handlers.append(logging.FileHandler(LOG_FILE_PATH))
+try:
+    with open(LOG_FILE_PATH, "a") as f:
+        if f.writable():
+            handlers.append(logging.FileHandler(LOG_FILE_PATH))
+except OSError:
+    pass
+
 
 logging.basicConfig(
     level=config('LOGGING_LEVEL', default=logging.INFO, cast=int),
