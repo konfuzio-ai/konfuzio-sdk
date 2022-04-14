@@ -2,11 +2,11 @@
 
 import abc
 import logging
-from typing import List, Tuple
+from typing import List
 
 import pandas as pd
 
-from konfuzio_sdk.data import Document, Category, Project
+from konfuzio_sdk.data import Document, Category
 from konfuzio_sdk.evaluate import compare
 
 logger = logging.getLogger(__name__)
@@ -15,16 +15,21 @@ logger = logging.getLogger(__name__)
 class ProcessingStep:
     """Track runtime of Tokenizer functions."""
 
-    def __init__(self, tokenizer_name: str, document: Document, runtime: float):
+    def __init__(self, tokenizer: str, document: Document, runtime: float):
         """Initialize the processing step."""
-        self.tokenizer_name = tokenizer_name
-        if document.id_ is None:
-            document_id = document.copy_of_id
-        else:
-            document_id = document.id_
-        self.document_id = document_id
-        self.number_of_pages = document.number_of_pages
+        self.tokenizer = tokenizer
+        self.document = document
         self.runtime = runtime
+
+    def eval_dict(self):
+        """Return any information needed to evaluate the ProcessingStep."""
+        step_eval = {
+            'tokenizer_name': str(self.tokenizer),
+            'document_id': self.document.id_ or self.document.copy_of_id,
+            'number_of_pages': self.document.number_of_pages,
+            'runtime': self.runtime,
+        }
+        return step_eval
 
 
 class AbstractTokenizer(metaclass=abc.ABCMeta):
@@ -44,7 +49,7 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
     def tokenize(self, document: Document):
         """Create Annotations with 1 Span based on the result of the Tokenizer."""
 
-    def evaluate(self, document: Document) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    def evaluate(self, document: Document) -> pd.DataFrame:
         """
         Compare a Document with its tokenized version.
 
@@ -62,20 +67,13 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
         )
 
         self.tokenize(virtual_doc)
-        data = {
-            'tokenizer_name': [x.tokenizer_name for x in self.processing_steps],
-            'document_id': [x.document_id for x in self.processing_steps],
-            'number_of_pages': [x.number_of_pages for x in self.processing_steps],
-            'runtime': [x.runtime for x in self.processing_steps],
-        }
-        return compare(document, virtual_doc), pd.DataFrame(data)
+        return compare(document, virtual_doc)
 
-    def evaluate_category(self, category: Category) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    def evaluate_category(self, category: Category) -> pd.DataFrame:
         """Compare test Documents of a Category with their tokenized version.
 
         :param category: Category to evaluate
-        :return: Evaluation DataFrame containing the evaluation of all Documents in the Category and processing time
-        Dataframe containing the processing duration of all steps of the tokenization.
+        :return: Evaluation DataFrame containing the evaluation of all Documents in the Category.
         """
         assert isinstance(category, Category)
 
@@ -84,56 +82,20 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
 
         evaluation = []
         for document in category.test_documents():
-            doc_evaluation, _ = self.evaluate(document)
+            doc_evaluation = self.evaluate(document)
             evaluation.append(doc_evaluation)
 
         evaluation = pd.concat(evaluation, ignore_index=True)
+        return evaluation
 
-        data = {
-            'tokenizer_name': [x.tokenizer_name for x in self.processing_steps],
-            'document_id': [x.document_id for x in self.processing_steps],
-            'number_of_pages': [x.number_of_pages for x in self.processing_steps],
-            'runtime': [x.runtime for x in self.processing_steps],
-        }
-        return evaluation, pd.DataFrame(data)
-
-    def evaluate_project(self, project: Project) -> Tuple[pd.DataFrame, pd.DataFrame]:
-        """Compare test Documents of the Categories in a Project with their tokenized version.
-
-        :param project: Project to evaluate
-        :return: Evaluation DataFrame containing the evaluation of all Documents in all Categories and processing time
-        Dataframe containing the processing duration of all steps of the tokenization.
+    def get_runtime_info(self) -> pd.DataFrame:
         """
-        assert isinstance(project, Project)
+        Get the processing runtime information as DataFrame.
 
-        if not project.categories:
-            raise ValueError(f"Project {project.__repr__()} has no Categories.")
-
-        if not project.test_documents:
-            raise ValueError(f"Project {project.__repr__()} has no test Documents.")
-
-        evaluation = []
-        for category in project.categories:
-            try:
-                docs_evaluation, _ = self.evaluate_category(category)
-                evaluation.append(docs_evaluation)
-            except ValueError as e:
-                # Category may not have test Documents
-                logger.info(f'Evaluation of the Tokenizer for {category} not possible, because of {e}.')
-                continue
-
-        data = {
-            'tokenizer_name': [x.tokenizer_name for x in self.processing_steps],
-            'document_id': [x.document_id for x in self.processing_steps],
-            'number_of_pages': [x.number_of_pages for x in self.processing_steps],
-            'runtime': [x.runtime for x in self.processing_steps],
-        }
-        evaluation = pd.concat(evaluation, ignore_index=True)
-        return evaluation, pd.DataFrame(data)
-
-    def reset_processing_steps(self):
-        """Reset tracking runtime of Tokenizer functions."""
-        self.processing_steps = []
+        :return: processing time Dataframe containing the processing duration of all steps of the tokenization.
+        """
+        data = [x.eval_dict() for x in self.processing_steps]
+        return pd.DataFrame(data)
 
 
 class ListTokenizer(AbstractTokenizer):
@@ -160,9 +122,3 @@ class ListTokenizer(AbstractTokenizer):
             self.processing_steps.append(tokenizer.processing_steps[-1])
 
         return document
-
-    def reset_processing_steps(self) -> None:
-        """Reset tracking runtime of Tokenizer functions."""
-        for tokenizer in self.tokenizers:
-            tokenizer.reset_processing_steps()
-        self.processing_steps = []

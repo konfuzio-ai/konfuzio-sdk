@@ -1,11 +1,10 @@
 """Regex tokenizers."""
 import logging
 import time
-from typing import Tuple
 
 import pandas as pd
 
-from konfuzio_sdk.data import Annotation, Document, Category, Span, Project
+from konfuzio_sdk.data import Annotation, Document, Category, Span
 from konfuzio_sdk.evaluate import compare
 from konfuzio_sdk.regex import regex_matches
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer, ListTokenizer, ProcessingStep
@@ -17,7 +16,7 @@ class RegexTokenizer(AbstractTokenizer):
     """Tokenizer based on a single regex."""
 
     def __init__(self, regex: str):
-        """Initialize the SingleRegexTokenizer."""
+        """Initialize the RegexTokenizer."""
         self.regex = regex
         self.processing_steps = []
 
@@ -84,7 +83,7 @@ class RegexTokenizer(AbstractTokenizer):
 
         # TODO: add processing time to Document
         # document.add_process_step(self.__repr__, time.monotonic() - t0)
-        self.processing_steps.append(ProcessingStep(self.__repr__(), document, time.monotonic() - t0))
+        self.processing_steps.append(ProcessingStep(self, document, time.monotonic() - t0))
 
         return document
 
@@ -208,8 +207,6 @@ class RegexMatcherTokenizer(ListTokenizer):
             df = compare(document, virtual_doc)
             eval_list.append(df)
 
-        self.reset_processing_steps()
-
         # Get unmatched Spans.
         df = pd.concat(eval_list)
         spans_not_found_by_tokenizer = df[(df['is_correct']) & (df['is_found_by_tokenizer'] == 0)]
@@ -234,47 +231,3 @@ class RegexMatcherTokenizer(ListTokenizer):
 
         self.tokenizers += new_tokenizers
         logger.info(f'Added {new_tokenizers} to {self}.')
-
-    def evaluate_project(self, project: Project) -> Tuple[pd.DataFrame, pd.DataFrame]:
-        """Compare test Documents of the Categories in a Project with their tokenized version.
-
-        :param project: Project to evaluate
-        :return: Evaluation DataFrame containing the evaluation of all Documents in all Categories.
-        """
-        assert isinstance(project, Project)
-
-        if not project.categories:
-            raise ValueError(f"Project {project.__repr__()} has no Categories.")
-
-        if not project.test_documents:
-            raise ValueError(f"Project {project.__repr__()} has no test Documents.")
-
-        evaluation = []
-        for category in project.categories:
-            try:
-                category_tokenizer = RegexMatcherTokenizer(
-                    tokenizers=[
-                        WhitespaceTokenizer(),
-                        ConnectedTextTokenizer(),
-                        ColonPrecededTokenizer(),
-                        CapitalizedTextTokenizer(),
-                        NonTextTokenizer(),
-                    ]
-                )
-                category_tokenizer.fit(category=category)
-                docs_evaluation, _ = category_tokenizer.evaluate_category(category)
-                evaluation.append(docs_evaluation)
-                self.processing_steps.extend(category_tokenizer.processing_steps)
-            except ValueError as e:
-                # Category may not have test Documents
-                logger.info(f'Evaluation of the Tokenizer for {category} not possible, because of {e}.')
-                continue
-
-        data = {
-            'tokenizer_name': [x.tokenizer_name for x in self.processing_steps],
-            'document_id': [x.document_id for x in self.processing_steps],
-            'number_of_pages': [x.number_of_pages for x in self.processing_steps],
-            'runtime': [x.runtime for x in self.processing_steps],
-        }
-        evaluation = pd.concat(evaluation, ignore_index=True)
-        return evaluation, pd.DataFrame(data)

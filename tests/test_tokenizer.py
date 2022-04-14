@@ -8,7 +8,7 @@ import time
 
 from konfuzio_sdk.data import Project, Annotation, Document, Label, AnnotationSet, LabelSet, Span, Category
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer, ListTokenizer, ProcessingStep
-from konfuzio_sdk.tokenizer.regex import RegexTokenizer
+from konfuzio_sdk.tokenizer.regex import RegexTokenizer, WhitespaceTokenizer
 
 logger = logging.getLogger(__name__)
 
@@ -22,14 +22,16 @@ class TestProcessingStep(unittest.TestCase):
         cls.project = Project(id_=None)
         cls.category = Category(project=cls.project, id_=1)
         cls.document = Document(project=cls.project, category=cls.category, text="Good morning.", id_=1)
-        cls.processing_step = ProcessingStep('name', cls.document, 0.1)
+        cls.tokenizer = WhitespaceTokenizer()
+        cls.processing_step = ProcessingStep(tokenizer=cls.tokenizer, document=cls.document, runtime=0.1)
 
-    def test_initialization(self):
+    def test_eval_dict(self):
         """Test initialization."""
-        assert self.processing_step.tokenizer_name == 'name'
-        assert self.processing_step.document_id == 1
-        assert self.processing_step.number_of_pages == 1
-        assert self.processing_step.runtime == 0.1
+        processing_eval = self.processing_step.eval_dict()
+        assert processing_eval['tokenizer_name'] == 'WhitespaceTokenizer'
+        assert processing_eval['document_id'] == 1
+        assert processing_eval['number_of_pages'] == 1
+        assert processing_eval['runtime'] == 0.1
 
 
 class TestAbstractTokenizer(unittest.TestCase):
@@ -91,9 +93,9 @@ class TestAbstractTokenizer(unittest.TestCase):
             _ = AbstractTokenizer()
             assert "Can't instantiate abstract class AbstractTokenizer with abstract methods" in context
 
-    def test_representation(self):
+    def test_string_representation(self):
         """Test string representation."""
-        assert self.tokenizer.__repr__() == "DummyTokenizer"
+        assert str(self.tokenizer) == "DummyTokenizer"
 
     def test_fit_input(self):
         """Test input for the fit of the tokenizer."""
@@ -123,23 +125,22 @@ class TestAbstractTokenizer(unittest.TestCase):
 
     def test_evaluate_output_format(self):
         """Test output format for the evaluate method."""
-        assert isinstance(self.tokenizer.evaluate(self.document), tuple)
-        assert isinstance(self.tokenizer.evaluate(self.document)[0], pd.DataFrame)
-        assert isinstance(self.tokenizer.evaluate(self.document)[1], pd.DataFrame)
+        assert isinstance(self.tokenizer.evaluate(self.document), pd.DataFrame)
 
     def test_evaluate_output_results_with_empty_document(self):
         """Test output for the evaluate method with an empty Document."""
         document = Document(project=self.project, category=self.category_1, text="")
-        result, _ = self.tokenizer.evaluate(document)
+        result = self.tokenizer.evaluate(document)
         assert result.shape[0] == 1
         assert result.is_correct[0] is None
         assert result.is_found_by_tokenizer.sum() == 0
 
-    def test_evaluate_output_processing_with_empty_document(self):
-        """Test output for the evaluate method with an empty Document."""
+    def test_processing_runtime_with_empty_document(self):
+        """Test the information of the processing runtime with a Document without text."""
         document = Document(project=self.project, category=self.category_1, text="")
         self.tokenizer.processing_steps = []
-        _, processing = self.tokenizer.evaluate(document)
+        _ = self.tokenizer.evaluate(document)
+        processing = self.tokenizer.get_runtime_info()
         assert processing.shape[0] == 1
         assert processing.tokenizer_name[0] == self.tokenizer.__repr__()
         self.assertIsNone(processing.document_id[0])
@@ -147,23 +148,24 @@ class TestAbstractTokenizer(unittest.TestCase):
 
     def test_evaluate_output_results_with_document(self):
         """Test output for the evaluate method with a Document with 1 Span."""
-        result, _ = self.tokenizer.evaluate(self.document)
+        result = self.tokenizer.evaluate(self.document)
         assert result.shape[0] == 2
         assert result.is_correct.sum() == 1
         assert result.is_found_by_tokenizer.sum() == 0
 
-    def test_evaluate_output_processing_with_document(self):
-        """Test output for the evaluate method with a Document with 1 Span."""
+    def test_processing_runtime_with_document(self):
+        """Test the information of the processing runtime with a Document with text."""
         self.tokenizer.processing_steps = []
-        _, processing = self.tokenizer.evaluate(self.document)
+        _ = self.tokenizer.evaluate(self.document)
+        processing = self.tokenizer.get_runtime_info()
         assert processing.shape[0] == 1
-        assert processing.tokenizer_name[0] == self.tokenizer.__repr__()
+        assert processing.tokenizer_name[0] == str(self.tokenizer)
         self.assertIsNone(processing.document_id[0])
         assert processing.runtime[0] < 1e-4
 
     def test_evaluate_output_offsets_with_document(self):
         """Test offsets in output for the evaluate method with a Document with 1 Span."""
-        result, _ = self.tokenizer.evaluate(self.document)
+        result = self.tokenizer.evaluate(self.document)
         assert result.start_offset[0] == self.span.start_offset
         assert result.end_offset[0] == self.span.end_offset
 
@@ -181,51 +183,19 @@ class TestAbstractTokenizer(unittest.TestCase):
 
     def test_evaluate_category_output_with_test_documents(self):
         """Test evaluate a Category with a test Documents."""
-        self.tokenizer.processing_steps = []
-        result, processing_times = self.tokenizer.evaluate_category(self.category_2)
+        result = self.tokenizer.evaluate_category(self.category_2)
         assert result.shape[0] == 2
         assert result.category_id.dropna().unique() == self.category_2.id_
-
-    def test_evaluate_project_input(self):
-        """Test input for the evaluate_project method."""
-        with self.assertRaises(AssertionError):
-            self.tokenizer.evaluate_project(self.category_1)
-
-    def test_evaluate_project_output_without_categories(self):
-        """Test evaluate a Project without Categories."""
-        project = Project(id_=None)
-        with self.assertRaises(ValueError):
-            self.tokenizer.evaluate_project(project)
-
-    def test_evaluate_project_output_without_test_documents(self):
-        """Test evaluate a Project without test Documents."""
-        project = Project(id_=None)
-        _ = Category(project=project)
-        with self.assertRaises(ValueError):
-            self.tokenizer.evaluate_project(project)
-
-    def test_evaluate_project_output_results_with_test_documents(self):
-        """Test evaluate a Project with test Documents."""
-        result, _ = self.tokenizer.evaluate_project(self.project)
-        assert result.shape[0] == 4
-        assert set(result.category_id.dropna().unique()) == set([self.category_1.id_, self.category_2.id_])
-
-    def test_evaluate_project_output_processing_with_test_documents(self):
-        """Test evaluate a Project with test Documents."""
-        self.tokenizer.reset_processing_steps()
-        _, processing = self.tokenizer.evaluate_project(self.project)
-        assert processing.shape[0] == 2
-        assert processing.tokenizer_name[0] == self.tokenizer.__repr__()
-        self.assertIsNone(processing.document_id[0])
-        assert processing.runtime[0] < 1e-4
 
     def test_reset_processing_steps(self):
         """Test reset processing steps."""
         self.tokenizer.processing_steps = []
         _ = self.tokenizer.evaluate(self.document)
-        assert len(self.tokenizer.processing_steps) == 1
-        self.tokenizer.reset_processing_steps()
-        assert len(self.tokenizer.processing_steps) == 0
+        processing = self.tokenizer.get_runtime_info()
+        assert processing.shape[0] == 1
+        self.tokenizer.processing_steps = []
+        processing = self.tokenizer.get_runtime_info()
+        assert processing.shape[0] == 0
 
 
 class TestListTokenizer(unittest.TestCase):
@@ -319,25 +289,25 @@ class TestListTokenizer(unittest.TestCase):
 
     def test_tokenizer_1(self):
         """Test that tokenizer_1 has only 1 match."""
-        result, _ = self.tokenizer_1.evaluate(self.document)
+        result = self.tokenizer_1.evaluate(self.document)
         assert result.is_correct.sum() == 2
         assert result.is_found_by_tokenizer.sum() == 1
 
     def test_tokenizer_2(self):
         """Test that tokenizer_2 has only 1 match."""
-        result, _ = self.tokenizer_2.evaluate(self.document)
+        result = self.tokenizer_2.evaluate(self.document)
         assert result.is_correct.sum() == 2
         assert result.is_found_by_tokenizer.sum() == 1
 
     def test_evaluate_list_tokenizer(self):
         """Test that with the combination of the tokenizers is possible to find both correct Spans."""
-        result, _ = self.tokenizer.evaluate(self.document)
+        result = self.tokenizer.evaluate(self.document)
         assert result.is_correct.sum() == 2
         assert result.is_found_by_tokenizer.sum() == 2
 
     def test_evaluate_list_tokenizer_offsets(self):
         """Test offsets of the result of the tokenizer."""
-        result, _ = self.tokenizer.evaluate(self.document)
+        result = self.tokenizer.evaluate(self.document)
         assert result.start_offset[0] == self.span_1.start_offset
         assert result.end_offset[0] == self.span_1.end_offset
         assert result.start_offset[1] == self.span_2.start_offset
@@ -345,19 +315,20 @@ class TestListTokenizer(unittest.TestCase):
 
     def test_reset_processing_steps(self):
         """Test reset processing steps for the ListTokenizer."""
-        self.tokenizer.reset_processing_steps()
+        self.tokenizer.processing_steps = []
         _ = self.tokenizer.evaluate(self.document)
         assert len(self.tokenizer.processing_steps) == 2
-        self.tokenizer.reset_processing_steps()
+        self.tokenizer.processing_steps = []
         assert len(self.tokenizer.processing_steps) == 0
 
-    def test_evaluate_processing_list_tokenizer(self):
-        """Test that with the combination of the tokenizers is possible to find both correct Spans."""
-        self.tokenizer.reset_processing_steps()
-        _, processing = self.tokenizer.evaluate(self.document)
+    def test_processing_runtime_of_list_tokenizer(self):
+        """Test that the information of the processing runtime refers to each Tokenizer in the list of Tokenizers."""
+        self.tokenizer.processing_steps = []
+        _ = self.tokenizer.evaluate(self.document)
+        processing = self.tokenizer.get_runtime_info()
         assert processing.shape[0] == 2
-        assert processing.tokenizer_name[0] == self.tokenizer_1.__repr__()
-        assert processing.tokenizer_name[1] == self.tokenizer_2.__repr__()
+        assert processing.tokenizer_name[0] == str(self.tokenizer_1)
+        assert processing.tokenizer_name[1] == str(self.tokenizer_2)
         self.assertIsNone(processing.document_id[0])
-        self.assertIsNone(processing.document_id[0])
+        self.assertIsNone(processing.document_id[1])
         assert processing.runtime[0] < 1e-3
