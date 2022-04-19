@@ -297,11 +297,12 @@ class Label(Data):
             label_set.add_label(self)
 
         # Regex features
-        self._tokens = None
+        self._tokens = {}
         self.tokens_file_path = None
         self._regex: List[str] = []
         self.regex_file_path = None
         self._combined_tokens = None
+        # TODO: combine category name for regex_file_path
         self.regex_file_path = os.path.join(self.project.regex_folder, f'{self.name_clean}.json5')
         self._correct_annotations = []
         self._evaluations = []  # used to do the duplicate check on Annotation level
@@ -351,22 +352,27 @@ class Label(Data):
             tokens = []
         return tokens
 
-    def tokens(self, categories: List[Category], update=False) -> List[str]:
+    def tokens(self, categories: List[Category], update=False) -> dict:
         """Calculate tokens to be used in the regex of the Label."""
-        if not self._tokens or update:
-            self.tokens_file_path = os.path.join(self.project.regex_folder, f'{self.name_clean}_tokens.json5')
-            if not is_file(self.tokens_file_path, raise_exception=False) or update:
+        for category in categories:
+            tokens_file_path = os.path.join(
+                self.project.regex_folder, f'{category.name}_{self.name_clean}_tokens.json5'
+            )
 
-                logger.info(f'Build tokens for Label {self.name}.')
-                self._tokens = self.find_tokens(categories=categories)
+            if not is_file(tokens_file_path, raise_exception=False) or update:
+                category_tokens = self.find_tokens(categories=[category])
 
-                if os.path.exists(self.regex_file_path):
-                    with open(self.tokens_file_path, 'w') as f:
-                        json.dump(self._tokens, f, indent=2, sort_keys=True)
+                if os.path.exists(tokens_file_path):
+                    with open(tokens_file_path, 'w') as f:
+                        json.dump(category_tokens, f, indent=2, sort_keys=True)
+
             else:
                 logger.info(f'Load existing tokens for Label {self.name}.')
-                with open(self.tokens_file_path, 'r') as f:
-                    self._tokens = json.load(f)
+                with open(tokens_file_path, 'r') as f:
+                    category_tokens = json.load(f)
+
+            self._tokens[category.id_] = category_tokens
+
         return self._tokens
 
     def check_tokens(self, categories: List[Category]):
@@ -375,18 +381,24 @@ class Label(Data):
         for annotation in self.annotations(categories=categories):
             for span in annotation.spans:
                 valid_offset = span.offset_string.replace('\n', '').replace('\t', '').replace('\f', '').replace(' ', '')
-                created_regex = annotation.regex_annotation_generator(self.tokens(categories=categories))
-                if valid_offset and span not in created_regex:
-                    logger.error(
-                        f'Please check Annotation ({span.annotation.get_link()}) >>{repr(span.offset_string)}<<.'
-                    )
-                    not_found.append(span)
+                categories_tokens = self.tokens(categories=categories)
+                for _, category_tokens in categories_tokens.items():
+                    created_regex = annotation.regex_annotation_generator(category_tokens)
+                    if valid_offset and span not in created_regex:
+                        logger.error(
+                            f'Please check Annotation ({span.annotation.get_link()}) >>{repr(span.offset_string)}<<.'
+                        )
+                        not_found.append(span)
         return not_found
 
     def combined_tokens(self, categories: List[Category]):
         """Create one OR Regex for all relevant Annotations tokens."""
         if not self._combined_tokens:
-            self._combined_tokens = merge_regex(self.tokens(categories=categories))
+            categories_tokens = self.tokens(categories=categories)
+            all_tokens = []
+            for _, category_tokens in categories_tokens.items():
+                all_tokens.extend(category_tokens)
+            self._combined_tokens = merge_regex(all_tokens)
         return self._combined_tokens
 
     def evaluate_regex(
@@ -529,7 +541,7 @@ class Label(Data):
 
         return best_regex
 
-    def regex(self, categories: List[Category], annotations=None, update=False) -> List:
+    def regex(self, categories: List[Category], update=False) -> List:
         """Calculate regex to be used in the LabelExtractionModel."""
         if not self._regex or update:
             if not is_file(self.regex_file_path, raise_exception=False) or update:
@@ -539,30 +551,14 @@ class Label(Data):
                     with open(self.regex_file_path, 'w') as f:
                         json.dump(self._regex, f, indent=2, sort_keys=True)
             else:
-                raise Exception(
-                    f'Regexes from file loaded for {self} which might ' f'have been calculated for other category'
+                logger.warning(
+                    f'Regexes loaded from file for {self} which might have been calculated for other category.'
                 )
                 logger.info(f'Start loading existing regexes for Label {self.name}.')
                 with open(self.regex_file_path, 'r') as f:
                     self._regex = json.load(f)
         logger.info(f'Regexes are ready for Label {self.name}.')
         return self._regex
-
-    def reset_regex(self) -> None:
-        """Reset attributes populated by regex operations."""
-        if is_file(self.tokens_file_path, raise_exception=False):
-            os.remove(self.tokens_file_path)
-
-        if is_file(self.regex_file_path, raise_exception=False):
-            os.remove(self.regex_file_path)
-
-        self._tokens = None
-        self.tokens_file_path = None
-        self._regex: List[str] = []
-        self._combined_tokens = None
-        self.regex_file_path = os.path.join(self.project.regex_folder, f'{self.name_clean}.json5')
-        self._correct_annotations = []
-        self._evaluations = []
 
     # def save(self) -> bool:
     #     """
@@ -913,7 +909,15 @@ class Annotation(Data):
         elif isinstance(annotation_set, AnnotationSet):
             # it's a save way to look up the annotation set first. Otherwise users can add annotation sets which
             # do not relate to the document
-            self.annotation_set: AnnotationSet = self.document.get_annotation_set_by_id(annotation_set.id_)
+            # self.annotation_set: AnnotationSet = self.document.get_annotation_set_by_id(annotation_set.id_)
+            # TODO: to be discussed
+            if annotation_set.document == self.document:
+                self.annotation_set: AnnotationSet = annotation_set
+            else:
+                raise ValueError(
+                    f'AnnotationSet {annotation_set} does not belong to the same Document {self.document} '
+                    f'as the Annotation {self}.'
+                )
         else:
             self.annotation_set = None
             logger.debug(f'{self} in {self.document} created but without Annotation Set information.')
@@ -1181,11 +1185,11 @@ class Annotation(Data):
         if new_matcher not in previous_matchers + found_for_label:  # only run evaluation if the token is truly new
             evaluation = self.label.evaluate_regex(new_regex, regex_quality=regex_quality, categories=categories)
             self._tokens.append(evaluation)
-            logger.error(f'Added new regex Token {new_matcher}.')
+            logger.debug(f'Added new regex Token {new_matcher}.')
         else:
             logger.debug(f'Annotation Token {repr(new_matcher)} or regex {repr(new_regex)} does exist.')
 
-    def tokens(self, categories: List[Category]) -> List:
+    def tokens(self, categories: List[Category]) -> List[str]:
         """Create a list of potential tokens based on Spans of this Annotation."""
         if not self._tokens:
             for span in self.spans:
