@@ -226,8 +226,5 @@ class RegexMatcherTokenizer(ListTokenizer):
                 for regex in regexes:
                     new_tokenizers.append(RegexTokenizer(regex))
 
-            # clean information added during regex process to the Labels
-            label.reset_regex()
-
         self.tokenizers += new_tokenizers
         logger.info(f'Added {new_tokenizers} to {self}.')
