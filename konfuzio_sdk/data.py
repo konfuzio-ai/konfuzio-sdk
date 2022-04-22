@@ -360,8 +360,9 @@ class Label(Data):
             if not is_file(tokens_file_path, raise_exception=False) or update:
                 category_tokens = self.find_tokens(categories=[category])
 
-                with open(tokens_file_path, 'w') as f:
-                    json.dump(category_tokens, f, indent=2, sort_keys=True)
+                if os.path.exists(self.project.regex_folder):
+                    with open(tokens_file_path, 'w') as f:
+                        json.dump(category_tokens, f, indent=2, sort_keys=True)
 
             else:
                 logger.info(f'Load existing tokens for Label {self.name}.')
