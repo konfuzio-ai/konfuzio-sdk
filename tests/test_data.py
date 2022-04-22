@@ -16,6 +16,7 @@ from konfuzio_sdk.data import (
     Span,
     download_training_and_test_data,
     Category,
+    Page,
 )
 from konfuzio_sdk.utils import is_file
 
@@ -44,7 +45,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 24
+        assert len(cls.project.virtual_documents) == 25
 
     def test_project_no_label(self):
         """Test that no_label exists in the Labels of the Project and has the expected name."""
@@ -141,34 +142,6 @@ class TestOfflineDataSetup(unittest.TestCase):
         project = Project(id_=None)
         label = Label(project=project, label_sets=[self.label_set], text='Second Offline Label')
         assert [ls.id_ for ls in label.label_sets] == [421]
-
-    def test_label_reset_regex(self):
-        """Test if we can reset the attributes related with the regex."""
-        project = Project(id_=None)
-        category = Category(project=project)
-        label_set = LabelSet(id_=33, project=project, categories=[category])
-        label = Label(id_=22, text='LabelName', project=project, label_sets=[label_set], threshold=0.5)
-        document = Document(project=project, category=category, text="From 14.12.2021 to 1.1.2022.", dataset_status=2)
-        span_1 = Span(start_offset=0, end_offset=5)
-        annotation_set_1 = AnnotationSet(id_=1, document=document, label_set=label_set)
-        annotation = Annotation(
-            document=document,
-            is_correct=True,
-            annotation_set=annotation_set_1,
-            label=label,
-            label_set=label_set,
-            spans=[span_1],
-        )
-        label.find_regex(categories=[category], annotations=[annotation])
-        self.assertIsNotNone(label._combined_tokens)
-        label.reset_regex()
-        self.assertIsNone(label._combined_tokens)
-        self.assertIsNone(label.tokens_file_path)
-        self.assertIsNone(label._tokens)
-        assert len(label._regex) == 0
-        assert len(label._correct_annotations) == 0
-        assert len(label._evaluations) == 0
-        assert label.regex_file_path == os.path.join(label.project.regex_folder, f'{label.name_clean}.json5')
 
     def test_to_add_label_to_project_twice(self):
         """Add an existing Label to a Project."""
@@ -327,7 +300,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         document = Document(project=project, category=self.category)
         span = Span(start_offset=1, end_offset=2)
 
-        with self.assertRaises(IndexError) as context:
+        with self.assertRaises(ValueError) as context:
             _ = Annotation(
                 document=document,
                 is_correct=True,
@@ -344,7 +317,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         document = Document(project=project, category=self.category)
         span = Span(start_offset=1, end_offset=2)
 
-        with self.assertRaises(IndexError) as context:
+        with self.assertRaises(ValueError) as context:
             _ = Annotation(
                 document=document,
                 is_correct=True,
@@ -402,7 +375,7 @@ class TestOfflineDataSetup(unittest.TestCase):
             document=document,
             is_correct=True,
             label=self.label,
-            annotation_set=self.annotation_set,
+            annotation_set=annotation_set,
             label_set=self.label_set,
             spans=[span],
         )
@@ -410,7 +383,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert annotation in annotation_set.annotations
 
     def test_create_document_with_pages(self):
-        """Add new annotation set to a document."""
+        """Create a Document with pages information."""
         page_list = [
             {
                 "id": 1,
@@ -421,6 +394,26 @@ class TestOfflineDataSetup(unittest.TestCase):
             }
         ]
         document = Document(project=self.project, category=self.category, pages=page_list, text='a')
+        assert len(document.pages) == len(page_list)
+        assert document.pages[0].image == page_list[0]["image"]
+        assert document.pages[0].number == page_list[0]["number"]
+        assert document.pages[0].original_size == page_list[0]["original_size"]
+        assert document.pages[0].size == page_list[0]["size"]
+
+    def test_create_document_with_page_object(self):
+        """Create a Document with pages information from a Page object."""
+        page_list = [
+            {
+                "id_": 1,
+                "image": "/page/show-image/1/",
+                "number": 1,
+                "original_size": [595.2, 841.68],
+                "size": [1414, 2000],
+            }
+        ]
+        page = Page(**page_list[0])
+
+        document = Document(project=self.project, category=self.category, pages=[page], text='a')
         assert len(document.pages) == len(page_list)
         assert document.pages[0].image == page_list[0]["image"]
         assert document.pages[0].number == page_list[0]["number"]
@@ -531,11 +524,28 @@ class TestOfflineDataSetup(unittest.TestCase):
         first_span = Span(start_offset=1, end_offset=2)
         second_span = Span(start_offset=1, end_offset=2)
         third_span = Span(start_offset=2, end_offset=3)
-        _ = Annotation(document=document, spans=[first_span], label_set=self.label_set, label=self.label)
-        # first_span and second_span have the same offsets
+        first_annotation = Annotation(document=document, spans=[first_span], label_set=self.label_set, label=self.label)
+        second_annotation = Annotation(
+            document=document, spans=[second_span, third_span], label_set=self.label_set, label=self.label
+        )
+        self.assertEqual([first_annotation, second_annotation], document.annotations(use_correct=False))
+
+    def test_to_add_a_correct_annotation_with_a_duplicated_span_to_a_document(self):
+        """Test to Span that has the same start and end offsets to a correct Annotation."""
+        document = Document(project=self.project, category=self.category)
+        first_span = Span(start_offset=1, end_offset=2)
+        second_span = Span(start_offset=1, end_offset=2)
+        third_span = Span(start_offset=2, end_offset=3)
+        _ = Annotation(
+            document=document, spans=[first_span], label_set=self.label_set, label=self.label, is_correct=True
+        )
         with self.assertRaises(ValueError):
             _ = Annotation(
-                document=document, spans=[second_span, third_span], label_set=self.label_set, label=self.label
+                document=document,
+                spans=[second_span, third_span],
+                label_set=self.label_set,
+                label=self.label,
+                is_correct=True,
             )
 
     def test_to_reuse_spans_across_annotations(self):
@@ -808,7 +818,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.assertFalse(is_file(doc.annotation_file_path, raise_exception=False))
         self.assertEqual(None, doc._annotations)
         self.assertTrue(doc.annotations())
-        self.assertEqual(5, len(doc._annotation_sets))
+        self.assertEqual(8, len(doc._annotation_sets))
         self.assertTrue(is_file(doc.annotation_file_path))
         prj.delete()
 
@@ -819,7 +829,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.assertFalse(is_file(doc.annotation_set_file_path, raise_exception=False))
         self.assertEqual(None, doc._annotation_sets)
         self.assertTrue(doc.annotation_sets())
-        self.assertEqual(5, len(doc._annotation_sets))
+        self.assertEqual(8, len(doc._annotation_sets))
         self.assertTrue(is_file(doc.annotation_set_file_path))
         prj.delete()
 
@@ -1056,7 +1066,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
         # existing annotation
         # https://app.konfuzio.com/admin/server/sequenceannotation/?document_id=44823&project=46
-        self.assertEqual(len(doc.annotations(use_correct=False)), 22)
+        self.assertEqual(len(doc.annotations(use_correct=False)), 21)  # 22 Annotations if considering negative ones
         # a multiline Annotation in the top right corner, see https://app.konfuzio.com/a/4419937
         self.assertEqual(66, doc.annotations()[0]._spans[0].start_offset)
         self.assertEqual(78, doc.annotations()[0]._spans[0].end_offset)
@@ -1148,7 +1158,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
         self.assertEqual(len(doc.annotations()), 19)
         assert len(doc.annotations(label=self.prj.get_label_by_id(858))) == 1
-        assert len(doc.annotations(use_correct=False)) == 22
+        assert len(doc.annotations(use_correct=False)) == 21  # 22 if considering negative ones
 
     def test_document_offset(self):
         """Test Document offsets."""
