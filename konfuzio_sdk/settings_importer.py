@@ -25,8 +25,20 @@ LOG_FORMAT = (
     "[%(funcName)-20.20s][%(lineno)-4.4d] %(message)-10s"
 )
 
+handlers = [
+    logging.StreamHandler()
+]
+
+try:
+    with open(LOG_FILE_PATH, "a") as f:
+        if f.writable():
+            handlers.append(logging.FileHandler(LOG_FILE_PATH))
+except OSError:
+    pass
+
+
 logging.basicConfig(
     level=config('LOGGING_LEVEL', default=logging.INFO, cast=int),
     format=LOG_FORMAT,
-    handlers=[logging.FileHandler(LOG_FILE_PATH), logging.StreamHandler()],
+    handlers=handlers,
 )
