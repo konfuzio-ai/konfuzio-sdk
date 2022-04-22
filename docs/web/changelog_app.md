@@ -8,6 +8,27 @@ All notable changes in the server of app.konfuzio.com will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
 
+## Unreleased
+
+### Added 
+- Beta Version of APIV3
+- Option to enforce running OCR even if text embeddings are present
+- Improved error messages in case a document cannot be processed.
+- Option to exclude email content when using the email-integration.
+
+### Changed
+- For on-premise Users, now the Postgresq 10 is the minium version
+- Improved Extraction AI
+- Updated Evaluation. The evaluation is now stricter as all Annotations created or accepted by a human are considered when calculating the evaluation metrics.
+- On-Premise container run now as non-root and using read-only fileystem
+- Improved mouse pointer in the Smartview
+
+### Fixed
+- An issue where empty Annotation Sets could appear on Documents
+- An issue where conflicting annotions could be created
+- Rare cases where OCR text included some characters mutiple time
+
+
 ## 2022-03-15_09-14-17
 
 ### Changed
