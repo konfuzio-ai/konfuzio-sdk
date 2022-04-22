@@ -1,4 +1,5 @@
 """Test Regex functionality on strings."""
+import os
 import textwrap
 from timeit import timeit
 
@@ -19,6 +20,7 @@ import pytest
 
 from konfuzio_sdk.regex import regex_matches
 from konfuzio_sdk.data import Project, Annotation, Label, Category, LabelSet, Document, AnnotationSet, Span
+from konfuzio_sdk.utils import is_file
 
 logger = logging.getLogger(__name__)
 
@@ -179,7 +181,6 @@ class TestTokens(unittest.TestCase):
             "has_multiple_top_candidates": False,
         }
         new_label = Label(project=self.prj, **label_data)
-        self.prj.add_label(new_label)
         category = self.prj.get_category_by_id(63)
         doc = self.prj.documents[0]
 
@@ -217,24 +218,26 @@ class TestTokens(unittest.TestCase):
         """Extract value for Steuerklasse."""
         label = next(x for x in self.prj.labels if x.name == 'Steuerklasse')
         category = self.prj.get_category_by_id(63)
-        assert label.tokens(categories=[category])
-        tokens = sorted(label.tokens(categories=[category]))
-        assert len(tokens) == 1
+        tokens = label.tokens(categories=[category])
+        assert len(sorted(tokens[category.id_])) == 1
+        assert is_file(os.path.join(self.prj.regex_folder, f'{category.name}_{label.name_clean}_tokens.json5'))
 
     def test_label_plz_token(self):
         """Extract all tax gross amounts of all payslips."""
         label = self.prj.get_label_by_name('Steuer-Brutto')
         category = self.prj.get_category_by_id(63)
         tokens = label.tokens(categories=[category])
-        assert len(tokens) == 4
-        assert '(?P<SteuerBrutto_N_' in tokens[0]
+        assert len(tokens[category.id_]) == 4
+        assert '(?P<SteuerBrutto_N_' in tokens[category.id_][0]
+        assert is_file(os.path.join(self.prj.regex_folder, f'{category.name}_{label.name_clean}_tokens.json5'))
 
     @unittest.skip(reason='Optimization does not work accurately at the moment. See "expected" result.')
     def test_label_token_auszahlungsbetrag(self):
         """Return the summary of all regex needed to get the wage."""
         label = self.prj.get_label_by_name('Auszahlungsbetrag')
         category = self.prj.get_category_by_id(63)
-        tokens = sorted(label.tokens(categories=[category]))
+        tokens = label.tokens(categories=[category])
+        tokens = sorted(tokens[category.id_])
         assert len(tokens) == 3
         assert '(?P<Auszahlungsbetrag_' in tokens[0]
         assert '(?P<Auszahlungsbetrag_' in tokens[1]
@@ -248,11 +251,14 @@ class TestTokens(unittest.TestCase):
         category = self.prj.get_category_by_id(63)
         try:
             label = next(x for x in self.prj.labels if len(x.annotations(categories=[category])) == 0)
-            assert sorted(label.tokens(categories=[category])) == []
+            tokens = label.tokens(categories=[category])
+            assert sorted(tokens[category.id_]) == []
+            # File is created even if there are no Annotations
+            assert is_file(os.path.join(self.prj.regex_folder, f'{category.name}_{label.name_clean}_tokens.json5'))
         except StopIteration:
             pass
 
-    @pytest.mark.skip("Line breaks are not supported.")
+    @unittest.skip(reason="Line breaks are not supported.")
     def test_linebreaks_in_tokens(self):
         """Calculate a Annotation that has line breaks."""
         category = self.prj.get_category_by_id(63)
