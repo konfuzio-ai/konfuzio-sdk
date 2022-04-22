@@ -3,7 +3,6 @@ import logging
 import unittest
 
 import pandas as pd
-import pytest
 import time
 
 from konfuzio_sdk.data import Project, Annotation, Document, Label, AnnotationSet, LabelSet, Span, Category
@@ -241,7 +240,7 @@ class TestListTokenizer(unittest.TestCase):
         with self.assertRaises(AssertionError):
             self.tokenizer.tokenize(self.project)
 
-    @pytest.mark.skip("It's possible to create an Annotation if not all Spans are equal to another Annotation")
+    @unittest.skip("It's possible to create an Annotation if not all Spans are equal to another Annotation")
     def test_tokenize_document_with_matching_spans(self):
         """
         Test tokenize a Document with Annotation with Spans that can be found by the tokenizer.

@@ -45,7 +45,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 25
+        assert len(cls.project.virtual_documents) == 27
 
     def test_project_no_label(self):
         """Test that no_label exists in the Labels of the Project and has the expected name."""
@@ -554,9 +554,24 @@ class TestOfflineDataSetup(unittest.TestCase):
         first_span = Span(start_offset=1, end_offset=2)
         second_span = Span(start_offset=2, end_offset=3)
         Annotation(document=document, spans=[first_span], label_set=self.label_set, label=self.label)
+        Annotation(document=document, spans=[first_span, second_span], label_set=self.label_set, label=self.label)
+        assert len(document.annotations(use_correct=False)) == 2
+
+    def test_to_reuse_spans_across_correct_annotations(self):
+        """Test if we find inconsistencies when one Span is assigned to a new correct Annotation."""
+        document = Document(project=self.project, category=self.category)
+        first_span = Span(start_offset=1, end_offset=2)
+        second_span = Span(start_offset=2, end_offset=3)
+        Annotation(document=document, spans=[first_span], label_set=self.label_set, label=self.label, is_correct=True)
         with self.assertRaises(ValueError) as context:
-            Annotation(document=document, spans=[first_span, second_span], label_set=self.label_set, label=self.label)
-            assert 'however it was assigned to Annotation' in context.exception
+            Annotation(
+                document=document,
+                spans=[first_span, second_span],
+                label_set=self.label_set,
+                label=self.label,
+                is_correct=True,
+            )
+            assert 'is a duplicate of' in context.exception
 
     def test_lose_weight(self):
         """Lose weight should remove session and documents."""
@@ -1359,6 +1374,7 @@ class TestFillOperation(unittest.TestCase):
 
     def test_fill_full_document_with_category(self):
         """Try to fill a Document with Category."""
+        # TODO: It's failing because the Document already has the Annotations created by fill (from the tests setup)
         self.prj.get_document_by_id(TEST_DOCUMENT_ID).annotations(fill=True)
 
     def test_correct_text_offset(self):
