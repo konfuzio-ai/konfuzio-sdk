@@ -300,9 +300,7 @@ class Label(Data):
         self._tokens = {}
         self.tokens_file_path = None
         self._regex: List[str] = []
-        self.regex_file_path = None
         self._combined_tokens = None
-        # TODO: combine category name for regex_file_path
         self.regex_file_path = os.path.join(self.project.regex_folder, f'{self.name_clean}.json5')
         self._correct_annotations = []
         self._evaluations = []  # used to do the duplicate check on Annotation level
@@ -362,9 +360,8 @@ class Label(Data):
             if not is_file(tokens_file_path, raise_exception=False) or update:
                 category_tokens = self.find_tokens(categories=[category])
 
-                if os.path.exists(tokens_file_path):
-                    with open(tokens_file_path, 'w') as f:
-                        json.dump(category_tokens, f, indent=2, sort_keys=True)
+                with open(tokens_file_path, 'w') as f:
+                    json.dump(category_tokens, f, indent=2, sort_keys=True)
 
             else:
                 logger.info(f'Load existing tokens for Label {self.name}.')
@@ -942,8 +939,8 @@ class Annotation(Data):
         ):
             # Legacy support for creating Annotations with a single offset
             bbox = kwargs.get('bbox', {})
-            sa = Span(start_offset=kwargs.get("start_offset"), end_offset=kwargs.get("end_offset"), annotation=self)
-            self.add_span(sa)
+            _ = Span(start_offset=kwargs.get("start_offset"), end_offset=kwargs.get("end_offset"), annotation=self)
+            # self.add_span(sa)
 
             logger.warning(f'{self} is empty')
 
@@ -1406,6 +1403,7 @@ class Document(Data):
                         id_=page_data.id_,
                         number=page_data.number,
                         size=page_data.size,
+                        image=page_data.image,
                         original_size=page_data.original_size,
                         start_offset=page_data.start_offset,
                         end_offset=page_data.end_offset,
