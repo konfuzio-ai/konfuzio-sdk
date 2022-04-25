@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 def sdk_isinstance(instance, klass):
-    """Custom isinstance implementation, which is compatible with cloudpickle saving by value."""
+    """Implement a custom isinstance which is compatible with cloudpickle saving by value."""
     result = type(instance).__name__ == klass.__name__
     return result
 
@@ -348,7 +348,8 @@ def amend_file_path(file_path: str, append_text: str = '', new_extension: str = 
 #         line_numbers = set(int(box['line_number']) for box in bbox.values() if box['page_number'] == page_number)
 #         for line_number in line_numbers:
 #             line_bboxes = list(
-#                 box for box in bbox.values() if box['page_number'] == page_number and box['line_number'] == line_number
+#                 box for box in bbox.values()
+#                 if box['page_number'] == page_number and box['line_number'] == line_number
 #             )
 #             max_y1 = max([x['y1'] for x in line_bboxes])
 #             min_y0 = min([x['y0'] for x in line_bboxes])
