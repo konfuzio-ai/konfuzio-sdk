@@ -7,8 +7,8 @@ import pandas as pd
 from konfuzio_sdk.data import Annotation, Document, Category, Span
 from konfuzio_sdk.evaluate import compare
 from konfuzio_sdk.regex import regex_matches
-from konfuzio_sdk.utils import sdk_isinstance
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer, ListTokenizer, ProcessingStep
+from konfuzio_sdk.utils import sdk_isinstance
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ class RegexTokenizer(AbstractTokenizer):
 
     def fit(self, category: Category):
         """Fit the tokenizer accordingly with the Documents of the Category."""
-        assert isinstance(category, Category)
+        assert sdk_isinstance(category, Category)
         return self
 
     def tokenize(self, document: Document) -> Document:
@@ -150,7 +150,7 @@ class RegexMatcherTokenizer(ListTokenizer):
 
     def fit(self, category: Category):
         """Call fit on all tokenizers."""
-        assert isinstance(category, Category)
+        assert sdk_isinstance(category, Category)
 
         for tokenizer in self.tokenizers:
             tokenizer.fit(category)

@@ -6,8 +6,8 @@ import os
 import pathlib
 import re
 import shutil
-import zipfile
 import time
+import zipfile
 from typing import Optional, List, Union, Tuple, Dict
 
 import dateutil.parser
@@ -27,7 +27,7 @@ from konfuzio_sdk.api import (
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
 from konfuzio_sdk.utils import get_bbox, get_missing_offsets
-from konfuzio_sdk.utils import is_file, convert_to_bio_scheme, amend_file_name
+from konfuzio_sdk.utils import is_file, convert_to_bio_scheme, amend_file_name, sdk_isinstance
 
 logger = logging.getLogger(__name__)
 
@@ -904,7 +904,7 @@ class Annotation(Data):
         # make sure an Annotation Set is available
         if isinstance(annotation_set_id, int):
             self.annotation_set: AnnotationSet = self.document.get_annotation_set_by_id(annotation_set_id)
-        elif isinstance(annotation_set, AnnotationSet):
+        elif sdk_isinstance(annotation_set, AnnotationSet):
             # it's a save way to look up the annotation set first. Otherwise users can add annotation sets which
             # do not relate to the document
             self.annotation_set: AnnotationSet = self.document.get_annotation_set_by_id(annotation_set.id_)
@@ -1391,7 +1391,7 @@ class Document(Data):
             for page_index, page_data in enumerate(pages_data):
                 page_text = page_texts[page_index]
                 end_offset = start_offset + len(page_text)
-                if isinstance(page_data, Page):
+                if sdk_isinstance(page_data, Page):
                     page = Page(
                         id_=page_data.id_,
                         number=page_data.number,
