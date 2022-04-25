@@ -52,13 +52,6 @@ class RegexTokenizer(AbstractTokenizer):
         # for each Span, create an Annotation
         for span_info in spans_info:
 
-            if bbox_keys:
-                if span_info['start_offset'] not in bbox_keys or span_info['end_offset'] - 1 not in bbox_keys:
-                    logger.error(
-                        f'Regex {span_info["regex_used"]} create '
-                        f'start_offset or end_offset which is not part of the document bbox.'
-                    )
-                    continue
             if len(bbox_keys) > 0 and (
                 span_info['start_offset'] not in bbox_keys or span_info['end_offset'] - 1 not in bbox_keys
             ):
@@ -117,7 +110,6 @@ class ColonPrecededTokenizer(RegexTokenizer):
 
     def __init__(self):
         """Initialize the ColonPrecededTokenizer."""
-        # super().__init__(regex=r'(?:(?::[ \t])((?:[^ \t\n\:\,\.\!\?\-\_]+(?:[ \t][^ \t\n\:\,\.\!\?\-\_]+)*)+))')
         super().__init__(regex=r':[ \t]((?:[^ \t\n\:\,\!\?\_]+(?:[ \t][^ \t\n\:\!\?\_]+)*)+)')
 
 
@@ -143,40 +135,6 @@ class NumbersTokenizer(RegexTokenizer):
     def __init__(self):
         """Initialize the NumbersTokenizer."""
         super().__init__(regex=r'\s((?:[\d+][ ]?)+)\s')
-
-
-# New experimental Tokenizer:
-# class Colon2PrecededTokenizer(RegexTokenizer):
-#     """Tokenizer based on text preceded by colon."""
-#
-#     def __init__(self):
-#         """Initialize the ColonPrecededTokenizer."""
-#         super().__init__(regex=r'(?::[ \t])((?:[^ \t\n\:\,\.\!\?\_]+(?:[ \t][^ \t\n\:\,\.\!\?\_]+)*)+)')
-#
-#
-# class Colon3PrecededTokenizer(RegexTokenizer):
-#     """Tokenizer based on text preceded by colon."""
-#
-#     def __init__(self):
-#         """Initialize the ColonPrecededTokenizer."""
-#         super().__init__(regex=r':[ \t]((?:[^ \t\n\:\,\!\?\_]+(?:[ \t][^ \t\n\:\!\?\_]+)*)+)')
-#
-#
-# class DotPrecededTokenizer(RegexTokenizer):
-#     """Tokenizer based on text preceded by colon."""
-#
-#     def __init__(self):
-#         """Initialize the DotPrecededTokenizer."""
-#         super().__init__(regex=r'\.[ \t]((?:[^ \t\n\:\,\!\?\_]+(?:[ \t][^ \t\n\:\!\?\_]+)*)+)')
-
-
-# class CommaSemicolonTokenizer(RegexTokenizer):
-#     """Tokenizer based on text preceded by colon."""
-#
-#     def __init__(self):
-#         """Initialize the CommaSemicolonTokenizer."""
-#         super().__init__(regex=r'[^ \n\t\f\,\.\;]+')
-#
 
 
 class LineUntilCommaTokenizer(RegexTokenizer):

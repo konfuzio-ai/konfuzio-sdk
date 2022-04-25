@@ -1287,7 +1287,7 @@ class Document(Data):
         :param pages: List of page sizes.
         :param update: Annotations, Annotation Sets will not be loaded by default. True will load it from the API.
                         False from local files
-        :param number_of_pages: Number of pages in the document
+        :param copy_of_id: ID of the Document that originated the current Document
         """
         self._no_label_annotation_set = None
         self.id_local = next(Data.id_iter)
