@@ -8,6 +8,7 @@ import pandas as pd
 
 from konfuzio_sdk.data import Document, Category
 from konfuzio_sdk.evaluate import compare
+from konfuzio_sdk.utils import sdk_isinstance
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +57,7 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
         :param document: Document to evaluate
         :return: Evaluation DataFrame and Processing time DataFrame.
         """
-        assert isinstance(document, Document)
+        assert sdk_isinstance(document, Document)
 
         virtual_doc = Document(
             project=document.category.project,
@@ -115,7 +116,7 @@ class ListTokenizer(AbstractTokenizer):
 
     def tokenize(self, document: Document) -> Document:
         """Run tokenize in the given order on a Document."""
-        assert isinstance(document, Document)
+        assert sdk_isinstance(document, Document)
 
         for tokenizer in self.tokenizers:
             tokenizer.tokenize(document)

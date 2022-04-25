@@ -7,6 +7,7 @@ import pandas as pd
 from konfuzio_sdk.data import Annotation, Document, Category, Span
 from konfuzio_sdk.evaluate import compare
 from konfuzio_sdk.regex import regex_matches
+from konfuzio_sdk.utils import sdk_isinstance
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer, ListTokenizer, ProcessingStep
 
 logger = logging.getLogger(__name__)
@@ -32,7 +33,7 @@ class RegexTokenizer(AbstractTokenizer):
         :param document: Document to tokenize
         :return: Document with Spans created by the Tokenizer.
         """
-        assert isinstance(document, Document)
+        assert sdk_isinstance(document, Document)
 
         if document.text is None:
             return document

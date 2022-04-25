@@ -19,6 +19,12 @@ from konfuzio_sdk import IMAGE_FILE, PDF_FILE, OFFICE_FILE, SUPPORTED_FILE_TYPES
 logger = logging.getLogger(__name__)
 
 
+def sdk_isinstance(instance, klass):
+    """Custom isinstance implementation, which is compatible with cloudpickle saving by value."""
+    result = type(instance).__name__ == klass.__name__
+    return result
+
+
 def get_id(a_string, include_time: bool = False) -> int:
     """
     Generate a unique ID.
