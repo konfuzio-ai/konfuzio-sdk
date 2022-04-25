@@ -1374,8 +1374,10 @@ class TestFillOperation(unittest.TestCase):
 
     def test_fill_full_document_with_category(self):
         """Try to fill a Document with Category."""
-        # TODO: It's failing because the Document already has the Annotations created by fill (from the tests setup)
-        self.prj.get_document_by_id(TEST_DOCUMENT_ID).annotations(fill=True)
+        # Failing because the Document already has the Annotations created by fill (from the tests setup)
+        with self.assertRaises(ValueError) as context:
+            self.prj.get_document_by_id(TEST_DOCUMENT_ID).annotations(fill=True)
+            assert "is a duplicate of" in context.exception
 
     def test_correct_text_offset(self):
         """Test if the the sorted spans can create the offset text."""
