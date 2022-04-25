@@ -294,30 +294,13 @@ class TestOfflineDataSetup(unittest.TestCase):
         """Check that a virtual Document has now folder."""
         assert not os.path.isdir(self.document.document_folder)
 
-    def test_new_annotation_in_document_of_add_foreign_annotation_set(self):
-        """Add new annotation to a document."""
-        project = Project(id_=None)
-        document = Document(project=project, category=self.category)
-        span = Span(start_offset=1, end_offset=2)
-
-        with self.assertRaises(ValueError) as context:
-            _ = Annotation(
-                document=document,
-                is_correct=True,
-                label=self.label,
-                annotation_set=self.annotation_set,
-                label_set=self.label_set,
-                spans=[span],
-            )
-            assert 'Annotation Set None is not part of Document None' in context.exception
-
     def test_new_annotation_in_annotation_set_of_document_of_add_foreign_annotation_set(self):
         """Add new annotation to a document."""
         project = Project(id_=None)
         document = Document(project=project, category=self.category)
         span = Span(start_offset=1, end_offset=2)
 
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaises(IndexError) as context:
             _ = Annotation(
                 document=document,
                 is_correct=True,

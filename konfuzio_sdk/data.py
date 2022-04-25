@@ -907,15 +907,7 @@ class Annotation(Data):
         elif isinstance(annotation_set, AnnotationSet):
             # it's a save way to look up the annotation set first. Otherwise users can add annotation sets which
             # do not relate to the document
-            # self.annotation_set: AnnotationSet = self.document.get_annotation_set_by_id(annotation_set.id_)
-            # TODO: to be discussed
-            if annotation_set.document == self.document:
-                self.annotation_set: AnnotationSet = annotation_set
-            else:
-                raise ValueError(
-                    f'AnnotationSet {annotation_set} does not belong to the same Document {self.document} '
-                    f'as the Annotation {self}.'
-                )
+            self.annotation_set: AnnotationSet = self.document.get_annotation_set_by_id(annotation_set.id_)
         else:
             self.annotation_set = None
             logger.debug(f'{self} in {self.document} created but without Annotation Set information.')
