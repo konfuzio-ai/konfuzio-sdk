@@ -11,10 +11,12 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 ## Unreleased
 
 ### Added 
-- Beta Version of APIV3
 - Option to enforce running OCR even if text embeddings are present
 - Improved error messages in case a document cannot be processed.
 - Option to exclude email content when using the email-integration.
+- Option to make document accessible via public link.
+- Beta Version of APIV3
+- Beta Version of new document dashboard (bases on [Konfuzio-Capture-Vue](https://github.com/konfuzio-ai/konfuzio-capture-vue))
 
 ### Changed
 - For on-premise Users, now the Postgresq 10 is the minium version
