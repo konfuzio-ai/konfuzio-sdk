@@ -88,7 +88,13 @@ class RegexTokenizer(AbstractTokenizer):
 
 
 class WhitespaceTokenizer(RegexTokenizer):
-    """Tokenizer based on whitespaces."""
+    """
+    Tokenizer based on whitespaces.
+
+    Example:
+        "street Name 1-2b," -> "street", "Name", "1-2b,"
+
+    """
 
     def __init__(self):
         """Initialize the WhitespaceTokenizer."""
@@ -96,7 +102,13 @@ class WhitespaceTokenizer(RegexTokenizer):
 
 
 class WhitespaceNoPunctuationTokenizer(RegexTokenizer):
-    """Tokenizer based on whitespaces without punctuation."""
+    """
+    Tokenizer based on whitespaces without punctuation.
+
+    Example:
+        "street Name 1-2b," -> "street", "Name", "1-2b"
+
+    """
 
     def __init__(self):
         """Initialize the WhitespaceNoPunctuationTokenizer."""
@@ -104,7 +116,13 @@ class WhitespaceNoPunctuationTokenizer(RegexTokenizer):
 
 
 class ConnectedTextTokenizer(RegexTokenizer):
-    """Tokenizer based on text connected by 1 whitespace."""
+    r"""
+    Tokenizer based on text connected by 1 whitespace.
+
+    Example:
+        r"This is \na description. Occupies a paragraph." -> "This is", "a description. Occupies a paragraph."
+
+    """
 
     def __init__(self):
         """Initialize the ConnectedTextTokenizer."""
@@ -112,7 +130,13 @@ class ConnectedTextTokenizer(RegexTokenizer):
 
 
 class ColonPrecededTokenizer(RegexTokenizer):
-    """Tokenizer based on text preceded by colon."""
+    """
+    Tokenizer based on text preceded by colon.
+
+    Example:
+        "write to: name" -> "name"
+
+    """
 
     def __init__(self):
         """Initialize the ColonPrecededTokenizer."""
@@ -120,7 +144,13 @@ class ColonPrecededTokenizer(RegexTokenizer):
 
 
 class CapitalizedTextTokenizer(RegexTokenizer):
-    """Tokenizer based on capitalized text."""
+    """
+    Tokenizer based on capitalized text.
+
+    Example:
+        "Company is Company A&B GmbH now" -> "Company A&B GmbH"
+
+    """
 
     def __init__(self):
         """Initialize the CapitalizedTextTokenizer."""
@@ -128,7 +158,13 @@ class CapitalizedTextTokenizer(RegexTokenizer):
 
 
 class NonTextTokenizer(RegexTokenizer):
-    """Tokenizer based on non text - numbers and separators."""
+    """
+    Tokenizer based on non text - numbers and separators.
+
+    Example:
+        "date 01. 01. 2022" -> "01. 01. 2022"
+
+    """
 
     def __init__(self):
         """Initialize the NonTextTokenizer."""
@@ -136,7 +172,13 @@ class NonTextTokenizer(RegexTokenizer):
 
 
 class NumbersTokenizer(RegexTokenizer):
-    """Tokenizer based on numbers."""
+    """
+    Tokenizer based on numbers.
+
+    Example:
+        "N. 1242022 123 " -> "1242022 123"
+
+    """
 
     def __init__(self):
         """Initialize the NumbersTokenizer."""
@@ -144,7 +186,13 @@ class NumbersTokenizer(RegexTokenizer):
 
 
 class LineUntilCommaTokenizer(RegexTokenizer):
-    """Tokenizer based on text preceded by colon."""
+    r"""
+    Tokenizer based on text preceded by colon.
+
+    Example:
+        "\n     Company und A&B GmbH,\n" -> "Company und A&B GmbH"
+
+    """
 
     def __init__(self):
         """Within a line match everything until ','."""
