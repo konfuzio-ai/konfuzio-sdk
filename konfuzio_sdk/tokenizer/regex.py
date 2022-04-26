@@ -82,8 +82,6 @@ class RegexTokenizer(AbstractTokenizer):
                 logger.info(f'Tokenized Annotation for {span}(>>{span.offset_string}<<) not created, because of {e}.')
                 continue
 
-        # TODO: add processing time to Document
-        # document.add_process_step(self.__repr__, time.monotonic() - t0)
         self.processing_steps.append(ProcessingStep(self, document, time.monotonic() - t0))
 
         return document
@@ -94,6 +92,14 @@ class WhitespaceTokenizer(RegexTokenizer):
 
     def __init__(self):
         """Initialize the WhitespaceTokenizer."""
+        super().__init__(regex=r'[^ \n\t\f]+')
+
+
+class WhitespaceNoPunctuationTokenizer(RegexTokenizer):
+    """Tokenizer based on whitespaces without punctuation."""
+
+    def __init__(self):
+        """Initialize the WhitespaceNoPunctuationTokenizer."""
         super().__init__(regex=r'[^ \n\t\f\,\.\;]+')
 
 
