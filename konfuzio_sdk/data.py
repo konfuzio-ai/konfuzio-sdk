@@ -365,7 +365,7 @@ class Label(Data):
                         json.dump(category_tokens, f, indent=2, sort_keys=True)
 
             else:
-                logger.info(f'Load existing tokens for Label {self.name}.')
+                logger.info(f'Load existing tokens for Label {self.name} in Category {category}.')
                 with open(tokens_file_path, 'r') as f:
                     category_tokens = json.load(f)
 
@@ -391,12 +391,13 @@ class Label(Data):
 
     def combined_tokens(self, categories: List[Category]):
         """Create one OR Regex for all relevant Annotations tokens."""
-        if not self._combined_tokens:
-            categories_tokens = self.tokens(categories=categories)
-            all_tokens = []
-            for _, category_tokens in categories_tokens.items():
+        categories_ids = [category.id_ for category in categories]
+        categories_tokens = self.tokens(categories=categories)
+        all_tokens = []
+        for category_id, category_tokens in categories_tokens.items():
+            if category_id in categories_ids:
                 all_tokens.extend(category_tokens)
-            self._combined_tokens = merge_regex(all_tokens)
+        self._combined_tokens = merge_regex(all_tokens)
         return self._combined_tokens
 
     def evaluate_regex(
