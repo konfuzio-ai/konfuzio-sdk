@@ -358,6 +358,7 @@ class Label(Data):
             )
 
             if not is_file(tokens_file_path, raise_exception=False) or update:
+                self._evaluations = []
                 category_tokens = self.find_tokens(categories=[category])
 
                 if os.path.exists(self.project.regex_folder):
@@ -371,7 +372,9 @@ class Label(Data):
 
             self._tokens[category.id_] = category_tokens
 
-        return self._tokens
+        categories_ids = [category.id_ for category in categories]
+
+        return {k: v for k, v in self._tokens.items() if k in categories_ids}
 
     def check_tokens(self, categories: List[Category]):
         """Check if a list of regex do find the annotations. Log Annotations that we cannot find."""
@@ -391,12 +394,10 @@ class Label(Data):
 
     def combined_tokens(self, categories: List[Category]):
         """Create one OR Regex for all relevant Annotations tokens."""
-        categories_ids = [category.id_ for category in categories]
         categories_tokens = self.tokens(categories=categories)
         all_tokens = []
         for category_id, category_tokens in categories_tokens.items():
-            if category_id in categories_ids:
-                all_tokens.extend(category_tokens)
+            all_tokens.extend(category_tokens)
         self._combined_tokens = merge_regex(all_tokens)
         return self._combined_tokens
 
