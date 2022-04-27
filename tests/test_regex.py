@@ -282,6 +282,92 @@ class TestTokens(unittest.TestCase):
         assert new_anno_1.tokens(categories=[category])[2]['regex'] == '(?P<EMPTY_LABEL_F_None_fallback>\n[ ]+)'
 
 
+class TestTokensMultipleCategories(unittest.TestCase):
+    """Create Tokens when Label is shared by different Categories."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Initialize the Project."""
+        cls.project = Project(id_=None)
+        cls.category = Category(project=cls.project, id_=1)
+        cls.category_2 = Category(project=cls.project, id_=2)
+        cls.project.add_category(cls.category)
+        cls.project.add_category(cls.category_2)
+        cls.label_set = LabelSet(id_=2, project=cls.project, categories=[cls.category, cls.category_2])
+        cls.label = Label(id_=3, text='LabelName', project=cls.project, label_sets=[cls.label_set])
+
+        # Category 1
+        cls.document = Document(project=cls.project, category=cls.category, text="Hi all,", dataset_status=2)
+        annotation_set = AnnotationSet(id_=4, document=cls.document, label_set=cls.label_set)
+        cls.span = Span(start_offset=3, end_offset=6)
+        _ = Annotation(
+            id_=5,
+            document=cls.document,
+            is_correct=True,
+            annotation_set=annotation_set,
+            label=cls.label,
+            label_set=cls.label_set,
+            spans=[cls.span],
+        )
+
+        # Category 2
+        cls.document_2 = Document(project=cls.project, category=cls.category_2, text="Morning.", dataset_status=2)
+        annotation_set_2 = AnnotationSet(id_=10, document=cls.document_2, label_set=cls.label_set)
+        cls.span_2 = Span(start_offset=0, end_offset=7)
+        _ = Annotation(
+            id_=11,
+            document=cls.document_2,
+            is_correct=True,
+            annotation_set=annotation_set_2,
+            label=cls.label,
+            label_set=cls.label_set,
+            spans=[cls.span_2],
+        )
+
+    def test_tokens_single_category(self):
+        """Test tokens created for a single Category."""
+        tokens = self.label.tokens(categories=[self.category])
+        assert len(tokens) == 1
+        assert tokens[self.category.id_] == ['(?P<None_W_5_3>all)']
+
+    def test_tokens_multiple_categories(self):
+        """Test tokens created based on multiple Categories."""
+        tokens = self.label.tokens(categories=[self.category, self.category_2])
+        assert len(tokens) == 2
+        assert tokens[self.category.id_] == ['(?P<None_W_5_3>all)']
+        assert tokens[self.category_2.id_] == ['(?P<None_F_11_0>[A-ZÄÖÜ][a-zäöüß]+)']
+
+    def test_tokens_one_category_after_another(self):
+        """
+        Test tokens created for one Category after having created tokens for another Category.
+
+        This could be the situation when running in a loop for multiple Categories in a Project.
+        """
+        tokens_1 = self.label.tokens(categories=[self.category])
+        tokens_2 = self.label.tokens(categories=[self.category_2])
+        assert len(tokens_1) == 1
+        assert len(tokens_2) == 1
+        assert tokens_1[self.category.id_] == ['(?P<None_W_5_3>all)']
+        assert tokens_2[self.category_2.id_] == ['(?P<None_F_11_0>[A-ZÄÖÜ][a-zäöüß]+)']
+
+    def test_tokens_evaluations_single_category(self):
+        """Test if the number of evaluations is the expected after getting the tokens for a single Category."""
+        _ = self.label.tokens(categories=[self.category])
+        assert len(self.label._evaluations) == 2
+
+    def test_tokens_evaluations_multiple_categories(self):
+        """
+        Test if the number of evaluations is the expected after getting the tokens for a single Category.
+
+        TODO: define how to handle _evaluations.
+            Atm, _evaluations are reset when find_tokens. Otherwise, we could select tokens from previous runs because
+            they remain in the evaluation. We only have he evaluations from the last Category.
+            How to handle it when we want to get tokens based on multiple Categories?
+        """
+        _ = self.label.tokens(categories=[self.category, self.category_2])
+        assert len(self.label._evaluations) == 4
+
+
 class TestRegexGenerator(unittest.TestCase):
     """Test to create regex based on data online."""
 
