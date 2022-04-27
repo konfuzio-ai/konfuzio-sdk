@@ -104,19 +104,29 @@
              
   <section id="guides-and-how-tos">
 <h1>Guides and How-Tos<a class="headerlink" href="#guides-and-how-tos" title="Permalink to this headline">¶</a></h1>
-<p>These guides will teach you how to do common operations with the Konfuzio API. You can refer to our <a class="reference external" href="./api_v3.html">API guide</a> for a general overview of how the API works and to our <a class="reference external" href="https://testing.konfuzio.com/v3/swagger/">Swagger documentation</a> for a full list of all the available endpoints.</p>
+<p>These guides will teach you how to do common operations with the Konfuzio API. You can refer to our <a class="reference external" href="./api_v3.html">API guide</a> for a general overview of how the API works and to our <a class="reference external" href="https://app.konfuzio.com/v3/swagger/">Swagger documentation</a> for a full list of all the available endpoints.</p>
 <p>The example snippets use cURL, but you can easily convert them to your preferred language manually or using tools like <a class="reference external" href="https://curlconverter.com">cURL Converter</a>.</p>
-<p>The guides assume you already have a <a class="reference external" href="./api_v3.html#token-authentication">token</a> that you will use in the headers of every API call. If you’re copy-pasting the snippets, remember to replace <code class="docutils literal notranslate"><span class="pre">&lt;your</span> <span class="pre">token&gt;</span></code> with the actual token value.</p>
+<p>The guides assume you already have a <a class="reference external" href="./api_v3.html#token-authentication">token</a> that you will use in the headers of every API call. If you’re copy-pasting the snippets, remember to replace <code class="docutils literal notranslate"><span class="pre">YOUR_TOKEN</span></code> with the actual token value.</p>
+<nav class="contents local" id="table-of-contents">
+<p class="topic-title">Table of Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#setup-a-project-with-labels-label-sets-and-categories" id="id2">Setup a project with labels, label sets and categories</a></p></li>
+<li><p><a class="reference internal" href="#upload-a-document" id="id3">Upload a document</a></p></li>
+<li><p><a class="reference internal" href="#create-an-annotation" id="id4">Create an annotation</a></p></li>
+<li><p><a class="reference internal" href="#create-training-data-and-train-the-ai" id="id5">Create training data and train the AI</a></p></li>
+<li><p><a class="reference internal" href="#create-your-own-document-dashboard" id="id6">Create your own document dashboard</a></p></li>
+</ul>
+</nav>
 <section id="setup-a-project-with-labels-label-sets-and-categories">
 <h2>Setup a project with labels, label sets and categories<a class="headerlink" href="#setup-a-project-with-labels-label-sets-and-categories" title="Permalink to this headline">¶</a></h2>
 <p>This guide will walk you through the API-based initial setup of a project with all the initial data you need to start uploading documents and training the AI.</p>
 <section id="create-a-project">
 <h3>Create a project<a class="headerlink" href="#create-a-project" title="Permalink to this headline">¶</a></h3>
-<p>First you need to set up a <a class="reference external" href="https://help.konfuzio.com/modules/projects/index.html">project</a>. To do so, you will make a call to our <a class="reference external" href="https://testing.konfuzio.com/v3/swagger/#/projects/projects_create">project creation endpoint</a>:</p>
+<p>First you need to set up a <a class="reference external" href="https://help.konfuzio.com/modules/projects/index.html">project</a>. To do so, you will make a call to our <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/projects/projects_create">project creation endpoint</a>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">--</span><span class="n">request</span> <span class="n">POST</span> \
   <span class="o">--</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">app</span><span class="o">.</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v3</span><span class="o">/</span><span class="n">projects</span><span class="o">/</span> \
   <span class="o">--</span><span class="n">header</span> <span class="s1">&#39;Content-Type: application/json&#39;</span> \
-  <span class="o">--</span><span class="n">header</span> <span class="s1">&#39;Authorization: Token &lt;your token&gt;&#39;</span> \
+  <span class="o">--</span><span class="n">header</span> <span class="s1">&#39;Authorization: Token YOUR_TOKEN&#39;</span> \
   <span class="o">--</span><span class="n">data</span> <span class="s1">&#39;{&quot;name&quot;: &quot;My Project&quot;}&#39;</span>
 </pre></div>
 </div>
@@ -125,44 +135,44 @@
 </section>
 <section id="create-a-category">
 <h3>Create a category<a class="headerlink" href="#create-a-category" title="Permalink to this headline">¶</a></h3>
-<p>A <a class="reference external" href="https://help.konfuzio.com/modules/categories/index.html">category</a> is used to group documents by type and can be associated to an <a class="reference external" href="https://help.konfuzio.com/modules/extractions/index.html">extraction AI</a>. For example, you might want to create a category called “Invoice”. To do so, you will make a call to our <a class="reference external" href="https://testing.konfuzio.com/v3/swagger/#/categories/categories_create">category creation endpoint</a>:</p>
+<p>A <a class="reference external" href="https://help.konfuzio.com/modules/categories/index.html">category</a> is used to group documents by type and can be associated to an <a class="reference external" href="https://help.konfuzio.com/modules/extractions/index.html">extraction AI</a>. For example, you might want to create a category called “Invoice”. To do so, you will make a call to our <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/categories/categories_create">category creation endpoint</a>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">--</span><span class="n">request</span> <span class="n">POST</span> \
   <span class="o">--</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">app</span><span class="o">.</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v3</span><span class="o">/</span><span class="n">categories</span><span class="o">/</span> \
   <span class="o">--</span><span class="n">header</span> <span class="s1">&#39;Content-Type: application/json&#39;</span> \
-  <span class="o">--</span><span class="n">header</span> <span class="s1">&#39;Authorization: Token &lt;your token&gt;&#39;</span> \
-  <span class="o">--</span><span class="n">data</span> <span class="s1">&#39;{&quot;project&quot;: &lt;project id&gt;, &quot;name&quot;: &quot;Invoice&quot;}&#39;</span>
+  <span class="o">--</span><span class="n">header</span> <span class="s1">&#39;Authorization: Token YOUR_TOKEN&#39;</span> \
+  <span class="o">--</span><span class="n">data</span> <span class="s1">&#39;{&quot;project&quot;: PROJECT_ID, &quot;name&quot;: &quot;Invoice&quot;}&#39;</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">name</span></code> and <code class="docutils literal notranslate"><span class="pre">project</span></code> are the only required parameters. Remember to replace <code class="docutils literal notranslate"><span class="pre">&lt;project</span> <span class="pre">id&gt;</span></code> with the actual <code class="docutils literal notranslate"><span class="pre">id</span></code> that you got from the previous step. You can check the endpoint documentation for more available options.</p>
+<p><code class="docutils literal notranslate"><span class="pre">name</span></code> and <code class="docutils literal notranslate"><span class="pre">project</span></code> are the only required parameters. Remember to replace <code class="docutils literal notranslate"><span class="pre">PROJECT_ID</span></code> with the actual <code class="docutils literal notranslate"><span class="pre">id</span></code> that you got from the previous step. You can check the endpoint documentation for more available options.</p>
 <p>This call will return a JSON object that, among other properties, will show the <code class="docutils literal notranslate"><span class="pre">id</span></code> of the created category. Take note of it, as you will need it in the next steps. You can retrieve a list of your created categories by sending a <code class="docutils literal notranslate"><span class="pre">GET</span></code> request to the same endpoint.</p>
 </section>
 <section id="create-some-labels">
 <h3>Create some labels<a class="headerlink" href="#create-some-labels" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="https://help.konfuzio.com/modules/labels/index.html">Labels</a> are used to label annotations with their business context. In the case of our invoice category, we might want to have labels such as “amount” and “product”. For each label, we need to make a different API request to our <a class="reference external" href="https://testing.konfuzio.com/v3/swagger/#/labels/labels_create">label creation endpoint</a>:</p>
+<p><a class="reference external" href="https://help.konfuzio.com/modules/labels/index.html">Labels</a> are used to label annotations with their business context. In the case of our invoice category, we might want to have labels such as “amount” and “product”. For each label, we need to make a different API request to our <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/labels/labels_create">label creation endpoint</a>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">--</span><span class="n">request</span> <span class="n">POST</span> \
   <span class="o">--</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">app</span><span class="o">.</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v3</span><span class="o">/</span><span class="n">labels</span><span class="o">/</span> \
   <span class="o">--</span><span class="n">header</span> <span class="s1">&#39;Content-Type: application/json&#39;</span> \
-  <span class="o">--</span><span class="n">header</span> <span class="s1">&#39;Authorization: Token &lt;your token&gt;&#39;</span> \
-  <span class="o">--</span><span class="n">data</span> <span class="s1">&#39;{&quot;project&quot;: &lt;project id&gt;, &quot;name&quot;: &quot;Amount&quot;, &quot;categories&quot;: [&lt;category id&gt;]}&#39;</span>
+  <span class="o">--</span><span class="n">header</span> <span class="s1">&#39;Authorization: Token YOUR_TOKEN&#39;</span> \
+  <span class="o">--</span><span class="n">data</span> <span class="s1">&#39;{&quot;project&quot;: PROJECT_ID, &quot;name&quot;: &quot;Amount&quot;, &quot;categories&quot;: [CATEGORY_ID]}&#39;</span>
 
 <span class="n">curl</span> <span class="o">--</span><span class="n">request</span> <span class="n">POST</span> \
   <span class="o">--</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">app</span><span class="o">.</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v3</span><span class="o">/</span><span class="n">labels</span><span class="o">/</span> \
   <span class="o">--</span><span class="n">header</span> <span class="s1">&#39;Content-Type: application/json&#39;</span> \
-  <span class="o">--</span><span class="n">header</span> <span class="s1">&#39;Authorization: Token &lt;your token&gt;&#39;</span> \
-  <span class="o">--</span><span class="n">data</span> <span class="s1">&#39;{&quot;project&quot;: &lt;project id&gt;, &quot;name&quot;: &quot;Product&quot;, &quot;categories&quot;: [&lt;category id&gt;]}&#39;</span>
+  <span class="o">--</span><span class="n">header</span> <span class="s1">&#39;Authorization: Token YOUR_TOKEN&#39;</span> \
+  <span class="o">--</span><span class="n">data</span> <span class="s1">&#39;{&quot;project&quot;: PROJECT_ID, &quot;name&quot;: &quot;Product&quot;, &quot;categories&quot;: [CATEGORY_ID]}&#39;</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">name</span></code> and <code class="docutils literal notranslate"><span class="pre">project</span></code> are the only required parameters, however we also want to associate these labels to a category. Since labels can be associated to multiple categories, the <code class="docutils literal notranslate"><span class="pre">categories</span></code> property is a list of integers. (We only have one, so in this case it’s going to be a list with a single integer). Remember to replace <code class="docutils literal notranslate"><span class="pre">&lt;project</span> <span class="pre">id&gt;</span></code> and <code class="docutils literal notranslate"><span class="pre">&lt;category</span> <span class="pre">id&gt;</span></code> with the actual values you got from the previous steps. You can check the endpoint documentation for more available options.</p>
+<p><code class="docutils literal notranslate"><span class="pre">name</span></code> and <code class="docutils literal notranslate"><span class="pre">project</span></code> are the only required parameters, however we also want to associate these labels to a category. Since labels can be associated to multiple categories, the <code class="docutils literal notranslate"><span class="pre">categories</span></code> property is a list of integers. (We only have one, so in this case it’s going to be a list with a single integer). Remember to replace <code class="docutils literal notranslate"><span class="pre">PROJECT_ID</span></code> and <code class="docutils literal notranslate"><span class="pre">CATEGORY_ID</span></code> with the actual values you got from the previous steps. You can check the endpoint documentation for more available options.</p>
 <p>These calls will return a JSON object that, among other properties, will show the <code class="docutils literal notranslate"><span class="pre">id</span></code> of the created labels. Take note of it, as you will need it in the next steps. You can retrieve a list of your created labels by sending a <code class="docutils literal notranslate"><span class="pre">GET</span></code> request to the same endpoint.</p>
 </section>
 <section id="create-a-label-set">
 <h3>Create a label set<a class="headerlink" href="#create-a-label-set" title="Permalink to this headline">¶</a></h3>
-<p>A <a class="reference external" href="https://help.konfuzio.com/modules/sets/index.html">label set</a> is used to group labels that make sense together. Sometimes these labels might occur multiple times in a document — in our “invoice” example, there’s going to be one set of “amount” and “product” for each line item we have in the invoice. We can call it “line item” and we can create it with an API request to our <a class="reference external" href="https://testing.konfuzio.com/v3/swagger/#/label-sets/label_sets_create">label set creation endpoint</a>:</p>
+<p>A <a class="reference external" href="https://help.konfuzio.com/modules/sets/index.html">label set</a> is used to group labels that make sense together. Sometimes these labels might occur multiple times in a document — in our “invoice” example, there’s going to be one set of “amount” and “product” for each line item we have in the invoice. We can call it “line item” and we can create it with an API request to our <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/label-sets/label_sets_create">label set creation endpoint</a>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">--</span><span class="n">request</span> <span class="n">POST</span> \
   <span class="o">--</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">app</span><span class="o">.</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v3</span><span class="o">/</span><span class="n">label</span><span class="o">-</span><span class="n">sets</span><span class="o">/</span> \
   <span class="o">--</span><span class="n">header</span> <span class="s1">&#39;Content-Type: application/json&#39;</span> \
-  <span class="o">--</span><span class="n">header</span> <span class="s1">&#39;Authorization: Token &lt;your token&gt;&#39;</span> \
-  <span class="o">--</span><span class="n">data</span> <span class="s1">&#39;{&quot;project&quot;: &lt;project id&gt;, &quot;name&quot;: &quot;Line Item&quot;, &quot;has_multiple_sections&quot;: true, &quot;categories&quot;: [&lt;category id&gt;], &quot;labels&quot;: [&lt;label ids&gt;]}&#39;</span>
+  <span class="o">--</span><span class="n">header</span> <span class="s1">&#39;Authorization: Token YOUR_TOKEN&#39;</span> \
+  <span class="o">--</span><span class="n">data</span> <span class="s1">&#39;{&quot;project&quot;: PROJECT_ID, &quot;name&quot;: &quot;Line Item&quot;, &quot;has_multiple_sections&quot;: true, &quot;categories&quot;: [CATEGORY_ID], &quot;labels&quot;: [LABEL_IDS]}&#39;</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">name</span></code> and <code class="docutils literal notranslate"><span class="pre">project</span></code> are the only required parameters, however we also want to associate this label set to the category and labels we created. Both <code class="docutils literal notranslate"><span class="pre">categories</span></code> and <code class="docutils literal notranslate"><span class="pre">labels</span></code> are lists of integers you need to fill with the actual ids of the objects you created earlier. For example, if our <code class="docutils literal notranslate"><span class="pre">category</span> <span class="pre">id</span></code> was <code class="docutils literal notranslate"><span class="pre">1</span></code>, and our <code class="docutils literal notranslate"><span class="pre">label</span> <span class="pre">id</span></code>s were <code class="docutils literal notranslate"><span class="pre">2</span></code> and <code class="docutils literal notranslate"><span class="pre">3</span></code>, we would need to change the data we send like this: <code class="docutils literal notranslate"><span class="pre">&quot;categories&quot;:</span> <span class="pre">[1],</span> <span class="pre">&quot;labels&quot;:</span> <span class="pre">[2,</span> <span class="pre">3]</span></code>. With <code class="docutils literal notranslate"><span class="pre">has_multiple_sections</span></code> set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, we also specify that this label set can be repeating, i.e. you can have multiple line items in a single invoice.</p>
@@ -172,9 +182,69 @@
 <p>Your basic setup is done! You’re now ready to upload documents and train the AI.</p>
 </section>
 </section>
+<section id="upload-a-document">
+<h2>Upload a document<a class="headerlink" href="#upload-a-document" title="Permalink to this headline">¶</a></h2>
+<p>After your initial project setup, you can start uploading documents. To upload a document, you will make a call to our <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/documents/documents_create">document creation endpoint</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Unlike most other endpoints, the document creation endpoint only supports <cite>multipart/form-data</cite> requests (to support file uploading), so you won’t have to JSON-encode your request this time.</p>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">--</span><span class="n">request</span> <span class="n">POST</span> \
+  <span class="o">--</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">app</span><span class="o">.</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v3</span><span class="o">/</span><span class="n">documents</span><span class="o">/</span> \
+  <span class="o">--</span><span class="n">header</span> <span class="s1">&#39;Content-Type: multipart/form-data&#39;</span> \
+  <span class="o">--</span><span class="n">header</span> <span class="s1">&#39;Authorization: Token YOUR_TOKEN&#39;</span> \
+  <span class="o">--</span><span class="n">form</span> <span class="n">project</span><span class="o">=</span><span class="n">PROJECT_ID</span> \
+  <span class="o">--</span><span class="n">form</span> <span class="n">category</span><span class="o">=</span><span class="n">CATEGORY_ID</span> \
+  <span class="o">--</span><span class="n">form</span> <span class="n">sync</span><span class="o">=</span><span class="n">true</span> \
+  <span class="o">--</span><span class="n">form</span> <span class="n">assignee</span><span class="o">=</span><span class="n">example</span><span class="nd">@example</span><span class="o">.</span><span class="n">org</span> \
+  <span class="o">--</span><span class="n">form</span> <span class="n">data_file</span><span class="o">=</span><span class="s1">&#39;@LOCAL_FILE_NAME&#39;</span><span class="p">;</span><span class="nb">type</span><span class="o">=</span><span class="n">application</span><span class="o">/</span><span class="n">pdf</span>
+</pre></div>
+</div>
+<p>In this request:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">PROJECT_ID</span></code> should be replaced with the ID of your project.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">category</span></code> is optional. If present, <code class="docutils literal notranslate"><span class="pre">CATEGORY_ID</span></code> must be the ID of a category belonging to your project. If this is not set, the app will try to automatically detect the document category basaed on the available options.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">sync</span></code> parameter is optional. If set to <code class="docutils literal notranslate"><span class="pre">false</span></code> (the default), the API will immediately return a response after the upload, confirming that the document was received and is now queuing for extraction. If set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, the server will wait for the document processing to be done before returning a response with the extracted data. This might take a long time with big documents, so it is recommended to use <code class="docutils literal notranslate"><span class="pre">sync=false</span></code> or set a high timeout for your request.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">assignee</span></code> parameter is optional. If provided, it is the email of the user assigned to work on this document, which must be a member of the project you’re uploading the document to.</p></li>
+<li><p>Finally, <code class="docutils literal notranslate"><span class="pre">data_file</span></code> is the document you’re going to upload. Replace <code class="docutils literal notranslate"><span class="pre">LOCAL_FILE_NAME</span></code> with the path to the existing file on your disk, and remember to keep the <code class="docutils literal notranslate"><span class="pre">&#64;</span></code> in front of it.</p></li>
+</ul>
+<p>The API will return the uploaded document’s ID and its current status. You can then use the <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/documents/documents_retrieve">document retrieve endpoint</a> to check if the document has finished processing, and if so, retrieve the extracted data.</p>
+</section>
 <section id="create-an-annotation">
 <h2>Create an annotation<a class="headerlink" href="#create-an-annotation" title="Permalink to this headline">¶</a></h2>
-<p>Coming soon.</p>
+<p><a class="reference external" href="https://help.konfuzio.com/modules/annotations/">Annotations</a> are automatically created by the extraction process when you upload a document, but if some data is missing you can annotate it manually to train the AI model to recognize it.</p>
+<p>Creating an annotation via the API requires the client to provide the bounding box coordinates of the relevant text snippet, which is usually done in a friendly user interface like our SmartView. The request to create an annotation usually looks like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">--</span><span class="n">request</span> <span class="n">POST</span> \
+  <span class="o">--</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">app</span><span class="o">.</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v3</span><span class="o">/</span><span class="n">documents</span><span class="o">/</span><span class="n">DOCUMENT_ID</span><span class="o">/</span><span class="n">annotations</span> \
+  <span class="o">--</span><span class="n">header</span> <span class="s1">&#39;Authorization: Token YOUR_TOKEN&#39;</span> \
+  <span class="o">--</span><span class="n">header</span> <span class="s1">&#39;Content-Type: application/json&#39;</span> \
+  <span class="o">--</span><span class="n">data</span> <span class="s1">&#39;{</span>
+    <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="n">LABEL_ID</span><span class="p">,</span>
+    <span class="s2">&quot;label_set_id&quot;</span><span class="p">:</span> <span class="n">LABEL_SET_ID</span><span class="p">,</span>
+    <span class="s2">&quot;is_correct&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s2">&quot;is_revised&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s2">&quot;span&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;bottom&quot;</span><span class="p">:</span> <span class="mf">133.59</span><span class="p">,</span>
+            <span class="s2">&quot;page_index&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;top&quot;</span><span class="p">:</span> <span class="mf">123.59</span><span class="p">,</span>
+            <span class="s2">&quot;x0&quot;</span><span class="p">:</span> <span class="mf">59.52</span><span class="p">,</span>
+            <span class="s2">&quot;x1&quot;</span><span class="p">:</span> <span class="mf">84.42</span><span class="p">,</span>
+            <span class="s2">&quot;y0&quot;</span><span class="p">:</span> <span class="mf">708.31</span><span class="p">,</span>
+            <span class="s2">&quot;y1&quot;</span><span class="p">:</span> <span class="mf">718.31</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span><span class="s1">&#39;</span>
+</pre></div>
+</div>
+<p>In this request:</p>
+<ul class="simple">
+<li><p>You <em>must</em> specify either <code class="docutils literal notranslate"><span class="pre">annotation_set</span></code> or <code class="docutils literal notranslate"><span class="pre">label_set</span></code>. Use <code class="docutils literal notranslate"><span class="pre">annotation_set</span></code> if an annotation set already exists. You can find the list of existing annotation sets by using the <code class="docutils literal notranslate"><span class="pre">GET</span></code> endpoint of the document. Using <code class="docutils literal notranslate"><span class="pre">label_set</span></code> will create a new annotation set associated with that label set. You can only do this if the label set has <code class="docutils literal notranslate"><span class="pre">has_multiple_sections</span></code> set to <code class="docutils literal notranslate"><span class="pre">true</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">label</span></code> should use the correct <code class="docutils literal notranslate"><span class="pre">LABEL_ID</span></code> for your annotation.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">span</span></code> is a list of bounding box objects.</p></li>
+<li><p>Other fields are optional.</p></li>
+</ul>
+<p>To generate the correct <code class="docutils literal notranslate"><span class="pre">span</span></code> for your annotation, we also provide the <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/documents/documents_bbox_retrieve">document bbox retrieve endpoint</a>, which can be called via <code class="docutils literal notranslate"><span class="pre">GET</span></code> to return a list of all the words in the document with their bounding boxes, that you can use to create your annotations programmatically.</p>
 </section>
 <section id="create-training-data-and-train-the-ai">
 <h2>Create training data and train the AI<a class="headerlink" href="#create-training-data-and-train-the-ai" title="Permalink to this headline">¶</a></h2>
@@ -182,7 +252,7 @@
 </section>
 <section id="create-your-own-document-dashboard">
 <h2>Create your own document dashboard<a class="headerlink" href="#create-your-own-document-dashboard" title="Permalink to this headline">¶</a></h2>
-<p>In cases where our <a class="reference external" href="http://help.konfuzio.com/integrations/public-documents/">public documents and iframes</a> are not enough, you can build your own solution. Here we explain how you can easily build a read-only dashboard for your documents.</p>
+<p>In cases where our <a class="reference external" href="https://help.konfuzio.com/integrations/public-documents/">public documents and iframes</a> are not enough, you can build your own solution. Here we explain how you can easily build a read-only dashboard for your documents.</p>
 <section id="start-from-our-vue-js-code">
 <h3>Start from our Vue.js code<a class="headerlink" href="#start-from-our-vue-js-code" title="Permalink to this headline">¶</a></h3>
 <p>Our document dashboard is based on Vue.js and completely implemented via our <a class="reference external" href="https://app.konfuzio.com/api/">public API</a>. You can check out our solution <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-capture-vue">on GitHub</a> and customize it to your needs. You will find a technical overview and component description in the repository’s <code class="docutils literal notranslate"><span class="pre">README</span></code>.</p>

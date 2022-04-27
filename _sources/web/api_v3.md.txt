@@ -2,8 +2,13 @@
 
 This document aims to provide developers with a high-level overview of what can be accomplished through the Konfuzio API v3. For a more thorough description of the available endpoints and their parameters and response, we invite you to browse our [Swagger documentation](http:/app.konfuzio.com/v3/swagger/), which also provides an OpenAPI specification that can be used to generate language-specific API clients.
 
+.. contents:: Table of Contents
+   :depth: 1
+   :local:
+   :backlinks: none
 
-# General Information
+
+## General Information
 
 The Konfuzio API v3 follows REST conventions and principles. Unless specified otherwise, all endpoints accept both JSON-encoded and form-encoded request bodies, according to the specified content type. All endpoints return JSON-encoded responses. We use standard HTTP verbs (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`) for actions, and return standard HTTP response codes based on the success or failure of the request.
 
@@ -16,13 +21,15 @@ Most of our endpoints, excluding those that deal with [public documents](http://
 
 Your Konfuzio username (email) and password are sent with every request as HTTP headers in the format `Authorization: Basic <string>`, where `<string>` is a Base64-encoded string in the format `<username>:<password>` (this is usually done automatically by the HTTP client). 
 
-*While this approach doesn't require additional setup and is useful for testing in the Swagger page, it is **discouraged** for serious/automated use, since it usually involves storing these credentials in plain text on the client side.*
+.. warning::
+  While this approach doesn't require additional setup and is useful for testing in the Swagger page, it is **discouraged** for serious/automated use, since it usually involves storing these credentials in plain text on the client side.
 
 ### Cookie authentication
 
 A `sessionid` is sent in the `cookie` field of every request.
 
-*This `sessionid` is generated and used by the Konfuzio website when you log in to avoid additional authentication in API requests, and should **not** be relied upon by third parties.*
+.. warning::
+  This `sessionid` is generated and used by the Konfuzio website when you log in to avoid additional authentication in API requests, and should **not** be relied upon by third parties.
 
 ### Token authentication
 
@@ -30,7 +37,8 @@ You send a `POST` request with your Konfuzio username (email) and password to ou
 
 This token doesn't currently expire, so you can use indefinitely, but you can delete it (and regenerated) via the [authentication DELETE endpoint](link).
 
-*This is the authentication method you should use if you're building an external service that consumes the Konfuzio API.*
+.. note::
+  This is the authentication method you **should** use if you're building an external service that consumes the Konfuzio API.
 
 An example workflow would look like:
 
@@ -98,7 +106,8 @@ print(response.json())
 
 All endpoints return an HTTP code that indicates the success of the request. Following the standard, codes starting with `2` (`200`, `201`...) indicate success; codes starting with `4` (`400`, `401`...) indicate failure on the client side, with the response body containing more information about what failed; codes starting with `5` (`500`, `502`...) indicate failure on our side and are usually temporary (if they aren't, please [contact us](link)).
 
-The Swagger documentation provides a more detailed breakdown of which response codes are expected for each endpoint.
+.. seealso::
+  The `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`_ provides a more detailed breakdown of which response codes are expected for each endpoint.
 
 
 ## Pagination
@@ -130,7 +139,8 @@ All endpoints that list resources support some filtering, based on the resource 
 
 Two filters that are usually available on all list endpoints are `created_at_after` and `created_at_before`, which filters for items that have been created after or before the specified date. So you could use `?created_at_before=2022-02-01&created_at_after=2021-12-01` to only return items that have been created between December 1, 2021 and February 1, 2022 (specified dates excluded).
 
-For more filtering options, refer to the Swagger documentation for the endpoint that you want to filter.
+.. seealso::
+  For more filtering options, refer to the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`_ for the endpoint that you want to filter.
 
 
 ## Ordering
@@ -141,7 +151,8 @@ You can combine multiple ordering fields by separating them with a `,`. For exam
 
 You can specify that you want the ordering to be reversed by prefixing the field name with a `-`. For example: `?ordering=-created_at`.
 
-For a list of fields that can be used for ordering, refer to the Swagger documentation for the endpoint that you want to order.
+.. seealso::
+  For a list of fields that can be used for ordering, refer to the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`_ for the endpoint that you want to order.
 
 
 ## Fields
@@ -150,7 +161,8 @@ Some endpoints allow you to override the default response schema and specify a s
 
 For example, you can specify `?fields=id,created_at` to only return the `id` and `created_at` fields in the response.
 
-Refer to the Swagger documentation for a specific endpoint to see if it supports using the `fields` parameter. When supported, any field in the response schema can be used in the `fields` parameter.
+.. seealso::
+  Refer to the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`_ for a specific endpoint to see if it supports using the `fields` parameter. When supported, any field in the response schema can be used in the `fields` parameter.
 
 
 ## Guides and How-Tos
