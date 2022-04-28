@@ -87,6 +87,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         assert data[0].keys() == {
             'id',
             'assignee',
+            'created_by',
             'number_of_pages',
             'callback_url',
             'callback_status_code',

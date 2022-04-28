@@ -242,7 +242,7 @@ class RegexMatcherTokenizer(ListTokenizer):
         for label in set(x.label for x in annotations_not_found_by_tokenizer):
             label_annotations = [x for x in annotations_not_found_by_tokenizer if x.label == label]
             if label_annotations:
-                regexes = label.find_regex(categories=[category], annotations=label_annotations)
+                regexes = label.find_regex(category=category, annotations=label_annotations)
                 for regex in regexes:
                     new_tokenizers.append(RegexTokenizer(regex))
 
