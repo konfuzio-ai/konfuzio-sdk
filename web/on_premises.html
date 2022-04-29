@@ -105,6 +105,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#optional-6-use-flower-to-monitor-tasks">[Optional] 6. Use Flower to monitor tasks</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#optional-7-use-azure-read-api-on-premise">[Optional] 7. Use Azure Read API on-premise</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#optional-8-install-document-segmentation-container">[Optional] 8. Install document segmentation container</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#upgrade-to-newer-konfuzio-version">9. Upgrade to newer Konfuzio Version</a></li>
 </ul>
 </li>
 </ul>
@@ -446,6 +447,12 @@ Password: {PROVIDED_BY_KONFUZIO}</p>
 <span class="n">SENTRY_DSN</span><span class="o">=</span>  <span class="c1"># Optional</span>
 </pre></div>
 </div>
+</section>
+<section id="upgrade-to-newer-konfuzio-version">
+<h4>9. Upgrade to newer Konfuzio Version<a class="headerlink" href="#upgrade-to-newer-konfuzio-version" title="Permalink to this headline">¶</a></h4>
+<p>Konfuzio upgrades are performed by replacing the Docker Tag to the <a class="reference external" href="https://dev.konfuzio.com/web/changelog_app.html">desired version</a>
+After starting the new Containers Database migrations need to by applied by <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">migrate</span></code> (see 4.).
+In case additional migration steps are needed, they wil be mentioned in the release notes.</p>
 </section>
 </section>
 </section>
