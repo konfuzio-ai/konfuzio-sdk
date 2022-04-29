@@ -347,7 +347,7 @@ class Label(Data):
             else:
                 self._evaluations[category.id_] = annotation.tokens()
         try:
-            tokens = get_best_regex(self._evaluations[category.id_], log_stats=True)
+            tokens = get_best_regex(self._evaluations.get(category.id_, []), log_stats=True)
         except ValueError:
             logger.error(f'We cannot find tokens for {self} with a f_score > 0.')
             tokens = []
