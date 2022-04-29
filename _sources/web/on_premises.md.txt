@@ -346,8 +346,8 @@ SENTRY_DSN=  # Optional
 #### 9. Upgrade to newer Konfuzio Version
 
 Konfuzio upgrades are performed by replacing the Docker Tag to the [desired version](https://dev.konfuzio.com/web/changelog_app.html)
-After starting the new Containers Database migrations need to by applied by `python manage.py migrate` (see 4.).
-In case additional migration steps are needed, they wil be mentioned in the release notes.
+After starting the new Containers Database migrations need to be applied by `python manage.py migrate` (see 4.).
+In case additional migration steps are needed, they will be mentioned in the release notes.
 
 ## Alternative deployment options
 
