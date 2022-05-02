@@ -6,6 +6,8 @@ from typing import Dict, Optional
 
 logger = logging.getLogger(__name__)
 
+ROMAN_NUMS = {'M': 1000, 'D': 500, 'C': 100, 'L': 50, 'X': 10, 'V': 5, 'I': 1}
+
 
 def _get_is_negative(offset_string: str) -> bool:
     """Check if a string has a negative sign."""
@@ -251,6 +253,8 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
         _float = float(offset_string[1:].replace(',', '.'))  # => 22.95
         _float = abs(_float)
         normalization = _float
+    elif all(char in ROMAN_NUMS.keys() for char in offset_string):
+        normalization = roman_to_float(offset_string)
     else:
         logger.warning(
             'Could not convert >>' + offset_string + '<< to positive/absolute float (no conversion case found)'
@@ -615,6 +619,25 @@ def normalize_to_bool(offset_string: str):
             return None
     else:
         return None
+
+
+def roman_to_float(offset_string: str) -> Optional[float]:
+    """ Convert a Roman numeral to an integer. """
+    input = offset_string.upper()
+    if len(offset_string) == 0:
+        return None
+    roman_sum = 0
+    for i, char in enumerate(offset_string):
+        try:
+            value = ROMAN_NUMS[input[i]]
+            # If the next place holds a larger number, this value is negative
+            if i+1 < len(input) and ROMAN_NUMS[input[i+1]] > value:
+                roman_sum -= value
+            else:
+                roman_sum += value
+        except KeyError:
+            return None
+    return float(roman_sum)
 
 
 def normalize(offset_string, data_type):
