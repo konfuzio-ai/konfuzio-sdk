@@ -286,6 +286,12 @@ class TestListTokenizer(unittest.TestCase):
         assert no_label_annotations[0].spans[0] != span_1
         assert no_label_annotations[1].spans[0] != span_2
 
+    def test_tokenize_with_empty_document(self):
+        """Test tokenize a Document without text."""
+        document = Document(project=self.project, category=self.category_1)
+        self.tokenizer.tokenize(document)
+        assert len(document.annotations()) == 0
+
     def test_tokenizer_1(self):
         """Test that tokenizer_1 has only 1 match."""
         result = self.tokenizer_1.evaluate(self.document)
