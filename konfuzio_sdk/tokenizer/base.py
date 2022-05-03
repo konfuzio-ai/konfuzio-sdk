@@ -98,6 +98,10 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
         data = [x.eval_dict() for x in self.processing_steps]
         return pd.DataFrame(data)
 
+    def lose_weight(self):
+        """Delete processing steps."""
+        self.processing_steps = []
+
 
 class ListTokenizer(AbstractTokenizer):
     """Use multiple tokenizers."""
@@ -123,3 +127,9 @@ class ListTokenizer(AbstractTokenizer):
             self.processing_steps.append(tokenizer.processing_steps[-1])
 
         return document
+
+    def lose_weight(self):
+        """Delete processing steps."""
+        self.processing_steps = []
+        for tokenizer in self.tokenizers:
+            tokenizer.lose_weight()

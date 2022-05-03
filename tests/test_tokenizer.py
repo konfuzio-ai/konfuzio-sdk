@@ -186,13 +186,13 @@ class TestAbstractTokenizer(unittest.TestCase):
         assert result.shape[0] == 2
         assert result.category_id.dropna().unique() == self.category_2.id_
 
-    def test_reset_processing_steps(self):
-        """Test reset processing steps."""
+    def test_lose_weight(self):
+        """Test lose weight."""
         self.tokenizer.processing_steps = []
         _ = self.tokenizer.evaluate(self.document)
         processing = self.tokenizer.get_runtime_info()
         assert processing.shape[0] == 1
-        self.tokenizer.processing_steps = []
+        self.tokenizer.lose_weight()
         processing = self.tokenizer.get_runtime_info()
         assert processing.shape[0] == 0
 
@@ -312,12 +312,12 @@ class TestListTokenizer(unittest.TestCase):
         assert result.start_offset[1] == self.span_2.start_offset
         assert result.end_offset[1] == self.span_2.end_offset
 
-    def test_reset_processing_steps(self):
-        """Test reset processing steps for the ListTokenizer."""
+    def test_test_lose_weight(self):
+        """Test reset processing steps for the ListTokenizer (lose_weight)."""
         self.tokenizer.processing_steps = []
         _ = self.tokenizer.evaluate(self.document)
         assert len(self.tokenizer.processing_steps) == 2
-        self.tokenizer.processing_steps = []
+        self.tokenizer.lose_weight()
         assert len(self.tokenizer.processing_steps) == 0
 
     def test_processing_runtime_of_list_tokenizer(self):
