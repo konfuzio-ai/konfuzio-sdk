@@ -86,8 +86,10 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
             doc_evaluation = self.evaluate(document)
             evaluation.append(doc_evaluation)
 
-        evaluation = pd.concat(evaluation, ignore_index=True)
-        return evaluation
+        if len(evaluation) > 0:
+            return pd.concat(evaluation, ignore_index=True)
+        else:
+            return pd.DataFrame()
 
     def get_runtime_info(self) -> pd.DataFrame:
         """

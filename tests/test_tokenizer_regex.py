@@ -1884,8 +1884,25 @@ class TestRegexMatcherTokenizer(TestTemplateRegexTokenizer):
             == self.document.annotations()[0].spans[0].end_offset
         )
 
+    def test_fit_category_without_documents(self):
+        """Test fit RegexMatcherTokenizer for Category without training Documents."""
+        project = Project(id_=None)
+        category = Category(project=project, id_=1)
+        tokenizer = RegexMatcherTokenizer(tokenizers=[RegexTokenizer(regex=self.regex)])
+        with self.assertRaises(ValueError) as context:
+            tokenizer.fit(category=category)
+            assert "has no training documents" in context.exception
+
     def test_evaluate_category(self):
         """Test evaluate_category method."""
         self.tokenizer.processing_steps = []
         result = self.tokenizer.evaluate_category(category=self.category)
         assert result.is_found_by_tokenizer.sum() == 2
+
+    def test_evaluate_category_without_documents(self):
+        """Test evaluate_category method."""
+        project = Project(id_=None)
+        category = Category(project=project, id_=1)
+        with self.assertRaises(ValueError) as context:
+            _ = self.tokenizer.evaluate_category(category=category)
+            assert "has no test documents" in context.exception

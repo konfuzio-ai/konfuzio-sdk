@@ -206,6 +206,9 @@ class RegexMatcherTokenizer(ListTokenizer):
         """Call fit on all tokenizers."""
         assert sdk_isinstance(category, Category)
 
+        if not category.documents:
+            raise ValueError(f"Category {category.__repr__()} has no training documents.")
+
         for tokenizer in self.tokenizers:
             tokenizer.fit(category)
 
@@ -226,6 +229,9 @@ class RegexMatcherTokenizer(ListTokenizer):
             self.tokenize(virtual_doc)
             df = compare(document, virtual_doc)
             eval_list.append(df)
+
+        if not eval_list:
+            raise ValueError('There are no evaluations of the fitted Tokenizer.')
 
         # Get unmatched Spans.
         df = pd.concat(eval_list)
