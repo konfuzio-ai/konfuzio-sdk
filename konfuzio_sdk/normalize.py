@@ -622,7 +622,7 @@ def normalize_to_bool(offset_string: str):
 
 
 def roman_to_float(offset_string: str) -> Optional[float]:
-    """ Convert a Roman numeral to an integer. """
+    """Convert a Roman numeral to an integer."""
     input = offset_string.upper()
     if len(offset_string) == 0:
         return None
