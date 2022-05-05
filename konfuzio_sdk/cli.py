@@ -4,7 +4,6 @@ import logging
 import sys
 from getpass import getpass
 
-from konfuzio_sdk import KONFUZIO_HOST
 from konfuzio_sdk.api import create_new_project
 from konfuzio_sdk.data import download_training_and_test_data
 from konfuzio_sdk.api import init_env
@@ -34,7 +33,7 @@ def credentials():
     """Retrieve user input."""
     user = input("Username you use to login to Konfuzio Server: ")
     password = getpass("Password you use to login to Konfuzio Server: ")
-    host = str(input("Server Host URL (press [ENTER] for https://app.konfuzio.com): ") or KONFUZIO_HOST)
+    host = str(input("Server Host URL (press [ENTER] for https://app.konfuzio.com): ") or 'https://app.konfuzio.com')
     return user, password, host
 
 
