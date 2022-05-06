@@ -2,6 +2,7 @@
 import os
 import textwrap
 from timeit import timeit
+import time
 
 from konfuzio_sdk.regex import (
     suggest_regex_for_string,
@@ -343,8 +344,35 @@ class TestTokensMultipleCategories(unittest.TestCase):
         self.annotation._tokens = []  # reset after test
         # clean evaluations for other tests (this test creates 16 evaluations)
         self.label._evaluations = {}
-        # TODO: locally we might get 'Hi[ ]+(?:(?P<None_W_5_3>all))\\,' due to differences in runtime
-        assert regexes == ['i[ ]+(?:(?P<None_W_5_3>all))\\,']
+        # we can have a different regex selected if the regexes are very similar because of slightly variations in
+        # runtime
+        assert regexes == ['[ ]+(?:(?P<None_W_5_3>all))\\,'] or regexes == ['i[ ]+(?:(?P<None_W_5_3>all))\\,']
+
+    def test_find_regex_runtime(self):
+        """
+        Test runtime of the regexes.
+
+        # The runtime of the 2 regexes in this test can vary slightly between runs. However, it should not be more
+        than 1 ms.
+        """
+        start_time_1 = time.time()
+        _ = regex_matches(
+            doctext=self.document.text,
+            regex='[ ]+(?:(?P<None_W_5_3>all))\\,',
+            keep_full_match=False,
+            filtered_group='None_',
+        )
+        runtime_1 = time.time() - start_time_1
+
+        start_time_2 = time.time()
+        _ = regex_matches(
+            doctext=self.document.text,
+            regex='i[ ]+(?:(?P<None_W_5_3>all))\\,',
+            keep_full_match=False,
+            filtered_group='None_',
+        )
+        runtime_2 = time.time() - start_time_2
+        assert abs(runtime_1 - runtime_2) <= 0.001
 
     def test_annotation_tokens(self):
         """Test tokens created for an Annotation."""

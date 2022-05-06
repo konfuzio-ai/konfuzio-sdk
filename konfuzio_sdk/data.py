@@ -1920,7 +1920,9 @@ class Document(Data):
         return {
             'id': self.id_local,
             'regex': regex,
-            'runtime': processing_time,
+            # processing_time time can vary slightly between runs, round to ms so that this variation does not affect
+            # the choice of regexes when values are below ms and metrics are the same
+            'runtime': round(processing_time, 3),
             'count_total_findings': len(findings_in_document),
             'count_total_correct_findings': len(correct_findings),
             'count_correct_annotations': len(self.annotations(label=label)),
