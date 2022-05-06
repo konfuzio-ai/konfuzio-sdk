@@ -658,7 +658,7 @@ def normalize(offset_string, data_type):
         else:
             result = None
     except Exception as e:  # NOQA
-        logger.error('Text >>' + offset_string + f'<< with data type {data_type} cannot be converted')
+        logger.debug('Text >>' + offset_string + f'<< with data type {data_type} cannot be converted')
         result = None
         pass
 
