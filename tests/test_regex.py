@@ -348,32 +348,6 @@ class TestTokensMultipleCategories(unittest.TestCase):
         # runtime
         assert regexes == ['[ ]+(?:(?P<None_W_5_3>all))\\,'] or regexes == ['i[ ]+(?:(?P<None_W_5_3>all))\\,']
 
-    def test_find_regex_runtime(self):
-        """
-        Test runtime of the regexes.
-
-        # The runtime of the 2 regexes in this test can vary slightly between runs. However, it should not be more
-        than 1 ms.
-        """
-        start_time_1 = time.time()
-        _ = regex_matches(
-            doctext=self.document.text,
-            regex='[ ]+(?:(?P<None_W_5_3>all))\\,',
-            keep_full_match=False,
-            filtered_group='None_',
-        )
-        runtime_1 = time.time() - start_time_1
-
-        start_time_2 = time.time()
-        _ = regex_matches(
-            doctext=self.document.text,
-            regex='i[ ]+(?:(?P<None_W_5_3>all))\\,',
-            keep_full_match=False,
-            filtered_group='None_',
-        )
-        runtime_2 = time.time() - start_time_2
-        assert abs(runtime_1 - runtime_2) <= 0.001
-
     def test_annotation_tokens(self):
         """Test tokens created for an Annotation."""
         tokens = self.annotation_2.tokens()
