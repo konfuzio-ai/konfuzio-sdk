@@ -256,7 +256,7 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
     elif all(char in ROMAN_NUMS.keys() for char in offset_string):
         normalization = roman_to_float(offset_string)
     else:
-        logger.warning(
+        logger.debug(
             'Could not convert >>' + offset_string + '<< to positive/absolute float (no conversion case found)'
         )
 
@@ -484,7 +484,7 @@ def _check_for_dates_with_day_count(offset_string: str, org_str: str, month_dict
     elif len(offset_string) == 10 and offset_string[-3] == '-' and offset_string[4] == '-':
         translation = offset_string[-2:] + '.' + offset_string[5:7] + '.' + offset_string[:4]
     else:
-        logger.warning('Could not convert >>' + offset_string + '<< to date (no conversion case found)')
+        logger.debug('Could not convert >>' + offset_string + '<< to date (no conversion case found)')
 
     translation = _final_date_check(translation)
 
