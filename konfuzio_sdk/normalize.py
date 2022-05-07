@@ -187,7 +187,7 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
         _float = abs(_float)
         normalization = _float
     # check for 12.34 (dot is third last char).
-    elif '.' in offset_string and (len(offset_string) - offset_string.index('.')) == 3:
+    elif offset_string.count('.') == 1 and (len(offset_string) - offset_string.index('.')) == 3:
         _float = float(offset_string)  # => 12.34
         _float = abs(_float)
         normalization = _float
@@ -201,7 +201,7 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
         _float = abs(_float)
         normalization = _float
     # check for 12.3 (dot is second last char).
-    elif '.' in offset_string and (len(offset_string) - offset_string.index('.')) == 2:
+    elif offset_string.count('.') == 1 and (len(offset_string) - offset_string.index('.')) == 2:
         _float = float(offset_string)  # => 12.3
         _float = abs(_float)
         normalization = _float
@@ -658,7 +658,7 @@ def normalize(offset_string, data_type):
         else:
             result = None
     except Exception as e:  # NOQA
-        logger.error('Text >>' + offset_string + f'<< with data type {data_type} cannot be converted')
+        logger.debug('Text >>' + offset_string + f'<< with data type {data_type} cannot be converted')
         result = None
         pass
 
