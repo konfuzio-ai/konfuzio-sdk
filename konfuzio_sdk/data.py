@@ -1408,6 +1408,8 @@ class Document(Data):
                     )
                 else:
                     page_data['id_'] = page_data.pop('id', None)
+                    page_data['size'] = tuple(page_data.get('size'))
+                    page_data['original_size'] = tuple(page_data.get('original_size'))
                     page = Page(**page_data, document=self, start_offset=start_offset, end_offset=end_offset)
                 _pages.append(page)
                 start_offset = end_offset + 1
