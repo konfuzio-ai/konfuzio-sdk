@@ -3,6 +3,7 @@ data
 konfuzio_sdk.egg-info
 .idea
 docs/build/
+*.log
 *.pyc
 venv
 settings.py

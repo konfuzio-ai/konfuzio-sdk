@@ -16,6 +16,7 @@ from konfuzio_sdk.data import (
     Span,
     download_training_and_test_data,
     Category,
+    Page,
 )
 from konfuzio_sdk.utils import is_file
 
@@ -44,7 +45,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 24
+        assert len(cls.project.virtual_documents) == 27
 
     def test_project_no_label(self):
         """Test that no_label exists in the Labels of the Project and has the expected name."""
@@ -83,7 +84,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         with self.assertRaises():
             span_1 = Span(start_offset=-1, end_offset=2)
             annotation_set_1 = AnnotationSet(id_=1, document=document, label_set=label_set)
-            annotation = Annotation(
+            _ = Annotation(
                 document=document,
                 is_correct=True,
                 annotation_set=annotation_set_1,
@@ -128,10 +129,9 @@ class TestOfflineDataSetup(unittest.TestCase):
 
     def test_to_add_label_to_project(self):
         """Add one Label to a Project."""
-        _ = Label(project=self.project, text='Fourth Offline Label')
+        _ = Label(project=self.project, text='Third Offline Label')
         assert sorted([label.name for label in self.project.labels]) == [
             'First Offline Label',
-            'Fourth Offline Label',
             'NO_LABEL',
             'Second Offline Label',
             'Third Offline Label',
@@ -186,6 +186,20 @@ class TestOfflineDataSetup(unittest.TestCase):
             span.bbox()
             assert 'coordinate x1 should be bigger than x0.' in context.exception
 
+    def test_get_span_bbox_with_unavailable_characters(self):
+        """Test get the bbox of a Span where the characters are unavailable."""
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 1, 'top': 10, 'bottom': 11, 'page_number': 1},
+            '2': {'x0': 1, 'x1': 2, 'y0': 0, 'y1': 1, 'top': 10, 'bottom': 11, 'page_number': 1},
+        }
+        document = Document(project=self.project, category=self.category, text='hello', bbox=document_bbox)
+        span = Span(start_offset=1, end_offset=2)
+        _ = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
+
+        with self.assertRaises(ValueError) as context:
+            span.bbox()
+            assert 'does not have available characters bounding boxes.' in context.exception
+
     def test_document_check_bbox_coordinates(self):
         """Test bbox check for coordinates with valid coordinates."""
         document_bbox = {
@@ -208,7 +222,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         document = Document(
             project=self.project,
             category=self.category,
-            text='hello',
+            text='h',
             bbox=document_bbox,
             pages=[{'original_size': (1, 1)}],
         )
@@ -222,7 +236,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         document = Document(
             project=self.project,
             category=self.category,
-            text='hello',
+            text='h',
             bbox=document_bbox,
             pages=[{'original_size': (1, 1)}],
         )
@@ -236,7 +250,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         document = Document(
             project=self.project,
             category=self.category,
-            text='hello',
+            text='h',
             bbox=document_bbox,
             pages=[{'original_size': (1, 1)}],
         )
@@ -250,7 +264,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         document = Document(
             project=self.project,
             category=self.category,
-            text='hello',
+            text='h',
             bbox=document_bbox,
             pages=[{'original_size': (1, 1)}],
         )
@@ -279,23 +293,6 @@ class TestOfflineDataSetup(unittest.TestCase):
     def test_to_there_must_not_be_a_folder(self):
         """Check that a virtual Document has now folder."""
         assert not os.path.isdir(self.document.document_folder)
-
-    def test_new_annotation_in_document_of_add_foreign_annotation_set(self):
-        """Add new annotation to a document."""
-        project = Project(id_=None)
-        document = Document(project=project, category=self.category)
-        span = Span(start_offset=1, end_offset=2)
-
-        with self.assertRaises(IndexError) as context:
-            _ = Annotation(
-                document=document,
-                is_correct=True,
-                label=self.label,
-                annotation_set=self.annotation_set,
-                label_set=self.label_set,
-                spans=[span],
-            )
-            assert 'Annotation Set None is not part of Document None' in context.exception
 
     def test_new_annotation_in_annotation_set_of_document_of_add_foreign_annotation_set(self):
         """Add new annotation to a document."""
@@ -361,7 +358,7 @@ class TestOfflineDataSetup(unittest.TestCase):
             document=document,
             is_correct=True,
             label=self.label,
-            annotation_set=self.annotation_set,
+            annotation_set=annotation_set,
             label_set=self.label_set,
             spans=[span],
         )
@@ -369,7 +366,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert annotation in annotation_set.annotations
 
     def test_create_document_with_pages(self):
-        """Add new annotation set to a document."""
+        """Create a Document with pages information."""
         page_list = [
             {
                 "id": 1,
@@ -379,8 +376,32 @@ class TestOfflineDataSetup(unittest.TestCase):
                 "size": [1414, 2000],
             }
         ]
-        document = Document(project=self.project, category=self.category, pages=page_list)
-        assert document.pages == page_list
+        document = Document(project=self.project, category=self.category, pages=page_list, text='a')
+        assert len(document.pages) == len(page_list)
+        assert document.pages[0].image == page_list[0]["image"]
+        assert document.pages[0].number == page_list[0]["number"]
+        assert document.pages[0].original_size == page_list[0]["original_size"]
+        assert document.pages[0].size == page_list[0]["size"]
+
+    def test_create_document_with_page_object(self):
+        """Create a Document with pages information from a Page object."""
+        page_list = [
+            {
+                "id_": 1,
+                "image": "/page/show-image/1/",
+                "number": 1,
+                "original_size": [595.2, 841.68],
+                "size": [1414, 2000],
+            }
+        ]
+        page = Page(**page_list[0])
+
+        document = Document(project=self.project, category=self.category, pages=[page], text='a')
+        assert len(document.pages) == len(page_list)
+        assert document.pages[0].image == page_list[0]["image"]
+        assert document.pages[0].number == page_list[0]["number"]
+        assert document.pages[0].original_size == page_list[0]["original_size"]
+        assert document.pages[0].size == page_list[0]["size"]
 
     def test_create_new_annotation_set_in_document(self):
         """Add new annotation set to a document."""
@@ -436,16 +457,16 @@ class TestOfflineDataSetup(unittest.TestCase):
 
         # Add annotation for the second time, heere it should be skipped.
         span = Span(start_offset=1, end_offset=2)
-        Annotation(
-            document=document,
-            is_correct=True,
-            label=self.label,
-            annotation_set=annotation_set,
-            label_set=self.label_set,
-            spans=[span],
-        )
-
-        self.assertEqual(len(document.annotations()), 2)
+        with self.assertRaises(ValueError) as context:
+            Annotation(
+                document=document,
+                is_correct=True,
+                label=self.label,
+                annotation_set=annotation_set,
+                label_set=self.label_set,
+                spans=[span],
+            )
+            assert "is a duplicate of" in context.exception
 
     def test_to_add_an_annotation_twice_to_a_document(self):
         """Test to add the same Annotation twice to a Document."""
@@ -467,7 +488,11 @@ class TestOfflineDataSetup(unittest.TestCase):
             _ = Annotation(id_=2, document=document, spans=[span_2], label=self.label, label_set=self.label_set)
 
     def test_to_add_annotation_with_same_span_offsets_but_different_label_to_a_document(self):
-        """Test to add Annotation with a Span with the same offsets but different Label to a Document."""
+        """
+        Test to add Annotation with a Span with the same offsets but different Label to a Document.
+
+        Both Annotations have is_correct=False.
+        """
         document = Document(project=self.project, category=self.category)
         label = Label(project=self.project, text='Second Offline Label', label_sets=[self.label_set])
         span_1 = Span(start_offset=1, end_offset=2)
@@ -476,18 +501,8 @@ class TestOfflineDataSetup(unittest.TestCase):
         with self.assertRaises(ValueError):
             _ = Annotation(id_=2, document=document, spans=[span_2], label=label, label_set=self.label_set)
 
-    def test_to_add_annotation_without_id_with_same_span_offsets_but_different_label_to_a_document(self):
-        """Test to add Annotation without ID with a Span with the same offsets but different Label to a Document."""
-        document = Document(project=self.project, category=self.category)
-        label = Label(project=self.project, text='Third Offline Label', label_sets=[self.label_set])
-        span_1 = Span(start_offset=1, end_offset=2)
-        _ = Annotation(id_=1, document=document, spans=[span_1], label=self.label, label_set=self.label_set)
-        span_2 = Span(start_offset=1, end_offset=2)
-        with self.assertRaises(ValueError):
-            _ = Annotation(document=document, spans=[span_2], label=label, label_set=self.label_set)
-
     def test_to_add_two_annotations_to_a_document(self):
-        """Test to add an the same Annotation twice to a Document."""
+        """Test to add the same Annotation twice to a Document."""
         document = Document(project=self.project, category=self.category)
         first_span = Span(start_offset=1, end_offset=2)
         second_span = Span(start_offset=1, end_offset=2)
@@ -498,15 +513,48 @@ class TestOfflineDataSetup(unittest.TestCase):
         )
         self.assertEqual([first_annotation, second_annotation], document.annotations(use_correct=False))
 
+    def test_to_add_a_correct_annotation_with_a_duplicated_span_to_a_document(self):
+        """Test to Span that has the same start and end offsets to a correct Annotation."""
+        document = Document(project=self.project, category=self.category)
+        first_span = Span(start_offset=1, end_offset=2)
+        second_span = Span(start_offset=1, end_offset=2)
+        third_span = Span(start_offset=2, end_offset=3)
+        _ = Annotation(
+            document=document, spans=[first_span], label_set=self.label_set, label=self.label, is_correct=True
+        )
+        with self.assertRaises(ValueError):
+            _ = Annotation(
+                document=document,
+                spans=[second_span, third_span],
+                label_set=self.label_set,
+                label=self.label,
+                is_correct=True,
+            )
+
     def test_to_reuse_spans_across_annotations(self):
         """Test if we find inconsistencies when one Span is assigned to a new Annotation."""
         document = Document(project=self.project, category=self.category)
         first_span = Span(start_offset=1, end_offset=2)
         second_span = Span(start_offset=2, end_offset=3)
         Annotation(document=document, spans=[first_span], label_set=self.label_set, label=self.label)
+        Annotation(document=document, spans=[first_span, second_span], label_set=self.label_set, label=self.label)
+        assert len(document.annotations(use_correct=False)) == 2
+
+    def test_to_reuse_spans_across_correct_annotations(self):
+        """Test if we find inconsistencies when one Span is assigned to a new correct Annotation."""
+        document = Document(project=self.project, category=self.category)
+        first_span = Span(start_offset=1, end_offset=2)
+        second_span = Span(start_offset=2, end_offset=3)
+        Annotation(document=document, spans=[first_span], label_set=self.label_set, label=self.label, is_correct=True)
         with self.assertRaises(ValueError) as context:
-            Annotation(document=document, spans=[first_span, second_span], label_set=self.label_set, label=self.label)
-            assert 'however it was assigned to Annotation' in context.exception
+            Annotation(
+                document=document,
+                spans=[first_span, second_span],
+                label_set=self.label_set,
+                label=self.label,
+                is_correct=True,
+            )
+            assert 'is a duplicate of' in context.exception
 
     def test_lose_weight(self):
         """Lose weight should remove session and documents."""
@@ -768,7 +816,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.assertFalse(is_file(doc.annotation_file_path, raise_exception=False))
         self.assertEqual(None, doc._annotations)
         self.assertTrue(doc.annotations())
-        self.assertEqual(5, len(doc._annotation_sets))
+        self.assertEqual(8, len(doc._annotation_sets))
         self.assertTrue(is_file(doc.annotation_file_path))
         prj.delete()
 
@@ -779,7 +827,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.assertFalse(is_file(doc.annotation_set_file_path, raise_exception=False))
         self.assertEqual(None, doc._annotation_sets)
         self.assertTrue(doc.annotation_sets())
-        self.assertEqual(5, len(doc._annotation_sets))
+        self.assertEqual(8, len(doc._annotation_sets))
         self.assertTrue(is_file(doc.annotation_set_file_path))
         prj.delete()
 
@@ -997,6 +1045,11 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
         assert doc.category.name == 'Lohnabrechnung'
 
+    def test_assignee_of_document(self):
+        """Test Assignee of a Document."""
+        doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
+        assert doc.assignee == 1043  # Document has Assignee ch+test@konfuzio.com with user ID 1043
+
     def test_document_with_multiline_annotation(self):
         """Test properties of a specific Documents in the test Project."""
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
@@ -1011,7 +1064,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
         # existing annotation
         # https://app.konfuzio.com/admin/server/sequenceannotation/?document_id=44823&project=46
-        self.assertEqual(len(doc.annotations(use_correct=False)), 22)
+        self.assertEqual(len(doc.annotations(use_correct=False)), 21)  # 22 Annotations if considering negative ones
         # a multiline Annotation in the top right corner, see https://app.konfuzio.com/a/4419937
         self.assertEqual(66, doc.annotations()[0]._spans[0].start_offset)
         self.assertEqual(78, doc.annotations()[0]._spans[0].end_offset)
@@ -1103,7 +1156,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
         self.assertEqual(len(doc.annotations()), 19)
         assert len(doc.annotations(label=self.prj.get_label_by_id(858))) == 1
-        assert len(doc.annotations(use_correct=False)) == 22
+        assert len(doc.annotations(use_correct=False)) == 21  # 22 if considering negative ones
 
     def test_document_offset(self):
         """Test Document offsets."""
@@ -1304,7 +1357,10 @@ class TestFillOperation(unittest.TestCase):
 
     def test_fill_full_document_with_category(self):
         """Try to fill a Document with Category."""
-        self.prj.get_document_by_id(TEST_DOCUMENT_ID).annotations(fill=True)
+        # Failing because the Document already has the Annotations created by fill (from the tests setup)
+        with self.assertRaises(ValueError) as context:
+            self.prj.get_document_by_id(TEST_DOCUMENT_ID).annotations(fill=True)
+            assert "is a duplicate of" in context.exception
 
     def test_correct_text_offset(self):
         """Test if the the sorted spans can create the offset text."""
