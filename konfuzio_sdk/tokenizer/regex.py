@@ -56,8 +56,9 @@ class RegexTokenizer(AbstractTokenizer):
                 span_info['start_offset'] not in bbox_keys or span_info['end_offset'] - 1 not in bbox_keys
             ):
                 logger.error(
-                    f'Regex {span_info["regex_used"]} created '
-                    f'start_offset or end_offset which is not part of the document bbox.'
+                    f'Regex {span_info["regex_used"]} created span '
+                    f'>>{document.text[span_info["start_offset"]:span_info["end_offset"]]}<<'
+                    f'with start_offset or end_offset which is not part of the document bbox.'
                 )
                 continue
 
