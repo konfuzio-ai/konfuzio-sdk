@@ -147,6 +147,7 @@ test_data_positive_numbers = [
     ('none', 0, None),
     ('NoNe', 0, None),
     ('StringThatIncludesnone', None, None),
+    ('000³', None, None)
 ]
 
 

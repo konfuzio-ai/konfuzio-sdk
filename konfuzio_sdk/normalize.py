@@ -226,7 +226,7 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
     ):
         normalization = abs(float(offset_string.replace('.', '')))
     # check for 5000 (only numbers)
-    elif offset_string.isdigit():
+    elif offset_string.isdecimal():
         _float = float(offset_string)
         _float = abs(_float)
         normalization = _float

@@ -4,6 +4,12 @@
 
 # Changelog
 
+## 2022-05-1 v.0.2.1
+
+### Added
+- Add the concept of a Tokenizer as class
+- Add the concept of a Page of a Document as class
+
 ## 2022-03-11 v.0.2.0
 
 ### Fixed
