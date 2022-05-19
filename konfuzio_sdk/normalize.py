@@ -55,6 +55,7 @@ def normalize_to_positive_float(offset_string: str) -> Optional[float]:
 
 def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
     """Given a string tries to translate that into an absolute float. SHOULD NOT BE CALLED DIRECTLY."""
+    _float = None
     normalization = None
 
     if offset_string in ['-', '-,-', '-,--', '--,--', '--,-', '-.-', '-.--', '--.--', '--.-']:
@@ -120,21 +121,21 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
     )
 
     if len(offset_string) > 1:
-        if (offset_string[-1] == 'S' or offset_string[-1] == 'H') and offset_string[-2].isdigit():
+        if (offset_string[-1] == 'S' or offset_string[-1] == 'H') and offset_string[-2].isdecimal():
             offset_string = offset_string[:-1]
 
     ln = len(offset_string)
 
     # check for 1.234,56
     if '.' in offset_string and offset_string.count(',') == 1 and offset_string.index('.') < offset_string.index(','):
-        _float = float(offset_string.replace('.', '').replace(',', '.'))  # => 1234.56
-        _float = abs(_float)
-        normalization = _float
+        offset_string = offset_string.replace('.', '').replace(',', '.')  # => 1234.56
+        if all(x.isdecimal() for x in offset_string.split('.')):
+            _float = float(offset_string)
     # check for 1,234.56
     elif '.' in offset_string and ',' in offset_string and offset_string.index(',') < offset_string.index('.'):
-        _float = float(offset_string.replace(',', ''))  # => 1234.56
-        _float = abs(_float)
-        normalization = _float
+        offset_string = offset_string.replace(',', '')  # => 1234.56
+        if all(x.isdecimal() for x in offset_string.split('.')):
+            _float = float(offset_string)
     # check for 1,234,56
     elif (
         ln > 6
@@ -144,73 +145,65 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
         and offset_string[-7] == ','
     ):
         offset_string = offset_string[:-3] + '.' + offset_string[-2:]  # => 1,234.56
-        _float = float(offset_string.replace(',', ''))  # => 1234.56
-        _float = abs(_float)
-        normalization = _float
+        offset_string = offset_string.replace(',', '')  # => 1234.56
+        if all(x.isdecimal() for x in offset_string.split('.')):
+            _float = float(offset_string)
     # check for 1.234.56
     elif ln > 6 and offset_string.count('.') >= 2 and offset_string[-3] == '.' and offset_string[-7] == '.':
         offset_string = offset_string.replace('.', '')  # => 123456
-        _float = float(offset_string[:-2] + '.' + offset_string[-2:])  # => 1234.56
-        _float = abs(_float)
-        normalization = _float
+        offset_string = offset_string[:-2] + '.' + offset_string[-2:]  # => 1234.56
+        if all(x.isdecimal() for x in offset_string.split('.')):
+            _float = float(offset_string)
     # check for 1.967.
     elif ln > 5 and offset_string.count('.') == 2 and offset_string[-1] == '.' and offset_string[-5] == '.':
         offset_string = offset_string.replace('.', '')  # => 123456
-        _float = float(offset_string)
-        _float = abs(_float)
-        normalization = _float
+        if offset_string.isdecimal():
+            _float = float(offset_string)
     # check for 1.234.567
     elif ln > 7 and offset_string.count('.') >= 2 and offset_string[-4] == '.' and offset_string[-8] == '.':
         offset_string = offset_string.replace('.', '')  # => 1234567
-        _float = float(offset_string)
-        _float = abs(_float)
-        normalization = _float
+        if offset_string.isdecimal():
+            _float = float(offset_string)
     # check for 3.456,814,75
     elif ln > 7 and offset_string.count(',') == 2 and offset_string[-3] == ',' and offset_string[-7] == ',':
         offset_string = offset_string.replace(',', '').replace('.', '')  # => 1234567
-        _float = float(offset_string) / 100.0
-        _float = abs(_float)
-        normalization = _float
+        if offset_string.isdecimal():
+            _float = float(offset_string) / 100.0
     # check for 1,234,567
     elif ln > 7 and offset_string.count(',') == 2 and offset_string[-4] == ',' and offset_string[-8] == ',':
         offset_string = offset_string.replace(',', '')  # => 1234567
-        _float = float(offset_string)
-        _float = abs(_float)
-        normalization = _float
+        if offset_string.isdecimal():
+            _float = float(offset_string)
     # check for 12,34 (comma is third last char).
     elif (
         ',' in offset_string
         and (len(offset_string) - offset_string.index(',')) == 3
-        and offset_string.replace(',', '').isdigit()
+        and offset_string.replace(',', '').isdecimal()
     ):
-        _float = float(offset_string.replace(',', '.'))  # => 12.34
-        _float = abs(_float)
-        normalization = _float
+        offset_string = offset_string.replace(',', '.')  # => 12.34
+        if all(x.isdecimal() for x in offset_string.split('.')):
+            _float = float(offset_string)
     # check for 12.34 (dot is third last char).
     elif offset_string.count('.') == 1 and (len(offset_string) - offset_string.index('.')) == 3:
-        _float = float(offset_string)  # => 12.34
-        _float = abs(_float)
-        normalization = _float
+        if all(x.isdecimal() for x in offset_string.split('.')):
+            _float = float(offset_string)  # => 12.34
     # check for 12,3 (comma is second last char).
     elif (
         ',' in offset_string
         and (len(offset_string) - offset_string.index(',')) == 2
-        and offset_string.replace(',', '').isdigit()
+        and offset_string.replace(',', '').isdecimal()
     ):
         _float = float(offset_string.replace(',', '.'))  # => 12.3
-        _float = abs(_float)
-        normalization = _float
     # check for 12.3 (dot is second last char).
     elif offset_string.count('.') == 1 and (len(offset_string) - offset_string.index('.')) == 2:
-        _float = float(offset_string)  # => 12.3
-        _float = abs(_float)
-        normalization = _float
+        if all(x.isdecimal() for x in offset_string.split('.')):
+            _float = float(offset_string)  # => 12.3
     # check for 500,000 (comma is forth last char).
     elif (
         ln > 0
         and ',' in offset_string
         and (len(offset_string) - offset_string.index(',')) == 4
-        and offset_string.replace(',', '').isdigit()
+        and offset_string.replace(',', '').isdecimal()
         and not offset_string[0] == ','
     ):
         _float = float(offset_string.replace(',', ''))  # => 500000
@@ -221,7 +214,7 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
         ln > 4
         and '.' in offset_string
         and offset_string[-4] == '.'
-        and offset_string.replace('.', '').isdigit()
+        and offset_string.replace('.', '').isdecimal()
         and offset_string.count('.') == 1
     ):
         normalization = abs(float(offset_string.replace('.', '')))
@@ -238,9 +231,9 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
         and offset_string[-3] == ';'
         and offset_string[-4] == ','
     ):
-        _float = float(offset_string.replace(',', '.').replace(';', ''))  # => 159.03
-        _float = abs(_float)
-        normalization = _float
+        offset_string = offset_string.replace(',', '.').replace(';', '')  # => 159.03
+        if all(x.isdecimal() for x in offset_string.split('.')):
+            _float = float(offset_string)
     # # check for “71,90 (obscured edge case)
     # elif offset_string[0] == '“' and offset_string[-3] == ',':
     #     _float = float(offset_string.replace('“', '').replace(',','.'))  # => 71.90
@@ -250,9 +243,9 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
     elif (
         ln > 2 and offset_string[0] == '‚' and offset_string[-3] == ','
     ):  # first comma is a very different comma ('‚' != ',')
-        _float = float(offset_string[1:].replace(',', '.'))  # => 22.95
-        _float = abs(_float)
-        normalization = _float
+        offset_string = offset_string[1:].replace(',', '.')  # => 22.95
+        if all(x.isdecimal() for x in offset_string.split('.')):
+            _float = float(offset_string)
     elif all(char in ROMAN_NUMS.keys() for char in offset_string):
         normalization = roman_to_float(offset_string)
     else:
@@ -260,6 +253,9 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
             'Could not convert >>' + offset_string + '<< to positive/absolute float (no conversion case found)'
         )
 
+    if _float is not None:
+        _float = abs(_float)
+        normalization = _float
     # handles the case when normalization is >float32 maximum size
     # TODO: handle the underflow case, i.e. normalization is a very small number
     if np.isinf(np.float32(normalization)):
@@ -361,7 +357,7 @@ def normalize_to_date(offset_string: str) -> Optional[str]:
         translation = _check_for_dates_with_only_month_and_year(offset_string)
 
     # if still no translation is found just check if it is just a year number
-    if not translation and offset_string.isdigit() and len(offset_string) == 4:
+    if not translation and offset_string.isdecimal() and len(offset_string) == 4:
         translation = '01.01.' + offset_string
         translation = _final_date_check(translation)
 
@@ -393,7 +389,7 @@ def _check_for_dates_with_day_count(offset_string: str, org_str: str, month_dict
             offset_string_filtered[:2] + '.' + offset_string_filtered[2:4] + '.' + offset_string_filtered[4:6]
         )
     # 010101
-    elif len(offset_string) == 6 and offset_string.isdigit():
+    elif len(offset_string) == 6 and offset_string.isdecimal():
         offset_string = offset_string[:2] + '.' + offset_string[2:4] + '.' + offset_string[4:6]
     # 01.012001 or 0101.2001
     elif len(offset_string.replace('.', '')) == 8 and (offset_string[2] == '.' or offset_string[-5] == '.'):
@@ -402,33 +398,33 @@ def _check_for_dates_with_day_count(offset_string: str, org_str: str, month_dict
             offset_string_filtered[:2] + '.' + offset_string_filtered[2:4] + '.' + offset_string_filtered[4:8]
         )
     # 01012001
-    elif len(offset_string) == 8 and offset_string.isdigit():
+    elif len(offset_string) == 8 and offset_string.isdecimal():
         offset_string = offset_string[:2] + '.' + offset_string[2:4] + '.' + offset_string[4:8]
     # /01.01.
     elif offset_string[0] == '/':
         offset_string = offset_string[1:]
     # 01.01/
-    elif offset_string[-1] == '/' and not offset_string[-2].isdigit():
+    elif offset_string[-1] == '/' and not offset_string[-2].isdecimal():
         offset_string = offset_string[:-1]
     # 0101.
-    elif offset_string[-1] == '.' and len(offset_string) == 5 and offset_string[:4].isdigit():
+    elif offset_string[-1] == '.' and len(offset_string) == 5 and offset_string[:4].isdecimal():
         offset_string = offset_string[:2] + '.' + offset_string[2:]
     # 0101 (from 01,01,)
-    elif len(offset_string) == 4 and offset_string.isdigit() and offset_string.count(',') == 2:
+    elif len(offset_string) == 4 and offset_string.isdecimal() and offset_string.count(',') == 2:
         offset_string = offset_string[:2] + '.' + offset_string[2:] + '.'
     # 01.01/01.01
     elif (
         len(no_white_space_raw) == 13
         and no_white_space_raw[0:6] == no_white_space_raw[7:13]
-        and not no_white_space_raw[6].isdigit()
+        and not no_white_space_raw[6].isdecimal()
     ):
         offset_string = no_white_space_raw[0:6]
     # 1993-02-05T00:00:00
     elif (
         len(offset_string) >= 17
-        and offset_string[0:4].isdigit()
-        and offset_string[5:7].isdigit()
-        and offset_string[8:10].isdigit()
+        and offset_string[0:4].isdecimal()
+        and offset_string[5:7].isdecimal()
+        and offset_string[8:10].isdecimal()
     ):
         offset_string = offset_string[0:10]
 
@@ -450,7 +446,7 @@ def _check_for_dates_with_day_count(offset_string: str, org_str: str, month_dict
         translation = _date
     # check for 01.01.01
     elif (
-        len(offset_string) == 8 and offset_string[2] == '.' and offset_string[5] == '.' and offset_string[6:].isdigit()
+        len(offset_string) == 8 and offset_string[2] == '.' and offset_string[5] == '.' and offset_string[6:].isdecimal()
     ):
         year_num = int(offset_string[6:])
 
@@ -462,7 +458,7 @@ def _check_for_dates_with_day_count(offset_string: str, org_str: str, month_dict
         translation = offset_string[:6] + str(cent_num) + offset_string[6:]
     # check for 01/01/01
     elif (
-        len(offset_string) == 8 and offset_string[2] == '/' and offset_string[5] == '/' and offset_string[6:].isdigit()
+        len(offset_string) == 8 and offset_string[2] == '/' and offset_string[5] == '/' and offset_string[6:].isdecimal()
     ):
         year_num = int(offset_string[6:])
 
@@ -531,7 +527,7 @@ def _check_for_dates_with_only_month_and_year(offset_string: str):
     if (
         offset_string[-3] == '/'
         and offset_string.count('/') == 1
-        and offset_string.replace('/', '').isdigit()
+        and offset_string.replace('/', '').isdecimal()
         and len(offset_string.replace('/', '')) == 4
     ):
         year_num = int(offset_string[-2:])
@@ -550,7 +546,7 @@ def _check_for_dates_with_only_month_and_year(offset_string: str):
     if (
         offset_string[-5] == '.'
         and offset_string.count('.') == 1
-        and offset_string.replace('.', '').isdigit()
+        and offset_string.replace('.', '').isdecimal()
         and len(offset_string.replace('.', '')) == 6
     ):
         translation = offset_string
@@ -558,7 +554,7 @@ def _check_for_dates_with_only_month_and_year(offset_string: str):
     elif (
         offset_string[-5] == '/'
         and offset_string.count('/') == 1
-        and offset_string.replace('/', '').isdigit()
+        and offset_string.replace('/', '').isdecimal()
         and len(offset_string.replace('/', '')) == 6
     ):
         translation = offset_string[:2] + '.' + offset_string[3:]
@@ -582,9 +578,9 @@ def _final_date_check(date_string: str):
             len(date_string) == 10
             and date_string[2] == '.'
             and date_string[5] == '.'
-            and date_string[-4:].isdigit()
-            and date_string[:2].isdigit()
-            and date_string[3:5].isdigit()
+            and date_string[-4:].isdecimal()
+            and date_string[:2].isdecimal()
+            and date_string[3:5].isdecimal()
         ):
             logger.warning('Could not convert >>' + date_string + '<< to date (date contains letters)')
             date_string = None

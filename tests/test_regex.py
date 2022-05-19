@@ -404,7 +404,7 @@ class TestTokensMultipleCategories(unittest.TestCase):
 class TestRegexGenerator(unittest.TestCase):
     """Test to create regex based on data online."""
 
-    document_count = 27
+    document_count = 26
     correct_annotations = 24
 
     @classmethod
