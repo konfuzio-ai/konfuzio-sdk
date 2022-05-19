@@ -617,7 +617,7 @@ class TestKonfuzioDataCustomPath(unittest.TestCase):
 class TestKonfuzioDataSetup(unittest.TestCase):
     """Test handle data."""
 
-    document_count = 27
+    document_count = 26
     test_document_count = 3
     annotations_correct = 24
     # 24 created by human
@@ -816,7 +816,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.assertFalse(is_file(doc.annotation_file_path, raise_exception=False))
         self.assertEqual(None, doc._annotations)
         self.assertTrue(doc.annotations())
-        self.assertEqual(8, len(doc._annotation_sets))
+        self.assertEqual(5, len(doc._annotation_sets))
         self.assertTrue(is_file(doc.annotation_file_path))
         prj.delete()
 
@@ -827,7 +827,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.assertFalse(is_file(doc.annotation_set_file_path, raise_exception=False))
         self.assertEqual(None, doc._annotation_sets)
         self.assertTrue(doc.annotation_sets())
-        self.assertEqual(8, len(doc._annotation_sets))
+        self.assertEqual(5, len(doc._annotation_sets))
         self.assertTrue(is_file(doc.annotation_set_file_path))
         prj.delete()
 
@@ -1415,4 +1415,4 @@ def test_download_training_and_test_data():
 def test_to_init_prj_from_folder():
     """Load Project from folder."""
     prj = Project(id_=46, project_folder='data_46')
-    assert len(prj.documents) == 27
+    assert len(prj.documents) == 26
