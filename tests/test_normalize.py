@@ -83,6 +83,7 @@ test_data_percentage = [
     ('12,34  %  .', 0.1234, None),
     ('12,34  %  .', 0.1234, None),
     ('12.34 %', 0.1234, None),
+    ('12.³4 %', None, None),
     ('12.34 %.', 0.1234, None),
     ('12.34 % .', 0.1234, None),
     ('12.34  %  .', 0.1234, None),
@@ -95,6 +96,7 @@ test_data_percentage = [
     ('0', 0, None),
     ('0 %', 0, None),
     ('0,00', 0, None),
+    ('0,0³', None, None),
     ('0,0', 0, None),
     ('0', 0, None),
 ]
@@ -147,7 +149,7 @@ test_data_positive_numbers = [
     ('none', 0, None),
     ('NoNe', 0, None),
     ('StringThatIncludesnone', None, None),
-    ('000³', None, None)
+    ('54³', None, None)
 ]
 
 
@@ -173,6 +175,7 @@ test_data_numbers = [
     ('29.485.259', 29485259, 58810),
     ('129.485.259', 129485259, 0),
     ('331.500', 331500, 0),
+    ('3³1.500', None, 0),
     ('3.000.000', 3000000, 0),
     ('56,430,681', 56430681, 0),
     ('43.34.34', None, 0),
@@ -193,6 +196,7 @@ test_data_numbers = [
     ('I', 1, None),
     ('III', 3, None),
     (' XIV  ', 14, None),
+    ('12³', None, 0),
     (' XL IV  ', 44, None)
     # ('Woch.Arb.Zt.', None, 0), TODO this raises uncaught ValuError
     # ('12.', 12.0, 0), undefined test cases:
@@ -245,6 +249,7 @@ test_data_dates = [
     ('July 31 ,2019', '2019-07-31', 0),
     ('23.0K.2010', None, 0),
     ('24.13.2020', None, 0),
+    ('24.13.202³', None, 0),
     ('03,07,', None, 51435),
     ('30.07.2.90', None, 0),
     ('09/2002', '2002-09-01', 0),
