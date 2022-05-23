@@ -4,6 +4,11 @@
 
 # Changelog
 
+## 2022-05-23 v.0.2.2
+
+### Fixed
+- Fix an issue that could affect the date normalization
+
 ## 2022-05-1 v.0.2.1
 
 ### Added
