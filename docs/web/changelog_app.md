@@ -19,7 +19,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 - Beta Version of new document dashboard (bases on [Konfuzio-Capture-Vue](https://github.com/konfuzio-ai/konfuzio-capture-vue))
 
 ### Changed
-- For on-premise Users, now the Postgresq 10 is the minium version
+- For on-premise Users, now the Postgresql 10 is the minimum version
 - Improved Extraction AI
 - Updated Evaluation. The evaluation is now stricter as all Annotations created or accepted by a human are considered when calculating the evaluation metrics.
 - On-Premise container run now as non-root and using read-only fileystem
@@ -28,7 +28,8 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 ### Fixed
 - An issue where empty Annotation Sets could appear on Documents
 - An issue where conflicting annotions could be created
-- Rare cases where OCR text included some characters mutiple time
+- An issue where negative annotations where not correctly being deleted (#9127)
+- Rare cases where OCR text included some characters mutiple times
 
 
 ## 2022-03-15_09-14-17
