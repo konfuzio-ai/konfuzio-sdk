@@ -17,6 +17,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -103,7 +104,7 @@
            <div itemprop="articleBody">
              
   <section id="api-guide-v3">
-<h1>API Guide (v3)<a class="headerlink" href="#api-guide-v3" title="Permalink to this headline">¶</a></h1>
+<h1>API Guide (v3)<a class="headerlink" href="#api-guide-v3" title="Permalink to this heading">¶</a></h1>
 <p>This document aims to provide developers with a high-level overview of what can be accomplished through the Konfuzio API v3. For a more thorough description of the available endpoints and their parameters and response, we invite you to browse our <a class="reference external" href="http:/app.konfuzio.com/v3/swagger/">Swagger documentation</a>, which also provides an OpenAPI specification that can be used to generate language-specific API clients.</p>
 <nav class="contents local" id="table-of-contents">
 <p class="topic-title">Table of Contents</p>
@@ -119,14 +120,14 @@
 </ul>
 </nav>
 <section id="general-information">
-<h2>General Information<a class="headerlink" href="#general-information" title="Permalink to this headline">¶</a></h2>
+<h2>General Information<a class="headerlink" href="#general-information" title="Permalink to this heading">¶</a></h2>
 <p>The Konfuzio API v3 follows REST conventions and principles. Unless specified otherwise, all endpoints accept both JSON-encoded and form-encoded request bodies, according to the specified content type. All endpoints return JSON-encoded responses. We use standard HTTP verbs (<code class="docutils literal notranslate"><span class="pre">GET</span></code>, <code class="docutils literal notranslate"><span class="pre">POST</span></code>, <code class="docutils literal notranslate"><span class="pre">PUT</span></code>, <code class="docutils literal notranslate"><span class="pre">PATCH</span></code>, <code class="docutils literal notranslate"><span class="pre">DELETE</span></code>) for actions, and return standard HTTP response codes based on the success or failure of the request.</p>
 </section>
 <section id="authentication">
-<h2>Authentication<a class="headerlink" href="#authentication" title="Permalink to this headline">¶</a></h2>
+<h2>Authentication<a class="headerlink" href="#authentication" title="Permalink to this heading">¶</a></h2>
 <p>Most of our endpoints, excluding those that deal with <a class="reference external" href="http://help.konfuzio.com/integrations/public-documents/">public documents</a>, strictly require authentication. We support three types of authentication.</p>
 <section id="basic-http-authentication">
-<h3>Basic HTTP authentication<a class="headerlink" href="#basic-http-authentication" title="Permalink to this headline">¶</a></h3>
+<h3>Basic HTTP authentication<a class="headerlink" href="#basic-http-authentication" title="Permalink to this heading">¶</a></h3>
 <p>Your Konfuzio username (email) and password are sent with every request as HTTP headers in the format <code class="docutils literal notranslate"><span class="pre">Authorization:</span> <span class="pre">Basic</span> <span class="pre">&lt;string&gt;</span></code>, where <code class="docutils literal notranslate"><span class="pre">&lt;string&gt;</span></code> is a Base64-encoded string in the format <code class="docutils literal notranslate"><span class="pre">&lt;username&gt;:&lt;password&gt;</span></code> (this is usually done automatically by the HTTP client).</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -134,7 +135,7 @@
 </div>
 </section>
 <section id="cookie-authentication">
-<h3>Cookie authentication<a class="headerlink" href="#cookie-authentication" title="Permalink to this headline">¶</a></h3>
+<h3>Cookie authentication<a class="headerlink" href="#cookie-authentication" title="Permalink to this heading">¶</a></h3>
 <p>A <code class="docutils literal notranslate"><span class="pre">sessionid</span></code> is sent in the <code class="docutils literal notranslate"><span class="pre">cookie</span></code> field of every request.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -142,7 +143,7 @@
 </div>
 </section>
 <section id="token-authentication">
-<h3>Token authentication<a class="headerlink" href="#token-authentication" title="Permalink to this headline">¶</a></h3>
+<h3>Token authentication<a class="headerlink" href="#token-authentication" title="Permalink to this heading">¶</a></h3>
 <p>You send a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request with your Konfuzio username (email) and password to our <a class="reference external" href="link">authentication endpoint</a>, which returns a token string that you can use in lieu of your actual credentials for subsequent requests, providing it with a HTTP header in the format <code class="docutils literal notranslate"><span class="pre">Authorization:</span> <span class="pre">Token</span> <span class="pre">&lt;token&gt;</span></code>.</p>
 <p>This token doesn’t currently expire, so you can use indefinitely, but you can delete it (and regenerated) via the <a class="reference external" href="link">authentication DELETE endpoint</a>.</p>
 <div class="admonition note">
@@ -157,7 +158,7 @@
 <li><p>For any subsequent request, the user provides the HTTP header <code class="docutils literal notranslate"><span class="pre">Authorization:</span> <span class="pre">Token</span> <span class="pre">bf20d992c0960876157b53745cdd86fad95e6ff4</span></code>.</p></li>
 </ol>
 <section id="curl-example">
-<h4>cURL example<a class="headerlink" href="#curl-example" title="Permalink to this headline">¶</a></h4>
+<h4>cURL example<a class="headerlink" href="#curl-example" title="Permalink to this heading">¶</a></h4>
 <p>To get a token:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">--</span><span class="n">request</span> <span class="n">POST</span> \
   <span class="o">--</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">app</span><span class="o">.</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v3</span><span class="o">/</span><span class="n">auth</span><span class="o">/</span> \
@@ -173,7 +174,7 @@
 </div>
 </section>
 <section id="python-example">
-<h4>Python example<a class="headerlink" href="#python-example" title="Permalink to this headline">¶</a></h4>
+<h4>Python example<a class="headerlink" href="#python-example" title="Permalink to this heading">¶</a></h4>
 <p>To get a token:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
 
@@ -207,7 +208,7 @@
 </section>
 </section>
 <section id="response-codes">
-<h2>Response codes<a class="headerlink" href="#response-codes" title="Permalink to this headline">¶</a></h2>
+<h2>Response codes<a class="headerlink" href="#response-codes" title="Permalink to this heading">¶</a></h2>
 <p>All endpoints return an HTTP code that indicates the success of the request. Following the standard, codes starting with <code class="docutils literal notranslate"><span class="pre">2</span></code> (<code class="docutils literal notranslate"><span class="pre">200</span></code>, <code class="docutils literal notranslate"><span class="pre">201</span></code>…) indicate success; codes starting with <code class="docutils literal notranslate"><span class="pre">4</span></code> (<code class="docutils literal notranslate"><span class="pre">400</span></code>, <code class="docutils literal notranslate"><span class="pre">401</span></code>…) indicate failure on the client side, with the response body containing more information about what failed; codes starting with <code class="docutils literal notranslate"><span class="pre">5</span></code> (<code class="docutils literal notranslate"><span class="pre">500</span></code>, <code class="docutils literal notranslate"><span class="pre">502</span></code>…) indicate failure on our side and are usually temporary (if they aren’t, please <a class="reference external" href="link">contact us</a>).</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
@@ -215,7 +216,7 @@
 </div>
 </section>
 <section id="pagination">
-<h2>Pagination<a class="headerlink" href="#pagination" title="Permalink to this headline">¶</a></h2>
+<h2>Pagination<a class="headerlink" href="#pagination" title="Permalink to this heading">¶</a></h2>
 <p>All endpoints that list resources are paginated. Pagination is achieved by providing <code class="docutils literal notranslate"><span class="pre">offset</span></code> and <code class="docutils literal notranslate"><span class="pre">limit</span></code> as <code class="docutils literal notranslate"><span class="pre">GET</span></code> parameters to the request. <code class="docutils literal notranslate"><span class="pre">limit</span></code> is the maximum amount of items that should be returned, and <code class="docutils literal notranslate"><span class="pre">offset</span></code> is the amount of items that should be skipped from the beginning.</p>
 <p>For example, if you wanted the first 50 items returned by an endpoint, you should pass <code class="docutils literal notranslate"><span class="pre">?limit=50</span></code>. If you wanted the next 50 items, you should pass <code class="docutils literal notranslate"><span class="pre">?limit=50&amp;offset=50</span></code>, and so on.</p>
 <p>Paginated responses always have the same basic structure:</p>
@@ -235,7 +236,7 @@
 </ul>
 </section>
 <section id="filtering">
-<h2>Filtering<a class="headerlink" href="#filtering" title="Permalink to this headline">¶</a></h2>
+<h2>Filtering<a class="headerlink" href="#filtering" title="Permalink to this heading">¶</a></h2>
 <p>All endpoints that list resources support some filtering, based on the resource being fetched. These filters are passed as <code class="docutils literal notranslate"><span class="pre">GET</span></code> parameters and can be combined.</p>
 <p>Two filters that are usually available on all list endpoints are <code class="docutils literal notranslate"><span class="pre">created_at_after</span></code> and <code class="docutils literal notranslate"><span class="pre">created_at_before</span></code>, which filters for items that have been created after or before the specified date. So you could use <code class="docutils literal notranslate"><span class="pre">?created_at_before=2022-02-01&amp;created_at_after=2021-12-01</span></code> to only return items that have been created between December 1, 2021 and February 1, 2022 (specified dates excluded).</p>
 <div class="admonition seealso">
@@ -244,7 +245,7 @@
 </div>
 </section>
 <section id="ordering">
-<h2>Ordering<a class="headerlink" href="#ordering" title="Permalink to this headline">¶</a></h2>
+<h2>Ordering<a class="headerlink" href="#ordering" title="Permalink to this heading">¶</a></h2>
 <p>Most endpoints that list resources support ordering on some fields. The ordering is passed as a single <code class="docutils literal notranslate"><span class="pre">GET</span></code> parameter named <code class="docutils literal notranslate"><span class="pre">ordering</span></code> with the field name that you want to order by as the value.</p>
 <p>You can combine multiple ordering fields by separating them with a <code class="docutils literal notranslate"><span class="pre">,</span></code>. For example: <code class="docutils literal notranslate"><span class="pre">?ordering=project,created_at</span></code>.</p>
 <p>You can specify that you want the ordering to be reversed by prefixing the field name with a <code class="docutils literal notranslate"><span class="pre">-</span></code>. For example: <code class="docutils literal notranslate"><span class="pre">?ordering=-created_at</span></code>.</p>
@@ -254,7 +255,7 @@
 </div>
 </section>
 <section id="fields">
-<h2>Fields<a class="headerlink" href="#fields" title="Permalink to this headline">¶</a></h2>
+<h2>Fields<a class="headerlink" href="#fields" title="Permalink to this heading">¶</a></h2>
 <p>Some endpoints allow you to override the default response schema and specify a subset of fields that you want to be returned. You can specify the <code class="docutils literal notranslate"><span class="pre">fields</span></code> <code class="docutils literal notranslate"><span class="pre">GET</span></code> parameter with the field names separated by a <code class="docutils literal notranslate"><span class="pre">,</span></code>.</p>
 <p>For example, you can specify <code class="docutils literal notranslate"><span class="pre">?fields=id,created_at</span></code> to only return the <code class="docutils literal notranslate"><span class="pre">id</span></code> and <code class="docutils literal notranslate"><span class="pre">created_at</span></code> fields in the response.</p>
 <div class="admonition seealso">
@@ -263,7 +264,7 @@
 </div>
 </section>
 <section id="guides-and-how-tos">
-<h2>Guides and How-Tos<a class="headerlink" href="#guides-and-how-tos" title="Permalink to this headline">¶</a></h2>
+<h2>Guides and How-Tos<a class="headerlink" href="#guides-and-how-tos" title="Permalink to this heading">¶</a></h2>
 <p>Check our <a class="reference external" href="./api_guides.html">API guides section</a> for practical examples on how to interact with the Konfuzio API</p>
 </section>
 </section>
