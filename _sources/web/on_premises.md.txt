@@ -343,11 +343,22 @@ SENTRY_RELEASE=  # Optional
 SENTRY_DSN=  # Optional
 ```
 
-#### 9. Upgrade to newer Konfuzio Version
+#### 9a. Upgrade to newer Konfuzio Version
 
 Konfuzio upgrades are performed by replacing the Docker Tag to the [desired version](https://dev.konfuzio.com/web/changelog_app.html)
 After starting the new Containers Database migrations need to be applied by `python manage.py migrate` (see 4.).
 In case additional migration steps are needed, they will be mentioned in the release notes.
+
+#### 9b. Downgrade to older Konfuzio Version
+
+Konfuzio downgrades are performed by creating a fresh Konfuzio installation in which existing Projects can be imported.
+The following steps need to be undertaken:
+- Export the Projects that you want to have available after downgrade using [konfuzio_sdk](https://help.konfuzio.com/integrations/migration-between-konfuzio-server-instances/index.html#migrate-projects-between-konfuzio-server-instances). Please make sure you use a SDK version that is compatible with the Konfuzio Server version you want to migrate to.
+- Create a new Postgres Database and a new Folder/Bucket for file storage which will be used for the downgraded version
+- Install the desired Konfuzio Server version by starting with 1.)
+- Import the projects using ["python manage.py project_import"]([konfuzio_sdk](https://help.konfuzio.com/integrations/migration-between-konfuzio-server-instances/index.html#migrate-projects-between-konfuzio-server-instances))
+
+
 
 ## Alternative deployment options
 
