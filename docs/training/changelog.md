@@ -8,13 +8,19 @@ All notable changes in the Konfuzio Trainer.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
 
-## 2021-11-09_12-18-21
+## v.0.3.3
+
+### Added
+- Allow to customize output folder for model training.
+
+
+## v.0.3.1
 
 ### Changed
 - Improve the detection model "Paragraph"
 
 
-## 2021-10-20_18-29-25
+## v.0.3.0
 
 ### Added
 - Start public changelog for Konfuzio Trainer
