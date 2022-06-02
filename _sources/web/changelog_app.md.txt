@@ -10,6 +10,8 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 
 ## Unreleased
 
+This version uses Konfuzio Trainer in version v.0.3.3. We recommend to use the Konfuzio Python SDK in version [v.0.2.2](https://dev.konfuzio.com/sdk/changelog.html#v-0-2-2)
+
 ### Added 
 - Option to enforce running OCR even if text embeddings are present
 - Improved error messages in case a document cannot be processed.
@@ -73,7 +75,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 
 ## 2021-11-26_08-11-36
 
-This version uses Konfuzio Trainer in version [2021-11-09_12-18-21](https://dev.konfuzio.com/training/changelog.html). We recommend to use the Konfuzio Python SDK in version [0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15)
+This version uses Konfuzio Trainer in version [v.0.3.0](https://dev.konfuzio.com/training/changelog.html). We recommend to use the Konfuzio Python SDK in version [0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15)
 
 ### Added
 - "Sentence" option to the available detection modes
