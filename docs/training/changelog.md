@@ -10,6 +10,12 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 
 ## v.0.3.3
 
+### Changed
+
+- Update of python dependencies
+
+## v.0.3.3
+
 ### Added
 - Allow to customize output folder for model training.
 
