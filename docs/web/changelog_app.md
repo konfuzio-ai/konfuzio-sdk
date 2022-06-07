@@ -33,6 +33,11 @@ This version uses Konfuzio Trainer in version v.0.3.3. We recommend to use the K
 - Rare cases where OCR text included some characters mutiple time
 
 
+## 2022-04-27_14-23-38
+
+### Added
+- Add assignee attribute of a Document to the API
+
 ## 2022-03-15_09-14-17
 
 ### Changed
