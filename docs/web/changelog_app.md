@@ -10,20 +10,19 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 
 ## Unreleased
 
-This version uses Konfuzio Trainer in version v.0.3.3. We recommend to use the Konfuzio Python SDK in version [v.0.2.2](https://dev.konfuzio.com/sdk/changelog.html#v-0-2-2)
+This version uses Konfuzio Trainer in version v.0.3.8. We recommend to use the Konfuzio Python SDK in version [v.0.2.2](https://dev.konfuzio.com/sdk/changelog.html#v-0-2-2)
 
 ### Added 
 - Option to enforce running OCR even if text embeddings are present
-- Improved error messages in case a document cannot be processed.
-- Option to exclude email content when using the email-integration.
-- Option to make document accessible via public link.
+- Improved error messages in case a document cannot be processed
+- Option to exclude email content when using the email-integration
+- Option to make document accessible via public link
 - Beta Version of APIV3
 - Beta Version of new document dashboard (bases on [Konfuzio-Capture-Vue](https://github.com/konfuzio-ai/konfuzio-capture-vue))
 
 ### Changed
-- For on-premise Users, now the Postgresq 10 is the minium version
+- For on-premise Users, now the Postgresql 10 is the minium version
 - Improved Extraction AI
-- Updated Evaluation. The evaluation is now stricter as all Annotations created or accepted by a human are considered when calculating the evaluation metrics.
 - On-Premise container run now as non-root and using read-only fileystem
 - Improved mouse pointer in the Smartview
 
