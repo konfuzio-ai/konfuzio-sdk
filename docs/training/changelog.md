@@ -8,7 +8,7 @@ All notable changes in the Konfuzio Trainer.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
 
-## v.0.3.3
+## v.0.3.8
 
 ### Changed
 
