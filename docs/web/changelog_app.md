@@ -10,18 +10,19 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 
 ## Unreleased
 
+This version uses Konfuzio Trainer in version v.0.3.8. We recommend to use the Konfuzio Python SDK in version [v.0.2.2](https://dev.konfuzio.com/sdk/changelog.html#v-0-2-2)
+
 ### Added 
 - Option to enforce running OCR even if text embeddings are present
-- Improved error messages in case a document cannot be processed.
-- Option to exclude email content when using the email-integration.
-- Option to make document accessible via public link.
+- Improved error messages in case a document cannot be processed
+- Option to exclude email content when using the email-integration
+- Option to make document accessible via public link
 - Beta Version of APIV3
 - Beta Version of new document dashboard (bases on [Konfuzio-Capture-Vue](https://github.com/konfuzio-ai/konfuzio-capture-vue))
 
 ### Changed
 - For on-premise Users, now the Postgresql 10 is the minimum version
 - Improved Extraction AI
-- Updated Evaluation. The evaluation is now stricter as all Annotations created or accepted by a human are considered when calculating the evaluation metrics.
 - On-Premise container run now as non-root and using read-only fileystem
 - Improved mouse pointer in the Smartview
 
@@ -31,6 +32,11 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 - An issue where negative annotations where not correctly being deleted (#9127)
 - Rare cases where OCR text included some characters mutiple times
 
+
+## 2022-04-27_14-23-38
+
+### Added
+- Add assignee attribute of a Document to the API
 
 ## 2022-03-15_09-14-17
 
@@ -74,7 +80,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 
 ## 2021-11-26_08-11-36
 
-This version uses Konfuzio Trainer in version [2021-11-09_12-18-21](https://dev.konfuzio.com/training/changelog.html). We recommend to use the Konfuzio Python SDK in version [0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15)
+This version uses Konfuzio Trainer in version [v.0.3.0](https://dev.konfuzio.com/training/changelog.html). We recommend to use the Konfuzio Python SDK in version [0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15)
 
 ### Added
 - "Sentence" option to the available detection modes
