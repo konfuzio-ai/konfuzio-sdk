@@ -551,8 +551,9 @@ class Document(Data):
         self.text = kwargs.get('text')
         self.hocr = kwargs.get('hocr')
 
-        # prepare local setup for document
-        pathlib.Path(self.root).mkdir(parents=True, exist_ok=True)
+        if id:
+            # prepare local setup for document
+            pathlib.Path(self.root).mkdir(parents=True, exist_ok=True)
 
     def __repr__(self):
         """Return the name of the document incl. the ID."""
