@@ -21,7 +21,7 @@ This version uses Konfuzio Trainer in version v.0.3.8. We recommend to use the K
 - Beta Version of new document dashboard (bases on [Konfuzio-Capture-Vue](https://github.com/konfuzio-ai/konfuzio-capture-vue))
 
 ### Changed
-- For on-premise Users, now the Postgresql 10 is the minium version
+- For on-premise Users, now the Postgresql 10 is the minimum version
 - Improved Extraction AI
 - On-Premise container run now as non-root and using read-only fileystem
 - Improved mouse pointer in the Smartview
@@ -29,7 +29,8 @@ This version uses Konfuzio Trainer in version v.0.3.8. We recommend to use the K
 ### Fixed
 - An issue where empty Annotation Sets could appear on Documents
 - An issue where conflicting annotions could be created
-- Rare cases where OCR text included some characters mutiple time
+- An issue where negative annotations where not correctly being deleted (#9127)
+- Rare cases where OCR text included some characters mutiple times
 
 
 ## 2022-04-27_14-23-38
