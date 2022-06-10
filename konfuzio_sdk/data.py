@@ -488,22 +488,17 @@ class Label(Data):
         else:
             return {}
 
-    def find_regex(self, category: 'Category', annotations: List['Annotation'] = None) -> List[str]:
+    def find_regex(self, category: 'Category') -> List[str]:
         """Find the best combination of regex in the list of all regex proposed by Annotations."""
-        # todo: start duplicate check
         regex_made = []
-        if annotations is not None:
-            assert all(x.label == self for x in annotations)
-            all_annotations = annotations
-        else:
-            all_annotations = self.annotations(categories=[category])
+        all_annotations = self.annotations(categories=[category])  # default is use_correct = True
 
         if not all_annotations:
             logger.warning(f'{self} has no correct annotations.')
             return []
 
         for annotation in all_annotations:
-            for span in annotation._spans:
+            for span in annotation.spans:
                 proposals = annotation.document.regex(start_offset=span.start_offset, end_offset=span.end_offset)
                 for proposal in proposals:
                     regex_to_remove_groupnames = re.compile('<.*?>')
@@ -534,7 +529,6 @@ class Label(Data):
         except ValueError:
             logger.exception(f'We cannot find regex for {self} with a f_score > 0.')
             best_regex = []
-        # todo: end duplicate check
 
         return best_regex
 
