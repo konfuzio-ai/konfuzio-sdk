@@ -397,11 +397,13 @@ class Label(Data):
 
     def combined_tokens(self, categories: List[Category]):
         """Create one OR Regex for all relevant Annotations tokens."""
-        categories_tokens = self.tokens(categories=categories)
-        all_tokens = []
-        for category_id, category_tokens in categories_tokens.items():
-            all_tokens.extend(category_tokens)
-        self._combined_tokens = merge_regex(all_tokens)
+        if not self._combined_tokens:
+            logger.error(f'Combine Tokens of Categories: {categories}')
+            categories_tokens = self.tokens(categories=categories)
+            all_tokens = []
+            for category_id, category_tokens in categories_tokens.items():
+                all_tokens.extend(category_tokens)
+            self._combined_tokens = merge_regex(all_tokens)
         return self._combined_tokens
 
     def evaluate_regex(
