@@ -6,7 +6,6 @@ from functools import partial
 
 import pandas as pd
 import numpy as np
-from konfuzio.multiclass_clf import convert_to_feat
 
 from konfuzio_sdk.evaluate import Evaluation
 from konfuzio_sdk.tokenizer.base import ListTokenizer
@@ -19,7 +18,7 @@ from sklearn.metrics import accuracy_score, balanced_accuracy_score, f1_score, p
     confusion_matrix, precision_score
 from tabulate import tabulate
 
-from konfuzio_sdk.pipelines.features import process_document_data, get_span_features, get_y_train
+from konfuzio_sdk.pipelines.features import process_document_data, get_span_features, get_y_train, convert_to_feat
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, WhitespaceNoPunctuationTokenizer, ConnectedTextTokenizer, \
     ColonPrecededTokenizer, CapitalizedTextTokenizer, NonTextTokenizer, RegexMatcherTokenizer
 
@@ -529,7 +528,6 @@ class DocumentAnnotationMultiClassModel(ExtractionModel):
         else:
             self.tokenizer = WhitespaceTokenizer()
             logger.info('Using WhitespaceTokenizer by default.')
-
 
     def tokenize(self, documents: List['Document'], multiprocess=True):
         """Call the tokenizer on test and training documents."""
