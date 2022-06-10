@@ -5,6 +5,8 @@ import unittest
 import pandas as pd
 import time
 
+import pytest
+
 from konfuzio_sdk.data import Project, Annotation, Document, Label, AnnotationSet, LabelSet, Span, Category
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer, ListTokenizer, ProcessingStep
 from konfuzio_sdk.tokenizer.regex import RegexTokenizer, WhitespaceTokenizer
@@ -289,8 +291,10 @@ class TestListTokenizer(unittest.TestCase):
     def test_tokenize_with_empty_document(self):
         """Test tokenize a Document without text."""
         document = Document(project=self.project, category=self.category_1)
-        self.tokenizer.tokenize(document)
-        assert len(document.annotations()) == 0
+        with pytest.raises(NotImplementedError) as e:
+            self.tokenizer.tokenize(document)
+
+        assert 'be tokenized when text is None' in str(e.value)
 
     def test_tokenizer_1(self):
         """Test that tokenizer_1 has only 1 match."""

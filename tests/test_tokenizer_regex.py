@@ -2,6 +2,8 @@
 import logging
 import unittest
 
+import pytest
+
 from konfuzio_sdk.data import Project, Annotation, Document, Label, AnnotationSet, LabelSet, Span, Category
 from konfuzio_sdk.tokenizer.regex import (
     RegexTokenizer,
@@ -131,8 +133,10 @@ class TestRegexTokenizer(unittest.TestCase):
     def test_tokenize_with_empty_document(self):
         """Test tokenize a Document without text."""
         document = Document(project=self.project, category=self.category)
-        self.tokenizer.tokenize(document)
-        assert len(document.annotations()) == 0
+        with pytest.raises(NotImplementedError) as e:
+            self.tokenizer.tokenize(document)
+
+        assert 'be tokenized when text is None' in str(e.value)
 
     def test_evaluate_output_with_document(self):
         """Test output for the evaluate method with a Document with 1 Span."""
