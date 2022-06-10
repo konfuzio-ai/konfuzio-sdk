@@ -47,7 +47,7 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
         """Fit the tokenizer accordingly with the Documents of the Category."""
 
     @abc.abstractmethod
-    def tokenize(self, document: Document):
+    def tokenize(self, document: Document, multiprocess=True):
         """Create Annotations with 1 Span based on the result of the Tokenizer."""
 
     def evaluate(self, document: Document) -> pd.DataFrame:
@@ -117,12 +117,12 @@ class ListTokenizer(AbstractTokenizer):
         for tokenizer in self.tokenizers:
             tokenizer.fit(category)
 
-    def tokenize(self, document: Document) -> Document:
+    def tokenize(self, document: Document, multiprocess=True) -> Document:
         """Run tokenize in the given order on a Document."""
         assert sdk_isinstance(document, Document)
 
         for tokenizer in self.tokenizers:
-            tokenizer.tokenize(document)
+            tokenizer.tokenize(document, multiprocess)
             if tokenizer.processing_steps:
                 self.processing_steps.append(tokenizer.processing_steps[-1])
 

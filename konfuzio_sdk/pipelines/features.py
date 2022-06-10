@@ -151,38 +151,6 @@ def upper_count(s: str) -> int:
     return sum(c.isupper() for c in s)
 
 
-# TODO Remove: use normalize instead.
-# def date_count(s: str) -> int:
-#     """
-#     Given a string this function tries to read it as a date (if not possible returns 0).
-#
-#     If possible it returns the relative difference to 01.01.2010 in days.
-#     """
-#     # checks the format
-#     if len(s) > 5:
-#         if (s[2] == '.' and s[5] == '.') or (s[2] == '/' and s[5] == '/'):
-#             date1 = pd.to_datetime("01.01.2010")
-#             date2 = pd.to_datetime(s, errors='ignore')
-#             if date2 == s:
-#                 return 0
-#
-#             else:
-#                 try:
-#                     diff = int((date2 - date1) / np.timedelta64(1, 'D'))
-#                 except TypeError as e:
-#                     logger.error(f'Could not substract for string {s} because of >>{e}<<.')
-#                     return 0
-#
-#             if diff == 0:
-#                 return 1
-#             else:
-#                 return diff
-#
-#         else:
-#             return 0
-#     return 0
-
-
 def year_month_day_count(offset_string_list: list) -> Tuple[List[int], List[int], List[int]]:
     """Given a list of offset-strings extracts the according dates, months and years for each string."""
     year_list = []

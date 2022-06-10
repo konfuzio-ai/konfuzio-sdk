@@ -1,0 +1,1367 @@
+"""Test models in models_labels_multiclass."""
+import logging
+import unittest
+
+import pandas
+import pandas as pd
+import pytest
+from konfuzio_sdk.data import Project, Category, Document, Label, LabelSet, AnnotationSet, Annotation, Span
+from pympler import asizeof
+
+from konfuzio.wrapper import get_bboxes, is_valid_extraction_dataframe
+
+from konfuzio_sdk.pipelines.extraction_ai import DocumentAnnotationMultiClassModel
+
+logger = logging.getLogger(__name__)
+
+
+# 1) dataset creation/cleaning (458).
+# 2) Searching existing testcases and writing the module/name to this file
+# 3) Complete testcases, what is missing.
+
+# Tests should inside the functions and test should indicate which variables are changed.
+# Tests should verify that overall for TestProject (46, Payslip / Trainticket) is correct (e.g. 100% Quality)
+
+
+@unittest.skip("Empty document crashes n-nearest.")
+def test_build_with_labels_only_associated_with_category():
+    """Test training with a document where the labels belong to the Category Label Set - no other Label Sets."""
+    project = Project(id_=46)
+    category = project.get_category_by_id(63)
+    category.label_sets = [project.get_label_set_by_id(63)]
+    label = category.label_sets[0].labels[0]
+
+    project._documents = [x for x in project._documents if x.id_ == 44834]
+
+    # Training documents only with Annotations for Label "label"
+    for document in category.documents():
+        document._annotations = document.annotations(use_correct=True, label=label)
+
+    extraction_ai = DocumentAnnotationMultiClassModel(category=category)
+    extraction_ai.build()
+    result = extraction_ai.extract(text=document.text, bbox=document.get_bbox(), pages=document.pages)
+
+    assert set(extraction_ai.df_train.label_text.unique()) == set([label.name, extraction_ai.no_label.name])
+    assert len(result.keys()) == 1
+    assert isinstance(result[label.name], pd.DataFrame)
+
+
+def test_build_with_label_set_without_multiple_annotation_sets():
+    """Test training with a document where the labels belong to a Label Set without multiple Annotation Sets."""
+    project = Project(id_=46)
+    category = project.get_category_by_id(63)
+    label_set = project.get_label_set_by_id(3707)
+    category.label_sets = [label_set]
+    label = project.get_label_by_id(12503)
+    assert label in category.label_sets[0].labels
+
+    project._documents = [x for x in project._documents if x.id_ == 44834]
+
+    # Training documents only with Annotations for Label "label"
+    for document in category.documents():
+        document._annotations = document.annotations(use_correct=True, label=label)
+
+    extraction_ai = DocumentAnnotationMultiClassModel(category=category)
+    extraction_ai.build()
+    result = extraction_ai.extract(text=document.text, bbox=document.get_bbox(), pages=document.pages)
+
+    assert len(result.keys()) == 1
+    assert isinstance(result[label_set.name], dict)
+    assert label.name in result[label_set.name].keys()
+    assert isinstance(result[label_set.name][label.name], pd.DataFrame)
+
+
+def test_build_label_set_with_multiple_annotation_sets():
+    """Test training with a document where the labels belong to a Label Set with multiple Annotation Sets."""
+    project = Project(id_=46)
+    category = project.get_category_by_id(63)
+    label_set = project.get_label_set_by_id(64)
+    category.label_sets = [label_set]
+    label = project.get_label_by_id(861)
+    assert label in category.label_sets[0].labels
+
+    project._documents = [x for x in project._documents if x.id_ == 44834]
+
+    # Training documents only with Annotations for Label "label"
+    for document in category.documents():
+        document._annotations = document.annotations(use_correct=True, label=label)
+
+    extraction_ai = DocumentAnnotationMultiClassModel(category=category)
+    extraction_ai.build()
+    result = extraction_ai.extract(text=document.text, bbox=document.get_bbox(), pages=document.pages)
+
+    assert len(result.keys()) == 1
+    assert isinstance(result[label_set.name], list)
+    assert isinstance(result[label_set.name][0], dict)
+    assert isinstance(result[label_set.name][0][label.name], pd.DataFrame)
+
+
+@unittest.skip("Needs revision and implementation.")
+def test_build_label_sets_with_shared_labels():
+    """
+    Test training with a document where a Label is shared between 2 Label Sets.
+
+    The first Label Set (first ID) does not have the option for multiple Annotation Sets and the second has the option
+    for multiple Annotation Sets.
+    The order is important.
+
+    Both Label Sets should have results.
+    TODO: atm the first Label Set without the option for multiple Annotation Sets, takes all the results for the shared
+        Label.
+    """
+    project = Project(id_=46)
+    category = project.get_category_by_id(63)
+    label_set_1 = project.get_label_set_by_id(64)
+    label_set_1.has_multiple_annotation_sets = False
+    label_set_2 = project.get_label_set_by_id(3706)
+    category.label_sets = [label_set_1, label_set_2]
+    label = project.get_label_by_id(861)
+    assert label in category.label_sets[0].labels
+
+    # Training documents only with Annotations for Label "label"
+    for document in category.documents():
+        document._annotations = document.annotations(use_correct=True, label=label)
+
+    extraction_ai = DocumentAnnotationMultiClassModel(category=category)
+    extraction_ai.build()
+    result = extraction_ai.extract(text=document.text, bbox=document.get_bbox(), pages=document.pages)
+
+    assert len(result.keys()) == 2
+    assert isinstance(result[label_set_1.name], dict)
+    assert isinstance(result[label_set_2.name], list)
+    assert not result[label_set_1.name][label.name].empty
+    assert len(result[label_set_2.name]) > 0
+    assert set(extraction_ai.label_set_clf.classes_.tolist()) == set([label_set_1.name, label_set_2.name, 'No'])
+
+
+@unittest.skip("Separate labels not supported")
+class SeparateLabelsTestDocumentEntityMulticlassModel(unittest.TestCase):
+    """
+    Test separate_labels function.
+
+    Existing test cases:
+
+    test_data.TestAPIDataSetup.test_separate_labels
+    => Tests training and the number of labels after separation using project 46
+
+    Missing test:
+    - number of annotations per label after separation
+    - Test label IDs or names instead of length of label list
+    - Test annotation_set label IDs or names instead of length of annotation_set label list
+    - Test new instances created by separations have negative ids
+
+    test_models_labels_multiclass.TestSeparateLabelsEntityMultiClassModel.test_training
+    => Tests training and the number of labels after separation using project 458
+
+    Missing test:
+    - content of extract() result
+    - No leakage of annotations from shared labels across categories and within categories (Nachname)
+    """
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set the test data (Project 1100)."""
+        cls.prj = Project(id_=1199)
+
+    def test_separate_labels(self):
+        # res = separate_labels(project=self.prj)
+        # assert....
+        pass
+
+
+class TestDocumentModelInitialization(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set the test data (Project 1199)."""
+        # TODO: use emtpy project
+        cls.prj = Project(id_=46)
+        cls.category = cls.prj.categories[0]
+        cls.document_id = 196137
+        cls.document = cls.prj.get_document_by_id(cls.document_id)
+        cls.extraction_ai = DocumentAnnotationMultiClassModel(category=cls.category)
+
+    def test_category(self):
+        """Test Extraction AI has Category."""
+        assert self.extraction_ai.category == self.category
+
+    def test_label_sets_with_ids(self):
+        """Test Extraction AI has Label Sets from category."""
+        assert set(filter(lambda x: x.id_, self.extraction_ai.label_sets)) == set(
+            filter(lambda x: x.id_, self.category.label_sets))
+
+    def test_labels_with_ids(self):
+        """Test Extraction AI has Labels from category."""
+        assert set(filter(lambda x: x.id_, self.extraction_ai.labels)) == set(
+            filter(lambda x: x.id_ and set(x.label_sets).issubset(self.category.label_sets), self.prj.labels))
+
+    @unittest.skip('Tokenizer creates new NO_Label')
+    def test_labels(self):
+        # TODO: NO LABEL is not added to the extraction AI but is added to the project
+        assert self.extraction_ai.labels == self.prj.labels
+
+    @unittest.skip('Tokenizer creates new NO_Label')
+    def test_label_sets(self):
+        # TODO: Label Set for NO LABEL is added to extraction AI but not to the project
+        assert self.extraction_ai.label_sets == self.prj.label_sets
+
+
+class TestLabelSetClfBasicProject(unittest.TestCase):
+    """Test fit of the Label Set classifier."""
+
+    # WIP: tests need to be completed
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set the test data."""
+        cls.prj = Project(id_=None)
+        cls.category = Category(project=cls.prj, id_=1)
+        cls.prj.add_category(cls.category)
+
+        label_set = LabelSet(
+            project=cls.prj, name='LabelSet1', categories=[cls.category], id_=2, has_multiple_annotation_sets=True
+        )
+        label = Label(project=cls.prj, label_sets=[label_set], text='FirstName', id_=3)
+
+        cls.document = Document(project=cls.prj, category=cls.category, text='A\nB')
+
+        # TODO: we need to add annotation even if we pass df_train
+        span = Span(start_offset=0, end_offset=1)
+        annotation_set = AnnotationSet(document=cls.document, label_set=label_set)
+        _ = Annotation(
+            label=label, annotation_set=annotation_set, label_set=label_set, document=cls.document, spans=[span]
+        )
+
+        cls.extraction_ai = DocumentAnnotationMultiClassModel(category=cls.category)
+
+    def test_fit_document_not_belonging_to_category(self):
+        """Test fit() the Label Set classifier with an invalid document - not belonging to the category."""
+        self.extraction_ai.label_feature_list = ['dummy_feat_1']
+        self.extraction_ai.df_train = pandas.DataFrame([{'document_id': 1, 'label_text': 'test', 'dummy_feat_1': 1}])
+        self.extraction_ai.df_valid = pandas.DataFrame()
+        with self.assertRaises(IndexError):
+            self.extraction_ai.fit_label_set_clf()
+
+    def test_fit_document_without_id(self):
+        """Test fit() the Label Set classifier with an invalid document - without ID."""
+        self.extraction_ai.label_feature_list = ['dummy_feat_1']
+        self.extraction_ai.df_train = pandas.DataFrame([{'document_id': None, 'label_text': 'test', 'dummy_feat_1': 1}])
+        self.extraction_ai.df_valid = pandas.DataFrame()
+        with self.assertRaises(ValueError) as context:
+            self.extraction_ai.fit_label_set_clf()
+            assert 'No objects to concatenate' in context
+
+    @unittest.skip(reason='Suggestion for change.')
+    def test_fit_document_without_label_classifier(self):
+        """Test fit() the Label Set classifier without having fitted the Label classifier."""
+        self.extraction_ai.label_feature_list = ['dummy_feat_1']
+        self.extraction_ai.df_train = pandas.DataFrame([{'document_id': 4, 'label_text': 'test', 'dummy_feat_1': 1}])
+        self.extraction_ai.df_valid = pandas.DataFrame()
+        # TODO: fit should e possible without label clf (8857)
+        self.extraction_ai.fit_label_set_clf()
+        # TODO: add assert
+
+    @unittest.skip(reason='Suggestion for change.')
+    def test_fit_document_without_label_features(self):
+        """Test fit() the Label Set classifier without Label features."""
+        self.extraction_ai.label_feature_list = []
+        self.extraction_ai.df_train = pandas.DataFrame([{'document_id': 4, 'label_text': 'test'}])
+        self.extraction_ai.df_valid = pandas.DataFrame()
+        self.extraction_ai.fit()
+        # TODO: fit should e possible without label features (8857)
+        self.extraction_ai.fit_label_set_clf()
+        # TODO: add assert
+
+    @unittest.skip(reason='Suggestion for change.')
+    def test_fit_document_without_label_features_list(self):
+        """Test fit() the Label Set classifier without the Label features list."""
+        self.extraction_ai.label_feature_list = []
+        self.extraction_ai.df_train = pandas.DataFrame([{'document_id': 4, 'label_text': 'test', 'dummy_feat_1': 1}])
+        self.extraction_ai.df_valid = pandas.DataFrame()
+        self.extraction_ai.fit()
+        # TODO: fit should be possible without label features (8857)
+        self.extraction_ai.fit_label_set_clf()
+        # TODO: add assert
+
+    @unittest.skip(reason='Suggestion for change.')
+    def test_fit_document_complete_features(self):
+        """Test fit() the Label Set classifier with complete features."""
+        self.extraction_ai.label_feature_list = ['dummy_feat_1']
+        span_dict = {
+            'document_id': 4, 'label_text': 'FirstName', 'dummy_feat_1': 1,
+            'label_id': 3, 'start_offset': 0, 'end_offset': 1, 'line_index': 0
+        }
+        self.extraction_ai.df_train = pandas.DataFrame([span_dict])
+        self.extraction_ai.df_valid = pandas.DataFrame()
+        self.extraction_ai.fit()
+        # TODO: fit should be possible with offline document if we have df_train (already with span info)
+        self.extraction_ai.fit_label_set_clf()
+        # TODO: add assert
+
+    @unittest.skip(reason='Suggestion for change.')
+    def test_fit_document_without_offsets_features(self):
+        """Test fit() the Label Set classifier without offset featuers."""
+        self.extraction_ai.label_feature_list = ['dummy_feat_1']
+        span_dict = {
+            'document_id': 4, 'label_text': 'FirstName', 'dummy_feat_1': 1,
+            'label_id': 3, 'line_index': 0
+        }
+        self.extraction_ai.df_train = pandas.DataFrame([span_dict])
+        self.extraction_ai.df_valid = pandas.DataFrame()
+        self.extraction_ai.fit()
+        # TODO: fit should be possible with offline document if we have df_train (already with span info) (8856)
+        self.extraction_ai.fit_label_set_clf()
+        # TODO: add assert
+
+
+class TestLabelSetClfExtractDefaultOnly(unittest.TestCase):
+    """Test Label Set classifier extract method when the only Label Set is the Category."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set the test data."""
+        cls.project = Project(id_=46)
+        category = cls.project.get_category_by_id(63)
+        cls.label_set = cls.project.get_label_set_by_id(63)  # default
+        category.label_sets = [cls.label_set]
+        cls.test_document = category.documents()[0]
+
+        for document in category.documents():
+            filtered_annotations = [annot for annot in document.annotations(use_correct=True)
+                                    if annot.label_set == cls.label_set]
+            document._annotations = filtered_annotations
+
+        cls.extraction_ai = DocumentAnnotationMultiClassModel(category=category)
+
+    def test_1_build_project_with_default_label_set_only(self):
+        """Test training with a Document where there are no Label Sets other than the default one."""
+        self.extraction_ai.build()
+        assert self.extraction_ai.label_set_clf is None
+        result = self.extraction_ai.extract(text=self.test_document.text,
+                                            bbox=self.test_document.get_bbox(),
+                                            pages=self.test_document.pages)
+
+        assert len(result.keys()) == 9
+        for label_name in result.keys():
+            assert label_name in [label.name for label in self.label_set.labels]
+            assert isinstance(result[label_name], pd.DataFrame)
+
+    def test_2_extract_label_set_with_clf(self):
+        """Test result of extract of Label Set clf with no Label Sets other than the default one."""
+        res_dict = {
+            # label from default Label Set
+            'Vorname': pd.DataFrame([
+                {'label_text': 'Vorname', 'confidence': 0.4, 'line_index': 1},
+                {'label_text': 'Vorname', 'confidence': 0.6, 'line_index': 2},
+            ])
+        }
+
+        self.assertIsNone(self.extraction_ai.label_set_clf)
+        extract_result = self.extraction_ai.extract_label_set_with_clf(self.test_document, pd.DataFrame(), res_dict)
+        assert extract_result == res_dict
+
+
+class TestLabelSetClfExtractMultipleFalseOnly(unittest.TestCase):
+    """Test Label Set classifier extract method when the only Label Set has no option for multiple Annotation Sets."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Project with 1 Label Set with multiple=False."""
+        cls.project = Project(id_=46)
+        category = cls.project.get_category_by_id(63)
+        cls.label_set1 = cls.project.get_label_set_by_id(63) # default
+        cls.label_set2 = cls.project.get_label_set_by_id(3707) # multiple false
+        category.label_sets = [cls.label_set1, cls.label_set2]
+        cls.test_document = category.documents()[0]
+
+        for document in category.documents():
+            filtered_annotations = [annot for annot in document.annotations(use_correct=True)
+                                    if annot.label_set in [cls.label_set1, cls.label_set2]]
+            document._annotations = filtered_annotations
+
+        cls.extraction_ai = DocumentAnnotationMultiClassModel(category=category)
+
+    def test_1_extract_method_default_label_set_prediction(self):
+        """Test extract with default predictions from the Label Set Classifier."""
+        res_dict = {
+            # label from default Label Set
+            'Vorname': pd.DataFrame([
+                {'label_text': 'Vorname', 'confidence': 0.4, 'line_index': 1},
+                {'label_text': 'Vorname', 'confidence': 0.6, 'line_index': 2},
+        ]),
+            # Label from Label Set with multiple False
+            'Steuer-Brutto': pd.DataFrame([
+                {'label_text': 'Steuer-Brutto', 'confidence': 0.2, 'line_index': 3},
+                {'label_text': 'Steuer-Brutto', 'confidence': 0.4, 'line_index': 4},
+            ]),
+        }
+
+        res_label_sets = pd.DataFrame(['No', 'No', 'No', 'No'])
+
+        result = self.extraction_ai.extract_from_label_set_output(res_dict, res_label_sets)
+        assert all(result['Vorname'] == res_dict['Vorname'])
+        assert all(result['Verdiensibescheinigung']['Steuer-Brutto'] == res_dict['Steuer-Brutto'])
+
+    def test_2_extract_method_correct_label_cls_correct_label_set_clf(self):
+        """Test extract with correct predictions from the Label Classifier and Label Set Classifier."""
+        res_dict = {
+            # label from default Label Set
+            'Vorname': pd.DataFrame([
+                {'label_text': 'Vorname', 'confidence': 0.4, 'line_index': 1},
+                {'label_text': 'Vorname', 'confidence': 0.6, 'line_index': 2},
+        ]),
+            # Label from Label Set with multiple False
+            'Steuer-Brutto': pd.DataFrame([
+                {'label_text': 'Steuer-Brutto', 'confidence': 0.2, 'line_index': 3},
+                {'label_text': 'Steuer-Brutto', 'confidence': 0.4, 'line_index': 4},
+            ]),
+        }
+        res_label_sets = pd.DataFrame(
+            ['Lohnabrechnung', 'No', 'Verdiensibescheinigung', 'No']
+        )
+
+        result = self.extraction_ai.extract_from_label_set_output(res_dict, res_label_sets)
+        assert all(result['Vorname'] == res_dict['Vorname'])
+        assert all(result['Verdiensibescheinigung']['Steuer-Brutto'] == res_dict['Steuer-Brutto'])
+
+    @unittest.skip(reason="Not currently using the choose_top option, which also needs revision.")
+    def test_3_extract_method_correct_label_cls_correct_label_set_clf_choose_top(self):
+        """Test extract with correct predictions from the Label Classifier and Label Set Classifier and choose top."""
+        res_dict = {
+            # label from default Label Set
+            'Vorname': pd.DataFrame([
+                {'label_text': 'Vorname', 'confidence': 0.4, 'line_index': 1},
+                {'label_text': 'Vorname', 'confidence': 0.6, 'line_index': 2},
+        ]),
+            # Label from Label Set with multiple False
+            'Steuer-Brutto': pd.DataFrame([
+                {'label_text': 'Steuer-Brutto', 'confidence': 0.2, 'line_index': 3},
+                {'label_text': 'Steuer-Brutto', 'confidence': 0.4, 'line_index': 4},
+            ]),
+        }
+        res_label_sets = pd.DataFrame(
+            ['Lohnabrechnung', 'No', 'Verdiensibescheinigung', 'No']
+        )
+
+        result = self.extraction_ai.extract_from_label_set_output(res_dict, res_label_sets, choose_top=True)
+        assert result['Vorname'].reset_index(drop=True).equals(
+            pd.DataFrame([{'label_text': 'Vorname', 'confidence': 0.6, 'line_index': 2}])
+        )
+        assert result['Verdiensibescheinigung']['Steuer-Brutto'].reset_index(drop=True).equals(
+            pd.DataFrame([{'label_text': 'Steuer-Brutto', 'confidence': 0.4, 'line_index': 4}])
+        )
+
+    def test_4_extract_method_incorrect_label_cls_correct_label_set_clf(self):
+        """Test extract with missing Label predictions and correct Label Set predictions."""
+        res_dict = {
+            # label from default Label Set
+            'Vorname': pd.DataFrame([
+                {'label_text': 'Vorname', 'confidence': 0.4, 'line_index': 1},
+                {'label_text': 'Vorname', 'confidence': 0.6, 'line_index': 2},
+        ]),
+        }
+        res_label_sets = pd.DataFrame(['No', 'No'])
+        result = self.extraction_ai.extract_from_label_set_output(res_dict.copy(), res_label_sets)
+        assert all(result['Vorname'] == res_dict['Vorname'])
+
+    def test_5_extract_method_incorrect_label_cls_incorrect_label_set_clf(self):
+        """Test extract with missing Label predictions and incorrect Label Set predictions."""
+        res_dict = {
+            # label from default Label Set
+            'Vorname': pd.DataFrame([
+                {'label_text': 'Vorname', 'confidence': 0.4, 'line_index': 1},
+                {'label_text': 'Vorname', 'confidence': 0.6, 'line_index': 2},
+            ]),
+        }
+        res_label_sets = pd.DataFrame(['No', 'Verdiensibescheinigung'])
+        result = self.extraction_ai.extract_from_label_set_output(res_dict, res_label_sets)
+        assert all(result['Vorname'] == res_dict['Vorname'])
+
+    def test_6_extract_method_correct_label_cls_incorrect_label_set_clf(self):
+        """Test extract with correct Label predictions and incorrect Label Set predictions."""
+        res_dict = {
+            # label from default Label Set
+            'Vorname': pd.DataFrame([
+                {'label_text': 'Vorname', 'confidence': 0.4, 'line_index': 1},
+                {'label_text': 'Vorname', 'confidence': 0.6, 'line_index': 2},
+            ]),
+            # Label from Label Set with multiple False
+            'Steuer-Brutto': pd.DataFrame([
+                {'label_text': 'Steuer-Brutto', 'confidence': 0.2, 'line_index': 3},
+                {'label_text': 'Steuer-Brutto', 'confidence': 0.4, 'line_index': 4},
+            ]),
+        }
+        res_label_sets = pd.DataFrame(['No', 'No', 'No', 'No'])
+        result = self.extraction_ai.extract_from_label_set_output(res_dict.copy(), res_label_sets)
+        assert all(result['Vorname'] == res_dict['Vorname'])
+        assert all(result['Verdiensibescheinigung']['Steuer-Brutto'] == res_dict['Steuer-Brutto'])
+
+    def test_7_build_project_with_multiple_false_label_sets_only(self):
+        """Test training with a Document where there are no Label Sets other than multiple=False ones."""
+        self.extraction_ai.build()
+        assert self.extraction_ai.label_set_clf is not None
+        result = self.extraction_ai.extract(text=self.test_document.text,
+                                            bbox=self.test_document.get_bbox(),
+                                            pages=self.test_document.pages)
+
+        labels_names_1 = [label.name for label in self.label_set1.labels]
+
+        for key in result.keys():
+            assert key in labels_names_1 + [self.label_set2.name]
+
+
+class TestLabelSetClfExtractMultipleTrueOnly(unittest.TestCase):
+    """Test Label Set classifier extract method when the only Label Set has option for multiple Annotation Sets."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Project with 1 Label Set with multiple=False."""
+        cls.project = Project(id_=46)
+        category = cls.project.get_category_by_id(63)
+        cls.label_set1 = cls.project.get_label_set_by_id(63) # default
+        cls.label_set2 = cls.project.get_label_set_by_id(64) # multiple true
+        category.label_sets = [cls.label_set1, cls.label_set2]
+        cls.test_document = category.documents()[0]
+
+        for document in category.documents():
+            filtered_annotations = [annot for annot in document.annotations(use_correct=True)
+                                    if annot.label_set in [cls.label_set1, cls.label_set2]]
+            document._annotations = filtered_annotations
+
+        cls.extraction_ai = DocumentAnnotationMultiClassModel(category=category)
+
+    def test_1_extract_method_default_label_set_prediction(self):
+        """Test extract with default predictions from the Label Set Classifier."""
+        res_dict = {
+            # label from default Label Set
+            'Vorname': pd.DataFrame([{'label_text': 'Vorname', 'confidence': 0.4, 'line_index': 1}]),
+            # Label from Label Set with multiple True
+            'Betrag': pd.DataFrame([
+                {'label_text': 'Betrag', 'confidence': 0.2, 'line_index': 3},
+                {'label_text': 'Betrag', 'confidence': 0.4, 'line_index': 4},
+                {'label_text': 'Betrag', 'confidence': 0.3, 'line_index': 5},
+            ]),
+        }
+
+        res_label_sets = pd.DataFrame(['No', 'No', 'No', 'No', 'No'])
+
+        result = self.extraction_ai.extract_from_label_set_output(res_dict, res_label_sets)
+        assert all(result['Vorname'] == res_dict['Vorname'])
+        assert len(result['Brutto-Bezug']) == 1
+        assert all(result['Brutto-Bezug'][0]['Betrag'] == res_dict['Betrag'])
+
+
+    def test_2_extract_method_correct_label_cls_correct_label_set_clf(self):
+        """Test extract with correct predictions from the Label Classifier and Label Set Classifier."""
+        res_dict = {
+            # label from default Label Set
+            'Vorname': pd.DataFrame([{'label_text': 'Vorname', 'confidence': 0.4, 'line_index': 1}]),
+            # Label from Label Set with multiple True
+            'Betrag': pd.DataFrame([
+                {'label_text': 'Betrag', 'confidence': 0.2, 'line_index': 3},
+                {'label_text': 'Betrag', 'confidence': 0.4, 'line_index': 4},
+                {'label_text': 'Betrag', 'confidence': 0.3, 'line_index': 5}
+            ])
+        }
+        res_label_sets = pd.DataFrame(
+            ['Lohnabrechnung', 'No', 'Brutto-Bezug', 'Brutto-Bezug', 'Brutto-Bezug']
+        )
+
+        result = self.extraction_ai.extract_from_label_set_output(res_dict, res_label_sets)
+        assert all(result['Vorname'] == res_dict['Vorname'])
+        assert len(result['Brutto-Bezug']) == 3
+        assert all(result['Brutto-Bezug'][0]['Betrag'] == res_dict['Betrag'].loc[0, :])
+        assert all(result['Brutto-Bezug'][1]['Betrag'] == res_dict['Betrag'].loc[1, :])
+        assert all(result['Brutto-Bezug'][2]['Betrag'] == res_dict['Betrag'].loc[2, :])
+
+    @unittest.skip(reason="Not currently using the choose_top option, which also needs revision.")
+    def test_3_extract_method_correct_label_cls_correct_label_set_clf_choose_top(self):
+        """Test extract with correct predictions from the Label Classifier and Label Set Classifier and choose top."""
+        res_dict = {
+            # label from default Label Set
+            'Vorname': pd.DataFrame([{'label_text': 'Vorname', 'confidence': 0.4, 'line_index': 1}]),
+            # Label from Label Set with multiple True
+            'Betrag': pd.DataFrame([
+                {'label_text': 'Betrag', 'confidence': 0.2, 'line_index': 3},
+                {'label_text': 'Betrag', 'confidence': 0.4, 'line_index': 4},
+                {'label_text': 'Betrag', 'confidence': 0.3, 'line_index': 5}
+            ])
+        }
+        res_label_sets = pd.DataFrame(
+            ['Lohnabrechnung', 'No', 'Brutto-Bezug', 'Brutto-Bezug', 'Brutto-Bezug']
+        )
+
+        result = self.extraction_ai.extract_from_label_set_output(res_dict, res_label_sets, choose_top=True)
+        assert all(result['Vorname'] == res_dict['Vorname'])
+        assert len(result['Brutto-Bezug']) == 3
+        assert all(result['Brutto-Bezug'][0]['Betrag'] == res_dict['Betrag'].loc[0, :])
+        assert all(result['Brutto-Bezug'][1]['Betrag'] == res_dict['Betrag'].loc[1, :])
+        assert all(result['Brutto-Bezug'][2]['Betrag'] == res_dict['Betrag'].loc[2, :])
+
+    def test_4_extract_method_incorrect_label_cls_correct_label_set_clf(self):
+        """Test extract with missing Label predictions and correct Label Set predictions."""
+        res_dict = {
+            # label from default Label Set
+            'Vorname': pd.DataFrame([{'label_text': 'Vorname', 'confidence': 0.4, 'line_index': 1}]),
+            # Label from Label Set with multiple True
+            'Betrag': pd.DataFrame([{'label_text': 'Betrag', 'confidence': 0.3, 'line_index': 5}])
+        }
+        res_label_sets = pd.DataFrame(['No', 'No', 'No', 'No', 'Brutto-Bezug'])
+        result = self.extraction_ai.extract_from_label_set_output(res_dict.copy(), res_label_sets)
+
+        assert all(result['Vorname'] == res_dict['Vorname'])
+        assert len(result['Brutto-Bezug']) == 1
+        assert all(result['Brutto-Bezug'][0]['Betrag'] == res_dict['Betrag'])
+
+    def test_5_extract_method_incorrect_label_cls_incorrect_label_set_clf(self):
+        """Test extract with missing Label predictions and incorrect Label Set predictions."""
+        res_dict = {
+            # label from default Label Set
+            'Vorname': pd.DataFrame([{'label_text': 'Vorname', 'confidence': 0.4, 'line_index': 1}]),
+            # Label from Label Set with multiple True
+            'Betrag': pd.DataFrame([{'label_text': 'Betrag', 'confidence': 0.3, 'line_index': 5}])
+        }
+        res_label_sets = pd.DataFrame(['Brutto-Bezug', 'No', 'No', 'No', 'No'])
+        result = self.extraction_ai.extract_from_label_set_output(res_dict, res_label_sets)
+        assert all(result['Vorname'] == pd.DataFrame([{'label_text': 'Vorname', 'confidence': 0.4, 'line_index': 1}]))
+        assert len(result['Brutto-Bezug']) == 1
+        assert all(result['Brutto-Bezug'][0]['Betrag'] == res_dict['Betrag'])
+
+    def test_6_extract_method_correct_label_cls_incorrect_label_set_clf(self):
+        """Test extract with correct Label predictions and incorrect Label Set predictions."""
+        res_dict = {
+            # label from default Label Set
+            'Vorname': pd.DataFrame([{'label_text': 'Vorname', 'confidence': 0.4, 'line_index': 1}]),
+            # Label from Label Set with multiple True
+            'Betrag': pd.DataFrame([
+                {'label_text': 'Betrag', 'confidence': 0.2, 'line_index': 3},
+                {'label_text': 'Betrag', 'confidence': 0.4, 'line_index': 4},
+                {'label_text': 'Betrag', 'confidence': 0.3, 'line_index': 5}
+            ])
+        }
+        res_label_sets = pd.DataFrame(
+            ['Lohnabrechnung', 'No', 'No', 'No', 'No']
+        )
+        result = self.extraction_ai.extract_from_label_set_output(res_dict.copy(), res_label_sets)
+        assert all(result['Vorname'] == res_dict['Vorname'])
+        assert len(result['Brutto-Bezug']) == 1
+        assert all(result['Brutto-Bezug'][0]['Betrag'] == res_dict['Betrag'])
+
+    def test_7_build_project_with_multiple_true_label_sets_only(self):
+        """Test training with a Document where there are no Label Sets other than multiple=True ones."""
+        self.extraction_ai.build()
+        assert self.extraction_ai.label_set_clf is not None
+        result = self.extraction_ai.extract(text=self.test_document.text,
+                                            bbox=self.test_document.get_bbox(),
+                                            pages=self.test_document.pages)
+
+        labels_names_1 = [label.name for label in self.label_set1.labels]
+
+        for key in result.keys():
+            assert key in labels_names_1 + [self.label_set2.name]
+
+
+class TestLabelSetClfExtractMultipleTrueAndMultipleFalse(unittest.TestCase):
+    """Test Label Set classifier extract method when the only Label Set is the Category."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set the test data."""
+        cls.project = Project(id_=46)
+        category = cls.project.get_category_by_id(63)
+        label_set0 = cls.project.get_label_set_by_id(63) # default
+        label_set1 = cls.project.get_label_set_by_id(64) # multiple true
+        label_set2 = cls.project.get_label_set_by_id(3707) # multiple false
+        category.label_sets = [label_set0, label_set1, label_set2]
+        cls.test_document = category.documents()[0]
+
+        for document in category.documents():
+            filtered_annotations = [annot for annot in document.annotations(use_correct=True)
+                                    if annot.label_set in [label_set0, label_set1, label_set2]]
+            document._annotations = filtered_annotations
+
+        cls.extraction_ai = DocumentAnnotationMultiClassModel(category=category)
+
+    def test_1_extract_method_default_label_set_prediction(self):
+        """Test extract with default predictions from the Label Set Classifier."""
+        res_dict = {
+            # label from default Label Set
+            'Vorname': pd.DataFrame([{'label_text': 'Vorname', 'confidence': 0.4, 'line_index': 1}]),
+            # Label from Label Set with multiple True
+            'Betrag': pd.DataFrame([
+                {'label_text': 'Betrag', 'confidence': 0.2, 'line_index': 3},
+                {'label_text': 'Betrag', 'confidence': 0.4, 'line_index': 4},
+                {'label_text': 'Betrag', 'confidence': 0.3, 'line_index': 5},
+                {'label_text': 'Betrag', 'confidence': 0.3, 'line_index': 10},
+            ]),
+            # Label from Label Set with multiple False
+            'Steuer-Brutto': pd.DataFrame([
+                {'label_text': 'Steuer-Brutto', 'confidence': 0.2, 'line_index': 7},
+                {'label_text': 'Steuer-Brutto', 'confidence': 0.4, 'line_index': 8},
+            ]),
+        }
+
+        res_label_sets = pd.DataFrame(['No', 'No', 'No', 'No', 'No', 'No', 'No', 'No', 'No'])
+
+        result = self.extraction_ai.extract_from_label_set_output(res_dict, res_label_sets)
+        assert all(result['Vorname'] == res_dict['Vorname'])
+        assert len(result['Brutto-Bezug']) == 1
+        assert all(result['Brutto-Bezug'][0]['Betrag'] == res_dict['Betrag'])
+        assert all(result['Verdiensibescheinigung']['Steuer-Brutto'] == res_dict['Steuer-Brutto'])
+
+    def test_2_extract_method_correct_label_cls_correct_label_set_clf(self):
+        """Test extract with correct predictions from the Label Classifier and Label Set Classifier."""
+        res_dict = {
+            # label from default Label Set
+            'Vorname': pd.DataFrame([{'label_text': 'Vorname', 'confidence': 0.4, 'line_index': 1}]),
+            # Label from Label Set with multiple True
+            'Betrag': pd.DataFrame([
+                {'label_text': 'Betrag', 'confidence': 0.2, 'line_index': 3},
+                {'label_text': 'Betrag', 'confidence': 0.4, 'line_index': 4},
+                {'label_text': 'Betrag', 'confidence': 0.3, 'line_index': 5},
+                {'label_text': 'Betrag', 'confidence': 0.3, 'line_index': 10},
+            ]),
+            # Label from Label Set with multiple False
+            'Steuer-Brutto': pd.DataFrame([
+                {'label_text': 'Steuer-Brutto', 'confidence': 0.2, 'line_index': 7},
+                {'label_text': 'Steuer-Brutto', 'confidence': 0.4, 'line_index': 8},
+            ]),
+        }
+        res_label_sets = pd.DataFrame(
+            ['Lohnabrechnung', 'No', 'Brutto-Bezug', 'Brutto-Bezug', 'Brutto-Bezug', 'No', 'Verdiensibescheinigung', 'No', 'No', 'Brutto-Bezug']
+        )
+
+        result = self.extraction_ai.extract_from_label_set_output(res_dict, res_label_sets)
+        assert all(result['Vorname'] == res_dict['Vorname'])
+        assert len(result['Brutto-Bezug']) == 4
+        assert all(result['Brutto-Bezug'][0]['Betrag'] == res_dict['Betrag'].loc[0, :])
+        assert all(result['Brutto-Bezug'][1]['Betrag'] == res_dict['Betrag'].loc[1, :])
+        assert all(result['Brutto-Bezug'][2]['Betrag'] == res_dict['Betrag'].loc[2, :])
+        assert all(result['Brutto-Bezug'][3]['Betrag'] == res_dict['Betrag'].loc[3, :])
+        assert all(result['Verdiensibescheinigung']['Steuer-Brutto'] == res_dict['Steuer-Brutto'])
+
+    @unittest.skip(reason="Not currently using the choose_top option, which also needs revision.")
+    def test_3_extract_method_correct_label_cls_correct_label_set_clf_choose_top(self):
+        """Test extract with correct predictions from the Label Classifier and Label Set Classifier and choose top."""
+        res_dict = {
+            # label from default Label Set
+            'Vorname': pd.DataFrame([{'label_text': 'Vorname', 'confidence': 0.4, 'line_index': 1}]),
+            # Label from Label Set with multiple True
+            'Betrag': pd.DataFrame([
+                {'label_text': 'Betrag', 'confidence': 0.2, 'line_index': 3},
+                {'label_text': 'Betrag', 'confidence': 0.4, 'line_index': 4},
+                {'label_text': 'Betrag', 'confidence': 0.3, 'line_index': 5}
+            ])
+        }
+        res_label_sets = pd.DataFrame(
+            ['Lohnabrechnung', 'Brutto-Bezug', 'Brutto-Bezug', 'Brutto-Bezug']
+        )
+
+        result = self.extraction_ai.extract_from_label_set_output(res_dict, res_label_sets, choose_top=True)
+        assert all(result['Vorname'] == res_dict['Vorname'])
+        assert len(result['Brutto-Bezug']) == 3
+        assert all(result['Brutto-Bezug'][0]['Betrag'] == res_dict['Betrag'].loc[0, :])
+        assert all(result['Brutto-Bezug'][1]['Betrag'] == res_dict['Betrag'].loc[1, :])
+        assert all(result['Brutto-Bezug'][2]['Betrag'] == res_dict['Betrag'].loc[2, :])
+
+    def test_4_extract_method_incorrect_label_cls_correct_label_set_clf(self):
+        """Test extract with missing Label predictions and correct Label Set predictions."""
+        res_dict = {
+            # label from default Label Set
+            'Vorname': pd.DataFrame([{'label_text': 'Vorname', 'confidence': 0.4, 'line_index': 1}]),
+            # Label from Label Set with multiple True
+            'Betrag': pd.DataFrame([
+                {'label_text': 'Betrag', 'confidence': 0.3, 'line_index': 5},
+                {'label_text': 'Betrag', 'confidence': 0.3, 'line_index': 10},
+            ]),
+            # Label from Label Set with multiple False
+            'Steuer-Brutto': pd.DataFrame([
+                {'label_text': 'Steuer-Brutto', 'confidence': 0.2, 'line_index': 7},
+            ]),
+        }
+        res_label_sets = pd.DataFrame(
+            ['Lohnabrechnung', 'No', 'No', 'No', 'Brutto-Bezug', 'No', 'Verdiensibescheinigung', 'No', 'No', 'Brutto-Bezug']
+        )
+
+        result = self.extraction_ai.extract_from_label_set_output(res_dict.copy(), res_label_sets)
+        assert all(result['Vorname'] == res_dict['Vorname'])
+        assert len(result['Brutto-Bezug']) == 2
+        assert all(result['Brutto-Bezug'][0]['Betrag'] == res_dict['Betrag'].loc[0, :])
+        assert all(result['Brutto-Bezug'][1]['Betrag'] == res_dict['Betrag'].loc[1, :])
+        assert all(result['Verdiensibescheinigung']['Steuer-Brutto'] == res_dict['Steuer-Brutto'])
+
+    def test_5_extract_method_incorrect_label_cls_incorrect_label_set_clf(self):
+        """Test extract with missing Label predictions and incorrect Label Set predictions."""
+        res_dict = {
+            # label from default Label Set
+            'Vorname': pd.DataFrame([{'label_text': 'Vorname', 'confidence': 0.4, 'line_index': 1}]),
+            # Label from Label Set with multiple True
+            'Betrag': pd.DataFrame([
+                {'label_text': 'Betrag', 'confidence': 0.3, 'line_index': 5},
+                {'label_text': 'Betrag', 'confidence': 0.3, 'line_index': 10},
+            ]),
+            # Label from Label Set with multiple False
+            'Steuer-Brutto': pd.DataFrame([
+                {'label_text': 'Steuer-Brutto', 'confidence': 0.2, 'line_index': 7},
+            ]),
+        }
+        res_label_sets = pd.DataFrame(
+            ['Brutto-Bezug', 'No', 'No', 'No', 'Verdiensibescheinigung', 'No', 'Lohnabrechnung', 'No', 'No', 'No']
+        )
+
+        result = self.extraction_ai.extract_from_label_set_output(res_dict, res_label_sets)
+        assert all(result['Vorname'] == pd.DataFrame([{'label_text': 'Vorname', 'confidence': 0.4, 'line_index': 1}]))
+        assert len(result['Brutto-Bezug']) == 1
+        assert all(result['Brutto-Bezug'][0]['Betrag'] == res_dict['Betrag'])
+        assert all(result['Verdiensibescheinigung']['Steuer-Brutto'] == res_dict['Steuer-Brutto'])
+
+    def test_6_build_project_with_all_label_set_types(self):
+        """Test training with a document where there are all label set types."""
+        self.extraction_ai.build()
+        assert self.extraction_ai.label_set_clf is not None
+        result = self.extraction_ai.extract(text=self.test_document.text,
+                                            bbox=self.test_document.get_bbox(),
+                                            pages=self.test_document.pages)
+        assert len(result.keys()) == 10
+
+
+class TestLabelSetClf(unittest.TestCase):
+    # TODO: use empty project? (TestLabelSetClfBasicProject)
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set the test data (Project 1199)."""
+        cls.prj = Project(id_=46, update=True)
+        cls.category = cls.prj.categories[0]
+        cls.document_id = 196137
+        cls.document = cls.prj.get_document_by_id(cls.document_id)
+        cls.extraction_ai = DocumentAnnotationMultiClassModel(category=cls.category)
+
+    def test_1_fit_invalid_document(self):
+        """Test fit() the Label Set classifier with an invalid document - not belonging to the category."""
+        self.extraction_ai.label_feature_list = ['dummy_feat_1']
+        self.extraction_ai.df_train = pandas.DataFrame([{'document_id': 1, 'label_text': 'test', 'dummy_feat_1': 1}])
+        self.extraction_ai.df_valid = pandas.DataFrame()
+        with self.assertRaises(IndexError):
+            self.extraction_ai.fit()
+            self.extraction_ai.fit_label_set_clf()
+
+    def test_2_fit_label_clf(self):
+        """Minimal setup to do the fitting."""
+        self.extraction_ai.label_feature_list = ['dummy_feat_1']
+        document_id = self.category.documents()[0].id_
+        self.extraction_ai.df_train = pandas.DataFrame(
+            [{'document_id': document_id, 'start_offset': 0, 'end_offset': 1,
+              'line_index': 0, 'label_text': 'Vorname', 'dummy_feat_1': 1},
+             {'document_id': document_id, 'start_offset': 0, 'end_offset': 1,
+              'line_index': 0, 'label_text': 'Nachname', 'dummy_feat_1': 1}]
+        )
+        self.extraction_ai.df_valid = pandas.DataFrame()
+        self.extraction_ai.fit()
+        self.extraction_ai.fit_label_set_clf()
+        assert len(self.extraction_ai.label_set_feature_list) == len(self.extraction_ai.labels)
+
+    def test_3_fit_label_extract(self):
+        """Minimal setup to do the fitting."""
+        document = self.category.documents()[0]
+        self.extraction_ai.build()
+        assert sorted(self.extraction_ai.label_set_feature_list) == sorted([
+            'EMPTY_LABEL', 'Vorname', 'Betrag', 'Faktor', 'Menge', 'Netto-Verdienst', 'Steuerrechtliche Abzüge',
+            'Nachname', 'Steuer-Brutto', 'Gesamt-Brutto', 'Auszahlungsbetrag', 'Austellungsdatum', 'Bezeichnung',
+            'Lohnart', 'Bank inkl. IBAN', 'Personalausweis', 'Steuerklasse', 'Sozialversicherung'
+        ])
+        self.extraction_ai.extract(text=document.text, bbox=document.get_bbox(), pages=document.pages)
+
+    def test_8_fit_label_set_clf_is_skipped(self):
+        """Test if the fit of the Label Set Classifier is skipped if there are only default Label Sets."""
+        for label_set in self.category.label_sets:
+            label_set.is_default = True
+        extraction_ai = DocumentAnnotationMultiClassModel(category=self.category)
+        extraction_ai.build()
+        # restore project status
+        for label_set in self.category.label_sets:
+            if label_set.id_ != 63:
+                label_set.is_default = False
+        assert extraction_ai.label_set_clf is None
+
+    def test_7_fit_label_set_clf_is_skipped_wrong_behaviour(self):
+        """Test if the fit of the Label Set Classifier happens if there are only Label Sets with multiple False."""
+        for label_set in self.category.label_sets:
+            label_set.has_multiple_annotation_sets = False
+        extraction_ai = DocumentAnnotationMultiClassModel(category=self.category)
+        extraction_ai.build()
+        # restore project status
+        for label_set in self.category.label_sets:
+            if label_set.id_ in [64, 3706, 3606]:
+                label_set.has_multiple_annotation_sets = True
+        assert extraction_ai.label_set_clf is not None
+
+    def test_6_extract_method_both_predictions_empty(self):
+        """Test extract with empty predictions from Label Classifier and Label Set Classifier."""
+        with self.assertRaises(ValueError) as context:
+            _ = self.extraction_ai.extract_from_label_set_output({}, pd.DataFrame())
+            assert 'Label Set Classifier result is empty and it should have the default value "No".' \
+                   in context.exception
+
+    def test_4_extract_method_empty_label_prediction(self):
+        """Test extract with empty predictions from the Label Classifier."""
+        res_dict = {}
+        res_label_sets = pd.DataFrame(['No', 'No', 'Verdiensibescheinigung', 'No'])
+        result = self.extraction_ai.extract_from_label_set_output(res_dict, res_label_sets)
+        assert result == {}
+
+    def test_5_extract_method_empty_label_set_prediction(self):
+        """Test extract with empty predictions from the Label Set Classifier."""
+        res_dict = {
+            # label from default Label Set
+            'Vorname': pd.DataFrame([
+                {'label_text': 'Vorname', 'confidence': 0.4, 'line_index': 1},
+                {'label_text': 'Vorname', 'confidence': 0.6, 'line_index': 2},
+            ]),
+        }
+        res_label_sets = pd.DataFrame()
+        with self.assertRaises(ValueError) as context:
+            _ = self.extraction_ai.extract_from_label_set_output(res_dict, res_label_sets)
+
+            assert 'Label Set Classifier result is empty and it should have the default value "No".' \
+                   in context.exception
+
+
+class CreateCandidatesDatasetTestDocumentAnnotationMultiClassModel(unittest.TestCase):
+    """Test for create_candidates_dataset."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set the test data (Project 46)."""
+        # TODO: use an empty Project
+        cls.prj = Project(id_=46, update=True)
+
+        cls.document_id = 44863  # 196137
+        # cls.document = cls.prj.get_document_by_id(cls.document_id)
+        cls.document = next(x for x in cls.prj.documents if x.id_ == cls.document_id)
+        # cls.document = next(x for x in cls.prj.no_status_documents if x.id_ == cls.document_id)
+        cls.category = cls.prj.categories[0]
+        extraction_ai = DocumentAnnotationMultiClassModel(category=cls.category)
+        cls.extraction_ai = extraction_ai.create_candidates_dataset()
+        cls.df = cls.extraction_ai.df_train
+
+    def test_length_df_train(self):
+        df = self.df.copy()
+        assert sum(len(x.spans) for x in self.document.annotations()) == df[df.document_id == self.document_id].shape[0]
+
+    def test_filter_feedback_required(self):
+        """All existing feedback required annotations (with ID) need to be filtered out."""
+        df = self.df.copy()
+        assert df[(~df['annotation_id'].isnull()) & (~df['revised']) & (~df['is_correct'])].shape[0] == 0
+
+    def test_filter_declined(self):
+        """All existing declined annotations (with ID) need to be filtered out."""
+        df = self.df.copy()
+        assert df[~df['id_'].isnull() & df['revised'] & ~df['is_correct']].shape[0] == 0
+
+    def test_document_id(self):
+        """ All annotations must be of the category documents."""
+        df = self.df.copy()
+        assert list(df['document_id'].unique()) == list(set([doc.id_ for doc in self.category.documents()]))
+
+    def test_multiline_positional_attributes(self):
+        """Test splitting of annotations provide valid results."""
+        df = self.df.copy()
+
+        label = next(x for x in self.prj.labels if x.id_ == 12470)
+        multiline_annotations = [x for x in self.document.annotations() if x.label and x.label.id_ == label.id_]
+
+        for annotation in multiline_annotations:
+            # assert annotation.id
+            assert annotation.annotation_set
+            assert annotation.annotation_set.label_set.name
+            assert annotation.bboxes
+
+            for span in annotation._spans:
+                box = get_bboxes(self.document.get_bbox(), span.start_offset, span.end_offset)[0]
+                filter_df = df[
+                    (df['start_offset'] == span.start_offset) & (df['end_offset'] == span.end_offset)
+                    ]
+
+                assert filter_df['offset_string'].iat[0] == span.offset_string
+                assert filter_df['l_dist0'].iat[0] >= 0
+                assert filter_df['l_dist1'].iat[0] >= 0
+                assert filter_df['r_dist0'].iat[0] >= 0
+                assert filter_df['r_dist1'].iat[0] >= 0
+
+            for attribute in ['page_index', 'x0', 'x1', 'y0', 'y1']:
+                logger.info(f'Check {attribute} for annotation {annotation}.')
+                assert abs(box[attribute] - filter_df[attribute].iat[0]) < 0.1
+
+    @unittest.skip(reason="Needs revision/ implementation. - we are getting a negative 'l_dist0'")
+    def test_positional_attributes(self):
+        df = self.df.copy()
+        df = df[df['document_id'] == self.document_id]
+
+        label = next(x for x in self.prj.labels if x.id_ == 12470)
+        not_multiline_annotations = [x for x in self.document.annotations() if x.label and x.label.id_ != label.id_]
+        for annotation in not_multiline_annotations:
+            for span in annotation._spans:
+                assert annotation.id_
+                assert annotation.annotation_set
+                assert annotation.annotation_set.label_set.name
+                assert annotation.bboxes
+
+                box = get_bboxes(annotation.document.get_bbox(), annotation.start_offset, annotation.end_offset)[0]
+                filter_df = df[
+                    (df['start_offset'] == annotation.start_offset) & (df['end_offset'] == annotation.end_offset)
+                    ]
+
+                assert filter_df['offset_string'].iat[0] == span.offset_string
+                assert filter_df['l_dist0'].iat[0] >= 0
+                assert filter_df['l_dist1'].iat[0] >= 0
+                assert filter_df['r_dist0'].iat[0] >= 0
+                assert filter_df['r_dist1'].iat[0] >= 0
+
+                for attribute in ['page_index', 'x0', 'x1', 'y0', 'y1']:
+                    logger.info(f'Check {attribute} for annotation {annotation}.')
+                    assert abs(box[attribute] - filter_df[attribute].iat[0]) < 0.1
+
+    def test_feature_function_number_of_features(self):
+        """
+        Test feature function.
+
+        feature_list consists of:
+        - string_feature_column_order
+            Generated by convert_to_feat() in multiclass_clf.py, generates 51 features.
+            builds on:
+            - strip_accents()
+            - vowel_count()
+            - special_count()
+            - space_count()
+            - digit_count()
+            - upper_count()
+            - date_count()
+            - num_count()
+            - normalize_to_python_float()
+            - unique_char_count()
+            - duplicate_count()
+            - count_string_differences()
+            - year_month_day_count()
+            - substring_count()
+            - starts_with_substring()
+            - ends_with_substring()
+        - abs_pos_feature_list
+            Uses ["x0", "y0", "x1", "y1", "page_index", "area"] which are direct annotation attributes
+        - l_keys
+            Defined by n_left_nearest:
+            l_dist_n distance to nth left neighbour
+            if n_nearest_across_lines is more keys are present: why?
+        - r_keys
+            Defined by n_right_nearest:
+            r_dist_n distance to nth right neighbour
+            if n_nearest_across_lines is more keys are present: why?
+        - relative_string_feature_list
+            for each left and right neighbour take the full 51 features.
+        - relative_pos_feature_list
+            "relative_position_in_page" page index as percentage of page length.
+        - word_on_page_feature_name_list
+        - first_word_features (if first_word)
+            uses 4 features ['first_word_x0', 'first_word_y0', 'first_word_x1', 'first_word_y1']
+            51 string features are generated but no used
+
+        """
+        # We use
+        string_features = [
+            'accented_char_count',
+            # 'feat_as_float', Deactivated as we already have normalize_to_float.
+            'feat_day_count',
+            'feat_digit_len',
+            'feat_duplicate_count',
+            'feat_ends_with_minus',
+            'feat_ends_with_plus',
+            'feat_len',
+            'feat_month_count',
+            'feat_num_count',
+            'feat_space_len',
+            'feat_special_len',
+            'feat_starts_with_minus',
+            'feat_starts_with_plus',
+            'feat_substring_count_a',
+            'feat_substring_count_ae',
+            'feat_substring_count_c',
+            'feat_substring_count_ch',
+            'feat_substring_count_comma',
+            'feat_substring_count_e',
+            'feat_substring_count_ei',
+            'feat_substring_count_en',
+            'feat_substring_count_er',
+            'feat_substring_count_f',
+            'feat_substring_count_g',
+            'feat_substring_count_h',
+            'feat_substring_count_i',
+            'feat_substring_count_j',
+            'feat_substring_count_k',
+            'feat_substring_count_m',
+            'feat_substring_count_minus',
+            'feat_substring_count_n',
+            'feat_substring_count_oe',
+            'feat_substring_count_ohn',
+            'feat_substring_count_on',
+            'feat_substring_count_percent',
+            'feat_substring_count_period',
+            'feat_substring_count_plus',
+            'feat_substring_count_r',
+            'feat_substring_count_s',
+            'feat_substring_count_sch',
+            'feat_substring_count_slash',
+            'feat_substring_count_str',
+            'feat_substring_count_u',
+            'feat_substring_count_ue',
+            'feat_substring_count_y',
+            'feat_unique_char_count',
+            'feat_upper_len',
+            'feat_vowel_len',
+            'feat_year_count'
+        ]
+
+        abs_pos_feature = [
+            "x0",
+            "y0",
+            "x1",
+            "y1",
+            "x0_relative",
+            "y0_relative",
+            "x1_relative",
+            "y1_relative",
+            "page_index",
+            "page_index_relative"
+            # "area"
+        ]
+        # relative_position_on_page = ["relative_position_in_page"]
+
+        neighbours_distances = 4
+        neighbours_features = 4 * len(string_features)
+        first_page_features = 0  # Deactivated
+        word_on_page_features = 0  # Deactivated
+
+        assert set(string_features).issubset(set(self.extraction_ai.label_feature_list))
+        assert set(abs_pos_feature).issubset(set(self.extraction_ai.label_feature_list))
+        # assert set(relative_position_on_page).issubset(set(self.extraction_ai.label_feature_list))
+
+        expected_feature_count = \
+            len(string_features) + \
+            len(abs_pos_feature) + \
+            neighbours_distances + \
+            neighbours_features + \
+            first_page_features + \
+            word_on_page_features
+        assert len(self.extraction_ai.label_feature_list) == expected_feature_count
+
+    def test_non_feature_columns(self):
+        expected_unused_dataframe_columns = {
+            'label_text',
+            'start_offset',
+            'end_offset',
+            'annotation_id',
+            'document_id',
+            'line_index',
+            'offset_string',
+            'r_offset_string0',
+            'r_offset_string1',
+            'l_offset_string0',
+            'l_offset_string1',
+            'confidence',
+            'normalized',
+            'is_correct',
+            'revised',
+            # 'top',
+            # 'bottom',
+            'id_'
+        }
+        unused_dataframe_column = set(list(self.df)) - set(self.extraction_ai.label_feature_list)
+        assert expected_unused_dataframe_columns == unused_dataframe_column
+
+
+class FitTestDocumentAnnotationMultiClassModel(unittest.TestCase):
+    """Test fit() method."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set the test data (Project 1100)."""
+        cls.prj = Project(id_=46)
+        cls.category = cls.prj.get_category_by_id(63)
+        cls.extraction_ai = DocumentAnnotationMultiClassModel(category=cls.category)
+
+    def test_fit(self):
+        """Minimal setup to do the fitting."""
+        self.extraction_ai.label_feature_list = ['dummy_feat_1']
+        document_id = self.category.documents()[0].id_
+        self.extraction_ai.df_train = pandas.DataFrame(
+            [{'document_id': document_id, 'label_text': 'test', 'dummy_feat_1': 1}]
+        )
+        self.extraction_ai.df_valid = pandas.DataFrame()
+        self.extraction_ai.fit()
+
+
+class TestExtractDocumentAnnotationMultiClassModel(unittest.TestCase):
+    """Test extract() method."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set the test data (Project 46)."""
+        cls.prj = Project(id_=46)
+        cls.category = cls.prj.get_category_by_id(63)
+        cls.documents = cls.category.documents()
+        cls.extraction_ai = DocumentAnnotationMultiClassModel(category=cls.category)
+        cls.extraction_ai = cls.extraction_ai.build()  # TODO why do we need build() here this makes test slow.
+
+    def test_extract_output_format(self):
+        """Test output format of the extract method."""
+        document = self.documents[0]
+        ai_result = self.extraction_ai.extract(text=document.text, bbox=document.get_bbox(), pages=document.pages)
+        assert isinstance(ai_result, dict)
+        for key, value in ai_result.items():
+            assert isinstance(value, pd.DataFrame) or isinstance(value, dict) or isinstance(value, list)
+
+    def test_extract_labels_and_label_sets(self):
+        """Test labels and label sets in the result keys."""
+        document = self.documents[0]
+        ai_result = self.extraction_ai.extract(text=document.text, bbox=document.get_bbox(), pages=document.pages)
+        category_labels_names = [label.name for label in self.prj.labels
+                                 if self.extraction_ai.category in label.label_sets]
+        category_label_sets_names = [label_set.name for label_set in self.extraction_ai.category.label_sets]
+
+        assert len(ai_result.keys()) > 0
+        for key, value in ai_result.items():
+            # key needs to be either a label or label set from the category
+            assert key in category_labels_names or key in category_label_sets_names
+
+    def test_extract_on_empty_document(self):
+        """Test extract() on an empty Document - no text."""
+        document = Document(text='', project=self.prj, category=self.extraction_ai.category)
+        ai_result = self.extraction_ai.extract(text=document.text, bbox=document.get_bbox(), pages=document.pages)
+        assert ai_result == {}
+
+    def test_extract_result_is_valid(self):
+        document = Document(text='', project=self.prj, category=self.extraction_ai.category)
+        ai_result = self.extraction_ai.extract(text=document.text, bbox=document.get_bbox(), pages=document.pages)
+
+        for _, value in ai_result.items():
+            if isinstance(value, pd.DataFrame):
+                assert is_valid_extraction_dataframe(ai_result, n_features_columns=260)
+
+            elif isinstance(value, list) or isinstance(value, dict):
+                if not isinstance(value, list):
+                    value = [value]
+
+                for entry in value:
+                    for _, extraction in entry.items():
+                        assert is_valid_extraction_dataframe(extraction, n_features_columns=260)
+
+
+class EvaluateTestDocumentAnnotationMultiClassModel(unittest.TestCase):
+    """Test evaluate() method."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set the test data (Project 1100)."""
+        # TODO: use empty Project
+        cls.prj = Project(id_=46)
+        cls.category = cls.prj.get_category_by_id(63)
+        cls.extraction_ai = DocumentAnnotationMultiClassModel(category=cls.category)
+
+    def test_evaluate_empty_test_df(self):
+        self.extraction_ai.df_test = None
+        with self.assertRaises(AttributeError):
+            self.extraction_ai.evaluate()
+
+    def test_evaluate(self):
+        # Do minimal training
+        self.extraction_ai.label_feature_list = ['dummy_feat_1']
+        self.extraction_ai.df_train = pandas.DataFrame([{'label_text': 'test', 'dummy_feat_1': 1}])
+        self.extraction_ai.df_test = pandas.DataFrame(
+            [{'confidence': 0.1, 'is_correct': True, 'label_text': 'test', 'dummy_feat_1': 1}]
+        )
+        self.extraction_ai.fit()
+
+        self.extraction_ai.evaluate()
+        df = self.extraction_ai.df_prob.iloc[:, 1]
+        assert len(df[df[0] != df.isnull()]) == 1
+
+
+class TestLoseWeight(unittest.TestCase):
+    """Test lose_weight() method."""
+
+    def test_lose_weight_without_documents(self):
+        """Test lose_weight without loading the documents in the project."""
+        prj = Project(id_=46, update=True)
+        category = prj.get_category_by_id(63)
+        extraction_ai = DocumentAnnotationMultiClassModel(category=category)
+        extraction_ai.lose_weight()
+        size_in_mb = asizeof.asizeof(extraction_ai) / 1_000_000  # Convert to MB
+        self.assertTrue(size_in_mb < 0.25)  # 2.46 MB
+
+    def test_lose_weight(self):
+        """Test lose_weight after loading the documents in the project (with build())."""
+        prj = Project(id_=46, update=True)
+        category = prj.get_category_by_id(63)
+        extraction_ai = DocumentAnnotationMultiClassModel(category=category)
+        extraction_ai.build()
+        extraction_ai.lose_weight()
+        size_in_mb = asizeof.asizeof(extraction_ai) / 1_000_000  # Convert to MB
+        self.assertTrue(size_in_mb < 0.5)
+
+    def test_lose_weight_changes_in_category_documents(self):
+        """
+        Lose weight removes Documents in the Category.
+
+        It's necessary for running multiple training iterations (e.g. parameters search)
+        """
+        prj = Project(id_=46, update=True)
+        category = prj.get_category_by_id(63)
+        extraction_ai = DocumentAnnotationMultiClassModel(category=category)
+        extraction_ai.build()
+        extraction_ai.lose_weight()
+        assert category.documents() == []
+        assert category.test_documents() == []
+
+
+class TestSave(unittest.TestCase):
+    def test_save(self):
+        """The name of the saved file should contain the name of the Category."""
+        prj = Project(id_=46)
+        category = prj.get_category_by_id(63)
+        extraction_ai = DocumentAnnotationMultiClassModel(category=category)
+        file_name = extraction_ai.save()
+        self.assertTrue(category.name.lower() in file_name)
+
+    def test_saved_model_without_documents(self):
+        """Saved model does not include Documents."""
+        prj = Project(id_=46)
+        category = prj.get_category_by_id(63)
+        extraction_ai = DocumentAnnotationMultiClassModel(category=category)
+        extraction_ai.build()
+        file_name = extraction_ai.save()
+        model = load_pickle(file_name)
+        assert len(category.documents()) == 25
+        assert model.documents == []
+        assert model.test_documents == []
+
+    def test_not_possible_to_get_documents_from_category_of_saved_model(self):
+        """Saved model does not keep the Documents of the Category."""
+        prj = Project(id_=46)
+        category = prj.get_category_by_id(63)
+        extraction_ai = DocumentAnnotationMultiClassModel(category=category)
+        extraction_ai.build()
+        file_name = extraction_ai.save()
+        model = load_pickle(file_name)
+        assert len(category.documents()) == 25
+        assert model.category.project.documents == []
+        assert model.category.documents() == []
+
+    def test_model_size_after_save(self):
+        """Save should create a file with less than 0.5 MB."""
+        prj = Project(id_=46)
+        category = prj.get_category_by_id(63)
+        extraction_ai = DocumentAnnotationMultiClassModel(category=category)
+        extraction_ai.build()
+        file_name = extraction_ai.save()
+        model = load_pickle(file_name)
+        size_in_mb = asizeof.asizeof(model) / 1_000_000  # Convert to MB
+        self.assertTrue(size_in_mb < 0.5)

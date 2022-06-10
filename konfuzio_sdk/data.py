@@ -25,7 +25,8 @@ from konfuzio_sdk.api import (
     update_document_konfuzio_api,
 )
 from konfuzio_sdk.normalize import normalize
-from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
+from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex, \
+    escape_regex_group_name
 from konfuzio_sdk.utils import get_bbox, get_missing_offsets
 from konfuzio_sdk.utils import is_file, convert_to_bio_scheme, amend_file_name, sdk_isinstance
 
@@ -284,7 +285,7 @@ class Label(Data):
         self.id_local = next(Data.id_iter)
         self.id_ = id_
         self.name = text
-        self.name_clean = text_clean
+        self.name_clean = escape_regex_group_name(text_clean) if text_clean else text_clean
         self.data_type = get_data_type_display
         self.description = description
         self.has_multiple_top_candidates = has_multiple_top_candidates
@@ -741,11 +742,14 @@ class Span(Data):
                 "revised": None,
                 "label_threshold": None,
                 "label_id": None,
+                "label_name": None,
                 "label_set_id": None,
+                "label_set_name": None,
                 "annotation_id": None,
                 "annotation_set_id": 0,  # to allow grouping to compare boolean
                 "document_id": 0,
                 "document_id_local": 0,
+                "document_dataset_status": 0,
                 "category_id": 0,
                 "x0": 0,
                 "x1": 0,
@@ -773,11 +777,14 @@ class Span(Data):
                 "revised": self.annotation.revised,
                 "label_threshold": self.annotation.label.threshold,  # todo: allow to optimize threshold
                 "label_id": self.annotation.label.id_,
+                "label_name": self.annotation.label.name,
                 "label_set_id": self.annotation.label_set.id_,
+                "label_set_name": self.annotation.label_set.name,
                 "annotation_id": self.annotation.id_,
                 "annotation_set_id": self.annotation.annotation_set.id_,
                 "document_id": self.annotation.document.id_,
                 "document_id_local": self.annotation.document.id_local,
+                "document_dataset_status": self.annotation.document.dataset_status,
                 "category_id": self.annotation.document.category.id_,
                 "x0": self.x0,
                 "x1": self.x1,
@@ -883,7 +890,7 @@ class Annotation(Data):
 
         if isinstance(label, int):
             self.label: Label = self.document.project.get_label_by_id(label)
-        elif isinstance(label, Label):
+        elif sdk_isinstance(label, Label):
             self.label: Label = label
         else:
             raise ValueError(f'{self.__class__.__name__} {self.id_local} has no Label.')
@@ -895,7 +902,7 @@ class Annotation(Data):
         # handles association to an Annotation Set if the Annotation belongs to a Category
         if isinstance(label_set_id, int):
             self.label_set: LabelSet = self.document.project.get_label_set_by_id(label_set_id)
-        elif isinstance(label_set, LabelSet):
+        elif sdk_isinstance(label_set, LabelSet):
             self.label_set = label_set
         else:
             self.label_set = None
@@ -1005,7 +1012,9 @@ class Annotation(Data):
 
     def __hash__(self):
         """Identity of Annotation that does not change over time."""
-        return hash((self.start_offset, self.end_offset, self.label_set, self.document, self.label))
+        start_offsets = tuple(span.start_offset for span in self._spans)
+        end_offsets = tuple(span.end_offset for span in self._spans)
+        return hash((start_offsets, end_offsets, self.label_set, self.document, self.label))
 
     @property
     def is_multiline(self) -> int:
@@ -1253,6 +1262,14 @@ class Page(Data):
 
 class Document(Data):
     """Access the information about one document, which is available online."""
+
+    DATASET_STATUS = {
+        0: 'None',
+        1: 'Preparation',
+        2: 'Training',
+        3: 'Test',
+        4: 'Excluded',
+    }
 
     def __init__(
         self,

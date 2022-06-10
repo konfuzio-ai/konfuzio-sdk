@@ -3,6 +3,7 @@ import logging
 import time
 
 import pandas as pd
+from pathos.multiprocessing import ProcessPool
 
 from konfuzio_sdk.data import Annotation, Document, Category, Span
 from konfuzio_sdk.evaluate import compare
@@ -26,7 +27,7 @@ class RegexTokenizer(AbstractTokenizer):
         assert sdk_isinstance(category, Category)
         return self
 
-    def tokenize(self, document: Document) -> Document:
+    def tokenize(self, document: Document, multiprocess=True) -> Document:
         """
         Create Annotations with 1 Span based on the result of the Tokenizer.
 
@@ -215,8 +216,7 @@ class RegexMatcherTokenizer(ListTokenizer):
 
         documents = category.documents()
 
-        eval_list = []
-        for document in documents:
+        def _tokenize(document):
             # Load Annotations before doing tokenization.
             document.annotations()
 
@@ -227,9 +227,12 @@ class RegexMatcherTokenizer(ListTokenizer):
                 category=document.category,
                 pages=document.pages,
             )
-            self.tokenize(virtual_doc)
+            self.tokenize(virtual_doc, multiprocess=False)
             df = compare(document, virtual_doc)
-            eval_list.append(df)
+            return df
+
+        pool = ProcessPool()
+        eval_list = pool.map(_tokenize, category.documents())
 
         if not eval_list:
             raise ValueError('There are no evaluations of the fitted Tokenizer.')

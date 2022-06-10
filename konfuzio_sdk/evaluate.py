@@ -1,6 +1,14 @@
 """Calculate the accuracy on any level in a  Document."""
+import logging
+from typing import Dict
 
 import pandas as pd
+
+from dataclasses import dataclass
+
+from tabulate import tabulate
+
+logger = logging.getLogger(__name__)
 
 RELEVANT_FOR_EVALUATION = [
     "id_local",  # needed to group spans in Annotations
@@ -8,13 +16,17 @@ RELEVANT_FOR_EVALUATION = [
     # "confidence", we don't care about the confidence of doc_a
     "start_offset",  # only relevant for the merge but allows to track multiple sequences per annotation
     "end_offset",  # only relevant for the merge but allows to track multiple sequences per annotation
+    "offset_string",
     "is_correct",  # we care if it is correct, humans create Annotations without confidence
     "label_id",
+    "label_name",
     "label_threshold",
     "revised",  # we need it to filter feedback required Annotations
     "annotation_set_id",
     "label_set_id",
+    "label_set_name",
     "document_id",
+    "document_dataset_status",
     "document_id_local",
     "category_id",  # Identify the Category to be able to run an evaluation across categories
     # "id__predicted", we don't care of the id_ see "id_"
@@ -108,3 +120,116 @@ def compare(doc_a, doc_b, only_use_correct=False) -> pd.DataFrame:
     quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) <= 1).all()
     assert quality
     return spans
+
+
+@dataclass
+class Evaluation:
+    tp: float
+    tn: float
+    fp: float
+    fn: float
+
+    def __init__(self, evaluation: 'DataFrame'):
+        self.evaluation = evaluation
+
+    # adding two Evaluations
+    def __add__(self, other):
+        return Evaluation(self.tp + other.tp, self.tn + other.tn, self.fp + other.fp, self.fp + other.fn)
+
+    @property
+    def tn(self):
+        return 0
+
+    @property
+    def tp(self):
+        return self.evaluation['true_positive'].sum()
+
+    @property
+    def fn(self):
+        return self.evaluation['false_negative'].sum()
+
+    @property
+    def fp(self):
+        return self.evaluation['false_positive'].sum()
+
+    @property
+    def accuracy(self) -> float:
+        try:
+            return (self.tp + self.tn) / (self.tp + self.tn + self.fp + self.fn)
+        except ZeroDivisionError:
+            return 0.0
+        except TypeError:
+            return 0.0
+
+    def accuracy_display(self):
+        return '{0:.2%}'.format(self.accuracy)
+
+    @property
+    def precision(self):
+        try:
+            return self.tp / (self.tp + self.fp)
+        except ZeroDivisionError:
+            return 0.0
+
+    def precision_display(self):
+        return '{0:.2}'.format(self.precision)
+
+    @property
+    def recall(self):
+        try:
+            return self.tp / (self.tp + self.fn)
+        except ZeroDivisionError:
+            return 0.0
+
+    def recall_display(self):
+        return '{0:.2}'.format(self.recall)
+
+    @property
+    def f1_score(self):
+        try:
+            return 2 * ((self.precision * self.recall) / (self.precision + self.recall))
+        except ZeroDivisionError:
+            return 0.0
+
+    def f1_score_display(self):
+        return '{0:.2}'.format(self.f1_score)
+
+    def fields_display(self) -> list:
+        return [
+            self.accuracy_display(),
+            int(self.tp),
+            int(self.fp),
+            int(self.tn),
+            int(self.fn),
+            self.precision_display(),
+            self.recall_display(),
+            self.f1_score_display(),
+        ]
+
+    def to_dict(self) -> Dict:
+        r = {
+            'accuracy': self.accuracy,
+            'f1_score': self.f1_score,
+            'precision': self.precision,
+            'recall': self.recall,
+            'tp': self.tp,
+            'fp': self.fp,
+            'fn': self.fn
+        }
+        return r
+
+    def label_evaluations(self, dataset_status=None) -> pd.DataFrame:
+        df_list = []
+        if self.evaluation.empty:
+            return pd.DataFrame()
+
+        if dataset_status:
+            evaluation = self.evaluation[self.evaluation['document_dataset_status'].isin(dataset_status)]
+        else:
+            evaluation = self.evaluation
+        for label_name, label_df in evaluation.groupby('label_name'):
+            df_list.append({'label_name': label_name, **Evaluation(label_df).to_dict()})
+
+        df = pd.DataFrame(df_list)
+        logger.info('\n' + tabulate(df, floatfmt=".2%", headers="keys", tablefmt="pipe") + '\n')
+        return df

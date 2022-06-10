@@ -22,6 +22,33 @@ def harmonize_whitespaces(text):
     return suggestion
 
 
+def escape_regex_group_name(text: str) -> str:
+    """
+    Filter for alphanumerical characters to get a valid regex group name.
+
+    In addition filter fot the case where regex-group-name does not start with a character from between a-z.
+
+    :return: cleaned string
+    """
+    text = (
+        text.replace('ß', 'ss')
+        .replace(' ', '_')
+        .replace('Ä', 'Ae')
+        .replace('Ü', 'Ue')
+        .replace('Ö', 'Oe')
+        .replace('ä', 'ae')
+        .replace('ü', 'ue')
+        .replace('ö', 'oe')
+        .replace('/', '_')
+    )
+    text_clean = re.sub(r'\W+', '', text)
+
+    if text_clean and text_clean[0].isnumeric():
+        text_clean = '_' + text_clean
+
+    return text_clean
+
+
 def escape(string: str):
     """Escape a string, so that it can still be used to create a regex."""
     escaped_original = (
@@ -177,12 +204,19 @@ def regex_matches(
     try:
         pattern = re.compile(regex, flags=flags)
     except re.error:
+        logger.error('.......')
+        logger.error(regex)
+        logger.error('.......')
         # throws error if group name is an invalid Python variable
         match = re.search(r'\?P<.*?>', regex)  # match the invalid group name
         group_name = match.group(0)  # get the string representation
         group_name = group_name.replace('?P<', '?P<_')  # add a leading underscore
         regex = re.sub(r'\?P<.*?>', group_name, regex)  # replace invalid group name with new one
-        pattern = re.compile(regex, flags=flags)  # try the compile again
+        try:
+            pattern = re.compile(regex, flags=flags)  # try the compile again
+        except:
+            logger.error(regex)
+            raise
 
     for match in pattern.finditer(doctext, overlapped=overlapped):
 

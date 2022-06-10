@@ -9,7 +9,7 @@ from konfuzio_sdk.regex import (
     merge_regex,
     generic_candidate_function,
     plausible_regex,
-    get_best_regex,
+    get_best_regex, escape_regex_group_name,
 )
 from konfuzio_sdk.utils import does_not_raise
 
@@ -110,6 +110,20 @@ def test_suggest_regex_for_string(input, output, expected_exception):
             assert suggest_regex_for_string(**input) == output
         else:
             assert suggest_regex_for_string(**input) is None
+
+group_name_test_data = [
+    ('5b', 'a-5b', does_not_raise())
+]
+
+@pytest.mark.parametrize("input, output, expected_exception", group_name_test_data)
+def test_group_name(input, output, expected_exception):
+    """Test different strings to represent them as a regex."""
+    with expected_exception:
+        if output is not None:
+            assert escape_regex_group_name(input) == output
+        else:
+            assert escape_regex_group_name(input) is None
+
 
 
 def test_merge_regex():

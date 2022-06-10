@@ -1,10 +1,15 @@
 import collections
 import logging
+import os
 import time
+from functools import partial
 
 import pandas as pd
 import numpy as np
 from konfuzio.multiclass_clf import convert_to_feat
+
+from konfuzio_sdk.evaluate import Evaluation
+from konfuzio_sdk.tokenizer.base import ListTokenizer
 
 from pathos.multiprocessing import ProcessPool
 from typing import List, Tuple, Dict, Optional
@@ -21,6 +26,7 @@ from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, WhitespaceNoPunctu
 from konfuzio_sdk.data import Category, Document, Annotation
 
 from konfuzio_sdk.pipelines.base import ExtractionModel
+from konfuzio_sdk.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -333,65 +339,30 @@ class DocumentAnnotationMultiClassModel(ExtractionModel):
                 raise ValueError
         return self
 
+    def data_checks(self):
+        """Check data consistency."""
+        for document in self.category.documents() + self.category.test_documents():
+            if not document.check_bbox():
+                print(f'Document {document} is invalid, see logs.')
+
     def build(self):
         """Build an DocumentAnnotationMultiClassModel."""
-        # Tokenizer selection
-        tokenizer_verification = [
-            self.tokenizer_whitespace + self.tokenizer_regex + self.tokenizer_spacy + self.tokenizer_regex_list +
-            self.tokenizer_regex_combination
-        ]
-        if sum(tokenizer_verification) > 1:
-            raise ValueError(f'You can only select 1 tokenizer. You have White space {self.tokenizer_whitespace}, '
-                             f'Regex {self.tokenizer_regex}, Regex list {self.tokenizer_regex_list},'
-                             f'Regex combination: {self.tokenizer_regex_combination}, Spacy: {self.tokenizer_spacy}.')
-
-        if self.tokenizer_whitespace:
-            self.tokenizer = WhitespaceTokenizer()
-
-        elif self.tokenizer_regex:
-            self.tokenizer = CategoryRegexTokenizer(categories=[self.category])
-
-        elif self.tokenizer_regex_list:
-            self.tokenizer = ListTokenizer(
-                tokenizers=[
-                    WhitespaceTokenizer(),
-                    WhitespaceNoPunctuationTokenizer(),
-                    ConnectedTextTokenizer(),
-                    ColonPrecededTokenizer(),
-                    CapitalizedTextTokenizer(),
-                    NonTextTokenizer(),
-                ]
-            )
-
-        elif self.tokenizer_regex_combination:
-            self.tokenizer = RegexMatcherTokenizer(
-                tokenizers=[
-                    WhitespaceTokenizer(),
-                    WhitespaceNoPunctuationTokenizer(),
-                    ConnectedTextTokenizer(),
-                    ColonPrecededTokenizer(),
-                    CapitalizedTextTokenizer(),
-                    NonTextTokenizer(),
-                ]
-            )
-            self.tokenizer.fit(category=self.category)
-
-        elif self.tokenizer_spacy:
-            self.tokenizer = SpacyTokenizer()
-
-        else:
-            self.tokenizer = WhitespaceTokenizer()
-            logger.info('Using WhitespaceTokenizer by default.')
-
+        logger.info('Start data_checks()...')
+        self.data_checks()
+        logger.info('Start fit_tokenizer()...')
+        self.fit_tokenizer()
+        logger.info('Start tokenize()...')
         self.tokenize(documents=self.documents + self.test_documents)
+        logger.info('Start create_candidates_dataset()...')
         self.create_candidates_dataset()
+        logger.info('Start train_valid_split()...')
         self.train_valid_split()
+        logger.info('Start fit()...')
         self.fit()
+        logger.info('Start fit_label_set_clf()...')
         self.fit_label_set_clf()
-        if not self.df_test.empty:
-            self.evaluate()
-        else:
-            logger.error('The test set is empty. Skip evaluation for test data.')
+        logger.info('Start evaluate()...')
+        self.evaluate()
 
         return self
 
@@ -516,8 +487,53 @@ class DocumentAnnotationMultiClassModel(ExtractionModel):
 
         return self
 
+    def fit_tokenizer(self):
+        # Tokenizer selection
+        tokenizer_verification = [
+            self.tokenizer_whitespace + self.tokenizer_regex + self.tokenizer_spacy + self.tokenizer_regex_list +
+            self.tokenizer_regex_combination
+        ]
+        if sum(tokenizer_verification) > 1:
+            raise ValueError(f'You can only select 1 tokenizer. You have White space {self.tokenizer_whitespace}, '
+                             f'Regex {self.tokenizer_regex}, Regex list {self.tokenizer_regex_list},'
+                             f'Regex combination: {self.tokenizer_regex_combination}, Spacy: {self.tokenizer_spacy}.')
+
+        if self.tokenizer_whitespace:
+            self.tokenizer = WhitespaceTokenizer()
+
+        elif self.tokenizer_regex_list:
+            self.tokenizer = ListTokenizer(
+                tokenizers=[
+                    WhitespaceTokenizer(),
+                    WhitespaceNoPunctuationTokenizer(),
+                    ConnectedTextTokenizer(),
+                    ColonPrecededTokenizer(),
+                    CapitalizedTextTokenizer(),
+                    NonTextTokenizer(),
+                ]
+            )
+
+        elif self.tokenizer_regex_combination:
+            self.tokenizer = RegexMatcherTokenizer(
+                tokenizers=[
+                    WhitespaceTokenizer(),
+                    WhitespaceNoPunctuationTokenizer(),
+                    ConnectedTextTokenizer(),
+                    ColonPrecededTokenizer(),
+                    CapitalizedTextTokenizer(),
+                    NonTextTokenizer(),
+                ]
+            )
+            self.tokenizer.fit(category=self.category)
+
+        else:
+            self.tokenizer = WhitespaceTokenizer()
+            logger.info('Using WhitespaceTokenizer by default.')
+
+
     def tokenize(self, documents: List['Document'], multiprocess=True):
         """Call the tokenizer on test and training documents."""
+
         if documents is None:
             documents = self.category.documents() + self.category.test_documents()
 
@@ -527,7 +543,7 @@ class DocumentAnnotationMultiClassModel(ExtractionModel):
         def _tokenize(document):
             document.annotations()
             try:
-                self.tokenizer.tokenize(document)
+                self.tokenizer.tokenize(document, multiprocess=False)
             except ValueError:  # It is OK if NO_Label annotations cannot be added.
                 pass
 
@@ -585,16 +601,13 @@ class DocumentAnnotationMultiClassModel(ExtractionModel):
             if hasattr(self.tokenizer, 'lose_weight'):  # remove after merge of branch tokenizer from SDK 03-05-2022
                 self.tokenizer.lose_weight()
 
-    def feature_function(self, documents, multiprocess=True) -> Tuple[pd.DataFrame, list]:
+    def feature_function(self, documents, multiprocess=False) -> Tuple[pd.DataFrame, list]:
         """Return a df with all the data from the json files read out and properly converted."""
         logger.info('Start generating features.')
 
-        document_df_list = []
-        feature_list = []
-
         if not documents:
             df = pd.DataFrame()
-            return df, feature_list
+            return df, []
 
         if self.spatial_features:
             abs_pos_feature_list = self._ABS_POS_FEATURE_LIST
@@ -707,7 +720,7 @@ class DocumentAnnotationMultiClassModel(ExtractionModel):
             annotations: List[Annotation],
     ):
         # TODO: Feels wrong to tokenize again and to create a new virtual doc.
-        #  How should "neighbour" work when we use a tokenizer different than WhiteSpacetokenizer?
+        # How should "neighbour" work when we use a tokenizer different than WhiteSpacetokenizer?
         tokenizer = WhitespaceTokenizer()
         document._bbox = document.get_bbox()
         virtual_doc = Document(
@@ -719,10 +732,7 @@ class DocumentAnnotationMultiClassModel(ExtractionModel):
         )
         virtual_doc._bbox = document.get_bbox()
         tokenizer.tokenize(virtual_doc)
-        whitespace_spans = [span for a in virtual_doc.annotations() for span in a.spans]
-
-        features_list: List[Dict] = []
-        relative_string_feature_list: List[str] = []
+        whitespace_spans = [span for a in virtual_doc.annotations(use_correct=False) for span in a.spans]
 
         # TODO: Should these variables be defined in the init?
         left_prefix = 'l_'
@@ -734,6 +744,8 @@ class DocumentAnnotationMultiClassModel(ExtractionModel):
         l_keys = [left_prefix + distance_name + str(x) for x in range(self.n_nearest_left)]
         r_keys = [right_prefix + distance_name + str(x) for x in range(self.n_nearest_right)]
 
+        features_list: List[Dict] = []
+        relative_string_feature_list: List[str] = []
         relative_string_feature_list += l_keys
         relative_string_feature_list += r_keys
 
@@ -742,66 +754,42 @@ class DocumentAnnotationMultiClassModel(ExtractionModel):
             for span in annotation.spans:
                 span.bbox()
                 feature_dict = {}
-                for look_left_index in range(0, self.n_nearest_left):
+                l_indexes = [(look_left_index, -1, left_prefix) for look_left_index in range(0, self.n_nearest_left)]
+                r_indexes = [(look_right_index, 1, right_prefix) for look_right_index in range(0, self.n_nearest_right)]
+                for index, factor, prefix in l_indexes + r_indexes:
                     try:
                         current_index = whitespace_spans.index(span)
-                        left_span = whitespace_spans[
-                            current_index - (look_left_index + 1)]  # look-left index is 0-based
-                    except (ValueError, IndexError):
-                        left_span = None
-                    if left_span and (self.n_nearest_across_lines or left_span.line_index == span.line_index):
-                        left_span.bbox()
-                        # l_dist
-                        feature_dict[left_prefix + distance_name + str(look_left_index)] = span.x0 - left_span.x1
-                        # l_offset_string
-                        feature_dict[left_prefix + offset_string_name + str(look_left_index)] = left_span.offset_string
+                    except ValueError:
+                       current_index = sorted(whitespace_spans + [span]).index(span) + factor * 1
+
+                    span_index = current_index + factor * (index + 1)
+                    if 0 <= span_index < len(whitespace_spans):
+                        lr_span = whitespace_spans[span_index]  # look-left index is 0-based
+                    else:
+                        lr_span = None
+
+                    if lr_span and (self.n_nearest_across_lines or lr_span.line_index == span.line_index):
+                        lr_span.bbox()
+                        feature_dict[prefix + distance_name + str(index)] = lr_span.x0 - lr_span.x1
+                        feature_dict[prefix + offset_string_name + str(index)] = lr_span.offset_string
                     else:
                         # TODO what is fallback value for no neighbour?, how does this value influence feature scaling?
-                        # l_dist
-                        feature_dict[left_prefix + distance_name + str(look_left_index)] = self._DEFAULT_NEIGHBOUR_DIST
+                        feature_dict[prefix + distance_name + str(index)] = self._DEFAULT_NEIGHBOUR_DIST
                         # https://stackoverflow.com/questions/58971596/random-forest-make-null-values-always-have-their-own-branch-in-a-decision-tree
-                        # l_offset_string
-                        feature_dict[left_prefix + offset_string_name + str(look_left_index)] = \
-                            self._DEFAULT_NEIGHBOUR_STRING
-
-                for look_right_index in range(0, self.n_nearest_right):
-                    try:
-                        current_index = whitespace_spans.index(span)
-                        right_span = whitespace_spans[
-                            current_index + (look_right_index + 1)]  # look-left index is 0-based
-                    except (ValueError, IndexError):
-                        right_span = None
-                    if right_span and (self.n_nearest_across_lines or right_span.line_index == span.line_index):
-                        right_span.bbox()
-                        # r_dist
-                        feature_dict[right_prefix + distance_name + str(look_right_index)] = right_span.x0 - span.x1
-                        # r_offset_string
-                        feature_dict[right_prefix + offset_string_name + str(look_right_index)] = \
-                            right_span.offset_string
-                    else:
-                        # r_dist
-                        feature_dict[right_prefix + distance_name + str(look_right_index)] = \
-                            self._DEFAULT_NEIGHBOUR_DIST  # TODO see above.
-                        # r_offset_string
-                        feature_dict[right_prefix + offset_string_name + str(look_right_index)] = \
-                            self._DEFAULT_NEIGHBOUR_STRING
+                        feature_dict[prefix + offset_string_name + str(index)] = self._DEFAULT_NEIGHBOUR_STRING
                 features_list.append(feature_dict)
 
         df = pd.DataFrame(features_list)
 
-        for index in range(self.n_nearest_left):
-            df_string_features_l = convert_to_feat(
-                list(df[left_prefix + offset_string_name + str(index)]), 'l' + str(index) + '_'
-            )
-            relative_string_feature_list += list(df_string_features_l.columns.values)
-            df = df.join(df_string_features_l, lsuffix='_caller', rsuffix='_other')
+        if not annotations:
+            logger.error('If there are no annotations the next loop will crash.')
 
-        for index in range(self.n_nearest_right):
-            df_string_features_r = convert_to_feat(
-                list(df[right_prefix + offset_string_name + str(index)]), 'r' + str(index) + '_'
+        for index, factor, prefix in l_indexes + r_indexes:
+            df_string_features = convert_to_feat(
+                list(df[prefix + offset_string_name + str(index)]), prefix[0] + str(index) + '_'
             )
-            relative_string_feature_list += list(df_string_features_r.columns.values)
-            df = df.join(df_string_features_r, lsuffix='_caller', rsuffix='_other')
+            relative_string_feature_list += list(df_string_features.columns.values)
+            df = df.join(df_string_features, lsuffix='_caller', rsuffix='_other')
 
         return df, relative_string_feature_list
 
@@ -951,9 +939,30 @@ class DocumentAnnotationMultiClassModel(ExtractionModel):
 
     def evaluate(self):
         """Start evaluation."""
-        logger.info('Evaluating label classifier on the test data')
-        self.df_test.loc[~self.df_test.is_correct, self._LABEL_TARGET_COLUMN_NAME] = self.no_label.name
-        self._evaluate_multiclass_clf(self.df_test)
+        if not self.df_test.empty:
+            logger.error('The test set is empty. Skip evaluation for test data.')
+        else:
+            logger.info('Evaluating label classifier on the test data')
+            self.df_test.loc[~self.df_test.is_correct, self._LABEL_TARGET_COLUMN_NAME] = self.no_label.name
+            self._evaluate_multiclass_clf(self.df_test)
+
+        # Run extraction on test documents.
+        def _evaluate(document, model):
+            return model.evaluate_extraction_model(document)
+
+        pool = ProcessPool()
+        data = pool.map(partial(_evaluate, model=self), self.category.documents())
+        df_data = pd.concat(data)
+        output_dir = self.category.project.model_folder
+        file_path = os.path.join(output_dir, f'{get_timestamp()}.csv')
+        df_data.to_csv(file_path)
+
+        logger.info('Training Documents')
+        Evaluation(df_data).label_evaluations(dataset_status=[2])
+
+        logger.info('Test Documents')
+        Evaluation(df_data).label_evaluations(dataset_status=[3])
+
 
     def _evaluate_multiclass_clf(self, df: pd.DataFrame):
         """

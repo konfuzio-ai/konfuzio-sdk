@@ -1,10 +1,12 @@
 """Test the evaluation."""
 import unittest
 
+import pandas
 from pandas import DataFrame
 
 from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span, LabelSet, Label, Category
-from konfuzio_sdk.evaluate import compare, grouped
+from konfuzio_sdk.evaluate import compare, grouped, Evaluation
+
 
 TEST_PROJECT_ID = 46
 
@@ -49,6 +51,16 @@ class TestEvaluation(unittest.TestCase):
         # due to the fact that Konfuzio Server does not save confidence = 100 % if Annotation was not created by a human
         assert evaluation["false_negative"].sum() == 0
         assert evaluation["is_found_by_tokenizer"].sum() == 21
+        e = Evaluation(evaluation)
+        assert e.accuracy == 1.0
+        assert e.f1_score == 1.0
+        assert e.precision == 1.0
+        assert e.recall == 1.0
+        e.label_evaluations()
+
+    def test_empty_evaluation(self):
+        e = Evaluation(DataFrame())
+        e.label_evaluations(dataset_status=[3])
 
     def test_doc_where_first_annotation_was_skipped(self):
         """Test if a Document is 100 % equivalent with first Annotation not existing for a certain Label."""

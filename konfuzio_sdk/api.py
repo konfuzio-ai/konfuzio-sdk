@@ -86,6 +86,7 @@ class TimeoutHTTPAdapter(HTTPAdapter):
         * TimeoutHTTPAdapter idea used from the following
             `Blogpost <https://findwork.dev/blog/advanced-usage-python-requests-timeouts-retries-hooks/>`_
     """
+    timeout = None
 
     def __init__(self, timeout, *args, **kwargs):
         """Force to init with timout policy."""
@@ -179,6 +180,7 @@ def get_document_details(document_id: int, project_id: int, session=_konfuzio_se
     :param extra_fields: Retrieve bounding boxes and HOCR from document, too. Can be "bbox,hocr", it's a hotfix
     :return: Data of the document.
     """
+    logger.info(f'Fetch document details for document {document_id}.')
     url = get_document_api_details_url(document_id=document_id, project_id=project_id, extra_fields=extra_fields)
     r = session.get(url)
     return r.json()

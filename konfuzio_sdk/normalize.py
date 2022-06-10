@@ -582,14 +582,14 @@ def _final_date_check(date_string: str):
             and date_string[:2].isdecimal()
             and date_string[3:5].isdecimal()
         ):
-            logger.warning('Could not convert >>' + date_string + '<< to date (date contains letters)')
+            # logger.warning('Could not convert >>' + date_string + '<< to date (date contains letters)')
             date_string = None
         elif (
             not ((1900 < int(date_string[-4:]) < 2100) or int(date_string[-4:]) == 0)
             or not (int(date_string[:2]) < 32)
             or not (int(date_string[3:5]) < 13)
         ):
-            logger.warning('Could not convert >>' + date_string + '<< to date (invalid date)')
+            # logger.warning('Could not convert >>' + date_string + '<< to date (invalid date)')
             date_string = None
     return date_string
 
