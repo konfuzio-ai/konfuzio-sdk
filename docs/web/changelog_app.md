@@ -8,7 +8,7 @@ All notable changes in the server of app.konfuzio.com will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
 
-## Unreleased
+## 2022-06-10_15-32-19
 
 This version uses Konfuzio Trainer in version v.0.3.8. We recommend to use the Konfuzio Python SDK in version [v.0.2.2](https://dev.konfuzio.com/sdk/changelog.html#v-0-2-2)
 
