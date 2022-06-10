@@ -669,6 +669,11 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         """Test if an annotation can be hashed."""
         set(self.prj.get_document_by_id(TEST_DOCUMENT_ID).annotations())
 
+    def test_span_hashable(self):
+        """Test if a Span can be hashed."""
+        annotation = self.prj.get_document_by_id(TEST_DOCUMENT_ID).annotations()[0]
+        set(annotation.spans)
+
     def test_number_of_label_sets(self):
         """Test Label Sets numbers."""
         # Online Label Sets + added during tests +  no_label_set

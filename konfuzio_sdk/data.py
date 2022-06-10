@@ -637,6 +637,13 @@ class Span(Data):
         """Return string representation."""
         return f"{self.__class__.__name__} ({self.start_offset}, {self.end_offset})"
 
+    def __hash__(self):
+        """Make any online or local concept hashable. See https://stackoverflow.com/a/7152650."""
+        if not self.annotation:
+            raise NotImplementedError('Span without Annotation is not hashable.')
+        else:
+            return hash((self.annotation, self.start_offset, self.end_offset))
+
     def bbox(self):
         """Calculate the bounding box of a text sequence."""
         if self.annotation:
