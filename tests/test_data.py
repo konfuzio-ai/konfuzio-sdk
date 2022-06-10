@@ -669,6 +669,10 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         """Test if an annotation can be hashed."""
         set(self.prj.get_document_by_id(TEST_DOCUMENT_ID).annotations())
 
+    def test_get_all_spans_of_a_document(self):
+        """Test to get all Spans in a Document."""
+        assert len(self.prj.get_document_by_id(TEST_DOCUMENT_ID).spans()) == 23
+
     def test_span_hashable(self):
         """Test if a Span can be hashed."""
         annotation = self.prj.get_document_by_id(TEST_DOCUMENT_ID).annotations()[0]

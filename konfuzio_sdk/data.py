@@ -1386,6 +1386,13 @@ class Document(Data):
 
         return self._no_label_annotation_set
 
+    def spans(self, use_correct=True):
+        """Return Spans of the Document."""
+        spans = []
+        for annotation in self.annotations(use_correct=use_correct):
+            spans += annotation.spans
+        return sorted(spans)
+
     def _load_pages(self, pages_data: List[Union[Dict, Page]]):
         """Load Pages of document."""
         if pages_data is not None:
