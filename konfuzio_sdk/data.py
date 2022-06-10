@@ -1203,10 +1203,10 @@ class Annotation(Data):
                 self.token_append(new_regex=regex_f, regex_quality=2)
         return self._tokens
 
+    # todo can we circumvent the combined tokens
     def regex(self):
         """Return regex of this annotation."""
-        category = self.document.category
-        return self.label.combined_tokens(categories=[category])
+        return self.label.combined_tokens(categories=[self.document.category])
 
     def delete(self) -> None:
         """Delete Annotation online."""
