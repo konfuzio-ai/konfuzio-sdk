@@ -552,10 +552,7 @@ class Document(Data):
         self.hocr = kwargs.get('hocr')
 
         # prepare local setup for document
-        try:
-            pathlib.Path(self.root).mkdir(parents=True, exist_ok=True)
-        except OSError:
-            pass
+        pathlib.Path(self.root).mkdir(parents=True, exist_ok=True)
 
     def __repr__(self):
         """Return the name of the document incl. the ID."""
