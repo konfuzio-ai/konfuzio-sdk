@@ -776,6 +776,8 @@ class DocumentAnnotationMultiClassModel(ExtractionModel):
                         # https://stackoverflow.com/questions/58971596/random-forest-make-null-values-always-have-their-own-branch-in-a-decision-tree
                         feature_dict[prefix + offset_string_name + str(index)] = self._DEFAULT_NEIGHBOUR_STRING
                 features_list.append(feature_dict)
+        if not annotations:
+            return pd.DataFrame(), []
 
         df = pd.DataFrame(features_list)
 

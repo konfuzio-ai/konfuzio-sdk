@@ -544,9 +544,16 @@ def get_span_features(annotations: List[Annotation], abs_pos_feature_list: List,
     """Get spatial features."""
     span_features: List[Dict] = []
 
+    if not annotations:
+        return pd.DataFrame(), span_features
+
     # annotations.sort(key=lambda x: x._spans[0].start_offset)
     for annotation in annotations:
         for span in annotation.spans:
+            assert span.x0 is not None
+            assert span.x1 is not None
+            assert span.y0 is not None
+            assert span.y1 is not None
             span_dict = {k: v for k, v in span.eval_dict().items() if k in abs_pos_feature_list + meta_information_list}
             span_features.append(span_dict)
             # span_dict = {}
