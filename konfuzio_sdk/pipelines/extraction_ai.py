@@ -413,7 +413,7 @@ class DocumentAnnotationMultiClassModel(ExtractionModel):
         logger.info('Start fit_label_set_clf()...')
         self.fit_label_set_clf()
         logger.info('Start evaluate()...')
-        self.evaluate()
+        self.evaluate(multiprocess=False)
 
         return self
 
@@ -989,9 +989,9 @@ class DocumentAnnotationMultiClassModel(ExtractionModel):
         self.clf.fit(self.df_train[self.label_feature_list], self.df_train[self._LABEL_TARGET_COLUMN_NAME])
         return self.clf
 
-    def evaluate(self):
+    def evaluate(self, multiprocess=True):
         """Start evaluation."""
-        if not self.df_test.empty:
+        if self.df_test.empty:
             logger.error('The test set is empty. Skip evaluation for test data.')
         else:
             logger.info('Evaluating label classifier on the test data')
@@ -1002,9 +1002,13 @@ class DocumentAnnotationMultiClassModel(ExtractionModel):
         def _evaluate(document, model):
             return model.evaluate_extraction_model(document)
 
-        pool = ProcessPool()
-        data = pool.map(partial(_evaluate, model=self), self.category.documents())
+        if multiprocess:
+            pool = ProcessPool()
+            data = pool.map(partial(_evaluate, model=self), self.category.documents())
+        else:
+            data = [_evaluate(document, model=self) for document in self.category.documents()]
         df_data = pd.concat(data)
+
         output_dir = self.category.project.model_folder
         file_path = os.path.join(output_dir, f'{get_timestamp()}.csv')
         df_data.to_csv(file_path)

@@ -1,3 +1,4 @@
+"""Test spatial feature function."""
 import unittest
 
 from konfuzio_sdk.data import Project, Category, Document, LabelSet, Span, AnnotationSet, Label, Annotation
@@ -6,7 +7,7 @@ from konfuzio_sdk.pipelines.features import get_spatial_features
 
 
 def test_get_spatial_features_empty():
-    """Test calling get_n_nearest_features with empty annoation document."""
+    """Test calling get_spatial_features with empty annotation document."""
 
     project = Project(id_=None)
     category = Category(project=project, id_=1)
