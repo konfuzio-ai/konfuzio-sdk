@@ -5,7 +5,7 @@ from konfuzio_sdk.pipelines.extraction_ai import DocumentAnnotationMultiClassMod
 from konfuzio_sdk.pipelines.features import get_spatial_features
 
 
-def test_get_span_features():
+def test_get_spatial_features_empty():
     """Test calling get_n_nearest_features with empty annoation document."""
 
     project = Project(id_=None)

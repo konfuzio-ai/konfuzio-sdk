@@ -586,7 +586,7 @@ def get_y_train(annotations) -> List[str]:
 
 
 # This is Span features
-def process_document_data(
+def get_span_features(
         document: Document,
         annotations: List[Annotation],
 ) -> Tuple[pd.DataFrame, List]:

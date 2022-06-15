@@ -18,7 +18,7 @@ from sklearn.metrics import accuracy_score, balanced_accuracy_score, f1_score, p
     confusion_matrix, precision_score
 from tabulate import tabulate
 
-from konfuzio_sdk.pipelines.features import process_document_data, get_spatial_features, get_y_train, convert_to_feat
+from konfuzio_sdk.pipelines.features import get_span_features, get_spatial_features, get_y_train, convert_to_feat
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, WhitespaceNoPunctuationTokenizer, ConnectedTextTokenizer, \
     ColonPrecededTokenizer, CapitalizedTextTokenizer, NonTextTokenizer, RegexMatcherTokenizer
 
@@ -255,6 +255,58 @@ class DocumentAnnotationMultiClassModel(ExtractionModel):
         "y1_relative",
         "page_index",
         "page_index_relative",
+    ]
+
+    _SPAN_FEATURE_LIST: list = [
+        'feat_vowel_len',
+        'feat_special_len',
+        'feat_space_len',
+        'feat_digit_len',
+        'feat_len',
+        'feat_upper_len',
+        'feat_num_count',
+        'feat_unique_char_count',
+        'feat_duplicate_count',
+        'accented_char_count',
+        'feat_year_count',
+        'feat_month_count',
+        'feat_day_count',
+        'feat_substring_count_slash',
+        'feat_substring_count_percent',
+        'feat_substring_count_e',
+        'feat_substring_count_g',
+        'feat_substring_count_a',
+        'feat_substring_count_u',
+        'feat_substring_count_i',
+        'feat_substring_count_f',
+        'feat_substring_count_s',
+        'feat_substring_count_oe',
+        'feat_substring_count_ae',
+        'feat_substring_count_ue',
+        'feat_substring_count_er',
+        'feat_substring_count_str',
+        'feat_substring_count_k',
+        'feat_substring_count_r',
+        'feat_substring_count_y',
+        'feat_substring_count_en',
+        'feat_substring_count_ch',
+        'feat_substring_count_sch',
+        'feat_substring_count_c',
+        'feat_substring_count_ei',
+        'feat_substring_count_on',
+        'feat_substring_count_ohn',
+        'feat_substring_count_n',
+        'feat_substring_count_m',
+        'feat_substring_count_j',
+        'feat_substring_count_h',
+        'feat_substring_count_plus',
+        'feat_substring_count_minus',
+        'feat_substring_count_period',
+        'feat_substring_count_comma',
+        'feat_starts_with_plus',
+        'feat_starts_with_minus',
+        'feat_ends_with_plus',
+        'feat_ends_with_minus'
     ]
     # TODO what is fallback value for no neighbour? how does this value influence feature scaling?
     # Default value for the distance to the next Span in case no Span is present.
@@ -657,7 +709,7 @@ class DocumentAnnotationMultiClassModel(ExtractionModel):
                 document_features.append(n_nearest_df)
 
             if self.string_features:
-                string_feature_df, string_feature_list = process_document_data(
+                string_feature_df, string_feature_list = get_span_features(
                     document=document,
                     annotations=training_annotations,
                 )

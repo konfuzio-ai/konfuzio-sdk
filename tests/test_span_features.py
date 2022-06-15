@@ -2,7 +2,9 @@ import unittest
 
 from konfuzio_sdk.data import Project, Category, Document, LabelSet, Span, AnnotationSet, Label, Annotation
 from konfuzio_sdk.pipelines.extraction_ai import DocumentAnnotationMultiClassModel
-from konfuzio_sdk.pipelines.features import get_spatial_features
+from konfuzio_sdk.pipelines.features import get_span_features
+
+FEATURE_COUNT = 49
 
 
 def test_get_span_features():
@@ -14,15 +16,12 @@ def test_get_span_features():
     document = Document(project=project, category=category)
     assert len(project.virtual_documents) == 1
 
-    abs_pos_feature_list = DocumentAnnotationMultiClassModel._ABS_POS_FEATURE_LIST
-    meta_information_list = DocumentAnnotationMultiClassModel._META_INFORMATION_LIST
-    df, feature_list = get_spatial_features(
+    df, feature_list = get_span_features(
+        document=document,
         annotations=document.annotations(),
-        abs_pos_feature_list=abs_pos_feature_list,
-        meta_information_list=meta_information_list
     )
-    assert df.empty
-    assert feature_list == []
+    assert df.shape == (0, 49)
+    assert len(feature_list) == FEATURE_COUNT
 
 
 class TestSpanFeatures(unittest.TestCase):
@@ -72,40 +71,14 @@ class TestSpanFeatures(unittest.TestCase):
         assert annotation_1.offset_string == ['hi']
         assert annotation_2.offset_string == ['ha']
 
-        abs_pos_feature_list = DocumentAnnotationMultiClassModel._ABS_POS_FEATURE_LIST
-        meta_information_list = DocumentAnnotationMultiClassModel._META_INFORMATION_LIST
-
-
         [span.bbox() for annotation in self.document.annotations() for span in annotation.spans]
 
-        df, feature_list = get_spatial_features(
+        df, feature_list = get_span_features(
+            document=self.document,
             annotations=self.document.annotations(),
-            abs_pos_feature_list=abs_pos_feature_list,
-            meta_information_list=meta_information_list
         )
-        assert abs_pos_feature_list == feature_list
-        assert list(df) == [
-            'id_', 'confidence', 'offset_string', 'normalized',
-            'start_offset', 'end_offset',
-            'is_correct', 'revised',
-            'annotation_id', 'document_id',
-            'x0', 'x1', 'y0', 'y1', 'page_index', 'line_index',
-            'x0_relative', 'x1_relative', 'y0_relative', 'y1_relative', 'page_index_relative'
-        ]
-
-        assert (df['x0'] == [0, 3]).all()
-        assert (df['x1'] == [3, 5]).all()
-        assert (df['y0'] == [0, 0]).all()
-        assert (df['y1'] == [1, 1]).all()
-
-        assert (df['page_index'] == [0, 0]).all()
-        assert (df['page_index_relative'] == [0, 0]).all()
-        assert (df['line_index'] == [0, 0]).all()
-
-        assert (df['x0_relative'] == [0 / 100, 3 / 100]).all()
-        assert (df['x1_relative'] == [3 / 100, 5 / 100]).all()
-        assert (df['y0_relative'] == [0 / 100, 0 / 100]).all()
-        assert (df['y1_relative'] == [1 / 100, 1 / 100]).all()
+        assert DocumentAnnotationMultiClassModel._SPAN_FEATURE_LIST == feature_list
+        assert list(df) == feature_list
 
     def test_get_n_nearest_features_partial(self):
         span_1 = Span(start_offset=0, end_offset=2)
@@ -130,36 +103,11 @@ class TestSpanFeatures(unittest.TestCase):
         assert annotation_1.offset_string == ['hi']
         assert annotation_2.offset_string == ['h']
 
-        abs_pos_feature_list = DocumentAnnotationMultiClassModel._ABS_POS_FEATURE_LIST
-        meta_information_list = DocumentAnnotationMultiClassModel._META_INFORMATION_LIST
-
         [span.bbox() for annotation in self.document.annotations() for span in annotation.spans]
 
-        df, feature_list = get_spatial_features(
+        df, feature_list = get_span_features(
+            document=self.document,
             annotations=self.document.annotations(),
-            abs_pos_feature_list=abs_pos_feature_list,
-            meta_information_list=meta_information_list
         )
-        assert abs_pos_feature_list == feature_list
-        assert list(df) == [
-            'id_', 'confidence', 'offset_string', 'normalized',
-            'start_offset', 'end_offset',
-            'is_correct', 'revised',
-            'annotation_id', 'document_id',
-            'x0', 'x1', 'y0', 'y1', 'page_index', 'line_index',
-            'x0_relative', 'x1_relative', 'y0_relative', 'y1_relative', 'page_index_relative'
-        ]
-
-        assert (df['x0'] == [0, 3]).all()
-        assert (df['x1'] == [3, 4]).all()
-        assert (df['y0'] == [0, 0]).all()
-        assert (df['y1'] == [1, 1]).all()
-
-        assert (df['page_index'] == [0, 0]).all()
-        assert (df['page_index_relative'] == [0, 0]).all()
-        assert (df['line_index'] == [0, 0]).all()
-
-        assert (df['x0_relative'] == [0 / 100, 3 / 100]).all()
-        assert (df['x1_relative'] == [3 / 100, 4 / 100]).all()
-        assert (df['y0_relative'] == [0 / 100, 0 / 100]).all()
-        assert (df['y1_relative'] == [1 / 100, 1 / 100]).all()
+        assert DocumentAnnotationMultiClassModel._SPAN_FEATURE_LIST == feature_list
+        assert list(df) == feature_list
