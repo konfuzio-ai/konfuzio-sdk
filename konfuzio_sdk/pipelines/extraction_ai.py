@@ -18,7 +18,7 @@ from sklearn.metrics import accuracy_score, balanced_accuracy_score, f1_score, p
     confusion_matrix, precision_score
 from tabulate import tabulate
 
-from konfuzio_sdk.pipelines.features import process_document_data, get_span_features, get_y_train, convert_to_feat
+from konfuzio_sdk.pipelines.features import process_document_data, get_spatial_features, get_y_train, convert_to_feat
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, WhitespaceNoPunctuationTokenizer, ConnectedTextTokenizer, \
     ColonPrecededTokenizer, CapitalizedTextTokenizer, NonTextTokenizer, RegexMatcherTokenizer
 
@@ -664,7 +664,7 @@ class DocumentAnnotationMultiClassModel(ExtractionModel):
                 document_feature_list += string_feature_list
                 document_features.append(string_feature_df)
 
-            span_feature_df, span_feature_list = get_span_features(
+            span_feature_df, span_feature_list = get_spatial_features(
                 annotations=training_annotations,
                 abs_pos_feature_list=abs_pos_feature_list,
                 meta_information_list=self._META_INFORMATION_LIST,

@@ -539,7 +539,7 @@ def split_in_two_by_document_df_list(data_list: List[pd.DataFrame], percentage: 
 #     return line_candidates, candidates_cache
 
 
-def get_span_features(annotations: List[Annotation], abs_pos_feature_list: List, meta_information_list: List)\
+def get_spatial_features(annotations: List[Annotation], abs_pos_feature_list: List, meta_information_list: List)\
         -> Tuple[pd.DataFrame, List]:
     """Get spatial features."""
     span_features: List[Dict] = []
