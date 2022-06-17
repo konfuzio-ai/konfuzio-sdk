@@ -1,0 +1,70 @@
+                                                            x02   328927/10103/00103
+Abrechnung  der Brutto/Netto-Bezüge
+                               für Dezember 2018                   22.05.2018 Biatt:  1
+ 
+Personal-Nr.  Geburtsdatum StKi Faktor  Ki.Frotr.Konfession  ‚Freibetragjährl.! |Freibetrag mtl! |DBA  iGleitzone  'St.-Tg.  VJuUr. üb. |Url. Anspr. Url.Tg.gen.  |Resturlaub
+00103 150256 4     ev                              30    2500  3000   700  4800
+ 
+SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  JUmsv-Tg. Anw. Tage ‚UrlaubTage |Krankh. Tg.  |Fehiz. Tage
+                                             
+50150256W493 AOK  Bayern Die Gesundheitskas 157 101 1111 1 30
+                                                               L     l.     L     l
+ Eintritt    Austritt
+                                                            Anw.Std. |UrlaubSta.  Krankh. Std. |Fehlz. Std.
+                                             170299  a
+                                             
+                                         4  Steuer-ID       IMFB?       Zeitlohn Sta.|Überstd.  |Bez. Sta.
+ " Testmandant
+  12345Testore"                                  12345678911
+   
+                               B/N
+               Be  212°?        10203          HinweisezurAbrechnung
+                                             
+                                            Kostenst.  101      Wöch.Arb.Zt. 37,50
+  Herrn
+                                             - LASt-Jahresausgl.:  LSt        241,32
+  Daniel-Muster Droschkenmann                  KiSt      19,30   SolzZ        13,19
+  Musterstraße 78
+  90453 Nürnberg
+Brutto-Bezüge
+ Lohnart |Bezeichnung                       |Einheit?   Menge?     Faktor® |Prozentsatz jst? sv?  |GB®          Betrag
+2020 Festlohn, gewerblich                                     L  LJ      3.000,00
+***%%* DATEV  Mustermandant 10103 mit SKRO4
+**%* Für Präsentationen, Messen, Schulungen, etc
+                                                                            Gesamt-Brutio
+Steuer/Sozialversicherung                                                               3.000,00
+ 
+st®      Steuer-Brutto       Lohnsteuer     Kirchensteuer   Solidaritätszuschlag                       Steuerrechtliche Abzüge
+L     3.00000       18318       1466       1015                           207,99
+           ı            I           ı           ı
+  
+sv® |   KV-Brutto    RV-Brutto    Av-Brutto    PV-Brutto  |   KV-Beitrag    RV-Beitrag  |  AV-Beitrag  |   PV-Beitrag®    SV-rechtliche Abzüge
+L  3.00000  3.00000  3.00000  3.00000    25200    27900    4500     3825       614,25
+       I        I        I        ı        ı        ı       ı        !
+ 
+                        |        |                                          Netto-Verdienst
+Verdiensibescheinigung                              Netto-Bezüge/Netto-Abzüge                      2.177,76
+ 
+Gesamt-Brutto     41.338946 SV-Beutto     41.38946   Lohnart |Bezeichnung                            Betrag
+Steuer-Brutto      41.38946 KV-Beitrag     3.32222
+Lohnsteuer       6.52600 RV-Beitrag     3.84922
+Kirchensteuer        52208 jAV-Beitrag       62084
+Solidaritätszuschlag      35893 |PV-Beitrag       50426
+                     
+Steuerfreie Bezüge         \   VWLgesamt         \
+P. verst. Zuk.sich.         ı   Kug-Auszahlung        \
+                 ı                  ı
+Pfändung Rest          \                  \
+Darlehen Rest           \                  ı
+ 
+ 
+Bank                                        SV-AG-Anteil Zus. AG-Kosten      Gesamtkosten     Auszahlungsbetrag
+Konto                                        58125      ,            ,       2.177,76
+ 
+14Hinzurechnungsbetrag              4=LaufenderBezug, S=SonstigerBezug, F=Frei,    5 3 =Bestandteildes Gesamt-Bruttos
+2 Std=Stunden,T=Tage, Km=Kilometer, St=Stuck     E =Einmalbezug, P =Pauschalierung,A=Abfindung,    6 2=Einschl. BeitragszuschlagzurPVfürKinderlose
+  EUR =Euro,Tsd=TausendEuro, Mio =MillionEuro     M =mehrjährige Versteuerung, N=Nachberechnung    7 MFB=Mehrfachbeschäftigung
+3 Gegebenenfalls Netto-Lohn/Netto-Stundenlohn       V=Vorjahr,W =Entgeltguthaben           & MaßgeblicherBeitragssatzzurKVinkl Zusatzbeitrag
+                      +Dies isteine Entgelibescheinigungnach$ 108Abs 3 Satz1 derGewerbeordnung-                         DATEV
+AFP Form-Nr LNGN13
+                                                                               

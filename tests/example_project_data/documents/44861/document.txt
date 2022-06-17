@@ -1,0 +1,68 @@
+                                                            x02   228586/  100/01020
+Abrechnung  der Brutto/Netto-Bezüge   für Dezember 2018                   21.12.2017 Bat:  1
+ 
+Personal-Nr. ‚ Geburtsdatum SKI Faktor  Ki.Frotr.Konfession  ‚Freibetragjährl.! |Freibetrag mtl! |DBA  |Gleitzone  St-Tg.  Vyurn.üb. Ur. Anspr. Url.Tg.gen.  |Resturlaub
+01020 291085 5  |     ev                              30
+ 
+SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  jum.SV-Tg. Anw. Tage |UrlaubTage‚Krankh. Tg. Fehlz. Tage
+                                             
+54291085M525 EK_ BARMER (vormals Barmer GE 157 101 1111 1 30
+ 
+                                             Eintritt   ;Austritt     Anw. Std.  Urlaub Std.  |Krankh. Std. |Fehlz. Std.
+                                             010116  un
+                                             
+                                         4  Steuer-ID       FB?       Zeitiohn Std.Überstd.  Bez. Std.
+ " Testmandant
+  125458Testore-                                  20093456788                  230   230
+                                                               L     1
+                               B/N
+               Pers.-Nr.  01020        x02            , j
+               Abt.-Nr. 1700         00100          HinweisezurAbrechnung
+                                             
+                                             Std.lohn 1   13,85
+  Frau
+  Lydia-Muster  Waldmeister
+  Beispielstrasse la
+  90329 Nürnberg
+Brutto-Bezüge
+ Lohnart |Bezeichnung                       |Einheit?   Menge?     Faktor® |Prozentsatz st* |sv#*  |GB®          Betrag
+1200 Überstundenzuschlag, 25%      Std   2,30    13,85  25,00 L  L  _J          7,97
+1300 Überstd.grundverg.+ FLA (25%)  Std   2,30    13,85       L  Lo)         31,86
+2000 Gehalt                                                  LL  J      1.200,00
+                                                                            Gesamt-Brutio
+Steuer/Sozialversicherung                                                               1.239,83
+ 
+st®      Steuer-Brutto       Lohnsteuer     Kirchensteuer   Solidaritätszuschlag                       Steuerrechtliche Abzüge
+L     1.23983       14333       1146        188                           162,67
+           ı            I           ı           ı
+ ı            ı           ı           ı
+                                                                      
+sv® |   KV-Brutto    RYV-Brutto    AV-Brutto    PV-Brutto  |   KV-Beitrag    RV-Beitrag  |  AV-Beitrag  |   PV-Beitrag®    SV-rechtliche Abzüge
+L  1.23983  1.23983  1.23983  1.239833    10415    11530    1860 2   1891       256,96
+       I        I        I        ı        ı        ı       ı        !
+ 
+       |                         |                                          Netto-Verdienst
+Verdiensibescheinigung                              Netto-Bezüge/Netto-Abzüge                        820,20
+ 
+Gesamt-Brutto     16.83723 SV-Brutto     16.83723   Lohnart Bezeichnung                            Betrag
+Steuer-Brutto      16.83723 KV-Beitrag     1.41434
+Lohnsteuer       2.461383 RV-Beitrag     1.565386
+Kirchensteuer        19686 AV-Beitrag       25256
+Solidaritätszuschlag      13532 PV-Beitrag       25678
+                     
+Steuerfreie Bezüge         \   VWL gesamt         \
+P. verst. Zuk.sich.         ı   Kug-Auszahlung        \
+                 ı                  ı
+Pfändung Rest      3.00000                f
+Dariehen Rest           \                  ı
+ 
+ 
+Bank Deutsche Bank PGK  Nürnbe               SV-AG-Anteil Zus. AG-Kosten      Gesamtkosten     Auszahlungsbetrag
+Konto DE73 7607 0024 0568 9745 11             24022                            820,20
+ 
+1 4=Hinzurechnungsbetrag              4=LaufenderBezug, $=SonstigerBezug, F=Frei,    5 ) =Bestandteildes Gesamt-Bruttos
+® Std=Stunden,T=Tage, Km=Kilometer, St=Stuck     E =Einmalbezug, P =Pauschalierung,A=Abfindung,    6 2-Einschl. BeitragszuschlagzurPVfürKinderlose
+  EUR =Euro,Tsd=TausendEuro, Mio =MillionEuro     M =mehrjahrige Versteuerung, N=Nachberechnung    7 MFB=Mehrfachbeschäftigung
+3 Gegebenenfalls Netto-Lohn/Netto-Stundenlohn       V=Vorjahr,W =Entgeliguthaben           ® MaßgeblicherBeitragssatzzurKVinkl Zusatzbeitrag           ZZ—
+AFP Form-Nr LNGN13              -Dies isteine Entgeltbescheinigungnach& 108Abs 3 Satz1 derGewerbeordnung-                         DATEV
+                                                                               
