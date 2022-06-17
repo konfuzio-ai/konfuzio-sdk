@@ -516,5 +516,5 @@ def upload_ai_model(ai_model_path: str, category_ids: List[int] = None, session=
         response = session.patch(url, data=json.dumps(data), headers=headers)
         response.raise_for_status()
 
-    logger.info(f'New ai_model uploaded {ai_model} to {url}')
+    logger.info(f'New AI Model uploaded {ai_model} to {url}')
     return ai_model
