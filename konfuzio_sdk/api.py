@@ -299,6 +299,8 @@ def delete_document_annotation(document_id: int, annotation_id: int, project_id:
         return json.loads(r.text)['id']
     elif r.status_code == 204:
         return r
+    else:
+        raise ConnectionError(f'Error{r.status_code}: {r.content} {r.url}')
 
 
 def get_meta_of_files(project_id: int, limit: int = 1000, session=_konfuzio_session()) -> List[dict]:
