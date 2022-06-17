@@ -19,6 +19,7 @@ from konfuzio_sdk.utils import (
     does_not_raise,
     get_missing_offsets,
     iter_before_and_after,
+    get_bbox,
 )
 
 TEST_STRING = "sample string"
@@ -266,6 +267,12 @@ def test_append_text_to_amend_file_path(file_path, expected_result, expected_err
 def test_corrupted_name():
     """Test to convert an invalide file name to a valid file name."""
     assert amend_file_name('2022-02-13 19:23:06.168728.tiff') == '2022-02-13-19-23-06-168728.tiff'
+
+
+def test_get_bbox():
+    """Test to raise Value Error if character cannot provide a bbox."""
+    with pytest.raises(ValueError):
+        get_bbox(bbox={}, start_offset=1, end_offset=5)
 
 
 # @pytest.mark.skip('Need implementation of Line and Paragraph first.')

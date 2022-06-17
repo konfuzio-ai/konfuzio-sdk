@@ -636,7 +636,8 @@ def get_bbox(bbox, start_offset: int, end_offset: int) -> Dict:
     # exit early if no bboxes are found between the start/end offset
     if not char_bbox_ids:
         logger.error(f"Between start {start_offset} and {end_offset} we do not find the bboxes of the characters.")
-        return {'bottom': None, 'top': None, 'page_index': None, 'x0': None, 'x1': None, 'y0': None, 'y1': None}
+        raise ValueError(f'Characters from {start_offset} to {end_offset} do not provide any bounding box.')
+        # return {'bottom': None, 'top': None, 'page_index': None, 'x0': None, 'x1': None, 'y0': None, 'y1': None}
 
     # set the default values which we overwrite with the actual character bbox values
     x0 = 100000000
@@ -646,7 +647,7 @@ def get_bbox(bbox, start_offset: int, end_offset: int) -> Dict:
     y1 = 0
     bottom = 0
     pdf_page_index = None
-    line_indexes = []
+    line_indexes = []  # todo create one bounding box per line.
 
     # combine all of the found character bboxes and calculate their combined x0, x1, etc. values
     for char_bbox_id in char_bbox_ids:

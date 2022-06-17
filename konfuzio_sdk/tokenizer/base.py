@@ -34,7 +34,7 @@ class ProcessingStep:
 
 
 class AbstractTokenizer(metaclass=abc.ABCMeta):
-    """Abstract definition of a tokenizer."""
+    """Abstract definition of a Tokenizer."""
 
     processing_steps = []
 
@@ -58,35 +58,24 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
         :return: Evaluation DataFrame and Processing time DataFrame.
         """
         assert sdk_isinstance(document, Document)
+        document.annotations()  # Load Annotations before doing tokenization
 
         virtual_doc = Document(
-            project=document.category.project,
+            project=document.project,
             text=document.text,
             bbox=document.get_bbox(),
             category=document.category,
             copy_of_id=document.id_,
+            pages=document.pages,
         )
 
         self.tokenize(virtual_doc)
-        return compare(document, virtual_doc)
-
-    def evaluate_category(self, category: Category) -> pd.DataFrame:
-        """Compare test Documents of a Category with their tokenized version.
-
-        :param category: Category to evaluate
-        :return: Evaluation DataFrame containing the evaluation of all Documents in the Category.
-        """
-        assert isinstance(category, Category)
-
-        if not category.test_documents():
-            raise ValueError(f"Category {category.__repr__()} has no test documents.")
-
-        evaluation = []
-        for document in category.test_documents():
-            doc_evaluation = self.evaluate(document)
-            evaluation.append(doc_evaluation)
-
-        return pd.concat(evaluation, ignore_index=True)
+        evaluation = compare(document, virtual_doc)
+        logger.warning(
+            f'{evaluation["is_found_by_tokenizer"].sum()} of {evaluation["is_correct"].sum()} corrects'
+            f' Spans are found by Tokenizer'
+        )
+        return evaluation
 
     def get_runtime_info(self) -> pd.DataFrame:
         """
@@ -122,6 +111,8 @@ class ListTokenizer(AbstractTokenizer):
         assert sdk_isinstance(document, Document)
 
         for tokenizer in self.tokenizers:
+            # todo: running multiple tokenizers on one document
+            #  should support that multiple Tokenizers can create identical Spans
             tokenizer.tokenize(document)
             if tokenizer.processing_steps:
                 self.processing_steps.append(tokenizer.processing_steps[-1])
