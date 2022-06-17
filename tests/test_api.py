@@ -29,11 +29,9 @@ from konfuzio_sdk.api import (
     create_label,
     TimeoutHTTPAdapter,
 )
+from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID
 
 FOLDER_ROOT = os.path.dirname(os.path.realpath(__file__))
-
-TEST_DOCUMENT_ID = 44823
-TEST_PROJECT_ID = 46
 
 
 @pytest.mark.serial
@@ -255,6 +253,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             document_id=TEST_DOCUMENT_ID, project_id=TEST_PROJECT_ID, annotation_id=annotation['id']
         )
 
+    @unittest.skip(reason='Server issue https://gitlab.com/konfuzio/objectives/-/issues/9284')
     def test_post_document_annotation(self):
         """Create an Annotation via API."""
         start_offset = 60

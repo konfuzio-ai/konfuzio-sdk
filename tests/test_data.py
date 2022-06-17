@@ -19,11 +19,48 @@ from konfuzio_sdk.data import (
     Page,
 )
 from konfuzio_sdk.utils import is_file
+from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID, TEST_PROJECT_ID
 
 logger = logging.getLogger(__name__)
 
-TEST_PROJECT_ID = 46
-TEST_DOCUMENT_ID = 44823
+
+class TestOfflineExampleData(unittest.TestCase):
+    """Test data features without real data."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Initialize the test Project."""
+        cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """Control the number of Documents created in the Test."""
+        assert len(cls.project.documents) == 26
+
+    def test_project_num_label(self):
+        """Test that no_label exists in the Labels of the Project and has the expected name."""
+        self.assertEqual(len(self.project.labels), 18)
+
+    def test_no_label(self):
+        """Test if NO_LABEL is available."""
+        assert self.project.no_label.name == "NO_LABEL"
+        self.assertIn(self.project.no_label, self.project.labels)
+
+    @unittest.skip(reason='Server Issue https://gitlab.com/konfuzio/objectives/-/issues/9265')
+    def test_annotation_bbox(self):
+        """Create a Span and calculate it's bbox."""
+        span = Span(start_offset=1764, end_offset=1769)  # the correct Annotation spans 1763 to 1769
+        document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        _ = Annotation(
+            id_=None,
+            document=document,
+            is_correct=True,
+            annotation_set=document.annotation_sets()[0],
+            label=self.project.no_label,
+            label_set=self.project.label_sets[0],
+            spans=[span],
+        )
+        span.bbox()
 
 
 class TestOfflineDataSetup(unittest.TestCase):
@@ -35,7 +72,6 @@ class TestOfflineDataSetup(unittest.TestCase):
         cls.project = Project(id_=None)
         cls.label = Label(project=cls.project, text='First Offline Label')
         cls.category = Category(project=cls.project, id_=1)
-        cls.project.add_category(cls.category)
         cls.document = Document(project=cls.project, category=cls.category)
         cls.label_set = LabelSet(project=cls.project, categories=[cls.category], id_=421)
         cls.label_set.add_label(cls.label)
@@ -559,8 +595,6 @@ class TestOfflineDataSetup(unittest.TestCase):
     def test_lose_weight(self):
         """Lose weight should remove session and documents."""
         project = Project(id_=None)
-        category = Category(project=project, id_=None)
-        project.add_category(category)
         label_set = LabelSet(project=project)
         Label(project=project, label_sets=[label_set])
         project.lose_weight()
@@ -671,7 +705,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_get_all_spans_of_a_document(self):
         """Test to get all Spans in a Document."""
-        assert len(self.prj.get_document_by_id(TEST_DOCUMENT_ID).spans()) == 23
+        assert len(self.prj.get_document_by_id(TEST_DOCUMENT_ID).spans()) == 21
 
     def test_span_hashable(self):
         """Test if a Span can be hashed."""
@@ -818,6 +852,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         doc.get_file()
         is_file(doc.ocr_file_path)
 
+    @unittest.skip(reason='Server Issue https://gitlab.com/konfuzio/objectives/-/issues/9286')
     def test_make_sure_annotations_are_downloaded_automatically(self):
         """Test if Annotations are downloaded automatically."""
         prj = Project(id_=TEST_PROJECT_ID, project_folder='another')
@@ -829,6 +864,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.assertTrue(is_file(doc.annotation_file_path))
         prj.delete()
 
+    @unittest.skip(reason='Server Issue https://gitlab.com/konfuzio/objectives/-/issues/9286')
     def test_make_sure_annotation_sets_are_downloaded_automatically(self):
         """Test if Annotation Sets are downloaded automatically."""
         prj = Project(id_=TEST_PROJECT_ID, project_folder='another2')
@@ -1284,7 +1320,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_number_of_all_documents(self):
         """Count the number of all available documents online."""
         prj = Project(id_=TEST_PROJECT_ID)
-        assert len(prj._documents) == 42
+        assert len(prj._documents) == 44
 
     def test_create_empty_annotation(self):
         """

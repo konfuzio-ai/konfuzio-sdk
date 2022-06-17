@@ -9,6 +9,7 @@ import shutil
 import time
 import zipfile
 from typing import Optional, List, Union, Tuple, Dict
+from warnings import warn
 
 import dateutil.parser
 from tqdm import tqdm
@@ -20,7 +21,6 @@ from konfuzio_sdk.api import (
     get_meta_of_files,
     get_project_details,
     post_document_annotation,
-    delete_document_annotation,
     get_document_details,
     update_document_konfuzio_api,
 )
@@ -224,6 +224,7 @@ class Category(Data):
         self.name_clean = name_clean
         self.project: Project = project
         self.label_sets: List[LabelSet] = []
+        self.project.add_category(category=self)
 
     def documents(self):
         """Filter for Documents of this Category."""
@@ -380,7 +381,7 @@ class Label(Data):
         return {k: v for k, v in self._tokens.items() if k in categories_ids}
 
     def check_tokens(self, categories: List[Category]):
-        """Check if a list of regex do find the annotations. Log Annotations that we cannot find."""
+        """Check if a list of regex do find the Annotations. Log Annotations that we cannot find."""
         not_found = []
         for annotation in self.annotations(categories=categories):
             for span in annotation.spans:
@@ -398,7 +399,6 @@ class Label(Data):
     def combined_tokens(self, categories: List[Category]):
         """Create one OR Regex for all relevant Annotations tokens."""
         if not self._combined_tokens:
-            logger.error(f'Combine Tokens of Categories: {categories}')
             categories_tokens = self.tokens(categories=categories)
             all_tokens = []
             for category_id, category_tokens in categories_tokens.items():
@@ -511,9 +511,10 @@ class Label(Data):
             f'For Label {self.name} we found {len(regex_made)} regex proposals for {len(all_annotations)} annotations.'
         )
 
+        # todo replace by compare
         evaluations = [
             self.evaluate_regex(
-                _regex_made, category=category, annotations=all_annotations, filtered_group=f'{self.name_clean}_'
+                _regex_made, category=category, annotations=all_annotations, filtered_group=f'{self.id_}_'
             )
             for _regex_made in regex_made
         ]
@@ -640,14 +641,22 @@ class Span(Data):
         else:
             return hash((self.annotation, self.start_offset, self.end_offset))
 
+    def regex(self):
+        """Suggest a Regex for the offset string."""
+        if self.annotation:
+            # todo make the options to replace characters and string more granular
+            full_replace = suggest_regex_for_string(self.offset_string, replace_characters=True, replace_numbers=True)
+            return merge_regex([full_replace])
+        else:
+            raise NotImplementedError('A Span needs a Annotation and Document relation to suggest a Regex.')
+
     def bbox(self):
         """Calculate the bounding box of a text sequence."""
         if self.annotation:
             b = get_bbox(self.annotation.document.get_bbox(), self.start_offset, self.end_offset)
 
             if not any(b.values()):
-                # The Span is composed by characters that are treated as whitespaces and therefore the Document does
-                # not have the bounding boxes for those characters (e.g. '\x0c')
+                # Whitespaces will not provide bounding boxes, e.g. for those characters like '\x0c'
                 raise ValueError(f'{self} does not have available characters bounding boxes.')
 
             # self.page_index = b['page_index']
@@ -661,19 +670,19 @@ class Span(Data):
 
             if self.x0 and self.x1 and not self.x0 < self.x1:
                 raise ValueError(
-                    f'{self}: coordinate x1 should be bigger than x0. '
+                    f'{self} in {self.annotation.document}: coordinate x1 should be bigger than x0. '
                     f'x0: {self.x0}, x1: {self.x1}, document: {self.annotation.document}.'
                 )
 
             if self.y0 and self.y1 and not self.y0 < self.y1:
                 raise ValueError(
-                    f'{self}: coordinate y1 should be bigger than y0.'
+                    f'{self} in {self.annotation.document}: coordinate y1 should be bigger than y0.'
                     f' y0: {self.y0}, y1: {self.y1}, document: {self.annotation.document}.'
                 )
 
             if self.page_index is not None and not (self.x1 < self.page_width) or not (self.y1 < self.page_height):
                 raise ValueError(
-                    f'Span {self}: bounding box of span is located outside of '
+                    f'{self} in {self.annotation.document}: bounding box of span is located outside of '
                     f'the page, document: {self.annotation.document}.'
                 )
 
@@ -1199,7 +1208,7 @@ class Annotation(Data):
                 self.token_append(new_regex=regex_n, regex_quality=1)
                 # the original string, with characters and numbers replaced
                 full_replacement = suggest_regex_for_string(span.offset_string, replace_characters=True)
-                regex_f = f'(?P<{self.label.name_clean}_F_{self.id_}_{span.start_offset}>{full_replacement})'
+                regex_f = f'(?P<Label_{self.label.id_}_F_{self.id_}_{span.start_offset}>{full_replacement})'
                 self.token_append(new_regex=regex_f, regex_quality=2)
         return self._tokens
 
@@ -1214,14 +1223,14 @@ class Annotation(Data):
             if annotation == self:
                 del self.document._annotations[index]
 
-        if self.is_online:
-            response = delete_document_annotation(
-                document_id=self.document.id_, annotation_id=self.id_, project_id=self.project.id_
-            )
-            if response.status_code == 204:
-                self.id_ = None
-            else:
-                logger.exception(response.text)
+        # if self.is_online:
+        #     response = delete_document_annotation(
+        #         document_id=self.document.id_, annotation_id=self.id_, project_id=self.project.id_
+        #     )
+        #     if response.status_code == 204:
+        #         self.id_ = None
+        #     else:
+        #         logger.exception(response.text)
 
     @property
     def spans(self) -> List[Span]:
@@ -1447,6 +1456,7 @@ class Document(Data):
         Check that every character in the text is part of the bbox dictionary and that each bbox has a match in the
         document text. Also, validate the coordinates of the bounding boxes.
         """
+        warn('This method is deprecated.', DeprecationWarning, stacklevel=2)
         self._bbox = self.get_bbox()
         for index, char in enumerate(self.text):
             if char in [' ', '\f', '\n']:
@@ -1554,7 +1564,7 @@ class Document(Data):
         if self.category is None:
             raise ValueError(f'Document {self} without Category must not have Annotations')
         self.get_annotations()
-        annotations = []
+        annotations: List[Annotation] = []
         add = False
         for annotation in self._annotations:
             for span in annotation.spans:
@@ -1675,6 +1685,8 @@ class Document(Data):
 
             with open(self.pages_file_path, "w") as f:
                 json.dump(data["pages"], f, indent=2, sort_keys=True)
+        elif self.id_ is None:
+            pass  # Document is not online
         else:
             logger.error(f'{self} is not available for download.')
 
@@ -1810,8 +1822,9 @@ class Document(Data):
     @property
     def pages(self):
         """Get Pages of Document. Once loaded stored in memory."""
-        if self._pages:
-            return self._pages
+        # todo: add Page as a Class to get access to the Image
+        if self._pages is not None:
+            pass
         if not is_file(self.pages_file_path, raise_exception=False):
             self.download_document_details()
         if is_file(self.pages_file_path, raise_exception=False):
@@ -1860,10 +1873,10 @@ class Document(Data):
         self._annotations = None
         self._annotation_sets = None
 
-    def regex(self, start_offset: int, end_offset: int, search=None, max_findings_per_page=15) -> List[str]:
+    def regex(self, start_offset: int, end_offset: int, search=None, max_findings_per_page=100) -> List[str]:
         """Suggest a list of regex which can be used to get the Span of a document."""
         if search is None:
-            search = [1, 3, 5, 15]
+            search = [2, 5, 10]
         if start_offset < 0:
             raise IndexError(f'The start offset must be a positive number but is {start_offset}')
         if end_offset > len(self.text):
@@ -1872,23 +1885,31 @@ class Document(Data):
         regex_to_remove_groupnames = re.compile('<.*?>')
         annotations = self.annotations(start_offset=start_offset, end_offset=end_offset)
         for annotation in annotations:
-            for spacer in search:
-                before_regex = suggest_regex_for_string(self.text[start_offset - spacer ** 2 : start_offset])
-                after_regex = suggest_regex_for_string(self.text[end_offset : end_offset + spacer])
-                proposal = before_regex + annotation.regex() + after_regex
+            for token in annotation.tokens():
+                for spacer in search:  # todo fix this search, so that we take regex token from other spans into account
+                    before_regex = suggest_regex_for_string(
+                        self.text[start_offset - spacer ** 2 : start_offset], replace_characters=True
+                    )
+                    after_regex = suggest_regex_for_string(
+                        self.text[end_offset : end_offset + spacer], replace_characters=True
+                    )
+                    # proposal = before_regex + token['regex'] + after_regex
+                    proposal = before_regex + annotation.regex() + after_regex
 
-                # check for duplicates
-                regex_found = [re.sub(regex_to_remove_groupnames, '', reg) for reg in proposals]
-                new_regex = re.sub(regex_to_remove_groupnames, '', proposal)
-                if new_regex not in regex_found:
-                    if max_findings_per_page:
-                        num_matches = len(re.findall(proposal, self.text))
-                        if num_matches / (self.text.count('\f') + 1) < max_findings_per_page:
-                            proposals.append(proposal)
+                    # check for duplicates
+                    regex_found = [re.sub(regex_to_remove_groupnames, '', reg) for reg in proposals]
+                    new_regex = re.sub(regex_to_remove_groupnames, '', proposal)
+                    if new_regex not in regex_found:
+                        if max_findings_per_page:
+                            num_matches = len(re.findall(proposal, self.text))
+                            if num_matches / (self.text.count('\f') + 1) < max_findings_per_page:
+                                proposals.append(proposal)
+                            else:
+                                logger.info(
+                                    f'Skip to evaluate regex {repr(proposal)} as it finds {num_matches} in {self}.'
+                                )
                         else:
-                            logger.info(f'Skip to evaluate regex {repr(proposal)} as it finds {num_matches} in {self}.')
-                    else:
-                        proposals.append(proposal)
+                            proposals.append(proposal)
 
         return proposals
 
@@ -1900,7 +1921,7 @@ class Document(Data):
             regex=regex,
             keep_full_match=False,
             # filter by name of label: one regex can match multiple labels
-            filtered_group=filtered_group,
+            # filtered_group=filtered_group,
         )
         processing_time = time.time() - start_time
         correct_findings = []
@@ -2019,6 +2040,7 @@ class Project(Data):
         """Get the "No Label" which is used by a Tokenizer."""
         if not self._no_label:
             self._no_label = Label(project=self, text='NO_LABEL', label_sets=[self.no_label_set])
+            self._no_label.name_clean = 'NO_LABEL'
         return self._no_label
 
     @property
@@ -2198,11 +2220,11 @@ class Project(Data):
                 category = Category(project=self, id_=label_set_data['id'], **label_set_data)
                 category.label_sets.append(label_set)
                 label_set.categories.append(category)  # Konfuzio Server mixes the concepts, we use two instances
-                self.add_category(category)
+                # self.add_category(category)
 
         return self.label_sets
 
-    def get_labels(self):
+    def get_labels(self) -> Label:
         """Get ID and name of any Label in the Project."""
         with open(self.labels_file_path, "r") as f:
             labels_data = json.load(f)

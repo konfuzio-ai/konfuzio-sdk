@@ -5,8 +5,7 @@ from pandas import DataFrame
 
 from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span, LabelSet, Label, Category
 from konfuzio_sdk.evaluate import compare, grouped
-
-TEST_PROJECT_ID = 46
+from tests.variables import TEST_PROJECT_ID
 
 
 class TestEvaluation(unittest.TestCase):

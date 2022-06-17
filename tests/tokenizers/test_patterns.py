@@ -5,7 +5,7 @@ import unittest
 import pytest
 
 from konfuzio_sdk.data import Project, Annotation, Document, Label, AnnotationSet, LabelSet, Span, Category
-from konfuzio_sdk.tokenizer.regex import (
+from konfuzio_sdk.tokenizer.patterns import (
     RegexTokenizer,
     WhitespaceTokenizer,
     WhitespaceNoPunctuationTokenizer,
@@ -15,8 +15,10 @@ from konfuzio_sdk.tokenizer.regex import (
     NonTextTokenizer,
     NumbersTokenizer,
     LineUntilCommaTokenizer,
-    RegexMatcherTokenizer,
+    AutomatedRegexTokenizer,
 )
+
+from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 
 logger = logging.getLogger(__name__)
 
@@ -30,8 +32,6 @@ class TestRegexTokenizer(unittest.TestCase):
         cls.project = Project(id_=None)
         cls.category = Category(project=cls.project, id_=1)
         cls.category_2 = Category(project=cls.project, id_=2)
-        cls.project.add_category(cls.category)
-        cls.project.add_category(cls.category_2)
         cls.label_set = LabelSet(id_=2, project=cls.project, categories=[cls.category, cls.category_2])
         cls.label = Label(id_=3, text='LabelName', project=cls.project, label_sets=[cls.label_set])
 
@@ -151,12 +151,6 @@ class TestRegexTokenizer(unittest.TestCase):
         assert result.start_offset[0] == self.span.start_offset
         assert result.end_offset[0] == self.span.end_offset
 
-    def test_evaluate_category(self):
-        """Test evaluate a Category with a Document with 1 Span that can be found by the tokenizer."""
-        result = self.tokenizer.evaluate_category(self.category)
-        assert result.is_correct.sum() == 1
-        assert result.is_found_by_tokenizer.sum() == 1
-
 
 class TestTemplateRegexTokenizer(unittest.TestCase):
     """Template for the testings of the tokenizers based on RegexTokenizer."""
@@ -166,7 +160,6 @@ class TestTemplateRegexTokenizer(unittest.TestCase):
         """Initialize the tokenizer and test setup."""
         cls.project = Project(id_=None)
         cls.category = Category(project=cls.project, id_=1)
-        cls.project.add_category(cls.category)
         cls.label_set = LabelSet(id_=2, project=cls.project, categories=[cls.category])
         cls.label = Label(id_=3, text='test', project=cls.project, label_sets=[cls.label_set])
 
@@ -1784,8 +1777,8 @@ class TestLineUntilCommaTokenizer(TestTemplateRegexTokenizer):
         assert result[result.is_found_by_tokenizer == 1].end_offset[0] == document.annotations()[0].spans[0].end_offset
 
 
-class TestRegexMatcherTokenizer(TestTemplateRegexTokenizer):
-    """Test the RegexMatcherTokenizer."""
+class TestAutomatedRegexTokenizer(TestTemplateRegexTokenizer):
+    """Test the AutomatedRegexTokenizer."""
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -1793,8 +1786,6 @@ class TestRegexMatcherTokenizer(TestTemplateRegexTokenizer):
         cls.project = Project(id_=None)
         cls.category = Category(project=cls.project, id_=1)
         cls.category_2 = Category(project=cls.project, id_=2)
-        cls.project.add_category(cls.category)
-        cls.project.add_category(cls.category_2)
         cls.label_set = LabelSet(id_=2, project=cls.project, categories=[cls.category, cls.category_2])
         cls.label = Label(id_=3, text='LabelName', project=cls.project, label_sets=[cls.label_set])
 
@@ -1865,14 +1856,13 @@ class TestRegexMatcherTokenizer(TestTemplateRegexTokenizer):
             spans=[cls.span_test_2],
         )
 
-        cls.regex = r'[^ \n]+'
-        cls.tokenizer = RegexMatcherTokenizer(tokenizers=[RegexTokenizer(regex=cls.regex)])
-        cls.tokenizer.fit(category=cls.category)
+        cls.tokenizer = AutomatedRegexTokenizer(tokenizers=[WhitespaceTokenizer()])
+        cls.tokenizer.fit(documents=cls.category.documents())
 
     def test_1_tokenizers_added(self):
         """Test new tokenizer added."""
         assert len(self.tokenizer.tokenizers) == 2
-        assert self.tokenizer.tokenizers[0].regex == self.regex
+        assert self.tokenizer.tokenizers[0].regex == WhitespaceTokenizer().regex
         assert "all" in self.tokenizer.tokenizers[1].regex
 
     def test_2_find_what_default_tokenizer_misses(self):
@@ -1889,24 +1879,25 @@ class TestRegexMatcherTokenizer(TestTemplateRegexTokenizer):
         )
 
     def test_fit_category_without_documents(self):
-        """Test fit RegexMatcherTokenizer for Category without training Documents."""
+        """Test fit AutomatedRegexTokenizer for Category without training Documents."""
         project = Project(id_=None)
         category = Category(project=project, id_=1)
-        tokenizer = RegexMatcherTokenizer(tokenizers=[RegexTokenizer(regex=self.regex)])
+        tokenizer = AutomatedRegexTokenizer(tokenizers=[WhitespaceTokenizer()])
         with self.assertRaises(ValueError) as context:
-            tokenizer.fit(category=category)
+            tokenizer.fit(documents=category.documents())
             assert "has no training documents" in context.exception
 
-    def test_evaluate_category(self):
-        """Test evaluate_category method."""
-        self.tokenizer.processing_steps = []
-        result = self.tokenizer.evaluate_category(category=self.category)
-        assert result.is_found_by_tokenizer.sum() == 2
 
-    def test_evaluate_category_without_documents(self):
-        """Test evaluate_category method."""
-        project = Project(id_=None)
-        category = Category(project=project, id_=1)
-        with self.assertRaises(ValueError) as context:
-            _ = self.tokenizer.evaluate_category(category=category)
-            assert "has no test documents" in context.exception
+class TestMissingSpans(unittest.TestCase):
+    """Find all Spans that cannot be detected by a Tokenizer."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Initialize the test Project."""
+        project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+        cls.document = project.get_document_by_id(TEST_DOCUMENT_ID)
+
+    def test_find_missing_spans(self):
+        """Find all missing Spans in a Project."""
+        tokenizer = RegexTokenizer(regex=r'\d')
+        tokenizer.tokenize(self.document)
