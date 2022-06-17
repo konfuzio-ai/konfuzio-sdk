@@ -2038,6 +2038,7 @@ class Project(Data):
     @property
     def no_label(self) -> Label:
         """Get the "No Label" which is used by a Tokenizer."""
+        # todo the NO_LABEL is outdated if the categories change in a project
         if not self._no_label:
             self._no_label = Label(project=self, text='NO_LABEL', label_sets=[self.no_label_set])
             self._no_label.name_clean = 'NO_LABEL'
@@ -2046,8 +2047,10 @@ class Project(Data):
     @property
     def no_label_set(self) -> Label:
         """Get the "No Label Set" which is used by a Tokenizer."""
+        # todo the NO_LABEL is outdated if the categories change in a project
         if not self._no_label_set:
             self._no_label_set = LabelSet(project=self, categories=self.categories)
+            self.no_label_set.name_clean = 'NO_LABEL_SET'
         return self._no_label_set
 
     @property

@@ -39,7 +39,7 @@ class TestOfflineExampleData(unittest.TestCase):
 
     def test_project_num_label(self):
         """Test that no_label exists in the Labels of the Project and has the expected name."""
-        self.assertEqual(len(self.project.labels), 18)
+        self.assertEqual(len(self.project.labels), 19)
 
     def test_no_label(self):
         """Test if NO_LABEL is available."""
