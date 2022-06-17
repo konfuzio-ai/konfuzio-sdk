@@ -101,15 +101,14 @@ def suggest_regex_for_string(string: str, replace_characters: bool = False, repl
     return suggestion
 
 
-def get_best_regex(evaluations: List, log_stats: bool = True, allow_zero_f1score=False) -> List:
+def get_best_regex(evaluations: List, log_stats: bool = True) -> List:
     """Optimize selection of one regex in scenarios were we are unsure if all correct Annotations are Labeled."""
     df = pandas.DataFrame(evaluations)
     if df.empty:
         logger.error('We cannot find any regex!')
         return []
 
-    if not allow_zero_f1score:
-        df = df.loc[df['f1_score'] > 0]
+    df = df.loc[df['f1_score'] > 0]
 
     df = df.sort_values(
         [
