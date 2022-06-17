@@ -14,7 +14,7 @@ from konfuzio_sdk.tokenizer.base import (
     ProcessingStep,
     create_project_with_missing_spans,
 )
-from konfuzio_sdk.tokenizer.patterns import RegexTokenizer, WhitespaceTokenizer
+from konfuzio_sdk.tokenizer.regex import RegexTokenizer, WhitespaceTokenizer
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 
 logger = logging.getLogger(__name__)

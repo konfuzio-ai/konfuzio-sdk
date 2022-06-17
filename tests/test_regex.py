@@ -228,7 +228,7 @@ class TestTokens(unittest.TestCase):
         category = self.prj.get_category_by_id(63)
         tokens = label.tokens(categories=[category])
         assert len(tokens[category.id_]) == 4
-        assert '(?P<Label_12503_F_' in tokens[category.id_][0]
+        assert '(?P<Label_12503_N_' in tokens[category.id_][0]
         assert is_file(os.path.join(self.prj.regex_folder, f'{category.name}_{label.name_clean}_tokens.json5'))
 
     @unittest.skip(reason='Optimization does not work accurately at the moment. See "expected" result.')
@@ -326,14 +326,14 @@ class TestTokensMultipleCategories(unittest.TestCase):
         """Test tokens created for a single Category."""
         tokens = self.label.tokens(categories=[self.category])
         assert len(tokens) == 1
-        assert tokens[self.category.id_] == ['(?P<None_W_5_3>all)']
+        assert tokens[self.category.id_] == ['(?P<Label_3_W_5_3>all)']
 
     def test_find_tokens(self):
         """Test to find tokens a Category."""
         tokens = self.label.find_tokens(category=self.category)
         # clean evaluations for other tests (this test creates 16 evaluations)
         self.label._evaluations = {}
-        assert tokens == ['(?P<None_W_5_3>all)']
+        assert tokens == ['(?P<Label_3_W_5_3>all)']
 
     def test_find_regex(self):
         """Test to find regex for a Category."""
@@ -343,13 +343,13 @@ class TestTokensMultipleCategories(unittest.TestCase):
         self.label._evaluations = {}
         # we can have a different regex selected if the regexes are very similar because of slightly variations in
         # runtime
-        assert regexes == ['(?:(?P<None_W_5_3>all))\\,']
+        assert regexes == ['(?:(?P<Label_3_W_5_3>all))\\,']
 
     def test_annotation_tokens(self):
         """Test tokens created for an Annotation."""
         tokens = self.annotation_2.tokens()
         self.annotation_2._tokens = []  # reset after test
-        assert '(?P<None_W_11_0>Morning)' in [e['regex'] for e in tokens]
+        assert '(?P<Label_3_W_11_0>Morning)' in [e['regex'] for e in tokens]
         assert '(?P<Label_3_F_11_0>[A-ZÄÖÜ][a-zäöüß]+)' in [e['regex'] for e in tokens]
 
     def test_token_append_to_annotation(self):
@@ -364,7 +364,7 @@ class TestTokensMultipleCategories(unittest.TestCase):
         """Test tokens created based on multiple Categories."""
         tokens = self.label.tokens(categories=[self.category, self.category_2])
         assert len(tokens) == 2
-        assert tokens[self.category.id_] == ['(?P<None_W_5_3>all)']
+        assert tokens[self.category.id_] == ['(?P<Label_3_W_5_3>all)']
         assert tokens[self.category_2.id_] == ['(?P<Label_3_F_11_0>[A-ZÄÖÜ][a-zäöüß]+)']
 
     def test_tokens_one_category_after_another(self):
@@ -377,7 +377,7 @@ class TestTokensMultipleCategories(unittest.TestCase):
         tokens_2 = self.label.tokens(categories=[self.category_2])
         assert len(tokens_1) == 1
         assert len(tokens_2) == 1
-        assert tokens_1[self.category.id_] == ['(?P<None_W_5_3>all)']
+        assert tokens_1[self.category.id_] == ['(?P<Label_3_W_5_3>all)']
         assert tokens_2[self.category_2.id_] == ['(?P<Label_3_F_11_0>[A-ZÄÖÜ][a-zäöüß]+)']
 
     def test_tokens_evaluations_single_category(self):
@@ -392,7 +392,7 @@ class TestTokensMultipleCategories(unittest.TestCase):
         print(len(self.label._evaluations[self.category_2.id_]))
         assert len(self.label._evaluations[self.category.id_]) == 2
         assert len(self.label._evaluations[self.category_2.id_]) == 2
-        assert '(?P<None_W_5_3>all)' in [e['regex'] for e in self.label._evaluations[self.category.id_]]
+        assert '(?P<Label_3_W_5_3>all)' in [e['regex'] for e in self.label._evaluations[self.category.id_]]
         assert '(?P<Label_3_F_11_0>[A-ZÄÖÜ][a-zäöüß]+)' in [
             e['regex'] for e in self.label._evaluations[self.category_2.id_]
         ]
@@ -630,7 +630,7 @@ class TestRegexGenerator(unittest.TestCase):
         tax = next(x for x in self.prj.labels if x.name == 'Steuerklasse')
         category = self.prj.get_category_by_id(63)
         regex = tax.find_regex(category=category)[0]
-        assert '(?P<Label_860_F_' in regex
+        assert '(?P<Label_860_N_' in regex
 
     @unittest.skip('We do not support multiple Annotations in one offset for now')
     def test_regex_second_annotation_in_row(self):

@@ -1200,11 +1200,11 @@ class Annotation(Data):
             for span in self.spans:
                 # the original string, with harmonized whitespaces
                 harmonized_whitespace = suggest_regex_for_string(span.offset_string, replace_numbers=False)
-                regex_w = f'(?P<{self.label.name_clean}_W_{self.id_}_{span.start_offset}>{harmonized_whitespace})'
+                regex_w = f'(?P<Label_{self.label.id_}_W_{self.id_}_{span.start_offset}>{harmonized_whitespace})'
                 self.token_append(new_regex=regex_w, regex_quality=0)
                 # the original string, with numbers replaced
                 numbers_replaced = suggest_regex_for_string(span.offset_string)
-                regex_n = f'(?P<{self.label.name_clean}_N_{self.id_}_{span.start_offset}>{numbers_replaced})'
+                regex_n = f'(?P<Label_{self.label.id_}_N_{self.id_}_{span.start_offset}>{numbers_replaced})'
                 self.token_append(new_regex=regex_n, regex_quality=1)
                 # the original string, with characters and numbers replaced
                 full_replacement = suggest_regex_for_string(span.offset_string, replace_characters=True)

@@ -595,6 +595,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     def test_lose_weight(self):
         """Lose weight should remove session and documents."""
         project = Project(id_=None)
+        _ = Category(project=project)
         label_set = LabelSet(project=project)
         Label(project=project, label_sets=[label_set])
         project.lose_weight()

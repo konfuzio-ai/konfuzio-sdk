@@ -5,7 +5,7 @@ import unittest
 import pytest
 
 from konfuzio_sdk.data import Project, Annotation, Document, Label, AnnotationSet, LabelSet, Span, Category
-from konfuzio_sdk.tokenizer.patterns import (
+from konfuzio_sdk.tokenizer.regex import (
     RegexTokenizer,
     WhitespaceTokenizer,
     WhitespaceNoPunctuationTokenizer,
