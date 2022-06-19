@@ -34,7 +34,6 @@ from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID
 FOLDER_ROOT = os.path.dirname(os.path.realpath(__file__))
 
 
-@pytest.mark.serial
 class TestKonfuzioSDKAPI(unittest.TestCase):
     """Test API with payslip example Project."""
 

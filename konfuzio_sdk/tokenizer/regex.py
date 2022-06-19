@@ -230,5 +230,7 @@ class AutomatedRegexTokenizer(ListTokenizer):
         for tokenizer in initial_tokenizers:
             project = create_project_with_missing_spans(tokenizer=tokenizer, documents=documents)
             for regex in project.labels[0].find_regex(category=project.categories[0]):
-                self.tokenizers.append(RegexTokenizer(regex=regex))
+                tokenizer_new = RegexTokenizer(regex=regex)
+                logger.info(f'{tokenizer_new} found in addition to {tokenizer}')
+                self.tokenizers.append(tokenizer_new)
                 logger.info(f'Added Tokenizer {repr(regex)} to {project.categories[0]}.')

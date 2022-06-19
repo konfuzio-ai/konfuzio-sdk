@@ -1861,6 +1861,7 @@ class TestAutomatedRegexTokenizer(TestTemplateRegexTokenizer):
 
     def test_1_tokenizers_added(self):
         """Test new tokenizer added."""
+        logger.info(self.tokenizer.tokenizers)
         assert len(self.tokenizer.tokenizers) == 2
         assert self.tokenizer.tokenizers[0].regex == WhitespaceTokenizer().regex
         assert "all" in self.tokenizer.tokenizers[1].regex

@@ -767,7 +767,6 @@ class Span(Data):
                 "page_height": 0,
                 "page_index": 0,
                 "line_index": 0,
-                # "area": 0,
             }
         else:
             eval = {
@@ -799,8 +798,6 @@ class Span(Data):
                 "page_height": self.page_height,
                 "page_index": self.page_index,
                 "line_index": self.line_index,  # used by label_set clf
-                # "area": self.x0 * self.x1,  # TODO What does this feature represent? Is self.x0 and self.x1 always
-                # not None here.
             }
 
         # Add calculated values: # TODO is this the right place for these calculations?
@@ -922,7 +919,7 @@ class Annotation(Data):
             self.annotation_set: AnnotationSet = self.document.get_annotation_set_by_id(annotation_set.id_)
         else:
             self.annotation_set = None
-            logger.debug(f'{self} in {self.document} created but without Annotation Set information.')
+            logger.warning(f'{self} in {self.document} created but without Annotation Set information.')
 
         for span in spans or []:
             self.add_span(span)
@@ -1703,7 +1700,7 @@ class Document(Data):
         if annotation not in self._annotations:
             # Hotfix Text Annotation Server:
             #  Annotation belongs to a Label / Label Set that does not relate to the Category of the Document.
-            logger.debug('You are using a hotfix for API results from Konfuzio Server.')
+            logger.info('You are using a hotfix for API results from Konfuzio Server.')
             if self.category is not None:
                 if annotation.label_set is not None:
                     if annotation.label_set.categories:
@@ -1920,6 +1917,7 @@ class Document(Data):
             doctext=self.text,
             regex=regex,
             keep_full_match=False,
+            filtered_group=f'Label_{label.id_}'
             # filter by name of label: one regex can match multiple labels
             # filtered_group=filtered_group,
         )
@@ -2025,33 +2023,18 @@ class Project(Data):
         self.labels_file_path = os.path.join(self.project_folder, "labels.json5")
         self.label_sets_file_path = os.path.join(self.project_folder, "label_sets.json5")
 
-        self._no_label_set = None
-        self._no_label = None
-
         if self.id_ or self._project_folder:
             self.get(update=update)
+
+        self.no_label_set = LabelSet(project=self, categories=self.categories, id_=0)
+        self.no_label_set.name_clean = 'NO_LABEL_SET'
+        self.no_label_set.name = 'NO_LABEL_SET'
+        self.no_label = Label(project=self, text='NO_LABEL', label_sets=[self.no_label_set], id_=0)
+        self.no_label.name_clean = 'NO_LABEL'
 
     def __repr__(self):
         """Return string representation."""
         return f"Project {self.id_}"
-
-    @property
-    def no_label(self) -> Label:
-        """Get the "No Label" which is used by a Tokenizer."""
-        # todo the NO_LABEL is outdated if the categories change in a project
-        if not self._no_label:
-            self._no_label = Label(project=self, text='NO_LABEL', label_sets=[self.no_label_set])
-            self._no_label.name_clean = 'NO_LABEL'
-        return self._no_label
-
-    @property
-    def no_label_set(self) -> Label:
-        """Get the "No Label Set" which is used by a Tokenizer."""
-        # todo the NO_LABEL is outdated if the categories change in a project
-        if not self._no_label_set:
-            self._no_label_set = LabelSet(project=self, categories=self.categories)
-            self.no_label_set.name_clean = 'NO_LABEL_SET'
-        return self._no_label_set
 
     @property
     def documents(self):
@@ -2137,7 +2120,7 @@ class Project(Data):
         pathlib.Path(self.regex_folder).mkdir(parents=True, exist_ok=True)
         pathlib.Path(self.model_folder).mkdir(parents=True, exist_ok=True)
 
-        if not is_file(self.meta_file_path, raise_exception=False) or update:
+        if self.id_ and (not is_file(self.meta_file_path, raise_exception=False) or update):
             self.write_project_files()
         self.get_meta()
         self.get_labels()
@@ -2174,7 +2157,6 @@ class Project(Data):
 
         :param label: Label to add in the Project
         """
-        # todo raise NotImplementedError  # There is no reason to add a Label to a Project
         if label not in self.labels:
             self.labels.append(label)
         else:

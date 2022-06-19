@@ -203,7 +203,9 @@ def convert_to_bio_scheme(text: str, annotations: List) -> List[Tuple[str, str]]
     , O
     it O
     's O
-    Konfuzio B-ORG
+    Helm B-ORG
+    und I-ORG
+    Nagel I-ORG
     . O
 
     The start and end offsets are considered having the origin in the beginning of the input text.
@@ -218,7 +220,7 @@ def convert_to_bio_scheme(text: str, annotations: List) -> List[Tuple[str, str]]
 
     nltk.download('punkt')
     tagged_entities = []
-    annotations.sort(key=lambda x: x[0])  # todo only spans can be sorted
+    annotations.sort(key=lambda x: x[0])  # todo only spans can be sorted, this does not prevent overlapping
 
     previous_start = 0
     end = 0

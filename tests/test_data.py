@@ -24,6 +24,74 @@ from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID, TEST_PROJECT_ID
 logger = logging.getLogger(__name__)
 
 
+class TestOnlineProject(unittest.TestCase):
+    """Use this class only to test data.py operations that need an online project."""
+
+    annotations_correct = 24
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Initialize the test Project."""
+        cls.project = Project(id_=TEST_PROJECT_ID)
+
+    def test_document(self):
+        """Test properties of a specific Documents in the test Project."""
+        doc = self.project.get_document_by_id(44842)
+        assert doc.category.name == 'Lohnabrechnung'
+        label = self.project.labels[0]
+        annotations = label.annotations(categories=[self.project.get_category_by_id(63)])
+        assert len(annotations) == self.annotations_correct
+        doc.update()
+        annotations = label.annotations(categories=[self.project.get_category_by_id(63)])
+        self.assertEqual(len(annotations), self.annotations_correct)
+        assert len(doc.text) == 4793
+        assert is_file(doc.txt_file_path)
+        # assert is_file(doc.bbox_file_path) bbox is not loaded at this point.
+        assert is_file(doc.annotation_file_path)
+        assert is_file(doc.annotation_set_file_path)
+
+    def test_document_no_label_annotations_after_update(self):
+        """Test that Annotations in the no_label_annotation_set of the Document are removed after update."""
+        document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        span = Span(start_offset=0, end_offset=1)
+        _ = Annotation(
+            document=document,
+            # annotation_set=document.no_label_annotation_set,
+            label=self.project.no_label,
+            label_set=self.project.no_label_set,
+            spans=[span],
+        )
+        assert len(document.annotations(use_correct=False, label=self.project.no_label)) == 1
+        document.update()
+        assert len(document.annotations(use_correct=False, label=self.project.no_label)) == 0
+
+    def test_document_with_multiline_annotation(self):
+        """Test properties of a specific Documents in the test Project."""
+        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        label = self.project.get_label_by_id(867)
+        annotations = label.annotations(categories=[self.project.get_category_by_id(63)])
+        self.assertEqual(len(annotations), self.annotations_correct)
+        doc.update()
+        annotations = label.annotations(categories=[self.project.get_category_by_id(63)])
+        self.assertEqual(len(annotations), self.annotations_correct)
+        self.assertEqual(len(doc.text), 4537)
+        # self.assertEqual(len(glob.glob(os.path.join(doc.document_folder, '*.*'))), 4)
+
+        # existing annotation
+        # https://app.konfuzio.com/admin/server/sequenceannotation/?document_id=44823&project=46
+        self.assertEqual(len(doc.annotations(use_correct=False)), 21)  # 22 Annotations if considering negative ones
+        # a multiline Annotation in the top right corner, see https://app.konfuzio.com/a/4419937
+        self.assertEqual(66, doc.annotations()[0]._spans[0].start_offset)
+        self.assertEqual(78, doc.annotations()[0]._spans[0].end_offset)
+        self.assertEqual(159, doc.annotations()[0]._spans[1].start_offset)
+        self.assertEqual(169, doc.annotations()[0]._spans[1].end_offset)
+        self.assertEqual(len(doc.annotations()), 19)
+        self.assertTrue(doc.annotations()[0].is_online)
+        with self.assertRaises(ValueError) as context:
+            doc.annotations()[0].save()
+            assert 'cannot update Annotations once saved online' in context.exception
+
+
 class TestOfflineExampleData(unittest.TestCase):
     """Test data features without real data."""
 
@@ -64,7 +132,7 @@ class TestOfflineExampleData(unittest.TestCase):
 
 
 class TestOfflineDataSetup(unittest.TestCase):
-    """Test data features without real data."""
+    """Test data features on programmatically constructed Project."""
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -648,7 +716,6 @@ class TestKonfuzioDataCustomPath(unittest.TestCase):
         prj.delete()
 
 
-@pytest.mark.serial
 class TestKonfuzioDataSetup(unittest.TestCase):
     """Test handle data."""
 
@@ -656,14 +723,16 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     test_document_count = 3
     annotations_correct = 24
     # 24 created by human
-    # https://app.konfuzio.com/admin/server/sequenceannotation/?document__dataset_status__exact=2&label__id__exact=867&project=46&status=3
+    # https://app.konfuzio.com/admin/server/sequenceannotation/?
+    # document__dataset_status__exact=2&label__id__exact=867&project=46&status=3
     # 1 Created by human and revised by human, but on a document that has no category
-    # https://app.konfuzio.com/admin/server/sequenceannotation/?document__dataset_status__exact=2&label__id__exact=867&project=46&status=1
+    # https://app.konfuzio.com/admin/server/sequenceannotation/?
+    # document__dataset_status__exact=2&label__id__exact=867&project=46&status=1
 
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the test Project."""
-        cls.prj = Project(id_=46)
+        cls.prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
 
     def test_number_training_documents(self):
         """Test the number of Documents in data set status training."""
@@ -963,7 +1032,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_create_new_doc_via_text_and_bbox(self):
         """Test to create a new Document which by a text and a bbox."""
-        doc = Project(id_=46).get_document_by_id(TEST_DOCUMENT_ID)
+        doc = Project(id_=None, project_folder=OFFLINE_PROJECT).get_document_by_id(TEST_DOCUMENT_ID)
         new_doc = Document(project=doc.project, text=doc.text, bbox=doc.get_bbox())
         assert new_doc.text
         assert new_doc.get_bbox()
@@ -972,17 +1041,17 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_category_of_document(self):
         """Test to download a file which includes a whitespace in the name."""
-        category = Project(id_=46).get_document_by_id(44860).category
+        category = Project(id_=None, project_folder=OFFLINE_PROJECT).get_document_by_id(44860).category
         self.assertEqual(category.name, 'Lohnabrechnung')
 
     def test_category_of_document_without_category(self):
         """Test the Category of a Document without Category."""
-        category = Project(id_=46).get_document_by_id(44864).category
+        category = Project(id_=None, project_folder=OFFLINE_PROJECT).get_document_by_id(44864).category
         self.assertIsNone(category)
 
     def test_get_file_with_white_colon_name(self):
         """Test to download a file which includes a whitespace in the name."""
-        doc = Project(id_=46).get_document_by_id(44860)
+        doc = Project(id_=None, project_folder=OFFLINE_PROJECT).get_document_by_id(44860)
         doc.get_file()
 
     def test_labels(self):
@@ -1016,7 +1085,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert len(self.prj.documents)
         # check if we can initialize a new project object, which will use the same data
         assert len(self.prj.documents) == self.document_count
-        new_project = Project(id_=TEST_PROJECT_ID)
+        new_project = Project(id_=None, project_folder=OFFLINE_PROJECT)
         assert len(new_project.documents) == self.document_count
         assert new_project.meta_file_path == self.prj.meta_file_path
 
@@ -1026,22 +1095,6 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.prj.get(update=True)
         assert len(self.prj.documents) == self.document_count
         is_file(self.prj.meta_file_path)
-
-    def test_document(self):
-        """Test properties of a specific Documents in the test Project."""
-        doc = self.prj.get_document_by_id(44842)
-        assert doc.category.name == 'Lohnabrechnung'
-        label = self.prj.labels[0]
-        annotations = label.annotations(categories=[self.prj.get_category_by_id(63)])
-        assert len(annotations) == self.annotations_correct
-        doc.update()
-        annotations = label.annotations(categories=[self.prj.get_category_by_id(63)])
-        self.assertEqual(len(annotations), self.annotations_correct)
-        assert len(doc.text) == 4793
-        assert is_file(doc.txt_file_path)
-        # assert is_file(doc.bbox_file_path) bbox is not loaded at this point.
-        assert is_file(doc.annotation_file_path)
-        assert is_file(doc.annotation_set_file_path)
 
     @unittest.skip(reason='No update logic of project about new Annotation.')
     def test_annotations_in_document(self):
@@ -1095,47 +1148,6 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         """Test Assignee of a Document."""
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
         assert doc.assignee == 1043  # Document has Assignee ch+test@konfuzio.com with user ID 1043
-
-    def test_document_with_multiline_annotation(self):
-        """Test properties of a specific Documents in the test Project."""
-        doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
-        label = self.prj.get_label_by_id(867)
-        annotations = label.annotations(categories=[self.prj.get_category_by_id(63)])
-        self.assertEqual(len(annotations), self.annotations_correct)
-        doc.update()
-        annotations = label.annotations(categories=[self.prj.get_category_by_id(63)])
-        self.assertEqual(len(annotations), self.annotations_correct)
-        self.assertEqual(len(doc.text), 4537)
-        # self.assertEqual(len(glob.glob(os.path.join(doc.document_folder, '*.*'))), 4)
-
-        # existing annotation
-        # https://app.konfuzio.com/admin/server/sequenceannotation/?document_id=44823&project=46
-        self.assertEqual(len(doc.annotations(use_correct=False)), 21)  # 22 Annotations if considering negative ones
-        # a multiline Annotation in the top right corner, see https://app.konfuzio.com/a/4419937
-        self.assertEqual(66, doc.annotations()[0]._spans[0].start_offset)
-        self.assertEqual(78, doc.annotations()[0]._spans[0].end_offset)
-        self.assertEqual(159, doc.annotations()[0]._spans[1].start_offset)
-        self.assertEqual(169, doc.annotations()[0]._spans[1].end_offset)
-        self.assertEqual(len(doc.annotations()), 19)
-        self.assertTrue(doc.annotations()[0].is_online)
-        with self.assertRaises(ValueError) as context:
-            doc.annotations()[0].save()
-            assert 'cannot update Annotations once saved online' in context.exception
-
-    def test_document_no_label_annotations_after_update(self):
-        """Test that Annotations in the no_label_annotation_set of the Document are removed after update."""
-        document = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
-        span = Span(start_offset=0, end_offset=1)
-        _ = Annotation(
-            document=document,
-            annotation_set=document.no_label_annotation_set,
-            label=self.prj.no_label,
-            label_set=self.prj.no_label_set,
-            spans=[span],
-        )
-        assert len(document.annotations(use_correct=False, label=self.prj.no_label)) == 1
-        document.update()
-        assert len(document.annotations(use_correct=False, label=self.prj.no_label)) == 0
 
     def test_add_document_twice(self):
         """Test adding same Document twice."""
@@ -1372,14 +1384,13 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert len(cls.prj.labels[0].annotations(categories=[category])) == cls.annotations_correct
 
 
-@pytest.mark.serial
 class TestFillOperation(unittest.TestCase):
-    """Seperate Test as we add non Labels to the Project."""
+    """Separate Test as we add non Labels to the Project."""
 
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the test: https://app.konfuzio.com/projects/46/docs/44823/bbox-annotations/."""
-        cls.prj = Project(id_=46)
+        cls.prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
         cls.doc = cls.prj.get_document_by_id(TEST_DOCUMENT_ID)
         default_label_set = cls.prj.get_label_set_by_name('Lohnabrechnung')
         assert default_label_set.labels.__len__() == 10
