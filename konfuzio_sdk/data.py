@@ -2026,10 +2026,11 @@ class Project(Data):
         if self.id_ or self._project_folder:
             self.get(update=update)
 
-        self.no_label_set = LabelSet(project=self, categories=self.categories, id_=0)
+        # todo: list of Categories the NO LABEL SET can be outdated, i.e. if the number of Categories changes
+        self.no_label_set = LabelSet(project=self, categories=self.categories)
         self.no_label_set.name_clean = 'NO_LABEL_SET'
         self.no_label_set.name = 'NO_LABEL_SET'
-        self.no_label = Label(project=self, text='NO_LABEL', label_sets=[self.no_label_set], id_=0)
+        self.no_label = Label(project=self, text='NO_LABEL', label_sets=[self.no_label_set])
         self.no_label.name_clean = 'NO_LABEL'
 
     def __repr__(self):

@@ -894,6 +894,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert sorted([label_set.name for label_set in self.prj.categories[0].label_sets]) == [
             'Brutto-Bezug',
             'Lohnabrechnung',
+            'NO_LABEL_SET',
             'Netto-Bezug',
             'Steuer',
             'Verdiensibescheinigung',

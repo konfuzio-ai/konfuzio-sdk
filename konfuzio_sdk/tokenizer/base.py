@@ -7,7 +7,7 @@ from warnings import warn
 
 import pandas as pd
 
-from konfuzio_sdk.data import Document, Category, Project, LabelSet, Label, AnnotationSet, Span, Annotation
+from konfuzio_sdk.data import Document, Category, Project, AnnotationSet, Span, Annotation
 from konfuzio_sdk.evaluate import compare
 from konfuzio_sdk.utils import sdk_isinstance
 
@@ -142,8 +142,8 @@ def create_project_with_missing_spans(tokenizer: AbstractTokenizer, documents: L
     warn('This method is WIP.', FutureWarning, stacklevel=2)
     virtual_project = Project(None)
     virtual_category = Category(project=virtual_project)
-    virtual_label_set = LabelSet(id_=None, project=virtual_project, categories=[virtual_category])
-    virtual_label = Label(id_=None, text='CombinedToken', project=virtual_project, label_sets=[virtual_label_set])
+    virtual_label_set = virtual_project.no_label_set
+    virtual_label = virtual_project.no_label
     for document in documents:
         compared = tokenizer.evaluate(document=document)  # todo summarize evaluation, as we are calculating it
         # return all Spans that were not found
