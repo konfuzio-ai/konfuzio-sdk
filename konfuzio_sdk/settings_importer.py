@@ -25,20 +25,12 @@ LOG_FORMAT = (
     "[%(funcName)-20.20s][%(lineno)-4.4d] %(message)-10s"
 )
 
-handlers = [
-    logging.StreamHandler()
-]
+handlers = [logging.StreamHandler()]
 
-try:
+if config('LOG_TO_FILE', default=True):
     with open(LOG_FILE_PATH, "a") as f:
         if f.writable():
             handlers.append(logging.FileHandler(LOG_FILE_PATH))
-except OSError:
-    pass
 
 
-logging.basicConfig(
-    level=config('LOGGING_LEVEL', default=logging.INFO, cast=int),
-    format=LOG_FORMAT,
-    handlers=handlers,
-)
+logging.basicConfig(level=config('LOGGING_LEVEL', default=logging.INFO, cast=int), format=LOG_FORMAT, handlers=handlers)
