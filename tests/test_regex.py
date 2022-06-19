@@ -151,6 +151,22 @@ def test_regex_spans_with_invalid_regex_group_name():
     assert expected_result == result
 
 
+def test_regex_spans_filtered_group():
+    """Test to run regex_matches with an invalid group name."""
+    result = regex_matches('Call me at 12 AM.', regex=r'(?P<variable1>\d)(?P<variable2>\d)', filtered_group='variable1')
+    expected_result = [
+        {
+            'regex_used': "'(?P<variable1>\\\\d)(?P<variable2>\\\\d)'",
+            'regex_group': 'variable1',
+            'value': '1',
+            'start_offset': 11,
+            'end_offset': 12,
+            'start_text': 0,
+        }
+    ]
+    assert expected_result == result
+
+
 def test_get_best_regex():
     """Test to evaluate an empty list."""
     assert get_best_regex([]) == []
