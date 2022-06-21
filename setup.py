@@ -46,8 +46,8 @@ setuptools.setup(
         'numpy==1.19.0',
         'pandas',  # todo add ==1.1.5, which causes conflict konfuzio-sdk[dev] 0.2.3 depends on pandas==1.1.5 / 1.0.5
         'python-dateutil',
-        'python-decouple==3.3',
-        'requests==2.24.0',
+        'python-decouple',  # todo add ==3.3 ?
+        'requests',  # todo add ==2.24.0 ?
         'regex==2020.6.8',  # re module but better
         'tabulate==0.8.7',  # Used to pretty print DataFrames
         'tqdm',
