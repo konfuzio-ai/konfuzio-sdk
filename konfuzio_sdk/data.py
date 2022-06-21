@@ -680,7 +680,17 @@ class Span(Data):
                     f' y0: {self.y0}, y1: {self.y1}, document: {self.annotation.document}.'
                 )
 
-            if self.page_index is not None and not (self.x1 < self.page_width) or not (self.y1 < self.page_height):
+            check_page = True
+            if self.page_index is None:
+                logger.error(f'Page index is None of {self} in {self.annotation.document}.')
+                check_page = False
+            if self.page_height is None:
+                logger.error(f'Page Height is None of {self} in {self.annotation.document}.')
+                check_page = False
+            if self.page_width is None:
+                logger.error(f'Page Width is None of {self} in {self.annotation.document}.')
+                check_page = False
+            if check_page and (not (self.x1 < self.page_width) or not (self.y1 < self.page_height)):
                 raise ValueError(
                     f'{self} in {self.annotation.document}: bounding box of span is located outside of '
                     f'the page, document: {self.annotation.document}.'

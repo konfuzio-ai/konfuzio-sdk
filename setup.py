@@ -36,21 +36,25 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     url="https://github.com/konfuzio-ai/konfuzio-sdk/",
-    packages=['konfuzio_sdk', 'konfuzio_sdk.tokenizer'],
+    packages=['konfuzio_sdk', 'konfuzio_sdk.tokenizer', 'konfuzio_sdk.trainer'],
     include_package_data=True,
     entry_points={'console_scripts': ['konfuzio_sdk=konfuzio_sdk.cli:main']},
     install_requires=[
-        'filetype',
+        'filetype==1.0.7',  # Used to check that files are in the correct format
+        'dill==0.3.2',  # Used to pickle objects
         'nltk',
-        'numpy',
+        'numpy==1.19.0',
         'pandas==1.1.5',
-        'Pillow',
         'python-dateutil',
-        'python-decouple',
-        'requests',
-        'regex',
-        'tabulate',
+        'python-decouple==3.3',
+        'requests==2.24.0',
+        'regex==2020.6.8',  # re module but better
+        'tabulate==0.8.7',  # Used to pretty print DataFrames
         'tqdm',
+        'pandas==1.0.5',
+        'pathos==0.2.6',
+        'pympler==0.9',  # Use to get pickle file size.
+        'scikit-learn==0.23.1',
     ],
     extras_require={
         'dev': [
