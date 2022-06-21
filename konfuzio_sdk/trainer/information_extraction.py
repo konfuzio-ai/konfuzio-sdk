@@ -195,7 +195,7 @@ def dict_to_dataframe(res_dict):
 #     pickle_path = os.path.join(folder_path, pickle_name)
 #     if not os.path.isfile(pickle_path):
 #         pickle_path = pickle_name
-#
+
 #     device = 'cpu'
 #     if torch.cuda.is_available():
 #         device = 'cuda'
