@@ -1013,16 +1013,11 @@ class Annotation(Data):
     def __eq__(self, other):
         """We compare an Annotation based on it's Label, Label-Sets if it's online otherwise on the id_local."""
         result = False
-        if self.document and other.document and self.document == other.document:
-            if self.document and other.document and self.document == other.document:
-                if self.is_correct and other.is_correct:
-                    for span_1 in self.spans:
-                        for span_2 in other.spans:
-                            if span_1 == span_2:
-                                return True
-                else:
-                    if self.spans == other.spans:
-                        return True
+        if self.document and other.document and self.document == other.document:  # same Document
+            # if self.is_correct and other.is_correct:  # for correct Annotations check if they are identical
+            if self.label and other.label and self.label == other.label:  # same Label
+                if self.spans == other.spans:  # logic changed from "one Span is identical" to "all Spans identical"
+                    return True
 
         return result
 

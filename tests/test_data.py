@@ -155,6 +155,166 @@ class TestOfflineExampleData(unittest.TestCase):
         span.bbox()
 
 
+class TestEqualityAnnotation(unittest.TestCase):
+    """Test the equality of Annotations."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Initialize the test Project."""
+        cls.project = Project(id_=None)
+        cls.label_one = Label(project=cls.project, text='First')
+        cls.label_two = Label(project=cls.project, text='First')
+        cls.category = Category(project=cls.project, id_=1)
+        cls.document = Document(project=cls.project, category=cls.category)
+        cls.label_set = LabelSet(project=cls.project, categories=[cls.category], id_=421)
+        # cls.label_set.add_label(cls.label)
+        cls.annotation_set = AnnotationSet(document=cls.document, label_set=cls.label_set)
+        assert len(cls.project.virtual_documents) == 1
+
+    def test_overlapping_correct_same_label(self):
+        """Reject to add Annotations that are identical."""
+        document = Document(project=self.project, category=self.category)
+        first_span = Span(start_offset=1, end_offset=2)
+        second_span = Span(start_offset=1, end_offset=2)
+        _ = Annotation(
+            document=document, spans=[first_span], label_set=self.label_set, label=self.label_one, is_correct=True
+        )
+
+        with pytest.raises(ValueError) as e:
+            _ = Annotation(
+                document=document, spans=[second_span], label_set=self.label_set, label=self.label_one, is_correct=True
+            )
+            assert 'is a duplicate of' in str(e)
+
+    def test_partially_overlapping_correct_same_label(self):
+        """Accept to add Annotation with the same Label if parts of their Spans differ."""
+        document = Document(project=self.project, category=self.category)
+        first_span = Span(start_offset=1, end_offset=2)
+        second_span = Span(start_offset=1, end_offset=2)
+        third_span = Span(start_offset=2, end_offset=3)
+        _ = Annotation(
+            document=document, spans=[first_span], label_set=self.label_set, label=self.label_one, is_correct=True
+        )
+
+        _ = Annotation(
+            document=document,
+            spans=[second_span, third_span],
+            label_set=self.label_set,
+            label=self.label_one,
+            is_correct=True,
+        )
+
+    def test_overlapping_wrong_same_label(self):
+        """Accept to add Annotation with the same Label if both are not correct."""
+        document = Document(project=self.project, category=self.category)
+        first_span = Span(start_offset=1, end_offset=2)
+        second_span = Span(start_offset=1, end_offset=2)
+        _ = Annotation(
+            document=document, spans=[first_span], label_set=self.label_set, label=self.label_one, is_correct=False
+        )
+
+        with pytest.raises(ValueError) as e:
+            _ = Annotation(
+                document=document, spans=[second_span], label_set=self.label_set, label=self.label_one, is_correct=False
+            )
+            assert 'is a duplicate of' in str(e)
+
+    def test_partially_overlapping_wrong_same_label(self):
+        """Accept to add Annotation with the same Label if parts of their Spans differ and one is not correct."""
+        document = Document(project=self.project, category=self.category)
+        first_span = Span(start_offset=1, end_offset=2)
+        second_span = Span(start_offset=1, end_offset=2)
+        third_span = Span(start_offset=2, end_offset=3)
+        _ = Annotation(
+            document=document, spans=[first_span], label_set=self.label_set, label=self.label_one, is_correct=False
+        )
+
+        _ = Annotation(
+            document=document,
+            spans=[second_span, third_span],
+            label_set=self.label_set,
+            label=self.label_one,
+            is_correct=False,
+        )
+
+    def test_overlapping_partially_correct_same_label(self):
+        """Accept to add Annotation with the same Label if one Annotation is not correct."""
+        document = Document(project=self.project, category=self.category)
+        first_span = Span(start_offset=1, end_offset=2)
+        second_span = Span(start_offset=1, end_offset=2)
+        _ = Annotation(
+            document=document, spans=[first_span], label_set=self.label_set, label=self.label_one, is_correct=True
+        )
+
+        with pytest.raises(ValueError) as e:
+            _ = Annotation(
+                document=document, spans=[second_span], label_set=self.label_set, label=self.label_one, is_correct=False
+            )
+            assert 'is a duplicate of' in str(e)
+
+    def test_partially_overlapping_partially_correct_same_label(self):
+        """Accept to add Annotation with the same Label if parts of their Spans differ and one is not correct."""
+        document = Document(project=self.project, category=self.category)
+        first_span = Span(start_offset=1, end_offset=2)
+        second_span = Span(start_offset=1, end_offset=2)
+        third_span = Span(start_offset=2, end_offset=3)
+        _ = Annotation(
+            document=document, spans=[first_span], label_set=self.label_set, label=self.label_one, is_correct=True
+        )
+
+        _ = Annotation(
+            document=document,
+            spans=[second_span, third_span],
+            label_set=self.label_set,
+            label=self.label_one,
+            is_correct=False,
+        )
+
+    def test_overlapping_correct_other_label(self):
+        """Accept to add Annotation with different Labels."""
+        document = Document(project=self.project, category=self.category)
+        first_span = Span(start_offset=1, end_offset=2)
+        second_span = Span(start_offset=1, end_offset=2)
+        _ = Annotation(
+            document=document, spans=[first_span], label_set=self.label_set, label=self.label_two, is_correct=True
+        )
+
+        _ = Annotation(
+            document=document, spans=[second_span], label_set=self.label_set, label=self.label_one, is_correct=True
+        )
+
+    def test_overlapping_wrong_other_label(self):
+        """Accept to add Annotation with different Labels if both are not correct."""
+        document = Document(project=self.project, category=self.category)
+        first_span = Span(start_offset=1, end_offset=2)
+        second_span = Span(start_offset=1, end_offset=2)
+        _ = Annotation(
+            document=document, spans=[first_span], label_set=self.label_set, label=self.label_one, is_correct=False
+        )
+
+        _ = Annotation(
+            document=document, spans=[second_span], label_set=self.label_set, label=self.label_two, is_correct=False
+        )
+
+    def test_partially_overlapping_partially_correct_other_label(self):
+        """Accept to add Annotation with different Labels if one is not correct and one is only some Spans overlap."""
+        document = Document(project=self.project, category=self.category)
+        first_span = Span(start_offset=1, end_offset=2)
+        second_span = Span(start_offset=1, end_offset=2)
+        third_span = Span(start_offset=2, end_offset=3)
+        _ = Annotation(
+            document=document, spans=[first_span], label_set=self.label_set, label=self.label_one, is_correct=True
+        )
+
+        _ = Annotation(
+            document=document,
+            spans=[second_span, third_span],
+            label_set=self.label_set,
+            label=self.label_two,
+            is_correct=False,
+        )
+
+
 class TestOfflineDataSetup(unittest.TestCase):
     """Test data features on programmatically constructed Project."""
 
