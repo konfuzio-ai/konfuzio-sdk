@@ -388,21 +388,22 @@ class Label(Data):
 
         return {k: v for k, v in self._tokens.items() if k in categories_ids}
 
-    def check_tokens(self, categories: List[Category]):
-        """Check if a list of regex do find the Annotations. Log Annotations that we cannot find."""
-        not_found = []
-        for annotation in self.annotations(categories=categories):
-            for span in annotation.spans:
-                valid_offset = span.offset_string.replace('\n', '').replace('\t', '').replace('\f', '').replace(' ', '')
-                categories_tokens = self.tokens(categories=categories)
-                for _, category_tokens in categories_tokens.items():
-                    created_regex = annotation.regex_annotation_generator(category_tokens)
-                    if valid_offset and span not in created_regex:
-                        logger.error(
-                            f'Please check Annotation ({span.annotation.get_link()}) >>{repr(span.offset_string)}<<.'
-                        )
-                        not_found.append(span)
-        return not_found
+    # def check_tokens(self, categories: List[Category]):
+    #     """Check if a list of regex do find the Annotations. Log Annotations that we cannot find."""
+    #     not_found = []
+    #     for annotation in self.annotations(categories=categories):
+    #         for span in annotation.spans:
+    #             valid_offset = span.offset_string.replace('\n', '').replace('\t', '').\
+    #             replace('\f', '').replace(' ', '')
+    #             categories_tokens = self.tokens(categories=categories)
+    #             for _, category_tokens in categories_tokens.items():
+    #                 created_regex = annotation.regex_annotation_generator(category_tokens)
+    #                 if valid_offset and span not in created_regex:
+    #                     logger.error(
+    #                         f'Please check Annotation ({span.annotation.get_link()}) >>{repr(span.offset_string)}<<.'
+    #                     )
+    #                     not_found.append(span)
+    #     return not_found
 
     def combined_tokens(self, categories: List[Category]):
         """Create one OR Regex for all relevant Annotations tokens."""
