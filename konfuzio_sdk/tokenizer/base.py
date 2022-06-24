@@ -160,6 +160,7 @@ def create_project_with_missing_spans(tokenizer: AbstractTokenizer, documents: L
         annotation_set_1 = AnnotationSet(id_=None, document=remaining_span_doc, label_set=virtual_label_set)
         # add Spans to the virtual Document in case the Tokenizer was not able to find them
         for index, span_info in missing_spans.iterrows():
+            # todo: Schema for bbox format https://gitlab.com/konfuzio/objectives/-/issues/8661
             new_span = Span(start_offset=span_info['start_offset'], end_offset=span_info['end_offset'])
             # todo add Tokenizer used to create Span
             _ = Annotation(
@@ -172,7 +173,7 @@ def create_project_with_missing_spans(tokenizer: AbstractTokenizer, documents: L
                 spans=[new_span],
             )
         logger.warning(
-            f'{len(remaining_span_doc.spans(use_correct=False))} of {len(document.spans())} '
+            f'{len(remaining_span_doc.spans)} of {len(document.spans)} '
             f'correct Spans in {document} the abstract Tokenizer did not find.'
         )
     return virtual_project

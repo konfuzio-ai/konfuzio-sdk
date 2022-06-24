@@ -137,7 +137,7 @@ class TestInformationExtraction(unittest.TestCase):
         pipeline.clf.fit(X, y)
         with pytest.raises(KeyError) as einfo:
             pipeline.extract(document)
-        assert 'Features of Document do not match' in str(einfo.value)
+        assert 'do not match the features of the pipeline' in str(einfo.value)
 
     def test_extract_with_correctly_fitted_clf(self):
         """Test to extract a Document."""

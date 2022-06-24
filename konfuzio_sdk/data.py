@@ -624,8 +624,7 @@ class Span(Data):
         self._page_index = None
         self._line_index = None
 
-        if annotation:
-            annotation.add_span(self)
+        annotation and annotation.add_span(self)  # only add if Span has access to an Annotation
 
     def __eq__(self, other) -> bool:
         """Compare any point of data with their position is equal."""
@@ -1078,10 +1077,12 @@ class Annotation(Data):
     def add_span(self, span: Span):
         """Add a Span to an Annotation incl. a duplicate check per Annotation."""
         if span not in self._spans:
-            self._spans.append(span)
-            if span.annotation is not None and span.annotation != self:
-                raise ValueError(f'{span} is added to {self} however it was assigned to {span.annotation} before.')
-            span.annotation = self
+            # add the Span first to make sure to bea able to do a duplicate check
+            self._spans.append(span)  # one Annotation can span multiple Spans
+            if span.annotation is not None and self != span.annotation:
+                raise ValueError(f'{span} should be added to {self} but relates to {span.annotation}.')
+            else:
+                span.annotation = self  # todo feature to link one Span to many Annotations
         else:
             raise ValueError(f'In {self} the {span} is a duplicate and will not be added.')
         return self
@@ -1279,7 +1280,7 @@ class Document(Data):
 
     def __init__(
         self,
-        project,
+        project: 'Project',
         id_: Union[int, None] = None,
         file_url: str = None,
         status=None,
@@ -1406,11 +1407,22 @@ class Document(Data):
 
         return self._no_label_annotation_set
 
-    def spans(self, use_correct=True):
-        """Return Spans of the Document."""
+    @property
+    def spans(self):
+        """Return all Spans of the Document."""
         spans = []
-        for annotation in self.annotations(use_correct=use_correct):
-            spans += annotation.spans
+        if self._annotations is None:
+            self.annotations()
+
+        for annotation in self._annotations:
+            for span in annotation.spans:
+                if span not in spans:
+                    spans.append(span)
+
+        # if self.spans == list(set(self.spans)):
+        #     # todo deduplicate Spans. One text offset in a document can ber referenced by many Spans of Annotations
+        #     raise NotImplementedError
+
         return sorted(spans)
 
     def _load_pages(self, pages_data: List[Union[Dict, Page]]):
@@ -1503,6 +1515,18 @@ class Document(Data):
                 )
 
         return valid
+
+    def __deepcopy__(self, memo) -> 'Document':
+        """Create a new Document of the instance."""
+        return Document(
+            id=None,
+            project=self.project,
+            category=self.category,
+            text=self.text,
+            bbox=self.get_bbox(),
+            pages=self.pages,
+            copy_of_id=self.id_,
+        )
 
     def check_annotations(self, update_document: bool = False) -> bool:
         """Check if Annotations are valid - no duplicates and correct Category."""
@@ -1714,7 +1738,7 @@ class Document(Data):
         if annotation not in self._annotations:
             # Hotfix Text Annotation Server:
             #  Annotation belongs to a Label / Label Set that does not relate to the Category of the Document.
-            logger.info('You are using a hotfix for API results from Konfuzio Server.')
+            # todo: add test that the Label and Label Set of an Annotation belong to the Category of the Document
             if self.category is not None:
                 if annotation.label_set is not None:
                     if annotation.label_set.categories:
@@ -2040,7 +2064,7 @@ class Project(Data):
         if self.id_ or self._project_folder:
             self.get(update=update)
 
-        # todo: list of Categories the NO LABEL SET can be outdated, i.e. if the number of Categories changes
+        # todo: list of Categories related to NO LABEL SET can be outdated, i.e. if the number of Categories changes
         self.no_label_set = LabelSet(project=self, categories=self.categories)
         self.no_label_set.name_clean = 'NO_LABEL_SET'
         self.no_label_set.name = 'NO_LABEL_SET'
