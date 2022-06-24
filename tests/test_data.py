@@ -2,6 +2,7 @@
 import logging
 import os
 import unittest
+from copy import copy, deepcopy
 
 import pytest
 
@@ -108,6 +109,25 @@ class TestOfflineExampleData(unittest.TestCase):
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
         assert len(cls.project.documents) == 26
+
+    def test_copy(self):
+        """Test that copy is not allowed as it needs to be implemented for every SDK concept."""
+        data = Data()
+        with pytest.raises(NotImplementedError):
+            copy(data)
+
+    def test_deepcopy(self):
+        """Test that deeepcopy is not allowed as it needs to be implemented for every SDK concept."""
+        data = Data()
+        with pytest.raises(NotImplementedError):
+            deepcopy(data)
+
+    def test_document_copy(self) -> None:
+        """Test to create a new Document instance."""
+        document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        new_document = deepcopy(document)
+        assert new_document != document
+        assert new_document._annotations is None  # for now the implementation just copies the bbox and text
 
     def test_project_num_label(self):
         """Test that no_label exists in the Labels of the Project and has the expected name."""

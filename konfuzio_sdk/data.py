@@ -52,6 +52,14 @@ class Data:
         """Make any online or local concept hashable. See https://stackoverflow.com/a/7152650."""
         return hash(str(self.id_local))
 
+    def __copy__(self):
+        """Not yet modelled."""
+        raise NotImplementedError
+
+    def __deepcopy__(self, memodict):
+        """Not yet modelled."""
+        raise NotImplementedError
+
     # todo require to overwrite lose_weight via @abstractmethod
     def lose_weight(self):
         """Delete data of the instance."""
