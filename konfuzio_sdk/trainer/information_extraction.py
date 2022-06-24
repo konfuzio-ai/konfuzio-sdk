@@ -9,6 +9,7 @@ import shutil
 import sys
 import time
 import unicodedata
+from copy import deepcopy
 from heapq import nsmallest
 from random import random
 from typing import Tuple, Optional, List, Union, Callable, Dict
@@ -28,6 +29,7 @@ from sklearn.metrics import (
     precision_score,
 )
 from sklearn.model_selection import train_test_split
+from sklearn.utils.validation import check_is_fitted
 from tabulate import tabulate
 
 from konfuzio_sdk.data import Document, Label, Annotation, Category
@@ -396,11 +398,6 @@ def date_count(s: str) -> int:
 
 def year_month_day_count(offset_string_list: list) -> Tuple[List[int], List[int], List[int]]:
     """Given a list of offset-strings extracts the according dates, months and years for each string."""
-    # class TestAnnotation:
-    #    offset_string = None
-    #    translated_string = None
-    #    is_correct = False
-
     year_list = []
     month_list = []
     day_list = []
@@ -408,8 +405,6 @@ def year_month_day_count(offset_string_list: list) -> Tuple[List[int], List[int]
     assert isinstance(offset_string_list, list)
 
     for s in offset_string_list:
-        # t = TestAnnotation()
-        # t.offset_string = s
         _normalization = normalize_to_date(s)
         if _normalization:
             year_list.append(int(_normalization[:4]))
@@ -430,13 +425,6 @@ def num_count(s: str) -> float:
 
     If possible it returns the number as a float.
     """
-    # class TestAnnotation:
-    #     offset_string = None
-    #     translated_string = None
-    #     is_correct = False
-    #
-    # t = TestAnnotation()
-    # t.offset_string = s
     num = normalize_to_float(s)
 
     if num:
@@ -476,16 +464,6 @@ def duplicate_count(s: str) -> int:
             counter += count[key]
 
     return counter
-
-
-# def substring_count(list: list, substring: str) -> list:
-#     """Given a list of strings returns the occurrence of a certain substring and returns the results as a list."""
-#     r_list = [0] * len(list)
-#
-#     for index in range(len(list)):
-#         r_list[index] = list[index].lower().count(substring)
-#
-#     return r_list
 
 
 def unique_char_count(s: str) -> int:
@@ -564,55 +542,55 @@ def plot_label_distribution(df_list: list, df_name_list=None) -> None:
     )
 
 
-def evaluate_split_quality(df_train: pandas.DataFrame, df_val: pandas.DataFrame, percentage: Optional[float] = None):
-    """Evaluate if the split method used produces satisfactory results."""
-    # check if df_train or df_val is empty
-    if df_train.empty:
-        logger.error('df_train is empty.')
-        return None
-    if df_val.empty:
-        logger.error('df_val is empty.')
-        return None
-    logger.info('Start split quality tests.')
-    n_train_examples = df_train.shape[0]
-    n_val_examples = df_val.shape[0]
-    n_total_examples = n_train_examples + n_val_examples
-
-    # check if the splits in total numbers is ok
-    if percentage and n_total_examples > 100:
-        if abs(n_train_examples / (n_total_examples * percentage) - 1) > 0.05:
-            logger.error(
-                f'Splits differ from split percentage significantly. Percentage: {percentage}. '
-                + f'Real Percentage: {n_train_examples / n_total_examples}'
-            )
-
-    train_dict = df_train['label_text'].value_counts().to_dict()
-    val_dict = df_val['label_text'].value_counts().to_dict()
-    total_dict = pandas.concat([df_train['label_text'], df_val['label_text']]).value_counts().to_dict()
-
-    train_dict_rel = df_train['label_text'].value_counts(normalize=True).to_dict()
-    val_dict_rel = df_val['label_text'].value_counts(normalize=True).to_dict()
-    total_dict_rel = (
-        pandas.concat([df_train['label_text'], df_val['label_text']]).value_counts(normalize=True).to_dict()
-    )
-
-    # checks the balance of the labels per split (and if there is at least one)
-    for key, value in total_dict_rel.items():
-        if key not in train_dict.keys():
-            logger.error('No sample of label "' + key + '" found in training dataset.')
-        elif total_dict[key] > 30 and abs(train_dict_rel[key] - value) > 0.05 * max(total_dict_rel[key], 0.01):
-            logger.error('Unbalanced distribution of label "' + key + '" (Significant deviation in training set)')
-        else:
-            logger.info('Balanced distribution of label "' + key + '" in training set')
-
-        if key not in val_dict.keys():
-            logger.error('No sample of label "' + key + '" found in validation dataset.')
-        elif total_dict[key] > 30 and abs(val_dict_rel[key] - value) > 0.05 * max(total_dict_rel[key], 0.01):
-            logger.warning('Unbalanced distribution of label "' + key + '" (Significant deviation in validation set)')
-        else:
-            logger.info('Balanced distribution of label "' + key + '" in validation set')
-
-    logger.info('Split quality test completed.')
+# def evaluate_split_quality(df_train: pandas.DataFrame, df_val: pandas.DataFrame, percentage: Optional[float] = None):
+#     """Evaluate if the split method used produces satisfactory results."""
+#     # check if df_train or df_val is empty
+#     if df_train.empty:
+#         logger.error('df_train is empty.')
+#         return None
+#     if df_val.empty:
+#         logger.error('df_val is empty.')
+#         return None
+#     logger.info('Start split quality tests.')
+#     n_train_examples = df_train.shape[0]
+#     n_val_examples = df_val.shape[0]
+#     n_total_examples = n_train_examples + n_val_examples
+#
+#     # check if the splits in total numbers is ok
+#     if percentage and n_total_examples > 100:
+#         if abs(n_train_examples / (n_total_examples * percentage) - 1) > 0.05:
+#             logger.error(
+#                 f'Splits differ from split percentage significantly. Percentage: {percentage}. '
+#                 + f'Real Percentage: {n_train_examples / n_total_examples}'
+#             )
+#
+#     train_dict = df_train['label_text'].value_counts().to_dict()
+#     val_dict = df_val['label_text'].value_counts().to_dict()
+#     total_dict = pandas.concat([df_train['label_text'], df_val['label_text']]).value_counts().to_dict()
+#
+#     train_dict_rel = df_train['label_text'].value_counts(normalize=True).to_dict()
+#     val_dict_rel = df_val['label_text'].value_counts(normalize=True).to_dict()
+#     total_dict_rel = (
+#         pandas.concat([df_train['label_text'], df_val['label_text']]).value_counts(normalize=True).to_dict()
+#     )
+#
+#     # checks the balance of the labels per split (and if there is at least one)
+#     for key, value in total_dict_rel.items():
+#         if key not in train_dict.keys():
+#             logger.error('No sample of label "' + key + '" found in training dataset.')
+#         elif total_dict[key] > 30 and abs(train_dict_rel[key] - value) > 0.05 * max(total_dict_rel[key], 0.01):
+#             logger.error('Unbalanced distribution of label "' + key + '" (Significant deviation in training set)')
+#         else:
+#             logger.info('Balanced distribution of label "' + key + '" in training set')
+#
+#         if key not in val_dict.keys():
+#             logger.error('No sample of label "' + key + '" found in validation dataset.')
+#         elif total_dict[key] > 30 and abs(val_dict_rel[key] - value) > 0.05 * max(total_dict_rel[key], 0.01):
+#             logger.warning('Unbalanced distribution of label "' + key + '" (Significant deviation in validation set)')
+#         else:
+#             logger.info('Balanced distribution of label "' + key + '" in validation set')
+#
+#     logger.info('Split quality test completed.')
 
 
 def split_in_two_by_document_df(
@@ -804,16 +782,11 @@ def process_document_data(
     n_nearest_across_lines: bool = False,
 ) -> Tuple[pandas.DataFrame, List, pandas.DataFrame]:
     """
-    Convert the json_data from one document to a DataFrame that can be used for training or prediction.
+    Convert the json_data from one Document to a DataFrame that can be used for training or prediction.
 
     Additionally returns the fake negatives, errors and conflicting annotations as a DataFrames and of course the
     column_order for training
     """
-    if tokenize_fn is None:
-        tokenize_fn = functools.partial(regex_matches, regex='[^ \n\t\f]+')
-    else:
-        assert callable(tokenize_fn), 'tokenize_fn must be callable'
-
     logger.info(f'Start generating features for document {document}.')
     file_error_data = []
     file_data_raw = []
@@ -840,7 +813,6 @@ def process_document_data(
         # if the document text is empty or if there are no ocr'd characters
         # then return an empty dataframe for the data, an empty feature list and an empty dataframe for the "error" data
         raise NotImplementedError
-        return pandas.DataFrame(), [], pandas.DataFrame()
 
     line_list: List[Dict] = []
     char_counter = 0
@@ -1774,58 +1746,77 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
         self.catchphrase_features = kwargs.get('catchphrase_features', None)
 
         self.regexes = None  # set later
-        self.label_feature_list = None  # will be set later
         self.tokenizer = None
 
-    def extract(self, document) -> 'Dict':
+    def features(self, document: Document):
+        """Calculate features using the best working default values that can be overwritten with self values."""
+        df, _feature_list, _temp_df_raw_errors = process_document_data(
+            document=document,
+            annotations=document.annotations(use_correct=False),
+            n_nearest=self.n_nearest if hasattr(self, 'n_nearest') else 2,
+            first_word=self.first_word if hasattr(self, 'first_word') else True,
+            tokenize_fn=self.tokenizer.tokenize,  # todo: we are tokenizing the document multiple times
+            catchphrase_list=self.catchphrase_features if hasattr(self, 'catchphrase_features') else None,
+            substring_features=self.substring_features if hasattr(self, 'substring_features') else None,
+            n_nearest_across_lines=self.n_nearest_across_lines if hasattr(self, 'n_nearest_across_lines') else False,
+        )
+        return df, _feature_list, _temp_df_raw_errors
+
+    def extract(self, document: Document) -> 'Dict':
         """
-        Use self to extract all known labels and section_labels.
+        Infer information from a given Document.
 
         :param text: HTML or raw text of document
         :param bbox: Bbox of the document
         :return: dictionary of labels and top candidates
 
+        :raises:
+         AttributeError: When missing a Tokenizer
+         NotFittedError: When CLF is not fitted
+
         """
-        document = Document(
-            id=None,
-            project=document.project,
-            category=document.category,
-            text=document.text,
-            bbox=document.get_bbox(),
-            pages=document.pages,
-        )
-
-        self.tokenizer.tokenize(document)
-
-        # remove annotations for extraction
-        doc_annotations = document.annotations(use_correct=False, label=document.project.no_label)
-        document._annotations = []
-
-        # Generate features
-        df, _ = self.feature_function(
-            documents=[document],
-            n_nearest=self.n_nearest if hasattr(self, 'n_nearest') else 2,
-            first_word=self.first_word if hasattr(self, 'first_word') else True,
-        )
-        if df.empty:
-            return {}
+        if self.tokenizer is None:
+            raise AttributeError(f'{self} missing Tokenizer.')
 
         if self.clf is None and hasattr(self, 'label_clf'):  # Can be removed for models after 09.10.2020
             self.clf = self.label_clf
 
-        results = pandas.DataFrame(
-            data=self.clf.predict_proba(X=df[self.label_feature_list]), columns=self.clf.classes_
-        )
+        if self.clf is None:
+            raise AttributeError(f'{self} does not provide a Label Classifier. Please add it.')
+        else:
+            check_is_fitted(self.clf)
+
+        # Main Logic -------------------------
+        # 1. start inference with new document
+        inference_document = deepcopy(document)
+        # 2. tokenize
+        self.tokenizer.tokenize(inference_document)
+        if not inference_document.spans:
+            logger.error(f'{self.tokenizer} does not provide Spans for {document}')
+            raise NotImplementedError('No error handling when Spans are missing.')
+        # 3. preprocessing
+        df, _feature_names, _raw_errors = self.features(inference_document)
+        try:
+            independet_variables = df[self.label_feature_list]
+        except KeyError:
+            raise KeyError(f'Features of {document} do not match the features of the pipeline.')
+            # todo calculate features of Document as defined in pipeline and do not check afterwards
+        # 4. prediction and store most likely prediction and its accuracy in separated columns
+        results = pandas.DataFrame(data=self.clf.predict_proba(X=independet_variables), columns=self.clf.classes_)
+        df['label_text'] = results.idxmax(axis=1)
+        df['Accuracy'] = results.max(axis=1)
+        # 5. Translation
+        df['Translated_Candidate'] = df['offset_string']  # todo: make translation explicit: It's a cool Feature
+        # Main Logic -------------------------
 
         # Remove no_label predictions
         if 'NO_LABEL' in results.columns:
             results = results.drop(['NO_LABEL'], axis=1)
 
-        # Store most likely prediction and its accuracy in separated columns
-        df['label_text'] = results.idxmax(axis=1)
-        df['Accuracy'] = results.max(axis=1)
-
         # Do column renaming to be compatible with text-annotation
+        # todo: how can multilines be created via SDK
+        # todo: why do we need to adjust the woring for Server?
+        # todo: which other attributes could be send in the extraction method?
         df.rename(
             columns={
                 'start_offset': 'Start',
@@ -1837,7 +1828,6 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
             },
             inplace=True,
         )
-        df['Translated_Candidate'] = df['Candidate']
 
         # Convert DataFrame to Dict with labels as keys and label dataframes as value.
         res_dict = {}
@@ -1856,10 +1846,10 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
 
         # Try to calculate sections based on template classifier.
         if hasattr(self, 'template_clf'):
-            res_dict = self.extract_template_with_clf(document.text, res_dict)
+            res_dict = self.extract_template_with_clf(inference_document.text, res_dict)
 
         # place annotations back
-        document._annotations = doc_annotations
+        # document._annotations = doc_annotations
 
         return res_dict
 
@@ -1882,10 +1872,7 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
             self.no_label_limit = None
 
         self.df_train, self.label_feature_list = self.feature_function(
-            documents=self.documents,
-            n_nearest=self.n_nearest if hasattr(self, 'n_nearest') else 2,
-            first_word=self.first_word if hasattr(self, 'first_word') else True,
-            no_label_limit=self.no_label_limit,
+            documents=self.documents, no_label_limit=self.no_label_limit
         )
 
         if self.df_train.empty:
@@ -1893,10 +1880,7 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
             return None
 
         self.df_test, test_label_feature_list = self.feature_function(
-            documents=self.test_documents,
-            n_nearest=self.n_nearest if hasattr(self, 'n_nearest') else 2,
-            first_word=self.first_word if hasattr(self, 'first_word') else True,
-            no_label_limit=self.no_label_limit,
+            documents=self.test_documents, no_label_limit=self.no_label_limit
         )
 
         if not self.df_test.empty:
@@ -1917,71 +1901,66 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
         self.documents = None
         self.test_documents = None
 
-    def feature_function_reworked(
-        self, documents: List[Document], n_nearest=0, first_word=True, no_label_limit=None
-    ) -> Tuple[List[pandas.DataFrame], list]:
-        """Return a df with all the data from the json files read out and properly converted."""
+    def feature_function(self, documents: List[Document], no_label_limit=None) -> Tuple[List[pandas.DataFrame], list]:
+        """Calculate features per Span of Annotations."""
         logger.info('Start generating features.')
         df_real_list = []
         df_raw_errors_list = []
         feature_list = []
 
         # todo make regex Tokenizer optional as those will be saved by the Server
-        if not hasattr(self, 'regexes'):  # Can be removed for models after 09.10.2020
-            self.regexes = [regex for label_model in self.labels for regex in label_model.label.regex()]
+        # if not hasattr(self, 'regexes'):  # Can be removed for models after 09.10.2020
+        #    self.regexes = [regex for label_model in self.labels for regex in label_model.label.regex()]
 
         for document in documents:
-            self.tokenizer.tokenize(document)  # todo: do we need it?
+            # todo check for tokenizer: self.tokenizer.tokenize(document)  # todo: do we need it?
             # todo check removed  if x.x0 and x.y0
-            annotations_labeled = [x for x in document.annotations(use_correct=False)]
-            no_label_annotations = [x for x in annotations_labeled if x.label.id_ is None]
-            label_annotations = [x for x in annotations_labeled if x.label.id_ is not None]
-            del annotations_labeled
+            # todo: use NO_LABEL for any Annotation that has no Label, instead of keeping Label = None
+            no_label_annotations = document.annotations(use_correct=False, label=document.project.no_label)
+            label_annotations = [x for x in document.annotations(use_correct=False) if x.label.id_ is not None]
+            if not document.is_online:
+                # inference time todo reduce shuffled complexity
+                assert not label_annotations, 'Non online Documents have no human revised Annotations.'
+                raise NotImplementedError(f'{document} is not online, please us process_document_data function.')
+            else:
+                # training time: todo reduce shuffled complexity
+                if isinstance(no_label_limit, int):
+                    n_no_labels = no_label_limit
+                elif isinstance(no_label_limit, float):
+                    n_no_labels = int(len(label_annotations) * no_label_limit)
+                else:
+                    assert no_label_limit is None
+
+                if no_label_limit is not None:
+                    no_label_annotations = self.get_best_no_label_annotations(
+                        n_no_labels, label_annotations, no_label_annotations
+                    )
+                    logger.info(
+                        f'Document {document} NO_LABEL annotations has been reduced to {len(no_label_annotations)}'
+                    )
 
             logger.info(f'Document {document} has {len(label_annotations)} labeled annotations')
             logger.info(f'Document {document} has {len(no_label_annotations)} NO_LABEL annotations')
 
-            if isinstance(no_label_limit, int):
-                n_no_labels = no_label_limit
-            elif isinstance(no_label_limit, float):
-                n_no_labels = int(len(label_annotations) * no_label_limit)
-            else:
-                assert no_label_limit is None
-
-            if no_label_limit is not None:
-                no_label_annotations = self.get_best_no_label_annotations(
-                    n_no_labels, label_annotations, no_label_annotations
-                )
-                logger.info(f'Document {document} NO_LABEL annotations has been reduced to {len(no_label_annotations)}')
-
-            annotations = self._filter_annotations_for_duplicates(label_annotations + no_label_annotations)
-
-            substring_features = self.substring_features if hasattr(self, 'substring_features') else None
-            n_nearest_across_lines = self.n_nearest_across_lines if hasattr(self, 'n_nearest_across_lines') else False
-            catchphrase_list = self.catchphrase_features if hasattr(self, 'catchphrase_features') else None
+            # todo: check if eq method of Annotation prevents duplicates
+            # annotations = self._filter_annotations_for_duplicates(label_annotations + no_label_annotations)
 
             t0 = time.monotonic()
 
-            temp_df_real, _feature_list, temp_df_raw_errors = process_document_data(
-                document=document,
-                annotations=annotations,
-                n_nearest=n_nearest,
-                first_word=first_word,
-                tokenize_fn=self.tokenizer.tokenize,
-                catchphrase_list=catchphrase_list,
-                substring_features=substring_features,
-                n_nearest_across_lines=n_nearest_across_lines,
-            )
+            temp_df_real, _feature_list, temp_df_raw_errors = self.features(document)
 
-            dt = time.monotonic() - t0
-
-            logger.info(f'Document {document} processed in {dt:.1f} seconds.')
+            logger.info(f'Document {document} processed in {time.monotonic() - t0:.1f} seconds.')
 
             feature_list += _feature_list
             df_real_list.append(temp_df_real)
             df_raw_errors_list.append(temp_df_raw_errors)
 
         feature_list = list(set(feature_list))
+
+        if df_real_list:
+            df_real_list = pandas.concat(df_real_list).reset_index(drop=True)
+        else:
+            raise NotImplementedError  # = pandas.DataFrame()
 
         return df_real_list, feature_list
 
@@ -2058,33 +2037,6 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
         # we don't shuffle before we trim the array here so the 'extra' NO_LABEL annotations
         # are the ones being cut off at the end
         return best_no_label_annotations[:n_no_labels]
-
-    # def predict_data_type(self, annotation):
-    #     """Use in get_best_no_label."""
-    #     if normalize_to_positive_float(annotation):
-    #         return 'Positive Number'
-    #     if normalize_to_float(annotation):
-    #         return 'Number'
-    #     if normalize_to_date(annotation):
-    #         return 'Date'
-    #     if normalize_to_bool(annotation):
-    #         return 'True/False'
-    #     if normalize_to_percentage(annotation):
-    #         return 'Percentage'
-    #     return 'Text'
-
-    def feature_function(
-        self, documents, n_nearest=0, first_word=True, no_label_limit=None
-    ) -> Tuple[pandas.DataFrame, list]:
-        """Return a list of df with all the data from the json files read out and properly converted."""
-        df, feature_list = self.feature_function_reworked(documents, n_nearest, first_word, no_label_limit)
-
-        if df:
-            df = pandas.concat(df).reset_index(drop=True)
-        else:
-            raise NotImplementedError  # = pandas.DataFrame()
-
-        return df, feature_list
 
     def train_valid_split(self):
         """Split documents randomly into valid and train data."""
