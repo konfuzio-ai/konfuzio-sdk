@@ -43,14 +43,14 @@ class TestEvaluation(unittest.TestCase):
         doc_a = prj.get_document_by_id(44823)
         doc_b = prj.get_document_by_id(44823)  # predicted
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 23  # 24 if considering negative Annotations
+        assert len(evaluation) == 21  # 24 if considering negative Annotations
         # for an Annotation which is human made, it is nan, so that above threshold is False
         # doc_a 19 + 2 multiline + 2 feedback required + 1 rejected
-        assert evaluation["true_positive"].sum() == 21  # 1 multiline with 2 lines = 2 Annotations
+        assert evaluation["true_positive"].sum() == 19  # 1 multiline with 2 lines = 2 Annotations
         assert evaluation["false_positive"].sum() == 0
         # due to the fact that Konfuzio Server does not save confidence = 100 % if Annotation was not created by a human
         assert evaluation["false_negative"].sum() == 0
-        assert evaluation["is_found_by_tokenizer"].sum() == 21
+        assert evaluation["is_found_by_tokenizer"].sum() == 19
         e = Evaluation(evaluation)
         assert e.accuracy == 1.0
         assert e.f1_score == 1.0

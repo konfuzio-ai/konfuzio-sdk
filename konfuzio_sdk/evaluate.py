@@ -35,6 +35,7 @@ RELEVANT_FOR_EVALUATION = [
     # "end_offset_predicted", only relevant for the merge
     # "is_correct_predicted", # it's a prediction so we don't know if it is correct
     "label_id_predicted",
+    "label_name_predicted",
     "label_threshold_predicted",  # we keep a flexibility to be able to predict the threshold
     # "revised_predicted",  # it's a prediction so we ignore if it is revised
     "annotation_set_id_predicted",
@@ -44,16 +45,20 @@ RELEVANT_FOR_EVALUATION = [
 ]
 
 
-def grouped(group, target: str):
+def grouped(group: pd.DataFrame, target: str):
     """Define which of the correct element in the predicted group defines the "correct" group id_."""
     verbose_validation_column_name = f"defined_to_be_correct_{target}"
     # all rows where is_correct is nan relate to an element which has no correct element partner
-    correct = group["is_correct"].fillna(False)  # so fill nan with False as .loc will need boolean
 
-    if len(group.loc[correct][target]) == 0:  # no "correct" element in the group, but the predicted grouping is correct
-        group[verbose_validation_column_name] = group[target].mode(dropna=False)[0]
+    relevant_group = group[group['above_predicted_threshold']]
+    if relevant_group.empty:
+        relevant_group = group  # Only filter for above predicted threshold if the is a Span above threshold
+
+    correct = relevant_group["is_correct"].fillna(False)  # so fill nan with False as .loc will need boolean
+    if len(relevant_group.loc[correct][target]) == 0:  # no "correct" element in the group, but the predicted grouping is correct
+        group[verbose_validation_column_name] = relevant_group[target].mode(dropna=False)[0]
     else:  # get the most frequent annotation_set_id from the *correct* Annotations in this group
-        group[verbose_validation_column_name] = group.loc[correct][target].mode(dropna=False)[0]
+        group[verbose_validation_column_name] = relevant_group.loc[correct][target].mode(dropna=False)[0]
 
     validation_column_name = f"is_correct_{target}"
     group[validation_column_name] = group[target] == group[verbose_validation_column_name]
@@ -137,20 +142,20 @@ class Evaluation:
         return Evaluation(self.tp + other.tp, self.tn + other.tn, self.fp + other.fp, self.fp + other.fn)
 
     @property
-    def tn(self):
-        return 0
+    def tn(self) -> float:
+        return float(0)
 
     @property
-    def tp(self):
-        return self.evaluation['true_positive'].sum()
+    def tp(self) -> float:
+        return float(self.evaluation['true_positive'].sum())
 
     @property
-    def fn(self):
-        return self.evaluation['false_negative'].sum()
+    def fn(self) -> float:
+        return float(self.evaluation['false_negative'].sum())
 
     @property
-    def fp(self):
-        return self.evaluation['false_positive'].sum()
+    def fp(self) -> float:
+        return float(self.evaluation['false_positive'].sum())
 
     @property
     def accuracy(self) -> float:
@@ -161,37 +166,37 @@ class Evaluation:
         except TypeError:
             return 0.0
 
-    def accuracy_display(self):
+    def accuracy_display(self) -> str:
         return '{0:.2%}'.format(self.accuracy)
 
     @property
-    def precision(self):
+    def precision(self) -> float:
         try:
             return self.tp / (self.tp + self.fp)
         except ZeroDivisionError:
             return 0.0
 
-    def precision_display(self):
+    def precision_display(self) -> str:
         return '{0:.2}'.format(self.precision)
 
     @property
-    def recall(self):
+    def recall(self) -> float:
         try:
             return self.tp / (self.tp + self.fn)
         except ZeroDivisionError:
             return 0.0
 
-    def recall_display(self):
+    def recall_display(self) -> str:
         return '{0:.2}'.format(self.recall)
 
     @property
-    def f1_score(self):
+    def f1_score(self) -> float:
         try:
             return 2 * ((self.precision * self.recall) / (self.precision + self.recall))
         except ZeroDivisionError:
             return 0.0
 
-    def f1_score_display(self):
+    def f1_score_display(self) -> str:
         return '{0:.2}'.format(self.f1_score)
 
     def fields_display(self) -> list:
@@ -212,9 +217,9 @@ class Evaluation:
             'f1_score': self.f1_score,
             'precision': self.precision,
             'recall': self.recall,
-            'tp': self.tp,
-            'fp': self.fp,
-            'fn': self.fn
+            'tp': int(self.tp),
+            'fp': int(self.fp),
+            'fn': int(self.fn)
         }
         return r
 
@@ -227,7 +232,14 @@ class Evaluation:
             evaluation = self.evaluation[self.evaluation['document_dataset_status'].isin(dataset_status)]
         else:
             evaluation = self.evaluation
-        for label_name, label_df in evaluation.groupby('label_name'):
+
+        for label_name in set(list(evaluation['label_name_predicted']) + list(evaluation['label_name'])):
+            label_df = evaluation[
+                (evaluation['label_name'] == label_name) |
+                (
+                    (evaluation['label_name_predicted'] == label_name) & evaluation['above_predicted_threshold']
+                )
+            ]
             df_list.append({'label_name': label_name, **Evaluation(label_df).to_dict()})
 
         df = pd.DataFrame(df_list)

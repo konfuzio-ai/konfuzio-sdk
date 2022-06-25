@@ -18,7 +18,7 @@ from sklearn.metrics import accuracy_score, balanced_accuracy_score, f1_score, p
     confusion_matrix, precision_score
 from tabulate import tabulate
 
-from konfuzio_sdk.pipelines.features import get_span_features, get_spatial_features, get_y_train, convert_to_feat
+from konfuzio_sdk.pipelines.features import get_span_features, get_spatial_features, convert_to_feat
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, WhitespaceNoPunctuationTokenizer, ConnectedTextTokenizer, \
     ColonPrecededTokenizer, CapitalizedTextTokenizer, NonTextTokenizer, RegexMatcherTokenizer
 
@@ -726,7 +726,7 @@ class DocumentAnnotationMultiClassModel(ExtractionModel):
 
             document_df = pd.concat(document_features, axis=1)
             # Set label_text
-            document_df[self._LABEL_TARGET_COLUMN_NAME] = get_y_train(training_annotations)
+            document_df[self._LABEL_TARGET_COLUMN_NAME] = self.get_y_train(training_annotations)
 
             dt = time.monotonic() - t0
             logger.info(f'Document {document} processed in {dt:.1f} seconds.')
@@ -1002,11 +1002,12 @@ class DocumentAnnotationMultiClassModel(ExtractionModel):
         def _evaluate(document, model):
             return model.evaluate_extraction_model(document)
 
+        documents = self.category.documents() + self.category.test_documents()
         if multiprocess:
             pool = ProcessPool()
-            data = pool.map(partial(_evaluate, model=self), self.category.documents())
+            data = pool.map(partial(_evaluate, model=self), documents)
         else:
-            data = [_evaluate(document, model=self) for document in self.category.documents()]
+            data = [_evaluate(document, model=self) for document in documents]
         df_data = pd.concat(data)
 
         output_dir = self.category.project.model_folder
@@ -1014,10 +1015,12 @@ class DocumentAnnotationMultiClassModel(ExtractionModel):
         df_data.to_csv(file_path)
 
         logger.info('Training Documents')
-        Evaluation(df_data).label_evaluations(dataset_status=[2])
+        training_dataset_status = {v: k for k, v in Document.DATASET_STATUS.items()}['Training']
+        Evaluation(df_data).label_evaluations(dataset_status=[training_dataset_status])
 
         logger.info('Test Documents')
-        Evaluation(df_data).label_evaluations(dataset_status=[3])
+        test_dataset_status = {v: k for k, v in Document.DATASET_STATUS.items()}['Test']
+        Evaluation(df_data).label_evaluations(dataset_status=[test_dataset_status])
 
 
     def _evaluate_multiclass_clf(self, df: pd.DataFrame):

@@ -8,6 +8,9 @@ import shutil
 import sys
 
 import cloudpickle
+
+from typing import List
+
 from konfuzio_sdk import BASE_DIR
 from konfuzio_sdk.data import Document
 from konfuzio_sdk.evaluate import compare
@@ -86,6 +89,21 @@ class ExtractionModel:
         self.df_data_list = None
 
         logger.info(f'Lose weight was executed on {self.name}')
+
+    def get_y_train(self, annotations) -> List[str]:
+        y_train = []
+        for annotation in annotations:
+            for span in annotation.spans:
+                # TODO add test, extraction process can not handle this yet
+                # if separate_labels:
+                #     if span.annotation.label.name == 'NO_LABEL':
+                #         y_train.append(span.annotation.label.name)
+                #     else:
+                #         y_train.append(span.annotation.label_set.name + '__' + span.annotation.label.name)
+                # else:
+                y_train.append(span.annotation.label.name)  # Label name should no always be set
+
+        return y_train
 
     def get_ai_model(self):
         """Try to load the latest pickled model."""

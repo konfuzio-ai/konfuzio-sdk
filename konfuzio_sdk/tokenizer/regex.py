@@ -48,7 +48,7 @@ class RegexTokenizer(AbstractTokenizer):
                 f'for the creation of Spans by the Tokenizer.'
             )
 
-        spans_info = regex_matches(document.text, self.regex)
+        spans_info = regex_matches(document.text, self.regex, keep_full_match=False)
 
         # for each Span, create an Annotation
         for span_info in spans_info:

@@ -568,23 +568,6 @@ def get_spatial_features(annotations: List[Annotation], abs_pos_feature_list: Li
     assert set(meta_information_list).issubset(df.columns.to_list())
     return df, abs_pos_feature_list
 
-
-def get_y_train(annotations) -> List[str]:
-    y_train = []
-    for annotation in annotations:
-        for span in annotation.spans:
-            # TODO add test, extraction process can not handle this yet
-            # if separate_labels:
-            #     if span.annotation.label.name == 'NO_LABEL':
-            #         y_train.append(span.annotation.label.name)
-            #     else:
-            #         y_train.append(span.annotation.label_set.name + '__' + span.annotation.label.name)
-            # else:
-            y_train.append(span.annotation.label.name)  # Label name should no always be set
-
-    return y_train
-
-
 # This is Span features
 def get_span_features(
         document: Document,
