@@ -72,45 +72,29 @@ class LabelModel(DocumentAnnotationMultiClassModel):
 
 
 if __name__ == "__main__":
-    training_prj = Project(id_=226, update=True)
+    training_prj = Project(id_=24, update=True)
     logger.info("Project initialized.")
-    category = training_prj.get_category_by_id(771)
+    category = training_prj.get_category_by_id(2455)
 
-    # Merging code.
-    labels = [
-        training_prj.get_label_by_name('Part 2'),
-        training_prj.get_label_by_name('Prefix'),
-        training_prj.get_label_by_name('Issue_Date')
-    ]
-    extraction_ais = []
-    for label in labels:
-        label_model_path = get_latest_document_model(f'*{label.name}.pkl', folder_path=category.project.model_folder)
-        label_model = load_pickle(label_model_path)
-        extraction_ais.append(label_model)
-    extraction_ai = ListExtractionAI(extraction_ais=extraction_ais, category=category)
-    modelpath = extraction_ai.save(include_konfuzio=True, output_dir=category.project.model_folder)
-    upload_ai_model(ai_model_path=modelpath, category_ids=[category.id_])
-    print(modelpath)
-
-    # labels = [training_prj.get_label_by_name('Prefix')]
+    labels = [training_prj.get_label_by_name('Rechnungsnummer')]
     # labels = [training_prj.get_label_by_name('Part 2')]
     # labels = [training_prj.get_label_by_name('Issue_Date')]
 
-    # extraction_ais = []
-    # for label in labels:
-    #     # Add Regex tokenizers.
-    #     new_tokenizers = []
-    #     regexes = label.find_regex(category=category, annotations=label.annotations(categories=[category]))
-    #     for regex in regexes:
-    #         new_tokenizers.append(RegexTokenizer(regex))
-    #
-    #     # category.project._documents = category.documents()[:1]
-    #     doc_model = LabelModel(category=category, label=label)
-    #     # doc_model.configure(dict(n_nearest_left=10, n_nearest_right=10))
-    #     doc_model.tokenizer = ListTokenizer(tokenizers=new_tokenizers)
-    #     doc_model.build()
-    #     extraction_ais.append(doc_model)
-    #     doc_model.save(output_dir=category.project.model_folder, name=label.name)
+    extraction_ais = []
+    for label in labels:
+        # Add Regex tokenizers.
+        new_tokenizers = []
+        regexes = label.find_regex(category=category, annotations=label.annotations(categories=[category]))
+        for regex in regexes:
+            new_tokenizers.append(RegexTokenizer(regex))
+
+        # category.project._documents = category.documents()[:1]
+        doc_model = LabelModel(category=category, label=label)
+        # doc_model.configure(dict(n_nearest_left=10, n_nearest_right=10))
+        doc_model.tokenizer = ListTokenizer(tokenizers=new_tokenizers)
+        doc_model.build()
+        extraction_ais.append(doc_model)
+        doc_model.save(output_dir=category.project.model_folder, name=label.name)
 
     # document = category.documents()[0]
     # extraction_ai = ListExtractionAI(extraction_ais=extraction_ais, category=category)
