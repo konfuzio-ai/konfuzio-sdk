@@ -32,7 +32,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils.validation import check_is_fitted
 from tabulate import tabulate
 
-from konfuzio_sdk.data import Document, Label, Annotation, Category
+from konfuzio_sdk.data import Document, Label, Annotation, Category, AnnotationSet
 from konfuzio_sdk.normalize import normalize_to_float, normalize_to_date
 from konfuzio_sdk.regex import regex_matches
 from konfuzio_sdk.utils import get_timestamp, get_bbox
@@ -1384,31 +1384,28 @@ class GroupAnnotationSets:
         :return:
         """
         # Only train template clf is there are non default templates
-        if True or len([x for x in self.section_labels if not x.is_default]) == 0:
+        self.section_labels = self.category.label_sets  # todo what is it?
+        if not [lset for lset in self.category.label_sets if not lset.is_default]:
             # todo see https://gitlab.com/konfuzio/objectives/-/issues/2247
+            # todo check for NO_LABEL_SET if we should keep it
             return
-        logger.info('Start fitting process of template_clf.')
+        logger.info('Start training of Multi-class Label Set Classifier.')
         # ignores the section count as it actually worsens results
-        self.template_feature_list = [label.name for label in self.labels]
+        # todo check if no category labels should be ignored
+        self.template_feature_list = [label.name for label in self.category.project.labels]
         n_nearest = self.n_nearest_template if hasattr(self, 'n_nearest_template') else 0
 
         # Pretty long feature generation
         df_train_label = self.df_train
-        df_valid_label = self.df_valid
+        # df_valid_label = self.df_valid
+        df_valid_label_list = []  # todo why?
 
         df_train_label_list = [(document_id, df_doc) for document_id, df_doc in df_train_label.groupby('document_id')]
-
-        if df_valid_label.empty:
-            df_valid_label_list = []
-        else:
-            df_valid_label_list = [
-                (document_id, df_doc) for document_id, df_doc in df_valid_label.groupby('document_id')
-            ]
 
         df_train_template_list = []
         df_train_ground_truth_list = []
         for document_id, df_doc in df_train_label_list:
-            document = self._get_document(document_id)
+            document = self.category.project.get_document_by_id(document_id)
             # Train classifier only on documents with a matching document template.
             if (
                 hasattr(self, 'default_section_label')
@@ -1481,7 +1478,7 @@ class GroupAnnotationSets:
             )
             return None, None
 
-        clf = RandomForestClassifier(n_estimators=self.n_estimators, max_depth=self.max_depth)
+        clf = RandomForestClassifier(n_estimators=self.n_estimators, max_depth=self.max_depth, random_state=420)
         clf.fit(x_train, y_train)
 
         if len(df_valid_expanded_features_list) > 0:
@@ -1492,14 +1489,14 @@ class GroupAnnotationSets:
         self.template_clf = clf
         return self.template_clf, self.template_feature_list
 
-    def _get_document(self, document_id):
-        """Return the document text for a specific document_id."""
-        for document in self.documents:
-            if document.id_ == document_id:
-                return document
-
-        logger.error('No document fitting this document_id: ' + str(document_id) + ' found!')
-        return None
+    # def _get_document(self, document_id):
+    #     """Return the document text for a specific document_id."""
+    #     for document in self.documents:
+    #         if document.id_ == document_id:
+    #             return document
+    #
+    #     logger.error('No document fitting this document_id: ' + str(document_id) + ' found!')
+    #     return None
 
     def generate_relative_line_features(self, n_nearest: int, df_features: pandas.DataFrame) -> pandas.DataFrame:
         """Add the features of the n_nearest previous and next lines."""
@@ -1607,7 +1604,9 @@ class GroupAnnotationSets:
         df = pandas.DataFrame()
         char_count = 0
 
-        document_annotations = [annotation for section in document.sections for annotation in section.annotations]
+        document_annotations = [
+            annotation for annotation_set in document.annotation_sets() for annotation in annotation_set.annotations
+        ]
 
         # Loop over lines
         for i, line in enumerate(document.text.replace('\f', '\n').split('\n')):
@@ -1615,15 +1614,17 @@ class GroupAnnotationSets:
             new_char_count = char_count + len(line)
             assert line == document.text[char_count:new_char_count]
             # TODO: Currently we can't handle
-            for section in document.sections:
+            for section in document.annotation_sets():
                 if section.start_offset and char_count <= section.start_offset < new_char_count:
-                    matched_section = section
+                    matched_section: AnnotationSet = section
                     break
 
             line_annotations = [x for x in document_annotations if char_count <= x.start_offset < new_char_count]
             annotations_dict = dict((x.label.name, True) for x in line_annotations)
-            counter_dict = dict(collections.Counter(x.section_label.name for x in line_annotations))
-            y = matched_section.section_label.name if matched_section else 'No'
+            counter_dict = dict(
+                collections.Counter(annotation.annotation_set.label_set.name for annotation in line_annotations)
+            )
+            y = matched_section.label_set.name if matched_section else 'No'
             df = df.append(
                 {'line': i, 'y': y, 'document': document.id_, **annotations_dict, **counter_dict}, ignore_index=True
             )
@@ -1639,6 +1640,9 @@ class GroupAnnotationSets:
         :param df:
         :return:
         """
+        if self.category is None:
+            raise AttributeError(f'{self} does not provide a Category.')
+
         global_df = pandas.DataFrame()
         char_count = 0
         # Using OptimalThreshold is a bad idea as it might defer between training (actual treshold from the label)
@@ -1655,7 +1659,7 @@ class GroupAnnotationSets:
             for annotation in annotations:
                 # annotations_accuracy_dict[f'{annotation["label"]}_accuracy'] += annotation['Accuracy']
                 try:
-                    label = next(x for x in self.labels if x.name == annotation['label'])
+                    label = next(x for x in self.category.project.labels if x.name == annotation['label'])
                 except StopIteration:
                     continue
                 for section_label in self.section_labels:
@@ -1691,7 +1695,7 @@ class GroupAnnotationSets:
         # Add extractions from non-default sections.
         for section_label in [x for x in self.section_labels if not x.is_default]:
             # Add Extraction from SectionLabels with multiple sections (as list).
-            if section_label.has_multiple_sections:
+            if section_label.has_multiple_annotation_sets:
                 new_res_dict[section_label.name] = []
                 detected_sections = res_templates[res_templates[0] == section_label.name]
                 # List of tuples, e.g. [(1, DefaultSectionName), (14, DetailedSectionName), ...]
@@ -1882,7 +1886,7 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
                     res_dict[label] = value[value['Accuracy'] > self.extract_threshold]
 
         # Try to calculate sections based on template classifier.
-        if hasattr(self, 'template_clf'):
+        if hasattr(self, 'template_clf'):  # todo smarter handling of multiple clf
             res_dict = self.extract_template_with_clf(inference_document.text, res_dict)
 
         # place annotations back
@@ -2120,17 +2124,16 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
 
     def fit(self) -> RandomForestClassifier:
         """Given training data and the feature list this function returns the trained regression model."""
-        logger.info('Start training of multiclass_clf.')
+        logger.info('Start training of Multi-class Label Classifier.')
 
         # balanced gives every label the same weight so that the sample_number doesn't effect the results
         self.clf = RandomForestClassifier(
-            class_weight="balanced", n_estimators=self.n_estimators, max_depth=self.max_depth
+            class_weight="balanced", n_estimators=self.n_estimators, max_depth=self.max_depth, random_state=420
         )
 
         self.clf.fit(self.df_train[self.label_feature_list], self.df_train['label_text'])
 
-        if hasattr(self, 'fit_template_clf'):
-            self.fit_template_clf()
+        self.fit_template_clf()
 
         return self.clf
 

@@ -41,14 +41,14 @@ class TestSequenceInformationExtraction(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the Data and Pipeline."""
-        cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+        cls.project = Project(id_=46, project_folder=OFFLINE_PROJECT)
         cls.pipeline = DocumentAnnotationMultiClassModel()
 
     def test_1_configure_pipeline(self):
         """Make sure the Data and Pipeline is configured."""
         self.pipeline.tokenizer = WhitespaceTokenizer()
         self.pipeline.category = self.project.get_category_by_id(id_=63)
-        self.pipeline.documents = self.pipeline.category.documents()[:1]
+        self.pipeline.documents = self.pipeline.category.documents()[:5]
         self.pipeline.test_documents = self.pipeline.category.test_documents()[:1]
 
     def test_2_make_features(self):
@@ -75,7 +75,8 @@ class TestSequenceInformationExtraction(unittest.TestCase):
     def test_6_extract_test_document(self):
         """Extract a randomly selected Test Document."""
         test_document = self.project.get_document_by_id(44823)
-        self.pipeline.extract(document=test_document)
+        result = self.pipeline.extract(document=test_document)
+        assert len(result['Brutto-Bezug']) > 0  # todo add more test for inference on data level
 
     @unittest.skip(reason='Test run offline.')
     def test_7_upload_ai_model(self):
@@ -151,6 +152,7 @@ class TestInformationExtraction(unittest.TestCase):
         )
         pipeline.clf.fit(X, y)
         pipeline.label_feature_list = ['start_offset', 'end_offset']
+        pipeline.category = document.category
         pipeline.extract(document)
 
     def test_feature_function_with_label_limit(self):

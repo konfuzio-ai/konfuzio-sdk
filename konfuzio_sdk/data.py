@@ -1825,7 +1825,7 @@ class Document(Data):
         elif is_file(self.bbox_file_path, raise_exception=False):
             with zipfile.ZipFile(self.bbox_file_path, "r") as archive:
                 bbox = json.loads(archive.read('bbox.json5'))
-        elif self.status and self.status[0] == 2:
+        elif self.status and self.status[0] == 2:  # todo check for self.project.id_ and self.id_ and ?
             logger.warning(f'Start downloading bbox files of {len(self.text)} characters for {self}.')
             bbox = get_document_details(document_id=self.id_, project_id=self.project.id_, extra_fields="bbox")['bbox']
             # Use the `zipfile` module: `compresslevel` was added in Python 3.7
