@@ -3,6 +3,7 @@
 import json
 import logging
 import os
+from json import JSONDecodeError
 from operator import itemgetter
 from typing import List, Union
 
@@ -110,7 +111,10 @@ class TimeoutHTTPAdapter(HTTPAdapter):
         # handle status code one by one as some status codes will cause a retry, see _konfuzio_session
         if response.status_code in [403, 404]:
             # Fallback to None if there's no detail, for whatever reason.
-            detail = response.json().get('detail')
+            try:
+                detail = response.json().get('detail')
+            except JSONDecodeError:
+                detail = 'No JSON provided by Host.'
             raise HTTPError(f'{response.status_code} {response.reason}: {detail} via {response.url}')
 
         return response
