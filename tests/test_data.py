@@ -1644,7 +1644,6 @@ class TestFillOperation(unittest.TestCase):
         assert self.doc.text[slice(spa[9][0], spa[9][1])] == self.doc.text[1588:1590] == '  '
 
 
-@pytest.mark.local
 class TestData(unittest.TestCase):
     """Test functions that don't require data."""
 
