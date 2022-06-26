@@ -5,6 +5,7 @@ import difflib
 import functools
 import logging
 import os
+import pathlib
 import shutil
 import sys
 import time
@@ -14,10 +15,9 @@ from heapq import nsmallest
 from random import random
 from typing import Tuple, Optional, List, Union, Callable, Dict
 
-import dill
 import numpy
 import pandas
-from pympler import asizeof
+from cloudpickle import cloudpickle
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (
     confusion_matrix,
@@ -260,9 +260,11 @@ def convert_to_feat(offset_string_list: list, ident_str: str = '') -> pandas.Dat
         count_string_differences(s1, s2) for s1, s2 in zip(offset_string_list, offset_string_list_accented)
     ]
 
-    df[ident_str + "feat_year_count"], df[ident_str + "feat_month_count"], df[
-        ident_str + "feat_day_count"
-    ] = year_month_day_count(offset_string_list)
+    (
+        df[ident_str + "feat_year_count"],
+        df[ident_str + "feat_month_count"],
+        df[ident_str + "feat_day_count"],
+    ) = year_month_day_count(offset_string_list)
 
     df[ident_str + "feat_substring_count_slash"] = substring_count(offset_string_list, "/")
     df[ident_str + "feat_substring_count_percent"] = substring_count(offset_string_list, "%")
@@ -1089,12 +1091,13 @@ def generate_feature_dict_from_occurence_dict(occurence_dict, catchphrase_list, 
 class Trainer:
     """Base Model to extract information from unstructured human readable text."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         """Initialize ExtractionModel."""
         # Go through keyword arguments, and either save their values to our
         # instance, or raise an error.
         self.clf = None
         self.name = self.__class__.__name__
+        self.label_feature_list = None  # will be set later
 
         self.df_data = None
         self.df_valid = None
@@ -1170,6 +1173,11 @@ class Trainer:
         logger.warning(f'{self} does not train a classifier.')
         pass
 
+    def fit_label_set_clf(self):
+        """Use as placeholder Function."""
+        logger.warning(f'{self} does not train a label set classifier.')
+        pass
+
     def evaluate(self):
         """Use as placeholder Function."""
         logger.warning(f'{self} does not evaluate results.')
@@ -1222,7 +1230,7 @@ class Trainer:
 
         logger.info(f'Size of the classifier is: {sys.getsizeof(self.clf)}')
 
-    def save(self, output_dir: str):
+    def save(self, output_dir: str, include_konfuzio=True):
         """
         Save the label model as bz2 compressed pickle object to the release directory.
 
@@ -1237,14 +1245,38 @@ class Trainer:
 
         :return: Path of the saved model file
         """
+        # Keep Documents of the Category so that we can restore them later
+        category_documents = self.category.documents() + self.category.test_documents()
+
+        # TODO: add Document.lose_weight in SDK - remove NO_LABEL Annotations from the Documents
+        for document in category_documents:
+            no_label_annotations = document.annotations(label=self.no_label)
+            clean_annotations = list(set(document.annotations()) - set(no_label_annotations))
+            document._annotations = clean_annotations
+
+        self.lose_weight()
+
+        from pympler import asizeof
+
         logger.info(f'Saving model - {asizeof.asizeof(self) / 1_000_000} MB')
 
         sys.setrecursionlimit(99999999)
 
         logger.info('Getting save paths')
+        import konfuzio_sdk
+        import konfuzio
 
-        file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.name_lower()}')
-        dill_file_path = file_path + '.dill'
+        if include_konfuzio:
+            cloudpickle.register_pickle_by_value(konfuzio_sdk)
+            cloudpickle.register_pickle_by_value(konfuzio)
+
+        name = self.category.name.lower()
+        output_dir = self.category.project.model_folder
+
+        # moke sure output dir exists
+        pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
+        file_path = os.path.join(output_dir, f'{get_timestamp()}_{name}')
+        temp_pkl_file_path = file_path + '.dill'
         pkl_file_path = file_path + '.pkl'
         try:
             # see: https://stackoverflow.com/a/9519016/5344492
@@ -1252,25 +1284,28 @@ class Trainer:
             logger.info('Saving model with dill')
 
             # first save with dill
-            with open(dill_file_path, 'wb') as f:
-                dill.dump(self, f)
+            with open(temp_pkl_file_path, 'wb') as f:
+                cloudpickle.dump(self, f)
 
             logger.info('Compressing model with bz2')
 
             # then save to bz2 in chunks
-            with open(dill_file_path, 'rb') as input_f:
+            with open(temp_pkl_file_path, 'rb') as input_f:
                 with bz2.open(pkl_file_path, 'wb') as output_f:
                     shutil.copyfileobj(input_f, output_f)
 
             logger.info('Deleting dill file')
 
             # then delete dill file
-            os.remove(dill_file_path)
+            os.remove(temp_pkl_file_path)
 
             size_string = f'{os.path.getsize(pkl_file_path) / 1_000_000} MB'
             logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
         except AttributeError:
             logger.exception('Cannot save pickled object.')
+
+        # restore Documents of the Category so that we can run the evaluation later
+        self.category.project._documents = category_documents
 
         return pkl_file_path
 

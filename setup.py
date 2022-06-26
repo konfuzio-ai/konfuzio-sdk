@@ -40,6 +40,7 @@ setuptools.setup(
     include_package_data=True,
     entry_points={'console_scripts': ['konfuzio_sdk=konfuzio_sdk.cli:main']},
     install_requires=[
+        'cloudpickle==2.0.0',
         'filetype==1.0.7',  # Used to check that files are in the correct format
         'dill==0.3.2',  # Used to pickle objects
         'nltk',
