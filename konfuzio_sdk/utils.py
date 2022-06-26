@@ -630,6 +630,8 @@ def get_bbox(bbox, start_offset: int, end_offset: int) -> Dict:
     document, create a new bbox which covers every character bbox between the given start and end offset.
 
     Pages are zero indexed, i.e. the first page has page_number = 0.
+
+    :raises ValueError None of the characters provides a bounding box.
     """
     # get the index of every character bbox in the Document between the start and end offset
     char_bbox_ids = [str(char_bbox_id) for char_bbox_id in range(start_offset, end_offset) if str(char_bbox_id) in bbox]
@@ -638,7 +640,6 @@ def get_bbox(bbox, start_offset: int, end_offset: int) -> Dict:
     if not char_bbox_ids:
         logger.error(f"Between start {start_offset} and {end_offset} we do not find the bboxes of the characters.")
         raise ValueError(f'Characters from {start_offset} to {end_offset} do not provide any bounding box.')
-        # return {'bottom': None, 'top': None, 'page_index': None, 'x0': None, 'x1': None, 'y0': None, 'y1': None}
 
     # set the default values which we overwrite with the actual character bbox values
     x0 = 100000000

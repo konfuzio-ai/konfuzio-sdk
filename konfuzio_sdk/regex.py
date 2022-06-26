@@ -176,6 +176,7 @@ def regex_matches(
     try:
         pattern = re.compile(regex, flags=flags)
     except re.error:
+        logger.error(regex)
         # throws error if group name is an invalid Python variable
         match = re.search(r'\?P<.*?>', regex)  # match the invalid group name
         group_name = match.group(0)  # get the string representation
