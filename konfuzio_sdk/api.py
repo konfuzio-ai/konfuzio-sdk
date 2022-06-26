@@ -88,6 +88,8 @@ class TimeoutHTTPAdapter(HTTPAdapter):
             `Blogpost <https://findwork.dev/blog/advanced-usage-python-requests-timeouts-retries-hooks/>`_
     """
 
+    timeout = None  # see https://stackoverflow.com/a/29649638
+
     def __init__(self, timeout, *args, **kwargs):
         """Force to init with timout policy."""
         self.timeout = timeout
