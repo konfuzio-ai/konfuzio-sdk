@@ -39,8 +39,7 @@ class TestSequenceInformationExtraction(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the Data and Pipeline."""
-        # cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-        cls.project = Project(id_=46)  # todo use offline project
+        cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
         cls.pipeline = DocumentAnnotationMultiClassModel()
 
     def test_1_configure_pipeline(self):
