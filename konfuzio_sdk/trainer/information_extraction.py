@@ -1096,6 +1096,7 @@ class Trainer:
         # Go through keyword arguments, and either save their values to our
         # instance, or raise an error.
         self.clf = None
+        self.category = None
         self.name = self.__class__.__name__
         self.label_feature_list = None  # will be set later
 
@@ -1126,7 +1127,6 @@ class Trainer:
 
     def lose_weight(self):
         """Delete everything that is not necessary for extraction."""
-        self.category: Category = None
         self.df_valid = None
         self.df_train = None
         self.df_test = None
@@ -1145,10 +1145,11 @@ class Trainer:
 
         self.df_data_list = None
 
-        for label in self.labels:
+        for label in self.category.project.labels:
             label.lose_weight()
-        for section_label in self.section_labels:
-            section_label.lose_weight()
+
+        for label_set in self.category.label_sets or []:
+            label_set.lose_weight()
 
         logger.info(f'Lose weight was executed on {self.name}')
 
@@ -1250,12 +1251,12 @@ class Trainer:
         category_documents = self.category.documents() + self.category.test_documents()
 
         # TODO: add Document.lose_weight in SDK - remove NO_LABEL Annotations from the Documents
-        for document in category_documents:
-            no_label_annotations = document.annotations(label=self.no_label)
-            clean_annotations = list(set(document.annotations()) - set(no_label_annotations))
-            document._annotations = clean_annotations
+        # for document in category_documents:
+        #     no_label_annotations = document.annotations(label=self.category.project.no_label)
+        #     clean_annotations = list(set(document.annotations()) - set(no_label_annotations))
+        #     document._annotations = clean_annotations
 
-        self.lose_weight()
+        # self.lose_weight() # todo make this optional: otherwise evaluate will not work on self
 
         from pympler import asizeof
 
@@ -1271,7 +1272,8 @@ class Trainer:
             # todo register all dependencies
 
         name = self.category.name.lower()
-        output_dir = self.category.project.model_folder
+        # output_dir = self.category.project.model_folder
+        file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.name_lower()}')
 
         # moke sure output dir exists
         pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
