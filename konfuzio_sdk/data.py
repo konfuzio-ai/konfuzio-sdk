@@ -703,6 +703,9 @@ class Span(Data):
                     f'{self} in {self.annotation.document}: bounding box of span is located outside of '
                     f'the page, document: {self.annotation.document}.'
                 )
+            return self
+        else:
+            raise NotImplementedError
 
     @property
     def line_index(self) -> int:  # TODO line_index might not be needed.

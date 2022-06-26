@@ -126,20 +126,53 @@ ratio_of_spans_found = evaluation.is_found_by_tokenizer.sum() / evaluation.is_co
 
 ## Add visual features to text
 
-Calculate the bounding box of a span by providing the start and end offset.
+Calculate the bounding box of a Span using the start and end character.
 
 ```python
-from konfuzio_sdk.data import Project, Document, LabelSet, Label, AnnotationSet, Annotation, Span
+from pprint import pprint
 
-my_project = Project(id_='YOUR_PROJECT_ID')
-doc: Document = my_project.get_document_by_id('DOCUMENT_ID_ONLNIE')
+from konfuzio_sdk.data import Project, LabelSet, Label, AnnotationSet, Annotation, Span
+import os
+
+OFFLINE_PROJECT = os.path.join("tests", "example_project_data")
+
+my_project = Project(id_=None, project_folder=OFFLINE_PROJECT)  # use offline data and don't connect to Server
+document = my_project.get_document_by_id(44823)
 label = Label(project=my_project)
-label_set = LabelSet(project=my_project)
-annotation_set = AnnotationSet(document=doc, label_set=label_set)
-annotation = Annotation(label=label, annotation_set=annotation_set, label_set=label_set, document=doc)
+label_set = LabelSet(project=my_project, categories=[document.category])
+annotation_set = AnnotationSet(document=document, label_set=label_set)
 
-span_with_bbox_information = Span(annotation=annotation, start_offset=10, end_offset=50).bbox()
+span = Span(start_offset=60, end_offset=65)
+
+annotation = Annotation(
+    label=label,
+    annotation_set=annotation_set,
+    label_set=label_set,
+    document=document,
+    spans=[span],
+)
+
+span_with_bbox_information = span.bbox()
+
+pprint(span_with_bbox_information.__dict__)
+
 ```
+
+```json
+{'_line_index': None,
+ '_page_index': 0,
+ 'annotation': Annotation (None) None (60, 65),
+ 'bottom': 32.849,
+ 'end_offset': 65,
+ 'id_local': 74,
+ 'start_offset': 60,
+ 'top': 23.849,
+ 'x0': 426.0,
+ 'x1': 442.8,
+ 'y0': 808.831,
+ 'y1': 817.831}
+````
+
 
 ## CLI
 
