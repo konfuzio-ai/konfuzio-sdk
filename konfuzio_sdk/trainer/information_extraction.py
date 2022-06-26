@@ -1126,6 +1126,7 @@ class Trainer:
 
     def lose_weight(self):
         """Delete everything that is not necessary for extraction."""
+        self.category: Category = None
         self.df_valid = None
         self.df_train = None
         self.df_test = None
@@ -1264,11 +1265,10 @@ class Trainer:
 
         logger.info('Getting save paths')
         import konfuzio_sdk
-        import konfuzio
 
         if include_konfuzio:
             cloudpickle.register_pickle_by_value(konfuzio_sdk)
-            cloudpickle.register_pickle_by_value(konfuzio)
+            # todo register all dependencies
 
         name = self.category.name.lower()
         output_dir = self.category.project.model_folder
