@@ -158,7 +158,7 @@ pprint(span_with_bbox_information.__dict__)
 
 ```
 
-```json
+```python
 {'_line_index': None,
  '_page_index': 0,
  'annotation': Annotation (None) None (60, 65),
