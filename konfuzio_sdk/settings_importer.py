@@ -5,6 +5,10 @@ import sys
 import time
 
 # This settings file will search for the settings file in the project in which konfuzio_sdk is imported
+from decouple import AutoConfig
+
+config = AutoConfig(search_path=os.getcwd())
+KONFUZIO_CACHE_DIR = config('KONFUZIO_CACHE_DIR', default=None)
 sys.path.append(os.getcwd())
 
 KONFUZIO_PROJECT_ID = None
@@ -19,7 +23,7 @@ try:
 except ImportError:
     time.sleep(5)
 
-BASE_DIR = os.getcwd()
+BASE_DIR = KONFUZIO_CACHE_DIR if KONFUZIO_CACHE_DIR else os.getcwd()
 DATA_ROOT = os.path.join(BASE_DIR, KONFUZIO_DATA_FOLDER)
 FILE_ROOT = os.path.join(DATA_ROOT, 'pdf')
 
