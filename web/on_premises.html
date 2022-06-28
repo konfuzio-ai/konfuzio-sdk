@@ -375,6 +375,7 @@ Password: {PROVIDED_BY_KONFUZIO}</p>
 <section id="setup-postgresql-redis-blobstorage-filesystemstorage">
 <h4>2. Setup PostgreSQL, Redis, BlobStorage/FileSystemStorage<a class="headerlink" href="#setup-postgresql-redis-blobstorage-filesystemstorage" title="Permalink to this heading">¶</a></h4>
 <p>The database credentials are needed in the next step. You may want to use psql and redis-cli to check if database credentials are working.</p>
+<p>In case you use FileSystemStorage and Docker volume mounts, you need to make sure the volume can be accessed by the konfuzio docker user (uid=999). You might want to run “chown 999:999 -R /konfuzio-vm/text-annotation/data” on the hiost VM.</p>
 </section>
 <section id="setup-environment-variable-file">
 <h4>3. Setup environment variable file<a class="headerlink" href="#setup-environment-variable-file" title="Permalink to this heading">¶</a></h4>
