@@ -1,4 +1,5 @@
 """Calculate the accuracy on any level in a  Document."""
+from warnings import warn
 
 import pandas as pd
 
@@ -48,14 +49,18 @@ def grouped(group, target: str):
     return group
 
 
-def compare(doc_a, doc_b, only_use_correct=False) -> pd.DataFrame:
+def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pd.DataFrame:
     """Compare the Annotations of two potentially empty Documents wrt. to **all** Annotations.
 
     :param doc_a: Document which is assumed to be correct
     :param doc_b: Document which needs to be evaluated
     :param only_use_correct: Unrevised feedback in doc_a is assumed to be correct.
+    :param strict: Evaluate on a Character exact level without any postprocessing, an amount Span "5,55 " will not be
+     exact with "5,55"
     :return: Evaluation DataFrame
     """
+    if not strict:
+        warn('This method is WIP: https://gitlab.com/konfuzio/objectives/-/issues/9332', FutureWarning, stacklevel=2)
     if doc_a.category != doc_b.category:
         raise ValueError(f'Categories of {doc_a} with {doc_a.category} and {doc_b} with {doc_a.category} do not match.')
     df_a = pd.DataFrame(doc_a.eval_dict(use_correct=only_use_correct))
