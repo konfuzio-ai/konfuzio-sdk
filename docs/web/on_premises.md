@@ -258,6 +258,8 @@ The Tag "latest" should be replaced with an actual version. A list of available 
 #### 2. Setup PostgreSQL, Redis, BlobStorage/FileSystemStorage
 The database credentials are needed in the next step. You may want to use psql and redis-cli to check if database credentials are working.
 
+In case you use FileSystemStorage and Docker volume mounts, you need to make sure the volume can be accessed by the konfuzio docker user (uid=999). You might want to run "chown 999:999 -R /konfuzio-vm/text-annotation/data" on the hiost VM.
+
 #### 3. Setup environment variable file
 Copy the /code/.env.example file from the container and adapt it to your settings. The .env file can be saved anywhere on the host VM. In this example we use "/konfuzio-vm/text-annotation.env".
 
