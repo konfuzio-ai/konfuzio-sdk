@@ -377,7 +377,8 @@ Keycloak allows single sign-on funtionality. By doing so no user management is d
 
 ### Set up
 
-#### To start and set up keycloak server:
+To start and set up keycloak server:
+
 1. Download [keycloak server](https://www.keycloak.org/downloads)
 2. Install and start keycloak server using [instruction](https://www.keycloak.org/docs/latest/server_installation/)
 3. Open keycloak dashboard in browser (locally it's http://0.0.0.0:8080/). 
@@ -392,7 +393,8 @@ Keycloak allows single sign-on funtionality. By doing so no user management is d
 9. Move to `Credentials` tab and save `Secret` value
 10. In `Users` navbar item create users
 
-#### To integrate konfuzio with keycloak you need to set the following environment variables for you Konfuzio Server installation:
+###  Environment Variables
+To integrate konfuzio with keycloak you need to set the following environment variables for you Konfuzio Server installation:
 
 - `KEYCLOAK_URL` (http://127.0.0.1:8080/ - for localhost)
 - `OIDC_RP_SIGN_ALGO` (`RS256` - by default)
@@ -403,6 +405,6 @@ Keycloak allows single sign-on funtionality. By doing so no user management is d
 Click `SSO` on login page to log in to Konfuzio using keycloak
 ![sso-button.png](keycloak/sso-button.png)
 
-#### Important notes:
+### Important notes
 
 - The Keycloak admin user cannot login into Konfuzio Server.
