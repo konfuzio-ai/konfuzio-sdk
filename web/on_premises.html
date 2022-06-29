@@ -117,12 +117,9 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#keycloak-integration">Keycloak Integration</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#set-up">Set up</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#to-start-and-set-up-keycloak-server">To start and set up keycloak server:</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#to-integrate-konfuzio-with-keycloak-you-need-to-set-the-following-environment-variables-for-you-konfuzio-server-installation">To integrate konfuzio with keycloak you need to set the following environment variables for you Konfuzio Server installation:</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#important-notes">Important notes:</a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="#set-up">Set up</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#environment-variables">Environment Variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#important-notes">Important notes</a></li>
 </ul>
 </li>
 </ul>
@@ -494,8 +491,7 @@ and webhooks. The CI application needs network access to the Konfuzio installati
 <p>Keycloak allows single sign-on funtionality. By doing so no user management is done wihtin Konfuzio Server. If you already operate a keycloak server, you can reuse keycloak users.</p>
 <section id="set-up">
 <h3>Set up<a class="headerlink" href="#set-up" title="Permalink to this heading">¶</a></h3>
-<section id="to-start-and-set-up-keycloak-server">
-<h4>To start and set up keycloak server:<a class="headerlink" href="#to-start-and-set-up-keycloak-server" title="Permalink to this heading">¶</a></h4>
+<p>To start and set up keycloak server:</p>
 <ol class="arabic">
 <li><p>Download <a class="reference external" href="https://www.keycloak.org/downloads">keycloak server</a></p></li>
 <li><p>Install and start keycloak server using <a class="reference external" href="https://www.keycloak.org/docs/latest/server_installation/">instruction</a></p></li>
@@ -515,8 +511,9 @@ and webhooks. The CI application needs network access to the Konfuzio installati
 <li><p>In <code class="docutils literal notranslate"><span class="pre">Users</span></code> navbar item create users</p></li>
 </ol>
 </section>
-<section id="to-integrate-konfuzio-with-keycloak-you-need-to-set-the-following-environment-variables-for-you-konfuzio-server-installation">
-<h4>To integrate konfuzio with keycloak you need to set the following environment variables for you Konfuzio Server installation:<a class="headerlink" href="#to-integrate-konfuzio-with-keycloak-you-need-to-set-the-following-environment-variables-for-you-konfuzio-server-installation" title="Permalink to this heading">¶</a></h4>
+<section id="environment-variables">
+<h3>Environment Variables<a class="headerlink" href="#environment-variables" title="Permalink to this heading">¶</a></h3>
+<p>To integrate konfuzio with keycloak you need to set the following environment variables for you Konfuzio Server installation:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">KEYCLOAK_URL</span></code> (<a class="reference external" href="http://127.0.0.1:8080/">http://127.0.0.1:8080/</a> - for localhost)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">OIDC_RP_SIGN_ALGO</span></code> (<code class="docutils literal notranslate"><span class="pre">RS256</span></code> - by default)</p></li>
@@ -528,11 +525,10 @@ and webhooks. The CI application needs network access to the Konfuzio installati
 <a class="reference external image-reference" href="keycloak/sso-button.png"><img alt="sso-button.png" src="../_images/sso-button.png" /></a>
 </section>
 <section id="important-notes">
-<h4>Important notes:<a class="headerlink" href="#important-notes" title="Permalink to this heading">¶</a></h4>
+<h3>Important notes<a class="headerlink" href="#important-notes" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
 <li><p>The Keycloak admin user cannot login into Konfuzio Server.</p></li>
 </ul>
-</section>
 </section>
 </section>
 </section>
