@@ -19,7 +19,7 @@ This version uses Konfuzio Trainer in version v.0.3.15 and the Konfuzio Python S
 - Option to make document accessible via public link
 - Beta Version of APIV3
 - Beta Version of new document dashboard (bases on [Konfuzio-Capture-Vue](https://github.com/konfuzio-ai/konfuzio-capture-vue))
-- Automatic rotation of pages when using Azure OCR (#8980)
+- Automatic rotation of pages (#8980)
 
 ### Changed
 - For on-premise Users, now the Postgresql 10 is the minimum version
