@@ -370,3 +370,39 @@ Konfuzio uses CI pipelines to allow users to run customAI model code securely. I
 the Kubernetes deployment option is not used, we recommend a dedicated virtual
 machine to run these pipelines. The selected CI application needs to support Docker
 and webhooks. The CI application needs network access to the Konfuzio installation.
+
+## Keycloak Integration
+
+Keycloak allows single sign-on funtionality. By doing so no user management is done wihtin Konfuzio Server. If you already operate a keycloak server, you can reuse keycloak users.
+
+### Set up
+
+#### To start and set up keycloak server:
+1. Download [keycloak server](https://www.keycloak.org/downloads)
+2. Install and start keycloak server using [instruction](https://www.keycloak.org/docs/latest/server_installation/)
+3. Open keycloak dashboard in browser (locally it's http://0.0.0.0:8080/). 
+4. Create admin user
+5. Login to Administration Console
+6. You can add new Realm or use default (Master)
+![add-realm.png](keycloak/add-realm.png)
+7. Create new client from `Clients` navbar item
+![add-client.png](keycloak/add-client.png)
+8. Fill client form correctly (`Access Type` and `Valid Redirect URIs` fields)
+![client-form.png](keycloak/client-form.png)
+9. Move to `Credentials` tab and save `Secret` value
+10. In `Users` navbar item create users
+
+#### To integrate konfuzio with keycloak you need to set the following environment variables for you Konfuzio Server installation:
+
+- `KEYCLOAK_URL` (http://127.0.0.1:8080/ - for localhost)
+- `OIDC_RP_SIGN_ALGO` (`RS256` - by default)
+- `OIDC_RP_CLIENT_ID` (client name from 7th point of previous section)
+- `OIDC_RP_CLIENT_SECRET` (Secret value from 9th point of previous section)
+- `SSO_ENABLED` (set `True` to activate integration)
+
+Click `SSO` on login page to log in to Konfuzio using keycloak
+![sso-button.png](keycloak/sso-button.png)
+
+#### Important notes:
+
+- The Keycloak admin user cannot login into Konfuzio Server.
