@@ -39,8 +39,9 @@ from sklearn.utils.validation import check_is_fitted
 from tabulate import tabulate
 
 from konfuzio_sdk.data import Document, Annotation, Category, AnnotationSet
-from konfuzio_sdk.normalize import normalize_to_float, normalize_to_date
+from konfuzio_sdk.normalize import normalize_to_float, normalize_to_date, normalize_to_percentage
 from konfuzio_sdk.regex import regex_matches
+from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 from konfuzio_sdk.utils import get_timestamp, get_bbox
 
 logger = logging.getLogger(__name__)
@@ -49,6 +50,620 @@ logger = logging.getLogger(__name__)
 CANDIDATES_CACHE_SIZE = 100
 
 warn('This module is WIP: https://gitlab.com/konfuzio/objectives/-/issues/9311', FutureWarning, stacklevel=2)
+
+
+def get_offsets_per_page(doc_text: str) -> Dict:
+    """Get the first start and last end offsets per page."""
+    page_text = doc_text.split('\f')
+    start = 0
+    starts_ends_per_page = {}
+
+    for ind, page in enumerate(page_text):
+        len_page = len(page)
+        end = start + len_page
+        starts_ends_per_page[ind] = (start, end)
+        start = end + 1
+
+    return starts_ends_per_page
+
+
+def filter_dataframe(df: pandas.DataFrame, label_name: str, labels_threshold: dict) -> pandas.DataFrame:
+    """Filter dataframe rows accordingly with the Accuracy value.
+
+    Rows (extractions) where the accuracy value is below the threshold defined for the label are removed.
+
+    :param df: Dataframe with extraction results
+    :param label_name: Name of the label
+    :param labels_threshold: Dictionary with the threshold values for each label
+    :returns: Filtered dataframe
+    """
+    try:
+        _label_threshold = labels_threshold[label_name]
+    except KeyError:
+        _label_threshold = 0.1
+
+    filtered = df[df['confidence'] >= _label_threshold]
+
+    return filtered
+
+
+def filter_low_confidence_extractions(result: Dict, labels_threshold: Dict) -> Dict:
+    """Remove extractions with confidence below the threshold defined for the respective label.
+
+    The input is a dictionary where the values can be:
+    - dataframe
+    - dictionary where the values are dataframes
+    - list of dictionaries  where the values are dataframes
+
+    :param result: Extraction results
+    :param labels_threshold: Dictionary with the threshold values for each label
+    :returns: Filtered dictionary.
+    """
+    for k in list(result.keys()):
+        if isinstance(result[k], pandas.DataFrame):
+            filtered = filter_dataframe(result[k], k, labels_threshold)
+            if filtered.empty:
+                del result[k]
+            else:
+                result[k] = filtered
+
+        elif isinstance(result[k], list):
+            for e, element in enumerate(result[k]):
+                for sk in list(element.keys()):
+                    if isinstance(element[sk], pandas.DataFrame):
+                        filtered = filter_dataframe(result[k][e][sk], sk, labels_threshold)
+                        if filtered.empty:
+                            del result[k][e][sk]
+                        else:
+                            result[k][e][sk] = filtered
+
+        elif isinstance(result[k], dict):
+            for ssk in list(result[k].keys()):
+                if isinstance(result[k][ssk], pandas.DataFrame):
+                    filtered = filter_dataframe(result[k][ssk], ssk, labels_threshold)
+                    if filtered.empty:
+                        del result[k][ssk]
+                    else:
+                        result[k][ssk] = filtered
+
+    return result
+
+
+def remove_empty_dataframes_from_extraction(result: Dict) -> Dict:
+    """Remove empty dataframes from the result of an Extraction AI.
+
+    The input is a dictionary where the values can be:
+    - dataframe
+    - dictionary where the values are dataframes
+    - list of dictionaries  where the values are dataframes
+    """
+    for k in list(result.keys()):
+        if isinstance(result[k], pandas.DataFrame) and result[k].empty:
+            del result[k]
+        elif isinstance(result[k], list):
+            for e, element in enumerate(result[k]):
+                for sk in list(element.keys()):
+                    if isinstance(element[sk], pandas.DataFrame) and element[sk].empty:
+                        del result[k][e][sk]
+        elif isinstance(result[k], dict):
+            for ssk in list(result[k].keys()):
+                if isinstance(result[k][ssk], pandas.DataFrame) and result[k][ssk].empty:
+                    del result[k][ssk]
+
+    return result
+
+
+def get_bboxes_by_coordinates(doc_bbox: Dict, selection_bboxes: List[Dict]) -> List[Dict]:
+    """
+    Get the bboxes of the characters contained in the selection bboxes.
+
+    todo: is this a duplicate of get_merged_bboxes in konfuzio_sdk.utils ?
+
+    Simplifies `get_bboxes`..
+
+    Returns a list of bboxes.
+    :param doc_bbox: Bboxes of the characters in the document.
+    :param selection_bboxes: Bboxes from which to get the info of the characters that they include.
+    :return: List of the bboxes of the characters included in selection_bboxes.
+    """
+    # initialize the list of bboxes that will later be returned
+    final_bboxes = []
+
+    # convert string indexes to int
+    doc_bbox = {int(index): char_bbox for index, char_bbox in doc_bbox.items()}
+
+    # iterate through every bbox of the selection
+    for selection_bbox in selection_bboxes:
+        selected_bboxes = [
+            # the index of the character is its offset, i.e. the number of chars before it in the document's text
+            {**char_bbox}
+            for index, char_bbox in doc_bbox.items()
+            if selection_bbox["page_index"] == char_bbox["page_number"] - 1
+            # filter the characters of the document according to their x/y values, so that we only include the
+            # characters that are inside the selection
+            and selection_bbox["x0"] <= char_bbox["x0"]
+            and selection_bbox["x1"] >= char_bbox["x1"]
+            and selection_bbox["y0"] <= char_bbox["y0"]
+            and selection_bbox["y1"] >= char_bbox["y1"]
+        ]
+
+        final_bboxes.extend(selected_bboxes)
+
+    return final_bboxes
+
+
+def flush_buffer(buffer: List[pandas.Series], doc_text: str, merge_vertical=False) -> Dict:
+    """
+    Merge a buffer of entities into a dictionary (which will eventually be turned into a DataFrame).
+
+    A buffer is a list of pandas.Series objects.
+    """
+    if 'label_text' in buffer[0]:
+        label = buffer[0]['label_text']
+    elif 'label' in buffer[0]:
+        label = buffer[0]['label']
+
+    # considering multiline case
+    if merge_vertical:
+        starts = []
+        ends = []
+        text = ""
+        n_buf = len(buffer)
+        for ind, buf in enumerate(buffer):
+            starts.append(buf['Start'])
+            ends.append(buf['End'])
+            text += doc_text[buf['Start'] : buf['End']]
+            if ind < n_buf - 1:
+                text += '\n'
+    else:
+        starts = buffer[0]['Start']
+        ends = buffer[-1]['End']
+        text = doc_text[starts:ends]
+
+    res_dict = dict()
+    res_dict['Start'] = starts
+    res_dict['End'] = ends
+    res_dict['label'] = label
+    res_dict['Candidate'] = text
+    res_dict['Translated_Candidate'] = res_dict['Candidate']
+    res_dict['Translation'] = None
+    res_dict['Accuracy'] = numpy.mean([b['Accuracy'] for b in buffer])
+    res_dict['x0'] = min([b['x0'] for b in buffer])
+    res_dict['x1'] = max([b['x1'] for b in buffer])
+    res_dict['y0'] = min([b['y0'] for b in buffer])
+    res_dict['y1'] = max([b['y1'] for b in buffer])
+    return res_dict
+
+
+def is_valid_merge(
+    row: pandas.Series,
+    buffer: List[pandas.Series],
+    doc_text: str,
+    label_types: Dict[str, str],
+    doc_bbox: Union[None, Dict] = None,
+    offsets_per_page: Union[None, Dict] = None,
+    merge_vertical: bool = False,
+    threshold: float = 0.0,
+    max_offset_distance: int = 5,
+) -> bool:
+    """
+    Verify if the merging that we are trying to do is valid.
+
+    If merging certain labels we only merge them if their merge keeps them a valid data type.
+
+    For example if two dates are next to each other in text then we only want to merge them if the result of the merge
+    is still a valid date.
+
+    If merging vertically we only check the vertical merging condition. Everything else is skipped.
+
+    :param row: Row candidate to be merged to what is already in the buffer.
+    :param buffer: Previous information.
+    :param doc_text: Text of the document.
+    :param label_types: Types of the entities.
+    :param doc_bbox: Bboxes of the characters in the document.
+    :param offsets_per_page: Start and end offset of each page in the document.
+    :param merge_vertical: Option to verify the vertical merge of the entities.
+    :param threshold: Confidence threshold for the candidate to be merged.
+    :param max_offset_distance: Maximum distance between two entities that can be merged.
+    :return: If the merge is valid or not.
+    """
+    # Vertical case
+    if merge_vertical:
+        return is_valid_merge_vertical(row=row, buffer=buffer, doc_bbox=doc_bbox, offsets_per_page=offsets_per_page)
+
+    # Horizontal case
+    # only merge if candidate is above accuracy threshold for merging
+    if threshold is None:
+        threshold = 0.1
+
+    if row['Accuracy'] < threshold:
+        return False
+    # only merge if all are the same data type
+    if len(set(label_types)) > 1:
+        return False
+
+    if doc_bbox is not None:
+        # only merge if there are no characters in between (or only maximum of 5 whitespaces)
+        char_bboxes = [
+            doc_bbox[str(char_bbox_id)]
+            for char_bbox_id in range(buffer[-1]['End'], row['Start'])
+            if str(char_bbox_id) in doc_bbox
+        ]
+
+        char_text = [chat_bbox['text'] for chat_bbox in char_bboxes]
+        # Do not merge if there are characters between
+        if not all([c == '' or c == ' ' for c in char_text]):
+            return False
+
+        # Do not merge if there are more than the maximum offset distance
+        if len(char_text) > max_offset_distance:
+            return False
+
+    # Do not merge if the difference in the offsets is bigger than the maximum offset distance
+    if row['Start'] - buffer[-1]['End'] > max_offset_distance:
+        return False
+
+    # only merge if text is on same line
+    # row can include entity that is already part of the buffer (buffer: Ankerkette Meterware, row: Ankerkette)
+    if '\n' in doc_text[min(buffer[0]['Start'], row['Start']) : max(buffer[-1]['End'], row['End'])]:
+        return False
+    # always merge if not one of these data types
+    # never merge numbers or positive numbers
+    if label_types[0] not in {'Number', 'Positive Number', 'Percentage', 'Date'}:
+        return True
+    # only merge percentages if the result of the merge is still a percentage
+    if label_types[0] == 'Percentage':
+        text = doc_text[buffer[0]['Start'] : row['End']]
+        merge = normalize_to_percentage(text)
+        return merge is not None
+    # only merge date if the result of the merge is still a date
+    if label_types[0] == 'Date':
+        text = doc_text[buffer[0]['Start'] : row['End']]
+        merge = normalize_to_date(text)
+        return merge is not None
+    # should only get here if we have a single data type that is either Number or Positive Number,
+    # which we do not merge
+    else:
+        return False
+
+
+def is_valid_merge_vertical(
+    row: pandas.Series, buffer: List[pandas.Series], doc_bbox: Dict, offsets_per_page: Dict
+) -> bool:
+    """
+    Verify if the vertical merging that we are trying to do is valid.
+
+    To be valid, it has to respect 2 conditions:
+
+    1. There is an overlap in the x coordinates of the bbox that includes the entities in the buffer and the row x
+     coordinates.
+
+    2. The bbox that includes the entities in the buffer and the row does not include any other character of the
+    document.
+
+    To check the 2nd condition, we get the bboxes of the characters from the entities in the buffer and the entity in
+    the row:
+    a) based on their start and end offsets
+    b) based on the bounding box that includes all these entities
+
+    b should not include any character that is not in a.
+
+    :param row: Row candidate to be merged to what is already in the buffer.
+    :param buffer: Previous information.
+    :param doc_bbox: Bboxes of the characters in the document.
+    :param offsets_per_page: Start and end offset of each page in the document.
+    :return: If the merge is valid or not.
+    """
+    # Bbox formed by the entities in the buffer.
+    buffer_bbox = {
+        'x0': min([b['x0'] for b in buffer]),
+        'x1': max([b['x1'] for b in buffer]),
+        'y0': min([b['y0'] for b in buffer]),
+        'y1': max([b['y1'] for b in buffer]),
+    }
+
+    # 1. There is an overlap in x coordinates
+    is_overlap = (
+        buffer_bbox['x1'] >= row['x0'] >= buffer_bbox['x0']
+        or buffer_bbox['x1'] >= row['x1'] >= buffer_bbox['x0']
+        or (buffer_bbox['x0'] >= row['x0'] and row['x1'] >= buffer_bbox['x1'])
+    )  # NOQA
+
+    if not is_overlap:
+        return False
+
+    # 2. There is no other characters if the buffer bbox is updated with the current row
+    # update buffer with row
+    temp_buffer = buffer.copy()
+    temp_buffer.append(row)
+
+    # get page index (necessary to select the bboxes of the characters)
+    for buf in temp_buffer:
+        for page_index, offsets in offsets_per_page.items():
+            if buf['Start'] >= offsets[0] and buf['End'] <= offsets[1]:
+                break
+
+        buf['page_index'] = page_index
+
+    if len(set([buf['page_index'] for buf in temp_buffer])) > 1:
+        logger.info('Merging annotations across pages is not possible.')
+        return False
+
+    # get bboxes by start and end offsets of each row in the temp buffer
+    bboxes_by_offset = []
+    for buf in temp_buffer:
+        char_bboxes = [
+            doc_bbox[str(char_bbox_id)]
+            for char_bbox_id in range(buf['Start'], buf['End'] + 1)
+            if str(char_bbox_id) in doc_bbox
+        ]
+        bboxes_by_offset.extend(char_bboxes)
+
+    # get bboxes contained in the bbox of the temp buffer
+    buffer_row_bbox = {
+        'x0': min([buffer_bbox['x0'], row['x0']]),
+        'x1': max([buffer_bbox['x1'], row['x1']]),
+        'y0': min([buffer_bbox['y0'], row['y0']]),
+        'y1': max([buffer_bbox['y1'], row['y1']]),
+        'page_index': temp_buffer[0]['page_index'],
+    }
+
+    bboxes_by_coordinates = get_bboxes_by_coordinates(doc_bbox, [buffer_row_bbox])
+
+    # check if there are bboxes in the merged bbox that are not part of the ones obtained by the offsets
+    diff = [x for x in bboxes_by_coordinates if x not in bboxes_by_offset and x['text'] != ' ']
+    no_diffs = len(diff) == 0
+
+    return no_diffs
+
+
+def merge_df(
+    df: pandas.DataFrame,
+    doc_text: str,
+    label_type_dict: Dict,
+    doc_bbox: Union[Dict, None] = None,
+    merge_vertical: bool = False,
+    threshold: float = 0.0,
+) -> pandas.DataFrame:
+    """
+    Merge a DataFrame of entities with matching predicted sections/labels.
+
+    Merge is performed between entities which are only separated by a space.
+    Stores entities to be merged in the `buffer` and then creates a dict from those entities by calling `flush_buffer`.
+    All of the dicts created by `flush_buffer` are then converted into a DataFrame and then returned.
+    """
+    res_dicts = []
+    buffer = []
+    end = None
+
+    offsets_per_page = None
+    if merge_vertical:
+        assert doc_bbox is not None
+        if df.empty:
+            return pandas.DataFrame(res_dicts)
+        df.sort_values(by=['y0'])
+        offsets_per_page = get_offsets_per_page(doc_text)
+        label_types = []
+
+    else:
+        label_types = [label_type_dict[row['label_text']] for _, row in df.iterrows()]
+
+    for _, row in df.iterrows():  # iterate over the rows in the DataFrame
+        # skip extractions bellow threshold
+        if row['Accuracy'] < threshold:
+            continue
+        # if they are valid merges then add to buffer
+        if end and is_valid_merge(
+            row, buffer, doc_text, label_types, doc_bbox, offsets_per_page, merge_vertical, threshold
+        ):
+            buffer.append(row)
+            end = row['End']
+        else:  # else, flush the buffer by creating a res_dict
+            if buffer:
+                res_dict = flush_buffer(buffer, doc_text, merge_vertical=merge_vertical)
+                res_dicts.append(res_dict)
+            buffer = []
+            buffer.append(row)
+            end = row['End']
+    if buffer:  # flush buffer at the very end to clear anything left over
+        res_dict = flush_buffer(buffer, doc_text, merge_vertical=merge_vertical)
+        res_dicts.append(res_dict)
+    df = pandas.DataFrame(res_dicts)  # convert the list of res_dicts created by `flush_buffer` into a DataFrame
+    return df
+
+
+def merge_annotations(
+    res_dict: Dict,
+    doc_text: str,
+    label_type_dict: Dict[str, str],
+    doc_bbox: Union[Dict, None] = None,
+    multiline_labels_names: Union[list, None] = None,
+    merge_vertical: bool = False,
+    labels_threshold: Union[dict, None] = None,
+) -> Dict:
+    """
+    Merge annotations by merging neighbouring entities in the res_dict with the same predicted section/label.
+
+    Does so by recursively calling itself until it reaches a pandas DataFrame, at which point it performs the merging
+    on the DataFrame.
+
+    Merging is dependent on the data type of the label, e.g. we always merge 'Text', never merge 'Number', only merge
+    'Percentage' and 'Date' if the resultant merge also gives a valid percentage or date.
+
+    The merge vertical option tries to group multiline predictions of the same label into a single one and should be
+    used only after the merge horizontal (the horizontal merge is skipped if the vertical is enabled).
+    The merge is dependent on the overlapping of the x coordinates and the intersection with other elements in the
+    document.
+    For this option, the document bbox is necessary as well as the names of the labels in which the merge can occur.
+
+    text is the text of the document.
+    label_type_dict is a dictionary where the label names are keys and the values are the data type.
+    doc_bbox are the bounding boxes of the characters in the document.
+    multiline_labels_names is a list with the names of the labels with multiline annotations.
+    merge_vertical is a bool for merging the entities vertically.
+
+    Example:
+    res_dict = {
+        'Text':
+            start end label  candidate
+            0     5   'Text' hello
+            6     10  'Text' world,
+        'Number':
+            start end label    candidate
+            20    25  'Number' 1234
+            26    30  'Number' 5678,
+        'Date':
+            start end label  candidate
+            30    32  'Date' 01.01
+            33    37  'Date' 2001
+            38    48  'Date' 02.02.2002
+                }
+    text = document.text
+    label_type_dict = {label.name: label.data_type for label in self.labels}
+    merged_res_dict = merge_annotations(res_dict, text, label_type_dict)
+    merged_res_dict = {
+        'Text':
+            start end label  candidate
+            0     10  'Text' hello world,
+        'Number':
+            start end label    candidate
+            20    25  'Number' 1234
+            26    30  'Number' 5678,
+        'Date':
+            start end label  candidate
+            30    37  'Date' 01.01 2001
+            38    48  'Date' 02.02.2002
+                }
+
+    If the merge vertical is enabled, entities with the same label that respect the defined conditions are grouped.
+
+    Example:
+    res_dict = {
+        'CompanyName':
+            start end label         candidate
+            0     4  'CompanyName'  Helm
+            6     14  'CompanyName'  & Nagel,
+
+    merged_res_dict = {
+        'CompanyName':
+            start   end     label          candidate
+            [0, 6] [4, 14]  'CompanyName'  Helm & Nagel,
+
+    """
+    if merge_vertical:
+        assert doc_bbox is not None
+        assert multiline_labels_names is not None
+
+    if labels_threshold is None:
+        labels_threshold = {label_name: 0.0 for label_name, _ in label_type_dict.items()}
+
+    merged_res_dict = dict()  # stores final results
+    for section_label, items in res_dict.items():
+        try:
+            _fix_label_threshold = labels_threshold[section_label]
+        except KeyError:
+            _fix_label_threshold = 0.1
+
+        if isinstance(items, pandas.DataFrame):  # perform merge on DataFrames within res_dict
+            if merge_vertical:
+                # only for the labels where multiline annotations can occur
+                if section_label in multiline_labels_names:
+                    merged_df = merge_df(
+                        df=items,
+                        doc_text=doc_text,
+                        label_type_dict=label_type_dict,
+                        doc_bbox=doc_bbox,
+                        merge_vertical=merge_vertical,
+                        threshold=_fix_label_threshold,
+                    )
+                else:
+                    merged_df = items
+            else:
+                merged_df = merge_df(
+                    df=items,
+                    doc_text=doc_text,
+                    label_type_dict=label_type_dict,
+                    doc_bbox=doc_bbox,
+                    threshold=_fix_label_threshold,
+                )
+            merged_res_dict[section_label] = merged_df
+        # if the value of the res_dict is not a DataFrame then we recursively call merge_annotations on it
+        elif isinstance(items, list):
+            # if it's a list then it is a list of sections
+            merged_res_dict[section_label] = [
+                merge_annotations(
+                    res_dict=i,
+                    doc_text=doc_text,
+                    label_type_dict=label_type_dict,
+                    doc_bbox=doc_bbox,
+                    multiline_labels_names=multiline_labels_names,
+                    merge_vertical=merge_vertical,
+                    labels_threshold=labels_threshold,
+                )
+                for i in items
+            ]
+        elif isinstance(items, dict):
+            # if it's a dict then it is a res_dict within a list of sections
+            merged_res_dict[section_label] = merge_annotations(
+                res_dict=items,
+                doc_text=doc_text,
+                label_type_dict=label_type_dict,
+                doc_bbox=doc_bbox,
+                multiline_labels_names=multiline_labels_names,
+                merge_vertical=merge_vertical,
+                labels_threshold=labels_threshold,
+            )
+    return merged_res_dict
+
+
+def split_multiline_annotations(annotations: List['Annotation'], multiline_labels: list) -> List['Annotation']:
+    """
+    Verify if there are annotations which involve multiple lines and split them into individual ones.
+
+    For example, if an annotation includes 3 lines, 3 new annotations are created.
+    This is necessary to have the correct offset strings.
+    The offset string of an annotation is built considering only the start and end offset.
+    In the multiline case, the start offset would be in the first line and the end offset in the last line.
+    Everything that is in the middle would be included.
+
+    :param annotations: Annotations to be verified.
+    :return: Splitted annotations.
+    """
+    new_annotations = []
+
+    for annotation in annotations:
+        if annotation.is_multiline:
+            # Keep track of which labels have this type of annotations. Important to limit the cases where vertical
+            # merge of entities should be applied.
+            if annotation.label not in multiline_labels:
+                multiline_labels.append(annotation.label)
+
+            for line_annotation in annotation.bboxes:
+                bbox = {
+                    'top': line_annotation['top'],
+                    'bottom': line_annotation['bottom'],
+                    'x0': line_annotation['x0'],
+                    'x1': line_annotation['x1'],
+                    'y0': line_annotation['y0'],
+                    'y1': line_annotation['y1'],
+                }
+
+                # Document is necessary as input to have the offset string.
+                # Other parameters are necessary because are not included in line_annotation.
+                annot = Annotation(
+                    document=annotation.document,
+                    label=annotation.label,
+                    is_correct=annotation.is_correct,
+                    revised=annotation.revised,
+                    annotation_set=annotation.annotation_set,
+                    bbox=bbox,
+                    **line_annotation,
+                )
+                new_annotations.append(annot)
+        else:
+            new_annotations.append(annotation)
+
+    return new_annotations
 
 
 def substring_count(list: list, substring: str) -> list:
@@ -2390,3 +3005,325 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
     #             annotations_filtered.append(annotation_cluster[0])
     #
     #     return annotations_filtered
+
+
+class SeparateLabelsAnnotationMultiClassModel(DocumentAnnotationMultiClassModel):
+    """
+    Model that should be used when we want to treat labels shared by different templates as different labels.
+
+    The extract method needs to undo the changes done in the labels of the project (project.separate_labels()).
+    """
+
+    def __init__(self, extract_threshold=None, *args, **kwargs):
+        """Initialize DocumentEntityMulticlassModel."""
+        DocumentAnnotationMultiClassModel.__init__(self, *args, **kwargs)
+        self.extract_threshold = extract_threshold
+
+    def extract(self, text, bbox, *args, **kwargs) -> 'Dict':
+        """
+        Undo the renaming of the labels when using project.separate_labels().
+
+        In this way we have the output of the extraction in the correct format.
+        """
+        res_dict = DocumentAnnotationMultiClassModel.extract(self, text, bbox, *args, **kwargs)
+
+        new_res = {}
+        for key, value in res_dict.items():
+            # if the value is a list, is because the key corresponds to a section label with multiple sections
+            # the key has already the name of the section label
+            # we need to go to each element of the list, which is a dictionary, and
+            # rewrite the label name (remove the section label name) in the keys
+            if isinstance(value, list):
+                section_label = key
+                if section_label not in new_res.keys():
+                    new_res[section_label] = []
+
+                for found_section in value:
+                    new_found_section = {}
+                    for label, df in found_section.items():
+                        if '__' in label:
+                            label = label.split('__')[1]
+                            df.label_text = label
+                            df.label = label
+                        new_found_section[label] = df
+
+                    new_res[section_label].append(new_found_section)
+
+            # if the value is a dictionary, is because he key corresponds to a section label without multiple sections
+            # we need to rewrite the label name (remove the section label name) in the keys
+            elif isinstance(value, dict):
+                section_label = key
+                if section_label not in new_res.keys():
+                    new_res[section_label] = {}
+
+                for label, df in value.items():
+                    if '__' in label:
+                        label = label.split('__')[1]
+                        df.label_text = label
+                        df.label = label
+                    new_res[section_label][label] = df
+
+            # otherwise the value must be directly a dataframe and it will correspond to the default section
+            # can also correspond to labels which the template clf couldn't attribute to any template.
+            # so we still check if we have the changed label name
+            elif '__' in key:
+                section_label = key.split('__')[0]
+                if section_label not in new_res.keys():
+                    new_res[section_label] = {}
+                key = key.split('__')[1]
+                value.label_text = key
+                value.label = key
+                # if the section label already exists and allows multi sections
+                if isinstance(new_res[section_label], list):
+                    new_res[section_label].append({key: value})
+                else:
+                    new_res[section_label][key] = value
+            else:
+                new_res[key] = value
+
+        return new_res
+
+
+class DocumentEntityMulticlassModel(DocumentAnnotationMultiClassModel, GroupAnnotationSets):
+    """Creates annotations by extracting all entities and then finding which overlap with existing annotations."""
+
+    def __init__(self, *args, **kwargs):
+        """Initialize DocumentEntityMulticlassModel."""
+        DocumentAnnotationMultiClassModel.__init__(self, *args, **kwargs)
+
+        self.use_generic_regex = False
+        self.multiline_labels = []
+
+        # set tokenizer if it wasn't set already
+        if not hasattr(self, "tokenizer"):
+            self.tokenizer = WhitespaceTokenizer()
+
+        logger.info('Getting annotations')
+
+        # loop over each document and test document
+        for document in self.documents + self.test_documents:
+            # get all entities
+            # entities = [e for e in re.finditer('[^ \n\t\f]+', document.text) if e and '\f' not in e.group()]
+            entities = self.tokenizer.get_entities(document.text)
+
+            # flush existing annotations
+            annotations = document._annotations
+            document._annotations = []
+
+            # check for multiline annotations
+            annotations = split_multiline_annotations(annotations, self.multiline_labels)
+
+            # flush annotations added during split of multiline
+            document._annotations = []
+
+            # get exact matches
+            matches, remaining_annotations, remaining_entities = self.get_exact_matches_and_filter_mached(
+                annotations, entities
+            )
+
+            # get entity matches for the rest
+            # (only call after the first one as this filters out annotations with no start and/or end offset)
+            matches += self.get_entity_matches(remaining_annotations, remaining_entities)
+
+            # convert the matches to annotations and add them to the document
+            self.add_matches_as_document_annotation(matches, document)
+
+        logger.info('All annotations processed.')
+
+    def add_matches_as_document_annotation(self, matches, document):
+        """Convert a match into a fitting annotation."""
+        # get document bbox for creating annotations
+        bbox = document.get_bbox()
+
+        # go through the matches
+        for match in matches:
+            # create annotation from entity
+            e = Annotation(
+                start_offset=match['entity']['start_offset'],
+                end_offset=match['entity']['end_offset'],
+                document=document,
+                bbox=get_bbox(
+                    bbox, start_offset=match['entity']['start_offset'], end_offset=match['entity']['end_offset']
+                ),
+            )
+
+            # set the corresponding attributes for the entity annotation to match that of the actual annotation
+            for key, value in match['annotation'].__dict__.items():
+                if key in ['start_offset', 'end_offset', 'offset_string', 'offset_string_original']:
+                    continue
+                setattr(e, key, value)
+
+            # add the entity as an annotation to the document
+            document.add_annotation(e)
+
+    def get_exact_matches_and_filter_mached(self, annotations, entities) -> Tuple[List[Dict], List[Dict]]:
+        """
+        Only give back annotation-entity combinations that are considered exact.
+
+        This is the case if annotation spans the entire entity (or more).
+        If an annotation is not completly exactly matched, add it to the unmatched list
+        """
+        unmachted_list = []
+        match_list = []
+        matched_entities = []
+
+        for annotation in annotations:
+
+            # filter out annotations with missing start or end offset
+            if annotation.start_offset is None or annotation.end_offset is None:
+                continue
+
+            start_found = False
+            end_found = False
+            for entity in entities:
+                # check if the annotation spans the whole entity
+                if entity['start_offset'] >= annotation.start_offset and entity['end_offset'] <= annotation.end_offset:
+                    match_list.append({'entity': entity, 'annotation': annotation})
+
+                    # you can't just remove the entity because that causes the iterator to jump by one
+                    matched_entities.append(entity)
+
+                    # update start and end found
+                    if entity['start_offset'] == annotation.start_offset:
+                        start_found = True
+                    if entity['end_offset'] == annotation.end_offset:
+                        end_found = True
+
+                # if we go past the annotation end, stop looking for entities (assuming they are in order)
+                elif entity['start_offset'] > annotation.end_offset:
+                    break
+
+            # see if the annotation was completly machted
+            if not (start_found and end_found):
+                unmachted_list.append(annotation)
+
+        return match_list, unmachted_list, [entity for entity in entities if entity not in matched_entities]
+
+    def get_entity_matches(self, annotations, entities) -> List[Dict]:
+        """Catch all exceptetions. Here we just match every entity with an annotation that lies within them."""
+        matches = []
+
+        for annotation in annotations:
+            for entity in entities:
+                # matches if entity starts before the annotation ends and ends after the annotation starts
+                if entity['start_offset'] <= annotation.end_offset and entity['end_offset'] >= annotation.start_offset:
+                    matches.append({'entity': entity, 'annotation': annotation})
+                # if we go past the annotation end, stop looking for entities (assuming they are in order)
+                elif entity['start_offset'] > annotation.end_offset:
+                    break
+
+        return matches
+
+    def extract(self, text: str, bbox: Dict, *args, **kwargs) -> Dict:
+        """Run clf."""
+        res_dict = super().extract(text, bbox, *args, **kwargs)
+
+        label_type_dict = {label.name: label.data_type for label in self.labels}
+        label_threshold_dict = {
+            label.name: label.threshold if hasattr(label, 'threshold') else 0.1 for label in self.labels
+        }
+
+        res_dict = remove_empty_dataframes_from_extraction(res_dict)
+        res_dict = filter_low_confidence_extractions(res_dict, label_threshold_dict)
+
+        merged_res_dict = merge_annotations(
+            res_dict=res_dict,
+            doc_text=text,
+            label_type_dict=label_type_dict,
+            doc_bbox=bbox,
+            labels_threshold=label_threshold_dict,
+        )
+
+        # If the training has labels with multiline annotations, we try to merge entities vertically
+        if hasattr(self, 'multiline_labels'):
+            multiline_labels_names = [label.name for label in self.multiline_labels]
+            merged_res_dict = merge_annotations(
+                res_dict=merged_res_dict,
+                doc_text=text,
+                label_type_dict=label_type_dict,
+                doc_bbox=bbox,
+                multiline_labels_names=multiline_labels_names,
+                merge_vertical=True,
+                labels_threshold=label_threshold_dict,
+            )
+
+        return merged_res_dict
+
+
+class SeparateLabelsEntityMultiClassModel(DocumentEntityMulticlassModel):
+    """
+    Model that should be used when we want to treat labels shared by different templates as different labels.
+
+    The extract method needs to undo the changes done in the labels of the project (project.separate_labels()).
+    """
+
+    def __init__(self, extract_threshold=None, *args, **kwargs):
+        """Initialize DocumentEntityMulticlassModel."""
+        DocumentEntityMulticlassModel.__init__(self, *args, **kwargs)
+        self.extract_threshold = extract_threshold
+
+    def extract(self, text, bbox, *args, **kwargs) -> 'Dict':
+        """
+        Undo the renaming of the labels when using project.separate_labels().
+
+        In this way we have the output of the extraction in the correct format.
+        """
+        # from konfuzio.models_labels_multiclass import DocumentEntityMulticlassModel
+
+        res_dict = DocumentEntityMulticlassModel.extract(self, text, bbox, *args, **kwargs)
+
+        new_res = {}
+        for key, value in res_dict.items():
+            # if the value is a list, is because the key corresponds to a section label with multiple sections
+            # the key has already the name of the section label
+            # we need to go to each element of the list, which is a dictionary, and
+            # rewrite the label name (remove the section label name) in the keys
+            if isinstance(value, list):
+                section_label = key
+                if section_label not in new_res.keys():
+                    new_res[section_label] = []
+
+                for found_section in value:
+                    new_found_section = {}
+                    for label, df in found_section.items():
+                        if '__' in label:
+                            label = label.split('__')[1]
+                            df.label_text = label
+                            df.label = label
+                        new_found_section[label] = df
+
+                    new_res[section_label].append(new_found_section)
+
+            # if the value is a dictionary, is because he key corresponds to a section label without multiple sections
+            # we need to rewrite the label name (remove the section label name) in the keys
+            elif isinstance(value, dict):
+                section_label = key
+                if section_label not in new_res.keys():
+                    new_res[section_label] = {}
+
+                for label, df in value.items():
+                    if '__' in label:
+                        label = label.split('__')[1]
+                        df.label_text = label
+                        df.label = label
+                    new_res[section_label][label] = df
+
+            # otherwise the value must be directly a dataframe and it will correspond to the default section
+            # can also correspond to labels which the template clf couldn't attribute to any template.
+            # so we still check if we have the changed label name
+            elif '__' in key:
+                section_label = key.split('__')[0]
+                if section_label not in new_res.keys():
+                    new_res[section_label] = {}
+                key = key.split('__')[1]
+                value.label_text = key
+                value.label = key
+                # if the section label already exists and allows multi sections
+                if isinstance(new_res[section_label], list):
+                    new_res[section_label].append({key: value})
+                else:
+                    new_res[section_label][key] = value
+            else:
+                new_res[key] = value
+
+        return new_res
