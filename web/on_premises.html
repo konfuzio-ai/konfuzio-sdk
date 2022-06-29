@@ -116,6 +116,15 @@
 <li class="toctree-l3"><a class="reference internal" href="#custom-ai-model-training-via-ci-pipelines">Custom AI model training via CI pipelines</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#keycloak-integration">Keycloak Integration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#set-up">Set up</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#to-start-and-set-up-keycloak-server">To start and set up keycloak server:</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#to-integrate-konfuzio-with-keycloak-you-need-to-set-the-following-environment-variables-for-you-konfuzio-server-installation">To integrate konfuzio with keycloak you need to set the following environment variables for you Konfuzio Server installation:</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#important-notes">Important notes:</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="changelog_app.html">Changelog</a></li>
@@ -478,6 +487,52 @@ The following steps need to be undertaken:</p>
 the Kubernetes deployment option is not used, we recommend a dedicated virtual
 machine to run these pipelines. The selected CI application needs to support Docker
 and webhooks. The CI application needs network access to the Konfuzio installation.</p>
+</section>
+</section>
+<section id="keycloak-integration">
+<h2>Keycloak Integration<a class="headerlink" href="#keycloak-integration" title="Permalink to this heading">¶</a></h2>
+<p>Keycloak allows single sign-on funtionality. By doing so no user management is done wihtin Konfuzio Server. If you already operate a keycloak server, you can reuse keycloak users.</p>
+<section id="set-up">
+<h3>Set up<a class="headerlink" href="#set-up" title="Permalink to this heading">¶</a></h3>
+<section id="to-start-and-set-up-keycloak-server">
+<h4>To start and set up keycloak server:<a class="headerlink" href="#to-start-and-set-up-keycloak-server" title="Permalink to this heading">¶</a></h4>
+<ol class="arabic">
+<li><p>Download <a class="reference external" href="https://www.keycloak.org/downloads">keycloak server</a></p></li>
+<li><p>Install and start keycloak server using <a class="reference external" href="https://www.keycloak.org/docs/latest/server_installation/">instruction</a></p></li>
+<li><p>Open keycloak dashboard in browser (locally it’s <a class="reference external" href="http://0.0.0.0:8080/">http://0.0.0.0:8080/</a>).</p></li>
+<li><p>Create admin user</p></li>
+<li><p>Login to Administration Console</p></li>
+<li><p>You can add new Realm or use default (Master)</p>
+<a class="reference external image-reference" href="keycloak/add-realm.png"><img alt="add-realm.png" src="../_images/add-realm.png" /></a>
+</li>
+<li><p>Create new client from <code class="docutils literal notranslate"><span class="pre">Clients</span></code> navbar item</p>
+<a class="reference external image-reference" href="keycloak/add-client.png"><img alt="add-client.png" src="../_images/add-client.png" /></a>
+</li>
+<li><p>Fill client form correctly (<code class="docutils literal notranslate"><span class="pre">Access</span> <span class="pre">Type</span></code> and <code class="docutils literal notranslate"><span class="pre">Valid</span> <span class="pre">Redirect</span> <span class="pre">URIs</span></code> fields)</p>
+<a class="reference external image-reference" href="keycloak/client-form.png"><img alt="client-form.png" src="../_images/client-form.png" /></a>
+</li>
+<li><p>Move to <code class="docutils literal notranslate"><span class="pre">Credentials</span></code> tab and save <code class="docutils literal notranslate"><span class="pre">Secret</span></code> value</p></li>
+<li><p>In <code class="docutils literal notranslate"><span class="pre">Users</span></code> navbar item create users</p></li>
+</ol>
+</section>
+<section id="to-integrate-konfuzio-with-keycloak-you-need-to-set-the-following-environment-variables-for-you-konfuzio-server-installation">
+<h4>To integrate konfuzio with keycloak you need to set the following environment variables for you Konfuzio Server installation:<a class="headerlink" href="#to-integrate-konfuzio-with-keycloak-you-need-to-set-the-following-environment-variables-for-you-konfuzio-server-installation" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">KEYCLOAK_URL</span></code> (<a class="reference external" href="http://127.0.0.1:8080/">http://127.0.0.1:8080/</a> - for localhost)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">OIDC_RP_SIGN_ALGO</span></code> (<code class="docutils literal notranslate"><span class="pre">RS256</span></code> - by default)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">OIDC_RP_CLIENT_ID</span></code> (client name from 7th point of previous section)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">OIDC_RP_CLIENT_SECRET</span></code> (Secret value from 9th point of previous section)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SSO_ENABLED</span></code> (set <code class="docutils literal notranslate"><span class="pre">True</span></code> to activate integration)</p></li>
+</ul>
+<p>Click <code class="docutils literal notranslate"><span class="pre">SSO</span></code> on login page to log in to Konfuzio using keycloak</p>
+<a class="reference external image-reference" href="keycloak/sso-button.png"><img alt="sso-button.png" src="../_images/sso-button.png" /></a>
+</section>
+<section id="important-notes">
+<h4>Important notes:<a class="headerlink" href="#important-notes" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>The Keycloak admin user cannot login into Konfuzio Server.</p></li>
+</ul>
+</section>
 </section>
 </section>
 </section>
