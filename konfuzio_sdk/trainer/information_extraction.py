@@ -1,4 +1,19 @@
-"""Extract information from Documents."""
+"""Extract information from Documents.
+
+Conventional template matching based approaches fail to generalize well to document images of unseen templates,
+and are not robust against text recognition errors.
+
+We follow the approach proposed by Sun et. al (2021) to encode both the visual and textual
+features of detected text regions, and edges of which represent the spatial relations between neighboring text
+regions. Their experiments validate that all information including visual features, textual
+features and spatial relations can benefit key information extraction.
+
+We reduce the hardware requirements from 1 NVIDIA Titan X GPUs with 12 GB memory to a 1 CPU and 16 GB memory by
+replacing the end-to-end pipeline into two parts.
+
+Sun, H., Kuang, Z., Yue, X., Lin, C., & Zhang, W. (2021). Spatial Dual-Modality Graph Reasoning for Key Information
+Extraction. arXiv. https://doi.org/10.48550/ARXIV.2103.14470
+"""
 import bz2
 import collections
 import difflib
@@ -12,27 +27,18 @@ import time
 import unicodedata
 from copy import deepcopy
 from heapq import nsmallest
-from random import random
 from typing import Tuple, Optional, List, Union, Callable, Dict
+from warnings import warn
 
 import numpy
 import pandas
 from cloudpickle import cloudpickle
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import (
-    confusion_matrix,
-    recall_score,
-    accuracy_score,
-    precision_recall_fscore_support,
-    f1_score,
-    balanced_accuracy_score,
-    precision_score,
-)
-from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support, f1_score, balanced_accuracy_score
 from sklearn.utils.validation import check_is_fitted
 from tabulate import tabulate
 
-from konfuzio_sdk.data import Document, Label, Annotation, Category, AnnotationSet
+from konfuzio_sdk.data import Document, Annotation, Category, AnnotationSet
 from konfuzio_sdk.normalize import normalize_to_float, normalize_to_date
 from konfuzio_sdk.regex import regex_matches
 from konfuzio_sdk.utils import get_timestamp, get_bbox
@@ -41,6 +47,8 @@ logger = logging.getLogger(__name__)
 
 """Multiclass classifier for document extraction."""
 CANDIDATES_CACHE_SIZE = 100
+
+warn('This module is WIP: https://gitlab.com/konfuzio/objectives/-/issues/9311', FutureWarning, stacklevel=2)
 
 
 def substring_count(list: list, substring: str) -> list:
@@ -595,77 +603,78 @@ def plot_label_distribution(df_list: list, df_name_list=None) -> None:
 #     logger.info('Split quality test completed.')
 
 
-def split_in_two_by_document_df(
-    data: pandas.DataFrame, percentage: float, check_imbalances=False
-) -> Tuple[pandas.DataFrame, pandas.DataFrame]:
-    """
-    Split the input df in two (by document) and return two dataframes of about the right size.
+# def split_in_two_by_document_df(
+#     data: pandas.DataFrame, percentage: float, check_imbalances=False
+# ) -> Tuple[pandas.DataFrame, pandas.DataFrame]:
+#     """
+#     Split the input df in two (by document) and return two dataframes of about the right size.
+#
+#     The first item in the return tuple is of the percentage size.
+#     """
+#     logger.info('Split into test and training.')
+#     if data['document_id'].isnull().values.any():
+#         raise Exception('To split by document_id every annotation needs a non-NaN document_id!')
+#
+#     df_list = [df_doc for k, df_doc in data.groupby('document_id')]
+#
+#     return split_in_two_by_document_df_list(data_list=df_list, percentage=percentage,
+#     check_imbalances=check_imbalances)
 
-    The first item in the return tuple is of the percentage size.
-    """
-    logger.info('Split into test and training.')
-    if data['document_id'].isnull().values.any():
-        raise Exception('To split by document_id every annotation needs a non-NaN document_id!')
 
-    df_list = [df_doc for k, df_doc in data.groupby('document_id')]
-
-    return split_in_two_by_document_df_list(data_list=df_list, percentage=percentage, check_imbalances=check_imbalances)
-
-
-def split_in_two_by_document_df_list(
-    data_list: List[pandas.DataFrame], percentage: float, check_imbalances=False
-) -> Tuple[pandas.DataFrame, pandas.DataFrame]:
-    """
-    Split a list of document df in to two concatenated df according to the percentage.
-
-    The first item in the return tuple is of the percentage size.
-    """
-    logger.info('Split into test and training.')
-    df_list = data_list
-    total_sample_num = sum([len(df.index) for df in data_list])
-    select_amount = int(total_sample_num * percentage)
-
-    selected_count = 0
-    selected_df = pandas.DataFrame()
-    rest_df = pandas.DataFrame()
-
-    random.Random(1).shuffle(df_list)
-
-    # TODO: check for maximum deviation from the percentage specified
-    for i, df_doc in enumerate(df_list):
-        # Add first document to selected_df to avoid empty df
-        if i == 0:
-            selected_df = pandas.concat([selected_df, df_doc])
-            selected_count += len(df_doc.index)
-
-        # Add second document to rest_df to avoid empty df
-        if i == 1 and percentage < 1.0:
-            rest_df = pandas.concat([rest_df, df_doc])
-            continue
-
-        # Add further documents according to required percentage.
-        if selected_count <= select_amount or percentage == 1.0:
-            selected_df = pandas.concat([selected_df, df_doc])
-            selected_count += len(df_doc.index)
-        else:
-            rest_df = pandas.concat([rest_df, df_doc])
-
-    if selected_df.empty:
-        raise Exception('Not enough data to train an AI model.')
-
-    selected_df.reset_index(drop=True, inplace=True)
-    rest_df.reset_index(drop=True, inplace=True)  # get labels used in each df
-
-    if check_imbalances:
-        selected_classes = set(selected_df['label_text'].unique())
-        rest_classes = set(rest_df['label_text'].unique())
-        # find labels that do not appear in both dfs
-        non_overlapping_classes = selected_classes ^ rest_classes
-        # remove non-overlapping examples
-        selected_df = selected_df[~selected_df['label_text'].isin(non_overlapping_classes)]
-        rest_df = rest_df[~rest_df['label_text'].isin(non_overlapping_classes)]
-        logger.info(f'The following classes could not be split and have been removed: {non_overlapping_classes}')
-    return selected_df, rest_df
+# def split_in_two_by_document_df_list(
+#     data_list: List[pandas.DataFrame], percentage: float, check_imbalances=False
+# ) -> Tuple[pandas.DataFrame, pandas.DataFrame]:
+#     """
+#     Split a list of document df in to two concatenated df according to the percentage.
+#
+#     The first item in the return tuple is of the percentage size.
+#     """
+#     logger.info('Split into test and training.')
+#     df_list = data_list
+#     total_sample_num = sum([len(df.index) for df in data_list])
+#     select_amount = int(total_sample_num * percentage)
+#
+#     selected_count = 0
+#     selected_df = pandas.DataFrame()
+#     rest_df = pandas.DataFrame()
+#
+#     random.Random(1).shuffle(df_list)
+#
+#     # TODO: check for maximum deviation from the percentage specified
+#     for i, df_doc in enumerate(df_list):
+#         # Add first document to selected_df to avoid empty df
+#         if i == 0:
+#             selected_df = pandas.concat([selected_df, df_doc])
+#             selected_count += len(df_doc.index)
+#
+#         # Add second document to rest_df to avoid empty df
+#         if i == 1 and percentage < 1.0:
+#             rest_df = pandas.concat([rest_df, df_doc])
+#             continue
+#
+#         # Add further documents according to required percentage.
+#         if selected_count <= select_amount or percentage == 1.0:
+#             selected_df = pandas.concat([selected_df, df_doc])
+#             selected_count += len(df_doc.index)
+#         else:
+#             rest_df = pandas.concat([rest_df, df_doc])
+#
+#     if selected_df.empty:
+#         raise Exception('Not enough data to train an AI model.')
+#
+#     selected_df.reset_index(drop=True, inplace=True)
+#     rest_df.reset_index(drop=True, inplace=True)  # get labels used in each df
+#
+#     if check_imbalances:
+#         selected_classes = set(selected_df['label_text'].unique())
+#         rest_classes = set(rest_df['label_text'].unique())
+#         # find labels that do not appear in both dfs
+#         non_overlapping_classes = selected_classes ^ rest_classes
+#         # remove non-overlapping examples
+#         selected_df = selected_df[~selected_df['label_text'].isin(non_overlapping_classes)]
+#         rest_df = rest_df[~rest_df['label_text'].isin(non_overlapping_classes)]
+#         logger.info(f'The following classes could not be split and have been removed: {non_overlapping_classes}')
+#     return selected_df, rest_df
 
 
 def annotation_to_dict(annotation: Annotation, include_pos: bool = False) -> dict:
@@ -1190,47 +1199,47 @@ class Trainer:
         logger.warning(f'{self} does not extract.')
         pass
 
-    def clf_info(self, feature_pattern=None, contains=True) -> None:
-        """
-        Log info about feature importance after clf is fitted.
-
-        Args:
-        ----
-            feature_pattern: A string which should be or should not be contained in the name of the feature
-            contains: Boolean, used to determine if the feature_pattern should be contained or should not be contained
-
-        Returns: None
-
-        """
-        try:
-            infotable = pandas.DataFrame()
-            infotable['feature'] = self.X_train.columns
-            infotable['importance'] = self.clf.feature_importances_
-            if feature_pattern:
-                infotable_text = tabulate(
-                    infotable[infotable.feature.str.contains(feature_pattern) == contains].sort_values(
-                        "importance", ascending=False
-                    ),
-                    floatfmt=".5%",
-                    headers="keys",
-                    tablefmt="pipe",
-                )
-            else:  # return all
-                infotable_text = tabulate(
-                    infotable.sort_values("importance", ascending=False),
-                    floatfmt=".5%",
-                    headers="keys",
-                    tablefmt="pipe",
-                )
-
-            logger.info(
-                f'DOES{"NOT" if not contains else " "} CONTAIN "{feature_pattern}" FEATURE RATING (DESCENDING):'
-                f'\n{infotable_text}\n'
-            )
-        except AttributeError:
-            logger.exception('.feature_importances_ not available for classifier')
-
-        logger.info(f'Size of the classifier is: {sys.getsizeof(self.clf)}')
+    # def clf_info(self, feature_pattern=None, contains=True) -> None:
+    #     """
+    #     Log info about feature importance after clf is fitted.
+    #
+    #     Args:
+    #     ----
+    #         feature_pattern: A string which should be or should not be contained in the name of the feature
+    #         contains: Boolean, used to determine if the feature_pattern should be contained or should not be contained
+    #
+    #     Returns: None
+    #
+    #     """
+    #     try:
+    #         infotable = pandas.DataFrame()
+    #         infotable['feature'] = self.X_train.columns
+    #         infotable['importance'] = self.clf.feature_importances_
+    #         if feature_pattern:
+    #             infotable_text = tabulate(
+    #                 infotable[infotable.feature.str.contains(feature_pattern) == contains].sort_values(
+    #                     "importance", ascending=False
+    #                 ),
+    #                 floatfmt=".5%",
+    #                 headers="keys",
+    #                 tablefmt="pipe",
+    #             )
+    #         else:  # return all
+    #             infotable_text = tabulate(
+    #                 infotable.sort_values("importance", ascending=False),
+    #                 floatfmt=".5%",
+    #                 headers="keys",
+    #                 tablefmt="pipe",
+    #             )
+    #
+    #         logger.info(
+    #             f'DOES{"NOT" if not contains else " "} CONTAIN "{feature_pattern}" FEATURE RATING (DESCENDING):'
+    #             f'\n{infotable_text}\n'
+    #         )
+    #     except AttributeError:
+    #         logger.exception('.feature_importances_ not available for classifier')
+    #
+    #     logger.info(f'Size of the classifier is: {sys.getsizeof(self.clf)}')
 
     def save(self, output_dir: str, include_konfuzio=True):
         """
@@ -1311,60 +1320,60 @@ class Trainer:
 
         return pkl_file_path
 
-    def update(self, instance):
-        """
-        Add an extraction model instance to self. Deletes models with the same name before.
+    # def update(self, instance):
+    #     """
+    #     Add an extraction model instance to self. Deletes models with the same name before.
+    #
+    #     :param instance:
+    #     :return:
+    #     """
+    #     for i, label in enumerate(self.labels):
+    #         if instance.name == label.name:
+    #             logger.info(f'Delete old label {label.name} before adding new one...')
+    #             del self.labels[i]
+    #
+    #     self.add(instance)
 
-        :param instance:
-        :return:
-        """
-        for i, label in enumerate(self.labels):
-            if instance.name == label.name:
-                logger.info(f'Delete old label {label.name} before adding new one...')
-                del self.labels[i]
-
-        self.add(instance)
-
-    def add(self, instance):
-        """
-        Add an extraction model instance to self.
-
-        :param instance: An inherited ExtractionModel, i.e. LabelExtractionModels or CategoryExtractionModels
-        :return:
-        """
-        from konfuzio.models_classification import CategoryExtractionModel
-        from konfuzio.models_legacy import (
-            LabelExtractionModel,
-            PatternExtractionModel,
-            MultiLabelExtractionModel,
-            LabelAnnotationModel,
-            DocumentExtractionModel,
-        )
-
-        add_success_info = f'Document {self.name} now also extracts {instance.name}.'
-
-        for i, label in enumerate(self.labels):
-            if instance.name == label.name:
-                logger.error(f'{label.name} does already exist as label. You may want to use update().')
-                raise Exception('Exiting. See log for details...')
-
-        if (
-            isinstance(instance, Label)
-            or isinstance(instance, PatternExtractionModel)
-            or isinstance(instance, MultiLabelExtractionModel)
-            or isinstance(instance, LabelAnnotationModel)
-            or isinstance(instance, LabelExtractionModel)
-        ):
-            self.labels.append(instance)
-            logger.info(add_success_info)
-        elif isinstance(instance, CategoryExtractionModel):
-            self.categories.append(instance)
-            logger.info(add_success_info)
-        elif isinstance(instance, DocumentExtractionModel):
-            self.documents.append(instance)
-            logger.info(add_success_info)
-        else:
-            raise Exception(f'{instance.name} cannot be added to document {self.name}.')
+    # def add(self, instance):
+    #     """
+    #     Add an extraction model instance to self.
+    #
+    #     :param instance: An inherited ExtractionModel, i.e. LabelExtractionModels or CategoryExtractionModels
+    #     :return:
+    #     """
+    #     from konfuzio.models_classification import CategoryExtractionModel
+    #     from konfuzio.models_legacy import (
+    #         LabelExtractionModel,
+    #         PatternExtractionModel,
+    #         MultiLabelExtractionModel,
+    #         LabelAnnotationModel,
+    #         DocumentExtractionModel,
+    #     )
+    #
+    #     add_success_info = f'Document {self.name} now also extracts {instance.name}.'
+    #
+    #     for i, label in enumerate(self.labels):
+    #         if instance.name == label.name:
+    #             logger.error(f'{label.name} does already exist as label. You may want to use update().')
+    #             raise Exception('Exiting. See log for details...')
+    #
+    #     if (
+    #         isinstance(instance, Label)
+    #         or isinstance(instance, PatternExtractionModel)
+    #         or isinstance(instance, MultiLabelExtractionModel)
+    #         or isinstance(instance, LabelAnnotationModel)
+    #         or isinstance(instance, LabelExtractionModel)
+    #     ):
+    #         self.labels.append(instance)
+    #         logger.info(add_success_info)
+    #     elif isinstance(instance, CategoryExtractionModel):
+    #         self.categories.append(instance)
+    #         logger.info(add_success_info)
+    #     elif isinstance(instance, DocumentExtractionModel):
+    #         self.documents.append(instance)
+    #         logger.info(add_success_info)
+    #     else:
+    #         raise Exception(f'{instance.name} cannot be added to document {self.name}.')
 
 
 class GroupAnnotationSets:
@@ -1579,25 +1588,25 @@ class GroupAnnotationSets:
 
         return feature_df_template
 
-    def evaluate_template_clf(self, y_true, y_pred, classes):
-        """
-        Evaluate a template clf by comparing the ground truth to the predictions.
-
-        Classes are the different classes of the template clf (the different sections).
-        """
-        logger.info('Evaluate template classifier on the validation data.')
-
-        try:
-            matrix = pandas.DataFrame(
-                confusion_matrix(y_true=y_true, y_pred=y_pred, labels=classes),
-                columns=classes,
-                index=['y_true_' + x for x in classes],
-            )
-            logger.info('\n' + tabulate(matrix, headers=classes))
-        except ValueError:
-            pass
-        logger.info(f'precision: {precision_score(y_true, y_pred, average="micro")}')
-        logger.info(f'recall: {recall_score(y_true, y_pred, average="micro")}')
+    # def evaluate_template_clf(self, y_true, y_pred, classes):
+    #     """
+    #     Evaluate a template clf by comparing the ground truth to the predictions.
+    #
+    #     Classes are the different classes of the template clf (the different sections).
+    #     """
+    #     logger.info('Evaluate template classifier on the validation data.')
+    #
+    #     try:
+    #         matrix = pandas.DataFrame(
+    #             confusion_matrix(y_true=y_true, y_pred=y_pred, labels=classes),
+    #             columns=classes,
+    #             index=['y_true_' + x for x in classes],
+    #         )
+    #         logger.info('\n' + tabulate(matrix, headers=classes))
+    #     except ValueError:
+    #         pass
+    #     logger.info(f'precision: {precision_score(y_true, y_pred, average="micro")}')
+    #     logger.info(f'recall: {recall_score(y_true, y_pred, average="micro")}')
 
     def build_document_template_feature(self, document) -> pandas.DataFrame():
         """Build document feature for template classifier given ground truth."""
@@ -1752,8 +1761,8 @@ class GroupAnnotationSets:
         return new_res_dict
 
 
-class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
-    """Use multiclass clf and template clf."""
+class SpatialDualModalityReasoning(Trainer, GroupAnnotationSets):
+    """Encode visual and textual features to extract text regions."""
 
     def __init__(
         self,
@@ -1894,45 +1903,45 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
 
         return res_dict
 
-    def create_candidates_dataset(self, *args, **kwargs):
-        """
-        Build DocumentAnnotation Model for this project.
-
-        :param klass: Custom DocumentAnnotationModel e.g. Invoice(DocumentAnnotationModel)
-        :return: path to the pickled document model as str
-        """
-        if self.use_generic_regex:
-            for label in self.labels:
-                label.regex(multiprocessing=self.multiprocessing)
-            self.regexes = [regex for label in self.labels for regex in label.regex()]
-        # Use default entity generating regex if there a no regexes at hand.
-        else:
-            self.regexes = ['[^ \n\t\f]+']
-
-        if not hasattr(self, 'no_label_limit'):
-            self.no_label_limit = None
-
-        self.df_train, self.label_feature_list = self.feature_function(
-            documents=self.documents, no_label_limit=self.no_label_limit
-        )
-
-        if self.df_train.empty:
-            logger.warning('df_train is empty! No training data found.')
-            return None
-
-        self.df_test, test_label_feature_list = self.feature_function(
-            documents=self.test_documents, no_label_limit=self.no_label_limit
-        )
-
-        if not self.df_test.empty:
-            assert self.label_feature_list == test_label_feature_list
-
-        # updates the label_feature_list according to the outdated_feature_list
-        outdated_features_list = ['feat_date_count']
-        for outdated_feature in outdated_features_list:
-            self.label_feature_list = [feat for feat in self.label_feature_list if outdated_feature not in feat]
-
-        return self
+    # def create_candidates_dataset(self, *args, **kwargs):
+    #     """
+    #     Build DocumentAnnotation Model for this project.
+    #
+    #     :param klass: Custom DocumentAnnotationModel e.g. Invoice(DocumentAnnotationModel)
+    #     :return: path to the pickled document model as str
+    #     """
+    #     if self.use_generic_regex:
+    #         for label in self.labels:
+    #             label.regex(multiprocessing=self.multiprocessing)
+    #         self.regexes = [regex for label in self.labels for regex in label.regex()]
+    #     # Use default entity generating regex if there a no regexes at hand.
+    #     else:
+    #         self.regexes = ['[^ \n\t\f]+']
+    #
+    #     if not hasattr(self, 'no_label_limit'):
+    #         self.no_label_limit = None
+    #
+    #     self.df_train, self.label_feature_list = self.feature_function(
+    #         documents=self.documents, no_label_limit=self.no_label_limit
+    #     )
+    #
+    #     if self.df_train.empty:
+    #         logger.warning('df_train is empty! No training data found.')
+    #         return None
+    #
+    #     self.df_test, test_label_feature_list = self.feature_function(
+    #         documents=self.test_documents, no_label_limit=self.no_label_limit
+    #     )
+    #
+    #     if not self.df_test.empty:
+    #         assert self.label_feature_list == test_label_feature_list
+    #
+    #     # updates the label_feature_list according to the outdated_feature_list
+    #     outdated_features_list = ['feat_date_count']
+    #     for outdated_feature in outdated_features_list:
+    #         self.label_feature_list = [feat for feat in self.label_feature_list if outdated_feature not in feat]
+    #
+    #     return self
 
     def lose_weight(self):
         """Lose weight before pickling."""
@@ -2005,122 +2014,122 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
 
         return df_real_list, feature_list
 
-    def get_best_no_label_annotations(
-        self, n_no_labels: int, label_annotations: List[Annotation], no_label_annotations: List[Annotation]
-    ) -> List[Annotation]:
-        """Select no_label annotations which are probably most beneficial for training."""
-        # store our chosen "best" NO_LABELS
-        best_no_label_annotations = []
-
-        # get all the real label offset strings and offsets
-        label_texts = set([a.offset_string for a in label_annotations])
-        offsets = set([(a.start_offset, a.end_offset) for a in label_annotations])
-
-        _no_label_annotations = []
-
-        random.shuffle(no_label_annotations)
-
-        # for every NO_LABEL that has an exact string match (but not an offset match)
-        # to a real label, we add it to the best_no_label_annotations
-        for annotation in no_label_annotations:
-            offset_string = annotation.offset_string
-            start_offset = annotation.start_offset
-            end_offset = annotation.end_offset
-            if offset_string in label_texts and (start_offset, end_offset) not in offsets:
-                best_no_label_annotations.append(annotation)
-            else:
-                _no_label_annotations.append(annotation)
-
-        # if we have enough NO_LABELS, we stop here
-        if len(best_no_label_annotations) >= n_no_labels:
-            return best_no_label_annotations[:n_no_labels]
-
-        no_label_annotations = _no_label_annotations
-        _no_label_annotations = collections.defaultdict(list)
-
-        # if we didn't have enough exact matches then we want our NO_LABELS to be the same
-        # data_type as our real labels
-        # we count the amount of each data_type in the real labels
-        # then calculate how many NO_LABEL of each data_type we need
-        data_type_count = collections.Counter()
-        data_type_count.update([a.label.data_type for a in label_annotations])
-        for data_type, count in data_type_count.items():
-            data_type_count[data_type] = n_no_labels * count / len(label_annotations)
-
-        random.shuffle(no_label_annotations)
-
-        # we now loop through the NO_LABELS that weren't exact matches and add them to
-        # the _no_label_annotations dict if we still need more of that data_type
-        # any that belong to a different data_type are added under the 'extra' key
-        for annotation in no_label_annotations:
-            data_type = self.predict_data_type(annotation)
-            if data_type in data_type_count:
-                if len(_no_label_annotations[data_type]) < data_type_count[data_type]:
-                    _no_label_annotations[data_type].append(annotation)
-                else:
-                    _no_label_annotations['extra'].append(annotation)
-            else:
-                _no_label_annotations['extra'].append(annotation)
-
-        # we now add the NO_LABEL annotations with the desired data_type to our
-        # "best" NO_LABELS
-        for data_type, _ in data_type_count.most_common():
-            best_no_label_annotations.extend(_no_label_annotations[data_type])
-
-        random.shuffle(best_no_label_annotations)
-
-        if len(best_no_label_annotations) >= n_no_labels:
-            return best_no_label_annotations[:n_no_labels]
-
-        # if we still didn't have enough we append the 'extra' NO_LABEL annotations here
-        best_no_label_annotations.extend(_no_label_annotations['extra'])
-
-        # we don't shuffle before we trim the array here so the 'extra' NO_LABEL annotations
-        # are the ones being cut off at the end
-        return best_no_label_annotations[:n_no_labels]
-
-    def train_valid_split(self):
-        """Split documents randomly into valid and train data."""
-        logger.info('Splitting into train and valid')
-
-        logger.info('Setting NO_LABEL in df_train')
-        self.df_train.loc[~self.df_train.is_correct, 'label_text'] = 'NO_LABEL'
-
-        # if we don't want to split into train/valid then set df_valid to empty df
-        if self.train_split_percentage == 1:
-            self.df_valid = pandas.DataFrame()
-        else:
-            # else, first find labels which only appear once so can't be stratified
-            single_labels = [lbl for (lbl, cnt) in self.df_train['label_text'].value_counts().items() if cnt <= 1]
-            if single_labels:
-                # if we find any, add to df_singles df
-                logger.info(f'Following labels appear only once in df_train so are not in df_valid: {single_labels}')
-                df_singles = self.df_train.groupby('label_text').filter(lambda x: len(x) == 1)
-
-            # drop labels that only appear once in df_train as they cannot be stratified
-            self.df_train = self.df_train.groupby('label_text').filter(lambda x: len(x) > 1)
-
-            # do stratified split
-            self.df_train, self.df_valid = train_test_split(
-                self.df_train,
-                train_size=self.train_split_percentage,
-                stratify=self.df_train['label_text'],
-                random_state=1,
-            )
-
-            # if we found any single labels, add them back to df_train
-            if single_labels:
-                self.df_train = pandas.concat([self.df_train, df_singles])
-
-        if self.df_train.empty:
-            raise Exception('Not enough data to train an AI model.')
-
-        if self.df_train[self.label_feature_list].isnull().values.any():
-            raise Exception('Sample with NaN within the training data found! Check code!')
-
-        if not self.df_valid.empty:
-            if self.df_valid[self.label_feature_list].isnull().values.any():
-                raise Exception('Sample with NaN within the validation data found! Check code!')
+    # def get_best_no_label_annotations(
+    #     self, n_no_labels: int, label_annotations: List[Annotation], no_label_annotations: List[Annotation]
+    # ) -> List[Annotation]:
+    #     """Select no_label annotations which are probably most beneficial for training."""
+    #     # store our chosen "best" NO_LABELS
+    #     best_no_label_annotations = []
+    #
+    #     # get all the real label offset strings and offsets
+    #     label_texts = set([a.offset_string for a in label_annotations])
+    #     offsets = set([(a.start_offset, a.end_offset) for a in label_annotations])
+    #
+    #     _no_label_annotations = []
+    #
+    #     random.shuffle(no_label_annotations)
+    #
+    #     # for every NO_LABEL that has an exact string match (but not an offset match)
+    #     # to a real label, we add it to the best_no_label_annotations
+    #     for annotation in no_label_annotations:
+    #         offset_string = annotation.offset_string
+    #         start_offset = annotation.start_offset
+    #         end_offset = annotation.end_offset
+    #         if offset_string in label_texts and (start_offset, end_offset) not in offsets:
+    #             best_no_label_annotations.append(annotation)
+    #         else:
+    #             _no_label_annotations.append(annotation)
+    #
+    #     # if we have enough NO_LABELS, we stop here
+    #     if len(best_no_label_annotations) >= n_no_labels:
+    #         return best_no_label_annotations[:n_no_labels]
+    #
+    #     no_label_annotations = _no_label_annotations
+    #     _no_label_annotations = collections.defaultdict(list)
+    #
+    #     # if we didn't have enough exact matches then we want our NO_LABELS to be the same
+    #     # data_type as our real labels
+    #     # we count the amount of each data_type in the real labels
+    #     # then calculate how many NO_LABEL of each data_type we need
+    #     data_type_count = collections.Counter()
+    #     data_type_count.update([a.label.data_type for a in label_annotations])
+    #     for data_type, count in data_type_count.items():
+    #         data_type_count[data_type] = n_no_labels * count / len(label_annotations)
+    #
+    #     random.shuffle(no_label_annotations)
+    #
+    #     # we now loop through the NO_LABELS that weren't exact matches and add them to
+    #     # the _no_label_annotations dict if we still need more of that data_type
+    #     # any that belong to a different data_type are added under the 'extra' key
+    #     for annotation in no_label_annotations:
+    #         data_type = self.predict_data_type(annotation)
+    #         if data_type in data_type_count:
+    #             if len(_no_label_annotations[data_type]) < data_type_count[data_type]:
+    #                 _no_label_annotations[data_type].append(annotation)
+    #             else:
+    #                 _no_label_annotations['extra'].append(annotation)
+    #         else:
+    #             _no_label_annotations['extra'].append(annotation)
+    #
+    #     # we now add the NO_LABEL annotations with the desired data_type to our
+    #     # "best" NO_LABELS
+    #     for data_type, _ in data_type_count.most_common():
+    #         best_no_label_annotations.extend(_no_label_annotations[data_type])
+    #
+    #     random.shuffle(best_no_label_annotations)
+    #
+    #     if len(best_no_label_annotations) >= n_no_labels:
+    #         return best_no_label_annotations[:n_no_labels]
+    #
+    #     # if we still didn't have enough we append the 'extra' NO_LABEL annotations here
+    #     best_no_label_annotations.extend(_no_label_annotations['extra'])
+    #
+    #     # we don't shuffle before we trim the array here so the 'extra' NO_LABEL annotations
+    #     # are the ones being cut off at the end
+    #     return best_no_label_annotations[:n_no_labels]
+    #
+    # def train_valid_split(self):
+    #     """Split documents randomly into valid and train data."""
+    #     logger.info('Splitting into train and valid')
+    #
+    #     logger.info('Setting NO_LABEL in df_train')
+    #     self.df_train.loc[~self.df_train.is_correct, 'label_text'] = 'NO_LABEL'
+    #
+    #     # if we don't want to split into train/valid then set df_valid to empty df
+    #     if self.train_split_percentage == 1:
+    #         self.df_valid = pandas.DataFrame()
+    #     else:
+    #         # else, first find labels which only appear once so can't be stratified
+    #         single_labels = [lbl for (lbl, cnt) in self.df_train['label_text'].value_counts().items() if cnt <= 1]
+    #         if single_labels:
+    #             # if we find any, add to df_singles df
+    #             logger.info(f'Following labels appear only once in df_train so are not in df_valid: {single_labels}')
+    #             df_singles = self.df_train.groupby('label_text').filter(lambda x: len(x) == 1)
+    #
+    #         # drop labels that only appear once in df_train as they cannot be stratified
+    #         self.df_train = self.df_train.groupby('label_text').filter(lambda x: len(x) > 1)
+    #
+    #         # do stratified split
+    #         self.df_train, self.df_valid = train_test_split(
+    #             self.df_train,
+    #             train_size=self.train_split_percentage,
+    #             stratify=self.df_train['label_text'],
+    #             random_state=1,
+    #         )
+    #
+    #         # if we found any single labels, add them back to df_train
+    #         if single_labels:
+    #             self.df_train = pandas.concat([self.df_train, df_singles])
+    #
+    #     if self.df_train.empty:
+    #         raise Exception('Not enough data to train an AI model.')
+    #
+    #     if self.df_train[self.label_feature_list].isnull().values.any():
+    #         raise Exception('Sample with NaN within the training data found! Check code!')
+    #
+    #     if not self.df_valid.empty:
+    #         if self.df_valid[self.label_feature_list].isnull().values.any():
+    #             raise Exception('Sample with NaN within the validation data found! Check code!')
 
     def fit(self) -> RandomForestClassifier:
         """Given training data and the feature list this function returns the trained regression model."""
@@ -2307,34 +2316,34 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
 
         return df_dict
 
-    def _filter_annotations_for_duplicates(self, doc_annotations_list: List['Annotation']):
-        """
-        Filter the annotations for duplicates.
-
-        A duplicate is characterized by having the same start_offset,
-        end_offset and label_text. Duplicates have to be filtered as there should be only one logical truth per specific
-        text_offset and label.
-        """
-        annotations_filtered = []
-        res = collections.defaultdict(list)
-
-        for annotation in doc_annotations_list:
-            key = f'{annotation.start_offset}"_"{annotation.end_offset}'
-            res[key].append(annotation)
-
-        annotations_bundled = list(res.values())
-        for annotation_cluster in annotations_bundled:
-            if len(annotation_cluster) > 1:
-                found = False
-                for annotation in annotation_cluster:
-                    if annotation.is_correct is True:
-                        found = True
-                        annotations_filtered.append(annotation)
-
-                if found is False:
-                    annotations_filtered.append(annotation_cluster[0])
-
-            else:
-                annotations_filtered.append(annotation_cluster[0])
-
-        return annotations_filtered
+    # def _filter_annotations_for_duplicates(self, doc_annotations_list: List['Annotation']):
+    #     """
+    #     Filter the annotations for duplicates.
+    #
+    #     A duplicate is characterized by having the same start_offset,
+    #     end_offset and label_text. Duplicates have to be filtered as there should be only one logical truth per
+    #     specific text_offset and label.
+    #     """
+    #     annotations_filtered = []
+    #     res = collections.defaultdict(list)
+    #
+    #     for annotation in doc_annotations_list:
+    #         key = f'{annotation.start_offset}"_"{annotation.end_offset}'
+    #         res[key].append(annotation)
+    #
+    #     annotations_bundled = list(res.values())
+    #     for annotation_cluster in annotations_bundled:
+    #         if len(annotation_cluster) > 1:
+    #             found = False
+    #             for annotation in annotation_cluster:
+    #                 if annotation.is_correct is True:
+    #                     found = True
+    #                     annotations_filtered.append(annotation)
+    #
+    #             if found is False:
+    #                 annotations_filtered.append(annotation_cluster[0])
+    #
+    #         else:
+    #             annotations_filtered.append(annotation_cluster[0])
+    #
+    #     return annotations_filtered
