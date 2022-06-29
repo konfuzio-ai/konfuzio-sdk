@@ -1761,8 +1761,51 @@ class GroupAnnotationSets:
         return new_res_dict
 
 
-class SpatialDualModalityReasoning(Trainer, GroupAnnotationSets):
-    """Encode visual and textual features to extract text regions."""
+class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
+    """Encode visual and textual features to extract text regions.
+
+    Fit a extraction pipeline to extract linked Annotations.
+
+    Both Label and Label Set classifiers are using a RandomForestClassifier from scikit-learn to run in a low memory and
+    single CPU environment. A random forest classifier is a group of decision trees classifiers, see:
+    https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
+
+    The parameters of this class allow to select the Tokenizer, to configure the Label and Label Set classifiers and to
+    select the type of features used by the Label and Label Set classifiers.
+
+    They are divided in:
+    - tokenizer selection
+    - parametrization of the Label classifier
+    - parametrization of the Label Set classifier
+    - features for the Label classifier
+    - features for the Label Set classifier
+
+    By default, the text of the Documents is split into smaller chunks of text based on whitespaces
+    ('tokenizer_whitespace'). That means that all words present in the text will be shown to the AI. It is possible to
+    define if the splitting of the text into smaller chunks should be done based on regexes learned from the
+    Spans of the Annotations of the Category ('tokenizer_regex') or if to use a model from Spacy library for German
+    language ('tokenizer_spacy'). Another option is to use a pre-defined list of tokenizers based on regexes
+    ('tokenizer_regex_list') and, on top of the pre-defined list, to create tokenizers that match what is missed
+    by those ('tokenizer_regex_combination').
+
+    Some parameters of the scikit-learn RandomForestClassifier used for the Label and/or Label Set classifier
+    can be set directly in Konfuzio Server ('label_n_estimators', 'label_max_depth', 'label_class_weight',
+    'label_random_state', 'label_set_n_estimators', 'label_set_max_depth').
+
+    Features are measurable pieces of data of the Annotation. By default, a combination of features is used that
+    includes features built from the text of the Annotation ('string_features'), features built from the position of
+    the Annotation in the Document ('spatial_features') and features from the Spans created by a WhitespaceTokenizer on
+    the left or on the right of the Annotation ('n_nearest_left', 'n_nearest_right', 'n_nearest_across_lines).
+    It is possible to exclude any of them ('spatial_features', 'string_features', 'n_nearest_left', 'n_nearest_right')
+    or to specify the number of Spans created by a WhitespaceTokenizer to consider
+    ('n_nearest_left', 'n_nearest_right').
+
+    While extracting, the Label Set classifier takes the predictions from the Label classifier as input.
+    The Label Set classifier groups them intoAnnotation sets.
+    It is possible to define the confidence threshold for the predictions to be considered by the
+    Label Set classifier ('label_set_confidence_threshold'). However, the label_set_confidence_threshold is not applied
+    to the final predictions of the Extraction AI.
+    """
 
     def __init__(
         self,
