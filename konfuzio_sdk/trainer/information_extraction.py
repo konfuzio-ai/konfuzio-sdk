@@ -32,7 +32,7 @@ from warnings import warn
 
 import numpy
 import pandas
-from cloudpickle import cloudpickle
+import cloudpickle
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support, f1_score, balanced_accuracy_score
 from sklearn.utils.validation import check_is_fitted
@@ -1309,7 +1309,7 @@ def annotation_to_dict(annotation: Annotation, include_pos: bool = False) -> dic
         "label_text": annotation.label.name if annotation.label else None,
         "revised": annotation.revised,
         "is_correct": annotation.is_correct,
-        "accuracy": annotation.confidence,
+        "confidence": annotation.confidence,
         "x0": annotation.spans[0].x0,
         "y0": annotation.spans[0].y0,
         "x1": annotation.spans[0].x1,
@@ -1606,7 +1606,7 @@ def process_document_data(
 
         # checks for ERRORS
         # todo why accuracy?
-        if annotation_dict["accuracy"] is None and not (
+        if annotation_dict["confidence"] is None and not (
             annotation_dict["revised"] is False and annotation_dict["is_correct"] is True
         ):
             file_error_data.append(annotation_dict)
@@ -1893,42 +1893,35 @@ class Trainer:
 
         if include_konfuzio:
             cloudpickle.register_pickle_by_value(konfuzio_sdk)
-            # todo register all dependencies
+            # todo register all dependencies?
 
-        name = self.category.name.lower()
         # output_dir = self.category.project.model_folder
-        file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.name_lower()}')
+        # file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower())}')
 
         # moke sure output dir exists
         pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
-        file_path = os.path.join(output_dir, f'{get_timestamp()}_{name}')
-        temp_pkl_file_path = file_path + '.dill'
-        pkl_file_path = file_path + '.pkl'
-        try:
-            # see: https://stackoverflow.com/a/9519016/5344492
 
-            logger.info('Saving model with dill')
+        temp_pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower()}.dill')
+        pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower()}.pkl')
 
-            # first save with dill
-            with open(temp_pkl_file_path, 'wb') as f:
-                cloudpickle.dump(self, f)
+        logger.info('Saving model with dill')
+        # first save with dill
+        with open(temp_pkl_file_path, 'wb') as f:  # see: https://stackoverflow.com/a/9519016/5344492
+            cloudpickle.dump(self, f)
 
-            logger.info('Compressing model with bz2')
+        logger.info('Compressing model with bz2')
 
-            # then save to bz2 in chunks
-            with open(temp_pkl_file_path, 'rb') as input_f:
-                with bz2.open(pkl_file_path, 'wb') as output_f:
-                    shutil.copyfileobj(input_f, output_f)
+        # then save to bz2 in chunks
+        with open(temp_pkl_file_path, 'rb') as input_f:
+            with bz2.open(pkl_file_path, 'wb') as output_f:
+                shutil.copyfileobj(input_f, output_f)
 
-            logger.info('Deleting dill file')
+        logger.info('Deleting dill file')
+        # then delete dill file
+        os.remove(temp_pkl_file_path)
 
-            # then delete dill file
-            os.remove(temp_pkl_file_path)
-
-            size_string = f'{os.path.getsize(pkl_file_path) / 1_000_000} MB'
-            logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
-        except AttributeError:
-            logger.exception('Cannot save pickled object.')
+        size_string = f'{os.path.getsize(pkl_file_path) / 1_000_000} MB'
+        logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
 
         # restore Documents of the Category so that we can run the evaluation later
         self.category.project._documents = category_documents
@@ -2852,7 +2845,7 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
             for index in range(len(predicted_label_list)):
                 # if the highest probability to a non NO_LABEL class is >=0.2, we say it predicted that class instead
                 # replace predicted label index and probability
-                if only_label_accuracy_list[index] >= 0.2:
+                if only_label_accuracy_list[index] >= 0.2:  # todo: whx 0.2
                     predicted_label_list[index] = only_label_predicted_label_list[index]
                     accuracy_list[index] = only_label_accuracy_list[index]
         else:
@@ -3014,18 +3007,17 @@ class SeparateLabelsAnnotationMultiClassModel(DocumentAnnotationMultiClassModel)
     The extract method needs to undo the changes done in the labels of the project (project.separate_labels()).
     """
 
-    def __init__(self, extract_threshold=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         """Initialize DocumentEntityMulticlassModel."""
         DocumentAnnotationMultiClassModel.__init__(self, *args, **kwargs)
-        self.extract_threshold = extract_threshold
 
-    def extract(self, text, bbox, *args, **kwargs) -> 'Dict':
+    def extract(self, document: Document) -> 'Dict':
         """
         Undo the renaming of the labels when using project.separate_labels().
 
         In this way we have the output of the extraction in the correct format.
         """
-        res_dict = DocumentAnnotationMultiClassModel.extract(self, text, bbox, *args, **kwargs)
+        res_dict = DocumentAnnotationMultiClassModel.extract(self, document=document)
 
         new_res = {}
         for key, value in res_dict.items():
@@ -3085,7 +3077,7 @@ class SeparateLabelsAnnotationMultiClassModel(DocumentAnnotationMultiClassModel)
 
 
 class DocumentEntityMulticlassModel(DocumentAnnotationMultiClassModel, GroupAnnotationSets):
-    """Creates annotations by extracting all entities and then finding which overlap with existing annotations."""
+    """Creates Annotations by extracting all entities and then finding which overlap with existing annotations."""
 
     def __init__(self, *args, **kwargs):
         """Initialize DocumentEntityMulticlassModel."""
@@ -3098,129 +3090,133 @@ class DocumentEntityMulticlassModel(DocumentAnnotationMultiClassModel, GroupAnno
         if not hasattr(self, "tokenizer"):
             self.tokenizer = WhitespaceTokenizer()
 
-        logger.info('Getting annotations')
+    # def get_annotations(self):
+    #     """Convert Documents to entities."""
+    #     logger.info('Getting annotations')
+    #
+    #     # loop over each document and test document
+    #     for document in self.documents + self.test_documents:
+    #         document = self.tokenizer.tokenize(document)
+    #
+    #         # flush existing annotations
+    #         annotations = document._annotations
+    #         document._annotations = []
+    #
+    #         # check for multiline annotations
+    #         annotations = split_multiline_annotations(annotations, self.multiline_labels)
+    #
+    #         # flush annotations added during split of multiline
+    #         document._annotations = []
+    #
+    #         # get exact matches
+    #         matches = document.annotations()
+    #         remaining_annotations = list(set(document.annotations(use_correct=False))-set(document.annotations()))
+    # matches, remaining_annotations, remaining_entities = self.get_exact_matches_and_filter_mached(
+    #     annotations, document.annotations()
+    # )
 
-        # loop over each document and test document
-        for document in self.documents + self.test_documents:
-            # get all entities
-            # entities = [e for e in re.finditer('[^ \n\t\f]+', document.text) if e and '\f' not in e.group()]
-            entities = self.tokenizer.get_entities(document.text)
+    # get entity matches for the rest
+    # (only call after the first one as this filters out annotations with no start and/or end offset)
+    # matches += self.get_entity_matches(remaining_annotations, remaining_entities)
 
-            # flush existing annotations
-            annotations = document._annotations
-            document._annotations = []
+    # convert the matches to annotations and add them to the document
+    # self.add_matches_as_document_annotation(matches, document)
 
-            # check for multiline annotations
-            annotations = split_multiline_annotations(annotations, self.multiline_labels)
+    # logger.info('All annotations processed.')
 
-            # flush annotations added during split of multiline
-            document._annotations = []
+    # def add_matches_as_document_annotation(self, matches, document):
+    #     """Convert a match into a fitting annotation."""
+    #     # get document bbox for creating annotations
+    #     bbox = document.get_bbox()
+    #
+    #     # go through the matches
+    #     for match in matches:
+    #         # create annotation from entity
+    #         e = Annotation(
+    #             start_offset=match['entity']['start_offset'],
+    #             end_offset=match['entity']['end_offset'],
+    #             document=document,
+    #             bbox=get_bbox(
+    #                 bbox, start_offset=match['entity']['start_offset'], end_offset=match['entity']['end_offset']
+    #             ),
+    #         )
+    #
+    #         # set the corresponding attributes for the entity annotation to match that of the actual annotation
+    #         for key, value in match['annotation'].__dict__.items():
+    #             if key in ['start_offset', 'end_offset', 'offset_string', 'offset_string_original']:
+    #                 continue
+    #             setattr(e, key, value)
+    #
+    #         # add the entity as an annotation to the document
+    #         document.add_annotation(e)
 
-            # get exact matches
-            matches, remaining_annotations, remaining_entities = self.get_exact_matches_and_filter_mached(
-                annotations, entities
-            )
+    # def get_exact_matches_and_filter_mached(self, annotations, entities) -> Tuple[List[Dict], List[Dict]]:
+    #     """
+    #     Only give back annotation-entity combinations that are considered exact.
+    #
+    #     This is the case if annotation spans the entire entity (or more).
+    #     If an annotation is not completely exactly matched, add it to the unmatched list
+    #     """
+    #     unmachted_list = []
+    #     match_list = []
+    #     matched_entities = []
+    #
+    #     for annotation in annotations:
+    #
+    #         # filter out annotations with missing start or end offset
+    #         if annotation.start_offset is None or annotation.end_offset is None:
+    #             continue
+    #
+    #         start_found = False
+    #         end_found = False
+    #         for entity in entities:
+    #             # check if the annotation spans the whole entity
+    #             if entity['start_offset'] >= annotation.
+    #             start_offset and entity['end_offset'] <= annotation.end_offset:
+    #                 match_list.append({'entity': entity, 'annotation': annotation})
+    #
+    #                 # you can't just remove the entity because that causes the iterator to jump by one
+    #                 matched_entities.append(entity)
+    #
+    #                 # update start and end found
+    #                 if entity['start_offset'] == annotation.start_offset:
+    #                     start_found = True
+    #                 if entity['end_offset'] == annotation.end_offset:
+    #                     end_found = True
+    #
+    #             # if we go past the annotation end, stop looking for entities (assuming they are in order)
+    #             elif entity['start_offset'] > annotation.end_offset:
+    #                 break
+    #
+    #         # see if the annotation was completly machted
+    #         if not (start_found and end_found):
+    #             unmachted_list.append(annotation)
+    #
+    #     return match_list, unmachted_list, [entity for entity in entities if entity not in matched_entities]
 
-            # get entity matches for the rest
-            # (only call after the first one as this filters out annotations with no start and/or end offset)
-            matches += self.get_entity_matches(remaining_annotations, remaining_entities)
+    # def get_entity_matches(self, annotations, entities) -> List[Dict]:
+    #     """Catch all exceptetions. Here we just match every entity with an annotation that lies within them."""
+    #     matches = []
+    #
+    #     for annotation in annotations:
+    #         for entity in entities:
+    #             # matches if entity starts before the annotation ends and ends after the annotation starts
+    #             if entity['start_offset'] <= annotation.
+    #             end_offset and entity['end_offset'] >= annotation.start_offset:
+    #                 matches.append({'entity': entity, 'annotation': annotation})
+    #             # if we go past the annotation end, stop looking for entities (assuming they are in order)
+    #             elif entity['start_offset'] > annotation.end_offset:
+    #                 break
+    #
+    #     return matches
 
-            # convert the matches to annotations and add them to the document
-            self.add_matches_as_document_annotation(matches, document)
-
-        logger.info('All annotations processed.')
-
-    def add_matches_as_document_annotation(self, matches, document):
-        """Convert a match into a fitting annotation."""
-        # get document bbox for creating annotations
-        bbox = document.get_bbox()
-
-        # go through the matches
-        for match in matches:
-            # create annotation from entity
-            e = Annotation(
-                start_offset=match['entity']['start_offset'],
-                end_offset=match['entity']['end_offset'],
-                document=document,
-                bbox=get_bbox(
-                    bbox, start_offset=match['entity']['start_offset'], end_offset=match['entity']['end_offset']
-                ),
-            )
-
-            # set the corresponding attributes for the entity annotation to match that of the actual annotation
-            for key, value in match['annotation'].__dict__.items():
-                if key in ['start_offset', 'end_offset', 'offset_string', 'offset_string_original']:
-                    continue
-                setattr(e, key, value)
-
-            # add the entity as an annotation to the document
-            document.add_annotation(e)
-
-    def get_exact_matches_and_filter_mached(self, annotations, entities) -> Tuple[List[Dict], List[Dict]]:
-        """
-        Only give back annotation-entity combinations that are considered exact.
-
-        This is the case if annotation spans the entire entity (or more).
-        If an annotation is not completly exactly matched, add it to the unmatched list
-        """
-        unmachted_list = []
-        match_list = []
-        matched_entities = []
-
-        for annotation in annotations:
-
-            # filter out annotations with missing start or end offset
-            if annotation.start_offset is None or annotation.end_offset is None:
-                continue
-
-            start_found = False
-            end_found = False
-            for entity in entities:
-                # check if the annotation spans the whole entity
-                if entity['start_offset'] >= annotation.start_offset and entity['end_offset'] <= annotation.end_offset:
-                    match_list.append({'entity': entity, 'annotation': annotation})
-
-                    # you can't just remove the entity because that causes the iterator to jump by one
-                    matched_entities.append(entity)
-
-                    # update start and end found
-                    if entity['start_offset'] == annotation.start_offset:
-                        start_found = True
-                    if entity['end_offset'] == annotation.end_offset:
-                        end_found = True
-
-                # if we go past the annotation end, stop looking for entities (assuming they are in order)
-                elif entity['start_offset'] > annotation.end_offset:
-                    break
-
-            # see if the annotation was completly machted
-            if not (start_found and end_found):
-                unmachted_list.append(annotation)
-
-        return match_list, unmachted_list, [entity for entity in entities if entity not in matched_entities]
-
-    def get_entity_matches(self, annotations, entities) -> List[Dict]:
-        """Catch all exceptetions. Here we just match every entity with an annotation that lies within them."""
-        matches = []
-
-        for annotation in annotations:
-            for entity in entities:
-                # matches if entity starts before the annotation ends and ends after the annotation starts
-                if entity['start_offset'] <= annotation.end_offset and entity['end_offset'] >= annotation.start_offset:
-                    matches.append({'entity': entity, 'annotation': annotation})
-                # if we go past the annotation end, stop looking for entities (assuming they are in order)
-                elif entity['start_offset'] > annotation.end_offset:
-                    break
-
-        return matches
-
-    def extract(self, text: str, bbox: Dict, *args, **kwargs) -> Dict:
+    def extract(self, document: Document) -> Dict:
         """Run clf."""
-        res_dict = super().extract(text, bbox, *args, **kwargs)
+        res_dict = super().extract(document=document)
 
-        label_type_dict = {label.name: label.data_type for label in self.labels}
+        label_type_dict = {label.name: label.data_type for label in self.category.labels}
         label_threshold_dict = {
-            label.name: label.threshold if hasattr(label, 'threshold') else 0.1 for label in self.labels
+            label.name: label.threshold if hasattr(label, 'threshold') else 0.1 for label in self.category.labels
         }
 
         res_dict = remove_empty_dataframes_from_extraction(res_dict)
@@ -3228,9 +3224,9 @@ class DocumentEntityMulticlassModel(DocumentAnnotationMultiClassModel, GroupAnno
 
         merged_res_dict = merge_annotations(
             res_dict=res_dict,
-            doc_text=text,
+            doc_text=document.text,
             label_type_dict=label_type_dict,
-            doc_bbox=bbox,
+            doc_bbox=document.get_bbox(),
             labels_threshold=label_threshold_dict,
         )
 
@@ -3239,9 +3235,9 @@ class DocumentEntityMulticlassModel(DocumentAnnotationMultiClassModel, GroupAnno
             multiline_labels_names = [label.name for label in self.multiline_labels]
             merged_res_dict = merge_annotations(
                 res_dict=merged_res_dict,
-                doc_text=text,
+                doc_text=document.text,
                 label_type_dict=label_type_dict,
-                doc_bbox=bbox,
+                doc_bbox=document.get_bbox(),
                 multiline_labels_names=multiline_labels_names,
                 merge_vertical=True,
                 labels_threshold=label_threshold_dict,
@@ -3262,7 +3258,7 @@ class SeparateLabelsEntityMultiClassModel(DocumentEntityMulticlassModel):
         DocumentEntityMulticlassModel.__init__(self, *args, **kwargs)
         self.extract_threshold = extract_threshold
 
-    def extract(self, text, bbox, *args, **kwargs) -> 'Dict':
+    def extract(self, document: Document) -> 'Dict':
         """
         Undo the renaming of the labels when using project.separate_labels().
 
@@ -3270,7 +3266,7 @@ class SeparateLabelsEntityMultiClassModel(DocumentEntityMulticlassModel):
         """
         # from konfuzio.models_labels_multiclass import DocumentEntityMulticlassModel
 
-        res_dict = DocumentEntityMulticlassModel.extract(self, text, bbox, *args, **kwargs)
+        res_dict = DocumentEntityMulticlassModel.extract(self, document=document)
 
         new_res = {}
         for key, value in res_dict.items():
