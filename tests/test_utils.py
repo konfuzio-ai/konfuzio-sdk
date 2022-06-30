@@ -20,7 +20,6 @@ from konfuzio_sdk.utils import (
     get_missing_offsets,
     iter_before_and_after,
     get_bbox,
-    get_bboxes,
 )
 
 TEST_STRING = "sample string"
@@ -273,13 +272,6 @@ def test_get_bbox():
     """Test to raise Value Error if character cannot provide a bbox."""
     with pytest.raises(ValueError):
         get_bbox(bbox={}, start_offset=1, end_offset=5)
-
-
-# TODO issue #9326
-def skip_get_bboxes():
-    """Test to raise Value Error if character cannot provide a bbox."""
-    with pytest.raises(ValueError):
-        get_bboxes(bbox={}, start_offset=1, end_offset=5)
 
 
 # @pytest.mark.skip('Need implementation of Line and Paragraph first.')
