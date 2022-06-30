@@ -138,7 +138,6 @@ class TestOfflineExampleData(unittest.TestCase):
         assert self.project.no_label.name == "NO_LABEL"
         self.assertIn(self.project.no_label, self.project.labels)
 
-    @unittest.skip(reason='Server Issue https://gitlab.com/konfuzio/objectives/-/issues/9265')
     def test_annotation_bbox(self):
         """Create a Span and calculate it's bbox."""
         span = Span(start_offset=1764, end_offset=1769)  # the correct Annotation spans 1763 to 1769
@@ -435,6 +434,10 @@ class TestOfflineDataSetup(unittest.TestCase):
         """Add an existing Label to a Project."""
         with self.assertRaises(ValueError):
             self.project.add_label(self.label)
+
+    def test_get_labels_of_category(self):
+        """Return only related Labels as Information Extraction can be trained per Category."""
+        assert self.category.labels.__len__() == 1
 
     def test_to_add_spans_to_annotation(self):
         """Add one Span to one Annotation."""
@@ -913,6 +916,27 @@ class TestKonfuzioDataCustomPath(unittest.TestCase):
         prj.delete()
 
 
+class TestKonfuzioOneVirtualOneRealCategory(unittest.TestCase):
+    """Test handle data."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Initialize the test Project."""
+        cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+        category = Category(project=cls.project, name_clean='Virtual Category')
+        label = Label(name='Only virtual Category Label', project=cls.project)
+        _ = LabelSet(project=cls.project, is_default=False, labels=[label], categories=[category])
+
+    def test_get_labels_of_virtual_category(self):
+        """Return only related Labels as Information Extraction can be trained per Category."""
+        assert len(self.project.categories[1].labels) == 1  # virtual created Categories have no NO_LABEL
+
+    def test_get_labels_of_category(self):
+        """Return only related Labels as Information Extraction can be trained per Category."""
+        real_category = self.project.get_category_by_id(63)
+        assert len(real_category.labels) == len(self.project.labels) - 1
+
+
 class TestKonfuzioDataSetup(unittest.TestCase):
     """Test handle data."""
 
@@ -934,6 +958,10 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_number_training_documents(self):
         """Test the number of Documents in data set status training."""
         assert len(self.prj.documents) == self.document_count
+
+    def test_get_labels_of_category(self):
+        """Return only related Labels as Information Extraction can be trained per Category."""
+        assert len(self.prj.categories[0].labels) == len(self.prj.labels)
 
     def test_document_with_no_category_must_have_no_annotations(self):
         """Test if we skip Annotations in no Category Documents."""

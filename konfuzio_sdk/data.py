@@ -234,6 +234,18 @@ class Category(Data):
         self.label_sets: List[LabelSet] = []
         self.project.add_category(category=self)
 
+    @property
+    def labels(self):
+        """Return the Labels that belong to the Category and it's Label Sets."""
+        labels = []
+        # for label in self.project.labels:
+        #     if self in label.label_sets:
+        #         labels.append(label)
+        for label_set in self.label_sets:
+            labels += label_set.labels
+
+        return list(set(labels))
+
     def documents(self):
         """Filter for Documents of this Category."""
         return [x for x in self.project.documents if x.category == self]
