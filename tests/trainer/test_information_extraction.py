@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """Test to train an Extraction AI."""
-
+import linecache
 import logging
 import math
+import tracemalloc
 import unittest
 
 import pytest
@@ -38,14 +39,48 @@ logger = logging.getLogger(__name__)
 FEATURE_COUNT = 49
 
 
+def display_top(snapshot, key_type='lineno', limit=30):
+    """Trace memory allocations, see https://docs.python.org/3/library/tracemalloc.html."""
+    snapshot = snapshot.filter_traces(
+        (
+            tracemalloc.Filter(False, "<frozen importlib._bootstrap>"),
+            tracemalloc.Filter(False, "<unknown>"),
+            tracemalloc.Filter(False, "<logging>"),
+            tracemalloc.Filter(False, "<tracemalloc>"),
+        )
+    )
+    top_stats = snapshot.statistics(key_type)
+
+    logger.info("Top %s lines" % limit)
+    for index, stat in enumerate(top_stats[:limit], 1):
+        frame = stat.traceback[0]
+        logger.info("#%s: %s:%s: %.1f KiB" % (index, frame.filename, frame.lineno, stat.size / 1024))
+        line = linecache.getline(frame.filename, frame.lineno).strip()
+        if line:
+            logger.info('    %s' % line)
+
+    other = top_stats[limit:]
+    if other:
+        size = sum(stat.size for stat in other)
+        logger.info("%s other: %.1f KiB" % (len(other), size / 1024))
+    total = sum(stat.size for stat in top_stats)
+    logger.info("Total allocated size: %.1f KiB" % (total / 1024))
+
+
 class TestSequenceInformationExtraction(unittest.TestCase):
     """Test to train an extraction Model for Documents."""
 
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the Data and Pipeline."""
+        tracemalloc.start()
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
         cls.pipeline = DocumentAnnotationMultiClassModel()
+        display_top(tracemalloc.take_snapshot())
+
+    def tearDown(self) -> None:
+        """Print a Snapshot after running a test."""
+        display_top(tracemalloc.take_snapshot())
 
     def test_1_configure_pipeline(self):
         """Make sure the Data and Pipeline is configured."""

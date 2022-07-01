@@ -1383,6 +1383,8 @@ def get_line_candidates(document_text, document_bbox, line_list, line_num, candi
     for candidate in tokenize_fn(document_text[line_start_offset:line_end_offset]):
         candidate_start_offset = candidate['start_offset'] + line_start_offset
         candidate_end_offset = candidate['end_offset'] + line_start_offset
+        # todo: the next line is memory heavy
+        #  https://gitlab.com/konfuzio/objectives/-/issues/9342
         candidate_bbox = dict(
             **get_bbox(document_bbox, candidate_start_offset, candidate_end_offset),
             offset_string=document_text[candidate_start_offset:candidate_end_offset],
@@ -2328,6 +2330,8 @@ class GroupAnnotationSets:
                                 label_df = res_dict[label.name]
                                 if label_df.empty:
                                     continue
+                                # todo: the next line is memory heavy
+                                #  https://gitlab.com/konfuzio/objectives/-/issues/9342
                                 label_df['line'] = (
                                     label_df['Start'].apply(lambda x: text_replaced[: int(x)]).str.count('\n')
                                 )
