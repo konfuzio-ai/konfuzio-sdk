@@ -685,8 +685,52 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation["false_negative"].sum() == 0
         assert evaluation["is_found_by_tokenizer"].sum() == 2
 
-    def test_grouped(self):
+    def test_grouped_both_above_threshold_both_correct(self):
         """Test if group catches all relevant errors."""
-        grouped(DataFrame([[True, 'a'], [False, 'b']], columns=['is_correct', 'target']), target='target')
-        grouped(DataFrame([[False, 'a'], [False, 'b']], columns=['is_correct', 'target']), target='target')
-        grouped(DataFrame([[None, 'a'], [None, 'b']], columns=['is_correct', 'target']), target='target')
+        result = grouped(
+            DataFrame(
+                [[True, 'a', True], [True, 'b', True]], columns=['is_correct', 'target', 'above_predicted_threshold']
+            ),
+            target='target',
+        )
+        assert result['defined_to_be_correct_target'].to_list() == ['a', 'a']  # todo: it could be a OR b
+
+    def test_grouped_both_above_threshold_one_correct(self):
+        """Test if group catches all relevant errors."""
+        result = grouped(
+            DataFrame(
+                [[True, 'a', True], [False, 'b', True]], columns=['is_correct', 'target', 'above_predicted_threshold']
+            ),
+            target='target',
+        )
+        assert result['defined_to_be_correct_target'].to_list() == ['a', 'a']
+
+    def test_grouped_one_above_threshold_none_correct(self):
+        """Test if group catches all relevant errors."""
+        result = grouped(
+            DataFrame(
+                [[False, 'a', False], [False, 'b', True]], columns=['is_correct', 'target', 'above_predicted_threshold']
+            ),
+            target='target',
+        )
+        assert result['defined_to_be_correct_target'].to_list() == ['b', 'b']  # todo: it could be a OR b
+
+    def test_grouped_one_above_threshold_one_correct(self):
+        """Test if group catches all relevant errors."""
+        result = grouped(
+            DataFrame(
+                [[None, 'a', True], [None, 'b', False]], columns=['is_correct', 'target', 'above_predicted_threshold']
+            ),
+            target='target',
+        )
+        assert result['defined_to_be_correct_target'].to_list() == ['a', 'a']  # todo: it could be a OR b
+
+    def test_grouped_none_above_threshold_none_correct(self):
+        """Test if group catches all relevant errors."""
+        result = grouped(
+            DataFrame(
+                [[None, 'a', False], [None, 'b', False]], columns=['is_correct', 'target', 'above_predicted_threshold']
+            ),
+            target='target',
+        )
+        assert result['defined_to_be_correct_target'].to_list() == ['a', 'a']  # todo: it could be a OR b
