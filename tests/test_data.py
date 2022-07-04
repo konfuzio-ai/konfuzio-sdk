@@ -1563,8 +1563,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_number_of_all_documents(self):
         """Count the number of all available documents online."""
-        prj = Project(id_=TEST_PROJECT_ID)
-        assert len(prj._documents) == 44
+        assert len(self.prj._documents) == 44
 
     def test_create_empty_annotation(self):
         """
