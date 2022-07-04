@@ -686,7 +686,7 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation["is_found_by_tokenizer"].sum() == 2
 
     def test_grouped_both_above_threshold_both_correct(self):
-        """Test grouped for two correct Spans over threshold."""
+        """Test grouped for two correct Spans where both are over threshold."""
         result = grouped(
             DataFrame(
                 [[True, 'a', True], [True, 'b', True]], columns=['is_correct', 'target', 'above_predicted_threshold']
@@ -696,7 +696,7 @@ class TestEvaluation(unittest.TestCase):
         assert result['defined_to_be_correct_target'].to_list() == ['a', 'a']  # todo: it could be a OR b
 
     def test_grouped_both_above_threshold_one_correct(self):
-        """Test grouped for two incorrect Spans over threshold."""
+        """Test grouped for one correct Span and one incorrect Span over threshold."""
         result = grouped(
             DataFrame(
                 [[True, 'a', True], [False, 'b', True]], columns=['is_correct', 'target', 'above_predicted_threshold']
@@ -723,7 +723,7 @@ class TestEvaluation(unittest.TestCase):
             ),
             target='target',
         )
-        assert result['defined_to_be_correct_target'].to_list() == ['a', 'a']  # todo: it could be a OR b
+        assert result['defined_to_be_correct_target'].to_list() == ['a', 'a']  # it must be a, as a is above threshold
 
     def test_grouped_none_above_threshold_none_correct(self):
         """Test grouped for two Spans below threshold, while is_correct is empty."""
