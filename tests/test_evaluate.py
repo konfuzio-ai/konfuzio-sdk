@@ -713,7 +713,7 @@ class TestEvaluation(unittest.TestCase):
             ),
             target='target',
         )
-        assert result['defined_to_be_correct_target'].to_list() == ['b', 'b']  # todo: it could be a OR b
+        assert result['defined_to_be_correct_target'].to_list() == ['b', 'b']  # see reason in commit 4a66394
 
     def test_grouped_one_above_threshold_one_correct(self):
         """Test if group catches all relevant errors."""
