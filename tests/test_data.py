@@ -332,7 +332,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 27
+        assert len(cls.project.virtual_documents) == 28
 
     def test_project_no_label(self):
         """Test that no_label exists in the Labels of the Project and has the expected name."""
