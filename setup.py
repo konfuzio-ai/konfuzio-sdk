@@ -44,7 +44,7 @@ setuptools.setup(
         'filetype==1.0.7',  # Used to check that files are in the correct format
         'dill==0.3.2',  # Used to pickle objects
         'nltk',
-        'numpy==1.19.0',
+        'numpy==1.22.0',
         'pandas',  # todo add ==1.1.5, which causes conflict konfuzio-sdk[dev] 0.2.3 depends on pandas==1.1.5 / 1.0.5
         'Pillow',
         'python-dateutil',
