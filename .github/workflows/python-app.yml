@@ -5,9 +5,6 @@ name: Python application
 
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
 
 jobs:
   build:
@@ -20,22 +17,26 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: 3.9
+    - name: Load cached Python environment
+      # see https://blog.allenai.org/python-caching-in-github-actions-e9452698e98d
+      uses: actions/cache@v2
+      with:
+        path: ${{ env.pythonLocation }}
+        key: ${{ env.pythonLocation }}-${{ hashFiles('setup.py') }}
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install flake8 pytest
-        pip install -e .[dev]
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install --upgrade --upgrade-strategy eager -e .[dev]
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Run local tests
+    - name: Run pydocstyle
       run: |
-        cd tests
-        pytest --durations=10 -m 'local'
+        cd konfuzio_sdk
+        pydocstyle
     - name: Run tests
       run: |
         cd tests
@@ -46,32 +47,3 @@ jobs:
         KONFUZIO_USER: ${{ secrets.KONFUZIO_USER }}  
         KONFUZIO_PASSWORD: ${{ secrets.KONFUZIO_PASSWORD }}   
         KONFUZIO_TOKEN: ${{ secrets.KONFUZIO_TOKEN }}   
-    - name: Run pydocstyle
-      run: |
-        cd konfuzio_sdk
-        pydocstyle
-
-
-
-#    - name: Checkout
-#      uses: actions/checkout@v2
-#      with:
-#        ref: live-documentation
-#    - name: Generate documentation
-#      uses: ammaraskar/sphinx-action@master
-#      with:
-#        docs-folder: "docs/"
-#    - name : Upload Files
-#      uses: actions/upload-artifact@v2
-#      with:
-#        name: DocumentationHTML
-#        path: docs/build/
-#    - name: Update gh-pages
-#      run: |
-#        git checkout gh-pages
-#        git pull
-#    - name: Push changes
-#      uses: ad-m/github-push-action@master
-#      with:
-#        branch: gh-pages
-#        github_token: ${{ secrets.GITHUB_TOKEN }}

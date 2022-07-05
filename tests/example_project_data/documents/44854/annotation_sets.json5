@@ -1,0 +1,38 @@
+[
+  {
+    "id": 78782,
+    "parent": null,
+    "position": 1,
+    "section_label": 63
+  },
+  {
+    "id": 79268,
+    "parent": 78782,
+    "position": 1,
+    "section_label": 64
+  },
+  {
+    "id": 79269,
+    "parent": 78782,
+    "position": 2,
+    "section_label": 64
+  },
+  {
+    "id": 79270,
+    "parent": 78782,
+    "position": 3,
+    "section_label": 64
+  },
+  {
+    "id": 681323,
+    "parent": 78782,
+    "position": 1,
+    "section_label": 3686
+  },
+  {
+    "id": 687425,
+    "parent": 78782,
+    "position": 1,
+    "section_label": 3707
+  }
+]

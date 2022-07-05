@@ -1,13 +1,17 @@
 """Regex tokenizers."""
 import logging
 import time
-
-import pandas as pd
+from typing import List
+from warnings import warn
 
 from konfuzio_sdk.data import Annotation, Document, Category, Span
-from konfuzio_sdk.evaluate import compare
 from konfuzio_sdk.regex import regex_matches
-from konfuzio_sdk.tokenizer.base import AbstractTokenizer, ListTokenizer, ProcessingStep
+from konfuzio_sdk.tokenizer.base import (
+    AbstractTokenizer,
+    ListTokenizer,
+    ProcessingStep,
+    create_project_with_missing_spans,
+)
 from konfuzio_sdk.utils import sdk_isinstance
 
 logger = logging.getLogger(__name__)
@@ -21,6 +25,10 @@ class RegexTokenizer(AbstractTokenizer):
         self.regex = regex
         self.processing_steps = []
 
+    def __repr__(self):
+        """Return string representation of the class."""
+        return f"{self.__class__.__name__}: {repr(self.regex)}"
+
     def fit(self, category: Category):
         """Fit the tokenizer accordingly with the Documents of the Category."""
         assert sdk_isinstance(category, Category)
@@ -30,58 +38,49 @@ class RegexTokenizer(AbstractTokenizer):
         """
         Create Annotations with 1 Span based on the result of the Tokenizer.
 
-        :param document: Document to tokenize
+        :param document: Document to tokenize, can have been tokenized before
         :return: Document with Spans created by the Tokenizer.
         """
         assert sdk_isinstance(document, Document)
-
         if document.text is None:
-            return document
+            raise NotImplementedError(f'{document} cannot be tokenized when text is None.')
+
+        before_none = len(document.annotations(use_correct=False, label=document.project.no_label))
 
         t0 = time.monotonic()
-        bbox_keys = sorted([int(x) for x in list(document.get_bbox().keys())])
+        spans = []
+        # do not keep the full regex match as we will see many matches whitespaces as pre or suffix
+        for span_info in regex_matches(document.text, self.regex, keep_full_match=False):
+            span = Span(start_offset=span_info['start_offset'], end_offset=span_info['end_offset'])
+            if span not in spans:  # do not use duplicated spans  # todo add test
+                spans.append(span)
 
-        if len(bbox_keys) == 0:
-            logger.info(
-                f'{document} has no characters bboxes. The verifications of the bboxes will not be applied '
-                f'for the creation of Spans by the Tokenizer.'
-            )
-
-        spans_info = regex_matches(document.text, self.regex)
-
-        # for each Span, create an Annotation
-        for span_info in spans_info:
-
-            if len(bbox_keys) > 0 and (
-                span_info['start_offset'] not in bbox_keys or span_info['end_offset'] - 1 not in bbox_keys
-            ):
-                logger.error(
-                    f'Regex {span_info["regex_used"]} created span '
-                    f'>>{document.text[span_info["start_offset"]:span_info["end_offset"]]}<<'
-                    f'with start_offset or end_offset which is not part of the document bbox.'
-                )
-                continue
-
-            span = Span(
-                start_offset=span_info['start_offset'],
-                end_offset=span_info['end_offset']
-                # , created_by=self.__repr__
-            )
-
-            try:
-                _ = Annotation(
+        # Create a revised = False and is_correct = False (defaults) Annotation
+        for span in spans:
+            if span not in document.spans:  # (use_correct=False):
+                # todo this hides the fact, that Tokenizers of different quality can create the same Span
+                # todo we create an overlapping Annotation in case the Tokenizer finds a correct match
+                annotation = Annotation(
                     document=document,
                     annotation_set=document.no_label_annotation_set,
-                    label=document.project.no_label,
+                    label=document.project.no_label,  # track which tokenizer created the span by using a Label
                     label_set=document.project.no_label_set,
                     category=document.category,
-                    is_correct=False,
-                    revised=False,
                     spans=[span],
                 )
-            except ValueError as e:
-                logger.info(f'Tokenized Annotation for {span}(>>{span.offset_string}<<) not created, because of {e}.')
-                continue
+                for span in annotation.spans:
+                    try:
+                        span.bbox()  # check that the bbox can be calculated  # todo add test
+                    except ValueError as e:
+                        logger.error(f'Regex made {span} "{span.offset_string}" that has no valid bbox: {repr(e)}')
+                        # annotation.delete()  # todo we should skip Annotations that have no valide bbox
+                    # except TypeError as e:
+                    #   logger.error(f'Typeerror Bbox of {span} "{span.offset_string}": {repr(e)} - {span.eval_dict()}')
+                    #   # annotation.delete()  # todo we should skip Annotations that have no valide bbox
+            else:
+                logger.warning(f'{document} contains {span} already. It will not be added by the Tokenizer.')
+        after_none = len(document.annotations(use_correct=False, label=document.project.no_label))
+        logger.info(f'{after_none - before_none} new Annotations in {document} by {repr(self)}.')
 
         self.processing_steps.append(ProcessingStep(self, document, time.monotonic() - t0))
 
@@ -144,6 +143,22 @@ class ColonPrecededTokenizer(RegexTokenizer):
         super().__init__(regex=r':[ \t]((?:[^ \t\n\:\,\!\?\_]+(?:[ \t][^ \t\n\:\!\?\_]+)*)+)')
 
 
+class ColonOrWhitespacePrecededTokenizer(RegexTokenizer):
+    """
+    Tokenizer based on text preceded by colon.
+
+    Example:
+        "write to: name" -> "name"
+
+    """
+
+    def __init__(self):
+        """Initialize the ColonPrecededTokenizer."""
+        super().__init__(
+            regex=r'[ :][ \t](?P<ColonOrWhitespacePreceded>(?:[^ \t\n\:\,\!\?\_]+(?:[ \t][^ \t\n\:\!\?\_]+)*)+)'
+        )
+
+
 class CapitalizedTextTokenizer(RegexTokenizer):
     """
     Tokenizer based on capitalized text.
@@ -200,58 +215,19 @@ class LineUntilCommaTokenizer(RegexTokenizer):
         super().__init__(regex=r'\n\s*([^.]*),\n')
 
 
-class RegexMatcherTokenizer(ListTokenizer):
+class AutomatedRegexTokenizer(ListTokenizer):
     """Applies a list of Tokenizers and then uses a generic regex approach to match the remaining unmatched Spans."""
 
-    def fit(self, category: Category):
+    def fit(self, documents: List[Document]):
         """Call fit on all tokenizers."""
-        assert sdk_isinstance(category, Category)
-
-        if not category.documents:
-            raise ValueError(f"Category {category.__repr__()} has no training documents.")
-
-        for tokenizer in self.tokenizers:
-            tokenizer.fit(category)
-
-        documents = category.documents()
-
-        eval_list = []
-        for document in documents:
-            # Load Annotations before doing tokenization.
-            document.annotations()
-
-            virtual_doc = Document(
-                text=document.text,
-                bbox=document.get_bbox(),
-                project=document.project,
-                category=document.category,
-                pages=document.pages,
-            )
-            self.tokenize(virtual_doc)
-            df = compare(document, virtual_doc)
-            eval_list.append(df)
-
-        if not eval_list:
-            raise ValueError('There are no evaluations of the fitted Tokenizer.')
-
-        # Get unmatched Spans.
-        df = pd.concat(eval_list)
-        spans_not_found_by_tokenizer = df[(df['is_correct']) & (df['is_found_by_tokenizer'] == 0)]
-        annotations_not_found_by_tokenizer = [
-            x
-            for document in documents
-            for x in document.annotations()
-            if x.id_ in list(spans_not_found_by_tokenizer['id_'].astype(int))
-        ]
-
-        # Add Regex tokenizers.
-        new_tokenizers = []
-        for label in set(x.label for x in annotations_not_found_by_tokenizer):
-            label_annotations = [x for x in annotations_not_found_by_tokenizer if x.label == label]
-            if label_annotations:
-                regexes = label.find_regex(category=category, annotations=label_annotations)
-                for regex in regexes:
-                    new_tokenizers.append(RegexTokenizer(regex))
-
-        self.tokenizers += new_tokenizers
-        logger.info(f'Added {new_tokenizers} to {self}.')
+        warn('This method is WIP.', FutureWarning, stacklevel=2)
+        if not documents:
+            raise ValueError('Tokenizer has no training documents.')
+        initial_tokenizers = self.tokenizers.copy()
+        for tokenizer in initial_tokenizers:
+            project = create_project_with_missing_spans(tokenizer=tokenizer, documents=documents)
+            for regex in project.labels[0].find_regex(category=project.categories[0]):
+                tokenizer_new = RegexTokenizer(regex=regex)
+                logger.info(f'{tokenizer_new} found in addition to {tokenizer}')
+                self.tokenizers.append(tokenizer_new)
+                logger.info(f'Added Tokenizer {repr(regex)} to {project.categories[0]}.')

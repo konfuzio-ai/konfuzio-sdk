@@ -19,6 +19,7 @@ from konfuzio_sdk.utils import (
     does_not_raise,
     get_missing_offsets,
     iter_before_and_after,
+    get_bbox,
 )
 
 TEST_STRING = "sample string"
@@ -28,7 +29,6 @@ TEST_IMAGE_FILE = os.path.join(FOLDER_ROOT, 'test_data', 'png.png')
 TEST_ZIP_FILE = os.path.join(FOLDER_ROOT, 'test_data', 'docx.docx')
 
 
-@pytest.mark.local
 class TestUtils(unittest.TestCase):
     """Test utility functions."""
 
@@ -239,12 +239,20 @@ def test_append_text_to_filename(file_path, expected_result, expected_error):
 
 file_path_append_data = [
     # text embeddings all over the text
-    ('/tmp/text_embeddings_0639187398.pdf', '/tmp/text_embeddings_0639187398_ocr.pdf', does_not_raise()),
+    (
+        '/tmp/text_embeddings_0639187398.pdf',
+        os.path.join('/', 'tmp', 'text_embeddings_0639187398_ocr.pdf'),
+        does_not_raise(),
+    ),
     # text embeddings only on some pages of the text
     ('only_some_pages_have_embeddings.tiff', 'only_some_pages_have_embeddings_ocr.tiff', does_not_raise()),
     # two dots in a file name
-    ('only/_some_pages._have_embeddings.tiff', 'only/_some_pages_have_embeddings_ocr.tiff', does_not_raise()),
-    ('2022/-02-13 19:23:06.168728.tiff', '2022/-02-13-19-23-06-168728_ocr.tiff', does_not_raise()),
+    (
+        'only/_some_pages._have_embeddings.tiff',
+        os.path.join('only', '_some_pages_have_embeddings_ocr.tiff'),
+        does_not_raise(),
+    ),
+    ('2022/-02-13 19:23:06.168728.tiff', os.path.join('2022', '-02-13-19-23-06-168728_ocr.tiff'), does_not_raise()),
 ]
 
 
@@ -258,6 +266,12 @@ def test_append_text_to_amend_file_path(file_path, expected_result, expected_err
 def test_corrupted_name():
     """Test to convert an invalide file name to a valid file name."""
     assert amend_file_name('2022-02-13 19:23:06.168728.tiff') == '2022-02-13-19-23-06-168728.tiff'
+
+
+def test_get_bbox():
+    """Test to raise Value Error if character cannot provide a bbox."""
+    with pytest.raises(ValueError):
+        get_bbox(bbox={}, start_offset=1, end_offset=5)
 
 
 # @pytest.mark.skip('Need implementation of Line and Paragraph first.')

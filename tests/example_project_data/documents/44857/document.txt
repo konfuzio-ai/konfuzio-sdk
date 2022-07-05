@@ -1,0 +1,67 @@
+                                                            x02   228586/  100/00011
+Abrechnung  der Brutto/Netto-Bezüge   für Dezember 2018                   21.12.2017 Bat:  1
+ 
+Personal-Nr. | Geburtsdatum sıK! Faktor  Ki.Frotr.Konfession  ‚Freibetragjährl.! |Freibetrag mtl! |DBA  |Gleitzone  St-Tg.  Vyun.üb. Ur. Anspr. jUrl.Tg.gen. Resturlaub
+00011 140292 3  _    10 ev                              30
+ 
+SV-Nummer       [Krankenkasse                       KK%®|PGRS Bars  JUm.|Sv-Tg. Anw. Tage ‚UrlaubTage Krankh. Tg.  |Fehiz. Tage
+                                             
+11140292B115 EK BARMER (vormals Barmer GE 157 101 1111 1 30
+ 
+                                             Eintritt   |Austritt     Anw.Std. |Unaub Std.  |Krankh. Std. |Fehlz. Std.
+                                             010116  un
+                                         4   Steuer-ID       FB?       Zeitiohn Std. Überstd.  |Bez. Std.
+ " Testmandant
+  Danone                                  17792345680                  190   190
+   
+                               B/N
+               Pers.-Nr.  00011        x02            , j
+               Abt.-Nr. 1600         00100          HinweisezurAbrechnung
+                                             
+                                             Std.lohn 1   14,88
+  Herrn
+  Bruno-Muster Bauch
+  Paumgartner Str. 10
+  90429 Nürnberg
+Brutto-Bezüge
+ 
+Lohnart [Bezeichnung                       |Einheit?   Menge® |     Faktor® ‚Prozentsatz |ste ısv®  |GB5          Betrag
+1200 Überstundenzuschlag, 25%      Std   1,90    14,88  25,00 L  L  _J          7,07
+1300 Überstd.grundverg.+ FLA (25%)  Std   1,90    14,88       L  Lg         28,27
+2000 Gehalt                                                  LLJ      2.580,00
+3100 AG-Anteil VWL,1fd                                        L  LG         15,00
+                                                                            Gesamt-Brutio
+Steuer/Sozialversicherung                                                               2.630,34
+ 
+st®      Steuer-Brutto       Lohnsteuer     Kirchensteuer   Solidaritätszuschlag                       Steuerrechtliche Abzüge
+L     2.63034       10933                                                  109,33
+           ı            I           ı           ı
+           ı            ı           ı           ı
+  
+sv® |   KV-Brutto    RV-Brutto    AV-Brutto    PV-Brutto  |   KV-Beitrag    RV-Beitrag  |  AV-Beitrag  |   PV-Beitrag®    SV-rechtliche Abzüge
+L  2.63034  2.630344  2.63034  2.63034    22094    24462    3946     3354       538,56
+       I        !        !        ı        ı        ı       ı        !
+ 
+                        |        |                                          Netto-Verdienst
+Verdiensibescheinigung                              Netto-Bezüge/Netto-Abzüge                       1.982,45
+ 
+Gesamt-Brutto     34.95839 |SV-Brutto     34.95839   Lohnart |Bezeichnung                            Betrag
+Steuer-Brutto      34.95839 KV-Beitrag     2.93652   9840 VWL                             15,00-
+Lohnsteuer       1.97730 |RV-Beitrag     3.25115   9841 VWL, pfändbar                    10,00-
+Kirchensteuer         A881 AV-Beitrag       52439
+Solidaritätszuschlag       2794 |PV-Beitrag       44571
+                     
+Steuerfreie Bezüge            VWL gesamt      30000
+P. verst. Zuk.sich.         \   Kug-Auszahlung        \
+                 ı                  I
+Pfändung Rest          ı                  ı
+Darlehen Rest           \                  ı
+ 
+ Bak Sparda-Bank Nürnberg                   SV-AG-Anteil Zus. AG-Kosten      Gesamtkosten     Auszahlungsbeirag
+Konto DE88 7609 0500 0005 6897 56             50963                           1.957,45
+ 1 4=Hinzurechnungsbetrag              4=LaufenderBezug, $=SonstigerBezug, F=Frei,    5 ) =Bestandteildes Gesamt-Bruttos
+® Std=Stunden,T=Tage, Km=Kilometer, St=Stuck     E =Einmalbezug, P=Pauschalierung,A=Abfindung,    6 2-Einschl. BeitragszuschlagzurPVfürKinderlose
+  EUR =Euro,Tsd=TausendEuro, Mio =MillionEuro     M =mehrjahrige Versteuerung, N=Nachberechnung    7 MFB=Mehrfachbeschäftigung
+3 Gegebenenfalls Netto-Lohn/Netto-Stundenlohn       V=Vorjahr,W =Entgeltguthaben           ® MaßgeblicherBeitragssatzzurKVinkl Zusatzbeitrag
+AFP Form-Nr LNGN13              -Dies isteine Entgeltbescheinigungnach& 108Abs 3 Satz1 derGewerbeordnung-                         DATEV
+                                                                               

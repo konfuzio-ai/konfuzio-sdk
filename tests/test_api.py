@@ -8,6 +8,7 @@ import unittest
 from unittest.mock import patch
 
 import pytest
+from requests import HTTPError
 
 from konfuzio_sdk import BASE_DIR
 from konfuzio_sdk.api import (
@@ -29,14 +30,11 @@ from konfuzio_sdk.api import (
     create_label,
     TimeoutHTTPAdapter,
 )
+from tests.variables import TEST_PROJECT_ID, TEST_DOCUMENT_ID
 
 FOLDER_ROOT = os.path.dirname(os.path.realpath(__file__))
 
-TEST_DOCUMENT_ID = 44823
-TEST_PROJECT_ID = 46
 
-
-@pytest.mark.serial
 class TestKonfuzioSDKAPI(unittest.TestCase):
     """Test API with payslip example Project."""
 
@@ -106,6 +104,18 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'status_data',
             'updated_at',
         }
+
+    def test_document_details_document_not_available(self):
+        """Test to get Document that does not exist."""
+        with pytest.raises(HTTPError) as e:
+            get_document_details(document_id=0, project_id=0)
+        assert 'You do not have permission' in str(e.value)
+
+    def test_document_details_document_not_available_but_project_exists(self):
+        """Test to get Document that does not exist."""
+        with pytest.raises(HTTPError) as e:
+            get_document_details(document_id=99999999999999999999, project_id=TEST_PROJECT_ID)
+        assert '404 Not Found' in str(e.value)
 
     def test_document_details(self):
         """Test to get Document details."""
@@ -190,7 +200,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
     def test_download_file_not_available(self):
         """Test to download the original version of a document."""
         document_id = 15631000000000000000000000000
-        with pytest.raises(FileNotFoundError):
+        with pytest.raises(HTTPError):
             download_file_konfuzio_api(document_id=document_id)
 
     def test_get_annotations(self):
@@ -255,6 +265,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             document_id=TEST_DOCUMENT_ID, project_id=TEST_PROJECT_ID, annotation_id=annotation['id']
         )
 
+    @unittest.skip(reason='Server issue https://gitlab.com/konfuzio/objectives/-/issues/9284')
     def test_post_document_annotation(self):
         """Create an Annotation via API."""
         start_offset = 60

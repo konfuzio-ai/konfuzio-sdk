@@ -1,0 +1,68 @@
+                                                            x02   228586/  100/01500
+Abrechnung  der Brutto/Netto-Bezüge   für Dezember 2018                   21.12.2017 Bat:  1
+ 
+Personal-Nr. ‚ Geburtsdatum Stk! Faktor  Ki.Frbtr.[Konfession  ‚Freibetragjährl.! |Freibetrag mtl! |DBA  |Gleitzone  St-Tg.  Vyun.üb. Ur. Anspr. jUn.Tg.gen. Resturlaub
+01500 041162 3  _    10 ev                              30
+ 
+SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  Jum.'Sv-Tg. Anw. Tage ‚UrlaubTage Krankh. Tg.  |Fehiz. Tage
+                                             
+570411621165 AOK  Bayern Die Gesundheitskas     101 0110 1 30
+ 
+                                             Eintritt   |Austritt     Anw. Std. |Unaub Std.  IKrankh. Std. |Fehlz. Std.
+                                             010116  un
+                                         4   Steuer-ID       IMFB?       Zeitlohn Sta.|Überstd.  |Bez. Sta.
+ " Testmandant
+  12545"Testore                                  18802395679                  290   290
+   
+               Pers.-Nr.  01500        x2
+               Abt.-Nr. 1610         00100          HinweisezurAbrechnung
+                                             
+                                             Std.lohn 1   26,42
+  Herrn
+  Simon-Muster  Merlot
+  Hinter-Beispielgasse 3
+  90329 Nürnberg
+Brutto-Bezüge
+ Lohnart [Bezeichnung                       |Einheit?   Menge?     Faktor® |Prozentsatz jst? sv?  |GB®          Betrag
+1200 Überstundenzuschlag, 25%      Std   2,90    26,42  25,00 L  L_JYJ         19,16
+1300 Überstd.grundverg.+ FLA (25%)  Std   2,90    26,42       L  Lg         16,62
+2000 Gehalt                                                  L  Lg      4.580,00
+3040 Gehaltsverzicht, mtl.                                    LLN        200,00-
+4720 Betr.AV,Geh.vz.1fd, $3Nr.63EStG                           FF N        200,00
+                                                                            Gesamt-Brutio
+Steuer/Sozialversicherung                                                               4.675,78
+ 
+st®      Steuer-Brutto       Lohnsteuer     Kirchensteuer   Solidaritätszuschlag                       Steuerrechtliche Abzüge
+L     4.475,78       54916       3050       2097                            600,63
+           ı            I           ı           ı
+  
+sv® |   KV-Brutto    RV-Brutto    Av-Brutto    PV-Brutto  |   KV-Beitrag    RV-Beitrag  |  AV-Beitrag  |   PV-Beitrag®    SV-rechtliche Abzüge
+L          4.471578  4.475,78               f     41625    6714      ı         483,39
+       I        I        I        ı        ı        ı       ı        !
+ 
+                        |        |                                          Netto-Verdienst
+Verdiensibescheinigung                              Netto-Bezüge/Netto-Abzüge                      3.591,76
+ 
+Gesamt-Brutto     62.141,77 SV-Brutto     59.74177   Lohnart |Bezeichnung                            Beirag
+Steuer-Brutto      59.74177 |KV-Beitrag               9810 gewöhnliche Pfändung            250,21-
+Lohnsteuer       8.20697 RV-Beitrag     5.55599   9820 Gehaltsverzicht bAV             200,00-
+Kirchensteuer        49351 jAV-Beitrag       89613   9852 AG-Ant. priv.Krankenvers.        323,03
+Solidaritätszuschlag      33927 |PV-Beitrag               9858 AG-Ant. priv. Pflegevers.         17,50
+                     
+Steuerfreie Bezüge    2.40000 vWLgesamt
+P. verst. Zuk.sich.         ı   Kug-Auszahlung        \
+                 ı                  ı
+Pfändung Rest    109.57859                f
+Darlehen Rest           \                  ı
+ 
+ 
+Baık Deutsche Bank PGK  Nürnbe               SV-AG-Anteil Zus. AG-Kosten      Gesamtkosten     Auszahlungsbetrag
+Konto DE33 7607 0024 0012 3456 78             82392                           3.482,08
+ 
+14.Hinzurechnungsbetrag              4=LaufenderBezug, S=SonstigerBezug, F=Frei,    5 ) =Bestandteildes Gesamt-Bruttos
+2 Std=Stunden,T=Tage, Km=Kılometer, St=Stück     E =Einmalbezug, P=Pauschalierung,A=Abfindung,    6 2=Einschl. BeitragszuschlagzurPVfürKinderlose
+  EUR =Euro,Tsd=TausendEuro, Mio =MillionEuro     M =mehrjährige Versteuerung, N=Nachberechnung    7 MFB=Mehrfachbeschäftigung
+3 Gegebenenfalls Netto-Lohn/Netto-Stundenlohn       V=Vorjahr,W =Entgeltguthaben           & MaßgeblicherBeitragssatzzurKVinkl Zusatzbeitrag
+                      -Dies isteine Entgelibescheinigungnach$ 108Abs 3 Satz1 derGewerbeordnung-                         DATEV
+AFPForm-Nr LNGN13
+                                                                               

@@ -5,9 +5,17 @@ import unittest
 import pandas as pd
 import time
 
+import pytest
+
 from konfuzio_sdk.data import Project, Annotation, Document, Label, AnnotationSet, LabelSet, Span, Category
-from konfuzio_sdk.tokenizer.base import AbstractTokenizer, ListTokenizer, ProcessingStep
+from konfuzio_sdk.tokenizer.base import (
+    AbstractTokenizer,
+    ListTokenizer,
+    ProcessingStep,
+    create_project_with_missing_spans,
+)
 from konfuzio_sdk.tokenizer.regex import RegexTokenizer, WhitespaceTokenizer
+from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +35,7 @@ class TestProcessingStep(unittest.TestCase):
     def test_eval_dict(self):
         """Test initialization."""
         processing_eval = self.processing_step.eval_dict()
-        assert processing_eval['tokenizer_name'] == 'WhitespaceTokenizer'
+        assert processing_eval['tokenizer_name'] == 'WhitespaceTokenizer: \'[^ \\\\n\\\\t\\\\f]+\''
         assert processing_eval['document_id'] == 1
         assert processing_eval['number_of_pages'] == 1
         assert processing_eval['runtime'] == 0.1
@@ -57,8 +65,6 @@ class TestAbstractTokenizer(unittest.TestCase):
         cls.project = Project(id_=None)
         cls.category_1 = Category(project=cls.project, id_=1)
         cls.category_2 = Category(project=cls.project, id_=2)
-        cls.project.add_category(cls.category_1)
-        cls.project.add_category(cls.category_2)
         label_set = LabelSet(id_=2, project=cls.project, categories=[cls.category_1, cls.category_2])
         label = Label(id_=3, text='LabelName', project=cls.project, label_sets=[label_set])
 
@@ -168,11 +174,13 @@ class TestAbstractTokenizer(unittest.TestCase):
         assert result.start_offset[0] == self.span.start_offset
         assert result.end_offset[0] == self.span.end_offset
 
+    @unittest.skip(reason='removed narrow implementation to evaluate multiple Documents: evaluate_category')
     def test_evaluate_category_input(self):
         """Test input for the evaluate_category method."""
         with self.assertRaises(AssertionError):
             self.tokenizer.evaluate_category(self.project)
 
+    @unittest.skip(reason='removed narrow implementation to evaluate multiple Documents: evaluate_category')
     def test_evaluate_category_output_without_test_documents(self):
         """Test evaluate a Category without test Documents."""
         project = Project(id_=None)
@@ -180,6 +188,7 @@ class TestAbstractTokenizer(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.tokenizer.evaluate_category(category)
 
+    @unittest.skip(reason='removed narrow implementation to evaluate multiple Documents: evaluate_category')
     def test_evaluate_category_output_with_test_documents(self):
         """Test evaluate a Category with a test Documents."""
         result = self.tokenizer.evaluate_category(self.category_2)
@@ -209,7 +218,6 @@ class TestListTokenizer(unittest.TestCase):
 
         cls.project = Project(id_=None)
         cls.category_1 = Category(project=cls.project, id_=1)
-        cls.project.add_category(cls.category_1)
         cls.label_set = LabelSet(id_=2, project=cls.project, categories=[cls.category_1])
         cls.label = Label(id_=3, text='LabelName', project=cls.project, label_sets=[cls.label_set])
 
@@ -289,8 +297,10 @@ class TestListTokenizer(unittest.TestCase):
     def test_tokenize_with_empty_document(self):
         """Test tokenize a Document without text."""
         document = Document(project=self.project, category=self.category_1)
-        self.tokenizer.tokenize(document)
-        assert len(document.annotations()) == 0
+        with pytest.raises(NotImplementedError) as e:
+            self.tokenizer.tokenize(document)
+
+        assert 'be tokenized when text is None' in str(e.value)
 
     def test_tokenizer_1(self):
         """Test that tokenizer_1 has only 1 match."""
@@ -337,3 +347,21 @@ class TestListTokenizer(unittest.TestCase):
         self.assertIsNone(processing.document_id[0])
         self.assertIsNone(processing.document_id[1])
         assert processing.runtime[0] < 1e-3
+
+
+class TestTokenize(unittest.TestCase):
+    """Find all Spans that cannot be detected by a Tokenizer."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Initialize the test Project."""
+        project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+        cls.document = project.get_document_by_id(TEST_DOCUMENT_ID)
+        assert len(cls.document.spans) == 23
+
+    def test_find_missing_spans(self):
+        """Find all missing Spans in a Project."""
+        tokenizer = RegexTokenizer(regex=r'\d')
+        project = create_project_with_missing_spans(tokenizer=tokenizer, documents=[self.document])
+        # Span 365 to 366 (Tax ID) can be found be Tokenizer, so only 18 instead of 19 Spans are missing
+        self.assertEqual(len(project.documents[0].spans), 20)

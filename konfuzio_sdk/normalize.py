@@ -446,7 +446,10 @@ def _check_for_dates_with_day_count(offset_string: str, org_str: str, month_dict
         translation = _date
     # check for 01.01.01
     elif (
-        len(offset_string) == 8 and offset_string[2] == '.' and offset_string[5] == '.' and offset_string[6:].isdecimal()
+        len(offset_string) == 8
+        and offset_string[2] == '.'
+        and offset_string[5] == '.'
+        and offset_string[6:].isdecimal()
     ):
         year_num = int(offset_string[6:])
 
@@ -458,7 +461,10 @@ def _check_for_dates_with_day_count(offset_string: str, org_str: str, month_dict
         translation = offset_string[:6] + str(cent_num) + offset_string[6:]
     # check for 01/01/01
     elif (
-        len(offset_string) == 8 and offset_string[2] == '/' and offset_string[5] == '/' and offset_string[6:].isdecimal()
+        len(offset_string) == 8
+        and offset_string[2] == '/'
+        and offset_string[5] == '/'
+        and offset_string[6:].isdecimal()
     ):
         year_num = int(offset_string[6:])
 
@@ -582,14 +588,14 @@ def _final_date_check(date_string: str):
             and date_string[:2].isdecimal()
             and date_string[3:5].isdecimal()
         ):
-            logger.warning('Could not convert >>' + date_string + '<< to date (date contains letters)')
+            logger.info('Could not convert >>' + date_string + '<< to date (date contains letters)')
             date_string = None
         elif (
             not ((1900 < int(date_string[-4:]) < 2100) or int(date_string[-4:]) == 0)
             or not (int(date_string[:2]) < 32)
             or not (int(date_string[3:5]) < 13)
         ):
-            logger.warning('Could not convert >>' + date_string + '<< to date (invalid date)')
+            logger.info('Could not convert >>' + date_string + '<< to date (invalid date)')
             date_string = None
     return date_string
 
@@ -627,7 +633,7 @@ def roman_to_float(offset_string: str) -> Optional[float]:
         try:
             value = ROMAN_NUMS[input[i]]
             # If the next place holds a larger number, this value is negative
-            if i+1 < len(input) and ROMAN_NUMS[input[i+1]] > value:
+            if i + 1 < len(input) and ROMAN_NUMS[input[i + 1]] > value:
                 roman_sum -= value
             else:
                 roman_sum += value

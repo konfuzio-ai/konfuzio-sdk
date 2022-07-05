@@ -101,15 +101,14 @@ def suggest_regex_for_string(string: str, replace_characters: bool = False, repl
     return suggestion
 
 
-def get_best_regex(evaluations: List, log_stats: bool = True, allow_zero_f1score=False) -> List:
+def get_best_regex(evaluations: List, log_stats: bool = True) -> List:
     """Optimize selection of one regex in scenarios were we are unsure if all correct Annotations are Labeled."""
     df = pandas.DataFrame(evaluations)
     if df.empty:
         logger.error('We cannot find any regex!')
         return []
 
-    if not allow_zero_f1score:
-        df = df.loc[df['f1_score'] > 0]
+    df = df.loc[df['f1_score'] > 0]
 
     df = df.sort_values(
         [
@@ -177,6 +176,7 @@ def regex_matches(
     try:
         pattern = re.compile(regex, flags=flags)
     except re.error:
+        logger.error(regex)
         # throws error if group name is an invalid Python variable
         match = re.search(r'\?P<.*?>', regex)  # match the invalid group name
         group_name = match.group(0)  # get the string representation
@@ -195,48 +195,44 @@ def regex_matches(
                 if match[group_index] is not None:
                     # if one regex group ( a annotation's token) does not match, it returns none
                     # https://stackoverflow.com/a/59120080
+                    if match.regs[group_index][1] > match.regs[group_index][0]:  # Work on text sequences not indices
+                        _results.append(
+                            {
+                                'regex_used': repr(regex),
+                                'regex_group': group_name,
+                                'value': match[group_index],
+                                'start_offset': match.regs[group_index][0],
+                                'end_offset': match.regs[group_index][1],
+                                'start_text': start_chr,
+                            }
+                        )
+            # find unnamed groups if available
+            unnamed_groups = [x for x in range(1, match.re.groups + 1) if x not in match.re.groupindex.values()]
+            for group_index in unnamed_groups:
+                if match.regs[group_index][1] > match.regs[group_index][0]:  # Work on text sequences not indices
                     _results.append(
                         {
                             'regex_used': repr(regex),
-                            'regex_group': group_name,
+                            'regex_group': str(group_index),
                             'value': match[group_index],
                             'start_offset': match.regs[group_index][0],
                             'end_offset': match.regs[group_index][1],
                             'start_text': start_chr,
                         }
                     )
-            # find unnamed groups if available
-            unnamed_groups = [x for x in range(1, match.re.groups + 1) if x not in match.re.groupindex.values()]
-            for group_index in unnamed_groups:
+
+        if match.groups() and keep_full_match or not match.groups():
+            if match.span()[1] > match.span()[0]:  # Work on text sequences not indices
                 _results.append(
                     {
                         'regex_used': repr(regex),
-                        'regex_group': str(group_index),
-                        'value': match[group_index],
-                        'start_offset': match.regs[group_index][0],
-                        'end_offset': match.regs[group_index][1],
+                        'regex_group': '0',
+                        'value': match.group(),
+                        'start_offset': match.span()[0],
+                        'end_offset': match.span()[1],
                         'start_text': start_chr,
                     }
                 )
-
-        if match.groups() and keep_full_match or not match.groups():
-            _results.append(
-                {
-                    'regex_used': repr(regex),
-                    'regex_group': '0',
-                    'value': match.group(),
-                    'start_offset': match.span()[0],
-                    'end_offset': match.span()[1],
-                    'start_text': start_chr,
-                }
-            )
-
-        # if bbox:
-        #     # update each element in _results with bbox
-        #     for res in _results:
-        #         res['bounding_box'] = get_bbox(
-        #             bbox, res['start_offset'] + res['start_text'], res['end_offset'] + res['start_text']
-        #         )
 
         # add results per match to all results
         results.extend(_results)

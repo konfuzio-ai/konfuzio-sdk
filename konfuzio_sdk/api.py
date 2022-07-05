@@ -3,10 +3,12 @@
 import json
 import logging
 import os
+from json import JSONDecodeError
 from operator import itemgetter
 from typing import List, Union
 
 import requests
+from requests import HTTPError
 from requests.adapters import HTTPAdapter
 from urllib3 import Retry
 
@@ -87,6 +89,8 @@ class TimeoutHTTPAdapter(HTTPAdapter):
             `Blogpost <https://findwork.dev/blog/advanced-usage-python-requests-timeouts-retries-hooks/>`_
     """
 
+    timeout = None  # see https://stackoverflow.com/a/29649638
+
     def __init__(self, timeout, *args, **kwargs):
         """Force to init with timout policy."""
         self.timeout = timeout
@@ -101,10 +105,24 @@ class TimeoutHTTPAdapter(HTTPAdapter):
             kwargs["timeout"] = self.timeout
         return super().send(request, *args, **kwargs)
 
+    def build_response(self, req, resp):
+        """Throw error for any HTTPError that is not part of the retry strategy."""
+        response = super().build_response(req, resp)
+        # handle status code one by one as some status codes will cause a retry, see _konfuzio_session
+        if response.status_code in [403, 404]:
+            # Fallback to None if there's no detail, for whatever reason.
+            try:
+                detail = response.json().get('detail')
+            except JSONDecodeError:
+                detail = 'No JSON provided by Host.'
+            raise HTTPError(f'{response.status_code} {response.reason}: {detail} via {response.url}')
+
+        return response
+
 
 def _konfuzio_session(token: str = KONFUZIO_TOKEN):
     """
-    Create a session incl. base auth to the KONFUZIO_HOST.
+    Create a session incl. Token to the KONFUZIO_HOST.
 
     :return: Request session.
     """
@@ -299,6 +317,8 @@ def delete_document_annotation(document_id: int, annotation_id: int, project_id:
         return json.loads(r.text)['id']
     elif r.status_code == 204:
         return r
+    else:
+        raise ConnectionError(f'Error{r.status_code}: {r.content} {r.url}')
 
 
 def get_meta_of_files(project_id: int, limit: int = 1000, session=_konfuzio_session()) -> List[dict]:
@@ -467,9 +487,6 @@ def download_file_konfuzio_api(document_id: int, ocr: bool = True, session=_konf
     if content_type not in ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg']:
         logger.info(f'CONTENT TYP of {document_id} is {content_type} and no PDF or image.')
 
-    if r.status_code != 200:
-        raise FileNotFoundError(f'{document_id} cannot be found on the server.')
-
     logger.info(f'Downloaded file {document_id} from {KONFUZIO_HOST}.')
     return r.content
 
@@ -516,5 +533,5 @@ def upload_ai_model(ai_model_path: str, category_ids: List[int] = None, session=
         response = session.patch(url, data=json.dumps(data), headers=headers)
         response.raise_for_status()
 
-    logger.info(f'New ai_model uploaded {ai_model} to {url}')
+    logger.info(f'New AI Model uploaded {ai_model} to {url}')
     return ai_model

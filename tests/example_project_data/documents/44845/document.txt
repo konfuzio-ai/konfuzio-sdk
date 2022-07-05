@@ -1,0 +1,73 @@
+                                                            x02   328927/10103/00201
+Abrechnung  der Brutto/Netto-Bezüge   für Dezember 20138                   22.05.2018 Bat:  1
+ 
+Personal-Nr. | Geburtsdatum sıK! Faktor  Ki.Frbtr.Konfession  ‚Freibetragjährl.! ‚Freibetrag mti.! Ipsa Gleitzone  st.-Tg.  Vyun.üb. Ur. Anspr. jUrl.Tg.gen. |Resturlaub
+00201 210256 3     ‚_ev                              30    3200  3100  1900  4400
+ 
+SV-Nummer       [Krankenkasse                       KK%®|PGRS Bars  jum.|SV-Tg. Anw. Tage |UrlaubTage |Krankh. Tg. |Fehlz. Tage
+                                             
+50210256B409 EK BARMER (vormals Barmer GE 157 101 1111 1 30
+                                                               L     l     L     l
+ 
+                                             Eintritt   ‚Austritt     Anw.Std.  Urlaub Std.  |Krankh. Std. |Fehlz. Std.
+                                             
+                                             079199  L L       l     L     l     l
+ -                                       4  Steuer-ID       MFB?       Zeitiohn Std.jÜberstd.  Bez. Std.
+  Testmandant 2                                              |
+  12345Testore-                                  14725836994
+   
+                               B/N
+               Pers.-Nr.  00201        x02
+               Abt.-Nr. B23         10103          HinweisezurAbrechnung
+                                             
+                                            Kostenst.  101      Wöch.Arb.Zt. 37,50
+  Herrn
+                                             - LSt-Jahresausgl.:
+  Xaver-Muster Xoxmann
+  Mustergasse 20
+  90427 Nürnberg
+Brutto-Bezüge
+ 
+Lohnart [Bezeichnung                       |Einheit?   Menge? |     Faktor® ‚Prozentsatz |ste ısv®  |GB5          Betrag
+2000 Gehalt                                                  LLoJV      3.620,00
+3040 Gehaltsverzicht, mtl.                                    LULN        100,00-
+4720 Betr.AV,Geh.vz.1fd, $3Nr.63EStG                           FF N        100,00
+*%*k%* DATEV  Mustermandant 10103 mit SKRO4
+**%4* Für Präsentationen, Messen, Schulungen, etc.
+                                                                            Gesamt-Brutto
+Steuer/Sozialversicherung                                                               3.620,00
+ 
+st®      Steuer-Brutto       Lohnsteuer     Kirchensteuer   Solidaritätszuschlag                       Steuerrechtliche Abzüge
+L     3.52000       28783       2302       1583                           326,68
+           ı            I           ı           ı
+  
+sv® |   KV-Brutto    RV-Brutto    AV-Brutto    PV-Brutto  |   KV-Beitrag    RV-Beitrag  |  AV-Beitrag  |   PV-Beitrag®    SV-rechtliche Abzüge
+L  3.52000  3.52000  3.52000  3.52000    29568    32736    5280 2   5368       129,52
+       I        I        I        I        I        I       I        I
+ 
+                                                                           Netto-Verdienst
+Verdiensibescheinigung                              Netto-Bezüge/Netto-Abzüge                      2.563,80
+ 
+Gesamt-Brutto     45.76000 |SV-Brutto     44.56000   Lohnart |Bezeichnung                            Betrag
+Steuer-Brutto      44.56000 KV-Beitrag     3.74304   9820 Gehaltsverzicht bAV             100, 00-
+Lohnsteuer       3.94996 RV-Beitrag     4.14408
+Kirchensteuer        31592 |AV-Beitrag       66840
+Solidaritätszuschlag      21724 |PV-Beitrag       67954
+                     
+Steuerfreie Bezüge    1.20000 vwLgesamt
+P. verst. Zuk.sich.         \   Kug-Auszahlung        \
+                 ı                  I
+Pfändung Rest          ı                  \
+Darlehen Rest           \                  ı
+ 
+ 
+Bank                                        SV-AG-Anteil Zus. AG-Kosten      Gesamtkosten     Auszahlungsbetrag
+Konto                                        68200                           2.463,80
+ 
+14.Hinzurechnungsbetrag              4=LaufenderBezug, S=SonstigerBezug, F=Frei,    5 ) =Bestandteildes Gesamt-Bruttos
+2 Std=Stunden,T=Tage, Km=Kilometer, St=Stück     E =Einmalbezug, P=Pauschalierung,A=Abfindung,    6 2=Einschl. BeitragszuschlagzurPVfürKinderlose
+  EUR =Euro,Tsd=TausendEuro, Mio =MillionEuro     M =mehrjährige Versteuerung, N=Nachberechnung    7 MEB=Mehrfachbeschäftigung
+3 Gegebenenfalls Netto-Lohn/Netto-Stundenlohn       V=Vorjahr,W =Entgeltguthaben           8 MaßgeblicherBeitragssatzzurKVinkl Zusatzbeitrag
+                      +Dies isteine Entgelibescheinigungnach$ 108Abs 3 Satz1 derGewerbeordnung-                         DATEV
+AFP Form-Nr LNGN13
+                                                                               

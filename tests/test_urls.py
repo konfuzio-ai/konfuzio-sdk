@@ -19,8 +19,8 @@ from konfuzio_sdk.urls import (
 
 
 from konfuzio_sdk import KONFUZIO_HOST
+from tests.variables import TEST_PROJECT_ID
 
-TEST_PROJECT_ID = 46
 DOCUMENT_ID = 3346
 ANNOTATION_ID = 56
 LABEL_ID = 12
