@@ -1076,10 +1076,8 @@ class Annotation(Data):
     @property
     def offset_string(self) -> List[str]:
         """View the string representation of the Annotation."""
-        if not self.custom_offset_string and self.document.text:
+        if self.document.text:
             result = [span.offset_string for span in self.spans]
-        elif self.custom_offset_string:
-            result = self.offset_string_api
         else:
             result = []
         return result
