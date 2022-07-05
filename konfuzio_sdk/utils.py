@@ -3,13 +3,15 @@ import datetime
 import hashlib
 import itertools
 import logging
+import operator
 import os
 import re
 import unicodedata
 import zipfile
 from contextlib import contextmanager
 from io import BytesIO
-from typing import Union, List, Tuple, Dict
+from typing import Union, List, Tuple, Dict, Optional
+from warnings import warn
 
 import filetype
 from PIL import Image
@@ -493,134 +495,133 @@ def map_offsets(characters_bboxes: list) -> dict:
     return offsets_map
 
 
-# def convert_segmentation_bbox(bbox: dict, page: dict) -> dict:
-#     """
-#     Convert bounding box from the segmentation result to the scale of the characters bboxes of the document.
-#
-#     :param bbox: Bounding box from the segmentation result
-#     :param page: Page information
-#     :return: Converted bounding box.
-#     """
-#     original_size = page['original_size']
-#     image_size = page['size']
-#     factor_y = original_size[1] / image_size[1]
-#     factor_x = original_size[0] / image_size[0]
-#     height = image_size[1]
-#
-#     temp_y0 = (height - bbox['y0']) * factor_y
-#     temp_y1 = (height - bbox['y1']) * factor_y
-#     bbox['y0'] = temp_y1
-#     bbox['y1'] = temp_y0
-#     bbox['x0'] = bbox['x0'] * factor_x
-#     bbox['x1'] = bbox['x1'] * factor_x
-#
-#     return bbox
+def convert_segmentation_bbox(bbox: dict, page: dict) -> dict:
+    """
+    Convert bounding box from the segmentation result to the scale of the characters bboxes of the document.
 
-#
-# def select_bboxes(selection_bbox: dict, page_bboxes: list, tolerance: int = 10) -> list:
-#     """
-#     Filter the characters bboxes of the Document page according to their x/y values.
-#
-#     The result only includes the characters that are inside the selection bbox.
-#
-#     :param selection_bbox: Bounding box used to select the characters bboxes.
-#     :param page_bboxes: Bounding boxes of the characters in the Document page.
-#     :param tolerance: Tolerance for the coordinates values.
-#     :return: Selected characters bboxes.
-#     """
-#     selected_char_bboxes = [
-#         char_bbox
-#         for char_bbox in page_bboxes
-#         if int(selection_bbox["x0"]) - tolerance <= char_bbox["x0"]
-#         and int(selection_bbox["x1"]) + tolerance >= char_bbox["x1"]
-#         and int(selection_bbox["y0"]) - tolerance <= char_bbox["y0"]
-#         and int(selection_bbox["y1"]) + tolerance >= char_bbox["y1"]
-#     ]
-#
-#     return selected_char_bboxes
+    :param bbox: Bounding box from the segmentation result
+    :param page: Page information
+    :return: Converted bounding box.
+    """
+    original_size = page['original_size']
+    image_size = page['size']
+    factor_y = original_size[1] / image_size[1]
+    factor_x = original_size[0] / image_size[0]
+    height = image_size[1]
 
-#
-# def group_bboxes_per_line(char_bboxes: dict, page_index: int) -> list:
-#     """
-#     Group characters bounding boxes per line.
-#
-#     A line will have a single bounding box.
-#
-#     :param char_bboxes: Bounding boxes of the characters.
-#     :param page_index: Index of the page in the document.
-#     :return: List with 1 bounding box per line.
-#     """
-#     lines_bboxes = []
-#
-#     # iterate over each line_number and all of the character bboxes with that line number
-#     for line_number, line_char_bboxes in itertools.groupby(char_bboxes, lambda x: x['line_number']):
-#         # set the default values which we overwrite with the actual character bbox values
-#         x0 = 100000000
-#         top = 10000000
-#         y0 = 10000000
-#         x1 = 0
-#         y1 = 0
-#         bottom = 0
-#         start_offset = 100000000
-#         end_offset = 0
-#
-#         # remove space chars from the line selection so they don't interfere with the merging of bboxes
-#         # (a bbox should never start with a space char)
-#         trimmed_line_char_bboxes = [char for char in line_char_bboxes if not char['text'].isspace()]
-#
-#         if len(trimmed_line_char_bboxes) == 0:
-#             continue
-#
-#         # merge characters bounding boxes of the same line
-#         for char_bbox in trimmed_line_char_bboxes:
-#             x0 = min(char_bbox['x0'], x0)
-#             top = min(char_bbox['top'], top)
-#             y0 = min(char_bbox['y0'], y0)
-#
-#             x1 = max(char_bbox['x1'], x1)
-#             bottom = max(char_bbox['bottom'], bottom)
-#             y1 = max(char_bbox['y1'], y1)
-#
-#             start_offset = min(int(char_bbox['string_offset']), start_offset)
-#             end_offset = max(int(char_bbox['string_offset']), end_offset)
-#
-#         line_bbox = {
-#             'bottom': bottom,
-#             'page_index': page_index,
-#             'top': top,
-#             'x0': x0,
-#             'x1': x1,
-#             'y0': y0,
-#             'y1': y1,
-#             'start_offset': start_offset,
-#             'end_offset': end_offset + 1,
-#             'line_number': line_number,
-#         }
-#
-#         lines_bboxes.append(line_bbox)
-#
-#     return lines_bboxes
+    temp_y0 = (height - bbox['y0']) * factor_y
+    temp_y1 = (height - bbox['y1']) * factor_y
+    bbox['y0'] = temp_y1
+    bbox['y1'] = temp_y0
+    bbox['x0'] = bbox['x0'] * factor_x
+    bbox['x1'] = bbox['x1'] * factor_x
+
+    return bbox
 
 
-# def merge_bboxes(bboxes: list):
-#     """
-#     Merge bounding boxes.
-#
-#     :param bboxes: Bounding boxes to be merged.
-#     :return: Merged bounding box.
-#     """
-#     merge_bbox = {
-#         "x0": min([b['x0'] for b in bboxes]),
-#         "x1": max([b['x1'] for b in bboxes]),
-#         "y0": min([b['y0'] for b in bboxes]),
-#         "y1": max([b['y1'] for b in bboxes]),
-#         "top": min([b['top'] for b in bboxes]),
-#         "bottom": max([b['bottom'] for b in bboxes]),
-#         "page_index": bboxes[0]['page_index'],
-#     }
-#
-#     return merge_bbox
-#
+def select_bboxes(selection_bbox: dict, page_bboxes: list, tolerance: int = 10) -> list:
+    """
+    Filter the characters bboxes of the Document page according to their x/y values.
+
+    The result only includes the characters that are inside the selection bbox.
+
+    :param selection_bbox: Bounding box used to select the characters bboxes.
+    :param page_bboxes: Bounding boxes of the characters in the Document page.
+    :param tolerance: Tolerance for the coordinates values.
+    :return: Selected characters bboxes.
+    """
+    selected_char_bboxes = [
+        char_bbox
+        for char_bbox in page_bboxes
+        if int(selection_bbox["x0"]) - tolerance <= char_bbox["x0"]
+        and int(selection_bbox["x1"]) + tolerance >= char_bbox["x1"]
+        and int(selection_bbox["y0"]) - tolerance <= char_bbox["y0"]
+        and int(selection_bbox["y1"]) + tolerance >= char_bbox["y1"]
+    ]
+
+    return selected_char_bboxes
+
+
+def group_bboxes_per_line(char_bboxes: dict, page_index: int) -> list:
+    """
+    Group characters bounding boxes per line.
+
+    A line will have a single bounding box.
+
+    :param char_bboxes: Bounding boxes of the characters.
+    :param page_index: Index of the page in the document.
+    :return: List with 1 bounding box per line.
+    """
+    lines_bboxes = []
+
+    # iterate over each line_number and all of the character bboxes with that line number
+    for line_number, line_char_bboxes in itertools.groupby(char_bboxes, lambda x: x['line_number']):
+        # set the default values which we overwrite with the actual character bbox values
+        x0 = 100000000
+        top = 10000000
+        y0 = 10000000
+        x1 = 0
+        y1 = 0
+        bottom = 0
+        start_offset = 100000000
+        end_offset = 0
+
+        # remove space chars from the line selection so they don't interfere with the merging of bboxes
+        # (a bbox should never start with a space char)
+        trimmed_line_char_bboxes = [char for char in line_char_bboxes if not char['text'].isspace()]
+
+        if len(trimmed_line_char_bboxes) == 0:
+            continue
+
+        # merge characters bounding boxes of the same line
+        for char_bbox in trimmed_line_char_bboxes:
+            x0 = min(char_bbox['x0'], x0)
+            top = min(char_bbox['top'], top)
+            y0 = min(char_bbox['y0'], y0)
+
+            x1 = max(char_bbox['x1'], x1)
+            bottom = max(char_bbox['bottom'], bottom)
+            y1 = max(char_bbox['y1'], y1)
+
+            start_offset = min(int(char_bbox['string_offset']), start_offset)
+            end_offset = max(int(char_bbox['string_offset']), end_offset)
+
+        line_bbox = {
+            'bottom': bottom,
+            'page_index': page_index,
+            'top': top,
+            'x0': x0,
+            'x1': x1,
+            'y0': y0,
+            'y1': y1,
+            'start_offset': start_offset,
+            'end_offset': end_offset + 1,
+            'line_number': line_number,
+        }
+
+        lines_bboxes.append(line_bbox)
+
+    return lines_bboxes
+
+
+def merge_bboxes(bboxes: list):
+    """
+    Merge bounding boxes.
+
+    :param bboxes: Bounding boxes to be merged.
+    :return: Merged bounding box.
+    """
+    merge_bbox = {
+        "x0": min([b['x0'] for b in bboxes]),
+        "x1": max([b['x1'] for b in bboxes]),
+        "y0": min([b['y0'] for b in bboxes]),
+        "y1": max([b['y1'] for b in bboxes]),
+        "top": min([b['top'] for b in bboxes]),
+        "bottom": max([b['bottom'] for b in bboxes]),
+        "page_index": bboxes[0]['page_index'],
+    }
+
+    return merge_bbox
 
 
 def get_bbox(bbox, start_offset: int, end_offset: int) -> Dict:
@@ -631,6 +632,8 @@ def get_bbox(bbox, start_offset: int, end_offset: int) -> Dict:
     document, create a new bbox which covers every character bbox between the given start and end offset.
 
     Pages are zero indexed, i.e. the first page has page_number = 0.
+
+    :raises ValueError None of the characters provides a bounding box.
     """
     # get the index of every character bbox in the Document between the start and end offset
     char_bbox_ids = [str(char_bbox_id) for char_bbox_id in range(start_offset, end_offset) if str(char_bbox_id) in bbox]
@@ -639,7 +642,6 @@ def get_bbox(bbox, start_offset: int, end_offset: int) -> Dict:
     if not char_bbox_ids:
         logger.error(f"Between start {start_offset} and {end_offset} we do not find the bboxes of the characters.")
         raise ValueError(f'Characters from {start_offset} to {end_offset} do not provide any bounding box.')
-        # return {'bottom': None, 'top': None, 'page_index': None, 'x0': None, 'x1': None, 'y0': None, 'y1': None}
 
     # set the default values which we overwrite with the actual character bbox values
     x0 = 100000000
@@ -757,3 +759,194 @@ def iter_before_and_after(iterable, before=1, after=None, fill=None):
             new.append(itertools.chain(itertools.islice(iterator, i + 1, None), [fill] * (i + 1)))
 
     return zip(*new)
+
+
+def get_merged_bboxes(doc_bbox: Dict, bboxes: Union[Dict, List], doc_text: Optional[str] = None) -> List[Dict]:
+    """
+    Merge Bboxes.
+
+    Given a document bbox in dict format and a dict or list of bboxes (the selection), get the smallest
+    possible set of bboxes that represents the characters of the selection, divided by lines.
+
+    Similar to `get_bbox` and `get_bboxes`, but takes bboxes as input instead of offsets.
+
+    :param doc_bbox: a dict representing all the characters in the document
+    :param bboxes: a list or dict of bboxes representing the user's selection
+    :param doc_text: an optional string containing the document's text
+
+    Returns a list of bboxes.
+    """
+    warn('This method is WIP, see https://gitlab.com/konfuzio/objectives/-/issues/9333', FutureWarning, stacklevel=2)
+    # initialize the list of bboxes that will later be returned
+    line_bboxes = []
+
+    # convert string indexes to int
+    # this is very expensive but can't be moved from here for now since we need int indexes multiple times
+    doc_bbox = {int(index): char_bbox for index, char_bbox in doc_bbox.items()}
+
+    # convert selection dict if not already a list
+    if isinstance(bboxes, dict):
+        bboxes = list(bboxes.values())
+
+    # sort selected bboxes by y first, then x
+    bboxes.sort(key=operator.itemgetter('y0', 'x0'))
+
+    # iterate through every bbox of the selection
+    for selection_bbox in bboxes:
+        selected_bboxes = [
+            # the index of the character is its offset, i.e. the number of chars before it in the document's text
+            {"string_offset": index, **char_bbox}
+            for index, char_bbox in doc_bbox.items()
+            if selection_bbox["page_index"] == char_bbox["page_number"] - 1
+            # filter the characters of the document according to their x/y values, so that we only include the
+            # characters that are inside the selection
+            and selection_bbox["x0"] <= char_bbox["x0"]
+            and selection_bbox["x1"] >= char_bbox["x1"]
+            and selection_bbox["y0"] <= char_bbox["y0"]
+            and selection_bbox["y1"] >= char_bbox["y1"]
+        ]
+
+        # decide what we are going to group the character bboxes by in order to group those on the same line
+        # either group by 'line_number' (if they all have a 'line_number' attribute) or 'bottom'
+        if all('line_number' in selected_bbox.keys() for selected_bbox in selected_bboxes):
+            group_by = 'line_number'
+        else:
+            group_by = 'bottom'
+
+        # iterate over each line_number (or bottom, depending on group_by) and all of the character
+        # bboxes that have the same line_number (or bottom)
+        for line_number, line_char_bboxes in itertools.groupby(selected_bboxes, lambda x: x[group_by]):
+            # set the defaut values which we overwrite with the actual character bbox values
+            x0 = 100000000
+            top = 10000000
+            y0 = 10000000
+            x1 = 0
+            y1 = 0
+            bottom = 0
+            pdf_page_index = None
+            start_offset = 100000000
+            end_offset = 0
+
+            # remove space chars from the line selection so they don't interfere with the merging of bboxes
+            # (a bbox should never start with a space char)
+            trimmed_line_char_bboxes = [char for char in line_char_bboxes if not char['text'].isspace()]
+
+            if len(trimmed_line_char_bboxes) == 0:
+                continue
+
+            # combine all of the found character bboxes on a given line and calculate their combined x0, x1, etc. values
+            for char_bbox in trimmed_line_char_bboxes:
+                x0 = min(char_bbox['x0'], x0)
+                top = min(char_bbox['top'], top)
+                y0 = min(char_bbox['y0'], y0)
+
+                x1 = max(char_bbox['x1'], x1)
+                bottom = max(char_bbox['bottom'], bottom)
+                y1 = max(char_bbox['y1'], y1)
+
+                start_offset = min(char_bbox['string_offset'], start_offset)
+                end_offset = max(char_bbox['string_offset'], end_offset)
+
+                if pdf_page_index is not None:
+                    try:
+                        assert pdf_page_index == char_bbox['page_number'] - 1
+                    except AssertionError:
+                        logger.warning(
+                            "We don't support bounding boxes over page breaks yet, and will return the bounding box"
+                            "on the first page of the match."
+                        )
+                        break
+
+                pdf_page_index = char_bbox['page_number'] - 1
+
+            line_bbox = {
+                'bottom': bottom,
+                'page_index': pdf_page_index,
+                'top': top,
+                'x0': x0,
+                'x1': x1,
+                'y0': y0,
+                'y1': y1,
+                'start_offset': start_offset,
+                'end_offset': end_offset + 1,
+                'line_number': line_number,
+            }
+
+            # if we're being passed a bbox with an offset string, for example when saving a new annotation with a
+            # custom string, keep it in the data structure so it can be returned and saved later
+            if 'offset_string' in selection_bbox:
+                line_bbox['offset_string'] = selection_bbox['offset_string']
+
+            line_bboxes.append(line_bbox)
+
+    # When receiving multiple selection bboxes, we want to merge those we can (consecutive ones)
+    # into a single bbox.
+    # For example, if I have the string "THIS IS SOME TEXT", and I want to click-select "THIS",
+    # "SOME" and "TEXT", the function should return two bboxes: one for "THIS" and one for
+    # "SOME TEXT" (since they are consecutive).
+    # The way we do this is by sorting our `line_bboxes` by `start_offset` and checking for
+    # characters between two consecutive normalized bboxes; if there isn't any, we assume they
+    # can be merged, otherwise they stay the same.
+
+    line_bboxes.sort(key=lambda k: k['start_offset'])
+
+    # initialize the list where merged bboxes will be saved
+    merged_bboxes = []
+
+    for line_bbox in line_bboxes:
+        # if this is the first bbox we're checking, just add it
+        if len(merged_bboxes) < 1:
+            merged_bboxes.append(line_bbox)
+            continue
+
+        # if the last bbox we added has a different line number, it should not be merged
+        if merged_bboxes[-1]['line_number'] != line_bbox['line_number']:
+            merged_bboxes.append(line_bbox)
+            continue
+
+        # determine whether there are characters between this bbox's start and the previous bbox's end.
+        # the generator returns as soon as it finds a positive result.
+        has_chars_in_between = any(
+            True
+            for key, char in doc_bbox.items()
+            # the index of a doc_bbox char is its offset, so we can use the start/end offset from the
+            # bboxes we're comparing to see if there are chars between them
+            if (merged_bboxes[-1]['end_offset'] - 1) < key < line_bbox['start_offset']
+            # a "space" char counts as no character for this check
+            and not char['text'].isspace()
+        )
+
+        # if there are no chars in between, merge this bbox into the previous one
+        if not has_chars_in_between:
+            # we know that there are no characters between these two bounding boxes, but what about spaces?
+            # we calculate the amt of spaces between these two bounding boxes so it can be replicated when building the
+            # offset_string.
+            amount_of_spaces_in_between = line_bbox['start_offset'] - merged_bboxes[-1]['end_offset']
+
+            merged_bboxes[-1]['x0'] = min(merged_bboxes[-1]['x0'], line_bbox['x0'])
+            merged_bboxes[-1]['top'] = min(merged_bboxes[-1]['top'], line_bbox['top'])
+            merged_bboxes[-1]['y0'] = min(merged_bboxes[-1]['y0'], line_bbox['y0'])
+            merged_bboxes[-1]['x1'] = max(merged_bboxes[-1]['x1'], line_bbox['x1'])
+            merged_bboxes[-1]['bottom'] = max(merged_bboxes[-1]['bottom'], line_bbox['bottom'])
+            merged_bboxes[-1]['y1'] = max(merged_bboxes[-1]['y1'], line_bbox['y1'])
+            merged_bboxes[-1]['start_offset'] = min(merged_bboxes[-1]['start_offset'], line_bbox['start_offset'])
+            merged_bboxes[-1]['end_offset'] = max(merged_bboxes[-1]['end_offset'], line_bbox['end_offset'])
+
+            # if both bboxes have the offset string property, merge them
+            if merged_bboxes[-1].get('offset_string') and line_bbox.get('offset_string'):
+                merged_bboxes[-1]['offset_string'] += " " * amount_of_spaces_in_between + line_bbox['offset_string']
+
+        # otherwise, just add the bbox to the list
+        else:
+            merged_bboxes.append(line_bbox)
+
+    # if we're passed a doc_text, add an offset_string to each bbox
+    if doc_text:
+        for bbox in merged_bboxes:
+            offset_string = doc_text[bbox['start_offset'] : bbox['end_offset']]
+            # don't override offset_string if already set
+            if not bbox.get('offset_string'):
+                bbox['offset_string'] = offset_string
+            bbox['offset_string_original'] = offset_string
+
+    return merged_bboxes

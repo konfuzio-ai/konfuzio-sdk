@@ -57,29 +57,26 @@ class RegexTokenizer(AbstractTokenizer):
 
         # Create a revised = False and is_correct = False (defaults) Annotation
         for span in spans:
-            if span not in document.spans():  # (use_correct=False):
+            if span not in document.spans:  # (use_correct=False):
                 # todo this hides the fact, that Tokenizers of different quality can create the same Span
                 # todo we create an overlapping Annotation in case the Tokenizer finds a correct match
-                try:
-                    annotation = Annotation(
-                        document=document,
-                        annotation_set=document.no_label_annotation_set,
-                        label=document.project.no_label,  # track which tokenizer created the span by using a Label
-                        label_set=document.project.no_label_set,
-                        category=document.category,
-                        spans=[span],
-                    )
-                    for span in annotation.spans:
-                        try:
-                            span.bbox()  # check that the bbox can be calculated  # todo add test
-                        except ValueError as e:
-                            logger.error(f'Regex made {span} "{span.offset_string}" that has no valid bbox: {repr(e)}')
-                            # annotation.delete()  # todo we should skip Annotations that have no valide bbox
-                        except TypeError as e:
-                            logger.error(f'Regex made {span} "{span.offset_string}" that has no valid bbox: {repr(e)}')
-                            # annotation.delete()  # todo we should skip Annotations that have no valide bbox
-                except ValueError as e:
-                    logger.error(repr(e))
+                annotation = Annotation(
+                    document=document,
+                    annotation_set=document.no_label_annotation_set,
+                    label=document.project.no_label,  # track which tokenizer created the span by using a Label
+                    label_set=document.project.no_label_set,
+                    category=document.category,
+                    spans=[span],
+                )
+                for span in annotation.spans:
+                    try:
+                        span.bbox()  # check that the bbox can be calculated  # todo add test
+                    except ValueError as e:
+                        logger.error(f'Regex made {span} "{span.offset_string}" that has no valid bbox: {repr(e)}')
+                        # annotation.delete()  # todo we should skip Annotations that have no valide bbox
+                    # except TypeError as e:
+                    #   logger.error(f'Typeerror Bbox of {span} "{span.offset_string}": {repr(e)} - {span.eval_dict()}')
+                    #   # annotation.delete()  # todo we should skip Annotations that have no valide bbox
             else:
                 logger.warning(f'{document} contains {span} already. It will not be added by the Tokenizer.')
         after_none = len(document.annotations(use_correct=False, label=document.project.no_label))

@@ -5,7 +5,6 @@ from pandas import DataFrame
 
 from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span, LabelSet, Label, Category
 from konfuzio_sdk.evaluate import compare, grouped
-from tests.variables import TEST_PROJECT_ID
 
 
 class TestEvaluation(unittest.TestCase):
@@ -36,7 +35,7 @@ class TestEvaluation(unittest.TestCase):
 
     def test_doc_on_doc_incl_multiline_annotation(self):
         """Test if a Document is 100 % equivalent even it has unrevised Annotations."""
-        prj = Project(id_=TEST_PROJECT_ID)
+        prj = Project(id_=None, project_folder='example_project_data')
         doc_a = prj.get_document_by_id(44823)
         doc_b = prj.get_document_by_id(44823)  # predicted
         evaluation = compare(doc_a, doc_b)
@@ -51,7 +50,7 @@ class TestEvaluation(unittest.TestCase):
 
     def test_doc_where_first_annotation_was_skipped(self):
         """Test if a Document is 100 % equivalent with first Annotation not existing for a certain Label."""
-        prj = Project(id_=TEST_PROJECT_ID)
+        prj = Project(id_=None, project_folder='example_project_data')
         doc_a = prj.get_document_by_id(44823)
         doc_b = prj.get_document_by_id(44823)  # predicted
         doc_b.annotations()
@@ -67,7 +66,7 @@ class TestEvaluation(unittest.TestCase):
 
     def test_doc_where_last_annotation_was_skipped(self):
         """Test if a Document is 100 % equivalent with last Annotation not existing for a certain Label."""
-        prj = Project(id_=TEST_PROJECT_ID)
+        prj = Project(id_=None, project_folder='example_project_data')
         doc_a = prj.get_document_by_id(44823)
         doc_b = prj.get_document_by_id(44823)  # predicted
         doc_b.annotations()
@@ -83,7 +82,7 @@ class TestEvaluation(unittest.TestCase):
 
     def test_if_first_multiline_annotation_is_missing_in_b(self):
         """Test if a Document is equivalent if first Annotation is missing."""
-        prj = Project(id_=TEST_PROJECT_ID)
+        prj = Project(id_=None, project_folder='example_project_data')
         doc_a = prj.get_document_by_id(44823)
         doc_b = Document(project=prj, category=doc_a.category)
         for annotation in doc_a.annotations()[1:]:
@@ -100,7 +99,7 @@ class TestEvaluation(unittest.TestCase):
 
     def test_doc_where_first_annotation_is_missing_in_a(self):
         """Test if a Document is equivalent if first Annotation is not present."""
-        prj = Project(id_=TEST_PROJECT_ID)
+        prj = Project(id_=None, project_folder='example_project_data')
         doc_b = prj.get_document_by_id(44823)
         doc_a = Document(project=prj, category=doc_b.category)
         # use only correct Annotations
@@ -119,7 +118,7 @@ class TestEvaluation(unittest.TestCase):
 
     def test_only_unrevised_annotations(self):
         """Test to evaluate on a Document that has only unrevised Annotations."""
-        prj = Project(id_=TEST_PROJECT_ID)
+        prj = Project(id_=None, project_folder='example_project_data')
         doc_a = prj.get_document_by_id(137234)
         doc_b = Document(project=prj, category=doc_a.category)
 
@@ -133,7 +132,7 @@ class TestEvaluation(unittest.TestCase):
 
     def test_doc_where_first_annotation_from_all_is_missing_in_a(self):
         """Test if a Document is equivalent if all Annotation are not present and feedback required are included."""
-        prj = Project(id_=TEST_PROJECT_ID)
+        prj = Project(id_=None, project_folder='example_project_data')
         doc_b = prj.get_document_by_id(44823)
         doc_a = Document(project=prj, category=doc_b.category)
         # use correct Annotations and feedback required ones
@@ -151,7 +150,7 @@ class TestEvaluation(unittest.TestCase):
 
     def test_doc_where_last_annotation_is_missing_in_b(self):
         """Test if a Document is equivalent if last Annotation is missing."""
-        prj = Project(id_=TEST_PROJECT_ID)
+        prj = Project(id_=None, project_folder='example_project_data')
         doc_a = prj.get_document_by_id(44823)
         doc_b = Document(project=prj, category=doc_a.category)
         # use correct Annotations and feedback required ones
@@ -168,7 +167,7 @@ class TestEvaluation(unittest.TestCase):
 
     def test_doc_where_last_annotation_is_missing_in_a(self):
         """Test if a Document is equivalent if last Annotation is not present."""
-        prj = Project(id_=TEST_PROJECT_ID)
+        prj = Project(id_=None, project_folder='example_project_data')
         doc_b = prj.get_document_by_id(44823)
         doc_a = Document(project=prj, category=doc_b.category)
         # use correct Annotations and feedback required ones
@@ -185,7 +184,7 @@ class TestEvaluation(unittest.TestCase):
 
     def test_nothing_should_be_predicted(self):
         """Support to evaluate that nothing is found in a document."""
-        prj = Project(id_=TEST_PROJECT_ID)
+        prj = Project(id_=None, project_folder='example_project_data')
         doc_b = prj.get_document_by_id(44823)
         doc_a = Document(project=prj, category=doc_b.category)
         evaluation = compare(doc_a, doc_b)
@@ -199,7 +198,7 @@ class TestEvaluation(unittest.TestCase):
 
     def test_nothing_can_be_predicted(self):
         """Support to evaluate that nothing must be found in a document."""
-        prj = Project(id_=TEST_PROJECT_ID)
+        prj = Project(id_=None, project_folder='example_project_data')
         doc_a = prj.get_document_by_id(44823)
         doc_b = Document(project=prj, category=doc_a.category)
         evaluation = compare(doc_a, doc_b)
@@ -219,7 +218,7 @@ class TestEvaluation(unittest.TestCase):
         Only 1 is in the prediction.
         """
         # todo: this logic is a view logic on the document: shouldn't this go into the Annotations function
-        prj = Project(id_=TEST_PROJECT_ID)
+        prj = Project(id_=None, project_folder='example_project_data')
         doc_a = prj.get_document_by_id(44823)
         doc_b = Document(project=prj, category=doc_a.category)
 
@@ -686,8 +685,52 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation["false_negative"].sum() == 0
         assert evaluation["is_found_by_tokenizer"].sum() == 2
 
-    def test_grouped(self):
-        """Test if group catches all relevant errors."""
-        grouped(DataFrame([[True, 'a'], [False, 'b']], columns=['is_correct', 'target']), target='target')
-        grouped(DataFrame([[False, 'a'], [False, 'b']], columns=['is_correct', 'target']), target='target')
-        grouped(DataFrame([[None, 'a'], [None, 'b']], columns=['is_correct', 'target']), target='target')
+    def test_grouped_both_above_threshold_both_correct(self):
+        """Test grouped for two correct Spans where both are over threshold."""
+        result = grouped(
+            DataFrame(
+                [[True, 'a', True], [True, 'b', True]], columns=['is_correct', 'target', 'above_predicted_threshold']
+            ),
+            target='target',
+        )
+        assert result['defined_to_be_correct_target'].to_list() == ['a', 'a']  # todo: it could be a OR b
+
+    def test_grouped_both_above_threshold_one_correct(self):
+        """Test grouped for one correct Span and one incorrect Span over threshold."""
+        result = grouped(
+            DataFrame(
+                [[True, 'a', True], [False, 'b', True]], columns=['is_correct', 'target', 'above_predicted_threshold']
+            ),
+            target='target',
+        )
+        assert result['defined_to_be_correct_target'].to_list() == ['a', 'a']
+
+    def test_grouped_one_above_threshold_both_incorrect(self):
+        """Test grouped for incorrect Span over threshold and incorrect Span below threshold."""
+        result = grouped(
+            DataFrame(
+                [[False, 'a', False], [False, 'b', True]], columns=['is_correct', 'target', 'above_predicted_threshold']
+            ),
+            target='target',
+        )
+        assert result['defined_to_be_correct_target'].to_list() == ['b', 'b']  # see reason in commit 4a66394
+
+    def test_grouped_one_above_threshold_none_correct(self):
+        """Test grouped for Span below threshold and Span above threshold, while is_correct is empty."""
+        result = grouped(
+            DataFrame(
+                [[None, 'a', True], [None, 'b', False]], columns=['is_correct', 'target', 'above_predicted_threshold']
+            ),
+            target='target',
+        )
+        assert result['defined_to_be_correct_target'].to_list() == ['a', 'a']  # it must be a, as a is above threshold
+
+    def test_grouped_none_above_threshold_none_correct(self):
+        """Test grouped for two Spans below threshold, while is_correct is empty."""
+        result = grouped(
+            DataFrame(
+                [[None, 'a', False], [None, 'b', False]], columns=['is_correct', 'target', 'above_predicted_threshold']
+            ),
+            target='target',
+        )
+        assert result['defined_to_be_correct_target'].to_list() == ['a', 'a']  # todo: it could be a OR b

@@ -29,7 +29,6 @@ TEST_IMAGE_FILE = os.path.join(FOLDER_ROOT, 'test_data', 'png.png')
 TEST_ZIP_FILE = os.path.join(FOLDER_ROOT, 'test_data', 'docx.docx')
 
 
-@pytest.mark.local
 class TestUtils(unittest.TestCase):
     """Test utility functions."""
 

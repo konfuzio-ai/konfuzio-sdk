@@ -3,10 +3,12 @@
 import json
 import logging
 import os
+from json import JSONDecodeError
 from operator import itemgetter
 from typing import List, Union
 
 import requests
+from requests import HTTPError
 from requests.adapters import HTTPAdapter
 from urllib3 import Retry
 
@@ -87,6 +89,8 @@ class TimeoutHTTPAdapter(HTTPAdapter):
             `Blogpost <https://findwork.dev/blog/advanced-usage-python-requests-timeouts-retries-hooks/>`_
     """
 
+    timeout = None  # see https://stackoverflow.com/a/29649638
+
     def __init__(self, timeout, *args, **kwargs):
         """Force to init with timout policy."""
         self.timeout = timeout
@@ -101,10 +105,24 @@ class TimeoutHTTPAdapter(HTTPAdapter):
             kwargs["timeout"] = self.timeout
         return super().send(request, *args, **kwargs)
 
+    def build_response(self, req, resp):
+        """Throw error for any HTTPError that is not part of the retry strategy."""
+        response = super().build_response(req, resp)
+        # handle status code one by one as some status codes will cause a retry, see _konfuzio_session
+        if response.status_code in [403, 404]:
+            # Fallback to None if there's no detail, for whatever reason.
+            try:
+                detail = response.json().get('detail')
+            except JSONDecodeError:
+                detail = 'No JSON provided by Host.'
+            raise HTTPError(f'{response.status_code} {response.reason}: {detail} via {response.url}')
+
+        return response
+
 
 def _konfuzio_session(token: str = KONFUZIO_TOKEN):
     """
-    Create a session incl. base auth to the KONFUZIO_HOST.
+    Create a session incl. Token to the KONFUZIO_HOST.
 
     :return: Request session.
     """
@@ -468,9 +486,6 @@ def download_file_konfuzio_api(document_id: int, ocr: bool = True, session=_konf
     content_type = r.headers.get('content-type')
     if content_type not in ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg']:
         logger.info(f'CONTENT TYP of {document_id} is {content_type} and no PDF or image.')
-
-    if r.status_code != 200:
-        raise FileNotFoundError(f'{document_id} cannot be found on the server.')
 
     logger.info(f'Downloaded file {document_id} from {KONFUZIO_HOST}.')
     return r.content
