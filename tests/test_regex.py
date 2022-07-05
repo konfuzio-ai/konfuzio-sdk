@@ -21,6 +21,7 @@ import pytest
 from konfuzio_sdk.regex import regex_matches
 from konfuzio_sdk.data import Project, Annotation, Label, Category, LabelSet, Document, AnnotationSet, Span
 from konfuzio_sdk.utils import is_file
+from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 
 logger = logging.getLogger(__name__)
 
@@ -172,13 +173,30 @@ def test_get_best_regex():
     assert get_best_regex([]) == []
 
 
+def test_get_best_regex_from_project():
+    """Test to get evaluation."""
+    # todo: https://gitlab.com/konfuzio/objectives/-/issues/9358
+    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+    document = project.get_document_by_id(TEST_DOCUMENT_ID)
+    evaluations = document.evaluate_regex(r'(?P<Label_860>\d)', project.get_label_by_id(860))  # Tax
+    assert evaluations['count_total_findings'] == 329
+    assert evaluations['count_total_correct_findings'] == 1
+    assert evaluations['count_correct_annotations'] == 1
+    assert evaluations['count_correct_annotations_not_found'] == 0
+    assert evaluations['doc_matched']
+    assert evaluations['annotation_precision'] == 0.00303951367781155
+    assert evaluations['document_recall'] == 0
+    assert evaluations['annotation_recall'] == 1.0  # todo: evaluation on Span Level is missing
+    assert evaluations['f1_score'] == 0.00606060606060606
+
+
 class TestTokens(unittest.TestCase):
     """Create Tokens from example Data of the Konfuzio Host."""
 
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the Project."""
-        cls.prj = Project(id_=46)
+        cls.prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
 
     @pytest.mark.xfail(reason='We force to have an annotation_set to init an Annotation.')
     def test_token_replacement_only_whitespace_2(self):
