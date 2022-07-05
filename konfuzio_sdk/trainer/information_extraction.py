@@ -1813,6 +1813,8 @@ class Trainer:
 
     def extract(self, *args, **kwargs):
         """Use as placeholder Function."""
+        # todo: extract should return a Document
+        #  see https://github.com/konfuzio-ai/konfuzio-sdk/blob/64fd8792/konfuzio_sdk/data.py#L1182
         logger.warning(f'{self} does not extract.')
         pass
 
@@ -2802,19 +2804,6 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
         return self.clf
 
     def evaluate(self):
-        """Start evaluation."""
-        # if self.train_split_percentage != 1:
-        #     logger.info('Evaluating label classifier on the validation data')
-        #     self._evaluate_multiclass_clf(self.df_valid)
-        #
-        # logger.info('Evaluating label classifier on the test data')
-        # if self.df_test.empty:
-        #     logger.error('The test set is empty. Skip evaluation for test data.')
-        # else:
-        #     self.df_test.loc[~self.df_test.is_correct, 'label_text'] = 'NO_LABEL'
-        self._evaluate_multiclass_clf(self.df_test)
-
-    def _evaluate_multiclass_clf(self, df: pandas.DataFrame):
         """
         Evaluate the label classifier on a given DataFrame.
 
@@ -2822,7 +2811,7 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
         plus the f1-score, precision and recall across each label individually.
         """
         # copy the df as we do not want to modify it
-        df = df.copy()
+        df = self.df_test.copy()
 
         # get probability of each class
         _results = pandas.DataFrame(
