@@ -37,12 +37,11 @@ def grouped(group, target: str):
     """Define which of the correct element in the predicted group defines the "correct" group id_."""
     verbose_validation_column_name = f"defined_to_be_correct_{target}"
     # all rows where is_correct is nan relate to an element which has no correct element partner
-    correct = group["is_correct"].fillna(False)  # so fill nan with False as .loc will need boolean
-
-    if len(group.loc[correct][target]) == 0:  # no "correct" element in the group, but the predicted grouping is correct
+    eligible_to_vote = group['above_predicted_threshold'].fillna(False)
+    if not len(group.loc[eligible_to_vote][target]):  # fallback if none of the Spans provide confidence
         group[verbose_validation_column_name] = group[target].mode(dropna=False)[0]
-    else:  # get the most frequent annotation_set_id from the *correct* Annotations in this group
-        group[verbose_validation_column_name] = group.loc[correct][target].mode(dropna=False)[0]
+    else:  # get the most frequent annotation_set_id from the high confidence Spans in this group
+        group[verbose_validation_column_name] = group.loc[eligible_to_vote][target].mode(dropna=False)[0]
 
     validation_column_name = f"is_correct_{target}"
     group[validation_column_name] = group[target] == group[verbose_validation_column_name]
