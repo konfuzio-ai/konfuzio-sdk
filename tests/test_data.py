@@ -803,6 +803,21 @@ class TestOfflineDataSetup(unittest.TestCase):
         )
         self.assertEqual([first_annotation, second_annotation], document.annotations(use_correct=False))
 
+    def test_to_return_a_custom_offset_string(self):
+        """Test to return a offset string which was human edited on the Server."""
+        document = Document(project=self.project, category=self.category)
+        first_span = Span(start_offset=1, end_offset=2)
+        annotation = Annotation(
+            document=document,
+            spans=[first_span],
+            label_set=self.label_set,
+            label=self.label,
+            is_correct=True,
+            custom_offset_string=True,
+            offset_string="custom_string",
+        )
+        assert annotation.offset_string == 'custom_string'
+
     def test_to_add_a_correct_annotation_with_a_duplicated_span_to_a_document(self):
         """Test to Span that has the same start and end offsets to a correct Annotation.
 
