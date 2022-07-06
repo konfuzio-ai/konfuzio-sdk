@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 <meta content="Simple examples of how can the konfuzio_sdk package be used to get and post information on a project. These code snippets should provide a first insight for a quick start with the package." name="description" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -18,7 +18,6 @@
         <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -126,11 +125,11 @@
            <div itemprop="articleBody">
              
   <section id="code-examples">
-<h1>Code Examples<a class="headerlink" href="#code-examples" title="Permalink to this heading">¶</a></h1>
+<h1>Code Examples<a class="headerlink" href="#code-examples" title="Permalink to this headline">¶</a></h1>
 <section id="example-usage">
-<h2>Example Usage<a class="headerlink" href="#example-usage" title="Permalink to this heading">¶</a></h2>
+<h2>Example Usage<a class="headerlink" href="#example-usage" title="Permalink to this headline">¶</a></h2>
 <section id="project">
-<h3>Project<a class="headerlink" href="#project" title="Permalink to this heading">¶</a></h3>
+<h3>Project<a class="headerlink" href="#project" title="Permalink to this headline">¶</a></h3>
 <p>Retrieve all information available for your project:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 </pre></div>
@@ -143,7 +142,7 @@ A subfolder will be created for each document in the project.</p>
 </div>
 </section>
 <section id="documents">
-<h3>Documents<a class="headerlink" href="#documents" title="Permalink to this heading">¶</a></h3>
+<h3>Documents<a class="headerlink" href="#documents" title="Permalink to this headline">¶</a></h3>
 <p>To access the documents in the project you can use:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">documents</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_documents_by_status</span><span class="p">()</span>
 </pre></div>
@@ -290,7 +289,7 @@ SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  jum.SV-Tg. 
 </pre></div>
 </div>
 <section id="download-pdfs">
-<h4>Download PDFs<a class="headerlink" href="#download-pdfs" title="Permalink to this heading">¶</a></h4>
+<h4>Download PDFs<a class="headerlink" href="#download-pdfs" title="Permalink to this headline">¶</a></h4>
 <p>To get the PDFs of the documents, you can use <strong>get_file()</strong>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
     <span class="n">document</span><span class="o">.</span><span class="n">get_file</span><span class="p">()</span>
@@ -307,7 +306,7 @@ information of the characters and the image of the document.</p>
 <p>In the document folder, you will see a new file with the original name.</p>
 </section>
 <section id="download-pages-as-images">
-<h4>Download pages as images<a class="headerlink" href="#download-pages-as-images" title="Permalink to this heading">¶</a></h4>
+<h4>Download pages as images<a class="headerlink" href="#download-pages-as-images" title="Permalink to this headline">¶</a></h4>
 <p>To get the pages of the document as png images, you can use <strong>get_images()</strong>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
     <span class="n">document</span><span class="o">.</span><span class="n">get_images</span><span class="p">()</span>
@@ -316,7 +315,7 @@ information of the characters and the image of the document.</p>
 <p>You will get one png image named “page_number_of_page.png” for each page in the document.</p>
 </section>
 <section id="download-bounding-boxes-of-the-characters">
-<h4>Download bounding boxes of the characters<a class="headerlink" href="#download-bounding-boxes-of-the-characters" title="Permalink to this heading">¶</a></h4>
+<h4>Download bounding boxes of the characters<a class="headerlink" href="#download-bounding-boxes-of-the-characters" title="Permalink to this headline">¶</a></h4>
 <p>To get the bounding boxes information of the characters, you can use <strong>get_bbox()</strong>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
     <span class="n">document</span><span class="o">.</span><span class="n">get_bbox</span><span class="p">()</span>
@@ -330,7 +329,7 @@ For example, you can get the path to the file with the document text with:</p>
 </div>
 </section>
 <section id="update-document">
-<h4>Update Document<a class="headerlink" href="#update-document" title="Permalink to this heading">¶</a></h4>
+<h4>Update Document<a class="headerlink" href="#update-document" title="Permalink to this headline">¶</a></h4>
 <p>If there are changes in the document in the Konfuzio Server, you can update the document with:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
 </pre></div>
@@ -339,7 +338,7 @@ For example, you can get the path to the file with the document text with:</p>
 project.update(). However, for projects with many documents it can be faster to update only the relevant documents.</p>
 </section>
 <section id="upload-document">
-<h4>Upload Document<a class="headerlink" href="#upload-document" title="Permalink to this heading">¶</a></h4>
+<h4>Upload Document<a class="headerlink" href="#upload-document" title="Permalink to this headline">¶</a></h4>
 <p>You can upload a document via SDK. Create a Document instance and save it.
 The document will be uploaded to the Konfuzio Server.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">file_path</span><span class="o">=&lt;</span><span class="n">path_to_the_file</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">my_project</span><span class="p">)</span>
@@ -358,7 +357,7 @@ status (see code <a class="reference external" href="https://app.konfuzio.com/v2
 </div>
 </section>
 <section id="modify-document">
-<h4>Modify Document<a class="headerlink" href="#modify-document" title="Permalink to this heading">¶</a></h4>
+<h4>Modify Document<a class="headerlink" href="#modify-document" title="Permalink to this headline">¶</a></h4>
 <p>The dataset status and the category of a document can be modified after the document is uploaded.
 To change the category, you can select the category that you desire from the project based on its ID and attribute it
 to the document.</p>
@@ -371,7 +370,7 @@ to the document.</p>
 </div>
 </section>
 <section id="delete-document">
-<h4>Delete Document<a class="headerlink" href="#delete-document" title="Permalink to this heading">¶</a></h4>
+<h4>Delete Document<a class="headerlink" href="#delete-document" title="Permalink to this headline">¶</a></h4>
 <p>To locally delete a document, you can use:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
 </pre></div>
@@ -382,7 +381,7 @@ If you want to get it again you can update the project.</p>
 </section>
 </section>
 <section id="create-regex-based-annotations">
-<h2>Create Regex-based Annotations<a class="headerlink" href="#create-regex-based-annotations" title="Permalink to this heading">¶</a></h2>
+<h2>Create Regex-based Annotations<a class="headerlink" href="#create-regex-based-annotations" title="Permalink to this headline">¶</a></h2>
 <p>Let’s see a simple example of how can we use the <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> package to get information on a project and to post annotations.</p>
 <p>You can follow the example below to post annotations of a certain word or expression in the first document uploaded.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">re</span>
@@ -434,7 +433,7 @@ If you want to get it again you can update the project.</p>
 </div>
 </section>
 <section id="retrain-flair-ner-ontonotes-fast-with-human-revised-annotations">
-<h2>Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations<a class="headerlink" href="#retrain-flair-ner-ontonotes-fast-with-human-revised-annotations" title="Permalink to this heading">¶</a></h2>
+<h2>Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations<a class="headerlink" href="#retrain-flair-ner-ontonotes-fast-with-human-revised-annotations" title="Permalink to this headline">¶</a></h2>
 <p>The tutorial <em>HRetrain Flair NER-Ontonotes-Fast with Human Revised Annotations</em> aims to show you how to use the
 Konfuzio SDK package to include an easy feedback workflow in your training pipeline. It also gives an example of how you
 can take advantage of open-source models to speed up the annotation process and use the feedback workflow to adapt the
@@ -444,7 +443,7 @@ domain knowledge of the model to your aim.</p>
 and try it by yourself.</p>
 </section>
 <section id="count-relevant-expressions-in-annual-reports">
-<h2>Count Relevant Expressions in Annual Reports<a class="headerlink" href="#count-relevant-expressions-in-annual-reports" title="Permalink to this heading">¶</a></h2>
+<h2>Count Relevant Expressions in Annual Reports<a class="headerlink" href="#count-relevant-expressions-in-annual-reports" title="Permalink to this headline">¶</a></h2>
 <p>The tutorial <em>Count Relevant Expressions in Annual Reports</em> aims to show you how to use the Konfuzio SDK package to
 retrieve structured and organized information that can be used for a deeper analysis and understanding of your data.
 It will show you how to identify and count pre-specified expressions in documents and how to collect that information.</p>

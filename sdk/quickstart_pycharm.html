@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Install SDK using PyCharm &mdash; Konfuzio  documentation</title>
@@ -17,7 +17,6 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -115,9 +114,9 @@
            <div itemprop="articleBody">
              
   <section id="install-sdk-using-pycharm">
-<h1>Install SDK using PyCharm<a class="headerlink" href="#install-sdk-using-pycharm" title="Permalink to this heading">¶</a></h1>
+<h1>Install SDK using PyCharm<a class="headerlink" href="#install-sdk-using-pycharm" title="Permalink to this headline">¶</a></h1>
 <section id="pycharm-setup">
-<h2>1. PyCharm Setup<a class="headerlink" href="#pycharm-setup" title="Permalink to this heading">¶</a></h2>
+<h2>1. PyCharm Setup<a class="headerlink" href="#pycharm-setup" title="Permalink to this headline">¶</a></h2>
 <p>PyCharm is a widespread common Integrated Development Environment (IDE) with strong debugging functionalities, which is
 why we choose PyCharm as our preferred IDE in this context. To start with, please download the Community version of
 PyCharm for your respective operating system here: <a class="reference external" href="https://www.jetbrains.com/de-de/pycharm/download/#section=windows">https://www.jetbrains.com/de-de/pycharm/download/#section=windows</a>.</p>
@@ -129,7 +128,7 @@ new virtual environment for the project.</p>
 <a class="reference external image-reference" href="https://user-images.githubusercontent.com/85744792/127325540-968e916d-626a-496f-aab4-f9d8fe5e9c5e.png"><img alt="image" src="https://user-images.githubusercontent.com/85744792/127325540-968e916d-626a-496f-aab4-f9d8fe5e9c5e.png" /></a>
 </section>
 <section id="create-a-virtual-environment">
-<h2>2. Create a Virtual Environment<a class="headerlink" href="#create-a-virtual-environment" title="Permalink to this heading">¶</a></h2>
+<h2>2. Create a Virtual Environment<a class="headerlink" href="#create-a-virtual-environment" title="Permalink to this headline">¶</a></h2>
 <p>As we want to execute our project with our Konfuzio SDK package, we need a virtual environment that is based on Python
 version 3.8. This Python version is the most widespread and commonly used version which still represents a good
 trade-off between newness and stability. To create such a virtual environment, please refer to this documentation which
@@ -144,21 +143,21 @@ can’t carry out debugging of code that is executed in Docker containers or on 
 our Konfuzio SDK package.</p>
 </section>
 <section id="install-the-konfuzio-sdk-package">
-<h2>3. Install the Konfuzio SDK package<a class="headerlink" href="#install-the-konfuzio-sdk-package" title="Permalink to this heading">¶</a></h2>
+<h2>3. Install the Konfuzio SDK package<a class="headerlink" href="#install-the-konfuzio-sdk-package" title="Permalink to this headline">¶</a></h2>
 <p>Install the Konfuzio SDK package via pip install in the terminal. This will install the SDK package directly in your
 working directory:
 <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">konfuzio-sdk</span></code></p>
 <a class="reference external image-reference" href="https://user-images.githubusercontent.com/85744792/127275731-b730e743-0a90-4e5c-a454-3d74d047bd48.png"><img alt="image" src="https://user-images.githubusercontent.com/85744792/127275731-b730e743-0a90-4e5c-a454-3d74d047bd48.png" /></a>
 </section>
 <section id="define-your-working-directory">
-<h2>4. Define your working directory<a class="headerlink" href="#define-your-working-directory" title="Permalink to this heading">¶</a></h2>
+<h2>4. Define your working directory<a class="headerlink" href="#define-your-working-directory" title="Permalink to this headline">¶</a></h2>
 <p>To store the Konfuzio SDK package, indicate the location by inputting the path of your working directory. This path
 should be the location of the “data” folder of the PyCharm project and can be found e.g. on the top left corner.
 <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">&lt;your</span> <span class="pre">working</span> <span class="pre">directory&gt;</span></code></p>
 <a class="reference external image-reference" href="https://user-images.githubusercontent.com/85744792/127276445-9d95cc91-871c-4d1e-98c1-8781fec39e3a.png"><img alt="image" src="https://user-images.githubusercontent.com/85744792/127276445-9d95cc91-871c-4d1e-98c1-8781fec39e3a.png" /></a>
 </section>
 <section id="initialize-the-project-with-the-required-inputs">
-<h2>5. Initialize the project with the required inputs<a class="headerlink" href="#initialize-the-project-with-the-required-inputs" title="Permalink to this heading">¶</a></h2>
+<h2>5. Initialize the project with the required inputs<a class="headerlink" href="#initialize-the-project-with-the-required-inputs" title="Permalink to this headline">¶</a></h2>
 <p>After the installation, initialize the package in your working directory with:
 <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span> <span class="pre">init</span></code></p>
 <p>This will require different inputs, starting with your <strong>login credentials</strong> to access the Konfuzio Server. It will then
@@ -172,7 +171,7 @@ the Konfuzio web interface.</p>
 to access the app and must not become public.</p>
 </section>
 <section id="test-your-setup">
-<h2>6. Test your Setup<a class="headerlink" href="#test-your-setup" title="Permalink to this heading">¶</a></h2>
+<h2>6. Test your Setup<a class="headerlink" href="#test-your-setup" title="Permalink to this headline">¶</a></h2>
 <p>If you are new to our Konfuzio application, there are no existing projects yet. Create a new one
 <a class="reference external" href="https://www.youtube.com/watch?v=KJC48LMvM2I&amp;t=50s">online</a> and then use the <strong>project ID</strong> in your following code.</p>
 <p>To test whether everything is working as desired, we are going to execute a few basic commands in the main.py file.
@@ -194,7 +193,7 @@ then “Run main”. As we didn’t upload any documents to our project yet, the
 <a class="reference external image-reference" href="https://user-images.githubusercontent.com/85744792/127325935-5e442366-85d9-4e48-bde2-b7905643c1f8.png"><img alt="image" src="https://user-images.githubusercontent.com/85744792/127325935-5e442366-85d9-4e48-bde2-b7905643c1f8.png" /></a>
 </section>
 <section id="test-the-debugging">
-<h2>7. Test the Debugging<a class="headerlink" href="#test-the-debugging" title="Permalink to this heading">¶</a></h2>
+<h2>7. Test the Debugging<a class="headerlink" href="#test-the-debugging" title="Permalink to this headline">¶</a></h2>
 <p>We include a second test to check if the debugging also works. Therefore, we include a breakpoint in the last line of
 the code in the line of the print statement and execute “Run” and then “Debug main”. This will provide you with an
 overview of all available variables. As you can see in the code above, we only accessed the document element - however,

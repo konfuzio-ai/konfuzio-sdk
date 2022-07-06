@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 <meta content="Documentation on how to deploy Konfuzio on premises using Kubernetes and Helm." name="description" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -18,7 +18,6 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -152,15 +151,15 @@
            <div itemprop="articleBody">
              
   <section id="on-premises-documentation">
-<h1>On-Premises Documentation<a class="headerlink" href="#on-premises-documentation" title="Permalink to this heading">¶</a></h1>
+<h1>On-Premises Documentation<a class="headerlink" href="#on-premises-documentation" title="Permalink to this headline">¶</a></h1>
 <p>The recommended way to operate a production-ready and scalabe Konfuzio installation is via Kubernetes. An alternative and more light-weight deployment option is the <a class="reference external" href="/web/on_premises.html#alternative-deployment-options">Single VM setup</a>.</p>
 <section id="kubernetes">
-<h2>Kubernetes<a class="headerlink" href="#kubernetes" title="Permalink to this heading">¶</a></h2>
+<h2>Kubernetes<a class="headerlink" href="#kubernetes" title="Permalink to this headline">¶</a></h2>
 <section id="required-tools">
-<h3>Required tools<a class="headerlink" href="#required-tools" title="Permalink to this heading">¶</a></h3>
+<h3>Required tools<a class="headerlink" href="#required-tools" title="Permalink to this headline">¶</a></h3>
 <p>Before deploying Konfuzio to your Kubernetes cluster, there are some tools you must have installed locally.</p>
 <section id="kubectl">
-<h4>kubectl<a class="headerlink" href="#kubectl" title="Permalink to this heading">¶</a></h4>
+<h4>kubectl<a class="headerlink" href="#kubectl" title="Permalink to this headline">¶</a></h4>
 <p>kubectl is the tool that talks to the Kubernetes API. kubectl 1.15 or higher is required and it needs to be compatible
 with your cluster (<a class="reference external" href="https://kubernetes.io/docs/tasks/tools/#before-you-begin">+/-1 minor release from your cluster</a>).</p>
 <p><a class="reference external" href="https://kubernetes.io/docs/tasks/tools/#install-kubectl">&gt; Install kubectl locally by following the Kubernetes documentation</a>.</p>
@@ -168,14 +167,14 @@ with your cluster (<a class="reference external" href="https://kubernetes.io/doc
 with setting up Helm.</p>
 </section>
 <section id="helm">
-<h4>Helm<a class="headerlink" href="#helm" title="Permalink to this heading">¶</a></h4>
+<h4>Helm<a class="headerlink" href="#helm" title="Permalink to this headline">¶</a></h4>
 <p>Helm is the package manager for Kubernetes. Konfuzio is tested and supported with Helm v3.</p>
 <section id="getting-helm">
-<h5>Getting Helm<a class="headerlink" href="#getting-helm" title="Permalink to this heading">¶</a></h5>
+<h5>Getting Helm<a class="headerlink" href="#getting-helm" title="Permalink to this headline">¶</a></h5>
 <p>You can get Helm from the project’s <a class="reference external" href="https://github.com/helm/helm/releases">releases page</a>, or follow other options
 under the official documentation of <a class="reference external" href="https://helm.sh/docs/intro/install/">installing Helm</a>.</p>
 <section id="connect-to-a-local-minikube-cluster">
-<h6>Connect to a local Minikube cluster<a class="headerlink" href="#connect-to-a-local-minikube-cluster" title="Permalink to this heading">¶</a></h6>
+<h6>Connect to a local Minikube cluster<a class="headerlink" href="#connect-to-a-local-minikube-cluster" title="Permalink to this headline">¶</a></h6>
 <p>For test purposes you can use <code class="docutils literal notranslate"><span class="pre">minikube</span></code> as your local cluster. If <code class="docutils literal notranslate"><span class="pre">kubectl</span> <span class="pre">cluster-info</span></code>
 is not showing <code class="docutils literal notranslate"><span class="pre">minikube</span></code> as the current cluster, use <code class="docutils literal notranslate"><span class="pre">kubectl</span> <span class="pre">config</span> <span class="pre">set-cluster</span>
 <span class="pre">minikube</span></code> to set the active cluster. For clusters in production please visit the <a class="reference external" href="https://kubernetes.io/docs/setup/production-environment/">Kubernetes
@@ -183,40 +182,40 @@ Documentation</a>.</p>
 </section>
 </section>
 <section id="initializing-helm">
-<h5>Initializing Helm<a class="headerlink" href="#initializing-helm" title="Permalink to this heading">¶</a></h5>
+<h5>Initializing Helm<a class="headerlink" href="#initializing-helm" title="Permalink to this headline">¶</a></h5>
 <p>If Helm v3 is being used, there no longer is an <code class="docutils literal notranslate"><span class="pre">init</span></code> sub command and the command is
 ready to be used once it is installed. Otherwise please upgrade Helm.</p>
 </section>
 </section>
 <section id="next-steps">
-<h4>Next steps<a class="headerlink" href="#next-steps" title="Permalink to this heading">¶</a></h4>
+<h4>Next steps<a class="headerlink" href="#next-steps" title="Permalink to this headline">¶</a></h4>
 <p>Once kubectl and Helm are configured, you can continue to configuring your Kubernetes
 cluster.</p>
 </section>
 </section>
 <section id="deployment">
-<h3>Deployment<a class="headerlink" href="#deployment" title="Permalink to this heading">¶</a></h3>
+<h3>Deployment<a class="headerlink" href="#deployment" title="Permalink to this headline">¶</a></h3>
 <p>Before running <code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">install</span></code>, you need to make some decisions about how you will run
 Konfuzio. Options can be specified using Helm’s <code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">option.name=value</span></code> command
 line option. A complete list of command line options can be found <a class="reference external" href="https://helm.sh/docs/helm/">here</a>. This guide will
 cover required values and common options.</p>
 <section id="selecting-configuration-options">
-<h4>Selecting configuration options<a class="headerlink" href="#selecting-configuration-options" title="Permalink to this heading">¶</a></h4>
+<h4>Selecting configuration options<a class="headerlink" href="#selecting-configuration-options" title="Permalink to this headline">¶</a></h4>
 <p>In each section collect the options that will be combined to use with <code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">install</span></code>.</p>
 <section id="secrets">
-<h5>Secrets<a class="headerlink" href="#secrets" title="Permalink to this heading">¶</a></h5>
+<h5>Secrets<a class="headerlink" href="#secrets" title="Permalink to this headline">¶</a></h5>
 <p>There are some secrets that need to be created (e.g. SSH keys). By default they will be
 generated automatically.</p>
 </section>
 <section id="networking-and-dns">
-<h5>Networking and DNS<a class="headerlink" href="#networking-and-dns" title="Permalink to this heading">¶</a></h5>
+<h5>Networking and DNS<a class="headerlink" href="#networking-and-dns" title="Permalink to this headline">¶</a></h5>
 <p>By default, Konfuzio relies on Kubernetes <code class="docutils literal notranslate"><span class="pre">Service</span></code> objects of <code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">LoadBalancer</span></code> to
 expose Konfuzio services using name-based virtual servers configured with <code class="docutils literal notranslate"><span class="pre">Ingress</span></code>
 objects. You’ll need to specify a domain which will contain records to resolve the
 domain to the appropriate IP.</p>
 <p><code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">global.hosts.domain=example.com</span></code></p>
 <section id="ips">
-<h6>IPs<a class="headerlink" href="#ips" title="Permalink to this heading">¶</a></h6>
+<h6>IPs<a class="headerlink" href="#ips" title="Permalink to this headline">¶</a></h6>
 <p>If you plan to use an automatic DNS registration service,you won’t need any additional
 configuration for Konfuzio, but you will need to deploy it to your cluster.</p>
 <p>If you plan to manually configure your DNS records they should all point to a static IP.
@@ -228,7 +227,7 @@ For example if you choose <code class="docutils literal notranslate"><span class
 </section>
 </section>
 <section id="persistence">
-<h5>Persistence<a class="headerlink" href="#persistence" title="Permalink to this heading">¶</a></h5>
+<h5>Persistence<a class="headerlink" href="#persistence" title="Permalink to this headline">¶</a></h5>
 <p>By default the setup will create Volume Claims with the expectation that a dynamic
 provisioner will create the underlying Persistent Volumes. If you would like to customize
 the storageClass or manually create and assign volumes,please review the <a class="reference external" href="https://kubernetes.io/docs/concepts/storage/volumes/">storage
@@ -238,7 +237,7 @@ objects, so it’s best to plan ahead before installing your production instance
 migration work.</p>
 </section>
 <section id="tls-certificates">
-<h5>TLS certificates<a class="headerlink" href="#tls-certificates" title="Permalink to this heading">¶</a></h5>
+<h5>TLS certificates<a class="headerlink" href="#tls-certificates" title="Permalink to this headline">¶</a></h5>
 <p>You should be running Konfuzio using https which requiresTLS certificates. By default, the setup will install and
 configure <a class="reference external" href="https://github.com/jetstack/cert-manager">cert-manager</a> to obtain free TLS certificates. If you
 have your own wildcard certificate, you already have cert-manager installed, or you have
@@ -248,7 +247,7 @@ specify an email address to register your TLS certificates.</p>
 <p><code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">certmanager-issuer.email=me&#64;example.com</span></code></p>
 </section>
 <section id="postgresql">
-<h5>PostgreSQL<a class="headerlink" href="#postgresql" title="Permalink to this heading">¶</a></h5>
+<h5>PostgreSQL<a class="headerlink" href="#postgresql" title="Permalink to this headline">¶</a></h5>
 <p>By default this Konfuzio provides an in-cluster PostgreSQL database, for trial purposes
 only.</p>
 <p><strong>NOTE: This configuration is not recommended for use in production.</strong></p>
@@ -265,16 +264,16 @@ be configured to use it as shown below.</p>
 <code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">global.psql.password.key=key_that_contains_postgres_password</span></code></p>
 </section>
 <section id="redis">
-<h5>Redis<a class="headerlink" href="#redis" title="Permalink to this heading">¶</a></h5>
+<h5>Redis<a class="headerlink" href="#redis" title="Permalink to this headline">¶</a></h5>
 <p>All the Redis configuration settings are configured automatically.</p>
 </section>
 <section id="persistent-volume">
-<h5>Persistent Volume<a class="headerlink" href="#persistent-volume" title="Permalink to this heading">¶</a></h5>
+<h5>Persistent Volume<a class="headerlink" href="#persistent-volume" title="Permalink to this headline">¶</a></h5>
 <p>Konfuzio relies on object storage for highly-available persistent data in Kubernetes. By default, Konfuzio uses a
 <a class="reference external" href="https://kubernetes.io/docs/concepts/storage/persistent-volumes/">persistent volume</a> within the cluster.</p>
 </section>
 <section id="outgoing-email">
-<h5>Outgoing email<a class="headerlink" href="#outgoing-email" title="Permalink to this heading">¶</a></h5>
+<h5>Outgoing email<a class="headerlink" href="#outgoing-email" title="Permalink to this headline">¶</a></h5>
 <p>By default outgoing email is disabled. To enable it,provide details for your SMTP server
 using the <code class="docutils literal notranslate"><span class="pre">global.smtp</span></code> and <code class="docutils literal notranslate"><span class="pre">global.email</span></code> settings. You can find details for these
 settings in the command line options.</p>
@@ -283,7 +282,7 @@ settings in the command line options.</p>
 <code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">global.smtp.AuthPass=password-here</span></code></p>
 </section>
 <section id="cpu-gpu-and-ram-resource-requirements">
-<h5>CPU, GPU and RAM Resource Requirements<a class="headerlink" href="#cpu-gpu-and-ram-resource-requirements" title="Permalink to this heading">¶</a></h5>
+<h5>CPU, GPU and RAM Resource Requirements<a class="headerlink" href="#cpu-gpu-and-ram-resource-requirements" title="Permalink to this headline">¶</a></h5>
 <p>The resource requests, and number of replicas for the Konfuzio components in this
 setup are set by default to be adequate for a small production deployment. This is
 intended to fit in a cluster with at least 16 vCPU with AVX2 support enabled, 32 GB of
@@ -294,7 +293,7 @@ and training of medium to large dataset will be significantly slower.</p>
 </section>
 </section>
 <section id="deploy-using-helm">
-<h4>Deploy using Helm<a class="headerlink" href="#deploy-using-helm" title="Permalink to this heading">¶</a></h4>
+<h4>Deploy using Helm<a class="headerlink" href="#deploy-using-helm" title="Permalink to this headline">¶</a></h4>
 <p>Once you have all of your configuration options collected, we can get any dependencies
 and run Helm. In this example, we’ve named our Helm release <code class="docutils literal notranslate"><span class="pre">konfuzio</span></code>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">repo</span> <span class="pre">add</span> <span class="pre">konfuzio</span></code><span class="raw-html-m2r"><br></span>
@@ -309,13 +308,13 @@ a specific version of Konfuzio. This will output the list of resources installed
 deployment finishes which may take 5-10 minutes.</p>
 </section>
 <section id="monitoring-the-deployment">
-<h4>Monitoring the Deployment<a class="headerlink" href="#monitoring-the-deployment" title="Permalink to this heading">¶</a></h4>
+<h4>Monitoring the Deployment<a class="headerlink" href="#monitoring-the-deployment" title="Permalink to this headline">¶</a></h4>
 <p>The status of the deployment can be checked by running <code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">status</span> <span class="pre">konfuzio</span></code> which
 can also be done while the deployment is taking place if you run the command in
 another terminal.</p>
 </section>
 <section id="initial-login">
-<h4>Initial login<a class="headerlink" href="#initial-login" title="Permalink to this heading">¶</a></h4>
+<h4>Initial login<a class="headerlink" href="#initial-login" title="Permalink to this headline">¶</a></h4>
 <p>You can access the Konfuzio instance by visiting the domain specified during
 installation. If you manually created the secret for initial root password, you can use that
 to sign in as <code class="docutils literal notranslate"><span class="pre">root</span></code> user. If not, Konfuzio would’ve automatically created a random
@@ -326,7 +325,7 @@ password for <code class="docutils literal notranslate"><span class="pre">root</
 </section>
 </section>
 <section id="upgrade">
-<h3>Upgrade<a class="headerlink" href="#upgrade" title="Permalink to this heading">¶</a></h3>
+<h3>Upgrade<a class="headerlink" href="#upgrade" title="Permalink to this headline">¶</a></h3>
 <p>Before upgrading your Konfuzio installation, you need to check the <a class="reference external" href="./changelog_app.html">changelog</a>
 corresponding to the specific release you want to upgrade to and look for any that might
 pertain to the new version.</p>
@@ -353,9 +352,9 @@ step. Without a backup, Konfuzio data might be lost if the upgrade fails.</p></l
 </section>
 </section>
 <section id="docker">
-<h2>Docker<a class="headerlink" href="#docker" title="Permalink to this heading">¶</a></h2>
+<h2>Docker<a class="headerlink" href="#docker" title="Permalink to this headline">¶</a></h2>
 <section id="id2">
-<h3>Single VM setup<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h3>
+<h3>Single VM setup<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <p>Konfuzio can be configured to run on a single virtual machine, without relying on
 Kubernetes. In this scenario, all necessary containers are started manually or with a
 container orchestration tool of your choice.</p>
@@ -365,7 +364,7 @@ required. In this setup Konfuzio is running in the context of the Docker executo
 therefore there are no strict requirements for the VMs operating systems. However, we
 recommend a Linux VM with Debian, Ubuntu, CentOS,or Redhat Linux.</p>
 <section id="download-docker-image">
-<h4>1. Download Docker Image<a class="headerlink" href="#download-docker-image" title="Permalink to this heading">¶</a></h4>
+<h4>1. Download Docker Image<a class="headerlink" href="#download-docker-image" title="Permalink to this headline">¶</a></h4>
 <p>The Konfuzio docker image can be downloaded via “docker pull”. We will provide you
 with the credentials. This action requires an internet connection.</p>
 <p>The internet connection can be turned off once the download is complete. In case there is
@@ -379,16 +378,16 @@ Password: {PROVIDED_BY_KONFUZIO}</p>
 <p>The Tag “latest” should be replaced with an actual version. A list of available tags can be found here: <a class="reference external" href="https://dev.konfuzio.com/web/changelog_app.html">https://dev.konfuzio.com/web/changelog_app.html</a>.</p>
 </section>
 <section id="setup-postgresql-redis-blobstorage-filesystemstorage">
-<h4>2. Setup PostgreSQL, Redis, BlobStorage/FileSystemStorage<a class="headerlink" href="#setup-postgresql-redis-blobstorage-filesystemstorage" title="Permalink to this heading">¶</a></h4>
+<h4>2. Setup PostgreSQL, Redis, BlobStorage/FileSystemStorage<a class="headerlink" href="#setup-postgresql-redis-blobstorage-filesystemstorage" title="Permalink to this headline">¶</a></h4>
 <p>The database credentials are needed in the next step. You may want to use psql and redis-cli to check if database credentials are working.</p>
 <p>In case you use FileSystemStorage and Docker volume mounts, you need to make sure the volume can be accessed by the konfuzio docker user (uid=999). You might want to run “chown 999:999 -R /konfuzio-vm/text-annotation/data” on the hiost VM.</p>
 </section>
 <section id="setup-environment-variable-file">
-<h4>3. Setup environment variable file<a class="headerlink" href="#setup-environment-variable-file" title="Permalink to this heading">¶</a></h4>
+<h4>3. Setup environment variable file<a class="headerlink" href="#setup-environment-variable-file" title="Permalink to this headline">¶</a></h4>
 <p>Copy the /code/.env.example file from the container and adapt it to your settings. The .env file can be saved anywhere on the host VM. In this example we use “/konfuzio-vm/text-annotation.env”.</p>
 </section>
 <section id="init-the-database-create-first-superuser-via-cli-and-prefill-e-mail-templates">
-<h4>4. Init the database, create first superuser via cli and prefill e-mail templates<a class="headerlink" href="#init-the-database-create-first-superuser-via-cli-and-prefill-e-mail-templates" title="Permalink to this heading">¶</a></h4>
+<h4>4. Init the database, create first superuser via cli and prefill e-mail templates<a class="headerlink" href="#init-the-database-create-first-superuser-via-cli-and-prefill-e-mail-templates" title="Permalink to this headline">¶</a></h4>
 <p>In this example we store the files on the host VM and mount the directory “/konfuzio-vm/text-annotation/data” into the container. In the first step we create a container with a shell to then start the initialization scripts within the container.
 The container needs to be able to access IP addresses and hostnames used in the .env. This can be ensured using –add.host. In the example we make the host IP 10.0.0.1 available.</p>
 <p>docker run -it –add-host=10.0.0.1 –env-file /konfuzio-vm/text-annotation.env –mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data registry.gitlab.com/konfuzio/text-annotation/master:latest bash</p>
@@ -400,7 +399,7 @@ The container needs to be able to access IP addresses and hostnames used in the 
 <p>Note: The username used during the createsuperuser dialog must have the format of a valid e-mail in order to be able to login later.</p>
 </section>
 <section id="start-the-container">
-<h4>5. Start the container<a class="headerlink" href="#start-the-container" title="Permalink to this heading">¶</a></h4>
+<h4>5. Start the container<a class="headerlink" href="#start-the-container" title="Permalink to this headline">¶</a></h4>
 <p>In this example we start three containers, the first one to serve the Konfuzio web application. The second and third are used to process tasks in the background without blocking the web application.</p>
 <p><code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">run</span> <span class="pre">-p</span> <span class="pre">80:8000</span> <span class="pre">--name</span> <span class="pre">web</span> <span class="pre">-d</span> <span class="pre">--add-host=host:10.0.0.1</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
 <code class="docutils literal notranslate"><span class="pre">--env-file</span> <span class="pre">/konfuzio-vm/text-annotation.env</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
@@ -420,7 +419,7 @@ The container needs to be able to access IP addresses and hostnames used in the 
 <code class="docutils literal notranslate"><span class="pre">priority_extract,extract,processing,priority_local_ocr,local_ocr,training,finalize,training_heavy,categorize</span></code></p>
 </section>
 <section id="optional-6-use-flower-to-monitor-tasks">
-<h4>[Optional] 6. Use Flower to monitor tasks<a class="headerlink" href="#optional-6-use-flower-to-monitor-tasks" title="Permalink to this heading">¶</a></h4>
+<h4>[Optional] 6. Use Flower to monitor tasks<a class="headerlink" href="#optional-6-use-flower-to-monitor-tasks" title="Permalink to this headline">¶</a></h4>
 <p><a class="reference external" href="https://flower.readthedocs.io/en/latest/screenshots.html">Flower</a> can be used a task monitoring tool. Flower will be only accessible for Konfuzio superusers.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">pull</span> <span class="n">mher</span><span class="o">/</span><span class="n">flower</span><span class="p">:</span><span class="mf">0.9</span><span class="o">.</span><span class="mi">7</span>
 <span class="n">docker</span> <span class="n">run</span> <span class="o">--</span><span class="n">rm</span> <span class="o">--</span><span class="n">name</span> <span class="n">flower</span> <span class="o">-</span><span class="n">d</span> <span class="o">-</span><span class="n">p</span> <span class="mi">5555</span><span class="p">:</span><span class="mi">5555</span>  <span class="n">mher</span><span class="o">/</span><span class="n">flower</span><span class="p">:</span><span class="mf">0.9</span><span class="o">.</span><span class="mi">7</span> <span class="o">--</span><span class="n">adress</span> <span class="mf">0.0</span><span class="o">.</span><span class="mf">0.0</span> <span class="o">--</span><span class="n">url_prefix</span><span class="o">=</span><span class="n">flower</span> <span class="o">--</span><span class="n">broker</span><span class="o">=</span><span class="n">redis</span><span class="p">:</span><span class="o">//</span><span class="p">:</span><span class="nd">@10</span><span class="o">.</span><span class="mf">0.0</span><span class="o">.</span><span class="mi">1</span><span class="p">:</span><span class="mi">6379</span><span class="o">/</span><span class="mi">0</span>
@@ -429,7 +428,7 @@ The container needs to be able to access IP addresses and hostnames used in the 
 <p>The Konfuzio Server application acts as a reverse proxy an servers the flower application. Therefore, django needs to know the flower url. <code class="docutils literal notranslate"><span class="pre">FLOWER_URL=http://host:5555/flower</span></code></p>
 </section>
 <section id="optional-7-use-azure-read-api-on-premise">
-<h4>[Optional] 7. Use Azure Read API on-premise<a class="headerlink" href="#optional-7-use-azure-read-api-on-premise" title="Permalink to this heading">¶</a></h4>
+<h4>[Optional] 7. Use Azure Read API on-premise<a class="headerlink" href="#optional-7-use-azure-read-api-on-premise" title="Permalink to this headline">¶</a></h4>
 <p>The <a class="reference external" href="https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2">Azure Read API</a> can be installed on-premise and used togehter with Konfuzio.</p>
 <p>Please install the Read API Container according to the current <a class="reference external" href="https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2">manual</a></p>
 <p>Once the Azure Read API container is running you need to set the following variables in the .env file. This for example look like the following:</p>
@@ -438,7 +437,7 @@ The container needs to be able to access IP addresses and hostnames used in the 
 <code class="docutils literal notranslate"><span class="pre">AZURE_OCR_VERSION=v3.2</span> <span class="pre">#</span> <span class="pre">The</span> <span class="pre">version</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">READ</span> <span class="pre">API</span></code></p>
 </section>
 <section id="optional-8-install-document-segmentation-container">
-<h4>[Optional] 8. Install document segmentation container<a class="headerlink" href="#optional-8-install-document-segmentation-container" title="Permalink to this heading">¶</a></h4>
+<h4>[Optional] 8. Install document segmentation container<a class="headerlink" href="#optional-8-install-document-segmentation-container" title="Permalink to this headline">¶</a></h4>
 <p>Download the container with the credentials provided by Konfuzio</p>
 <p>Registry URL: registry.gitlab.com<span class="raw-html-m2r"><br></span>
 Username: {PROVIDED_BY_KONFUZIO}<span class="raw-html-m2r"><br></span>
@@ -458,13 +457,13 @@ Password: {PROVIDED_BY_KONFUZIO}</p>
 </div>
 </section>
 <section id="a-upgrade-to-newer-konfuzio-version">
-<h4>9a. Upgrade to newer Konfuzio Version<a class="headerlink" href="#a-upgrade-to-newer-konfuzio-version" title="Permalink to this heading">¶</a></h4>
+<h4>9a. Upgrade to newer Konfuzio Version<a class="headerlink" href="#a-upgrade-to-newer-konfuzio-version" title="Permalink to this headline">¶</a></h4>
 <p>Konfuzio upgrades are performed by replacing the Docker Tag to the <a class="reference external" href="https://dev.konfuzio.com/web/changelog_app.html">desired version</a>
 After starting the new Containers Database migrations need to be applied by <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">migrate</span></code> (see 4.).
 In case additional migration steps are needed, they will be mentioned in the release notes.</p>
 </section>
 <section id="b-downgrade-to-older-konfuzio-version">
-<h4>9b. Downgrade to older Konfuzio Version<a class="headerlink" href="#b-downgrade-to-older-konfuzio-version" title="Permalink to this heading">¶</a></h4>
+<h4>9b. Downgrade to older Konfuzio Version<a class="headerlink" href="#b-downgrade-to-older-konfuzio-version" title="Permalink to this headline">¶</a></h4>
 <p>Konfuzio downgrades are performed by creating a fresh Konfuzio installation in which existing Projects can be imported.
 The following steps need to be undertaken:</p>
 <ul class="simple">
@@ -477,9 +476,9 @@ The following steps need to be undertaken:</p>
 </section>
 </section>
 <section id="alternative-deployment-options">
-<h2>Alternative deployment options<a class="headerlink" href="#alternative-deployment-options" title="Permalink to this heading">¶</a></h2>
+<h2>Alternative deployment options<a class="headerlink" href="#alternative-deployment-options" title="Permalink to this headline">¶</a></h2>
 <section id="custom-ai-model-training-via-ci-pipelines">
-<h3>Custom AI model training via CI pipelines<a class="headerlink" href="#custom-ai-model-training-via-ci-pipelines" title="Permalink to this heading">¶</a></h3>
+<h3>Custom AI model training via CI pipelines<a class="headerlink" href="#custom-ai-model-training-via-ci-pipelines" title="Permalink to this headline">¶</a></h3>
 <p>Konfuzio uses CI pipelines to allow users to run customAI model code securely. In case
 the Kubernetes deployment option is not used, we recommend a dedicated virtual
 machine to run these pipelines. The selected CI application needs to support Docker
@@ -487,10 +486,10 @@ and webhooks. The CI application needs network access to the Konfuzio installati
 </section>
 </section>
 <section id="keycloak-integration">
-<h2>Keycloak Integration<a class="headerlink" href="#keycloak-integration" title="Permalink to this heading">¶</a></h2>
+<h2>Keycloak Integration<a class="headerlink" href="#keycloak-integration" title="Permalink to this headline">¶</a></h2>
 <p>Keycloak allows single sign-on funtionality. By doing so no user management is done wihtin Konfuzio Server. If you already operate a keycloak server, you can reuse keycloak users.</p>
 <section id="set-up">
-<h3>Set up<a class="headerlink" href="#set-up" title="Permalink to this heading">¶</a></h3>
+<h3>Set up<a class="headerlink" href="#set-up" title="Permalink to this headline">¶</a></h3>
 <p>To start and set up keycloak server:</p>
 <ol class="arabic">
 <li><p>Download <a class="reference external" href="https://www.keycloak.org/downloads">keycloak server</a></p></li>
@@ -512,7 +511,7 @@ and webhooks. The CI application needs network access to the Konfuzio installati
 </ol>
 </section>
 <section id="environment-variables">
-<h3>Environment Variables<a class="headerlink" href="#environment-variables" title="Permalink to this heading">¶</a></h3>
+<h3>Environment Variables<a class="headerlink" href="#environment-variables" title="Permalink to this headline">¶</a></h3>
 <p>To integrate konfuzio with keycloak you need to set the following environment variables for you Konfuzio Server installation:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">KEYCLOAK_URL</span></code> (<a class="reference external" href="http://127.0.0.1:8080/">http://127.0.0.1:8080/</a> - for localhost)</p></li>
@@ -525,7 +524,7 @@ and webhooks. The CI application needs network access to the Konfuzio installati
 <a class="reference external image-reference" href="keycloak/sso-button.png"><img alt="sso-button.png" src="../_images/sso-button.png" /></a>
 </section>
 <section id="important-notes">
-<h3>Important notes<a class="headerlink" href="#important-notes" title="Permalink to this heading">¶</a></h3>
+<h3>Important notes<a class="headerlink" href="#important-notes" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>The Keycloak admin user cannot login into Konfuzio Server.</p></li>
 </ul>
