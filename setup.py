@@ -26,14 +26,18 @@ import setuptools
 # Dev branch marker is: 'X.Y.dev' or 'X.Y.devN' where N is an integer.
 # 'X.Y.dev0' is the canonical version of 'X.Y.dev'
 #
-commit = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('ascii').strip()
 
 with open(path.join('konfuzio_sdk', 'VERSION')) as version_file:
     version_number = version_file.read().strip()
 
 if getenv('NIGHTLY_BUILD'):
     # create a pre-release
-    version = f"{version_number}.dev{datetime.now().strftime('%Y%m%d')}_{commit}"
+    last_commit = (
+        subprocess.check_output(['git', 'log', '-1', '--pretty=%cd', '--date=format:%Y%m%d%H%M%S'])
+        .decode('ascii')
+        .strip()
+    )
+    version = f"{version_number}.dev{datetime.now().strftime('%Y%m%d')}_{last_commit}"
 else:
     version = f"{version_number}"
 
