@@ -1,16 +1,12 @@
 
 name: Nightly build master branch
 
-
 on:
-  push:
-    branches:
-      - 9379-improve-release-process
   schedule:
     # Adjust refresh schedule here. By default, it runs once per day.
     # Syntax reference: https://docs.github.com/en/actions/reference/events-that-trigger-workflows#schedule
     # Recommended tool: https://crontab.guru/
-    - cron: "12 5 * * *"
+    - cron: "19 3 * * *"
 
 # thanks to https://www.caktusgroup.com/blog/2021/02/11/automating-pypi-releases/
 jobs:
