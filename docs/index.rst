@@ -54,6 +54,7 @@ have Konfuzio on premises and examples on how to use the API for communicate dir
    sdk/examples/examples.rst
    sdk/sourcecode.rst
    sdk/contribution.md
+   sdk/releasing/index.md
    sdk/coordinates_system.md
    sdk/changelog.md
 
