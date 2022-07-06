@@ -78,6 +78,62 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
         )
         return evaluation
 
+    def missing_spans(self, document: Document) -> Document:
+        """
+        Apply a Tokenizer on a list of Document and remove all Spans that can be found.
+
+        Use this approach to sequentially work on remaining Spans after a Tokenizer ran on a List of Documents.
+
+        :param tokenizer: A Tokenizer that runs on a list of Documents
+        :param documents: Any list of Documents
+
+        :return: A new Document containing all missing Spans contained in a copied version of all Documents.
+
+        """
+        warn(
+            'This method is WIP, as we return a new instance, however the document should be kept and missing Span '
+            'instances of this document should be returned.',
+            FutureWarning,
+            stacklevel=2,
+        )
+        virtual_project = Project(None)
+        virtual_category = Category(project=virtual_project)
+        virtual_label_set = virtual_project.no_label_set
+        virtual_label = virtual_project.no_label
+
+        compared = self.evaluate(document=document)  # todo summarize evaluation, as we are calculating it
+        # return all Spans that were not found
+        missing_spans = compared[(compared['is_correct']) & (compared['is_found_by_tokenizer'] == 0)]
+        remaining_span_doc = Document(
+            bbox=document.get_bbox(),
+            pages=document.pages,
+            text=document.text,
+            project=virtual_project,
+            category=virtual_category,
+            dataset_status=document.dataset_status,
+            copy_of_id=document.id_,
+        )
+        annotation_set_1 = AnnotationSet(id_=None, document=remaining_span_doc, label_set=virtual_label_set)
+        # add Spans to the virtual Document in case the Tokenizer was not able to find them
+        for index, span_info in missing_spans.iterrows():
+            # todo: Schema for bbox format https://gitlab.com/konfuzio/objectives/-/issues/8661
+            new_span = Span(start_offset=span_info['start_offset'], end_offset=span_info['end_offset'])
+            # todo add Tokenizer used to create Span
+            _ = Annotation(
+                id_=int(span_info['id_']),
+                document=remaining_span_doc,
+                is_correct=True,
+                annotation_set=annotation_set_1,
+                label=virtual_label,
+                label_set=virtual_label_set,
+                spans=[new_span],
+            )
+        logger.warning(
+            f'{len(remaining_span_doc.spans)} of {len(document.spans)} '
+            f'correct Spans in {document} the abstract Tokenizer did not find.'
+        )
+        return remaining_span_doc
+
     def get_runtime_info(self) -> pd.DataFrame:
         """
         Get the processing runtime information as DataFrame.
@@ -125,55 +181,3 @@ class ListTokenizer(AbstractTokenizer):
         self.processing_steps = []
         for tokenizer in self.tokenizers:
             tokenizer.lose_weight()
-
-
-def create_project_with_missing_spans(tokenizer: AbstractTokenizer, documents: List[Document]) -> Project:
-    """
-    Apply a Tokenizer on a list of Document and remove all Spans that can be found.
-
-    Use this approach to sequentially work on remaining Spans after a Tokenizer ran on a List of Documents.
-
-    :param tokenizer: A Tokenizer that runs on a list of Documents
-    :param documents: Any list of Documents
-
-    :return: A new Project containing all missing Spans contained in a copied version of all Documents.
-
-    """
-    warn('This method is WIP.', FutureWarning, stacklevel=2)
-    virtual_project = Project(None)
-    virtual_category = Category(project=virtual_project)
-    virtual_label_set = virtual_project.no_label_set
-    virtual_label = virtual_project.no_label
-    for document in documents:
-        compared = tokenizer.evaluate(document=document)  # todo summarize evaluation, as we are calculating it
-        # return all Spans that were not found
-        missing_spans = compared[(compared['is_correct']) & (compared['is_found_by_tokenizer'] == 0)]
-        remaining_span_doc = Document(
-            bbox=document.get_bbox(),
-            pages=document.pages,
-            text=document.text,
-            project=virtual_project,
-            category=virtual_category,
-            dataset_status=document.dataset_status,
-            copy_of_id=document.id_,
-        )
-        annotation_set_1 = AnnotationSet(id_=None, document=remaining_span_doc, label_set=virtual_label_set)
-        # add Spans to the virtual Document in case the Tokenizer was not able to find them
-        for index, span_info in missing_spans.iterrows():
-            # todo: Schema for bbox format https://gitlab.com/konfuzio/objectives/-/issues/8661
-            new_span = Span(start_offset=span_info['start_offset'], end_offset=span_info['end_offset'])
-            # todo add Tokenizer used to create Span
-            _ = Annotation(
-                id_=int(span_info['id_']),
-                document=remaining_span_doc,
-                is_correct=True,
-                annotation_set=annotation_set_1,
-                label=virtual_label,
-                label_set=virtual_label_set,
-                spans=[new_span],
-            )
-        logger.warning(
-            f'{len(remaining_span_doc.spans)} of {len(document.spans)} '
-            f'correct Spans in {document} the abstract Tokenizer did not find.'
-        )
-    return virtual_project
