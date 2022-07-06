@@ -6,7 +6,7 @@ from os import path
 import setuptools
 
 # check python version
-import konfuzio_sdk
+from konfuzio_sdk import version
 
 CURRENT_PYTHON = sys.version_info[:2]
 REQUIRED_PYTHON = (3, 6)
@@ -29,7 +29,7 @@ this_directory = path.abspath(path.dirname(__file__))
 with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-VERSION = konfuzio_sdk.__version__
+VERSION = version.__version__
 
 setuptools.setup(
     name="konfuzio_sdk",
