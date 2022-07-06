@@ -4,6 +4,11 @@
 
 # Changelog
 
+Please find all updates on the Changelog on
+<a href="https://github.com/konfuzio-ai/konfuzio-sdk/releases" target="_blank">Github</a>
+
+# Archived Changelog
+
 ## 2022-05-23 v.0.2.2
 
 ### Fixed
