@@ -29,7 +29,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setuptools.setup(
     name="konfuzio_sdk",
-    version="0.2.3",
+    version="0.2.3.dev1",
     author='Helm & Nagel GmbH',
     author_email="info@helm-nagel.com",
     description="Konfuzio Software Development Kit",
