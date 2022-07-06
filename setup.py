@@ -2,7 +2,6 @@
 import subprocess
 import sys
 import textwrap
-from datetime import datetime
 from os import path, getenv
 
 import setuptools
@@ -37,7 +36,7 @@ if getenv('NIGHTLY_BUILD'):
         .decode('ascii')
         .strip()
     )
-    version = f"{version_number}.dev{datetime.now().strftime('%Y%m%d')}_{last_commit}"
+    version = f"{version_number}.dev{last_commit}"
 else:
     version = f"{version_number}"
 
