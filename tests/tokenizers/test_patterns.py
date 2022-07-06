@@ -17,7 +17,6 @@ from konfuzio_sdk.tokenizer.regex import (
     NonTextTokenizer,
     NumbersTokenizer,
     LineUntilCommaTokenizer,
-    AutomatedRegexTokenizer,
 )
 
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
@@ -1796,33 +1795,18 @@ class TestAutomatedRegexTokenizer(TestTemplateRegexTokenizer):
                 self.tokenizer.tokenizers.append(RegexTokenizer(regex=regex))
 
     def test_1_tokenizers_added(self):
-        """Test new tokenizer added."""
-        logger.info(self.tokenizer.tokenizers)
+        """Test to find one additional tokenizer in addition to the WhitespaceTokenizer."""
         assert len(self.tokenizer.tokenizers) == 2
-        assert self.tokenizer.tokenizers[0].regex == WhitespaceTokenizer().regex
-        assert "all" in self.tokenizer.tokenizers[1].regex
 
     def test_2_find_what_default_tokenizer_misses(self):
-        """Test if tokenizer can find what cannot be found by the defined tokenizer based on whitespaces."""
-        result = self.tokenizer.evaluate(self.document)
+        """Test if tokenizer can find what cannot be found by the WhitespaceTokenizer."""
+        document = self.project.local_training_document
+        result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 1
         assert (
-            result[result.is_found_by_tokenizer == 1].start_offset[0]
-            == self.document.annotations()[0].spans[0].start_offset
+            result[result.is_found_by_tokenizer == 1].start_offset[0] == document.annotations()[0].spans[0].start_offset
         )
-        assert (
-            result[result.is_found_by_tokenizer == 1].end_offset[0]
-            == self.document.annotations()[0].spans[0].end_offset
-        )
-
-    def test_fit_category_without_documents(self):
-        """Test fit AutomatedRegexTokenizer for Category without training Documents."""
-        project = Project(id_=None)
-        category = Category(project=project, id_=1)
-        tokenizer = AutomatedRegexTokenizer(tokenizers=[WhitespaceTokenizer()])
-        with self.assertRaises(ValueError) as context:
-            tokenizer.fit(documents=category.documents())
-            assert "has no training documents" in context.exception
+        assert result[result.is_found_by_tokenizer == 1].end_offset[0] == document.annotations()[0].spans[0].end_offset
 
 
 class TestMissingSpans(unittest.TestCase):
