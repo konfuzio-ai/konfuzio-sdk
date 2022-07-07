@@ -14,13 +14,13 @@ Any changes released to the branch master, will be released to PyPI in the next 
    1. Create a new Tag on master, named as the version number in step 1.
    2. Add a title for the release
    3. Automatically generate the description using the Names of the merged Pull Requests
-3. After you press publish release, a new Python Package will be uploaded to pypi by a GitHub Action, see code
+3. After you press publish release, a new Python Package will be uploaded to PyPI by a GitHub Action, see code
    [here](https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/.github/workflows/release.yml). You can verify 
    that the Release was uploaded via having a look on [PyPI](https://pypi.org/project/konfuzio-sdk/#history)
 
 ## How to use nightly builds?
 
-![New PyPi Python release](new-pypi-release.png)
+![New PyPI Python release](new-pypi-release.png)
 
 1. Install the latest pre-release `pip install --pre konfuzio_sdk` 
 2. Force to pick the latest pre-release the version `pip install konfuzio_sdk>=0.2.3.dev0`. As PEP440 states: The 
