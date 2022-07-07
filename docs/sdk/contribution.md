@@ -74,7 +74,7 @@ the folder to *.gitignore*.
 ## Directory Structure
 
 ```
-├── document-ai-python-sdk      <- SDK project name
+├── konfuzio-sdk      <- SDK project name
 │   │
 │   ├── docs                    <- Documentation to use konfuzio_sdk package in a project
 │   │

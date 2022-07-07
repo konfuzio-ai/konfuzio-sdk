@@ -8,12 +8,7 @@ import time
 import pytest
 
 from konfuzio_sdk.data import Project, Annotation, Document, Label, AnnotationSet, LabelSet, Span, Category
-from konfuzio_sdk.tokenizer.base import (
-    AbstractTokenizer,
-    ListTokenizer,
-    ProcessingStep,
-    create_project_with_missing_spans,
-)
+from konfuzio_sdk.tokenizer.base import AbstractTokenizer, ListTokenizer, ProcessingStep
 from konfuzio_sdk.tokenizer.regex import RegexTokenizer, WhitespaceTokenizer
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 
@@ -362,6 +357,7 @@ class TestTokenize(unittest.TestCase):
     def test_find_missing_spans(self):
         """Find all missing Spans in a Project."""
         tokenizer = RegexTokenizer(regex=r'\d')
-        project = create_project_with_missing_spans(tokenizer=tokenizer, documents=[self.document])
-        # Span 365 to 366 (Tax ID) can be found be Tokenizer, so only 18 instead of 19 Spans are missing
-        self.assertEqual(len(project.documents[0].spans), 20)
+        document = tokenizer.missing_spans(self.document)
+        # Span 365 to 366 (Tax ID) can be found be Tokenizer, two Spans are not correct and don't need to be found
+        assert sum([not span.annotation.is_correct for span in self.document.spans]) == 2
+        self.assertEqual(len(document.spans), 20)

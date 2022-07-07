@@ -5,6 +5,8 @@ import unittest
 import pytest
 
 from konfuzio_sdk.data import Project, Annotation, Document, Label, AnnotationSet, LabelSet, Span, Category
+from konfuzio_sdk.samples import LocalTextProject
+from konfuzio_sdk.tokenizer.base import ListTokenizer
 from konfuzio_sdk.tokenizer.regex import (
     RegexTokenizer,
     WhitespaceTokenizer,
@@ -15,7 +17,6 @@ from konfuzio_sdk.tokenizer.regex import (
     NonTextTokenizer,
     NumbersTokenizer,
     LineUntilCommaTokenizer,
-    AutomatedRegexTokenizer,
 )
 
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
@@ -1783,110 +1784,29 @@ class TestAutomatedRegexTokenizer(TestTemplateRegexTokenizer):
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the tokenizer and test setup."""
-        cls.project = Project(id_=None)
-        cls.category = Category(project=cls.project, id_=1)
-        cls.category_2 = Category(project=cls.project, id_=2)
-        cls.label_set = LabelSet(id_=2, project=cls.project, categories=[cls.category, cls.category_2])
-        cls.label = Label(id_=3, text='LabelName', project=cls.project, label_sets=[cls.label_set])
+        cls.project = LocalTextProject()
 
-        # Category 1
-        cls.document = Document(project=cls.project, category=cls.category, text="Hi all,", dataset_status=2)
-        annotation_set = AnnotationSet(id_=4, document=cls.document, label_set=cls.label_set)
-        cls.span = Span(start_offset=3, end_offset=6)
-        _ = Annotation(
-            id_=5,
-            document=cls.document,
-            is_correct=True,
-            annotation_set=annotation_set,
-            label=cls.label,
-            label_set=cls.label_set,
-            spans=[cls.span],
-        )
-
-        cls.document_test_a = Document(project=cls.project, category=cls.category, text="Hi all,", dataset_status=3)
-        annotation_set_test_a = AnnotationSet(id_=6, document=cls.document_test_a, label_set=cls.label_set)
-        cls.span_test_a = Span(start_offset=3, end_offset=6)
-        _ = Annotation(
-            id_=7,
-            document=cls.document_test_a,
-            is_correct=True,
-            annotation_set=annotation_set_test_a,
-            label=cls.label,
-            label_set=cls.label_set,
-            spans=[cls.span_test_a],
-        )
-
-        cls.document_test_b = Document(project=cls.project, category=cls.category, text="Hi all,", dataset_status=3)
-        annotation_set_test_b = AnnotationSet(id_=8, document=cls.document_test_b, label_set=cls.label_set)
-        cls.span_test_b = Span(start_offset=3, end_offset=6)
-        _ = Annotation(
-            id_=9,
-            document=cls.document_test_b,
-            is_correct=True,
-            annotation_set=annotation_set_test_b,
-            label=cls.label,
-            label_set=cls.label_set,
-            spans=[cls.span_test_b],
-        )
-
-        # Category 2
-        cls.document_2 = Document(project=cls.project, category=cls.category_2, text="Morning.", dataset_status=2)
-        annotation_set_2 = AnnotationSet(id_=10, document=cls.document_2, label_set=cls.label_set)
-        cls.span_2 = Span(start_offset=0, end_offset=7)
-        _ = Annotation(
-            id_=11,
-            document=cls.document_2,
-            is_correct=True,
-            annotation_set=annotation_set_2,
-            label=cls.label,
-            label_set=cls.label_set,
-            spans=[cls.span_2],
-        )
-
-        cls.document_test_2 = Document(project=cls.project, category=cls.category_2, text="Morning.", dataset_status=3)
-        annotation_set_test_2 = AnnotationSet(id_=5, document=cls.document_test_2, label_set=cls.label_set)
-        cls.span_test_2 = Span(start_offset=0, end_offset=7)
-        _ = Annotation(
-            id_=8,
-            document=cls.document_test_2,
-            is_correct=True,
-            annotation_set=annotation_set_test_2,
-            label=cls.label,
-            label_set=cls.label_set,
-            spans=[cls.span_test_2],
-        )
-
-        cls.tokenizer = AutomatedRegexTokenizer(tokenizers=[WhitespaceTokenizer()])
-        cls.tokenizer.fit(documents=cls.category.documents())
+    def setUp(self) -> None:
+        """Build a ListTokenizer and rely on label.find_regex."""
+        self.tokenizer = ListTokenizer(tokenizers=[WhitespaceTokenizer()])
+        category = self.project.get_category_by_id(id_=1)
+        for label in category.labels:
+            for regex in label.find_regex(category=category):
+                self.tokenizer.tokenizers.append(RegexTokenizer(regex=regex))
 
     def test_1_tokenizers_added(self):
-        """Test new tokenizer added."""
-        logger.info(self.tokenizer.tokenizers)
+        """Test to find one additional tokenizer in addition to the WhitespaceTokenizer."""
         assert len(self.tokenizer.tokenizers) == 2
-        assert self.tokenizer.tokenizers[0].regex == WhitespaceTokenizer().regex
-        assert "all" in self.tokenizer.tokenizers[1].regex
 
     def test_2_find_what_default_tokenizer_misses(self):
-        """Test if tokenizer can find what cannot be found by the defined tokenizer based on whitespaces."""
-        result = self.tokenizer.evaluate(self.document)
+        """Test if tokenizer can find what cannot be found by the WhitespaceTokenizer."""
+        document = self.project.local_training_document
+        result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 1
         assert (
-            result[result.is_found_by_tokenizer == 1].start_offset[0]
-            == self.document.annotations()[0].spans[0].start_offset
+            result[result.is_found_by_tokenizer == 1].start_offset[0] == document.annotations()[0].spans[0].start_offset
         )
-        assert (
-            result[result.is_found_by_tokenizer == 1].end_offset[0]
-            == self.document.annotations()[0].spans[0].end_offset
-        )
-
-    def test_fit_category_without_documents(self):
-        """Test fit AutomatedRegexTokenizer for Category without training Documents."""
-        project = Project(id_=None)
-        category = Category(project=project, id_=1)
-        tokenizer = AutomatedRegexTokenizer(tokenizers=[WhitespaceTokenizer()])
-        with self.assertRaises(ValueError) as context:
-            tokenizer.fit(documents=category.documents())
-            assert "has no training documents" in context.exception
+        assert result[result.is_found_by_tokenizer == 1].end_offset[0] == document.annotations()[0].spans[0].end_offset
 
 
 class TestMissingSpans(unittest.TestCase):

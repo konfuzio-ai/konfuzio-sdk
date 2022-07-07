@@ -1,17 +1,10 @@
 """Regex tokenizers."""
 import logging
 import time
-from typing import List
-from warnings import warn
 
 from konfuzio_sdk.data import Annotation, Document, Category, Span
 from konfuzio_sdk.regex import regex_matches
-from konfuzio_sdk.tokenizer.base import (
-    AbstractTokenizer,
-    ListTokenizer,
-    ProcessingStep,
-    create_project_with_missing_spans,
-)
+from konfuzio_sdk.tokenizer.base import AbstractTokenizer, ProcessingStep
 from konfuzio_sdk.utils import sdk_isinstance
 
 logger = logging.getLogger(__name__)
@@ -213,21 +206,3 @@ class LineUntilCommaTokenizer(RegexTokenizer):
     def __init__(self):
         """Within a line match everything until ','."""
         super().__init__(regex=r'\n\s*([^.]*),\n')
-
-
-class AutomatedRegexTokenizer(ListTokenizer):
-    """Applies a list of Tokenizers and then uses a generic regex approach to match the remaining unmatched Spans."""
-
-    def fit(self, documents: List[Document]):
-        """Call fit on all tokenizers."""
-        warn('This method is WIP.', FutureWarning, stacklevel=2)
-        if not documents:
-            raise ValueError('Tokenizer has no training documents.')
-        initial_tokenizers = self.tokenizers.copy()
-        for tokenizer in initial_tokenizers:
-            project = create_project_with_missing_spans(tokenizer=tokenizer, documents=documents)
-            for regex in project.labels[0].find_regex(category=project.categories[0]):
-                tokenizer_new = RegexTokenizer(regex=regex)
-                logger.info(f'{tokenizer_new} found in addition to {tokenizer}')
-                self.tokenizers.append(tokenizer_new)
-                logger.info(f'Added Tokenizer {repr(regex)} to {project.categories[0]}.')

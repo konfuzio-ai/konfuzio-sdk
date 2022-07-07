@@ -1708,6 +1708,17 @@ class TestData(unittest.TestCase):
         b = Data()
         self.assertNotEqual(a, b)
 
+    def test_not_online(self):
+        """Test that data with a None ID is not online."""
+        a = Data()
+        self.assertFalse(a.is_online)
+
+    def test_is_online(self):
+        """Test that data with an ID is online."""
+        a = Data()
+        a.id_ = 0
+        self.assertTrue(a.is_online)
+
 
 def test_download_training_and_test_data():
     """Test downloading of data from training and test documents."""

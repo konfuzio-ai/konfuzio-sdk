@@ -60,6 +60,11 @@ class Data:
         """Not yet modelled."""
         raise NotImplementedError
 
+    @property
+    def is_online(self) -> Optional[int]:
+        """Define if the Document is saved to the server."""
+        return self.id_ is not None
+
     # todo require to overwrite lose_weight via @abstractmethod
     def lose_weight(self):
         """Delete data of the instance."""
@@ -1069,11 +1074,6 @@ class Annotation(Data):
         return max([sa.end_offset for sa in self._spans], default=None)
 
     @property
-    def is_online(self) -> Optional[int]:
-        """Define if the Annotation is saved to the server."""
-        return self.id_ is not None
-
-    @property
     def offset_string(self) -> List[str]:
         """View the string representation of the Annotation."""
         if len(self.spans) > 1:
@@ -1251,15 +1251,6 @@ class Annotation(Data):
         for index, annotation in enumerate(self.document._annotations):
             if annotation == self:
                 del self.document._annotations[index]
-
-        # if self.is_online:
-        #     response = delete_document_annotation(
-        #         document_id=self.document.id_, annotation_id=self.id_, project_id=self.project.id_
-        #     )
-        #     if response.status_code == 204:
-        #         self.id_ = None
-        #     else:
-        #         logger.exception(response.text)
 
     @property
     def spans(self) -> List[Span]:
@@ -1572,11 +1563,6 @@ class Document(Data):
             update_document_konfuzio_api(document_id=self.id_, file_name=self.name, dataset_status=4, assignee=assignee)
 
         return valid
-
-    @property
-    def is_online(self) -> Optional[int]:
-        """Define if the Document is saved to the server."""
-        return self.id_ is not None
 
     def annotation_sets(self):
         """Return Annotation Sets of Documents."""
@@ -2025,7 +2011,7 @@ class Document(Data):
 
     def get_annotations(self) -> List[Annotation]:
         """Get Annotations of the Document."""
-        if self._update or (self.id_ and (self._annotations is None or self._annotation_sets is None)):
+        if self._update or (self.is_online and (self._annotations is None or self._annotation_sets is None)):
             annotation_file_exists = is_file(self.annotation_file_path, raise_exception=False)
             annotation_set_file_exists = is_file(self.annotation_set_file_path, raise_exception=False)
 
