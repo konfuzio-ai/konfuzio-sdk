@@ -1,11 +1,11 @@
 .. meta::
-   :description: How to release a Python package automatically on Pypi including. The guide covers how to release pre-releases.
+   :description: How to release a Python package automatically on PyPI including. The guide covers how to release pre-releases.
 
 # Releasing Changes
 
-Any changes released to the branch master, will be released to Pypi in the next release.
+Any changes released to the branch master, will be released to PyPI in the next release.
 
-## How to release with GitHub an Pypi
+## How to release with GitHub to PyPI
 
 1. Change the version number in the file VERSION use the format `v.X.X.X` without whitespaces.
    ![Update Python Package Version](update-python-version.png)
@@ -16,7 +16,7 @@ Any changes released to the branch master, will be released to Pypi in the next 
    3. Automatically generate the description using the Names of the merged Pull Requests
 3. After you press publish release, a new Python Package will be uploaded to pypi by a GitHub Action, see code
    [here](https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/.github/workflows/release.yml). You can verify 
-   that the Release was uploaded via having a look on [Pypi](https://pypi.org/project/konfuzio-sdk/#history)
+   that the Release was uploaded via having a look on [PyPI](https://pypi.org/project/konfuzio-sdk/#history)
 
 ## How to use nightly builds?
 
