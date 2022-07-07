@@ -2,14 +2,15 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+<meta content="How to release a Python package automatically on PyPI including. The guide covers how to release pre-releases." name="description" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Create Regex-based Annotations &mdash; Konfuzio  documentation</title>
+  <title>Releasing Changes &mdash; Konfuzio  documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../../_static/full_green_square.png"/>
-    <link rel="canonical" href="https://dev.konfuzio.com/sdk/examples/helloworld.html" />
+    <link rel="canonical" href="https://dev.konfuzio.com/sdk/releasing/index.html" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -20,7 +21,9 @@
         <script src="../../_static/doctools.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" /> 
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Coordinates System" href="../coordinates_system.html" />
+    <link rel="prev" title="Contribution Guide" href="../contribution.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -40,13 +43,17 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Konfuzio Python SDK</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../configuration_reference.html">Install SDK</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../quickstart_pycharm.html">Install SDK using PyCharm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html">Code Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/examples.html">Code Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sourcecode.html">Source Code Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../contribution.html">Contribution Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../releasing/index.html">Releasing Changes</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Releasing Changes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-release-with-github-to-pypi">How to release with GitHub to PyPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-use-nightly-builds">How to use nightly builds?</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../coordinates_system.html">Coordinates System</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../changelog.html#archived-changelog">Archived Changelog</a></li>
@@ -94,9 +101,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Create Regex-based Annotations</li>
+      <li>Releasing Changes</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../../_sources/sdk/examples/helloworld.md.txt" rel="nofollow"> View page source</a>
+            <a href="../../_sources/sdk/releasing/index.md.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -104,63 +111,55 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="create-regex-based-annotations">
-<h1>Create Regex-based Annotations<a class="headerlink" href="#create-regex-based-annotations" title="Permalink to this headline">¶</a></h1>
-<p>Let’s see a simple example of how can we use the <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> package to get information on a project and to post annotations.</p>
-<p>You can follow the example below to post annotations of a certain word or expression in the first document uploaded.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">re</span>
-
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Annotation</span><span class="p">,</span> <span class="n">Label</span>
-
-<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
-
-<span class="c1"># Word/expression to annotate in the document</span>
-<span class="c1"># should match an existing one in your document</span>
-<span class="n">input_expression</span> <span class="o">=</span> <span class="s2">&quot;John Smith&quot;</span>
-
-<span class="c1"># Label for the annotation</span>
-<span class="n">label_name</span> <span class="o">=</span> <span class="s2">&quot;Name&quot;</span>
-<span class="c1"># Creation of the Label in the project default label set</span>
-<span class="n">my_label</span> <span class="o">=</span> <span class="n">Label</span><span class="p">(</span><span class="n">my_project</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">label_name</span><span class="p">)</span>
-<span class="c1"># Saving it online</span>
-<span class="n">my_label</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
-
-<span class="c1"># Label Set where label belongs</span>
-<span class="n">label_set_id</span> <span class="o">=</span> <span class="n">my_label</span><span class="o">.</span><span class="n">label_sets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">id_</span>
-
-<span class="c1"># First document in the project</span>
-<span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-<span class="c1"># Matches of the word/expression in the document</span>
-<span class="n">matches_locations</span> <span class="o">=</span> <span class="p">[(</span><span class="n">m</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">m</span><span class="o">.</span><span class="n">end</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">input_expression</span><span class="p">,</span> <span class="n">document</span><span class="o">.</span><span class="n">text</span><span class="p">)]</span>
-
-<span class="c1"># List to save the links to the annotations created</span>
-<span class="n">new_annotations_links</span> <span class="o">=</span> <span class="p">[]</span>
-
-<span class="c1"># Create annotation for each match</span>
-<span class="k">for</span> <span class="n">offsets</span> <span class="ow">in</span> <span class="n">matches_locations</span><span class="p">:</span>
-    <span class="n">annotation_obj</span> <span class="o">=</span> <span class="n">Annotation</span><span class="p">(</span>
-        <span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">,</span>
-        <span class="n">document_id</span><span class="o">=</span><span class="n">document</span><span class="o">.</span><span class="n">id_</span><span class="p">,</span>
-        <span class="n">start_offset</span><span class="o">=</span><span class="n">offsets</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-        <span class="n">end_offset</span><span class="o">=</span><span class="n">offsets</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-        <span class="n">label</span><span class="o">=</span><span class="n">my_label</span><span class="p">,</span>
-        <span class="n">label_set_id</span><span class="o">=</span><span class="n">label_set_id</span><span class="p">,</span>
-        <span class="n">accuracy</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">new_annotation_added</span> <span class="o">=</span> <span class="n">annotation_obj</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">new_annotation_added</span><span class="p">:</span>
-        <span class="n">new_annotations_links</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">annotation_obj</span><span class="o">.</span><span class="n">get_link</span><span class="p">())</span>
-
-<span class="k">print</span><span class="p">(</span><span class="n">new_annotations_links</span><span class="p">)</span>
-</pre></div>
+  <section id="releasing-changes">
+<h1>Releasing Changes<a class="headerlink" href="#releasing-changes" title="Permalink to this headline">¶</a></h1>
+<p>Any changes released to the branch master, will be released to PyPI in the next release.</p>
+<section id="how-to-release-with-github-to-pypi">
+<h2>How to release with GitHub to PyPI<a class="headerlink" href="#how-to-release-with-github-to-pypi" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p>Change the version number in the file VERSION use the format <code class="docutils literal notranslate"><span class="pre">v.X.X.X</span></code> without whitespaces.</p>
+<a class="reference external image-reference" href="update-python-version.png"><img alt="Update Python Package Version" src="../../_images/update-python-version.png" /></a>
+</li>
+<li><p>Draft a Release <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases/new">here</a>.</p>
+<a class="reference external image-reference" href="steps-to-draft-a-release.png"><img alt="draft_new_release.png" src="../../_images/steps-to-draft-a-release.png" /></a>
+<ol class="arabic simple">
+<li><p>Create a new Tag on master, named as the version number in step 1.</p></li>
+<li><p>Add a title for the release</p></li>
+<li><p>Automatically generate the description using the Names of the merged Pull Requests</p></li>
+</ol>
+</li>
+<li><p>After you press publish release, a new Python Package will be uploaded to PyPI by a GitHub Action, see code
+<a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/.github/workflows/release.yml">here</a>. You can verify
+that the Release was uploaded via having a look on <a class="reference external" href="https://pypi.org/project/konfuzio-sdk/#history">PyPI</a></p></li>
+</ol>
+</section>
+<section id="how-to-use-nightly-builds">
+<h2>How to use nightly builds?<a class="headerlink" href="#how-to-use-nightly-builds" title="Permalink to this headline">¶</a></h2>
+<a class="reference external image-reference" href="new-pypi-release.png"><img alt="New PyPI Python release" src="../../_images/new-pypi-release.png" /></a>
+<ol class="arabic simple">
+<li><p>Install the latest pre-release <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--pre</span> <span class="pre">konfuzio_sdk</span></code></p></li>
+<li><p>Force to pick the latest pre-release the version <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">konfuzio_sdk&gt;=0.2.3.dev0</span></code>. As PEP440 states: The
+developmental release segment consists of the string .dev, followed by a non-negative integer value.<span class="raw-html-m2r"><br></span>
+Developmental releases are ordered by their numerical component, immediately before the corresponding  release
+(and before any pre-releases with the same release segment), and following any previous release (including any<span class="raw-html-m2r"><br></span>
+post-releases)</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Pre-Releases don’t use tags but reference commits. The version number of a pre-release relates to the
+Year-Month-Date-Hour-Minute-Second of last commit date on branch master used to create this release.</p>
 </div>
+<a class="reference external image-reference" href="version-number-prerelease.png"><img alt="img.png" src="../../_images/version-number-prerelease.png" /></a>
+</section>
 </section>
 
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../contribution.html" class="btn btn-neutral float-left" title="Contribution Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../coordinates_system.html" class="btn btn-neutral float-right" title="Coordinates System" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 
