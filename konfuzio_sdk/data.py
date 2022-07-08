@@ -1360,6 +1360,7 @@ class Document(Data):
         self.assignee = assignee
         self._update = update
         self.copy_of_id = copy_of_id
+        self.bboxes_available = self.is_online
 
         if project and category_template:
             self.category = project.get_category_by_id(category_template)
