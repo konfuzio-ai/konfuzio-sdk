@@ -1815,18 +1815,47 @@ class Document(Data):
 
         return self._text
 
-    @property
-    def pages(self):
-        """Get Pages of Document. Once loaded stored in memory."""
-        # todo: add Page as a Class to get access to the Image
-        if self._pages is not None:
-            pass
-        if not is_file(self.pages_file_path, raise_exception=False):
+    def add_page(self, page: Page):
+        """Add a Page to a Document."""
+        if page not in self._pages:
+            self._pages.append(page)
+        else:
+            raise ValueError(f'In {self} the {page} is a duplicate and will not be added.')
+
+    def get_page_by_index(self, page_index: int):
+        """Return the Page by index."""
+        for page in self.pages():
+            if page.index == page_index:
+                return page
+        raise IndexError(f'Page with Index {page_index} not available in {self}')
+
+    def pages(self) -> List[Page]:
+        """Get Pages of Document."""
+        if self._pages:
+            return self._pages
+        if self.is_online and not is_file(self.pages_file_path, raise_exception=False):
             self.download_document_details()
+            is_file(self.pages_file_path)
         if is_file(self.pages_file_path, raise_exception=False):
             with open(self.pages_file_path, "r") as f:
                 pages_data = json.loads(f.read())
-            self._load_pages(pages_data)
+
+            page_texts = self.text.split('\f')
+            assert len(page_texts) == len(pages_data)
+            start_offset = 0
+            for page_index, page_data in enumerate(pages_data):
+                page_text = page_texts[page_index]
+                end_offset = start_offset + len(page_text)
+                _ = Page(
+                    id_=page_data['id'],
+                    document=self,
+                    number=page_data['number'],
+                    original_size=page_data['original_size'],
+                    start_offset=start_offset,
+                    end_offset=end_offset,
+                )
+                start_offset = end_offset + 1
+
         return self._pages
 
     @property
