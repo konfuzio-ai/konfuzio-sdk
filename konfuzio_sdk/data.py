@@ -1493,15 +1493,24 @@ class Document(Data):
 
     def __deepcopy__(self, memo) -> 'Document':
         """Create a new Document of the instance."""
-        return Document(
+        document = Document(
             id=None,
             project=self.project,
             category=self.category,
             text=self.text,
             bbox=self.get_bbox(),
-            pages=self.pages,
             copy_of_id=self.id_,
         )
+        for page in self.pages():
+            _ = Page(
+                id_=None,
+                document=document,
+                start_offset=page.start_offset,
+                end_offset=page.end_offset,
+                number=page.number,
+                original_size=(page.width, page.height),
+            )
+        return document
 
     def check_annotations(self, update_document: bool = False) -> bool:
         """Check if Annotations are valid - no duplicates and correct Category."""
