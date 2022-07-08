@@ -707,13 +707,6 @@ class Span(Data):
         :param end_offset: Ending of the offset string (int)
         :param annotation: The Annotation the Span belong to
         """
-        if start_offset == end_offset:
-            raise ValueError(f"You cannot created a {self.__class__.__name__} with start {start_offset} and no Text.")
-        elif end_offset < start_offset:
-            raise ValueError(
-                f"You cannot created a {self.__class__.__name__} with start {start_offset} which is later than"
-                f" end_offset {end_offset}."
-            )
         self.id_local = next(Data.id_iter)
         self.annotation = annotation
         self.start_offset = start_offset
@@ -724,12 +717,51 @@ class Span(Data):
         self.x1 = None
         self.y0 = None
         self.y1 = None
-
-        # use hidden variables calculated information in instance
-        self._page_index = None
         self._line_index = None
-
+        self._page: Union[Page, None] = None
+        self._bbox: Union[Bbox, None] = None
         annotation and annotation.add_span(self)  # only add if Span has access to an Annotation
+        self._valid()
+
+    def _valid(self,):
+        """Validate containted data."""
+        if self.end_offset == self.start_offset == 0:
+            logger.error(f'{self} is intentionally left empty.')
+        elif self.end_offset < 0:
+            raise ValueError(f'{self} must span text.')
+        elif self.start_offset == self.end_offset:
+            raise ValueError(f"{self} must span text: Start {self.start_offset} equals end.")
+        elif self.end_offset < self.start_offset:
+            raise ValueError(f"{self} length must be positive.")
+        return True
+
+    @property
+    def page(self) -> Page:
+        """Return Page of Span."""
+        if self.annotation is None or self.annotation.document is None:
+            raise NotImplementedError
+        elif self.annotation.document.text is None:
+            logger.error(f'{self.annotation.document} does not provide text.')
+            pass
+        elif self._page is None and self.annotation.document.pages():
+            text = self.annotation.document.text[: self.start_offset]
+            page_index = len(text.split('\f')) - 1
+            self._page = self.annotation.document.get_page_by_index(page_index=page_index)
+        return self._page
+
+    @property
+    def line_index(self) -> int:
+        """Return index of the line of the Span."""
+        if self.annotation.document.text:
+            if self._line_index is None:
+                start_line_number = len(self.annotation.document.text[: self.start_offset].split('\n'))
+                end_line_number = len(self.annotation.document.text[: self.end_offset].split('\n'))
+
+                if start_line_number != end_line_number:
+                    raise ValueError(f'{self} must not span more than one visual line.')
+                self._line_index = start_line_number - 1
+
+        return self._line_index
 
     def __eq__(self, other) -> bool:
         """Compare any point of data with their position is equal."""
@@ -763,90 +795,24 @@ class Span(Data):
         else:
             raise NotImplementedError('A Span needs a Annotation and Document relation to suggest a Regex.')
 
-    def bbox(self):
+    def bbox(self) -> Bbox:
         """Calculate the bounding box of a text sequence."""
-        if self.annotation:
-            b = get_bbox(self.annotation.document.get_bbox(), self.start_offset, self.end_offset)
-
-            if not any(b.values()):
-                # Whitespaces will not provide bounding boxes, e.g. for those characters like '\x0c'
-                raise ValueError(f'{self} does not have available characters bounding boxes.')
-
-            # self.page_index = b['page_index']
-            # "page_index" depends on the document text and should be independent of bboxes.
-            self.top = b['top']
-            self.bottom = b['bottom']
-            self.x0 = b['x0']
-            self.x1 = b['x1']
-            self.y0 = b['y0']
-            self.y1 = b['y1']
-
-            if self.x0 and self.x1 and not self.x0 < self.x1:
-                raise ValueError(
-                    f'{self} in {self.annotation.document}: coordinate x1 should be bigger than x0. '
-                    f'x0: {self.x0}, x1: {self.x1}, document: {self.annotation.document}.'
-                )
-
-            if self.y0 and self.y1 and not self.y0 < self.y1:
-                raise ValueError(
-                    f'{self} in {self.annotation.document}: coordinate y1 should be bigger than y0.'
-                    f' y0: {self.y0}, y1: {self.y1}, document: {self.annotation.document}.'
-                )
-
-            check_page = True
-            if self.page_index is None:
-                logger.error(f'Page index is None of {self} in {self.annotation.document}.')
-                check_page = False
-            if self.page_height is None:
-                logger.error(f'Page Height is None of {self} in {self.annotation.document}.')
-                check_page = False
-            if self.page_width is None:
-                logger.error(f'Page Width is None of {self} in {self.annotation.document}.')
-                check_page = False
-            if check_page and (not (self.x1 < self.page_width) or not (self.y1 < self.page_height)):
-                raise ValueError(
-                    f'{self} in {self.annotation.document}: bounding box of span is located outside of '
-                    f'the page, document: {self.annotation.document}.'
-                )
-            return self
-        else:
+        if not self.annotation:
             raise NotImplementedError
-
-    @property
-    def line_index(self) -> int:  # TODO line_index might not be needed.
-        """Calculate the index of the line on which the span starts, first line has index 0."""
-        if self.annotation and self.annotation.document.pages:
-            if self._line_index is not None:
-                return self._line_index
+        if self._bbox is None:
+            if self.annotation.document.bboxes:
+                if self.page:
+                    b = get_bbox(self.annotation.document.bboxes, self.start_offset, self.end_offset)
+                    if not any(
+                        b.values()
+                    ):  # Whitespaces will not provide bounding boxes, e.g. for those characters like '\x0c'
+                        raise ValueError(f'{self} does not have available characters bounding boxes.')
+                    self._bbox = Bbox(x0=b['x0'], x1=b['x1'], y0=b['y0'], y1=b['y1'], page=self.page)
+                else:
+                    logger.warning(f'{self} does not have a Page.')
             else:
-                self._line_index = self.annotation.document.text[0 : self.start_offset].count('\n')
-                return self._line_index
-
-    @property
-    def page_index(self) -> Optional[int]:
-        """Calculate the index of the page on which the span starts, first page has index 0."""
-        if self.annotation and self.annotation.document.pages:
-            if self._page_index is not None:
-                return self._page_index
-            else:
-                self._page_index = self.annotation.document.text[0 : self.start_offset].count('\f')
-                return self._page_index
-
-    @property
-    def page_width(self) -> Optional[float]:
-        """Get width of the page of the Span. Used to calculate relative position on page."""
-        if self.page_index is not None:
-            return self.annotation.document.pages[self.page_index].original_size[0]
-        else:
-            return None
-
-    @property
-    def page_height(self) -> Optional[float]:
-        """Get width of the page of the Span. Used to calculate relative position on page."""
-        if self.page_index is not None:
-            return self.annotation.document.pages[self.page_index].original_size[1]
-        else:
-            return None
+                logger.warning(f'{self.annotation.document} of {self} does not provide Bboxes.')
+        return self._bbox
 
     @property
     def normalized(self):
@@ -863,7 +829,7 @@ class Span(Data):
 
     def eval_dict(self):
         """Return any information needed to evaluate the Span."""
-        if self.start_offset == -1 and self.end_offset == 0:
+        if self.start_offset == self.end_offset == 0:
             eval = {
                 "id_local": None,
                 "id_": None,
@@ -889,10 +855,15 @@ class Span(Data):
                 "x1": 0,
                 "y0": 0,
                 "y1": 0,
+                "line_index": 0,
+                "page_index": None,
                 "page_width": 0,
                 "page_height": 0,
-                "page_index": 0,
-                "line_index": 0,
+                "x0_relative": None,
+                "x1_relative": None,
+                "y0_relative": None,
+                "y1_relative": None,
+                "page_index_relative": None,
             }
         else:
             eval = {
@@ -916,35 +887,24 @@ class Span(Data):
                 "document_id": self.annotation.document.id_,
                 "document_id_local": self.annotation.document.id_local,
                 "category_id": self.annotation.document.category.id_,
-                "x0": self.x0,
-                "x1": self.x1,
-                "y0": self.y0,
-                "y1": self.y1,
-                "page_width": self.page_width,
-                "page_height": self.page_height,
-                "page_index": self.page_index,
-                "line_index": self.line_index,  # used by label_set clf
+                "line_index": self.line_index,
             }
 
-        # Add calculated values: # TODO is this the right place for these calculations?
-        if self.x0 is not None and self.x1 is not None and self.page_width is not None:
-            eval["x0_relative"] = self.x0 / self.page_width  # TODO should we calculate fields here?
-            eval["x1_relative"] = self.x1 / self.page_width
-        else:
-            eval["x0_relative"] = None
-            eval["x1_relative"] = None
+            if self.bbox:
+                eval["x0"] = self.bbox.x0
+                eval["x1"] = self.bbox.x1
+                eval["y0"] = self.bbox.y0
+                eval["y1"] = self.bbox.y1
 
-        if self.y0 is not None and self.y1 is not None and self.page_height is not None:
-            eval["y0_relative"] = self.y0 / self.page_height
-            eval["y1_relative"] = self.y1 / self.page_height
-        else:
-            eval["y0_relative"] = None
-            eval["y1_relative"] = None
-
-        if self.page_index is not None and self.annotation.document.number_of_pages:
-            eval["page_index_relative"] = self.page_index / self.annotation.document.number_of_pages
-        else:
-            eval["page_index_relative"] = None
+            if self.page:  # todo separate as eval_dict on Page level
+                eval["page_index"] = self.page.index
+                eval["page_width"] = self.page.width
+                eval["page_height"] = self.page.height
+                eval["x0_relative"] = self.bbox.x0 / self.page.width
+                eval["x1_relative"] = self.bbox.x1 / self.page.width
+                eval["y0_relative"] = self.bbox.y0 / self.page.height
+                eval["y1_relative"] = self.bbox.y1 / self.page.height
+                eval["page_index_relative"] = self.page.index / self.annotation.document.number_of_pages
 
         return eval
 
