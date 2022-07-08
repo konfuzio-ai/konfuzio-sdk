@@ -126,9 +126,9 @@ class TestUrls(unittest.TestCase):
         self.assertEqual(get_page_image_url(PAGE_ID), f'{KONFUZIO_HOST}/page/show-image/{PAGE_ID}/')
 
     def test_upload_ai_url(self):
-        """Test to access Page online."""
+        """Test to get URL to upload new AI file."""
         self.assertEqual(get_create_ai_model_url(), f'{KONFUZIO_HOST}/api/aimodels/')
 
     def test_change_ai_url(self):
-        """Test to access Page online."""
+        """Test to get URL to change AI."""
         self.assertEqual(get_update_ai_model_url(AI_ID), f'{KONFUZIO_HOST}/api/aimodels/{AI_ID}/')
