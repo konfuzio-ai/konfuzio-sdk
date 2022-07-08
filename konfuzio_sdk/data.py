@@ -708,7 +708,7 @@ class Span(Data):
         :param annotation: The Annotation the Span belong to
         """
         self.id_local = next(Data.id_iter)
-        self.annotation = annotation
+        self.annotation: Annotation = annotation
         self.start_offset = start_offset
         self.end_offset = end_offset
         self.top = None
@@ -1379,18 +1379,14 @@ class Document(Data):
         project.add_document(self)  # check for duplicates by ID before adding the Document to the project
 
         # use hidden variables to store low volume information in instance
-        self._text = text
+        self._text: str = text
         self._bbox = bbox
         self._hocr = None
-        self._pages = None
-
-        # Use Page to initialize Pages of this Document
-        self._load_pages(pages_data=pages)
+        self._pages: List[Page] = []
 
         # prepare local setup for document
         if self.id_:
             pathlib.Path(self.document_folder).mkdir(parents=True, exist_ok=True)
-        self.image_paths = []  # Path to the images  # todo implement pages
         self.annotation_file_path = os.path.join(self.document_folder, "annotations.json5")
         self.annotation_set_file_path = os.path.join(self.document_folder, "annotation_sets.json5")
         self.txt_file_path = os.path.join(self.document_folder, "document.txt")
