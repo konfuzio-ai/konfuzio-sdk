@@ -1666,7 +1666,7 @@ class Document(Data):
 
     def download_document_details(self):
         """Retrieve data from a Document online in case documented has finished processing."""
-        if self.status and self.status[0] == 2:
+        if self.is_online and self.status and self.status[0] == 2:
             data = get_document_details(document_id=self.id_, project_id=self.project.id_, session=self.session)
 
             # write a file, even there are no annotations to support offline work
@@ -1681,10 +1681,8 @@ class Document(Data):
 
             with open(self.pages_file_path, "w") as f:
                 json.dump(data["pages"], f, indent=2, sort_keys=True)
-        elif self.id_ is None:
-            pass  # Document is not online
         else:
-            logger.error(f'{self} is not available for download.')
+            raise NotImplementedError
 
         return self
 
@@ -1816,7 +1814,7 @@ class Document(Data):
         """Get Document text. Once loaded stored in memory."""
         if self._text is not None:
             return self._text
-        if not is_file(self.txt_file_path, raise_exception=False):
+        if self.is_online and not is_file(self.txt_file_path, raise_exception=False):
             self.download_document_details()
         if is_file(self.txt_file_path, raise_exception=False):
             with open(self.txt_file_path, "r", encoding="utf-8") as f:
