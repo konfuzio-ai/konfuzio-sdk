@@ -1471,49 +1471,28 @@ class Document(Data):
 
         return result
 
-    def check_bbox(self, update_document: bool = False) -> bool:
+    def check_bbox(self) -> bool:
         """
-        Check match between the text in the Document and its bounding boxes.
+        Check match between the text in the Document Page and Bbox.
 
         Check that every character in the text is part of the bbox dictionary and that each bbox has a match in the
         document text. Also, validate the coordinates of the bounding boxes.
         """
         warn('This method is deprecated.', DeprecationWarning, stacklevel=2)
-        self._bbox = self.get_bbox()
-        for index, char in enumerate(self.text):
-            if char in [' ', '\f', '\n']:
-                continue
-            try:
-                if self.get_bbox()[str(index)]['text'] != char:
-                    return False
-            except KeyError:
-                return False
+        for bbox_index, bbox in self.get_bbox().items():
+            character = self.text[int(bbox_index)]
+            if character not in [' ', '\f', '\n'] and bbox['text'] != character:
+                raise ValueError(f'{self} must have a BBox for character "{character}" with ID {bbox_index}.')
+            if bbox['x1'] <= bbox['x0']:
+                raise ValueError(f'{self} has negative or no width.')
+            if bbox['y1'] <= bbox['y0']:
+                raise ValueError(f'{self} has negative or no height.')
+            if bbox['x1'] >= self.get_page_by_index(bbox['page_number'] - 1).width:
+                raise ValueError(f'{self} has invalid X1.')
+            if bbox['y1'] >= self.get_page_by_index(bbox['page_number'] - 1).height:
+                raise ValueError(f'{self} has invalid Y1.')
 
-        all_x = all([v['x1'] > v['x0'] for k, v in self.get_bbox().items()])
-        all_y = all([v['y1'] > v['y0'] for k, v in self.get_bbox().items()])
-        all_width = all(
-            [v['x1'] <= self.pages[v['page_number'] - 1].original_size[0] for k, v in self.get_bbox().items()]
-        )
-
-        all_height = all(
-            [v['y1'] <= self.pages[v['page_number'] - 1].original_size[1] for k, v in self.get_bbox().items()]
-        )
-
-        valid = all([all_x, all_y, all_width, all_height])
-
-        if not valid:
-            logger.error(f'{self} has invalid character bounding boxes.')
-
-            if update_document:
-                # set the dataset status of the Document to Excluded
-                update_document_konfuzio_api(
-                    document_id=self.id_,
-                    file_name=self.name,
-                    dataset_status=4,
-                    assignee=1102,  # bbox-issue@konfuzio.com
-                )
-
-        return valid
+        return True
 
     def __deepcopy__(self, memo) -> 'Document':
         """Create a new Document of the instance."""

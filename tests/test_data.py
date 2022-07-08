@@ -496,13 +496,8 @@ class TestOfflineDataSetup(unittest.TestCase):
         document_bbox = {
             '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 1, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
         }
-        document = Document(
-            project=self.project,
-            category=self.category,
-            text='h',
-            bbox=document_bbox,
-            pages=[{'original_size': (1, 1)}],
-        )
+        document = Document(project=self.project, category=self.category, text='h', bbox=document_bbox)
+        _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
         self.assertTrue(document.check_bbox())
 
     def test_document_check_bbox_invalid_x_coordinates(self):
@@ -510,56 +505,62 @@ class TestOfflineDataSetup(unittest.TestCase):
         document_bbox = {
             '0': {'x0': 1, 'x1': 1, 'y0': 0, 'y1': 1, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
         }
-        document = Document(
-            project=self.project,
-            category=self.category,
-            text='h',
-            bbox=document_bbox,
-            pages=[{'original_size': (1, 1)}],
-        )
-        self.assertFalse(document.check_bbox())
+        document = Document(project=self.project, category=self.category, text='h', bbox=document_bbox)
+        _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
+        with pytest.raises(ValueError) as e:
+            self.assertFalse(document.check_bbox())
+            assert 'has negative or no height' in str(e)
 
     def test_document_check_bbox_invalid_y_coordinates(self):
         """Test bbox check with invalid y coordinates."""
         document_bbox = {
             '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 0, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
         }
-        document = Document(
-            project=self.project,
-            category=self.category,
-            text='h',
-            bbox=document_bbox,
-            pages=[{'original_size': (1, 1)}],
-        )
-        self.assertFalse(document.check_bbox())
+        document = Document(project=self.project, category=self.category, text='h', bbox=document_bbox)
+        _ = Page(id_=1, number=1, original_size=(595.2, 0), document=document, start_offset=0, end_offset=1)
+        with pytest.raises(ValueError) as e:
+            self.assertFalse(document.check_bbox())
+            assert 'has negative or no height' in str(e)
 
     def test_document_check_bbox_invalid_width_coordinates(self):
         """Test bbox check with invalid x coordinates regarding the page width."""
         document_bbox = {
             '0': {'x0': 0, 'x1': 2, 'y0': 0, 'y1': 0, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
         }
-        document = Document(
-            project=self.project,
-            category=self.category,
-            text='h',
-            bbox=document_bbox,
-            pages=[{'original_size': (1, 1)}],
-        )
-        self.assertFalse(document.check_bbox())
+        document = Document(project=self.project, category=self.category, text='h', bbox=document_bbox)
+        _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
+        with pytest.raises(ValueError) as e:
+            self.assertFalse(document.check_bbox())
+            assert 'has negative or no height' in str(e)
+
+    def test_page_width(self):
+        """Test width of Page."""
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
+        }
+        document = Document(project=self.project, category=self.category, text='h', bbox=document_bbox)
+        _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
+        assert document.get_page_by_index(0).width == 595.2
+
+    def test_page_height(self):
+        """Test height of Page."""
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
+        }
+        document = Document(project=self.project, category=self.category, text='h', bbox=document_bbox)
+        _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
+        assert document.get_page_by_index(0).height == 841.68
 
     def test_document_check_bbox_invalid_height_coordinates(self):
         """Test bbox check with invalid x coordinates regarding the page height."""
         document_bbox = {
-            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
+            '0': {'x0': 1, 'x1': 0, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
         }
-        document = Document(
-            project=self.project,
-            category=self.category,
-            text='h',
-            bbox=document_bbox,
-            pages=[{'original_size': (1, 1)}],
-        )
-        self.assertFalse(document.check_bbox())
+        document = Document(project=self.project, category=self.category, text='h', bbox=document_bbox)
+        _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
+        with pytest.raises(ValueError) as e:
+            self.assertFalse(document.check_bbox())
+            assert 'has negative width' in str(e)
 
     def test_document_check_duplicated_annotations(self):
         """Test Annotations check when an error is raised due to duplicated Annotations by get_annotations."""
