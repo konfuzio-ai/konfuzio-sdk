@@ -1460,8 +1460,8 @@ class Document(Data):
         """Use this dict to evaluate Documents. The speciality: For every Span of an Annotation create one entry."""
         result = []
         annotations = self.annotations(use_correct=use_correct)
-        if not annotations:  # if there are no annotations in this Documents
-            result.append(Span(start_offset=-1, end_offset=0).eval_dict())
+        if not annotations:  # if there are no Annotations in this Documents
+            result.append(Span(start_offset=0, end_offset=0).eval_dict())
         else:
             for annotation in annotations:
                 result += annotation.eval_dict
