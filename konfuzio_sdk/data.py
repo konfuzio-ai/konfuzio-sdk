@@ -1778,12 +1778,14 @@ class Document(Data):
 
         :return: Bounding box information per character in the document.
         """
-        if self._bbox is not None:
-            return self._bbox
+        if self._bbox:
+            bbox = self._bbox
         elif is_file(self.bbox_file_path, raise_exception=False):
             with zipfile.ZipFile(self.bbox_file_path, "r") as archive:
                 bbox = json.loads(archive.read('bbox.json5'))
-        elif self.status and self.status[0] == 2:  # todo check for self.project.id_ and self.id_ and ?
+        elif (
+            self.is_online and self.status and self.status[0] == 2
+        ):  # todo check for self.project.id_ and self.id_ and ?
             logger.warning(f'Start downloading bbox files of {len(self.text)} characters for {self}.')
             bbox = get_document_details(document_id=self.id_, project_id=self.project.id_, extra_fields="bbox")['bbox']
             # Use the `zipfile` module: `compresslevel` was added in Python 3.7
@@ -1797,10 +1799,17 @@ class Document(Data):
                 # Test integrity of compressed archive
                 zip_file.testzip()
         else:
-            logger.error(f'{self} does not have bboxes.')
-            return {}
+            self.bboxes_available = False
+            bbox = {}
 
         return bbox
+
+    @property
+    def bboxes(self):
+        """Use the cached bbox version."""
+        if self._bbox is None and self.bboxes_available:
+            self._bbox = self.get_bbox()
+        return self._bbox
 
     @property
     def text(self):
