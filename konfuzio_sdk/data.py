@@ -799,19 +799,20 @@ class Span(Data):
         """Calculate the bounding box of a text sequence."""
         if not self.annotation:
             raise NotImplementedError
+        if not self.page:
+            logger.warning(f'{self} does not have a Page.')
+            return None
+        if not self.annotation.document.bboxes:
+            logger.warning(f'{self.annotation.document} of {self} does not provide Bboxes.')
+            return None
+        _ = self.line_index  # quick validate if start and end is in the same line of text
+
         if self._bbox is None:
-            if self.annotation.document.bboxes:
-                if self.page:
-                    b = get_bbox(self.annotation.document.bboxes, self.start_offset, self.end_offset)
-                    if not any(
-                        b.values()
-                    ):  # Whitespaces will not provide bounding boxes, e.g. for those characters like '\x0c'
-                        raise ValueError(f'{self} does not have available characters bounding boxes.')
-                    self._bbox = Bbox(x0=b['x0'], x1=b['x1'], y0=b['y0'], y1=b['y1'], page=self.page)
-                else:
-                    logger.warning(f'{self} does not have a Page.')
-            else:
-                logger.warning(f'{self.annotation.document} of {self} does not provide Bboxes.')
+            b = get_bbox(self.annotation.document.bboxes, self.start_offset, self.end_offset)
+            if not any(b.values()):  # Some characters will not provide bounding boxes, e.g. '\x0c'
+                raise ValueError(f'{self} does not have available characters bounding boxes.')
+            self._bbox = Bbox(x0=b['x0'], x1=b['x1'], y0=b['y0'], y1=b['y1'], page=self.page)
+
         return self._bbox
 
     @property
@@ -890,20 +891,20 @@ class Span(Data):
                 "line_index": self.line_index,
             }
 
-            if self.bbox:
-                eval["x0"] = self.bbox.x0
-                eval["x1"] = self.bbox.x1
-                eval["y0"] = self.bbox.y0
-                eval["y1"] = self.bbox.y1
+            if self.bbox():
+                eval["x0"] = self.bbox().x0
+                eval["x1"] = self.bbox().x1
+                eval["y0"] = self.bbox().y0
+                eval["y1"] = self.bbox().y1
 
             if self.page:  # todo separate as eval_dict on Page level
                 eval["page_index"] = self.page.index
                 eval["page_width"] = self.page.width
                 eval["page_height"] = self.page.height
-                eval["x0_relative"] = self.bbox.x0 / self.page.width
-                eval["x1_relative"] = self.bbox.x1 / self.page.width
-                eval["y0_relative"] = self.bbox.y0 / self.page.height
-                eval["y1_relative"] = self.bbox.y1 / self.page.height
+                eval["x0_relative"] = self.bbox().x0 / self.page.width
+                eval["x1_relative"] = self.bbox().x1 / self.page.width
+                eval["y0_relative"] = self.bbox().y0 / self.page.height
+                eval["y1_relative"] = self.bbox().y1 / self.page.height
                 eval["page_index_relative"] = self.page.index / self.annotation.document.number_of_pages
 
         return eval
@@ -1038,6 +1039,8 @@ class Annotation(Data):
         self.x1 = None
         self.y0 = None
         self.y1 = None
+
+        # todo: remove this Annotation single Bbox
         bbox = kwargs.get('bbox')
         if bbox:
             self.top = bbox.get('top')
