@@ -1596,7 +1596,11 @@ class Document(Data):
         Filter available annotations.
 
         :param label: Label for which to filter the Annotations.
-        :param use_correct: If to filter by correct annotations.
+        :param use_correct: If to filter by correct Annotations.
+        :param start_offset: Filter for Annotations that have at least one Span intersecting with a specified start_offset
+        and end_offset. Must be provided together with end_offset.
+        :param end_offset: Filter for Annotations that have at least one Span intersecting with a specified start_offset
+        and end_offset. Must be provided together with start_offset.
         :return: Annotations in the document.
         """
         if self.category is None:
