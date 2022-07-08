@@ -117,6 +117,16 @@ def get_document_original_file_url(document_id: int, host: str = KONFUZIO_HOST) 
     return f'{host}/doc/show-original/{document_id}/'
 
 
+def get_page_image_url(page_id: int, host: str = KONFUZIO_HOST) -> str:
+    """
+    Generate URL to get Page as Image.
+
+    :param page_id: ID of the Page
+    :return: URL to get Page as PNG
+    """
+    return f'{host}/page/show-image/{page_id}/'
+
+
 def get_document_api_details_url(
     document_id: int, project_id: int, host: str = KONFUZIO_HOST, extra_fields='hocr,bbox'
 ) -> str:
@@ -124,12 +134,22 @@ def get_document_api_details_url(
     Generate URL to access the details of a Document in a Project.
 
     :param document_id: ID of the Document as integer
-    :param project_id: ID of the project
+    :param project_id: ID of the Project
     :param host: Konfuzio host
     :param extra_fields: Extra information to include in the response
     :return: URL to get Document details
     """
     return f'{host}/api/projects/{project_id}/docs/{document_id}/?extra_fields={extra_fields}'
+
+
+def get_annotation_view_url(annotation_id: int, host: str = KONFUZIO_HOST) -> str:
+    """
+    Generate URL to see Annotation in the SmartView.
+
+    :param annotation_id: ID of the Annotation
+    :return: URL to get visually access Annotation online.
+    """
+    return f'{host}/a/{annotation_id}/'
 
 
 # LABELS
