@@ -9,7 +9,7 @@ import re
 import shutil
 import time
 import zipfile
-from typing import Optional, List, Union, Tuple, Dict
+from typing import Optional, List, Union, Tuple
 from warnings import warn
 
 import dateutil.parser
@@ -1399,6 +1399,9 @@ class Document(Data):
         self.bbox_file_path = os.path.join(self.document_folder, "bbox.zip")
         self.bio_scheme_file_path = os.path.join(self.document_folder, "bio_scheme.txt")
 
+        if pages:
+            self.pages()  # create page instances
+
     def __repr__(self):
         """Return the name of the Document incl. the ID."""
         return f"Document {self.name} ({self.id_})"
@@ -1455,41 +1458,6 @@ class Document(Data):
         #     raise NotImplementedError
 
         return sorted(spans)
-
-    def _load_pages(self, pages_data: List[Union[Dict, Page]]):
-        """Load Pages of document."""
-        if pages_data is not None:
-            _pages = []
-            page_texts = self.text.split('\f')
-            assert len(page_texts) == len(pages_data)
-
-            start_offset = 0
-
-            for page_index, page_data in enumerate(pages_data):
-                page_text = page_texts[page_index]
-                end_offset = start_offset + len(page_text)
-                if sdk_isinstance(page_data, Page):
-                    page = Page(
-                        id_=page_data.id_,
-                        number=page_data.number,
-                        size=page_data.size,
-                        image=page_data.image,
-                        original_size=page_data.original_size,
-                        start_offset=page_data.start_offset,
-                        end_offset=page_data.end_offset,
-                        document=self,
-                    )
-                else:
-                    page_data['id_'] = page_data.pop('id', None)
-                    if 'size' in page_data.keys():
-                        page_data['size'] = tuple(page_data['size'])
-                    if 'original_size' in page_data.keys():
-                        page_data['original_size'] = tuple(page_data['original_size'])
-                    page = Page(**page_data, document=self, start_offset=start_offset, end_offset=end_offset)
-                _pages.append(page)
-                start_offset = end_offset + 1
-
-            self._pages = _pages
 
     def eval_dict(self, use_correct=False) -> List[dict]:
         """Use this dict to evaluate Documents. The speciality: For every Span of an Annotation create one entry."""
