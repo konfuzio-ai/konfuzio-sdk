@@ -1,4 +1,5 @@
 """Handle data from the API."""
+import io
 import itertools
 import json
 import logging
@@ -12,6 +13,7 @@ from typing import Optional, List, Union, Tuple, Dict
 from warnings import warn
 
 import dateutil.parser
+from PIL import Image
 from tqdm import tqdm
 
 from konfuzio_sdk import KONFUZIO_HOST
@@ -23,6 +25,7 @@ from konfuzio_sdk.api import (
     post_document_annotation,
     get_document_details,
     update_document_konfuzio_api,
+    get_page_image,
 )
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
@@ -70,6 +73,91 @@ class Data:
         """Delete data of the instance."""
         self.session = None
         return self
+
+
+class Page(Data):
+    """Access the information about one Page of a document."""
+
+    def __init__(
+        self,
+        id_: Union[int, None],
+        document: 'Document',
+        start_offset: int,
+        end_offset: int,
+        number: int,
+        original_size: Tuple[float, float],
+    ):
+        """Create a Page for a Document."""
+        self.id_ = id_
+        self.document = document
+        document.add_page(self)
+        self.start_offset = start_offset
+        self.end_offset = end_offset
+        self.image = None
+        self.number = number
+        self.index = number - 1
+        self._original_size = original_size
+        self.width = self._original_size[0]
+        self.height = self._original_size[1]
+        self.image_path = os.path.join(self.document.document_folder, f'page_{self.number}.png')
+
+        check_page = True
+        if self.index is None:
+            logger.error(f'Page index is None of {self} in {self.document}.')
+            check_page = False
+        if self.height is None:
+            logger.error(f'Page Height is None of {self} in {self.document}.')
+            check_page = False
+        if self.width is None:
+            logger.error(f'Page Width is None of {self} in {self.document}.')
+            check_page = False
+        assert check_page
+
+    def __repr__(self):
+        """Return the name of the Document incl. the ID."""
+        return f"Page {self.index} of {self.document}"
+
+    def get_image(self, update: bool = False):
+        """Get Document Page as PNG."""
+        if self.document.status[0] == 2 and (not is_file(self.image_path, raise_exception=False) or update):
+            png_content = get_page_image(self.id_)
+            with open(self.image_path, "wb") as f:
+                f.write(png_content)
+                self.image = Image.open(io.BytesIO(png_content))
+        elif is_file(self.image_path, raise_exception=False):
+            self.image = Image.open(self.image_path)
+        return self.image
+
+
+class Bbox:
+    """A bounding box relates to an area of a Document Page."""
+
+    def __init__(self, x0: int, x1: int, y0: int, y1: int, page: Page):
+        """Store information and validate."""
+        self.x0: int = x0
+        self.x1: int = x1
+        self.y0: int = y0
+        self.y1: int = y1
+        self.angle: float = 0.0  # not yet used
+        self.page: Page = page
+        self._valid()
+
+    def _valid(self,):
+        """Validate contained data."""
+        if self.x0 and self.x1 and not self.x0 < self.x1:
+            raise ValueError(
+                f'{self} in {self.page.document}: coordinate x1 should be bigger than x0. '
+                f'x0: {self.x0}, x1: {self.x1}, document: {self.page.document}.'
+            )
+
+        if self.y0 and self.y1 and not self.y0 < self.y1:
+            raise ValueError(
+                f'{self} in {self.page.document}: coordinate y1 should be bigger than y0.'
+                f' y0: {self.y0}, y1: {self.y1}, document: {self.page.document}.'
+            )
+
+        if not (self.x1 < self.page.width) or not (self.y1 < self.page.height):
+            raise ValueError(f'{self} is located outside of {self.page}.')
 
 
 class AnnotationSet(Data):
@@ -1256,31 +1344,6 @@ class Annotation(Data):
     def spans(self) -> List[Span]:
         """Return default entry to get all Spans of the Annotation."""
         return sorted(self._spans)
-
-
-class Page(Data):
-    """Access the information about one Page of a document."""
-
-    def __init__(
-        self,
-        id_: Union[int, None] = None,
-        document: 'Document' = None,
-        start_offset: int = None,
-        end_offset: int = None,
-        number: int = None,
-        image: str = None,
-        original_size: Tuple[float, float] = None,
-        size: Tuple[float, float] = None,
-    ):
-        """Create a Page for a Document."""
-        self.id_ = id_
-        self.document = document
-        self.start_offset = start_offset
-        self.end_offset = end_offset
-        self.original_size = original_size
-        self.size = size
-        self.image = image
-        self.number = number
 
 
 class Document(Data):
