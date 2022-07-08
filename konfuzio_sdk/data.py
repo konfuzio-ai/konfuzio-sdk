@@ -1657,24 +1657,12 @@ class Document(Data):
 
     def get_images(self, update: bool = False):
         """
-        Get Document pages as png images.
+        Get Document Pages as PNG images.
 
         :param update: Update the downloaded images even they are already available
-        :return: Path to OCR file.
+        :return: Path to PNG files.
         """
-        self.image_paths = []
-        for page in self.pages:
-            if is_file(page.image, raise_exception=False):
-                self.image_paths.append(page.image)
-            else:
-                page_path = os.path.join(self.document_folder, f'page_{page.number}.png')
-                self.image_paths.append(page_path)
-
-                if not is_file(page_path, raise_exception=False) or update:
-                    url = f'{KONFUZIO_HOST}{page.image}'
-                    res = self.session.get(url)
-                    with open(page_path, "wb") as f:
-                        f.write(res.content)
+        return [page.get_image(update=update) for page in self.pages()]
 
     def download_document_details(self):
         """Retrieve data from a Document online in case documented has finished processing."""
