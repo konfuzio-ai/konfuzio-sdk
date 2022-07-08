@@ -16,7 +16,6 @@ import dateutil.parser
 from PIL import Image
 from tqdm import tqdm
 
-from konfuzio_sdk import KONFUZIO_HOST
 from konfuzio_sdk.api import (
     _konfuzio_session,
     download_file_konfuzio_api,
@@ -29,6 +28,7 @@ from konfuzio_sdk.api import (
 )
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
+from konfuzio_sdk.urls import get_annotation_view_url
 from konfuzio_sdk.utils import get_bbox, get_missing_offsets
 from konfuzio_sdk.utils import is_file, convert_to_bio_scheme, amend_file_name, sdk_isinstance
 
@@ -1154,8 +1154,8 @@ class Annotation(Data):
 
     def get_link(self):
         """Get link to the Annotation in the SmartView."""
-        if self.id_:
-            return KONFUZIO_HOST + "/a/" + str(self.id_)
+        if self.is_online:
+            return get_annotation_view_url(self.id_)
         else:
             return None
 
