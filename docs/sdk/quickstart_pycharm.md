@@ -1,7 +1,9 @@
 .. meta::
 :description: Contains all necessary steps to use the sdk with pycharm.
 
-### Install SDK using PyCharm
+.. _Install SDK using PyCharm:
+
+## Install SDK using PyCharm
 
 #### 1. PyCharm Setup
 

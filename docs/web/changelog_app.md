@@ -1,6 +1,8 @@
 .. meta::
    :description: All notable changes in the server of app.konfuzio.com will be documented in this file, following the calendar versioning.
 
+.. _Server Changelog:
+
 # Changelog
 
 All notable changes in the server of app.konfuzio.com will be documented in this file.
