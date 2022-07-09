@@ -1,7 +1,9 @@
 """Calculate the accuracy on any level in a  Document."""
-from warnings import warn
+# from typing import Tuple, List
 
-import pandas as pd
+import pandas
+from sklearn.utils.extmath import weighted_mode
+
 
 RELEVANT_FOR_EVALUATION = [
     "id_local",  # needed to group spans in Annotations
@@ -37,18 +39,30 @@ def grouped(group, target: str):
     """Define which of the correct element in the predicted group defines the "correct" group id_."""
     verbose_validation_column_name = f"defined_to_be_correct_{target}"
     # all rows where is_correct is nan relate to an element which has no correct element partner
-    eligible_to_vote = group['above_predicted_threshold'].fillna(False)
-    if not len(group.loc[eligible_to_vote][target]):  # fallback if none of the Spans provide confidence
-        group[verbose_validation_column_name] = group[target].mode(dropna=False)[0]
+    eligible_to_vote = group['above_predicted_threshold'].fillna(False) & group['is_matched'].fillna(False)
+    if not eligible_to_vote.any():  # no Spans provide confidence above Threshold of Label
+        if not group['confidence_predicted'].any():
+            group[verbose_validation_column_name] = group[target].mode(dropna=False)[0]
+        else:
+            group[verbose_validation_column_name] = int(weighted_mode(group[target], group['confidence_predicted'])[0])
+    elif not group.loc[eligible_to_vote][target].any():  # no Spans should be predicted
+        group[verbose_validation_column_name] = None
     else:  # get the most frequent annotation_set_id from the high confidence Spans in this group
-        group[verbose_validation_column_name] = group.loc[eligible_to_vote][target].mode(dropna=False)[0]
-
+        if not group.loc[eligible_to_vote]['confidence_predicted'].any():  # CLF does not provide a confidence score
+            # get the most frequent annotation_set_id from the *correct* Annotations in this group
+            group[verbose_validation_column_name] = group.loc[eligible_to_vote][target].mode(dropna=False)[0]
+        else:
+            group[verbose_validation_column_name] = int(
+                weighted_mode(group.loc[eligible_to_vote][target], group.loc[eligible_to_vote]['confidence_predicted'])[
+                    0
+                ]
+            )
     validation_column_name = f"is_correct_{target}"
     group[validation_column_name] = group[target] == group[verbose_validation_column_name]
     return group
 
 
-def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pd.DataFrame:
+def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFrame:
     """Compare the Annotations of two potentially empty Documents wrt. to **all** Annotations.
 
     :param doc_a: Document which is assumed to be correct
@@ -56,35 +70,51 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pd.DataFrame:
     :param only_use_correct: Unrevised feedback in doc_a is assumed to be correct.
     :param strict: Evaluate on a Character exact level without any postprocessing, an amount Span "5,55 " will not be
      exact with "5,55"
+    :raises ValueError: When the Category differs.
     :return: Evaluation DataFrame
     """
-    if not strict:
-        warn('This method is WIP: https://gitlab.com/konfuzio/objectives/-/issues/9332', FutureWarning, stacklevel=2)
+    df_a = pandas.DataFrame(doc_a.eval_dict(use_correct=only_use_correct))
+    df_b = pandas.DataFrame(doc_b.eval_dict(use_correct=False))
     if doc_a.category != doc_b.category:
         raise ValueError(f'Categories of {doc_a} with {doc_a.category} and {doc_b} with {doc_a.category} do not match.')
-    df_a = pd.DataFrame(doc_a.eval_dict(use_correct=only_use_correct))
-    df_b = pd.DataFrame(doc_b.eval_dict(use_correct=False))
-
-    # many to many inner join to keep all **spans** of doc_a and doc_b
-    spans = pd.merge(df_a, df_b, how="outer", on=["start_offset", "end_offset"], suffixes=('', '_predicted'))
-    spans = spans[RELEVANT_FOR_EVALUATION]
-
-    # add criteria to evaluate **spans**
-    spans["above_predicted_threshold"] = spans["confidence_predicted"] >= spans["label_threshold_predicted"]
-    spans["is_correct_label"] = spans["label_id"] == spans["label_id_predicted"]
-    spans["is_correct_label_set"] = spans["label_set_id"] == spans["label_set_id_predicted"]
-    # add check to evaluate multiline Annotations
-    spans = spans.groupby("id_local", dropna=False).apply(lambda group: grouped(group, "id_"))
-    # add check to evaluate Annotation Sets
-    spans = spans.groupby("annotation_set_id_predicted", dropna=False).apply(
-        lambda group: grouped(group, "annotation_set_id")
-    )
+    if strict:  # many to many inner join to keep all **spans** of doc_a and doc_b
+        spans = pandas.merge(df_a, df_b, how="outer", on=["start_offset", "end_offset"], suffixes=('', '_predicted'))
+        # spans = spans[RELEVANT_FOR_EVALUATION]
+        # add criteria to evaluate **spans**
+        spans["is_matched"] = True  # assumption is given by the fact that the "pandas.merge" IDs
+        spans["above_predicted_threshold"] = spans["confidence_predicted"] >= spans["label_threshold_predicted"]
+        spans["is_correct_label"] = spans["label_id"] == spans["label_id_predicted"]
+        spans["is_correct_label_set"] = spans["label_set_id"] == spans["label_set_id_predicted"]
+        # add check to evaluate multiline Annotations
+        spans = spans.groupby("id_local", dropna=False).apply(lambda group: grouped(group, "id_"))
+        # add check to evaluate Annotation Sets
+        spans = spans.groupby("annotation_set_id_predicted", dropna=False).apply(
+            lambda group: grouped(group, "annotation_set_id")
+        )
+    if not strict:
+        # allows  start_offset_predicted <= end_offset and end_offset_predicted >= start_offset
+        spans = pandas.merge(df_a, df_b, how="outer", on=["label_id", "label_set_id"], suffixes=('', '_predicted'))
+        # spans = spans[RELEVANT_FOR_EVALUATION]
+        # add criteria to evaluate **spans**
+        spans["is_matched"] = (spans["start_offset_predicted"] <= spans["end_offset"]) & (
+            spans["end_offset_predicted"] >= spans["start_offset"]
+        )
+        spans["above_predicted_threshold"] = spans["confidence_predicted"] >= spans["label_threshold_predicted"]
+        spans["is_correct_label"] = True
+        spans["is_correct_label_set"] = True
+        # add check to evaluate multiline Annotations
+        spans = spans.groupby("id_local", dropna=False).apply(lambda group: grouped(group, "id_"))
+        # add check to evaluate Annotation Sets
+        spans = spans.groupby("annotation_set_id_predicted", dropna=False).apply(
+            lambda group: grouped(group, "annotation_set_id")
+        )
 
     assert not spans.empty  # this function must be able to evaluate any two docs even without annotations
 
     # Evaluate which **spans** are TN, TP, FP and keep RELEVANT_FOR_MAPPING to allow grouping of confidence measures
     spans["true_positive"] = 1 * (
-        (spans["is_correct"])
+        (spans["is_matched"])
+        & (spans["is_correct"])
         & (spans["above_predicted_threshold"])
         & (  # Everything is correct
             (spans["is_correct_label"])
@@ -95,7 +125,8 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pd.DataFrame:
     )
 
     spans["false_positive"] = 1 * (  # commented out on purpose (spans["is_correct"]) &
-        spans["above_predicted_threshold"]
+        (spans["is_matched"])
+        & (spans["above_predicted_threshold"])
         & (  # Something is wrong
             (~spans["is_correct_label"])
             | (~spans["is_correct_label_set"])
@@ -104,9 +135,13 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pd.DataFrame:
         )
     )
 
-    spans["false_negative"] = 1 * ((spans["is_correct"]) & (~spans["above_predicted_threshold"]))
+    spans["false_negative"] = 1 * (
+        (spans["is_correct"]) & ((~spans["is_matched"]) | (~spans["above_predicted_threshold"]))
+    )
 
-    spans["is_found_by_tokenizer"] = 1 * (spans["is_correct"] & spans["document_id_local_predicted"].notna())
+    spans["is_found_by_tokenizer"] = 1 * (
+        (spans["is_matched"]) & (spans["is_correct"]) & (spans["document_id_local_predicted"].notna())
+    )
 
     # one **span** cannot be assigned to more than one group, however can be a True Negative
     quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) <= 1).all()

@@ -1,14 +1,18 @@
 """Test the evaluation."""
 import unittest
 
+# import pytest
 from pandas import DataFrame
 
 from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span, LabelSet, Label, Category
-from konfuzio_sdk.evaluate import compare, grouped
+from konfuzio_sdk.evaluate import compare, grouped  # , Evaluation
+
+# from konfuzio_sdk.samples import LocalTextProject
+from tests.variables import TEST_DOCUMENT_ID
 
 
-class TestEvaluation(unittest.TestCase):
-    """Testing evaluation of the Konfuzio Server.
+class TestCompare(unittest.TestCase):
+    """Testing to compare to Documents.
 
     Implemented:
         - prediction without complete offsets (e.g missing last character)
@@ -33,11 +37,11 @@ class TestEvaluation(unittest.TestCase):
 
     """
 
-    def test_doc_on_doc_incl_multiline_annotation(self):
+    def test_strict_doc_on_doc_incl_multiline_annotation(self):
         """Test if a Document is 100 % equivalent even it has unrevised Annotations."""
         prj = Project(id_=None, project_folder='example_project_data')
-        doc_a = prj.get_document_by_id(44823)
-        doc_b = prj.get_document_by_id(44823)  # predicted
+        doc_a = prj.get_document_by_id(TEST_DOCUMENT_ID)
+        doc_b = prj.get_document_by_id(TEST_DOCUMENT_ID)  # predicted
         evaluation = compare(doc_a, doc_b)
         assert len(evaluation) == 23  # 24 if considering negative Annotations
         # for an Annotation which is human made, it is nan, so that above threshold is False
@@ -48,11 +52,11 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation["false_negative"].sum() == 0
         assert evaluation["is_found_by_tokenizer"].sum() == 21
 
-    def test_doc_where_first_annotation_was_skipped(self):
+    def test_strict_doc_where_first_annotation_was_skipped(self):
         """Test if a Document is 100 % equivalent with first Annotation not existing for a certain Label."""
         prj = Project(id_=None, project_folder='example_project_data')
-        doc_a = prj.get_document_by_id(44823)
-        doc_b = prj.get_document_by_id(44823)  # predicted
+        doc_a = prj.get_document_by_id(TEST_DOCUMENT_ID)
+        doc_b = prj.get_document_by_id(TEST_DOCUMENT_ID)  # predicted
         doc_b.annotations()
         doc_b._annotations.pop(0)  # pop an Annotation that is correct in BOTH  Documents
         assert doc_a._annotations == doc_b._annotations  # first Annotation is removed in both  Documents
@@ -64,11 +68,11 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation["false_negative"].sum() == 0
         assert evaluation["is_found_by_tokenizer"].sum() == 19
 
-    def test_doc_where_last_annotation_was_skipped(self):
+    def test_strict_doc_where_last_annotation_was_skipped(self):
         """Test if a Document is 100 % equivalent with last Annotation not existing for a certain Label."""
         prj = Project(id_=None, project_folder='example_project_data')
-        doc_a = prj.get_document_by_id(44823)
-        doc_b = prj.get_document_by_id(44823)  # predicted
+        doc_a = prj.get_document_by_id(TEST_DOCUMENT_ID)
+        doc_b = prj.get_document_by_id(TEST_DOCUMENT_ID)  # predicted
         doc_b.annotations()
         doc_b._annotations.pop(11)  # pop an Annotation that is correct in BOTH  Documents
         assert doc_a._annotations == doc_b._annotations  # last Annotation is removed in both  Documents
@@ -80,10 +84,10 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation["false_negative"].sum() == 0
         assert evaluation["is_found_by_tokenizer"].sum() == 20
 
-    def test_if_first_multiline_annotation_is_missing_in_b(self):
+    def test_strict_if_first_multiline_annotation_is_missing_in_b(self):
         """Test if a Document is equivalent if first Annotation is missing."""
         prj = Project(id_=None, project_folder='example_project_data')
-        doc_a = prj.get_document_by_id(44823)
+        doc_a = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_b = Document(project=prj, category=doc_a.category)
         for annotation in doc_a.annotations()[1:]:
             doc_b.add_annotation(annotation)
@@ -97,10 +101,10 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation["false_negative"].sum() == 2
         assert evaluation["is_found_by_tokenizer"].sum() == 19
 
-    def test_doc_where_first_annotation_is_missing_in_a(self):
+    def test_strict_doc_where_first_annotation_is_missing_in_a(self):
         """Test if a Document is equivalent if first Annotation is not present."""
         prj = Project(id_=None, project_folder='example_project_data')
-        doc_b = prj.get_document_by_id(44823)
+        doc_b = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_a = Document(project=prj, category=doc_b.category)
         # use only correct Annotations
         for annotation in doc_b.annotations()[1:]:
@@ -116,7 +120,7 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation["false_negative"].sum() == 0
         assert evaluation["is_found_by_tokenizer"].sum() == 19
 
-    def test_only_unrevised_annotations(self):
+    def test_strict_only_unrevised_annotations(self):
         """Test to evaluate on a Document that has only unrevised Annotations."""
         prj = Project(id_=None, project_folder='example_project_data')
         doc_a = prj.get_document_by_id(137234)
@@ -130,10 +134,10 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation["false_negative"].sum() == 0
         assert evaluation["is_found_by_tokenizer"].sum() == 0
 
-    def test_doc_where_first_annotation_from_all_is_missing_in_a(self):
+    def test_strict_doc_where_first_annotation_from_all_is_missing_in_a(self):
         """Test if a Document is equivalent if all Annotation are not present and feedback required are included."""
         prj = Project(id_=None, project_folder='example_project_data')
-        doc_b = prj.get_document_by_id(44823)
+        doc_b = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_a = Document(project=prj, category=doc_b.category)
         # use correct Annotations and feedback required ones
         for annotation in doc_b.annotations(use_correct=False)[1:]:
@@ -148,10 +152,10 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation["false_negative"].sum() == 0
         assert evaluation["is_found_by_tokenizer"].sum() == 19
 
-    def test_doc_where_last_annotation_is_missing_in_b(self):
+    def test_strict_doc_where_last_annotation_is_missing_in_b(self):
         """Test if a Document is equivalent if last Annotation is missing."""
         prj = Project(id_=None, project_folder='example_project_data')
-        doc_a = prj.get_document_by_id(44823)
+        doc_a = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_b = Document(project=prj, category=doc_a.category)
         # use correct Annotations and feedback required ones
         for annotation in doc_a.annotations(use_correct=False)[:-1]:
@@ -165,10 +169,10 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation["false_negative"].sum() == 1
         assert evaluation["is_found_by_tokenizer"].sum() == 20
 
-    def test_doc_where_last_annotation_is_missing_in_a(self):
+    def test_strict_doc_where_last_annotation_is_missing_in_a(self):
         """Test if a Document is equivalent if last Annotation is not present."""
         prj = Project(id_=None, project_folder='example_project_data')
-        doc_b = prj.get_document_by_id(44823)
+        doc_b = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_a = Document(project=prj, category=doc_b.category)
         # use correct Annotations and feedback required ones
         for annotation in doc_b.annotations(use_correct=False)[:-1]:
@@ -182,10 +186,10 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation["false_negative"].sum() == 0
         assert evaluation["is_found_by_tokenizer"].sum() == 20
 
-    def test_nothing_should_be_predicted(self):
+    def test_strict_nothing_should_be_predicted(self):
         """Support to evaluate that nothing is found in a document."""
         prj = Project(id_=None, project_folder='example_project_data')
-        doc_b = prj.get_document_by_id(44823)
+        doc_b = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_a = Document(project=prj, category=doc_b.category)
         evaluation = compare(doc_a, doc_b)
         assert len(evaluation) == 24  # 25 if considering negative Annotations
@@ -196,10 +200,10 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation["false_negative"].sum() == 0
         assert evaluation["is_found_by_tokenizer"].sum() == 0
 
-    def test_nothing_can_be_predicted(self):
+    def test_strict_nothing_can_be_predicted(self):
         """Support to evaluate that nothing must be found in a document."""
         prj = Project(id_=None, project_folder='example_project_data')
-        doc_a = prj.get_document_by_id(44823)
+        doc_a = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_b = Document(project=prj, category=doc_a.category)
         evaluation = compare(doc_a, doc_b)
         # 25 if considering negative Annotations, we evaluate on span level an one annotation is multiline
@@ -209,7 +213,7 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation["false_negative"].sum() == 21
         assert evaluation["is_found_by_tokenizer"].sum() == 0
 
-    def test_doc_with_overruled_top_annotations(self):
+    def test_strict_doc_with_overruled_top_annotations(self):
         """
         Test if a Document is equivalent if prediction follows the top Annotation logic.
 
@@ -219,7 +223,7 @@ class TestEvaluation(unittest.TestCase):
         """
         # todo: this logic is a view logic on the document: shouldn't this go into the Annotations function
         prj = Project(id_=None, project_folder='example_project_data')
-        doc_a = prj.get_document_by_id(44823)
+        doc_a = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_b = Document(project=prj, category=doc_a.category)
 
         found = False
@@ -239,7 +243,7 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation["false_negative"].sum() == 1
         assert evaluation["is_found_by_tokenizer"].sum() == 20
 
-    def test_doc_with_missing_annotation_set(self):
+    def test_strict_doc_with_missing_annotation_set(self):
         """
         Test if we detect an Annotation of a missing Annotation Set.
 
@@ -305,7 +309,122 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation["false_negative"].sum() == 1
         assert evaluation["is_found_by_tokenizer"].sum() == 1
 
-    def test_documents_with_different_category(self):
+    def test_strict_vs_non_strict_doc_with_missing_annotation_set(self):
+        """Test if we detect a partially overlapping Span in an Annotation of a missing Annotation Set."""
+        project = Project(id_=None)
+        category = Category(project=project)
+        label_set = LabelSet(id_=33, project=project, categories=[category])
+        label = Label(id_=22, project=project, label_sets=[label_set], threshold=0.5)
+        # create a Document A
+        document_a = Document(project=project, category=category)
+        # first Annotation Set
+        span_1 = Span(start_offset=1, end_offset=2)
+        annotation_set_a_1 = AnnotationSet(id_=1, document=document_a, label_set=label_set)
+        _ = Annotation(
+            id_=1,
+            document=document_a,
+            confidence=0.5,
+            is_correct=True,
+            annotation_set=annotation_set_a_1,
+            label=label,
+            label_set=label_set,
+            spans=[span_1],
+        )
+        # second Annotation Set
+        span_2 = Span(start_offset=3, end_offset=5)
+        annotation_set_a_2 = AnnotationSet(id_=2, document=document_a, label_set=label_set)
+        _ = Annotation(
+            id_=2,
+            document=document_a,
+            is_correct=True,
+            annotation_set=annotation_set_a_2,
+            label=label,
+            label_set=label_set,
+            spans=[span_2],
+        )
+        # create a Document B
+        span_3 = Span(start_offset=4, end_offset=5)
+        document_b = Document(project=project, category=category)
+        # with only one Annotation Set, so to say the first one, which then contains the correct Annotation which is in
+        # second Annotation Set. This test includes to test if we did not find the first Annotation Set.
+        annotation_set_b = AnnotationSet(id_=3, document=document_b, label_set=label_set)
+        _ = Annotation(
+            id_=3,
+            document=document_b,
+            confidence=0.5,
+            is_correct=True,
+            annotation_set=annotation_set_b,
+            label=label,
+            label_set=label_set,
+            spans=[span_3],
+        )
+
+        evaluation_strict = compare(document_a, document_b)
+        assert len(evaluation_strict) == 3
+        assert evaluation_strict["true_positive"].sum() == 0
+        assert evaluation_strict["false_positive"].sum() == 1
+        assert evaluation_strict["false_negative"].sum() == 2
+        assert evaluation_strict["is_found_by_tokenizer"].sum() == 0
+
+        evaluation = compare(document_a, document_b, strict=False)
+        assert len(evaluation) == 2
+        assert evaluation["true_positive"].sum() == 1
+        assert evaluation["false_positive"].sum() == 0
+        assert evaluation["false_negative"].sum() == 1
+        assert evaluation["is_found_by_tokenizer"].sum() == 1
+
+    def test_non_strict_is_better_than_strict(self):
+        """Test if we detect an Annotation of a missing Annotation Set."""
+        project = Project(id_=None)
+        category = Category(project=project)
+        label_set = LabelSet(id_=33, project=project, categories=[category])
+        label = Label(id_=22, project=project, label_sets=[label_set], threshold=0.5)
+        # create a Document A
+        document_a = Document(project=project, category=category)
+        # Annotation Set
+        span_2 = Span(start_offset=3, end_offset=5)
+        annotation_set_a_2 = AnnotationSet(id_=2, document=document_a, label_set=label_set)
+        _ = Annotation(
+            id_=2,
+            document=document_a,
+            is_correct=True,
+            annotation_set=annotation_set_a_2,
+            label=label,
+            label_set=label_set,
+            spans=[span_2],
+        )
+        # create a Document B
+        span_3 = Span(start_offset=4, end_offset=5)
+        document_b = Document(project=project, category=category)
+        # with only one Annotation Set, so to say the first one, which then contains the correct Annotation which is in
+        # second Annotation Set. This test includes to test if we did not find the first Annotation Set.
+        annotation_set_b = AnnotationSet(id_=3, document=document_b, label_set=label_set)
+        _ = Annotation(
+            id_=3,
+            document=document_b,
+            confidence=0.5,
+            is_correct=True,
+            annotation_set=annotation_set_b,
+            label=label,
+            label_set=label_set,
+            spans=[span_3],
+        )
+
+        evaluation_strict = compare(document_a, document_b)
+        assert len(evaluation_strict) == 2
+        assert evaluation_strict["true_positive"].sum() == 0
+        assert evaluation_strict["false_positive"].sum() == 1
+        assert evaluation_strict["false_negative"].sum() == 1
+        assert evaluation_strict["is_found_by_tokenizer"].sum() == 0
+
+        evaluation = compare(document_a, document_b, strict=False)
+        assert len(evaluation) == 1
+        assert evaluation["true_positive"].sum() == 1
+        assert evaluation["false_positive"].sum() == 0
+        assert evaluation["false_negative"].sum() == 0
+        assert evaluation["is_found_by_tokenizer"].sum() == 1
+
+    def test_strict_documents_with_different_category(self):
         """Test to not compare two Documents with different Categories."""
         project = Project(id_=None)
         category = Category(project=project)
@@ -316,7 +435,7 @@ class TestEvaluation(unittest.TestCase):
             compare(document_a, document_b)
             assert 'do not match' in context.exception
 
-    def test_doc_with_annotation_with_wrong_offsets(self):
+    def test_strict_doc_with_annotation_with_wrong_offsets(self):
         """
         Test a Document where the Annotation has a Span with wrong offsets.
 
@@ -363,7 +482,7 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation["false_negative"].sum() == 1
         assert evaluation["is_found_by_tokenizer"].sum() == 0
 
-    def test_doc_with_annotation_with_wrong_label(self):
+    def test_strict_doc_with_annotation_with_wrong_label(self):
         """
         Test a Document where the Annotation has a Span with a wrong Label.
 
@@ -410,7 +529,7 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation["false_negative"].sum() == 0
         assert evaluation["is_found_by_tokenizer"].sum() == 1
 
-    def test_doc_with_one_missing_span_of_two_in_one_annotation(self):
+    def test_strict_doc_with_one_missing_span_of_two_in_one_annotation(self):
         """
         Test a Document where the Annotation has two Spans and one Span has a wrong offsets.
 
@@ -460,7 +579,7 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation["false_negative"].sum() == 1
         assert evaluation["is_found_by_tokenizer"].sum() == 1
 
-    def test_doc_with_extra_annotation_set(self):
+    def test_strict_doc_with_extra_annotation_set(self):
         """
         Test if we detect an Annotation of a missing Annotation Set.
 
@@ -538,7 +657,7 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation["false_negative"].sum() == 1
         assert evaluation["is_found_by_tokenizer"].sum() == 1
 
-    def test_doc_with_annotations_wrongly_grouped_in_one_annotation_set(self):
+    def test_strict_doc_with_annotations_wrongly_grouped_in_one_annotation_set(self):
         """
         Test to detect that two Annotations are correct but not grouped into the separate Annotation Sets.
 
@@ -615,7 +734,7 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation["false_negative"].sum() == 0
         assert evaluation["is_found_by_tokenizer"].sum() == 2
 
-    def test_to_evaluate_annotations_in_one_line_belonging_to_two_annotation_sets(self):
+    def test_strict_to_evaluate_annotations_in_one_line_belonging_to_two_annotation_sets(self):
         """Test to evaluate two Annotations where each one belongs to a different Annotation Set."""
         project = Project(id_=None)
         category = Category(project=project)
@@ -685,51 +804,67 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation["false_negative"].sum() == 0
         assert evaluation["is_found_by_tokenizer"].sum() == 2
 
-    def test_grouped_both_above_threshold_both_correct(self):
+    def test_strict_grouped_both_above_threshold_both_correct(self):
         """Test grouped for two correct Spans where both are over threshold."""
         result = grouped(
             DataFrame(
-                [[True, 'a', True], [True, 'b', True]], columns=['is_correct', 'target', 'above_predicted_threshold']
+                [[True, 3, True, 0.1], [True, 1, True, 0.05]],
+                columns=['is_matched', 'target', 'above_predicted_threshold', 'confidence_predicted'],
             ),
             target='target',
         )
-        assert result['defined_to_be_correct_target'].to_list() == ['a', 'a']  # todo: it could be a OR b
+        assert result['defined_to_be_correct_target'].to_list() == [3, 3]
 
-    def test_grouped_both_above_threshold_one_correct(self):
+    def test_non_strict_grouped_both_above_threshold_both_correct(self):
+        """Return second group with targe = int(1) as the confidence of 100 % is higher than 99%."""
+        result = grouped(
+            DataFrame(
+                [[True, 3, True, 0.99], [True, 1, True, 1.0]],
+                columns=['is_matched', 'target', 'above_predicted_threshold', 'confidence_predicted'],
+            ),
+            target='target',
+        )
+        assert result['defined_to_be_correct_target'].to_list() == [1, 1]
+
+    def test_strict_grouped_both_above_threshold_one_correct(self):
         """Test grouped for one correct Span and one incorrect Span over threshold."""
         result = grouped(
             DataFrame(
-                [[True, 'a', True], [False, 'b', True]], columns=['is_correct', 'target', 'above_predicted_threshold']
+                [[True, 3, True, 0.5], [False, 1, True, 0.5]],
+                columns=['is_matched', 'target', 'above_predicted_threshold', 'confidence_predicted'],
             ),
             target='target',
         )
-        assert result['defined_to_be_correct_target'].to_list() == ['a', 'a']
+        assert result['defined_to_be_correct_target'].to_list() == [3, 3]
 
-    def test_grouped_one_above_threshold_both_incorrect(self):
+    def test_strict_grouped_one_above_threshold_both_incorrect(self):
         """Test grouped for incorrect Span over threshold and incorrect Span below threshold."""
         result = grouped(
             DataFrame(
-                [[False, 'a', False], [False, 'b', True]], columns=['is_correct', 'target', 'above_predicted_threshold']
+                [[False, 1, False, 0.5], [False, 3, True, 0.5]],
+                columns=['is_matched', 'target', 'above_predicted_threshold', 'confidence_predicted'],
             ),
             target='target',
         )
-        assert result['defined_to_be_correct_target'].to_list() == ['b', 'b']  # see reason in commit 4a66394
+        assert result['defined_to_be_correct_target'].to_list() == [1, 1]  # see reason in commit 4a66394
 
-    def test_grouped_one_above_threshold_none_correct(self):
+    def test_strict_grouped_one_above_threshold_none_correct(self):
         """Test grouped for Span below threshold and Span above threshold, while is_correct is empty."""
         result = grouped(
             DataFrame(
-                [[None, 'a', True], [None, 'b', False]], columns=['is_correct', 'target', 'above_predicted_threshold']
+                [[None, 3, True, 0.9], [None, 1, False, 0.1]],
+                columns=['is_matched', 'target', 'above_predicted_threshold', 'confidence_predicted'],
             ),
             target='target',
         )
-        assert result['defined_to_be_correct_target'].to_list() == ['a', 'a']  # it must be a, as a is above threshold
+        assert result['defined_to_be_correct_target'].to_list() == [3, 3]  # it must be 3, as 3 is above threshold
 
-    def test_grouped_none_above_threshold_none_correct(self):
+    def test_strict_grouped_none_above_threshold_none_correct(self):
         """Test grouped for two Spans below threshold, while is_correct is empty."""
         result = grouped(
             DataFrame(
-                [[None, 'a', False], [None, 'b', False]], columns=['is_correct', 'target', 'above_predicted_threshold']
+                [[None, 3, False, 0.1], [None, 1, False, 0.2]],
+                columns=['is_matched', 'target', 'above_predicted_threshold', 'confidence_predicted'],
             ),
             target='target',
         )
