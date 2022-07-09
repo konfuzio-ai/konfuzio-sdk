@@ -292,7 +292,7 @@ class Label(Data):
         description: str = None,
         label_sets=None,
         has_multiple_top_candidates: bool = False,
-        threshold: float = None,
+        threshold: float = 0.0,
         *initial_data,
         **kwargs,
     ):

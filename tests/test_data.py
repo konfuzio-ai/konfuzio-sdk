@@ -414,6 +414,12 @@ class TestOfflineDataSetup(unittest.TestCase):
             Annotation(document=document_a, annotation_set=annotation_set_a, label=label)
             assert 'has no Label Set' in context.exception
 
+    def test_to_get_threshold(self):
+        """Define fallback threshold for a Label."""
+        project = Project(id_=None)
+        label = Label(project=project, text='Third Offline Label')
+        assert label.threshold == 0.0
+
     def test_to_add_label_to_project(self):
         """Add one Label to a Project."""
         _ = Label(project=self.project, text='Third Offline Label')
