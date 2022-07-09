@@ -8,6 +8,15 @@ All notable changes in the server of app.konfuzio.com will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
 
+## Unreleased
+
+### Added
+- Allow to set a default assignee for uploade documents
+- Allow to notify users via email when they get assigned to documents
+
+### Fixed
+- Top annotation filter in the SmartView now takes accepted Annotations into account
+
 ## 2022-07-05_19-35-21
 
 This version uses Konfuzio Trainer in version v.0.3.15, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Capture Vue in version [0.4.0](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
