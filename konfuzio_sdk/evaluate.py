@@ -1,5 +1,5 @@
 """Calculate the accuracy on any level in a  Document."""
-# from typing import Tuple, List
+from typing import Tuple, List
 
 import pandas
 from sklearn.utils.extmath import weighted_mode
@@ -147,3 +147,77 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
     quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) <= 1).all()
     assert quality
     return spans
+
+
+class Evaluation:
+    """Calculated accuracy measures by using the detailed comparison on Span Level."""
+
+    from konfuzio_sdk.data import Document
+
+    def __init__(self, documents: List[Tuple[Document, Document]]):
+        """
+        Relate to the two document instances.
+
+        :param documents: A list of tuple Documents that should be compared.
+        """
+        self.documents = documents
+        self.strict = True
+        self.only_use_correct = True
+        self.data = None
+        self.calculate()
+
+    def calculate(self):
+        """Calculate and update the data stored within this Evolution."""
+        evaluations = []  # start anew, the configuration of the Evaluation might have changed.
+        for ground_truth, predicted in self.documents:
+            evaluation = compare(
+                doc_a=ground_truth, doc_b=predicted, only_use_correct=self.only_use_correct, strict=self.strict
+            )
+            evaluations.append(evaluation)
+
+        self.data = pandas.concat(evaluations)
+
+    def query(self, search=None):
+        """Query the comparison data."""
+        from konfuzio_sdk.data import Label, Document, LabelSet
+
+        if search is None:
+            return self.data
+        elif isinstance(search, Label):
+            assert search.id_ is not None, f'{search} must have a ID'
+            query = f'label_id == {search.id_}'
+        elif isinstance(search, Document):
+            assert search.id_ is not None, f'{search} must have a ID.'
+            query = f'document_id == {search.id_}'
+        elif isinstance(search, LabelSet):
+            assert search.id_ is not None, f'{search} must have a ID.'
+            query = f'label_set_id == {search.id_}'
+        else:
+            raise NotImplementedError
+        return self.data.query(query)
+
+    def tp(self, search=None) -> int:
+        """Return the True Positives of all Spans."""
+        return self.query(search=search)["true_positive"].sum()
+
+    def fp(self, search=None) -> int:
+        """Return the False Positives of all Spans."""
+        return self.query(search=search)["false_positive"].sum()
+
+    def fn(self, search=None) -> int:
+        """Return the False Negatives of all Spans."""
+        return self.query(search=search)["false_negative"].sum()
+
+    def tn(self, search=None) -> int:
+        """Return the True Negatives of all Spans."""
+        return len(self.query(search=search)) - self.tp(search=search) - self.fn(search=search) - self.fp(search=search)
+
+    def tokenizer(self, search=None) -> int:
+        """Return the of all Spans."""
+        return self.query(search=search)["is_found_by_tokenizer"].sum()
+
+    def f1(self, search=None) -> float:
+        """Return the F1 score."""
+        return self.tp(search=search) / (
+            self.tp(search=search) + 0.5 * (self.fp(search=search) + self.fn(search=search))
+        )

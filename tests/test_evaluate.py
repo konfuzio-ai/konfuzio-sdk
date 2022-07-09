@@ -1,13 +1,13 @@
 """Test the evaluation."""
 import unittest
 
-# import pytest
+import pytest
 from pandas import DataFrame
 
 from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span, LabelSet, Label, Category
-from konfuzio_sdk.evaluate import compare, grouped  # , Evaluation
+from konfuzio_sdk.evaluate import compare, grouped, Evaluation
 
-# from konfuzio_sdk.samples import LocalTextProject
+from konfuzio_sdk.samples import LocalTextProject
 from tests.variables import TEST_DOCUMENT_ID
 
 
@@ -868,4 +868,77 @@ class TestCompare(unittest.TestCase):
             ),
             target='target',
         )
-        assert result['defined_to_be_correct_target'].to_list() == ['a', 'a']  # todo: it could be a OR b
+        assert result['defined_to_be_correct_target'].to_list() == [1, 1]
+
+    def test_strict_grouped_but_no_voter_above_threshold_none_confidence(self):
+        """Test grouped for two Spans below threshold and the CLF does not provide any confidence."""
+        result = grouped(
+            DataFrame(
+                [[None, 3, False, None], [None, 1, False, None]],
+                columns=['is_matched', 'target', 'above_predicted_threshold', 'confidence_predicted'],
+            ),
+            target='target',
+        )
+        assert result['defined_to_be_correct_target'].to_list() == [1, 1]
+
+
+class TestEvaluation(unittest.TestCase):
+    """Tes to compare to Documents."""
+
+    def test_project(self):
+        """Test that data has not changed."""
+        project = LocalTextProject()
+        assert len(project.documents) == 2
+        assert len(project.test_documents) == 3
+
+    def test_true_positive(self):
+        """Count two Spans from two Training Documents."""
+        project = LocalTextProject()
+        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
+        assert evaluation.tp() == 2
+
+    def test_false_positive(self):
+        """Count zero Annotations from two Training Documents."""
+        project = LocalTextProject()
+        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
+        assert evaluation.fp() == 0
+
+    def test_true_negatives(self):
+        """Count zero Annotations from two Training Documents."""
+        project = LocalTextProject()
+        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
+        assert evaluation.tn() == 0
+
+    def test_f1(self):
+        """Test to calculate F1 Score."""
+        project = LocalTextProject()
+        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
+        assert evaluation.f1() == 1.0
+
+    def test_false_negatives(self):
+        """Count zero Annotations from two Training Documents."""
+        project = LocalTextProject()
+        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
+        assert evaluation.fn() == 0
+
+    def test_true_positive_label(self):
+        """Count two Annotations from two Training Documents and filter by one Label."""
+        project = LocalTextProject()
+        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
+        label = project.get_label_by_id(id_=3)  # there is only one Label that is not the NONE_LABEL
+        assert evaluation.tp(search=label) == 2
+
+    def test_true_positive_document(self):
+        """Count zero Annotations from one Training Document that has no ID."""
+        project = LocalTextProject()
+        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
+        with pytest.raises(AssertionError) as e:
+            evaluation.tp(search=project.documents[0])
+            assert 'Document None (None) must have a ID.' in e
+
+    def test_true_positive_label_set(self):
+        """Count two Annotations from two Training Documents related to one Label Set."""
+        project = LocalTextProject()
+        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
+        label_set = project.get_label_set_by_id(id_=2)
+        assert evaluation.tp(search=label_set) == 2
