@@ -13,7 +13,7 @@ RELEVANT_FOR_EVALUATION = [
     "end_offset",  # only relevant for the merge but allows to track multiple sequences per annotation
     "is_correct",  # we care if it is correct, humans create Annotations without confidence
     "label_id",
-    "label_threshold",
+    "label_threshold",anew
     "revised",  # we need it to filter feedback required Annotations
     "annotation_set_id",
     "label_set_id",
@@ -168,7 +168,7 @@ class Evaluation:
 
     def calculate(self):
         """Calculate and update the data stored within this Evolution."""
-        evaluations = []  # start anew, the configuration of the Evaluation might have changed.
+        evaluations = []  # start new, the configuration of the Evaluation might have changed.
         for ground_truth, predicted in self.documents:
             evaluation = compare(
                 doc_a=ground_truth, doc_b=predicted, only_use_correct=self.only_use_correct, strict=self.strict
