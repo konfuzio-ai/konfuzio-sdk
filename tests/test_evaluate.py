@@ -6,7 +6,7 @@ from pandas import DataFrame
 
 from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span, LabelSet, Label, Category
 from konfuzio_sdk.evaluate import compare, grouped, Evaluation
-
+second group with targe = int
 from konfuzio_sdk.samples import LocalTextProject
 from tests.variables import TEST_DOCUMENT_ID
 
@@ -816,7 +816,7 @@ class TestCompare(unittest.TestCase):
         assert result['defined_to_be_correct_target'].to_list() == [3, 3]
 
     def test_non_strict_grouped_both_above_threshold_both_correct(self):
-        """Return second group with targe = int(1) as the confidence of 100 % is higher than 99%."""
+        """Return second group with target = int(1) as the confidence of 100 % is higher than 99%."""
         result = grouped(
             DataFrame(
                 [[True, 3, True, 0.99], [True, 1, True, 1.0]],
