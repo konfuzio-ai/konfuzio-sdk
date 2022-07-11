@@ -12,6 +12,7 @@ from typing import Optional, List, Union, Tuple, Dict
 from warnings import warn
 
 import dateutil.parser
+import pandas as pd
 from tqdm import tqdm
 
 from konfuzio_sdk import KONFUZIO_HOST
@@ -25,7 +26,8 @@ from konfuzio_sdk.api import (
     update_document_konfuzio_api,
 )
 from konfuzio_sdk.normalize import normalize
-from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
+from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex, \
+    prepare_regex_eval_df
 from konfuzio_sdk.utils import get_bbox, get_missing_offsets
 from konfuzio_sdk.utils import is_file, convert_to_bio_scheme, amend_file_name, sdk_isinstance
 
@@ -373,7 +375,8 @@ class Label(Data):
             else:
                 self._evaluations[category.id_] = annotation.tokens()
         try:
-            tokens = get_best_regex(self._evaluations.get(category.id_, []), log_stats=True)
+            evaluations_df = prepare_regex_eval_df(self._evaluations.get(category.id_, []))
+            tokens = get_best_regex(evaluations_df, log_stats=True)
         except ValueError:
             logger.error(f'We cannot find tokens for {self} with a f_score > 0.')
             tokens = []
@@ -514,45 +517,56 @@ class Label(Data):
         else:
             return {}
 
-    def find_regex(self, category: 'Category') -> List[str]:
+    def find_regex(self, category: 'Category', update: bool = True) -> List[str]:
         """Find the best combination of regex in the list of all regex proposed by Annotations."""
-        regex_made = []
-        all_annotations = self.annotations(categories=[category])  # default is use_correct = True
-
-        if not all_annotations:
-            logger.warning(f'{self} has no correct annotations.')
-            return []
-
-        for annotation in all_annotations:
-            for span in annotation.spans:
-                proposals = annotation.document.regex(start_offset=span.start_offset, end_offset=span.end_offset)
-                for proposal in proposals:
-                    regex_to_remove_groupnames = re.compile('<.*?>')
-                    regex_found = [re.sub(regex_to_remove_groupnames, '', reg) for reg in regex_made]
-                    new_regex = re.sub(regex_to_remove_groupnames, '', proposal)
-                    if new_regex not in regex_found:
-                        regex_made.append(proposal)
-
-        logger.info(
-            f'For Label {self.name} we found {len(regex_made)} regex proposals for {len(all_annotations)} annotations.'
+        evaluations_file_path = os.path.join(
+            self.project.regex_folder, f'{category.name}_{self.name_clean}_evaluations.xlsx'
         )
 
-        # todo replace by compare
-        evaluations = [
-            self.evaluate_regex(
-                _regex_made, category=category, annotations=all_annotations, filtered_group=f'{self.id_}_'
+        if not is_file(evaluations_file_path, raise_exception=False) or update:
+            regex_made = []
+            all_annotations = self.annotations(categories=[category])  # default is use_correct = True
+
+            if not all_annotations:
+                logger.warning(f'{self} has no correct annotations.')
+                return []
+
+            for annotation in all_annotations:
+                for span in annotation.spans:
+                    proposals = annotation.document.regex(start_offset=span.start_offset, end_offset=span.end_offset)
+                    for proposal in proposals:
+                        regex_to_remove_groupnames = re.compile('<.*?>')
+                        regex_found = [re.sub(regex_to_remove_groupnames, '', reg) for reg in regex_made]
+                        new_regex = re.sub(regex_to_remove_groupnames, '', proposal)
+                        if new_regex not in regex_found:
+                            regex_made.append(proposal)
+
+            logger.info(
+                f'For Label {self.name} we found {len(regex_made)} regex proposals for {len(all_annotations)} annotations.'
             )
-            for _regex_made in regex_made
-        ]
 
-        logger.info(
-            f'We compare {len(evaluations)} regex for {len(all_annotations)} correct Annotations for Category '
-            f'{category}.'
-        )
+            # todo replace by compare
+            evaluations = [
+                self.evaluate_regex(
+                    _regex_made, category=category, annotations=all_annotations, filtered_group=f'{self.id_}_'
+                )
+                for _regex_made in regex_made
+            ]
+            evaluations_df = prepare_regex_eval_df(evaluations)
+            if self.name_clean is not None: # todo a better check (such as self.online or self.project is not None)
+                evaluations_df.to_excel(evaluations_file_path)
+
+            logger.info(
+                f'We compare {len(evaluations)} regex for {len(all_annotations)} correct Annotations for Category '
+                f'{category}.'
+            )
+        else:
+            logger.info(f'Load existing evaluations for Label {self.name} in Category {category}.')
+            evaluations_df = pd.read_excel(evaluations_file_path, engine='openpyxl')
 
         try:
             logger.info(f'Evaluate {self} for best regex.')
-            best_regex = get_best_regex(evaluations)
+            best_regex = get_best_regex(evaluations_df)
         except ValueError:
             logger.exception(f'We cannot find regex for {self} with a f_score > 0.')
             best_regex = []

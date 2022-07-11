@@ -1,7 +1,7 @@
 """Generic way to build regex from examples."""
 import logging
 import regex as re
-from typing import List, Dict
+from typing import List, Dict, Union
 
 import pandas
 from tabulate import tabulate
@@ -26,24 +26,24 @@ def escape(string: str):
     """Escape a string, so that it can still be used to create a regex."""
     escaped_original = (
         string.replace('\\', "\\\\")
-        .replace('[', r'\[')
-        .replace(']', r'\]')
-        .replace('+', r'[\+]')
-        .replace('*', r'\*')
-        .replace('|', r'\|')
-        .replace('\n', '\n')
-        .replace('-', '[-]')
-        .replace('.', r'\.')
-        .replace('$', r'\$')
-        .replace('(', r'\(')
-        .replace(')', r'\)')
-        .replace('@', r'\@')
-        .replace('?', r'\?')
-        .replace('!', r'\!')
-        .replace(',', r'\,')
-        .replace('#', r'\#')
-        .replace('{', r'\{')
-        .replace('}', r'\}')
+            .replace('[', r'\[')
+            .replace(']', r'\]')
+            .replace('+', r'[\+]')
+            .replace('*', r'\*')
+            .replace('|', r'\|')
+            .replace('\n', '\n')
+            .replace('-', '[-]')
+            .replace('.', r'\.')
+            .replace('$', r'\$')
+            .replace('(', r'\(')
+            .replace(')', r'\)')
+            .replace('@', r'\@')
+            .replace('?', r'\?')
+            .replace('!', r'\!')
+            .replace(',', r'\,')
+            .replace('#', r'\#')
+            .replace('{', r'\{')
+            .replace('}', r'\}')
     )
     return escaped_original
 
@@ -101,12 +101,11 @@ def suggest_regex_for_string(string: str, replace_characters: bool = False, repl
     return suggestion
 
 
-def get_best_regex(evaluations: List, log_stats: bool = True) -> List:
-    """Optimize selection of one regex in scenarios were we are unsure if all correct Annotations are Labeled."""
+def prepare_regex_eval_df(evaluations: Union[List, pandas.DataFrame]) -> pandas.DataFrame:
+    """Prepare a DataFrame for finding the best regex."""
     df = pandas.DataFrame(evaluations)
     if df.empty:
-        logger.error('We cannot find any regex!')
-        return []
+        return df
 
     df = df.loc[df['f1_score'] > 0]
 
@@ -128,7 +127,14 @@ def get_best_regex(evaluations: List, log_stats: bool = True) -> List:
     df.loc[null_mask, 'new_matches_id'] = df.loc[null_mask]['correct_findings_id']
     df.insert(0, 'new_matches_count', df['new_matches_id'].str.len())
     df = df.drop(['correct_findings_id', 'correct_findings', 'all_matches_id', 'new_matches_id'], axis=1)
+    return df
 
+
+def get_best_regex(df: pandas.DataFrame, log_stats: bool = True) -> List:
+    """Optimize selection of one regex in scenarios where we are unsure if all correct Annotations are Labeled."""
+    if df.empty:
+        logger.error('We cannot find any regex!')
+        return []
     # iterate over sorted df, mark any row if it adds no matching value compared to regex above, we used max windowsize
     # matched_document = df.filter(regex=r'document_\d+').rolling(min_periods=1, window=100000000).max()
     # any regex witch matches more Documents that the regex before, is a good regex
@@ -151,7 +157,8 @@ def get_best_regex(evaluations: List, log_stats: bool = True) -> List:
 
 
 def regex_matches(
-    doctext: str, regex: str, start_chr: int = 0, flags=0, overlapped=False, keep_full_match=True, filtered_group=None
+        doctext: str, regex: str, start_chr: int = 0, flags=0, overlapped=False, keep_full_match=True,
+        filtered_group=None
 ) -> List[Dict]:
     """
     Convert a text with the help by one regex to text offsets.
@@ -253,6 +260,7 @@ def generic_candidate_function(regex, flags=0, overlapped=False, filtered_group=
     :param flags: Regex flag which should be considered.
     :return: An initialized candidate function.
     """
+
     # function to build candidates
     def candidate_function(doctext):
         """
@@ -281,7 +289,7 @@ def generic_candidate_function(regex, flags=0, overlapped=False, filtered_group=
         other_text = []
         previous = 0
         for span in candidates_spans:
-            other_text.append(doctext[previous : span[0]])
+            other_text.append(doctext[previous: span[0]])
             previous = span[1]
         other_text.append(doctext[previous:])
 

@@ -8,7 +8,7 @@ from konfuzio_sdk.regex import (
     merge_regex,
     generic_candidate_function,
     plausible_regex,
-    get_best_regex,
+    get_best_regex, prepare_regex_eval_df,
 )
 from konfuzio_sdk.utils import does_not_raise
 
@@ -170,7 +170,9 @@ def test_regex_spans_filtered_group():
 
 def test_get_best_regex():
     """Test to evaluate an empty list."""
-    assert get_best_regex([]) == []
+    df = prepare_regex_eval_df([])
+    assert df.empty
+    assert get_best_regex(df) == []
 
 
 def test_get_best_regex_from_project():
