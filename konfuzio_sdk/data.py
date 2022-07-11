@@ -568,9 +568,8 @@ class Label(Data):
                 for category in categories:
                     regex.extend(self.find_regex(category=category))
                 self._regex = regex
-                if os.path.exists(self.regex_file_path):
-                    with open(self.regex_file_path, 'w') as f:
-                        json.dump(self._regex, f, indent=2, sort_keys=True)
+                with open(self.regex_file_path, 'w') as f:
+                    json.dump(self._regex, f, indent=2, sort_keys=True)
             else:
                 logger.warning(
                     f'Regexes loaded from file for {self} which might have been calculated for other category.'
