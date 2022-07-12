@@ -1,5 +1,5 @@
 .. meta::
-   :description: How to contribute to the open source OCR, NLP and Computer Vision Python Package.
+:description: How to contribute to the open source OCR, NLP and Computer Vision Python Package.
 
 # Contribution Guide
 
@@ -59,6 +59,7 @@ Tests will automatically run for every commit you push to the GitHub project.
 You can also run them locally by executing `pytest` in your terminal from the root of this project.
 
 The files/folders listed below are ignored when you push your changes to the repository.
+
 - .env file
 - .settings.py file
 - data folder
@@ -70,6 +71,11 @@ The files/folders listed below are ignored when you push your changes to the rep
 *Note*:
 If you choose another name for the folder where you want to store the data being downloaded, please add
 the folder to *.gitignore*.
+
+## Architecture
+
+<div class="mxgraph" style="max-width:100%;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;toolbar&quot;:&quot;zoom layers tags lightbox&quot;,&quot;edit&quot;:&quot;_blank&quot;,&quot;url&quot;:&quot;https://raw.githubusercontent.com/konfuzio-ai/konfuzio-sdk/master/tests/SDK%20and%20Server%20Integration.drawio&quot;}"></div>
+<script type="text/javascript" src="https://viewer.diagrams.net/embed2.js?&fetch=https%3A%2F%2Fraw.githubusercontent.com%2Fkonfuzio-ai%2Fkonfuzio-sdk%2Fmaster%2Ftests%2FSDK%2520and%2520Server%2520Integration.drawio"></script>
 
 ## Directory Structure
 
@@ -114,6 +120,38 @@ To run tests from a specific file, do:
 
 `pytest tests/<name_of_the_file>.py`
 
+## How to release with GitHub to PyPI
+
+1. Change the version number in the file VERSION use the format `v.X.X.X` without whitespaces.
+   ![Update Python Package Version](releasing/update-python-version.png)
+2. Draft a Release [here](https://github.com/konfuzio-ai/konfuzio-sdk/releases/new).
+   ![draft_new_release.png](releasing/steps-to-draft-a-release.png)
+   1. Create a new Tag on master, named as the version number in step 1.
+   2. Add a title for the release
+   3. Automatically generate the description using the Names of the merged Pull Requests
+3. After you press publish release, a new Python Package will be uploaded to PyPI by a GitHub Action, see code
+   [here](https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/.github/workflows/release.yml). You can verify 
+   that the Release was uploaded via having a look on [PyPI](https://pypi.org/project/konfuzio-sdk/#history)
+
+## How to use nightly builds?
+
+![New PyPI Python release](releasing/new-pypi-release.png)
+
+1. Install the latest pre-release `pip install --pre konfuzio_sdk` 
+2. Force to pick the latest pre-release the version `pip install konfuzio_sdk>=0.2.3.dev0`. As PEP440 states: The 
+   developmental release segment consists of the string .dev, followed by a non-negative integer value.  
+   Developmental releases are ordered by their numerical component, immediately before the corresponding  release 
+   (and before any pre-releases with the same release segment), and following any previous release (including any  
+   post-releases)
+
+
+.. Note:: 
+   Pre-Releases don't use tags but reference commits. The version number of a pre-release relates to the 
+   Year-Month-Date-Hour-Minute-Second of last commit date on branch master used to create this release.
+   This process allows publish a new package if there are new commits on the master branch.
+
+![img.png](releasing/version-number-prerelease.png)
+
 
 ## Running tests in Docker
 
@@ -122,16 +160,22 @@ Check here the steps for how to run/debug Python code inside a Docker container.
 
 ### General Motivation for using the VS Code Remote Development Extension
 
-When it comes to running your code consistently and reliably, container solutions like Docker can play to their strengths.
+When it comes to running your code consistently and reliably, container solutions like Docker can play to their
+strengths.
 Even if you are not using Docker for deployment, as soon as you collaborate with other developers testing pipelines
 have to be in place to ensure that a new merge does not accidentally break the whole project.
-Collaborating can also mean very different operating systems and configurations that lead to varying behaviors on different machines.
-This issue is also commonly resolved using Docker. But this of course means that there can be differences between your local machine
-and the Docker container when it comes to dependencies, which leads to tedious dependency management and prolonged feedback loops (especially on Windows)
+Collaborating can also mean very different operating systems and configurations that lead to varying behaviors on
+different machines.
+This issue is also commonly resolved using Docker. But this of course means that there can be differences between your
+local machine
+and the Docker container when it comes to dependencies, which leads to tedious dependency management and prolonged
+feedback loops (especially on Windows)
 as you have to wait to see if the code you build really runs as expected in the Docker container.
-The best solution would be if you could combine the development tools of a Python IDE with the consistent test and execution results of a Docker container.
+The best solution would be if you could combine the development tools of a Python IDE with the consistent test and
+execution results of a Docker container.
 Running a docker container on a local machine is quite easy.
-Though setting up your container for debugging is not always straightforward. Luckily Microsoft's Visual Studio Code Remote Development Extension
+Though setting up your container for debugging is not always straightforward. Luckily Microsoft's Visual Studio Code
+Remote Development Extension
 offers a functional and easy to use solution.
 
 ### 1. Download and Install VS Code on your machine
@@ -140,8 +184,12 @@ Either use this [link](https://code.visualstudio.com/download) to download the V
 snap installed, just run (for this tutorial v1.56.2 was used):
 
 ```python
-sudo snap install --classic code
+sudo
+snap
+install - -classic
+code
 ```
+
 If you have not already installed Docker, download and install it [here](https://docs.docker.com/get-docker/).
 
 ### 2. Pull/Create your project that includes the relevant Docker file
@@ -193,7 +241,8 @@ Files' > 'From $your_dockerfile'*
 
 ![command pallet](../_static/img/vscode_docker/command_pallet.png)
 
-Now you should see in the file explorer under *.devcontainer* your *devcontainer.json* file. Open it. These are the basic
+Now you should see in the file explorer under *.devcontainer* your *devcontainer.json* file. Open it. These are the
+basic
 configurations of your devcontainer. Most of this can be left unchanged. Maybe give your container a name by changing
 the 'name' variable. Additionally, you should specify all the ports you need inside your Docker container in
 'forwardPorts'.
@@ -214,7 +263,8 @@ see *'Dev Container: $your_name'* next to the two arrows.
 
 ### 6. Install the Python extension inside the Docker container to debug and run Python files
 
-Again open up the extensions tab (now inside the Docker container) and install the Python extension (ID: *ms-python.python*).
+Again open up the extensions tab (now inside the Docker container) and install the Python extension (ID: *
+ms-python.python*).
 
 Now you can debug/run any Python file you want. Open up the chosen Python file and the 'Run and Debug' tab by clicking
 the run/debug icon that should be now available on the left taskbar.
@@ -233,11 +283,11 @@ If you are in the sample project you can make sure that the Docker container wor
 folder (*'cd tests'*) and executing:
 
 ```python
-pytest -m local
+pytest - m
+local
 ```
 
 ![tests](../_static/img/vscode_docker/tests.png)
-
 
 ### Additional Tips
 
@@ -246,5 +296,5 @@ pytest -m local
 
 - If you want to rebuild the container, because e.g. a different branch uses different dependencies, open the
   extension’s command palette and click *'Rebuild Container'*.
-(This of course means that you have to reinstall the Python extension - if this becomes annoying you can specify
+  (This of course means that you have to reinstall the Python extension - if this becomes annoying you can specify
   its ID in the devcontainer.json file to be pre-installed with every rebuild).
