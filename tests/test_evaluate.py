@@ -817,7 +817,7 @@ class TestCompare(unittest.TestCase):
         assert result['defined_to_be_correct_target'].to_list() == [3, 3]
 
     def test_non_strict_grouped_both_above_threshold_both_correct(self):
-        """Return second group with targe = int(1) as the confidence of 100 % is higher than 99%."""
+        """Return second group with target = int(1) as the confidence of 100 % is higher than 99%."""
         result = grouped(
             DataFrame(
                 [[True, 3, True, 0.99], [True, 1, True, 1.0]],
