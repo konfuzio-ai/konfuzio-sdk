@@ -99,8 +99,57 @@
 <li class="toctree-l3"><a class="reference internal" href="#important-notes">Important notes</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">Environment Variables</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="#false-for-production-true-for-local-development-mandatory">False for production, True for local development (mandatory).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#see-https-docs-djangoproject-com-en-3-2-ref-settings-std-setting-debug">See https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-DEBUG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#set-maintenance-mode-shows-503-error-page-when-maintenance-mode-is-on-mandatory">Set maintenance mode, shows 503 error page when maintenance-mode is on (mandatory).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#insert-random-secret-key-mandatory">Insert random secret key (mandatory).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#see-https-docs-djangoproject-com-en-4-0-ref-settings-secret-key">See https://docs.djangoproject.com/en/4.0/ref/settings/#secret-key</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#the-hostname-variable-is-used-in-the-e-mail-templates-mandatory">The HOSTNAME variable is used in the E-Mail templates (mandatory).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#https-example-konfuzio-com-or-http-localhost-8000-for-local-development">https://example.konfuzio.com or http://localhost:8000 for local development.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#note-please-include-the-protocol-e-g-http-even-the-variable-is-named-host-name">Note: Please include the protocol (e.g. http://) even the variable is named HOST_NAME</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#please-enter-a-postgres-database-https-github-com-kennethreitz-dj-database-url-url-schema-mandatory">Please enter a Postgres Database (https://github.com/kennethreitz/dj-database-url#url-schema) (mandatory).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#insert-hostname-e-g-konfuzio-com-or-for-local-development-mandatory">Insert hostname e.g. konfuzio.com or * for local development (mandatory).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#see-https-docs-djangoproject-com-en-4-0-ref-settings-allowed-hosts">See https://docs.djangoproject.com/en/4.0/ref/settings/#allowed-hosts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#django-s-default-storage-mandatory">Django’s default storage (mandatory).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#for-azure-use-storage-multiazurestorage">for azure use: storage.MultiAzureStorage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#for-s3-like-storage-use-storage-multis3boto3storage">for S3-like storage use: storage.MultiS3Boto3Storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#see-https-docs-djangoproject-com-en-4-0-ref-settings-default-file-storage">See https://docs.djangoproject.com/en/4.0/ref/settings/#default-file-storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#required-settings-if-storage-multiazurestorage-is-used-optional">Required settings if storage.MultiAzureStorage is used (optional).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#required-settings-for-storage-multis3boto3storage-optional">Required settings for storage.MultiS3Boto3Storage (optional).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#access-to-customer-blob-storage-optional">Access to customer Blob Storage (optional).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#e-g-beispiel-ag-account-key-the-keys-124-azure-container-default">e.g. “{‘beispiel_ag’: {‘account_key’: ‘the_keys_124’,’azure_container’: ‘default’,}}”</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#celery-settings-mandatory">Celery settings (mandatory).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#defender-settings-optional">Defender settings (optional).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#sentry-dsn-e-g-https-123456789-sentry-io-1234567-optional">SENTRY_DSN e.g. “https://123456789&#64;sentry.io/1234567” (optional).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#e-mail-address-which-is-bcc-in-every-transactional-e-mail-optional">E-Mail address which is BCC in every transactional E-Mail (optional).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#the-smtp-credentials-for-sending-e-mails-optional">The SMTP credentials for sending E-Mails (optional).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#see-https-docs-djangoproject-com-en-4-0-ref-settings-email-backend">See https://docs.djangoproject.com/en/4.0/ref/settings/#email-backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#see-https-docs-djangoproject-com-en-4-0-ref-settings-email-use-tls">See https://docs.djangoproject.com/en/4.0/ref/settings/#email-use-tls</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#see-https-docs-djangoproject-com-en-4-0-ref-settings-email-use-ssl">See https://docs.djangoproject.com/en/4.0/ref/settings/#email-use-ssl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#see-https-docs-djangoproject-com-en-4-0-ref-settings-email-timeout">See https://docs.djangoproject.com/en/4.0/ref/settings/#email-timeout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#api-key-to-sent-emails-via-sendgrid-if-debug-false-optional">Api Key to sent emails via SendGrid if Debug=False (optional).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#if-you-use-the-sendgrid-api-key-you-must-also-set-email-backend-sendgrid-backend-sendgridbackend">If you use the SENDGRID_API_KEY you must also set EMAIL_BACKEND=sendgrid_backend.SendgridBackend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#set-google-analytics-or-keep-empty-optional">Set Google Analytics or keep empty (optional).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#captcha-protected-signup-optional">Captcha protected signup (optional).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#flower-url-or-keep-empty-optional">Flower URL or keep empty (optional).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#rate-limit-per-worker-optional">Rate limit per worker (optional).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#configure-azure-ocr-optional">Configure Azure OCR (optional).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#if-this-is-activated-ssl-is-required-optional">If this is activated SSL is required (optional).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#see-https-docs-djangoproject-com-en-4-0-ref-settings-std-setting-session-cookie-secure">See https://docs.djangoproject.com/en/4.0/ref/settings/#std:setting-SESSION_COOKIE_SECURE</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#id8">If this is activated SSL is required (optional).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#https-docs-djangoproject-com-en-4-0-ref-settings-csrf-cookie-secure">https://docs.djangoproject.com/en/4.0/ref/settings/#csrf-cookie-secure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#new-relic-settings-optional">New relic settings (optional).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#directory-to-cache-files-during-the-ai-training-process-and-when-running-ai-models-optional">Directory to cache files during the AI training process and when running AI models (optional).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#keycloak-environment-the-following-values-establish-a-keycloak-connection-through-the">KEYCLOAK ENVIRONMENT The following values establish a keycloak connection through the</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#mozilla-oidc-package-https-mozilla-django-oidc-readthedocs-io-en-stable-settings-html-optional">mozilla oidc package (https://mozilla-django-oidc.readthedocs.io/en/stable/settings.html) (optional).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#set-to-true-to-activate-keycloak-optional">SET TO TRUE TO ACTIVATE KEYCLOAK (optional).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#if-you-use-keycloak-version-17-and-later-set-url-like-http-s-keycloak-address-port">If you use keycloak version 17 and later set url like: http(s)://{keycloak_address}:{port}/</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#if-you-use-keycloak-version-16-and-earlier-set-url-like-http-s-keycloak-address-port-auth">If you use keycloak version 16 and earlier set url like: http(s)://{keycloak_address}:{port}/auth/</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#these-variables-are-only-used-for-keycloak-integration-tests">These variables are only used for Keycloak integration tests:</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#the-admin-variables-are-for-login-keycloak-admin-panel-the-test-variables-are-for-login-to-konfuzio-server">The admin variables are for login keycloak admin panel, the test variables are for login to Konfuzio server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="changelog_app.html">Changelog</a></li>
 </ul>
 
@@ -508,6 +557,213 @@ and webhooks. The CI application needs network access to the Konfuzio installati
 </ul>
 </section>
 </section>
+<section id="id3">
+<h2>Environment Variables<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<p>Konfuzio Server is fully configured via environment variables, these can be passed as dedicated environment variables or a single .env to the Konfuzio containers. A template for a .env file is provided here:</p>
+<p><a href="#id4"><span class="problematic" id="id5">``</span></a><a href="#id6"><span class="problematic" id="id7">`</span></a>text</p>
+</section>
+</section>
+<section id="false-for-production-true-for-local-development-mandatory">
+<h1>False for production, True for local development (mandatory).<a class="headerlink" href="#false-for-production-true-for-local-development-mandatory" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="see-https-docs-djangoproject-com-en-3-2-ref-settings-std-setting-debug">
+<h1>See <a class="reference external" href="https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-DEBUG">https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-DEBUG</a><a class="headerlink" href="#see-https-docs-djangoproject-com-en-3-2-ref-settings-std-setting-debug" title="Permalink to this headline">¶</a></h1>
+<p>DEBUG=</p>
+</section>
+<section id="set-maintenance-mode-shows-503-error-page-when-maintenance-mode-is-on-mandatory">
+<h1>Set maintenance mode, shows 503 error page when maintenance-mode is on (mandatory).<a class="headerlink" href="#set-maintenance-mode-shows-503-error-page-when-maintenance-mode-is-on-mandatory" title="Permalink to this headline">¶</a></h1>
+<p>MAINTENANCE_MODE=False</p>
+</section>
+<section id="insert-random-secret-key-mandatory">
+<h1>Insert random secret key (mandatory).<a class="headerlink" href="#insert-random-secret-key-mandatory" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="see-https-docs-djangoproject-com-en-4-0-ref-settings-secret-key">
+<h1>See <a class="reference external" href="https://docs.djangoproject.com/en/4.0/ref/settings/#secret-key">https://docs.djangoproject.com/en/4.0/ref/settings/#secret-key</a><a class="headerlink" href="#see-https-docs-djangoproject-com-en-4-0-ref-settings-secret-key" title="Permalink to this headline">¶</a></h1>
+<p>SECRET_KEY=</p>
+</section>
+<section id="the-hostname-variable-is-used-in-the-e-mail-templates-mandatory">
+<h1>The HOSTNAME variable is used in the E-Mail templates (mandatory).<a class="headerlink" href="#the-hostname-variable-is-used-in-the-e-mail-templates-mandatory" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="https-example-konfuzio-com-or-http-localhost-8000-for-local-development">
+<h1><a class="reference external" href="https://example.konfuzio.com">https://example.konfuzio.com</a> or <a class="reference external" href="http://localhost:8000">http://localhost:8000</a> for local development.<a class="headerlink" href="#https-example-konfuzio-com-or-http-localhost-8000-for-local-development" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="note-please-include-the-protocol-e-g-http-even-the-variable-is-named-host-name">
+<h1>Note: Please include the protocol (e.g. <a class="reference external" href="http://">http://</a>) even the variable is named HOST_NAME<a class="headerlink" href="#note-please-include-the-protocol-e-g-http-even-the-variable-is-named-host-name" title="Permalink to this headline">¶</a></h1>
+<p>HOST_NAME=</p>
+</section>
+<section id="please-enter-a-postgres-database-https-github-com-kennethreitz-dj-database-url-url-schema-mandatory">
+<h1>Please enter a Postgres Database (<a class="reference external" href="https://github.com/kennethreitz/dj-database-url#url-schema">https://github.com/kennethreitz/dj-database-url#url-schema</a>) (mandatory).<a class="headerlink" href="#please-enter-a-postgres-database-https-github-com-kennethreitz-dj-database-url-url-schema-mandatory" title="Permalink to this headline">¶</a></h1>
+<p>DATABASE_URL=
+DATABASE_URL_SSL_REQUIRE=True</p>
+</section>
+<section id="insert-hostname-e-g-konfuzio-com-or-for-local-development-mandatory">
+<h1>Insert hostname e.g. konfuzio.com or * for local development (mandatory).<a class="headerlink" href="#insert-hostname-e-g-konfuzio-com-or-for-local-development-mandatory" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="see-https-docs-djangoproject-com-en-4-0-ref-settings-allowed-hosts">
+<h1>See <a class="reference external" href="https://docs.djangoproject.com/en/4.0/ref/settings/#allowed-hosts">https://docs.djangoproject.com/en/4.0/ref/settings/#allowed-hosts</a><a class="headerlink" href="#see-https-docs-djangoproject-com-en-4-0-ref-settings-allowed-hosts" title="Permalink to this headline">¶</a></h1>
+<p>ALLOWED_HOSTS=</p>
+</section>
+<section id="django-s-default-storage-mandatory">
+<h1>Django’s default storage (mandatory).<a class="headerlink" href="#django-s-default-storage-mandatory" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="for-azure-use-storage-multiazurestorage">
+<h1>for azure use: storage.MultiAzureStorage<a class="headerlink" href="#for-azure-use-storage-multiazurestorage" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="for-s3-like-storage-use-storage-multis3boto3storage">
+<h1>for S3-like storage use: storage.MultiS3Boto3Storage<a class="headerlink" href="#for-s3-like-storage-use-storage-multis3boto3storage" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="see-https-docs-djangoproject-com-en-4-0-ref-settings-default-file-storage">
+<h1>See <a class="reference external" href="https://docs.djangoproject.com/en/4.0/ref/settings/#default-file-storage">https://docs.djangoproject.com/en/4.0/ref/settings/#default-file-storage</a><a class="headerlink" href="#see-https-docs-djangoproject-com-en-4-0-ref-settings-default-file-storage" title="Permalink to this headline">¶</a></h1>
+<p>DEFAULT_FILE_STORAGE=django.core.files.storage.FileSystemStorage</p>
+</section>
+<section id="required-settings-if-storage-multiazurestorage-is-used-optional">
+<h1>Required settings if storage.MultiAzureStorage is used (optional).<a class="headerlink" href="#required-settings-if-storage-multiazurestorage-is-used-optional" title="Permalink to this headline">¶</a></h1>
+<p>AZURE_ACCOUNT_KEY=
+AZURE_ACCOUNT_NAME=
+AZURE_CONTAINER=</p>
+</section>
+<section id="required-settings-for-storage-multis3boto3storage-optional">
+<h1>Required settings for storage.MultiS3Boto3Storage (optional).<a class="headerlink" href="#required-settings-for-storage-multis3boto3storage-optional" title="Permalink to this headline">¶</a></h1>
+<p>AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_STORAGE_BUCKET_NAME=
+AWS_S3_REGION_NAME=
+AWS_S3_ENDPOINT_URL=</p>
+</section>
+<section id="access-to-customer-blob-storage-optional">
+<h1>Access to customer Blob Storage (optional).<a class="headerlink" href="#access-to-customer-blob-storage-optional" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="e-g-beispiel-ag-account-key-the-keys-124-azure-container-default">
+<h1>e.g. “{‘beispiel_ag’: {‘account_key’: ‘the_keys_124’,’azure_container’: ‘default’,}}”<a class="headerlink" href="#e-g-beispiel-ag-account-key-the-keys-124-azure-container-default" title="Permalink to this headline">¶</a></h1>
+<p>AZURE_CUSTOMER_STORAGE={}</p>
+</section>
+<section id="celery-settings-mandatory">
+<h1>Celery settings (mandatory).<a class="headerlink" href="#celery-settings-mandatory" title="Permalink to this headline">¶</a></h1>
+<p>BROKER_URL=
+RESULT_BACKEND=
+TASK_ALWAYS_EAGER=True</p>
+</section>
+<section id="defender-settings-optional">
+<h1>Defender settings (optional).<a class="headerlink" href="#defender-settings-optional" title="Permalink to this headline">¶</a></h1>
+<p>DEFENDER_REDIS_URL=</p>
+</section>
+<section id="sentry-dsn-e-g-https-123456789-sentry-io-1234567-optional">
+<h1>SENTRY_DSN e.g. “<a class="reference external" href="https://123456789&#64;sentry.io/1234567">https://123456789&#64;sentry.io/1234567</a>” (optional).<a class="headerlink" href="#sentry-dsn-e-g-https-123456789-sentry-io-1234567-optional" title="Permalink to this headline">¶</a></h1>
+<p>SENTRY_DSN=</p>
+</section>
+<section id="e-mail-address-which-is-bcc-in-every-transactional-e-mail-optional">
+<h1>E-Mail address which is BCC in every transactional E-Mail (optional).<a class="headerlink" href="#e-mail-address-which-is-bcc-in-every-transactional-e-mail-optional" title="Permalink to this headline">¶</a></h1>
+<p>CRM_INTEGRATION_EMAIL=</p>
+</section>
+<section id="the-smtp-credentials-for-sending-e-mails-optional">
+<h1>The SMTP credentials for sending E-Mails (optional).<a class="headerlink" href="#the-smtp-credentials-for-sending-e-mails-optional" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="see-https-docs-djangoproject-com-en-4-0-ref-settings-email-backend">
+<h1>See <a class="reference external" href="https://docs.djangoproject.com/en/4.0/ref/settings/#email-backend">https://docs.djangoproject.com/en/4.0/ref/settings/#email-backend</a><a class="headerlink" href="#see-https-docs-djangoproject-com-en-4-0-ref-settings-email-backend" title="Permalink to this headline">¶</a></h1>
+<p>EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_HOST=
+EMAIL_HOST_PASSWORD=
+EMAIL_HOST_USER=
+EMAIL_PORT=25</p>
+</section>
+<section id="see-https-docs-djangoproject-com-en-4-0-ref-settings-email-use-tls">
+<h1>See <a class="reference external" href="https://docs.djangoproject.com/en/4.0/ref/settings/#email-use-tls">https://docs.djangoproject.com/en/4.0/ref/settings/#email-use-tls</a><a class="headerlink" href="#see-https-docs-djangoproject-com-en-4-0-ref-settings-email-use-tls" title="Permalink to this headline">¶</a></h1>
+<p>EMAIL_USE_TLS=False</p>
+</section>
+<section id="see-https-docs-djangoproject-com-en-4-0-ref-settings-email-use-ssl">
+<h1>See <a class="reference external" href="https://docs.djangoproject.com/en/4.0/ref/settings/#email-use-ssl">https://docs.djangoproject.com/en/4.0/ref/settings/#email-use-ssl</a><a class="headerlink" href="#see-https-docs-djangoproject-com-en-4-0-ref-settings-email-use-ssl" title="Permalink to this headline">¶</a></h1>
+<p>EMAIL_USE_SSL=False</p>
+</section>
+<section id="see-https-docs-djangoproject-com-en-4-0-ref-settings-email-timeout">
+<h1>See <a class="reference external" href="https://docs.djangoproject.com/en/4.0/ref/settings/#email-timeout">https://docs.djangoproject.com/en/4.0/ref/settings/#email-timeout</a><a class="headerlink" href="#see-https-docs-djangoproject-com-en-4-0-ref-settings-email-timeout" title="Permalink to this headline">¶</a></h1>
+<p>EMAIL_TIMEOUT=
+DEFAULT_FROM_EMAIL=</p>
+</section>
+<section id="api-key-to-sent-emails-via-sendgrid-if-debug-false-optional">
+<h1>Api Key to sent emails via SendGrid if Debug=False (optional).<a class="headerlink" href="#api-key-to-sent-emails-via-sendgrid-if-debug-false-optional" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="if-you-use-the-sendgrid-api-key-you-must-also-set-email-backend-sendgrid-backend-sendgridbackend">
+<h1>If you use the SENDGRID_API_KEY you must also set EMAIL_BACKEND=sendgrid_backend.SendgridBackend<a class="headerlink" href="#if-you-use-the-sendgrid-api-key-you-must-also-set-email-backend-sendgrid-backend-sendgridbackend" title="Permalink to this headline">¶</a></h1>
+<p>SENDGRID_API_KEY=</p>
+</section>
+<section id="set-google-analytics-or-keep-empty-optional">
+<h1>Set Google Analytics or keep empty (optional).<a class="headerlink" href="#set-google-analytics-or-keep-empty-optional" title="Permalink to this headline">¶</a></h1>
+<p>GOOGLE_ANALYTICS=</p>
+</section>
+<section id="captcha-protected-signup-optional">
+<h1>Captcha protected signup (optional).<a class="headerlink" href="#captcha-protected-signup-optional" title="Permalink to this headline">¶</a></h1>
+<p>CAPTCHA=False</p>
+</section>
+<section id="flower-url-or-keep-empty-optional">
+<h1>Flower URL or keep empty (optional).<a class="headerlink" href="#flower-url-or-keep-empty-optional" title="Permalink to this headline">¶</a></h1>
+<p>FLOWER_URL=</p>
+</section>
+<section id="rate-limit-per-worker-optional">
+<h1>Rate limit per worker (optional).<a class="headerlink" href="#rate-limit-per-worker-optional" title="Permalink to this headline">¶</a></h1>
+<p>TASK_DEFAULT_RATE_LIMIT=30/m</p>
+</section>
+<section id="configure-azure-ocr-optional">
+<h1>Configure Azure OCR (optional).<a class="headerlink" href="#configure-azure-ocr-optional" title="Permalink to this headline">¶</a></h1>
+<p>AZURE_OCR_KEY=
+AZURE_OCR_VERSION=
+AZURE_OCR_BASE_URL=</p>
+</section>
+<section id="if-this-is-activated-ssl-is-required-optional">
+<h1>If this is activated SSL is required (optional).<a class="headerlink" href="#if-this-is-activated-ssl-is-required-optional" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="see-https-docs-djangoproject-com-en-4-0-ref-settings-std-setting-session-cookie-secure">
+<h1>See <a class="reference external" href="https://docs.djangoproject.com/en/4.0/ref/settings/#std:setting-SESSION_COOKIE_SECURE">https://docs.djangoproject.com/en/4.0/ref/settings/#std:setting-SESSION_COOKIE_SECURE</a><a class="headerlink" href="#see-https-docs-djangoproject-com-en-4-0-ref-settings-std-setting-session-cookie-secure" title="Permalink to this headline">¶</a></h1>
+<p>SESSION_COOKIE_SECURE=True</p>
+</section>
+<section id="id8">
+<h1>If this is activated SSL is required (optional).<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="https-docs-djangoproject-com-en-4-0-ref-settings-csrf-cookie-secure">
+<h1><a class="reference external" href="https://docs.djangoproject.com/en/4.0/ref/settings/#csrf-cookie-secure">https://docs.djangoproject.com/en/4.0/ref/settings/#csrf-cookie-secure</a><a class="headerlink" href="#https-docs-djangoproject-com-en-4-0-ref-settings-csrf-cookie-secure" title="Permalink to this headline">¶</a></h1>
+<p>CSRF_COOKIE_SECURE=True</p>
+</section>
+<section id="new-relic-settings-optional">
+<h1>New relic settings (optional).<a class="headerlink" href="#new-relic-settings-optional" title="Permalink to this headline">¶</a></h1>
+<p>NEW_RELIC_LICENSE_KEY=
+NEW_RELIC_APP_NAME=
+NEW_RELIC_ENVIRONMENT=</p>
+</section>
+<section id="directory-to-cache-files-during-the-ai-training-process-and-when-running-ai-models-optional">
+<h1>Directory to cache files during the AI training process and when running AI models (optional).<a class="headerlink" href="#directory-to-cache-files-during-the-ai-training-process-and-when-running-ai-models-optional" title="Permalink to this headline">¶</a></h1>
+<p>KONFUZIO_CACHE_DIR =   # e.g. ‘/cache’, uses tempdir if not set</p>
+</section>
+<section id="keycloak-environment-the-following-values-establish-a-keycloak-connection-through-the">
+<h1>KEYCLOAK ENVIRONMENT The following values establish a keycloak connection through the<a class="headerlink" href="#keycloak-environment-the-following-values-establish-a-keycloak-connection-through-the" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="mozilla-oidc-package-https-mozilla-django-oidc-readthedocs-io-en-stable-settings-html-optional">
+<h1>mozilla oidc package (<a class="reference external" href="https://mozilla-django-oidc.readthedocs.io/en/stable/settings.html">https://mozilla-django-oidc.readthedocs.io/en/stable/settings.html</a>) (optional).<a class="headerlink" href="#mozilla-oidc-package-https-mozilla-django-oidc-readthedocs-io-en-stable-settings-html-optional" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="set-to-true-to-activate-keycloak-optional">
+<h1>SET TO TRUE TO ACTIVATE KEYCLOAK (optional).<a class="headerlink" href="#set-to-true-to-activate-keycloak-optional" title="Permalink to this headline">¶</a></h1>
+<p>SSO_ENABLED=True</p>
+</section>
+<section id="if-you-use-keycloak-version-17-and-later-set-url-like-http-s-keycloak-address-port">
+<h1>If you use keycloak version 17 and later set url like: http(s)://{keycloak_address}:{port}/<a class="headerlink" href="#if-you-use-keycloak-version-17-and-later-set-url-like-http-s-keycloak-address-port" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="if-you-use-keycloak-version-16-and-earlier-set-url-like-http-s-keycloak-address-port-auth">
+<h1>If you use keycloak version 16 and earlier set url like: http(s)://{keycloak_address}:{port}/auth/<a class="headerlink" href="#if-you-use-keycloak-version-16-and-earlier-set-url-like-http-s-keycloak-address-port-auth" title="Permalink to this headline">¶</a></h1>
+<p>KEYCLOAK_URL=
+KEYCLOAK_REALM=  # defaults to master</p>
+<p>For Keycloak client creation see: <a class="reference external" href="https://www.keycloak.org/docs/latest/server_admin/#assembly-managing-clients_server_administration_guide">https://www.keycloak.org/docs/latest/server_admin/#assembly-managing-clients_server_administration_guide</a>
+OIDC_RP_SIGN_ALGO=RS256
+OIDC_RP_CLIENT_ID=
+OIDC_RP_CLIENT_SECRET=</p>
+</section>
+<section id="these-variables-are-only-used-for-keycloak-integration-tests">
+<h1>These variables are only used for Keycloak integration tests:<a class="headerlink" href="#these-variables-are-only-used-for-keycloak-integration-tests" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="the-admin-variables-are-for-login-keycloak-admin-panel-the-test-variables-are-for-login-to-konfuzio-server">
+<h1>The admin variables are for login keycloak admin panel, the test variables are for login to Konfuzio server<a class="headerlink" href="#the-admin-variables-are-for-login-keycloak-admin-panel-the-test-variables-are-for-login-to-konfuzio-server" title="Permalink to this headline">¶</a></h1>
+<p>KEYCLOAK_ADMIN_USERNAME=
+KEYCLOAK_ADMIN_PASSWORD=
+KEYCLOAK_TEST_USERNAME=
+KEYCLOAK_TEST_PASSWORD=
+``</p>
 </section>
 
 

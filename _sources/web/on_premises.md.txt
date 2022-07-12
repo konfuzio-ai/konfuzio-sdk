@@ -410,3 +410,146 @@ Click `SSO` on login page to log in to Konfuzio using keycloak
 ### Important notes
 
 - The Keycloak admin user cannot login into Konfuzio Server.
+
+
+## Environment Variables
+
+Konfuzio Server is fully configured via environment variables, these can be passed as dedicated environment variables or a single .env to the Konfuzio containers. A template for a .env file is provided here:
+
+```text
+# False for production, True for local development (mandatory).
+# See https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-DEBUG
+DEBUG=
+
+# Set maintenance mode, shows 503 error page when maintenance-mode is on (mandatory).
+MAINTENANCE_MODE=False
+
+# Insert random secret key (mandatory).
+# See https://docs.djangoproject.com/en/4.0/ref/settings/#secret-key
+SECRET_KEY=
+
+# The HOSTNAME variable is used in the E-Mail templates (mandatory).
+# https://example.konfuzio.com or http://localhost:8000 for local development.
+# Note: Please include the protocol (e.g. http://) even the variable is named HOST_NAME
+HOST_NAME=
+
+# Please enter a Postgres Database (https://github.com/kennethreitz/dj-database-url#url-schema) (mandatory).
+DATABASE_URL=
+DATABASE_URL_SSL_REQUIRE=True
+
+# Insert hostname e.g. konfuzio.com or * for local development (mandatory).
+# See https://docs.djangoproject.com/en/4.0/ref/settings/#allowed-hosts
+ALLOWED_HOSTS=
+
+# Django's default storage (mandatory).
+# for azure use: storage.MultiAzureStorage
+# for S3-like storage use: storage.MultiS3Boto3Storage
+# See https://docs.djangoproject.com/en/4.0/ref/settings/#default-file-storage
+DEFAULT_FILE_STORAGE=django.core.files.storage.FileSystemStorage
+
+# Required settings if storage.MultiAzureStorage is used (optional).
+AZURE_ACCOUNT_KEY=
+AZURE_ACCOUNT_NAME=
+AZURE_CONTAINER=
+
+# Required settings for storage.MultiS3Boto3Storage (optional).
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_STORAGE_BUCKET_NAME=
+AWS_S3_REGION_NAME=
+AWS_S3_ENDPOINT_URL=
+
+# Access to customer Blob Storage (optional).
+# e.g. "{'beispiel_ag': {'account_key': 'the_keys_124','azure_container': 'default',}}"
+AZURE_CUSTOMER_STORAGE={}
+
+# Celery settings (mandatory).
+BROKER_URL=
+RESULT_BACKEND=
+TASK_ALWAYS_EAGER=True
+
+# Defender settings (optional).
+DEFENDER_REDIS_URL=
+
+# SENTRY_DSN e.g. "https://123456789@sentry.io/1234567" (optional).
+SENTRY_DSN=
+
+# E-Mail address which is BCC in every transactional E-Mail (optional).
+CRM_INTEGRATION_EMAIL=
+
+# The SMTP credentials for sending E-Mails (optional).
+# See https://docs.djangoproject.com/en/4.0/ref/settings/#email-backend
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_HOST=
+EMAIL_HOST_PASSWORD=
+EMAIL_HOST_USER=
+EMAIL_PORT=25
+# See https://docs.djangoproject.com/en/4.0/ref/settings/#email-use-tls
+EMAIL_USE_TLS=False
+# See https://docs.djangoproject.com/en/4.0/ref/settings/#email-use-ssl
+EMAIL_USE_SSL=False
+# See https://docs.djangoproject.com/en/4.0/ref/settings/#email-timeout
+EMAIL_TIMEOUT=
+DEFAULT_FROM_EMAIL=
+
+# Api Key to sent emails via SendGrid if Debug=False (optional).
+# If you use the SENDGRID_API_KEY you must also set EMAIL_BACKEND=sendgrid_backend.SendgridBackend
+SENDGRID_API_KEY=
+
+# Set Google Analytics or keep empty (optional).
+GOOGLE_ANALYTICS=
+
+# Captcha protected signup (optional).
+CAPTCHA=False
+
+# Flower URL or keep empty (optional).
+FLOWER_URL=
+
+# Rate limit per worker (optional).
+TASK_DEFAULT_RATE_LIMIT=30/m
+
+# Configure Azure OCR (optional).
+AZURE_OCR_KEY=
+AZURE_OCR_VERSION=
+AZURE_OCR_BASE_URL=
+
+# If this is activated SSL is required (optional).
+# See https://docs.djangoproject.com/en/4.0/ref/settings/#std:setting-SESSION_COOKIE_SECURE
+SESSION_COOKIE_SECURE=True
+
+# If this is activated SSL is required (optional).
+# https://docs.djangoproject.com/en/4.0/ref/settings/#csrf-cookie-secure
+CSRF_COOKIE_SECURE=True
+
+# New relic settings (optional).
+NEW_RELIC_LICENSE_KEY=
+NEW_RELIC_APP_NAME=
+NEW_RELIC_ENVIRONMENT=
+
+# Directory to cache files during the AI training process and when running AI models (optional).
+KONFUZIO_CACHE_DIR =   # e.g. '/cache', uses tempdir if not set
+
+# KEYCLOAK ENVIRONMENT The following values establish a keycloak connection through the
+# mozilla oidc package (https://mozilla-django-oidc.readthedocs.io/en/stable/settings.html) (optional).
+
+# SET TO TRUE TO ACTIVATE KEYCLOAK (optional).
+SSO_ENABLED=True
+
+# If you use keycloak version 17 and later set url like: http(s)://{keycloak_address}:{port}/
+# If you use keycloak version 16 and earlier set url like: http(s)://{keycloak_address}:{port}/auth/
+KEYCLOAK_URL=
+KEYCLOAK_REALM=  # defaults to master
+
+For Keycloak client creation see: https://www.keycloak.org/docs/latest/server_admin/#assembly-managing-clients_server_administration_guide
+OIDC_RP_SIGN_ALGO=RS256
+OIDC_RP_CLIENT_ID=
+OIDC_RP_CLIENT_SECRET=
+
+# These variables are only used for Keycloak integration tests:
+# The admin variables are for login keycloak admin panel, the test variables are for login to Konfuzio server
+KEYCLOAK_ADMIN_USERNAME=
+KEYCLOAK_ADMIN_PASSWORD=
+KEYCLOAK_TEST_USERNAME=
+KEYCLOAK_TEST_PASSWORD=
+``
+
