@@ -165,7 +165,11 @@ class TestOfflineExampleData(unittest.TestCase):
             label_set=self.project.label_sets[0],
             spans=[span],
         )
-        span.bbox
+        box = span.bbox()  # verify if we can calculate valid bounding boxes from a given Text offset.
+        assert box.x1 == 113.28
+        assert box.x0 == 84.28
+        assert box.y0 == 532.592
+        assert box.y1 == 540.592
 
 
 class TestEqualityAnnotation(unittest.TestCase):
@@ -346,7 +350,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 29
+        assert len(cls.project.virtual_documents) == 30
 
     def test_project_no_label(self):
         """Test that no_label exists in the Labels of the Project and has the expected name."""
@@ -471,7 +475,7 @@ class TestOfflineDataSetup(unittest.TestCase):
 
     def test_get_span_bbox_with_characters_without_height(self):
         """Test get the bbox of a Span where the characters do not have height (OCR problem)."""
-        document_bbox = {'1': {'x0': 0, 'x1': 1, 'y0': 1, 'y1': 1, 'top': 10, 'bottom': 11, 'page_number': 1}}
+        document_bbox = {'1': {'x0': 0, 'x1': 1, 'y0': 1, 'y1': 1, 'page_number': 1}}
         document = Document(project=self.project, category=self.category, text='hello', bbox=document_bbox)
         span = Span(start_offset=1, end_offset=2)
         _ = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
@@ -480,16 +484,25 @@ class TestOfflineDataSetup(unittest.TestCase):
             span.bbox()
             assert 'coordinate y1 should be bigger than y0.' in context.exception
 
-    def test_get_span_bbox_with_characters_without_width(self):
+    def test_get_span_bbox_with_characters_without_width_missing_bbox(self):
         """Test get the bbox of a Span where the characters do not have width (OCR problem)."""
-        document_bbox = {'1': {'x0': 1, 'x1': 1, 'y0': 0, 'y1': 1, 'top': 10, 'bottom': 11, 'page_number': 1}}
+        document_bbox = {'1': {'x0': 1, 'x1': 1, 'y0': 0, 'y1': 1, 'page_number': 1}}
         document = Document(project=self.project, category=self.category, text='hello', bbox=document_bbox)
         span = Span(start_offset=1, end_offset=2)
         _ = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
         _ = Page(id_=1, number=1, original_size=(595.2, 0), document=document, start_offset=0, end_offset=1)
-        with self.assertRaises(ValueError) as context:
+        with pytest.raises(ValueError, match='provides Character "None" document text refers to "e"'):
             span.bbox()
-            assert 'coordinate x1 should be bigger than x0.' in context.exception
+
+    def test_get_span_bbox_with_characters_without_width(self):
+        """Test get the bbox of a Span where the characters do not have width (OCR problem)."""
+        document_bbox = {'0': {'x0': 1, 'x1': 1, 'y0': 0, 'y1': 1, 'page_number': 1, 'text': 'h'}}
+        document = Document(project=self.project, category=self.category, text='hello', bbox=document_bbox)
+        span = Span(start_offset=1, end_offset=2)
+        _ = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
+        _ = Page(id_=1, number=1, original_size=(595.2, 0), document=document, start_offset=0, end_offset=1)
+        with pytest.raises(ValueError, match='no width in Page 0'):
+            span.bbox()
 
     def test_get_span_bbox_with_unavailable_characters(self):
         """Test get the bbox of a Span where the characters are unavailable."""
@@ -575,9 +588,8 @@ class TestOfflineDataSetup(unittest.TestCase):
         }
         document = Document(project=self.project, category=self.category, text='h', bbox=document_bbox)
         _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
-        with pytest.raises(ValueError) as e:
-            self.assertFalse(document.check_bbox())
-            assert 'has negative width' in str(e)
+        with pytest.raises(ValueError, match='has negative width'):
+            document.check_bbox()
 
     def test_document_check_duplicated_annotations(self):
         """Test Annotations check when an error is raised due to duplicated Annotations by get_annotations."""
@@ -1217,6 +1229,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         span = Span(start_offset=1, end_offset=2)
         annotation = Annotation(document=doc, label_set=label_set, label=label, spans=[span])
         span = Span(start_offset=44, end_offset=65, annotation=annotation)
+        # only Character 60, 61 and 62 provide bounding boxes, all others are None
         span.bbox()
         self.assertEqual(span.page.index, 0)
         self.assertEqual(span.line_index, 0)
@@ -1465,15 +1478,25 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
         assert doc.annotations()[0].offset_string == ['328927/10103', '22.05.2018']
 
+    def test_document_id_when_loading_from_disk(self):
+        """Test ID of Document."""
+        doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
+        assert doc.id_ == TEST_DOCUMENT_ID
+
+    def test_document_check_bbox_available(self):
+        """Test deepcopy will copy over Bbox."""
+        doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
+        virtual_doc = deepcopy(doc)
+        assert virtual_doc.bboxes
+
     def test_document_check_bbox(self):
         """Test bbox check."""
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
         virtual_doc = deepcopy(doc)
         self.assertTrue(virtual_doc.check_bbox())
         virtual_doc._text = '123' + doc.text  # Change text to bring bbox out of sync.
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(ValueError, match='Bbox provides Character "n" document text refers to "l"'):
             virtual_doc.check_bbox()
-            assert 'must have a BBox for character "l" with ID 1000' in str(e)
 
     @unittest.skip(reason='Waiting for API to support to add to default Annotation Set')
     def test_document_add_new_annotation(self):

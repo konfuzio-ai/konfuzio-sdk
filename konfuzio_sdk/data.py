@@ -9,7 +9,7 @@ import re
 import shutil
 import time
 import zipfile
-from typing import Optional, List, Union, Tuple
+from typing import Optional, List, Union, Tuple, Dict
 from warnings import warn
 
 import dateutil.parser
@@ -29,7 +29,7 @@ from konfuzio_sdk.api import (
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
 from konfuzio_sdk.urls import get_annotation_view_url
-from konfuzio_sdk.utils import get_bbox, get_missing_offsets
+from konfuzio_sdk.utils import get_missing_offsets
 from konfuzio_sdk.utils import is_file, convert_to_bio_scheme, amend_file_name, sdk_isinstance
 
 logger = logging.getLogger(__name__)
@@ -113,9 +113,13 @@ class Page(Data):
             check_page = False
         assert check_page
 
+    def __hash__(self):
+        """Define that one Page per Document is unique."""
+        return (self.document, self.index)
+
     def __repr__(self):
         """Return the name of the Document incl. the ID."""
-        return f"Page {self.index} of {self.document}"
+        return f"Page {self.index} in {self.document}"
 
     def get_image(self, update: bool = False):
         """Get Document Page as PNG."""
@@ -142,22 +146,37 @@ class Bbox:
         self.page: Page = page
         self._valid()
 
+    def __repr__(self):
+        """Represent the Box."""
+        return f'{self.__class__.__name__}: {self.x1} {self.y0} {self.y0} {self.y1} on Page {self.page}'
+
+    def __hash__(self):
+        """Return identical value for a Bounding Box."""
+        return (self.x0, self.x1, self.y0, self.y1, self.page)
+
+    def __eq__(self, other: 'Bbox') -> bool:
+        """Define that one Bounding Box on the same page is identical."""
+        return self.__hash__() == other.__hash__()
+
     def _valid(self,):
         """Validate contained data."""
-        if self.x0 and self.x1 and not self.x0 < self.x1:
-            raise ValueError(
-                f'{self} in {self.page.document}: coordinate x1 should be bigger than x0. '
-                f'x0: {self.x0}, x1: {self.x1}, document: {self.page.document}.'
-            )
+        if self.x0 == self.x1:
+            raise ValueError(f'{self} no width in {self.page}.')
 
-        if self.y0 and self.y1 and not self.y0 < self.y1:
-            raise ValueError(
-                f'{self} in {self.page.document}: coordinate y1 should be bigger than y0.'
-                f' y0: {self.y0}, y1: {self.y1}, document: {self.page.document}.'
-            )
+        if self.x0 > self.x1:
+            raise ValueError(f'{self} has negative width in {self.page}.')
 
-        if not (self.x1 < self.page.width) or not (self.y1 < self.page.height):
-            raise ValueError(f'{self} is located outside of {self.page}.')
+        if self.y0 == self.y1:
+            raise ValueError(f'{self} has no height in {self.page}.')
+
+        if self.y0 > self.y1:
+            raise ValueError(f'{self} has negative height in {self.page}.')
+
+        if self.y1 > self.page.height:
+            raise ValueError(f'{self} exceeds height of {self.page}.')
+
+        if self.x1 > self.page.width:
+            raise ValueError(f'{self} exceeds width of {self.page}.')
 
 
 class AnnotationSet(Data):
@@ -802,17 +821,25 @@ class Span(Data):
         if not self.page:
             logger.warning(f'{self} does not have a Page.')
             return None
-        if not self.annotation.document.bboxes:
+        if not self.annotation.document.bboxes_available:
             logger.warning(f'{self.annotation.document} of {self} does not provide Bboxes.')
             return None
         _ = self.line_index  # quick validate if start and end is in the same line of text
 
         if self._bbox is None:
-            b = get_bbox(self.annotation.document.bboxes, self.start_offset, self.end_offset)
-            if not any(b.values()):  # Some characters will not provide bounding boxes, e.g. '\x0c'
-                raise ValueError(f'{self} does not have available characters bounding boxes.')
-            self._bbox = Bbox(x0=b['x0'], x1=b['x1'], y0=b['y0'], y1=b['y1'], page=self.page)
-
+            warn('WIP: Modifications before the next stable release expected.', FutureWarning, stacklevel=2)
+            # todo: verify that one Span relates to Character in on line of text
+            character_range = range(self.start_offset, self.end_offset)
+            characters = {key: self.annotation.document.bboxes.get(key) for key in character_range}
+            if not all(characters.values()):
+                logger.error(f'{self} contains Chractacters that don\'t provide a Bounding Box.')
+            self._bbox = Bbox(
+                x0=min([ch.x0 for c, ch in characters.items() if ch is not None]),
+                x1=max([ch.x1 for c, ch in characters.items() if ch is not None]),
+                y0=min([ch.y0 for c, ch in characters.items() if ch is not None]),
+                y1=max([ch.y1 for c, ch in characters.items() if ch is not None]),
+                page=self.page,
+            )
         return self._bbox
 
     @property
@@ -1363,7 +1390,6 @@ class Document(Data):
         self.assignee = assignee
         self._update = update
         self.copy_of_id = copy_of_id
-        self.bboxes_available = self.is_online
 
         if project and category_template:
             self.category = project.get_category_by_id(category_template)
@@ -1384,7 +1410,9 @@ class Document(Data):
 
         # use hidden variables to store low volume information in instance
         self._text: str = text
-        self._bbox = bbox
+        self._characters: Dict[int, Bbox] = None
+        self._bbox_json = bbox
+        self.bboxes_available: bool = self.is_online or self._bbox_json
         self._hocr = None
         self._pages: List[Page] = []
 
@@ -1472,26 +1500,9 @@ class Document(Data):
         return result
 
     def check_bbox(self) -> bool:
-        """
-        Check match between the text in the Document Page and Bbox.
-
-        Check that every character in the text is part of the bbox dictionary and that each bbox has a match in the
-        document text. Also, validate the coordinates of the bounding boxes.
-        """
-        warn('This method is deprecated.', DeprecationWarning, stacklevel=2)
-        for bbox_index, bbox in self.get_bbox().items():
-            character = self.text[int(bbox_index)]
-            if character not in [' ', '\f', '\n'] and bbox['text'] != character:
-                raise ValueError(f'{self} must have a BBox for character "{character}" with ID {bbox_index}.')
-            if bbox['x1'] <= bbox['x0']:
-                raise ValueError(f'{self} has negative or no width.')
-            if bbox['y1'] <= bbox['y0']:
-                raise ValueError(f'{self} has negative or no height.')
-            if bbox['x1'] >= self.get_page_by_index(bbox['page_number'] - 1).width:
-                raise ValueError(f'{self} has invalid X1.')
-            if bbox['y1'] >= self.get_page_by_index(bbox['page_number'] - 1).height:
-                raise ValueError(f'{self} has invalid Y1.')
-
+        """Please see get_bbox of the Document."""
+        warn('Deprecate: Modifications before the next stable release expected.', DeprecationWarning, stacklevel=2)
+        _ = self.bboxes
         return True
 
     def __deepcopy__(self, memo) -> 'Document':
@@ -1501,8 +1512,8 @@ class Document(Data):
             project=self.project,
             category=self.category,
             text=self.text,
-            bbox=self.get_bbox(),
             copy_of_id=self.id_,
+            bbox=self.get_bbox(),
         )
         for page in self.pages():
             _ = Page(
@@ -1779,20 +1790,19 @@ class Document(Data):
 
         return converted_text
 
-    def get_bbox(self):
+    def get_bbox(self) -> Dict:
         """
         Get bbox information per character of file. We don't store bbox as an attribute to save memory.
 
         :return: Bounding box information per character in the document.
         """
-        if self._bbox:
-            bbox = self._bbox
+        if self._bbox_json:
+            bbox = self._bbox_json
         elif is_file(self.bbox_file_path, raise_exception=False):
             with zipfile.ZipFile(self.bbox_file_path, "r") as archive:
                 bbox = json.loads(archive.read('bbox.json5'))
-        elif (
-            self.is_online and self.status and self.status[0] == 2
-        ):  # todo check for self.project.id_ and self.id_ and ?
+        elif self.is_online and self.status and self.status[0] == 2:
+            # todo check for self.project.id_ and self.id_ and ?
             logger.warning(f'Start downloading bbox files of {len(self.text)} characters for {self}.')
             bbox = get_document_details(document_id=self.id_, project_id=self.project.id_, extra_fields="bbox")['bbox']
             # Use the `zipfile` module: `compresslevel` was added in Python 3.7
@@ -1812,11 +1822,29 @@ class Document(Data):
         return bbox
 
     @property
-    def bboxes(self):
+    def bboxes(self) -> Dict[int, Bbox]:
         """Use the cached bbox version."""
-        if self._bbox is None and self.bboxes_available:
-            self._bbox = self.get_bbox()
-        return self._bbox
+        warn('WIP: Modifications before the next stable release expected.', FutureWarning, stacklevel=2)
+        if self.bboxes_available:
+            bbox = self.get_bbox()
+            boxes = {}
+            for character_index, box in bbox.items():
+                x0 = box.get('x0')
+                x1 = box.get('x1')
+                y0 = box.get('y0')
+                y1 = box.get('y1')
+                page_index = box.get('page_number') - 1
+                page = self.get_page_by_index(page_index=page_index)
+                box_character = box.get('text')
+                document_character = self.text[int(character_index)]
+                if box_character not in [' ', '\f', '\n'] and box_character != document_character:
+                    raise ValueError(
+                        f'{self} Bbox provides Character "{box_character}" document text refers to '
+                        f'"{document_character}" with ID "{character_index}".'
+                    )
+                boxes[int(character_index)] = Bbox(x0=x0, x1=x1, y0=y0, y1=y1, page=page)
+            self._characters = boxes
+        return self._characters
 
     @property
     def text(self):
