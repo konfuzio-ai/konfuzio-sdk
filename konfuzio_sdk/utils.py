@@ -431,6 +431,7 @@ def get_sentences(text: str, offsets_map: Union[dict, None] = None, language: st
     :param language: language of the text
     :return: List with a dict per sentence with its text and its start and end offsets in the text of the document.
     """
+    warn('Method needs testing and revision. Please create a Ticket if you use it.', DeprecationWarning, stacklevel=2)
     from nltk.tokenize import sent_tokenize
 
     sentences = set()
@@ -503,6 +504,7 @@ def convert_segmentation_bbox(bbox: dict, page: dict) -> dict:
     :param page: Page information
     :return: Converted bounding box.
     """
+    warn('Method needs testing and revision. Please create a Ticket if you use it.', DeprecationWarning, stacklevel=2)
     original_size = page['original_size']
     image_size = page['size']
     factor_y = original_size[1] / image_size[1]
@@ -530,6 +532,7 @@ def select_bboxes(selection_bbox: dict, page_bboxes: list, tolerance: int = 10) 
     :param tolerance: Tolerance for the coordinates values.
     :return: Selected characters bboxes.
     """
+    warn('Method needs testing and revision. Please create a Ticket if you use it.', DeprecationWarning, stacklevel=2)
     selected_char_bboxes = [
         char_bbox
         for char_bbox in page_bboxes
@@ -552,6 +555,7 @@ def group_bboxes_per_line(char_bboxes: dict, page_index: int) -> list:
     :param page_index: Index of the page in the document.
     :return: List with 1 bounding box per line.
     """
+    warn('Method needs testing and revision. Please create a Ticket if you use it.', DeprecationWarning, stacklevel=2)
     lines_bboxes = []
 
     # iterate over each line_number and all of the character bboxes with that line number
@@ -611,6 +615,7 @@ def merge_bboxes(bboxes: list):
     :param bboxes: Bounding boxes to be merged.
     :return: Merged bounding box.
     """
+    warn('Method needs testing and revision. Please create a Ticket if you use it.', DeprecationWarning, stacklevel=2)
     merge_bbox = {
         "x0": min([b['x0'] for b in bboxes]),
         "x1": max([b['x1'] for b in bboxes]),
@@ -635,6 +640,7 @@ def get_bbox(bbox, start_offset: int, end_offset: int) -> Dict:
 
     :raises ValueError None of the characters provides a bounding box.
     """
+    warn('This method is deprecated. Please use Spans in Documents or Bbox in Pages.', DeprecationWarning, stacklevel=2)
     # get the index of every character bbox in the Document between the start and end offset
     char_bbox_ids = [str(char_bbox_id) for char_bbox_id in range(start_offset, end_offset) if str(char_bbox_id) in bbox]
 
@@ -776,7 +782,7 @@ def get_merged_bboxes(doc_bbox: Dict, bboxes: Union[Dict, List], doc_text: Optio
 
     Returns a list of bboxes.
     """
-    warn('This method is WIP, see https://gitlab.com/konfuzio/objectives/-/issues/9333', FutureWarning, stacklevel=2)
+    warn('Method needs testing and revision. Please create a Ticket if you use it.', DeprecationWarning, stacklevel=2)
     # initialize the list of bboxes that will later be returned
     line_bboxes = []
 
