@@ -1,5 +1,6 @@
 """Test the evaluation."""
 import unittest
+from statistics import mean
 
 import pytest
 from pandas import DataFrame
@@ -915,7 +916,31 @@ class TestEvaluation(unittest.TestCase):
         """Test to calculate F1 Score."""
         project = LocalTextProject()
         evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
-        assert evaluation.f1() == 1.0
+        scores = []
+        for label in project.labels:
+            if label != project.no_label:
+                scores.append(evaluation.f1(search=label))
+        assert mean(scores) == 1.0
+
+    def test_precision(self):
+        """Test to calculate Precision."""
+        project = LocalTextProject()
+        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
+        scores = []
+        for label in project.labels:
+            if label != project.no_label:
+                scores.append(evaluation.precision(search=label))
+        assert mean(scores) == 1.0
+
+    def test_recall(self):
+        """Test to calculate Recall."""
+        project = LocalTextProject()
+        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
+        scores = []
+        for label in project.labels:
+            if label != project.no_label:
+                scores.append(evaluation.recall(search=label))
+        assert mean(scores) == 1.0
 
     def test_false_negatives(self):
         """Count zero Annotations from two Training Documents."""
