@@ -82,7 +82,7 @@ def filter_dataframe(df: pandas.DataFrame, label_name: str, labels_threshold: di
     except KeyError:
         _label_threshold = 0.1
 
-    filtered = df[df['confidence'] >= _label_threshold]
+    filtered = df[df['Accuracy'] >= _label_threshold]
 
     return filtered
 
