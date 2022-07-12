@@ -2,7 +2,6 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<meta content="Basic configurations necessary to use the sdk: have a project in the Konfuzio Web App with some basic settings and initialize the konfuzio-sdk correctly." name="description" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Install SDK &mdash; Konfuzio  documentation</title>
@@ -22,7 +21,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Install SDK using PyCharm" href="quickstart_pycharm.html" />
+    <link rel="next" title="Data" href="sourcecode.html" />
     <link rel="prev" title="Konfuzio Developer’s Guide" href="../index.html" /> 
 </head>
 
@@ -42,13 +41,10 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Konfuzio Python SDK</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Install SDK</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#sign-up-in-konfuzio-server">1. Sign up in Konfuzio Server</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#some-words-about-the-data-structure">Some words about the data structure</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="#sign-up-in-konfuzio-server">1. Sign up in Konfuzio Server</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#install-konfuzio-sdk-package">2. Install <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> package</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#option-1">Option 1</a></li>
 </ul>
@@ -57,40 +53,16 @@
 <li class="toctree-l2"><a class="reference internal" href="#download-the-data">4. Download the data</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="quickstart_pycharm.html">Install SDK using PyCharm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sourcecode.html">Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sourcecode.html#tokenizer">Tokenizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples/examples.html">Code Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sourcecode.html">Source Code Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contribution.html">Contribution Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="releasing/index.html">Releasing Changes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="coordinates_system.html">Coordinates System</a></li>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html#archived-changelog">Archived Changelog</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Konfuzio Trainer</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html">LabelSectionModel Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#documentmodel-examples">DocumentModel Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#paragraphmodel-examples">ParagraphModel Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#design-philosophy">Design Philosophy</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#tokenizers">Tokenizers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#vocabularies">Vocabularies</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#text-modules">Text Modules</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#image-modules">Image Modules</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#loading-pre-trained-modules">Loading Pre-trained Modules</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#extraction">Extraction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#ocr">OCR</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../training/changelog.html">Changelog</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../web/api.html">Konfuzio API Video Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../web/api.html#how-to-make-an-api-call">How to make an API Call</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../web/api.html#document-categorization-api">Document Categorization API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../web/api.html#document-segmentation-api">Document Segmentation API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../web/api.html#supported-ocr-languages">Supported OCR languages</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../web/api.html#supported-file-types">Supported File Types</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../web/api.html#supported-data-normalization">Supported Data Normalization</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../web/api.html#support">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api.html">REST API v2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api-v3.html">REST API v3</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../web/on_premises.html">On-Premises Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../web/changelog_app.html">Changelog</a></li>
 </ul>
@@ -119,26 +91,14 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="install-sdk">
+  <p>settings and initialize the konfuzio-sdk correctly.</p>
+<section id="install-sdk">
 <h1>Install SDK<a class="headerlink" href="#install-sdk" title="Permalink to this headline">¶</a></h1>
-<p>To test our SDK you need to have an account in the Konfuzio Server and initialize the package before using it. Just follow the instructions below to set yourself ready for the SDK.</p>
+<p>To test our SDK you need to have an account in the Konfuzio Server and initialize the package before using it. If you
+are using PyCharm have a look at <a class="reference external" href="quickstart_pycharm.html">Quickstart with Pycharm</a>.</p>
 <section id="sign-up-in-konfuzio-server">
 <h2>1. Sign up in Konfuzio Server<a class="headerlink" href="#sign-up-in-konfuzio-server" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference external" href="https://app.konfuzio.com/accounts/signup/">Register for free</a> in the Konfuzio Server.</p>
-<section id="some-words-about-the-data-structure">
-<h3>Some words about the data structure<a class="headerlink" href="#some-words-about-the-data-structure" title="Permalink to this headline">¶</a></h3>
-<p>The data structure of a project in Konfuzio Server includes:</p>
-<ul class="simple">
-<li><p>Labels<span class="raw-html-m2r"><br></span>
-A label is the name of a group of individual pieces of information found in a type of document.</p></li>
-<li><p>Label Set<span class="raw-html-m2r"><br></span>
-A Label Set combines labels.</p></li>
-<li><p>Training and Test documents<span class="raw-html-m2r"><br></span>
-Based on the data from the training documents the AI learns what to do. These newly acquired capabilities are then applied to the test documents to sample check the quality of the AI model.</p></li>
-<li><p>Annotations for documents<span class="raw-html-m2r"><br></span>
-An annotation is a single piece of information that a label has been assigned to.</p></li>
-</ul>
-</section>
 </section>
 <section id="install-konfuzio-sdk-package">
 <h2>2. Install <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> package<a class="headerlink" href="#install-konfuzio-sdk-package" title="Permalink to this headline">¶</a></h2>
@@ -183,7 +143,7 @@ Only documents in the training or test set are downloaded.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../index.html" class="btn btn-neutral float-left" title="Konfuzio Developer’s Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="quickstart_pycharm.html" class="btn btn-neutral float-right" title="Install SDK using PyCharm" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="sourcecode.html" class="btn btn-neutral float-right" title="Data" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

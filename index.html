@@ -41,43 +41,19 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Konfuzio Python SDK</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="sdk/configuration_reference.html">Install SDK</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sdk/quickstart_pycharm.html">Install SDK using PyCharm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk/sourcecode.html">Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk/sourcecode.html#tokenizer">Tokenizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sdk/examples/examples.html">Code Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sdk/sourcecode.html">Source Code Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sdk/contribution.html">Contribution Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sdk/releasing/index.html">Releasing Changes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sdk/coordinates_system.html">Coordinates System</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sdk/changelog.html">Changelog</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sdk/changelog.html#archived-changelog">Archived Changelog</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Konfuzio Trainer</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="training/training_documentation.html">LabelSectionModel Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="training/training_documentation.html#documentmodel-examples">DocumentModel Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="training/training_documentation.html#paragraphmodel-examples">ParagraphModel Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="training/training_documentation.html#design-philosophy">Design Philosophy</a></li>
-<li class="toctree-l1"><a class="reference internal" href="training/training_documentation.html#tokenizers">Tokenizers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="training/training_documentation.html#vocabularies">Vocabularies</a></li>
-<li class="toctree-l1"><a class="reference internal" href="training/training_documentation.html#text-modules">Text Modules</a></li>
-<li class="toctree-l1"><a class="reference internal" href="training/training_documentation.html#image-modules">Image Modules</a></li>
-<li class="toctree-l1"><a class="reference internal" href="training/training_documentation.html#loading-pre-trained-modules">Loading Pre-trained Modules</a></li>
-<li class="toctree-l1"><a class="reference internal" href="training/training_documentation.html#extraction">Extraction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="training/training_documentation.html#ocr">OCR</a></li>
-<li class="toctree-l1"><a class="reference internal" href="training/changelog.html">Changelog</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="web/api.html">Konfuzio API Video Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="web/api.html#how-to-make-an-api-call">How to make an API Call</a></li>
-<li class="toctree-l1"><a class="reference internal" href="web/api.html#document-categorization-api">Document Categorization API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="web/api.html#document-segmentation-api">Document Segmentation API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="web/api.html#supported-ocr-languages">Supported OCR languages</a></li>
-<li class="toctree-l1"><a class="reference internal" href="web/api.html#supported-file-types">Supported File Types</a></li>
-<li class="toctree-l1"><a class="reference internal" href="web/api.html#supported-data-normalization">Supported Data Normalization</a></li>
-<li class="toctree-l1"><a class="reference internal" href="web/api.html#support">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="web/api.html">REST API v2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="web/api-v3.html">REST API v3</a></li>
 <li class="toctree-l1"><a class="reference internal" href="web/on_premises.html">On-Premises Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="web/changelog_app.html">Changelog</a></li>
 </ul>
@@ -112,35 +88,25 @@
 </div>
 <section id="konfuzio-developers-guide">
 <h1>Konfuzio Developer’s Guide<a class="headerlink" href="#konfuzio-developers-guide" title="Permalink to this headline">¶</a></h1>
-<p>Konfuzio is a cloud and on-premises B2B platform used thousands of times a day to train and run AI.
-SMEs and large companies train their AI to understand and process documents, e-mails and texts like human beings.
-Find out more on our <a class="reference external" href="https://konfuzio.com">Homepage</a>.</p>
-<p>This Developer’s Guide compiles the resources that can be used to expand Konfuzio.</p>
-<p><strong>This technical documentation is updated frequently. Please feel free to share your feedback via info&#64;konfuzio.com</strong>.</p>
-<section id="konfuzio-python-sdk">
-<h2>Konfuzio Python SDK<a class="headerlink" href="#konfuzio-python-sdk" title="Permalink to this headline">¶</a></h2>
-<p>The Konfuzio Software Development Kit (Konfuzio SDK) provides a Python API to interact with the Konfuzio Server.
-Find in this section the documentation of the package, the installation instructions and code examples that will help
-you in starting using it.</p>
-</section>
-<section id="konfuzio-trainer">
-<h2>Konfuzio Trainer<a class="headerlink" href="#konfuzio-trainer" title="Permalink to this headline">¶</a></h2>
-<p>The Trainer module, only available for enterprise clients, allows to define, train and run custom Document AI.
-In the Trainer section you find the documentation of the features of this module, including the contents structure
-and examples of how to use it.</p>
-</section>
-<section id="konfuzio-server">
-<h2>Konfuzio Server<a class="headerlink" href="#konfuzio-server" title="Permalink to this headline">¶</a></h2>
-<p>The Konfuzio Server allows the interaction with the Konfuzio projects.
-In this section you can find information regarding how to use it. Check here the latest updates, information in how to
-have Konfuzio on premises and examples on how to use the API for communicate directly with the Konfuzio Server.</p>
-<div class="toctree-wrapper compound">
+<p>Konfuzio is a data-centric Document AI tool to build intelligent document workflows. It provides
+enterprise ready Web, API and Python interfaces to easily customize document workflows with AI and integrate it in any
+IT infrastructure. Find out more on our <a class="reference external" href="https://www.konfuzio.com">Homepage</a>.</p>
+<p><strong>Konfuzio SDK:</strong> The Open Source Konfuzio Software Development Kit (Konfuzio SDK) provides a Python API to build custom
+document processes. Review the release notes and and the source code on
+<a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">GitHub</a>.</p>
+<p><strong>Konfuzio Server:</strong> Register a trial account via our SaaS hosting on <a class="reference external" href="https://app.konfuzio.com">app.konfuzio.com</a> or
+<a class="reference internal" href="web/on_premises.html#server-installation"><span class="std std-ref">install it on your own infrastructure</span></a> (see <a class="reference internal" href="web/changelog_app.html#server-changelog"><span class="std std-ref">Changelog</span></a>).
+To then access the REST API via <a class="reference internal" href="web/api.html#server-api-v2"><span class="std std-ref">REST API v2</span></a> and  <a class="reference internal" href="web/api-v3.html#server-api-v3"><span class="std std-ref">REST API v3</span></a> or
+use further integrations, see <a class="reference external" href="https://help.konfuzio.com/integrations/index.html">help.konfuzio.com</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Konfuzio Trainer will no longer be available.
+The functionality of Trainer will be moved to Server or become open source in SDK.</p>
 </div>
 <div class="toctree-wrapper compound">
 </div>
 <div class="toctree-wrapper compound">
 </div>
-</section>
 </section>
 
 

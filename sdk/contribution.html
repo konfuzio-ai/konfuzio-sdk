@@ -2,7 +2,6 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<meta content="How to contribute to the open source OCR, NLP and Computer Vision Python Package." name="description" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Contribution Guide &mdash; Konfuzio  documentation</title>
@@ -22,8 +21,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Releasing Changes" href="releasing/index.html" />
-    <link rel="prev" title="Source Code Reference" href="sourcecode.html" /> 
+    <link rel="next" title="Coordinates System" href="coordinates_system.html" />
+    <link rel="prev" title="Code Examples" href="examples/examples.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -42,15 +41,18 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Konfuzio Python SDK</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="configuration_reference.html">Install SDK</a></li>
-<li class="toctree-l1"><a class="reference internal" href="quickstart_pycharm.html">Install SDK using PyCharm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sourcecode.html">Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sourcecode.html#tokenizer">Tokenizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples/examples.html">Code Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sourcecode.html">Source Code Reference</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Contribution Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#architecture">Architecture</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#directory-structure">Directory Structure</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#running-tests-locally">Running tests locally</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-release-with-github-to-pypi">How to release with GitHub to PyPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-use-nightly-builds">How to use nightly builds?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#running-tests-in-docker">Running tests in Docker</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#general-motivation-for-using-the-vs-code-remote-development-extension">General Motivation for using the VS Code Remote Development Extension</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#download-and-install-vs-code-on-your-machine">1. Download and Install VS Code on your machine</a></li>
@@ -64,36 +66,12 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="releasing/index.html">Releasing Changes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="coordinates_system.html">Coordinates System</a></li>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html#archived-changelog">Archived Changelog</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Konfuzio Trainer</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html">LabelSectionModel Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#documentmodel-examples">DocumentModel Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#paragraphmodel-examples">ParagraphModel Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#design-philosophy">Design Philosophy</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#tokenizers">Tokenizers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#vocabularies">Vocabularies</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#text-modules">Text Modules</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#image-modules">Image Modules</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#loading-pre-trained-modules">Loading Pre-trained Modules</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#extraction">Extraction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../training/training_documentation.html#ocr">OCR</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../training/changelog.html">Changelog</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../web/api.html">Konfuzio API Video Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../web/api.html#how-to-make-an-api-call">How to make an API Call</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../web/api.html#document-categorization-api">Document Categorization API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../web/api.html#document-segmentation-api">Document Segmentation API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../web/api.html#supported-ocr-languages">Supported OCR languages</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../web/api.html#supported-file-types">Supported File Types</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../web/api.html#supported-data-normalization">Supported Data Normalization</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../web/api.html#support">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api.html">REST API v2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api-v3.html">REST API v3</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../web/on_premises.html">On-Premises Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../web/changelog_app.html">Changelog</a></li>
 </ul>
@@ -180,6 +158,10 @@ You can also run them locally by executing <code class="docutils literal notrans
 <p><em>Note</em>:
 If you choose another name for the folder where you want to store the data being downloaded, please add
 the folder to <em>.gitignore</em>.</p>
+<section id="architecture">
+<h2>Architecture<a class="headerlink" href="#architecture" title="Permalink to this headline">¶</a></h2>
+<p><span class="raw-html-m2r"><div class="mxgraph" style="max-width:100%;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;toolbar&quot;:&quot;zoom layers tags lightbox&quot;,&quot;edit&quot;:&quot;_blank&quot;,&quot;url&quot;:&quot;https://raw.githubusercontent.com/konfuzio-ai/konfuzio-sdk/master/tests/SDK%20and%20Server%20Integration.drawio&quot;}"></div></span></p>
+<script type="text/javascript" src="https://viewer.diagrams.net/embed2.js?&fetch=https%3A%2F%2Fraw.githubusercontent.com%2Fkonfuzio-ai%2Fkonfuzio-sdk%2Fmaster%2Ftests%2FSDK%2520and%2520Server%2520Integration.drawio"></script></section>
 <section id="directory-structure">
 <h2>Directory Structure<a class="headerlink" href="#directory-structure" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>├── konfuzio-sdk      &lt;- SDK project name
@@ -216,29 +198,76 @@ the folder to <em>.gitignore</em>.</p>
 <p>To run tests from a specific file, do:</p>
 <p><code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">tests/&lt;name_of_the_file&gt;.py</span></code></p>
 </section>
+<section id="how-to-release-with-github-to-pypi">
+<h2>How to release with GitHub to PyPI<a class="headerlink" href="#how-to-release-with-github-to-pypi" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p>Change the version number in the file VERSION use the format <code class="docutils literal notranslate"><span class="pre">v.X.X.X</span></code> without whitespaces.</p>
+<a class="reference external image-reference" href="releasing/update-python-version.png"><img alt="Update Python Package Version" src="../_images/update-python-version.png" /></a>
+</li>
+<li><p>Draft a Release <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases/new">here</a>.</p>
+<a class="reference external image-reference" href="releasing/steps-to-draft-a-release.png"><img alt="draft_new_release.png" src="../_images/steps-to-draft-a-release.png" /></a>
+<ol class="arabic simple">
+<li><p>Create a new Tag on master, named as the version number in step 1.</p></li>
+<li><p>Add a title for the release</p></li>
+<li><p>Automatically generate the description using the Names of the merged Pull Requests</p></li>
+</ol>
+</li>
+<li><p>After you press publish release, a new Python Package will be uploaded to PyPI by a GitHub Action, see code
+<a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/.github/workflows/release.yml">here</a>. You can verify
+that the Release was uploaded via having a look on <a class="reference external" href="https://pypi.org/project/konfuzio-sdk/#history">PyPI</a></p></li>
+</ol>
+</section>
+<section id="how-to-use-nightly-builds">
+<h2>How to use nightly builds?<a class="headerlink" href="#how-to-use-nightly-builds" title="Permalink to this headline">¶</a></h2>
+<a class="reference external image-reference" href="releasing/new-pypi-release.png"><img alt="New PyPI Python release" src="../_images/new-pypi-release.png" /></a>
+<ol class="arabic simple">
+<li><p>Install the latest pre-release <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--pre</span> <span class="pre">konfuzio_sdk</span></code></p></li>
+<li><p>Force to pick the latest pre-release the version <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">konfuzio_sdk&gt;=0.2.3.dev0</span></code>. As PEP440 states: The
+developmental release segment consists of the string .dev, followed by a non-negative integer value.<span class="raw-html-m2r"><br></span>
+Developmental releases are ordered by their numerical component, immediately before the corresponding  release
+(and before any pre-releases with the same release segment), and following any previous release (including any<span class="raw-html-m2r"><br></span>
+post-releases)</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Pre-Releases don’t use tags but reference commits. The version number of a pre-release relates to the
+Year-Month-Date-Hour-Minute-Second of last commit date on branch master used to create this release.
+This process allows publish a new package if there are new commits on the master branch.</p>
+</div>
+<a class="reference external image-reference" href="releasing/version-number-prerelease.png"><img alt="img.png" src="../_images/version-number-prerelease.png" /></a>
+</section>
 <section id="running-tests-in-docker">
 <h2>Running tests in Docker<a class="headerlink" href="#running-tests-in-docker" title="Permalink to this headline">¶</a></h2>
 <p>If you have problems with the dependencies, a solution could be to use a docker to run the code.
 Check here the steps for how to run/debug Python code inside a Docker container.</p>
 <section id="general-motivation-for-using-the-vs-code-remote-development-extension">
 <h3>General Motivation for using the VS Code Remote Development Extension<a class="headerlink" href="#general-motivation-for-using-the-vs-code-remote-development-extension" title="Permalink to this headline">¶</a></h3>
-<p>When it comes to running your code consistently and reliably, container solutions like Docker can play to their strengths.
+<p>When it comes to running your code consistently and reliably, container solutions like Docker can play to their
+strengths.
 Even if you are not using Docker for deployment, as soon as you collaborate with other developers testing pipelines
 have to be in place to ensure that a new merge does not accidentally break the whole project.
-Collaborating can also mean very different operating systems and configurations that lead to varying behaviors on different machines.
-This issue is also commonly resolved using Docker. But this of course means that there can be differences between your local machine
-and the Docker container when it comes to dependencies, which leads to tedious dependency management and prolonged feedback loops (especially on Windows)
+Collaborating can also mean very different operating systems and configurations that lead to varying behaviors on
+different machines.
+This issue is also commonly resolved using Docker. But this of course means that there can be differences between your
+local machine
+and the Docker container when it comes to dependencies, which leads to tedious dependency management and prolonged
+feedback loops (especially on Windows)
 as you have to wait to see if the code you build really runs as expected in the Docker container.
-The best solution would be if you could combine the development tools of a Python IDE with the consistent test and execution results of a Docker container.
+The best solution would be if you could combine the development tools of a Python IDE with the consistent test and
+execution results of a Docker container.
 Running a docker container on a local machine is quite easy.
-Though setting up your container for debugging is not always straightforward. Luckily Microsoft’s Visual Studio Code Remote Development Extension
+Though setting up your container for debugging is not always straightforward. Luckily Microsoft’s Visual Studio Code
+Remote Development Extension
 offers a functional and easy to use solution.</p>
 </section>
 <section id="download-and-install-vs-code-on-your-machine">
 <h3>1. Download and Install VS Code on your machine<a class="headerlink" href="#download-and-install-vs-code-on-your-machine" title="Permalink to this headline">¶</a></h3>
 <p>Either use this <a class="reference external" href="https://code.visualstudio.com/download">link</a> to download the VS Code or, if you are on Linux and have
 snap installed, just run (for this tutorial v1.56.2 was used):</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">snap</span> <span class="n">install</span> <span class="o">--</span><span class="n">classic</span> <span class="n">code</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span>
+<span class="n">snap</span>
+<span class="n">install</span> <span class="o">-</span> <span class="o">-</span><span class="n">classic</span>
+<span class="n">code</span>
 </pre></div>
 </div>
 <p>If you have not already installed Docker, download and install it <a class="reference external" href="https://docs.docker.com/get-docker/">here</a>.</p>
@@ -283,7 +312,8 @@ going to be our main access point to the extension.</p>
 <p>In the Command Pallet (<em>‘View’ &gt; ‘Command Pallet’</em>) select <em>‘Remote-Containers: Add Development Container Configuration
 Files’ &gt; ‘From $your_dockerfile’</em></p>
 <a class="reference external image-reference" href="../_static/img/vscode_docker/command_pallet.png"><img alt="command pallet" src="../_images/command_pallet.png" /></a>
-<p>Now you should see in the file explorer under <em>.devcontainer</em> your <em>devcontainer.json</em> file. Open it. These are the basic
+<p>Now you should see in the file explorer under <em>.devcontainer</em> your <em>devcontainer.json</em> file. Open it. These are the
+basic
 configurations of your devcontainer. Most of this can be left unchanged. Maybe give your container a name by changing
 the ‘name’ variable. Additionally, you should specify all the ports you need inside your Docker container in
 ‘forwardPorts’.
@@ -301,7 +331,8 @@ see <em>‘Dev Container: $your_name’</em> next to the two arrows.</p>
 </section>
 <section id="install-the-python-extension-inside-the-docker-container-to-debug-and-run-python-files">
 <h3>6. Install the Python extension inside the Docker container to debug and run Python files<a class="headerlink" href="#install-the-python-extension-inside-the-docker-container-to-debug-and-run-python-files" title="Permalink to this headline">¶</a></h3>
-<p>Again open up the extensions tab (now inside the Docker container) and install the Python extension (ID: <em>ms-python.python</em>).</p>
+<p>Again open up the extensions tab (now inside the Docker container) and install the Python extension (ID: *
+ms-python.python*).</p>
 <p>Now you can debug/run any Python file you want. Open up the chosen Python file and the ‘Run and Debug’ tab by clicking
 the run/debug icon that should be now available on the left taskbar.</p>
 <!--[run and debug tab](images/vscode_docker/run_and_debug.PNG)--><p>Click <em>‘Run and Debug’ &gt; ‘Python File’</em> and you are good to go. Before make sure to set the needed breakpoints by
@@ -311,7 +342,8 @@ clicking to the left of the line numbers.</p>
 clicking <em>‘View’ &gt; ‘Terminal’</em>. One of the terminal’s tabs is the debug console, where you can evaluate any expression.</p>
 <p>If you are in the sample project you can make sure that the Docker container works as expected by entering the tests
 folder (<em>‘cd tests’</em>) and executing:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pytest</span> <span class="o">-</span><span class="n">m</span> <span class="n">local</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pytest</span> <span class="o">-</span> <span class="n">m</span>
+<span class="n">local</span>
 </pre></div>
 </div>
 <a class="reference external image-reference" href="../_static/img/vscode_docker/tests.png"><img alt="tests" src="../_images/tests.png" /></a>
@@ -334,8 +366,8 @@ its ID in the devcontainer.json file to be pre-installed with every rebuild).</p
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="sourcecode.html" class="btn btn-neutral float-left" title="Source Code Reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="releasing/index.html" class="btn btn-neutral float-right" title="Releasing Changes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="examples/examples.html" class="btn btn-neutral float-left" title="Code Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="coordinates_system.html" class="btn btn-neutral float-right" title="Coordinates System" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

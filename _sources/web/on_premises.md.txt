@@ -1,6 +1,8 @@
 .. meta::
    :description: Documentation on how to deploy Konfuzio on premises using Kubernetes and Helm.
 
+.. _Server Installation:
+
 # On-Premises Documentation
 
 The recommended way to operate a production-ready and scalabe Konfuzio installation is via Kubernetes. An alternative and more light-weight deployment option is the [Single VM setup](/web/on_premises.html#alternative-deployment-options). 

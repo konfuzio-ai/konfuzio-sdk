@@ -21,9 +21,7 @@
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Changelog" href="changelog.html" />
-    <link rel="prev" title="Changelog" href="../sdk/changelog.html" /> 
+    <link rel="search" title="Search" href="../search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -42,87 +40,19 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Konfuzio Python SDK</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../sdk/configuration_reference.html">Install SDK</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sdk/quickstart_pycharm.html">Install SDK using PyCharm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/sourcecode.html">Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/sourcecode.html#tokenizer">Tokenizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sdk/examples/examples.html">Code Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sdk/sourcecode.html">Source Code Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sdk/contribution.html">Contribution Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sdk/releasing/index.html">Releasing Changes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sdk/coordinates_system.html">Coordinates System</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sdk/changelog.html">Changelog</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sdk/changelog.html#archived-changelog">Archived Changelog</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Konfuzio Trainer</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">LabelSectionModel Examples</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#training-our-first-labelsectionmodel">Training our first LabelSectionModel</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#customizing-the-labelsectionmodel">Customizing the LabelSectionModel</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#setting-the-labelsectionmodel-training-hyperparameters">Setting the LabelSectionModel training hyperparameters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#customizing-the-labelsectionmodel-model-and-training-hyperparameters">Customizing the LabelSectionModel model and training hyperparameters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#implementing-a-custom-labelsectionmodel-training-loop">Implementing a custom LabelSectionModel training loop</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#implementing-a-custom-labelsectionmodel-classifier-training-loop">Implementing a custom LabelSectionModel classifier training loop</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="#documentmodel-examples">DocumentModel Examples</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#training-our-first-documentmodel">Training our first DocumentModel</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#customizing-the-documentmodel">Customizing the DocumentModel</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#classifying-documents-using-image-features-only">Classifying documents using image features only</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#classifying-documents-using-text-features-only">Classifying documents using text features only</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#setting-the-documentmodel-training-hyperparameters">Setting the DocumentModel training hyperparameters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#implementing-a-custom-documentmodel-training-loop">Implementing a custom DocumentModel training loop</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="#paragraphmodel-examples">ParagraphModel Examples</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#training-our-first-paragraphmodel">Training our first ParagraphModel</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#customizing-the-paragraphmodel">Customizing the ParagraphModel</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#setting-the-paragraphmodel-training-hyperparameters">Setting the ParagraphModel training hyperparameters</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="#design-philosophy">Design Philosophy</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#tokenizers">Tokenizers</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#whitespacetokenizer">WhitespaceTokenizer</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#spacytokenizer">SpacyTokenizer</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#phrasematchertokenizer">PhraseMatcherTokenizer</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#bpetokenizer">BPETokenizer</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="#vocabularies">Vocabularies</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#text-modules">Text Modules</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#nbow">NBOW</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#nbowselfattention">NBOWSelfAttention</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#lstm">LSTM</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#bert">BERT</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="#image-modules">Image Modules</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#vgg">VGG</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#efficientnet">EfficientNet</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="#loading-pre-trained-modules">Loading Pre-trained Modules</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#extraction">Extraction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#ocr">OCR</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#ocr-with-the-azure-read-api">OCR with the Azure Read API</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#additional-filescanner-ocr-results">Additional FileScanner OCR results</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#further-usages-of-the-filescanner">Further usages of the FileScanner</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#labelsectionmodel-extraction">LabelSectionModel extraction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#documentmodel-extraction">DocumentModel extraction</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../web/api.html">Konfuzio API Video Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../web/api.html#how-to-make-an-api-call">How to make an API Call</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../web/api.html#document-categorization-api">Document Categorization API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../web/api.html#document-segmentation-api">Document Segmentation API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../web/api.html#supported-ocr-languages">Supported OCR languages</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../web/api.html#supported-file-types">Supported File Types</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../web/api.html#supported-data-normalization">Supported Data Normalization</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../web/api.html#support">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api.html">REST API v2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api-v3.html">REST API v3</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../web/on_premises.html">On-Premises Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../web/changelog_app.html">Changelog</a></li>
 </ul>
@@ -1070,10 +1000,7 @@ AZURE_OCR_KEY = **********************
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../sdk/changelog.html" class="btn btn-neutral float-left" title="Changelog" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="changelog.html" class="btn btn-neutral float-right" title="Changelog" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 

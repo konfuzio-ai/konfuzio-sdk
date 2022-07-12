@@ -12,60 +12,33 @@
 Konfuzio Developer’s Guide
 ##########################
 
-Konfuzio is a cloud and on-premises B2B platform used thousands of times a day to train and run AI.
-SMEs and large companies train their AI to understand and process documents, e-mails and texts like human beings.
-Find out more on our `Homepage <https://konfuzio.com>`_.
+Konfuzio is a data-centric Document AI tool to build intelligent document workflows. It provides
+enterprise ready Web, API and Python interfaces to easily customize document workflows with AI and integrate it in any
+IT infrastructure. Find out more on our `Homepage <https://www.konfuzio.com>`_.
 
-This Developer's Guide compiles the resources that can be used to expand Konfuzio.
+**Konfuzio SDK:** The Open Source Konfuzio Software Development Kit (Konfuzio SDK) provides a Python API to build custom
+document processes. Review the release notes and and the source code on
+`GitHub <https://github.com/konfuzio-ai/konfuzio-sdk/releases>`_.
 
-**This technical documentation is updated frequently. Please feel free to share your feedback via info@konfuzio.com**.
+**Konfuzio Server:** Register a trial account via our SaaS hosting on `app.konfuzio.com <https://app.konfuzio.com>`_ or
+:ref:`install it on your own infrastructure <Server Installation>` (see :ref:`Server Changelog`).
+To then access the REST API via :ref:`Server API v2` and  :ref:`Server API v3` or
+use further integrations, see `help.konfuzio.com <https://help.konfuzio.com/integrations/index.html>`_.
 
-
-Konfuzio Python SDK
-###################
-
-The Konfuzio Software Development Kit (Konfuzio SDK) provides a Python API to interact with the Konfuzio Server.
-Find in this section the documentation of the package, the installation instructions and code examples that will help
-you in starting using it.
-
-Konfuzio Trainer
-################
-
-The Trainer module, only available for enterprise clients, allows to define, train and run custom Document AI.
-In the Trainer section you find the documentation of the features of this module, including the contents structure
-and examples of how to use it.
-
-Konfuzio Server
-###############
-
-The Konfuzio Server allows the interaction with the Konfuzio projects.
-In this section you can find information regarding how to use it. Check here the latest updates, information in how to
-have Konfuzio on premises and examples on how to use the API for communicate directly with the Konfuzio Server.
-
+.. Note::
+    Konfuzio Trainer will no longer be available.
+    The functionality of Trainer will be moved to Server or become open source in SDK.
 
 .. toctree::
    :hidden:
    :maxdepth: 3
-   :caption: Konfuzio Python SDK
-
+   :caption: Konfuzio SDK
 
    sdk/configuration_reference.md
-   sdk/quickstart_pycharm.md
-   sdk/examples/examples.rst
    sdk/sourcecode.rst
+   sdk/examples/examples.rst
    sdk/contribution.md
-   sdk/releasing/index.md
    sdk/coordinates_system.md
-   sdk/changelog.md
-
-
-.. toctree::
-   :maxdepth: 6
-   :hidden:
-   :caption: Konfuzio Trainer
-
-   training/training_documentation.md
-   training/changelog.md
 
 .. toctree::
    :caption: Konfuzio Server
@@ -73,5 +46,6 @@ have Konfuzio on premises and examples on how to use the API for communicate dir
    :maxdepth: 3
 
    web/api.md
+   web/api-v3.md
    web/on_premises.md
    web/changelog_app.md
