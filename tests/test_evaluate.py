@@ -352,7 +352,7 @@ class TestCompare(unittest.TestCase):
             id_=3,
             document=document_b,
             confidence=0.5,
-            is_correct=True,
+            # is_correct=True, we don't know this from the prediction
             annotation_set=annotation_set_b,
             label=label,
             label_set=label_set,
@@ -371,7 +371,7 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 1
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 1
-        assert evaluation["is_found_by_tokenizer"].sum() == 1
+        assert evaluation["is_found_by_tokenizer"].sum() == 0  # we don't find it with the tokenizer but only parts
 
     def test_non_strict_is_better_than_strict(self):
         """Test if we detect an Annotation of a missing Annotation Set."""
@@ -422,7 +422,7 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 1
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 0
-        assert evaluation["is_found_by_tokenizer"].sum() == 1
+        assert evaluation["is_found_by_tokenizer"].sum() == 0
 
     def test_strict_documents_with_different_category(self):
         """Test to not compare two Documents with different Categories."""
@@ -895,13 +895,15 @@ class TestEvaluation(unittest.TestCase):
         """Count two Spans from two Training Documents."""
         project = LocalTextProject()
         evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
-        assert evaluation.tp() == 2
+        assert evaluation.tp() == 3
 
     def test_false_positive(self):
         """Count zero Annotations from two Training Documents."""
         project = LocalTextProject()
-        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
-        assert evaluation.fp() == 0
+        true_document = project.documents[0]
+        predicted_document = project.test_documents[0]
+        evaluation = Evaluation(documents=list(zip([true_document], [predicted_document])))
+        assert evaluation.fp() == 2
 
     def test_true_negatives(self):
         """Count zero Annotations from two Training Documents."""
@@ -918,15 +920,24 @@ class TestEvaluation(unittest.TestCase):
     def test_false_negatives(self):
         """Count zero Annotations from two Training Documents."""
         project = LocalTextProject()
-        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
-        assert evaluation.fn() == 0
+        predicted_document = project.documents[0]  # A(3,5,Label_1) + A(7,10,Label_2)
+        true_document = project.test_documents[0]  # A(7,10,Label_1)
+        evaluation = Evaluation(documents=list(zip([true_document], [predicted_document])))
+        assert evaluation.tp() == 0
+        assert evaluation.fp() == 2
+        assert evaluation.fn() == 1
+        assert evaluation.tn() == 0
 
     def test_true_positive_label(self):
         """Count two Annotations from two Training Documents and filter by one Label."""
         project = LocalTextProject()
         evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
         label = project.get_label_by_id(id_=3)  # there is only one Label that is not the NONE_LABEL
+        assert evaluation.tp() == 3
         assert evaluation.tp(search=label) == 2
+        assert evaluation.fp(search=label) == 0
+        assert evaluation.fn(search=label) == 0
+        assert evaluation.tn(search=label) == 0
 
     def test_true_positive_document(self):
         """Count zero Annotations from one Training Document that has no ID."""
@@ -941,4 +952,171 @@ class TestEvaluation(unittest.TestCase):
         project = LocalTextProject()
         evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
         label_set = project.get_label_set_by_id(id_=2)
-        assert evaluation.tp(search=label_set) == 2
+        assert evaluation.tp(search=label_set) == 3
+
+
+class TestEvaluationTwoLabels(unittest.TestCase):
+    """Test the calculation two Documents with overlapping Spans and multiple Labels."""
+
+    def setUp(self) -> None:
+        """Test evaluation when changing filtered Label and Documents."""
+        project = LocalTextProject()
+        document_a = project.documents[0]  # A1(3,5,Label_3) + A2(7,10,Label_4)
+        document_b = project.test_documents[0]  # A3(7,10,Label_3) + A4(11,14,Label_4)
+        self.evaluation = Evaluation(documents=list(zip([document_b], [document_a])))
+
+    def test_true_positives(self):
+        """Evaluate that all is wrong."""
+        assert self.evaluation.tp() == 0
+
+    def test_false_positives(self):
+        """Evaluate that Document A predicts two wrong Spans."""
+        assert self.evaluation.fp() == 2  # A1 and A2
+
+    def test_false_negatives(self):
+        """Evaluate that Document A misses to predict one Span."""
+        assert self.evaluation.fn() == 1  # A3 OR A2
+
+    def test_true_negatives(self):
+        """Evaluate that that nothing is correctly predicted below threshold."""
+        assert self.evaluation.tn() == 0
+
+
+class TestEvaluationFirstLabelDocumentADocumentB(unittest.TestCase):
+    """Test the calculation two Documents with overlapping Spans and multiple Labels."""
+
+    def setUp(self) -> None:
+        """Test evaluation when changing filtered Label and Documents."""
+        project = LocalTextProject()
+        document_a = project.documents[0]  # A1(3,5,Label_3) + A2(7,10,Label_4)
+        document_b = project.test_documents[0]  # A3(7,10,Label_3) + A4(11,14,Label_4)
+        self.evaluation = Evaluation(documents=list(zip([document_b], [document_a])))
+        self.label = project.get_label_by_id(id_=3)
+
+    def test_true_positives(self):
+        """Evaluate that all is wrong."""
+        assert self.evaluation.tp(search=self.label) == 0
+
+    def test_false_positives(self):
+        """Check for overlapping Annotation.
+
+        Based on the example data. We filter all Spans for Label ID 3, while A2 overlaps with A3. Which causes
+        A2 to be counted as a FP. When we now filter for Label ID 3, we consider this Annotation as a False Positive.
+        One could argue that this should be a False Negative, as A3 should be predicted and is not. As the sum of FP
+        and FN is relevant for the F1 Score, and this issue will only happen for exact overlaps, we accept that we
+        rather predict 2 FP and 0 FN instead of 1 FP and 1 FN.
+        """
+        assert self.evaluation.fp(search=self.label) == 2  # todo: it could be 1 with A1, however A1 and A2 are used
+
+    def test_false_negatives(self):
+        """Check for overlapping Annotation.
+
+        Based on the example data. We filter all Spans for Label ID 3, while A2 overlaps with A3. Which causes
+        A3 to be counted as a FP. When we now filter for Label ID 3, we consider this Annotation as a False Positive.
+        One could argue that this should be a False Negative, as A3 should be predicted and is not. As the sum of FP
+        and FN is relevant for the F1 Score, and this issue will only happen for exact overlaps, we accept that we
+        rather predict 2 FP and 0 FN instead of 1 FP and 1 FN.
+        """
+        assert self.evaluation.fn(search=self.label) == 0  # todo: it could be 1 with A3, however A2 overrules A3
+
+    def test_true_negatives(self):
+        """Evaluate that that nothing is correctly predicted below threshold."""
+        assert self.evaluation.tn(search=self.label) == 0
+
+
+class TestEvaluationFirstLabelDocumentBDocumentA(unittest.TestCase):
+    """Test the calculation two Documents with overlapping Spans and multiple Labels."""
+
+    def setUp(self) -> None:
+        """Test evaluation when changing filtered Label and Documents."""
+        project = LocalTextProject()
+        document_a = project.documents[0]  # A1(3,5,Label_3) + A2(7,10,Label_4)
+        document_b = project.test_documents[0]  # A3(7,10,Label_3) + A4(11,14,Label_4)
+        self.evaluation = Evaluation(documents=list(zip([document_a], [document_b])))
+        self.label = project.get_label_by_id(id_=3)
+
+    def test_true_positives(self):
+        """Evaluate that all is wrong."""
+        assert self.evaluation.tp(search=self.label) == 0
+
+    def test_false_positives(self):
+        """Evaluate that Document B predicts one wrong Span."""
+        assert self.evaluation.fp(search=self.label) == 1  # A3
+
+    def test_false_negatives(self):
+        """Evaluate that Document B misses to predict one wrong Span."""
+        assert self.evaluation.fn(search=self.label) == 1  # A1
+
+    def test_true_negatives(self):
+        """Evaluate that that nothing is correctly predicted below threshold."""
+        assert self.evaluation.tn(search=self.label) == 0
+
+
+class TestEvaluationSecondLabelDocumentADocumentB(unittest.TestCase):
+    """Test the calculation two Documents with overlapping Spans and multiple Labels."""
+
+    def setUp(self) -> None:
+        """Test evaluation when changing filtered Label and Documents."""
+        project = LocalTextProject()
+        document_a = project.documents[0]  # A1(3,5,Label_3) + A2(7,10,Label_4)
+        document_b = project.test_documents[0]  # A3(7,10,Label_3) + A4(11,14,Label_4)
+        self.evaluation = Evaluation(documents=list(zip([document_b], [document_a])))
+        self.label = project.get_label_by_id(id_=4)
+
+    def test_true_positives(self):
+        """Evaluate that all is wrong."""
+        assert self.evaluation.tp(search=self.label) == 0
+
+    def test_false_positives(self):
+        """Evaluate that Document A predicts one wrong Spans."""
+        assert self.evaluation.fp(search=self.label) == 1  # A2
+
+    def test_false_negatives(self):
+        """Evaluate that Document A predicts one wrong Spans."""
+        assert self.evaluation.fn(search=self.label) == 1  # A3
+
+    def test_true_negatives(self):
+        """Evaluate that that nothing is correctly predicted below threshold."""
+        assert self.evaluation.tn(search=self.label) == 0
+
+
+class TestEvaluationSecondLabelDocumentBDocumentA(unittest.TestCase):
+    """Test the calculation two Documents with overlapping Spans and multiple Labels."""
+
+    def setUp(self) -> None:
+        """Test evaluation when changing filtered Label and Documents."""
+        project = LocalTextProject()
+        document_a = project.documents[0]  # A1(3,5,Label_3) + A2(7,10,Label_4)
+        document_b = project.test_documents[0]  # A3(7,10,Label_3) + A4(11,14,Label_4)
+        self.evaluation = Evaluation(documents=list(zip([document_a], [document_b])))
+        self.label = project.get_label_by_id(id_=4)
+
+    def test_true_positives(self):
+        """Evaluate that all is wrong."""
+        assert self.evaluation.tp(search=self.label) == 0
+
+    def test_false_positives(self):
+        """Check for overlapping Annotation.
+
+        Based on the example data. We filter all Spans for Label ID 4, while A3 overlaps with A2. Which causes
+        A3 to be counted as a FP. When we now filter for Label ID 4, we consider this Annotation as a False Positive.
+        One could argue that this should be a False Negative, as A2 should be predicted and is not. As the sum of FP
+        and FN is relevant for the F1 Score, and this issue will only happen for exact overlaps, we accept that we
+        rather predict 2 FP and 0 FN instead of 1 FP and 1 FN.
+        """
+        assert self.evaluation.fp(search=self.label) == 2  # todo: it could be 1 with A4, however A4 and A3 are used
+
+    def test_false_negatives(self):
+        """Check for overlapping Annotation.
+
+        Based on the example data. We filter all Spans for Label ID 4, while A3 overlaps with A2. Which causes
+        A3 to be counted as a FP. When we now filter for Label ID 4, we consider this Annotation as a False Positive.
+        One could argue that this should be a False Negative, as A2 should be predicted and is not. As the sum of FP
+        and FN is relevant for the F1 Score, and this issue will only happen for exact overlaps, we accept that we
+        rather predict 2 FP and 0 FN instead of 1 FP and 1 FN.
+        """
+        assert self.evaluation.fn(search=self.label) == 0  # todo: it could be 1 with A2, however A4 and A3 are used
+
+    def test_true_negatives(self):
+        """Evaluate that that nothing is correctly predicted below threshold."""
+        assert self.evaluation.tn(search=self.label) == 0
