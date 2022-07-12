@@ -16,7 +16,9 @@ class LocalTextProject(Project):
         label = Label(id_=3, text='LabelName', project=self, label_sets=[label_set])
         label_new = Label(id_=4, text='LabelName 2', project=self, label_sets=[label_set])
 
-        self.local_training_document = Document(project=self, category=category, text="Hi all,", dataset_status=2)
+        self.local_training_document = Document(
+            project=self, category=category, text="Hi all, I like fish.", dataset_status=2
+        )
         annotation_set = AnnotationSet(id_=4, document=self.local_training_document, label_set=label_set)
         _ = Annotation(
             id_=5,
@@ -39,7 +41,7 @@ class LocalTextProject(Project):
             spans=[Span(start_offset=7, end_offset=10)],
         )
 
-        document_test_a = Document(project=self, category=category, text="Hi all,", dataset_status=3)
+        document_test_a = Document(project=self, category=category, text="Hi all, I like fish.", dataset_status=3)
         annotation_set_test_a = AnnotationSet(id_=6, document=document_test_a, label_set=label_set)
         _ = Annotation(
             id_=7,
