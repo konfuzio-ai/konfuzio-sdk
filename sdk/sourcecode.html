@@ -109,7 +109,7 @@
 <dd><p>A Span is a sequence of characters or whitespaces without line break.</p>
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">bbox</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">bbox</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.data.Bbox</span></span></span></dt>
 <dd><p>Calculate the bounding box of a text sequence.</p>
 </dd></dl>
 
@@ -122,7 +122,7 @@
 <dl class="py property">
 <dt class="sig sig-object py">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">line_index</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em></dt>
-<dd><p>Calculate the index of the line on which the span starts, first line has index 0.</p>
+<dd><p>Return index of the line of the Span.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -139,20 +139,8 @@
 
 <dl class="py property">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">page_height</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em></dt>
-<dd><p>Get width of the page of the Span. Used to calculate relative position on page.</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">page_index</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em></dt>
-<dd><p>Calculate the index of the page on which the span starts, first page has index 0.</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">page_width</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em></dt>
-<dd><p>Get width of the page of the Span. Used to calculate relative position on page.</p>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">page</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">konfuzio_sdk.data.Page</span></em></dt>
+<dd><p>Return Page of Span.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -493,6 +481,12 @@ Project.documents: 2  –&gt; Document recall 100%</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">add_page</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.Page</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Add a Page to a Document.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">annotation_sets</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
 <dd><p>Return Annotation Sets of Documents.</p>
 </dd></dl>
@@ -514,6 +508,12 @@ Project.documents: 2  –&gt; Document recall 100%</p>
 </dl>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bboxes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">konfuzio_sdk.data.Bbox</span><span class="p"><span class="pre">]</span></span></em></dt>
+<dd><p>Use the cached bbox version.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">check_annotations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update_document</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span></dt>
@@ -522,10 +522,8 @@ Project.documents: 2  –&gt; Document recall 100%</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">check_bbox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update_document</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span></dt>
-<dd><p>Check match between the text in the Document and its bounding boxes.</p>
-<p>Check that every character in the text is part of the bbox dictionary and that each bbox has a match in the
-document text. Also, validate the coordinates of the bounding boxes.</p>
+<span class="sig-name descname"><span class="pre">check_bbox</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span></dt>
+<dd><p>Please see get_bbox of the Document.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -583,7 +581,7 @@ document text. Also, validate the coordinates of the bounding boxes.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">get_bbox</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">get_bbox</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span></dt>
 <dd><p>Get bbox information per character of file. We don’t store bbox as an attribute to save memory.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -612,15 +610,21 @@ document text. Also, validate the coordinates of the bounding boxes.</p>
 <dl class="py method">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">get_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Get Document pages as png images.</p>
+<dd><p>Get Document Pages as PNG images.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>update</strong> – Update the downloaded images even they are already available</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Path to OCR file.</p>
+<dd class="field-even"><p>Path to PNG files.</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">get_page_by_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">page_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Return the Page by index.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -670,10 +674,10 @@ anymore because _annotation_sets will no longer be None.</p>
 <dd><p>Return path to OCR PDF file.</p>
 </dd></dl>
 
-<dl class="py property">
+<dl class="py method">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pages</span></span></dt>
-<dd><p>Get Pages of Document. Once loaded stored in memory.</p>
+<span class="sig-name descname"><span class="pre">pages</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Page</span><span class="p"><span class="pre">]</span></span></span></span></dt>
+<dd><p>Get Pages of Document.</p>
 </dd></dl>
 
 <dl class="py method">
