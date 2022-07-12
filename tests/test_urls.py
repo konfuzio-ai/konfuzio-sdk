@@ -15,6 +15,10 @@ from konfuzio_sdk.urls import (
     get_labels_url,
     get_annotation_url,
     get_document_annotations_url,
+    get_annotation_view_url,
+    get_page_image_url,
+    get_create_ai_model_url,
+    get_update_ai_model_url,
 )
 
 
@@ -24,6 +28,8 @@ from tests.variables import TEST_PROJECT_ID
 DOCUMENT_ID = 3346
 ANNOTATION_ID = 56
 LABEL_ID = 12
+PAGE_ID = 1
+AI_ID = 1
 
 
 class TestUrls(unittest.TestCase):
@@ -110,3 +116,19 @@ class TestUrls(unittest.TestCase):
             f'{KONFUZIO_HOST}/api/projects/{TEST_PROJECT_ID}' f'/docs/{DOCUMENT_ID}/' f'annotations/{ANNOTATION_ID}/'
         )
         self.assertEqual(get_annotation_url(DOCUMENT_ID, ANNOTATION_ID, TEST_PROJECT_ID), annotation_url)
+
+    def test_annotation_view_url(self):
+        """Test to access Annotation online."""
+        self.assertEqual(get_annotation_view_url(ANNOTATION_ID), f'{KONFUZIO_HOST}/a/{ANNOTATION_ID}/')
+
+    def test_page_image_url(self):
+        """Test to access Page online."""
+        self.assertEqual(get_page_image_url(PAGE_ID), f'{KONFUZIO_HOST}/page/show-image/{PAGE_ID}/')
+
+    def test_upload_ai_url(self):
+        """Test to get URL to upload new AI file."""
+        self.assertEqual(get_create_ai_model_url(), f'{KONFUZIO_HOST}/api/aimodels/')
+
+    def test_change_ai_url(self):
+        """Test to get URL to change AI."""
+        self.assertEqual(get_update_ai_model_url(AI_ID), f'{KONFUZIO_HOST}/api/aimodels/{AI_ID}/')

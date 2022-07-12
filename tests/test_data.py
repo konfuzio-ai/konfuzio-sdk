@@ -5,6 +5,7 @@ import unittest
 from copy import copy, deepcopy
 
 import pytest
+from PIL.PngImagePlugin import PngImageFile
 
 from konfuzio_sdk.data import (
     Project,
@@ -37,7 +38,7 @@ class TestOnlineProject(unittest.TestCase):
 
     def test_document(self):
         """Test properties of a specific Documents in the test Project."""
-        doc = self.project.get_document_by_id(44842)
+        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         assert doc.category.name == 'Lohnabrechnung'
         label = self.project.labels[0]
         annotations = label.annotations(categories=[self.project.get_category_by_id(63)])
@@ -45,7 +46,7 @@ class TestOnlineProject(unittest.TestCase):
         doc.update()
         annotations = label.annotations(categories=[self.project.get_category_by_id(63)])
         self.assertEqual(len(annotations), self.annotations_correct)
-        assert len(doc.text) == 4793
+        assert len(doc.text) == 4537
         assert is_file(doc.txt_file_path)
         # assert is_file(doc.bbox_file_path) bbox is not loaded at this point.
         assert is_file(doc.annotation_file_path)
@@ -96,6 +97,18 @@ class TestOnlineProject(unittest.TestCase):
             doc.annotations()[0].save()
             assert 'cannot update Annotations once saved online' in context.exception
 
+    def test_get_pages_files(self):
+        """Test to download page files."""
+        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        assert len(doc.pages()) == 1
+
+    def test_load_image_in_memory(self):
+        """Test to download page files."""
+        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        for page in doc.pages():
+            image = page.get_image()
+            assert type(image) is PngImageFile
+
 
 class TestOfflineExampleData(unittest.TestCase):
     """Test data features without real data."""
@@ -127,6 +140,7 @@ class TestOfflineExampleData(unittest.TestCase):
         document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         new_document = deepcopy(document)
         assert new_document != document
+        assert new_document.get_page_by_index(0).width == 595.2
         assert new_document._annotations is None  # for now the implementation just copies the bbox and text
 
     def test_project_num_label(self):
@@ -151,7 +165,11 @@ class TestOfflineExampleData(unittest.TestCase):
             label_set=self.project.label_sets[0],
             spans=[span],
         )
-        span.bbox()
+        box = span.bbox()  # verify if we can calculate valid bounding boxes from a given Text offset.
+        assert box.x1 == 113.28
+        assert box.x0 == 84.28
+        assert box.y0 == 532.592
+        assert box.y1 == 540.592
 
 
 class TestEqualityAnnotation(unittest.TestCase):
@@ -332,7 +350,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 28
+        assert len(cls.project.virtual_documents) == 30
 
     def test_project_no_label(self):
         """Test that no_label exists in the Labels of the Project and has the expected name."""
@@ -458,30 +476,39 @@ class TestOfflineDataSetup(unittest.TestCase):
         span = Span(start_offset=1, end_offset=2)
         annotation = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
         assert annotation.spans[0].annotation is not None
-        assert annotation.spans[0].x0 is None  # Span bboxes must be explicitly loaded using span.bbox()
-        # Here this would be failing even when calling span.bbox() as the test document does not have a bbox.
+        assert annotation.spans[0].x0 is None  # Span bboxes must be explicitly loaded using span.bbox
+        # Here this would be failing even when calling span.bbox as the test document does not have a bbox.
 
     def test_get_span_bbox_with_characters_without_height(self):
         """Test get the bbox of a Span where the characters do not have height (OCR problem)."""
-        document_bbox = {'1': {'x0': 0, 'x1': 1, 'y0': 1, 'y1': 1, 'top': 10, 'bottom': 11, 'page_number': 1}}
+        document_bbox = {'1': {'x0': 0, 'x1': 1, 'y0': 1, 'y1': 1, 'page_number': 1}}
         document = Document(project=self.project, category=self.category, text='hello', bbox=document_bbox)
         span = Span(start_offset=1, end_offset=2)
         _ = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
-
+        _ = Page(id_=1, number=1, original_size=(595.2, 0), document=document, start_offset=0, end_offset=1)
         with self.assertRaises(ValueError) as context:
             span.bbox()
             assert 'coordinate y1 should be bigger than y0.' in context.exception
 
-    def test_get_span_bbox_with_characters_without_width(self):
+    def test_get_span_bbox_with_characters_without_width_missing_bbox(self):
         """Test get the bbox of a Span where the characters do not have width (OCR problem)."""
-        document_bbox = {'1': {'x0': 1, 'x1': 1, 'y0': 0, 'y1': 1, 'top': 10, 'bottom': 11, 'page_number': 1}}
+        document_bbox = {'1': {'x0': 1, 'x1': 1, 'y0': 0, 'y1': 1, 'page_number': 1}}
         document = Document(project=self.project, category=self.category, text='hello', bbox=document_bbox)
         span = Span(start_offset=1, end_offset=2)
         _ = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
-
-        with self.assertRaises(ValueError) as context:
+        _ = Page(id_=1, number=1, original_size=(595.2, 0), document=document, start_offset=0, end_offset=1)
+        with pytest.raises(ValueError, match='provides Character "None" document text refers to "e"'):
             span.bbox()
-            assert 'coordinate x1 should be bigger than x0.' in context.exception
+
+    def test_get_span_bbox_with_characters_without_width(self):
+        """Test get the bbox of a Span where the characters do not have width (OCR problem)."""
+        document_bbox = {'0': {'x0': 1, 'x1': 1, 'y0': 0, 'y1': 1, 'page_number': 1, 'text': 'h'}}
+        document = Document(project=self.project, category=self.category, text='hello', bbox=document_bbox)
+        span = Span(start_offset=1, end_offset=2)
+        _ = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
+        _ = Page(id_=1, number=1, original_size=(595.2, 0), document=document, start_offset=0, end_offset=1)
+        with pytest.raises(ValueError, match='no width in Page 0'):
+            span.bbox()
 
     def test_get_span_bbox_with_unavailable_characters(self):
         """Test get the bbox of a Span where the characters are unavailable."""
@@ -493,22 +520,20 @@ class TestOfflineDataSetup(unittest.TestCase):
         span = Span(start_offset=1, end_offset=2)
         _ = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
 
-        with self.assertRaises(ValueError) as context:
-            span.bbox()
-            assert 'does not have available characters bounding boxes.' in context.exception
+        span.bbox()
+        # with self.assertRaises(ValueError) as context:
+        # raise ValueError
+        # todo find a way to raise a value error for characters, but ignore special Characters that
+        #  do not provide a Bbox
+        # assert 'does not have available characters bounding boxes.' in context.exception
 
     def test_document_check_bbox_coordinates(self):
         """Test bbox check for coordinates with valid coordinates."""
         document_bbox = {
             '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 1, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
         }
-        document = Document(
-            project=self.project,
-            category=self.category,
-            text='h',
-            bbox=document_bbox,
-            pages=[{'original_size': (1, 1)}],
-        )
+        document = Document(project=self.project, category=self.category, text='h', bbox=document_bbox)
+        _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
         self.assertTrue(document.check_bbox())
 
     def test_document_check_bbox_invalid_x_coordinates(self):
@@ -516,56 +541,61 @@ class TestOfflineDataSetup(unittest.TestCase):
         document_bbox = {
             '0': {'x0': 1, 'x1': 1, 'y0': 0, 'y1': 1, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
         }
-        document = Document(
-            project=self.project,
-            category=self.category,
-            text='h',
-            bbox=document_bbox,
-            pages=[{'original_size': (1, 1)}],
-        )
-        self.assertFalse(document.check_bbox())
+        document = Document(project=self.project, category=self.category, text='h', bbox=document_bbox)
+        _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
+        with pytest.raises(ValueError) as e:
+            self.assertFalse(document.check_bbox())
+            assert 'has negative or no height' in str(e)
 
     def test_document_check_bbox_invalid_y_coordinates(self):
         """Test bbox check with invalid y coordinates."""
         document_bbox = {
             '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 0, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
         }
-        document = Document(
-            project=self.project,
-            category=self.category,
-            text='h',
-            bbox=document_bbox,
-            pages=[{'original_size': (1, 1)}],
-        )
-        self.assertFalse(document.check_bbox())
+        document = Document(project=self.project, category=self.category, text='h', bbox=document_bbox)
+        _ = Page(id_=1, number=1, original_size=(595.2, 0), document=document, start_offset=0, end_offset=1)
+        with pytest.raises(ValueError) as e:
+            self.assertFalse(document.check_bbox())
+            assert 'has negative or no height' in str(e)
 
     def test_document_check_bbox_invalid_width_coordinates(self):
         """Test bbox check with invalid x coordinates regarding the page width."""
         document_bbox = {
             '0': {'x0': 0, 'x1': 2, 'y0': 0, 'y1': 0, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
         }
-        document = Document(
-            project=self.project,
-            category=self.category,
-            text='h',
-            bbox=document_bbox,
-            pages=[{'original_size': (1, 1)}],
-        )
-        self.assertFalse(document.check_bbox())
+        document = Document(project=self.project, category=self.category, text='h', bbox=document_bbox)
+        _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
+        with pytest.raises(ValueError) as e:
+            self.assertFalse(document.check_bbox())
+            assert 'has negative or no height' in str(e)
+
+    def test_page_width(self):
+        """Test width of Page."""
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
+        }
+        document = Document(project=self.project, category=self.category, text='h', bbox=document_bbox)
+        _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
+        assert document.get_page_by_index(0).width == 595.2
+
+    def test_page_height(self):
+        """Test height of Page."""
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
+        }
+        document = Document(project=self.project, category=self.category, text='h', bbox=document_bbox)
+        _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
+        assert document.get_page_by_index(0).height == 841.68
 
     def test_document_check_bbox_invalid_height_coordinates(self):
         """Test bbox check with invalid x coordinates regarding the page height."""
         document_bbox = {
-            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
+            '0': {'x0': 1, 'x1': 0, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
         }
-        document = Document(
-            project=self.project,
-            category=self.category,
-            text='h',
-            bbox=document_bbox,
-            pages=[{'original_size': (1, 1)}],
-        )
-        self.assertFalse(document.check_bbox())
+        document = Document(project=self.project, category=self.category, text='h', bbox=document_bbox)
+        _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
+        with pytest.raises(ValueError, match='has negative width'):
+            document.check_bbox()
 
     def test_document_check_duplicated_annotations(self):
         """Test Annotations check when an error is raised due to duplicated Annotations by get_annotations."""
@@ -662,43 +692,16 @@ class TestOfflineDataSetup(unittest.TestCase):
 
         assert annotation in annotation_set.annotations
 
-    def test_create_document_with_pages(self):
-        """Create a Document with pages information."""
-        page_list = [
-            {
-                "id": 1,
-                "image": "/page/show-image/1/",
-                "number": 1,
-                "original_size": [595.2, 841.68],
-                "size": [1414, 2000],
-            }
-        ]
-        document = Document(project=self.project, category=self.category, pages=page_list, text='a')
-        assert len(document.pages) == len(page_list)
-        assert document.pages[0].image == page_list[0]["image"]
-        assert document.pages[0].number == page_list[0]["number"]
-        assert document.pages[0].original_size == page_list[0]["original_size"]
-        assert document.pages[0].size == page_list[0]["size"]
-
     def test_create_document_with_page_object(self):
         """Create a Document with pages information from a Page object."""
-        page_list = [
-            {
-                "id_": 1,
-                "image": "/page/show-image/1/",
-                "number": 1,
-                "original_size": [595.2, 841.68],
-                "size": [1414, 2000],
-            }
-        ]
-        page = Page(**page_list[0])
+        document = Document(project=self.project, category=self.category, text='a')
+        page_list = [{"id_": 1, "number": 1, "original_size": [595.2, 841.68]}]
+        page = Page(**page_list[0], document=document, start_offset=0, end_offset=1)
 
-        document = Document(project=self.project, category=self.category, pages=[page], text='a')
-        assert len(document.pages) == len(page_list)
-        assert document.pages[0].image == page_list[0]["image"]
-        assert document.pages[0].number == page_list[0]["number"]
-        assert document.pages[0].original_size == page_list[0]["original_size"]
-        assert document.pages[0].size == page_list[0]["size"]
+        assert len(document.pages()) == len(page_list)
+        assert page.image is None
+        assert page.number == 1
+        assert page.width == 595.2
 
     def test_create_new_annotation_set_in_document(self):
         """Add new annotation set to a document."""
@@ -1150,9 +1153,8 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_get_images(self):
         """Test get paths to the images of the first training document."""
-        self.prj.documents[0].get_images()
-        # TODO assert image sizes
-        assert len(self.prj.documents[0].image_paths) == len(self.prj.documents[0].pages)
+        document = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
+        assert len(document.pages()) == 1
 
     def test_get_file(self):
         """Test get path to the file of the first training document."""
@@ -1197,11 +1199,11 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_make_sure_pages_are_downloaded_automatically(self):
         """Test if Pages are downloaded automatically."""
-        prj = Project(id_=TEST_PROJECT_ID, project_folder='another3')
+        prj = Project(id_=TEST_PROJECT_ID, project_folder='another33')
         doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
         self.assertFalse(is_file(doc.pages_file_path, raise_exception=False))
-        self.assertEqual(None, doc._pages)
-        self.assertTrue(doc.pages)
+        self.assertEqual([], doc._pages)
+        self.assertTrue(doc.pages())
         self.assertTrue(is_file(doc.pages_file_path))
         prj.delete()
 
@@ -1233,15 +1235,14 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         span = Span(start_offset=1, end_offset=2)
         annotation = Annotation(document=doc, label_set=label_set, label=label, spans=[span])
         span = Span(start_offset=44, end_offset=65, annotation=annotation)
+        # only Character 60, 61 and 62 provide bounding boxes, all others are None
         span.bbox()
-        self.assertEqual(span.top, 23.849)
-        self.assertEqual(span.bottom, 32.849)
-        self.assertEqual(span.page_index, 0)
+        self.assertEqual(span.page.index, 0)
         self.assertEqual(span.line_index, 0)
-        self.assertEqual(span.x0, 426.0)
-        self.assertEqual(span.x1, 442.8)
-        self.assertEqual(span.y0, 808.831)
-        self.assertEqual(span.y1, 817.831)
+        self.assertEqual(span.bbox().x0, 426.0)
+        self.assertEqual(span.bbox().x1, 442.8)
+        self.assertEqual(span.bbox().y0, 808.831)
+        self.assertEqual(span.bbox().y1, 817.831)
 
     def test_size_of_project(self):
         """Test size of Project and compare it to the size after Documents have been loaded."""
@@ -1348,7 +1349,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     @unittest.skip(reason='No update logic of project about new Annotation.')
     def test_annotations_in_document(self):
         """Test number and value of Annotations."""
-        doc = self.prj.get_document_by_id(44842)
+        doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
         assert len(doc.annotations(use_correct=False)) == 24
         assert doc.annotations()[0].offset_string == ['22.05.2018']  # start_offset=465, start_offset=466
         assert len(doc.annotations()) == 24
@@ -1357,18 +1358,18 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_span_line_index_in_document(self):
         """Test line_index of span."""
-        doc = self.prj.get_document_by_id(44842)
+        doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
         label_set = LabelSet(project=self.prj, categories=[doc.category])
         label = Label(project=self.prj)
-        span = Span(start_offset=1, end_offset=2)
+        span = Span(start_offset=1000, end_offset=1002)
         _ = Annotation(document=doc, label_set=label_set, label=label, spans=[span])
-        assert span.page_index == 0
-        assert span.line_index == 0
+        assert span.page.index == 0
+        assert span.line_index == 13
 
     def test_annotation_sets_in_document(self):
         """Test number of Annotation Sets in a specific Document in the test Project."""
-        doc = self.prj.get_document_by_id(44842)
-        assert len(doc.annotation_sets()) == 5
+        doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
+        assert len(doc.annotation_sets()) == 24  # After Update to use the TEST_DOCUMENT_ID
 
     def test_get_annotation_set_after_removal(self):
         """Test get an annotation set that no longer exists."""
@@ -1407,21 +1408,31 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_correct_annotations(self):
         """Test correct Annotations of a certain Label in a specific document."""
-        doc = self.prj.get_document_by_id(44842)
+        doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
         label = self.prj.get_label_by_id(867)
         assert len(doc.annotations(label=label)) == 1
 
     def test_annotation_start_offset_zero_filter(self):
         """Test Annotations with start offset equal to zero."""
-        doc = self.prj.get_document_by_id(44842)
-        assert len(doc.annotations()) == 24
-        assert doc.annotations()[0].start_offset == 188
-        assert len(doc.annotations()) == 24
+        doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
+        assert len(doc.annotations()) == 19
+        assert doc.annotations()[0].start_offset == 66
 
     def test_multiline_annotation(self):
         """Test to convert a multiline span Annotation to a dict."""
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
         assert len(doc.annotations()[0].eval_dict) == 2
+
+    def test_compare_dicts(self):
+        """Test to convert a Annotation to a dict."""
+        annotations = self.prj.documents[0].annotations()
+        for annotation in annotations:
+            if annotation.id_ == 4420022:
+                span = annotation.spans[0]
+
+        empty_span = Span(start_offset=0, end_offset=0)
+
+        assert empty_span.eval_dict().keys() == span.eval_dict().keys()
 
     def test_annotation_to_dict(self):
         """Test to convert a Annotation to a dict."""
@@ -1449,14 +1460,14 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
         assert anno['page_width'] == 595.2
         assert anno['page_height'] == 841.68
-        assert anno['x0'] is None
-        assert anno['x1'] is None
-        assert anno['y0'] is None
-        assert anno['y1'] is None
-        assert anno['x0_relative'] is None
-        assert anno['x1_relative'] is None
-        assert anno['y0_relative'] is None
-        assert anno['y1_relative'] is None
+        assert anno['x0'] == 126.96
+        assert anno['x1'] == 131.04
+        assert anno['y0'] == 772.589
+        assert anno['y1'] == 783.589
+        assert anno['x0_relative'] == 0.2133064516129032
+        assert anno['x1_relative'] == 0.2201612903225806
+        assert anno['y0_relative'] == 0.9179129835566963
+        assert anno['y1_relative'] == 0.9309820834521435
         assert anno['line_index'] == 4
         assert anno['page_index'] == 0
         assert anno['page_index_relative'] == 0
@@ -1470,19 +1481,28 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_document_offset(self):
         """Test Document offsets."""
-        doc = self.prj.get_document_by_id(44842)
-        assert doc.text[395:396] == '4'
-        annotations = doc.annotations()
-        self.assertEqual(24, len(annotations))
-        assert annotations[2].offset_string == ['4']
+        doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
+        assert doc.annotations()[0].offset_string == ['328927/10103', '22.05.2018']
+
+    def test_document_id_when_loading_from_disk(self):
+        """Test ID of Document."""
+        doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
+        assert doc.id_ == TEST_DOCUMENT_ID
+
+    def test_document_check_bbox_available(self):
+        """Test deepcopy will copy over Bbox."""
+        doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
+        virtual_doc = deepcopy(doc)
+        assert virtual_doc.bboxes
 
     def test_document_check_bbox(self):
         """Test bbox check."""
-        doc = self.prj.get_document_by_id(44842)
-        virtual_doc = Document(text=doc.text, bbox=doc.get_bbox(), project=doc.project, pages=doc.pages)
+        doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
+        virtual_doc = deepcopy(doc)
         self.assertTrue(virtual_doc.check_bbox())
-        virtual_doc._text = '123' + virtual_doc.text  # Change text to bring bbox out of sync.
-        self.assertFalse(virtual_doc.check_bbox())
+        virtual_doc._text = '123' + doc.text  # Change text to bring bbox out of sync.
+        with pytest.raises(ValueError, match='Bbox provides Character "n" document text refers to "l"'):
+            virtual_doc.check_bbox()
 
     @unittest.skip(reason='Waiting for API to support to add to default Annotation Set')
     def test_document_add_new_annotation(self):

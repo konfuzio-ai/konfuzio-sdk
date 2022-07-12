@@ -1,4 +1,5 @@
 """Handle data from the API."""
+import io
 import itertools
 import json
 import logging
@@ -12,9 +13,9 @@ from typing import Optional, List, Union, Tuple, Dict
 from warnings import warn
 
 import dateutil.parser
+from PIL import Image
 from tqdm import tqdm
 
-from konfuzio_sdk import KONFUZIO_HOST
 from konfuzio_sdk.api import (
     _konfuzio_session,
     download_file_konfuzio_api,
@@ -23,10 +24,12 @@ from konfuzio_sdk.api import (
     post_document_annotation,
     get_document_details,
     update_document_konfuzio_api,
+    get_page_image,
 )
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
-from konfuzio_sdk.utils import get_bbox, get_missing_offsets
+from konfuzio_sdk.urls import get_annotation_view_url
+from konfuzio_sdk.utils import get_missing_offsets
 from konfuzio_sdk.utils import is_file, convert_to_bio_scheme, amend_file_name, sdk_isinstance
 
 logger = logging.getLogger(__name__)
@@ -70,6 +73,110 @@ class Data:
         """Delete data of the instance."""
         self.session = None
         return self
+
+
+class Page(Data):
+    """Access the information about one Page of a document."""
+
+    def __init__(
+        self,
+        id_: Union[int, None],
+        document: 'Document',
+        start_offset: int,
+        end_offset: int,
+        number: int,
+        original_size: Tuple[float, float],
+    ):
+        """Create a Page for a Document."""
+        self.id_ = id_
+        self.document = document
+        document.add_page(self)
+        self.start_offset = start_offset
+        self.end_offset = end_offset
+        self.image = None
+        self.number = number
+        self.index = number - 1
+        self._original_size = original_size
+        self.width = self._original_size[0]
+        self.height = self._original_size[1]
+        self.image_path = os.path.join(self.document.document_folder, f'page_{self.number}.png')
+
+        check_page = True
+        if self.index is None:
+            logger.error(f'Page index is None of {self} in {self.document}.')
+            check_page = False
+        if self.height is None:
+            logger.error(f'Page Height is None of {self} in {self.document}.')
+            check_page = False
+        if self.width is None:
+            logger.error(f'Page Width is None of {self} in {self.document}.')
+            check_page = False
+        assert check_page
+
+    def __hash__(self):
+        """Define that one Page per Document is unique."""
+        return (self.document, self.index)
+
+    def __repr__(self):
+        """Return the name of the Document incl. the ID."""
+        return f"Page {self.index} in {self.document}"
+
+    def get_image(self, update: bool = False):
+        """Get Document Page as PNG."""
+        if self.document.status[0] == 2 and (not is_file(self.image_path, raise_exception=False) or update):
+            png_content = get_page_image(self.id_)
+            with open(self.image_path, "wb") as f:
+                f.write(png_content)
+                self.image = Image.open(io.BytesIO(png_content))
+        elif is_file(self.image_path, raise_exception=False):
+            self.image = Image.open(self.image_path)
+        return self.image
+
+
+class Bbox:
+    """A bounding box relates to an area of a Document Page."""
+
+    def __init__(self, x0: int, x1: int, y0: int, y1: int, page: Page):
+        """Store information and validate."""
+        self.x0: int = x0
+        self.x1: int = x1
+        self.y0: int = y0
+        self.y1: int = y1
+        self.angle: float = 0.0  # not yet used
+        self.page: Page = page
+        self._valid()
+
+    def __repr__(self):
+        """Represent the Box."""
+        return f'{self.__class__.__name__}: {self.x1} {self.y0} {self.y0} {self.y1} on Page {self.page}'
+
+    def __hash__(self):
+        """Return identical value for a Bounding Box."""
+        return (self.x0, self.x1, self.y0, self.y1, self.page)
+
+    def __eq__(self, other: 'Bbox') -> bool:
+        """Define that one Bounding Box on the same page is identical."""
+        return self.__hash__() == other.__hash__()
+
+    def _valid(self,):
+        """Validate contained data."""
+        if self.x0 == self.x1:
+            raise ValueError(f'{self} no width in {self.page}.')
+
+        if self.x0 > self.x1:
+            raise ValueError(f'{self} has negative width in {self.page}.')
+
+        if self.y0 == self.y1:
+            raise ValueError(f'{self} has no height in {self.page}.')
+
+        if self.y0 > self.y1:
+            raise ValueError(f'{self} has negative height in {self.page}.')
+
+        if self.y1 > self.page.height:
+            raise ValueError(f'{self} exceeds height of {self.page}.')
+
+        if self.x1 > self.page.width:
+            raise ValueError(f'{self} exceeds width of {self.page}.')
 
 
 class AnnotationSet(Data):
@@ -620,15 +727,8 @@ class Span(Data):
         :param end_offset: Ending of the offset string (int)
         :param annotation: The Annotation the Span belong to
         """
-        if start_offset == end_offset:
-            raise ValueError(f"You cannot created a {self.__class__.__name__} with start {start_offset} and no Text.")
-        elif end_offset < start_offset:
-            raise ValueError(
-                f"You cannot created a {self.__class__.__name__} with start {start_offset} which is later than"
-                f" end_offset {end_offset}."
-            )
         self.id_local = next(Data.id_iter)
-        self.annotation = annotation
+        self.annotation: Annotation = annotation
         self.start_offset = start_offset
         self.end_offset = end_offset
         self.top = None
@@ -637,12 +737,51 @@ class Span(Data):
         self.x1 = None
         self.y0 = None
         self.y1 = None
-
-        # use hidden variables calculated information in instance
-        self._page_index = None
         self._line_index = None
-
+        self._page: Union[Page, None] = None
+        self._bbox: Union[Bbox, None] = None
         annotation and annotation.add_span(self)  # only add if Span has access to an Annotation
+        self._valid()
+
+    def _valid(self,):
+        """Validate containted data."""
+        if self.end_offset == self.start_offset == 0:
+            logger.error(f'{self} is intentionally left empty.')
+        elif self.end_offset < 0:
+            raise ValueError(f'{self} must span text.')
+        elif self.start_offset == self.end_offset:
+            raise ValueError(f"{self} must span text: Start {self.start_offset} equals end.")
+        elif self.end_offset < self.start_offset:
+            raise ValueError(f"{self} length must be positive.")
+        return True
+
+    @property
+    def page(self) -> Page:
+        """Return Page of Span."""
+        if self.annotation is None or self.annotation.document is None:
+            raise NotImplementedError
+        elif self.annotation.document.text is None:
+            logger.error(f'{self.annotation.document} does not provide text.')
+            pass
+        elif self._page is None and self.annotation.document.pages():
+            text = self.annotation.document.text[: self.start_offset]
+            page_index = len(text.split('\f')) - 1
+            self._page = self.annotation.document.get_page_by_index(page_index=page_index)
+        return self._page
+
+    @property
+    def line_index(self) -> int:
+        """Return index of the line of the Span."""
+        if self.annotation.document.text:
+            if self._line_index is None:
+                start_line_number = len(self.annotation.document.text[: self.start_offset].split('\n'))
+                end_line_number = len(self.annotation.document.text[: self.end_offset].split('\n'))
+
+                if start_line_number != end_line_number:
+                    raise ValueError(f'{self} must not span more than one visual line.')
+                self._line_index = start_line_number - 1
+
+        return self._line_index
 
     def __eq__(self, other) -> bool:
         """Compare any point of data with their position is equal."""
@@ -676,90 +815,33 @@ class Span(Data):
         else:
             raise NotImplementedError('A Span needs a Annotation and Document relation to suggest a Regex.')
 
-    def bbox(self):
+    def bbox(self) -> Bbox:
         """Calculate the bounding box of a text sequence."""
-        if self.annotation:
-            b = get_bbox(self.annotation.document.get_bbox(), self.start_offset, self.end_offset)
-
-            if not any(b.values()):
-                # Whitespaces will not provide bounding boxes, e.g. for those characters like '\x0c'
-                raise ValueError(f'{self} does not have available characters bounding boxes.')
-
-            # self.page_index = b['page_index']
-            # "page_index" depends on the document text and should be independent of bboxes.
-            self.top = b['top']
-            self.bottom = b['bottom']
-            self.x0 = b['x0']
-            self.x1 = b['x1']
-            self.y0 = b['y0']
-            self.y1 = b['y1']
-
-            if self.x0 and self.x1 and not self.x0 < self.x1:
-                raise ValueError(
-                    f'{self} in {self.annotation.document}: coordinate x1 should be bigger than x0. '
-                    f'x0: {self.x0}, x1: {self.x1}, document: {self.annotation.document}.'
-                )
-
-            if self.y0 and self.y1 and not self.y0 < self.y1:
-                raise ValueError(
-                    f'{self} in {self.annotation.document}: coordinate y1 should be bigger than y0.'
-                    f' y0: {self.y0}, y1: {self.y1}, document: {self.annotation.document}.'
-                )
-
-            check_page = True
-            if self.page_index is None:
-                logger.error(f'Page index is None of {self} in {self.annotation.document}.')
-                check_page = False
-            if self.page_height is None:
-                logger.error(f'Page Height is None of {self} in {self.annotation.document}.')
-                check_page = False
-            if self.page_width is None:
-                logger.error(f'Page Width is None of {self} in {self.annotation.document}.')
-                check_page = False
-            if check_page and (not (self.x1 < self.page_width) or not (self.y1 < self.page_height)):
-                raise ValueError(
-                    f'{self} in {self.annotation.document}: bounding box of span is located outside of '
-                    f'the page, document: {self.annotation.document}.'
-                )
-            return self
-        else:
+        if not self.annotation:
             raise NotImplementedError
-
-    @property
-    def line_index(self) -> int:  # TODO line_index might not be needed.
-        """Calculate the index of the line on which the span starts, first line has index 0."""
-        if self.annotation and self.annotation.document.pages:
-            if self._line_index is not None:
-                return self._line_index
-            else:
-                self._line_index = self.annotation.document.text[0 : self.start_offset].count('\n')
-                return self._line_index
-
-    @property
-    def page_index(self) -> Optional[int]:
-        """Calculate the index of the page on which the span starts, first page has index 0."""
-        if self.annotation and self.annotation.document.pages:
-            if self._page_index is not None:
-                return self._page_index
-            else:
-                self._page_index = self.annotation.document.text[0 : self.start_offset].count('\f')
-                return self._page_index
-
-    @property
-    def page_width(self) -> Optional[float]:
-        """Get width of the page of the Span. Used to calculate relative position on page."""
-        if self.page_index is not None:
-            return self.annotation.document.pages[self.page_index].original_size[0]
-        else:
+        if not self.page:
+            logger.warning(f'{self} does not have a Page.')
             return None
-
-    @property
-    def page_height(self) -> Optional[float]:
-        """Get width of the page of the Span. Used to calculate relative position on page."""
-        if self.page_index is not None:
-            return self.annotation.document.pages[self.page_index].original_size[1]
-        else:
+        if not self.annotation.document.bboxes_available:
+            logger.warning(f'{self.annotation.document} of {self} does not provide Bboxes.')
             return None
+        _ = self.line_index  # quick validate if start and end is in the same line of text
+
+        if self._bbox is None:
+            warn('WIP: Modifications before the next stable release expected.', FutureWarning, stacklevel=2)
+            # todo: verify that one Span relates to Character in on line of text
+            character_range = range(self.start_offset, self.end_offset)
+            characters = {key: self.annotation.document.bboxes.get(key) for key in character_range}
+            if not all(characters.values()):
+                logger.error(f'{self} contains Chractacters that don\'t provide a Bounding Box.')
+            self._bbox = Bbox(
+                x0=min([ch.x0 for c, ch in characters.items() if ch is not None]),
+                x1=max([ch.x1 for c, ch in characters.items() if ch is not None]),
+                y0=min([ch.y0 for c, ch in characters.items() if ch is not None]),
+                y1=max([ch.y1 for c, ch in characters.items() if ch is not None]),
+                page=self.page,
+            )
+        return self._bbox
 
     @property
     def normalized(self):
@@ -776,7 +858,7 @@ class Span(Data):
 
     def eval_dict(self):
         """Return any information needed to evaluate the Span."""
-        if self.start_offset == -1 and self.end_offset == 0:
+        if self.start_offset == self.end_offset == 0:
             eval = {
                 "id_local": None,
                 "id_": None,
@@ -802,10 +884,15 @@ class Span(Data):
                 "x1": 0,
                 "y0": 0,
                 "y1": 0,
+                "line_index": 0,
+                "page_index": None,
                 "page_width": 0,
                 "page_height": 0,
-                "page_index": 0,
-                "line_index": 0,
+                "x0_relative": None,
+                "x1_relative": None,
+                "y0_relative": None,
+                "y1_relative": None,
+                "page_index_relative": None,
             }
         else:
             eval = {
@@ -829,35 +916,24 @@ class Span(Data):
                 "document_id": self.annotation.document.id_,
                 "document_id_local": self.annotation.document.id_local,
                 "category_id": self.annotation.document.category.id_,
-                "x0": self.x0,
-                "x1": self.x1,
-                "y0": self.y0,
-                "y1": self.y1,
-                "page_width": self.page_width,
-                "page_height": self.page_height,
-                "page_index": self.page_index,
-                "line_index": self.line_index,  # used by label_set clf
+                "line_index": self.line_index,
             }
 
-        # Add calculated values: # TODO is this the right place for these calculations?
-        if self.x0 is not None and self.x1 is not None and self.page_width is not None:
-            eval["x0_relative"] = self.x0 / self.page_width  # TODO should we calculate fields here?
-            eval["x1_relative"] = self.x1 / self.page_width
-        else:
-            eval["x0_relative"] = None
-            eval["x1_relative"] = None
+            if self.bbox():
+                eval["x0"] = self.bbox().x0
+                eval["x1"] = self.bbox().x1
+                eval["y0"] = self.bbox().y0
+                eval["y1"] = self.bbox().y1
 
-        if self.y0 is not None and self.y1 is not None and self.page_height is not None:
-            eval["y0_relative"] = self.y0 / self.page_height
-            eval["y1_relative"] = self.y1 / self.page_height
-        else:
-            eval["y0_relative"] = None
-            eval["y1_relative"] = None
-
-        if self.page_index is not None and self.annotation.document.number_of_pages:
-            eval["page_index_relative"] = self.page_index / self.annotation.document.number_of_pages
-        else:
-            eval["page_index_relative"] = None
+            if self.page:  # todo separate as eval_dict on Page level
+                eval["page_index"] = self.page.index
+                eval["page_width"] = self.page.width
+                eval["page_height"] = self.page.height
+                eval["x0_relative"] = self.bbox().x0 / self.page.width
+                eval["x1_relative"] = self.bbox().x1 / self.page.width
+                eval["y0_relative"] = self.bbox().y0 / self.page.height
+                eval["y1_relative"] = self.bbox().y1 / self.page.height
+                eval["page_index_relative"] = self.page.index / self.annotation.document.number_of_pages
 
         return eval
 
@@ -991,6 +1067,8 @@ class Annotation(Data):
         self.x1 = None
         self.y0 = None
         self.y1 = None
+
+        # todo: remove this Annotation single Bbox
         bbox = kwargs.get('bbox')
         if bbox:
             self.top = bbox.get('top')
@@ -1107,8 +1185,8 @@ class Annotation(Data):
 
     def get_link(self):
         """Get link to the Annotation in the SmartView."""
-        if self.id_:
-            return KONFUZIO_HOST + "/a/" + str(self.id_)
+        if self.is_online:
+            return get_annotation_view_url(self.id_)
         else:
             return None
 
@@ -1259,31 +1337,6 @@ class Annotation(Data):
         return sorted(self._spans)
 
 
-class Page(Data):
-    """Access the information about one Page of a document."""
-
-    def __init__(
-        self,
-        id_: Union[int, None] = None,
-        document: 'Document' = None,
-        start_offset: int = None,
-        end_offset: int = None,
-        number: int = None,
-        image: str = None,
-        original_size: Tuple[float, float] = None,
-        size: Tuple[float, float] = None,
-    ):
-        """Create a Page for a Document."""
-        self.id_ = id_
-        self.document = document
-        self.start_offset = start_offset
-        self.end_offset = end_offset
-        self.original_size = original_size
-        self.size = size
-        self.image = image
-        self.number = number
-
-
 class Document(Data):
     """Access the information about one document, which is available online."""
 
@@ -1357,18 +1410,16 @@ class Document(Data):
         project.add_document(self)  # check for duplicates by ID before adding the Document to the project
 
         # use hidden variables to store low volume information in instance
-        self._text = text
-        self._bbox = bbox
+        self._text: str = text
+        self._characters: Dict[int, Bbox] = None
+        self._bbox_json = bbox
+        self.bboxes_available: bool = self.is_online or self._bbox_json
         self._hocr = None
-        self._pages = None
-
-        # Use Page to initialize Pages of this Document
-        self._load_pages(pages_data=pages)
+        self._pages: List[Page] = []
 
         # prepare local setup for document
         if self.id_:
             pathlib.Path(self.document_folder).mkdir(parents=True, exist_ok=True)
-        self.image_paths = []  # Path to the images  # todo implement pages
         self.annotation_file_path = os.path.join(self.document_folder, "annotations.json5")
         self.annotation_set_file_path = os.path.join(self.document_folder, "annotation_sets.json5")
         self.txt_file_path = os.path.join(self.document_folder, "document.txt")
@@ -1376,6 +1427,9 @@ class Document(Data):
         self.pages_file_path = os.path.join(self.document_folder, "pages.json5")
         self.bbox_file_path = os.path.join(self.document_folder, "bbox.zip")
         self.bio_scheme_file_path = os.path.join(self.document_folder, "bio_scheme.txt")
+
+        if pages:
+            self.pages()  # create page instances
 
     def __repr__(self):
         """Return the name of the Document incl. the ID."""
@@ -1434,108 +1488,44 @@ class Document(Data):
 
         return sorted(spans)
 
-    def _load_pages(self, pages_data: List[Union[Dict, Page]]):
-        """Load Pages of document."""
-        if pages_data is not None:
-            _pages = []
-            page_texts = self.text.split('\f')
-            assert len(page_texts) == len(pages_data)
-
-            start_offset = 0
-
-            for page_index, page_data in enumerate(pages_data):
-                page_text = page_texts[page_index]
-                end_offset = start_offset + len(page_text)
-                if sdk_isinstance(page_data, Page):
-                    page = Page(
-                        id_=page_data.id_,
-                        number=page_data.number,
-                        size=page_data.size,
-                        image=page_data.image,
-                        original_size=page_data.original_size,
-                        start_offset=page_data.start_offset,
-                        end_offset=page_data.end_offset,
-                        document=self,
-                    )
-                else:
-                    page_data['id_'] = page_data.pop('id', None)
-                    if 'size' in page_data.keys():
-                        page_data['size'] = tuple(page_data['size'])
-                    if 'original_size' in page_data.keys():
-                        page_data['original_size'] = tuple(page_data['original_size'])
-                    page = Page(**page_data, document=self, start_offset=start_offset, end_offset=end_offset)
-                _pages.append(page)
-                start_offset = end_offset + 1
-
-            self._pages = _pages
-
     def eval_dict(self, use_correct=False) -> List[dict]:
         """Use this dict to evaluate Documents. The speciality: For every Span of an Annotation create one entry."""
         result = []
         annotations = self.annotations(use_correct=use_correct)
-        if not annotations:  # if there are no annotations in this Documents
-            result.append(Span(start_offset=-1, end_offset=0).eval_dict())
+        if not annotations:  # if there are no Annotations in this Documents
+            result.append(Span(start_offset=0, end_offset=0).eval_dict())
         else:
             for annotation in annotations:
                 result += annotation.eval_dict
 
         return result
 
-    def check_bbox(self, update_document: bool = False) -> bool:
-        """
-        Check match between the text in the Document and its bounding boxes.
-
-        Check that every character in the text is part of the bbox dictionary and that each bbox has a match in the
-        document text. Also, validate the coordinates of the bounding boxes.
-        """
-        warn('This method is deprecated.', DeprecationWarning, stacklevel=2)
-        self._bbox = self.get_bbox()
-        for index, char in enumerate(self.text):
-            if char in [' ', '\f', '\n']:
-                continue
-            try:
-                if self.get_bbox()[str(index)]['text'] != char:
-                    return False
-            except KeyError:
-                return False
-
-        all_x = all([v['x1'] > v['x0'] for k, v in self.get_bbox().items()])
-        all_y = all([v['y1'] > v['y0'] for k, v in self.get_bbox().items()])
-        all_width = all(
-            [v['x1'] <= self.pages[v['page_number'] - 1].original_size[0] for k, v in self.get_bbox().items()]
-        )
-
-        all_height = all(
-            [v['y1'] <= self.pages[v['page_number'] - 1].original_size[1] for k, v in self.get_bbox().items()]
-        )
-
-        valid = all([all_x, all_y, all_width, all_height])
-
-        if not valid:
-            logger.error(f'{self} has invalid character bounding boxes.')
-
-            if update_document:
-                # set the dataset status of the Document to Excluded
-                update_document_konfuzio_api(
-                    document_id=self.id_,
-                    file_name=self.name,
-                    dataset_status=4,
-                    assignee=1102,  # bbox-issue@konfuzio.com
-                )
-
-        return valid
+    def check_bbox(self) -> bool:
+        """Please see get_bbox of the Document."""
+        warn('Deprecate: Modifications before the next stable release expected.', DeprecationWarning, stacklevel=2)
+        _ = self.bboxes
+        return True
 
     def __deepcopy__(self, memo) -> 'Document':
         """Create a new Document of the instance."""
-        return Document(
+        document = Document(
             id=None,
             project=self.project,
             category=self.category,
             text=self.text,
-            bbox=self.get_bbox(),
-            pages=self.pages,
             copy_of_id=self.id_,
+            bbox=self.get_bbox(),
         )
+        for page in self.pages():
+            _ = Page(
+                id_=None,
+                document=document,
+                start_offset=page.start_offset,
+                end_offset=page.end_offset,
+                number=page.number,
+                original_size=(page.width, page.height),
+            )
+        return document
 
     def check_annotations(self, update_document: bool = False) -> bool:
         """Check if Annotations are valid - no duplicates and correct Category."""
@@ -1688,28 +1678,16 @@ class Document(Data):
 
     def get_images(self, update: bool = False):
         """
-        Get Document pages as png images.
+        Get Document Pages as PNG images.
 
         :param update: Update the downloaded images even they are already available
-        :return: Path to OCR file.
+        :return: Path to PNG files.
         """
-        self.image_paths = []
-        for page in self.pages:
-            if is_file(page.image, raise_exception=False):
-                self.image_paths.append(page.image)
-            else:
-                page_path = os.path.join(self.document_folder, f'page_{page.number}.png')
-                self.image_paths.append(page_path)
-
-                if not is_file(page_path, raise_exception=False) or update:
-                    url = f'{KONFUZIO_HOST}{page.image}'
-                    res = self.session.get(url)
-                    with open(page_path, "wb") as f:
-                        f.write(res.content)
+        return [page.get_image(update=update) for page in self.pages()]
 
     def download_document_details(self):
         """Retrieve data from a Document online in case documented has finished processing."""
-        if self.status and self.status[0] == 2:
+        if self.is_online and self.status and self.status[0] == 2:
             data = get_document_details(document_id=self.id_, project_id=self.project.id_, session=self.session)
 
             # write a file, even there are no annotations to support offline work
@@ -1724,10 +1702,8 @@ class Document(Data):
 
             with open(self.pages_file_path, "w") as f:
                 json.dump(data["pages"], f, indent=2, sort_keys=True)
-        elif self.id_ is None:
-            pass  # Document is not online
         else:
-            logger.error(f'{self} is not available for download.')
+            raise NotImplementedError
 
         return self
 
@@ -1815,18 +1791,19 @@ class Document(Data):
 
         return converted_text
 
-    def get_bbox(self):
+    def get_bbox(self) -> Dict:
         """
         Get bbox information per character of file. We don't store bbox as an attribute to save memory.
 
         :return: Bounding box information per character in the document.
         """
-        if self._bbox is not None:
-            return self._bbox
+        if self._bbox_json:
+            bbox = self._bbox_json
         elif is_file(self.bbox_file_path, raise_exception=False):
             with zipfile.ZipFile(self.bbox_file_path, "r") as archive:
                 bbox = json.loads(archive.read('bbox.json5'))
-        elif self.status and self.status[0] == 2:  # todo check for self.project.id_ and self.id_ and ?
+        elif self.is_online and self.status and self.status[0] == 2:
+            # todo check for self.project.id_ and self.id_ and ?
             logger.warning(f'Start downloading bbox files of {len(self.text)} characters for {self}.')
             bbox = get_document_details(document_id=self.id_, project_id=self.project.id_, extra_fields="bbox")['bbox']
             # Use the `zipfile` module: `compresslevel` was added in Python 3.7
@@ -1840,17 +1817,42 @@ class Document(Data):
                 # Test integrity of compressed archive
                 zip_file.testzip()
         else:
-            logger.error(f'{self} does not have bboxes.')
-            return {}
+            self.bboxes_available = False
+            bbox = {}
 
         return bbox
+
+    @property
+    def bboxes(self) -> Dict[int, Bbox]:
+        """Use the cached bbox version."""
+        warn('WIP: Modifications before the next stable release expected.', FutureWarning, stacklevel=2)
+        if self.bboxes_available:
+            bbox = self.get_bbox()
+            boxes = {}
+            for character_index, box in bbox.items():
+                x0 = box.get('x0')
+                x1 = box.get('x1')
+                y0 = box.get('y0')
+                y1 = box.get('y1')
+                page_index = box.get('page_number') - 1
+                page = self.get_page_by_index(page_index=page_index)
+                box_character = box.get('text')
+                document_character = self.text[int(character_index)]
+                if box_character not in [' ', '\f', '\n'] and box_character != document_character:
+                    raise ValueError(
+                        f'{self} Bbox provides Character "{box_character}" document text refers to '
+                        f'"{document_character}" with ID "{character_index}".'
+                    )
+                boxes[int(character_index)] = Bbox(x0=x0, x1=x1, y0=y0, y1=y1, page=page)
+            self._characters = boxes
+        return self._characters
 
     @property
     def text(self):
         """Get Document text. Once loaded stored in memory."""
         if self._text is not None:
             return self._text
-        if not is_file(self.txt_file_path, raise_exception=False):
+        if self.is_online and not is_file(self.txt_file_path, raise_exception=False):
             self.download_document_details()
         if is_file(self.txt_file_path, raise_exception=False):
             with open(self.txt_file_path, "r", encoding="utf-8") as f:
@@ -1858,18 +1860,47 @@ class Document(Data):
 
         return self._text
 
-    @property
-    def pages(self):
-        """Get Pages of Document. Once loaded stored in memory."""
-        # todo: add Page as a Class to get access to the Image
-        if self._pages is not None:
-            pass
-        if not is_file(self.pages_file_path, raise_exception=False):
+    def add_page(self, page: Page):
+        """Add a Page to a Document."""
+        if page not in self._pages:
+            self._pages.append(page)
+        else:
+            raise ValueError(f'In {self} the {page} is a duplicate and will not be added.')
+
+    def get_page_by_index(self, page_index: int):
+        """Return the Page by index."""
+        for page in self.pages():
+            if page.index == page_index:
+                return page
+        raise IndexError(f'Page with Index {page_index} not available in {self}')
+
+    def pages(self) -> List[Page]:
+        """Get Pages of Document."""
+        if self._pages:
+            return self._pages
+        if self.is_online and not is_file(self.pages_file_path, raise_exception=False):
             self.download_document_details()
+            is_file(self.pages_file_path)
         if is_file(self.pages_file_path, raise_exception=False):
             with open(self.pages_file_path, "r") as f:
                 pages_data = json.loads(f.read())
-            self._load_pages(pages_data)
+
+            page_texts = self.text.split('\f')
+            assert len(page_texts) == len(pages_data)
+            start_offset = 0
+            for page_index, page_data in enumerate(pages_data):
+                page_text = page_texts[page_index]
+                end_offset = start_offset + len(page_text)
+                _ = Page(
+                    id_=page_data['id'],
+                    document=self,
+                    number=page_data['number'],
+                    original_size=page_data['original_size'],
+                    start_offset=start_offset,
+                    end_offset=end_offset,
+                )
+                start_offset = end_offset + 1
+
         return self._pages
 
     @property

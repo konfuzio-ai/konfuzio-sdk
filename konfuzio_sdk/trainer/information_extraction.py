@@ -1295,10 +1295,10 @@ def plot_label_distribution(df_list: list, df_name_list=None) -> None:
 def annotation_to_dict(annotation: Annotation, include_pos: bool = False) -> dict:
     """Convert an annotation to a dictionary."""
     # Calculate area.
-    if annotation.spans[0].x0 is None or annotation.spans[0].y0 is None:
+    if annotation.spans[0].bbox().x0 is None or annotation.spans[0].bbox().y0 is None:
         raise NotImplementedError
     else:
-        area = annotation.spans[0].x0 * annotation.spans[0].y0
+        area = annotation.spans[0].bbox().x0 * annotation.spans[0].bbox().y0
 
     # gets the data into a dict
     annotation_dict = {
@@ -1310,11 +1310,11 @@ def annotation_to_dict(annotation: Annotation, include_pos: bool = False) -> dic
         "revised": annotation.revised,
         "is_correct": annotation.is_correct,
         "confidence": annotation.confidence,
-        "x0": annotation.spans[0].x0,
-        "y0": annotation.spans[0].y0,
-        "x1": annotation.spans[0].x1,
-        "y1": annotation.spans[0].y1,
-        "page_index": annotation.spans[0].page_index,  # todo as attribute not on annotation level anymore
+        "x0": annotation.spans[0].bbox().x0,
+        "y0": annotation.spans[0].bbox().y0,
+        "x1": annotation.spans[0].bbox().x1,
+        "y1": annotation.spans[0].bbox().y1,
+        "page_index": annotation.spans[0].page.index,  # todo as attribute not on annotation level anymore
         "line_index": annotation.spans[0].line_index,  # todo as attribute not on annotation level anymore
         "area": area,
         "top": annotation.spans[0].top,  # todo as attribute not on annotation level anymore
@@ -1531,11 +1531,15 @@ def process_document_data(
             try:
                 annotation.spans[0].bbox()
                 if candidate['end_offset'] <= annotation.start_offset:
-                    candidate['dist'] = annotation.spans[0].x0 - candidate['x1']  # todo hotfix remove ".spans[0]"
+                    candidate['dist'] = (
+                        annotation.spans[0].bbox().x0 - candidate['x1']
+                    )  # todo hotfix remove ".spans[0]"
                     candidate['pos'] = 0
                     l_list.append(candidate)
                 elif candidate['start_offset'] >= annotation.end_offset:
-                    candidate['dist'] = candidate['x0'] - annotation.spans[0].x1  # todo hotfix remove ".spans[0]"
+                    candidate['dist'] = (
+                        candidate['x0'] - annotation.spans[0].bbox().x1
+                    )  # todo hotfix remove ".spans[0]"
                     candidate['pos'] = 0
                     r_list.append(candidate)
             except ValueError as e:

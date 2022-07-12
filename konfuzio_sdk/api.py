@@ -29,6 +29,7 @@ from konfuzio_sdk.urls import (
     get_labels_url,
     get_update_ai_model_url,
     get_create_ai_model_url,
+    get_page_image_url,
 )
 from konfuzio_sdk.utils import is_file
 
@@ -200,6 +201,29 @@ def get_document_details(document_id: int, project_id: int, session=_konfuzio_se
     url = get_document_api_details_url(document_id=document_id, project_id=project_id, extra_fields=extra_fields)
     r = session.get(url)
     return r.json()
+
+
+def get_page_image(page_id: int, session=_konfuzio_session(), thumbnail: bool = False):
+    """
+    Load image of a Page as Bytes.
+
+    :param page_id: ID of the Page
+    :param thumbnail: Download Page image as thumbnail
+    :param session: Konfuzio session with Retry and Timeout policy
+    :return: Bytes of the Image.
+    """
+    if thumbnail:
+        raise NotImplementedError
+    else:
+        url = get_page_image_url(page_id=page_id)
+
+    r = session.get(url)
+
+    content_type = r.headers.get('content-type')
+    if content_type != 'image/png':
+        raise TypeError(f'CONTENT TYP of Image {page_id} is {content_type} and no PNG.')
+
+    return r.content
 
 
 # def post_document_bulk_annotation(document_id: int, project_id: int, annotation_list, session=_konfuzio_session()):
