@@ -14,20 +14,34 @@ class LocalTextProject(Project):
         category_2 = Category(project=self, id_=2)
         label_set = LabelSet(id_=2, project=self, categories=[category, category_2])
         label = Label(id_=3, text='LabelName', project=self, label_sets=[label_set])
+        label_new = Label(id_=4, text='LabelName 2', project=self, label_sets=[label_set])
 
-        self.local_training_document = Document(project=self, category=category, text="Hi all,", dataset_status=2)
+        self.local_training_document = Document(
+            project=self, category=category, text="Hi all, I like fish.", dataset_status=2
+        )
         annotation_set = AnnotationSet(id_=4, document=self.local_training_document, label_set=label_set)
         _ = Annotation(
             id_=5,
             document=self.local_training_document,
             is_correct=True,
+            confidence=1.0,
             annotation_set=annotation_set,
             label=label,
             label_set=label_set,
-            spans=[Span(start_offset=3, end_offset=6)],
+            spans=[Span(start_offset=3, end_offset=5)],
+        )
+        _ = Annotation(
+            id_=6,
+            document=self.local_training_document,
+            is_correct=True,
+            confidence=1.0,
+            annotation_set=annotation_set,
+            label=label_new,
+            label_set=label_set,
+            spans=[Span(start_offset=7, end_offset=10)],
         )
 
-        document_test_a = Document(project=self, category=category, text="Hi all,", dataset_status=3)
+        document_test_a = Document(project=self, category=category, text="Hi all, I like fish.", dataset_status=3)
         annotation_set_test_a = AnnotationSet(id_=6, document=document_test_a, label_set=label_set)
         _ = Annotation(
             id_=7,
@@ -36,7 +50,17 @@ class LocalTextProject(Project):
             annotation_set=annotation_set_test_a,
             label=label,
             label_set=label_set,
-            spans=[Span(start_offset=3, end_offset=6)],
+            spans=[Span(start_offset=7, end_offset=10)],
+        )
+
+        _ = Annotation(
+            id_=70,
+            document=document_test_a,
+            is_correct=True,
+            annotation_set=annotation_set_test_a,
+            label=label_new,
+            label_set=label_set,
+            spans=[Span(start_offset=11, end_offset=14)],
         )
 
         document_test_b = Document(project=self, category=category, text="Hi all,", dataset_status=3)

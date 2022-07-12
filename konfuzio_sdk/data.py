@@ -292,7 +292,7 @@ class Label(Data):
         description: str = None,
         label_sets=None,
         has_multiple_top_candidates: bool = False,
-        threshold: float = None,
+        threshold: float = 0.0,
         *initial_data,
         **kwargs,
     ):
@@ -568,9 +568,10 @@ class Label(Data):
                 for category in categories:
                     regex.extend(self.find_regex(category=category))
                 self._regex = regex
-                if os.path.exists(self.regex_file_path):
-                    with open(self.regex_file_path, 'w') as f:
-                        json.dump(self._regex, f, indent=2, sort_keys=True)
+                # save the results on disk for later use
+                with open(self.regex_file_path, 'w') as f:
+                    json.dump(self._regex, f, indent=2, sort_keys=True)
+                is_file(self.regex_file_path)
             else:
                 logger.warning(
                     f'Regexes loaded from file for {self} which might have been calculated for other category.'

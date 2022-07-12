@@ -25,4 +25,4 @@ class TestLocalTextProject(unittest.TestCase):
     def test_number_of_labels(self):
         """Test the number of all labels."""
         project = LocalTextProject()
-        assert len(project.labels) == 2
+        assert len(project.labels) == 3
