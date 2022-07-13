@@ -13,7 +13,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 ## Unreleased
 
 ### Added
-- Allow to set a default assignee for uploade documents
+- Allow to set a default assignee for uploaded documents
 - Allow to notify users via email when they get assigned to documents
 
 ### Fixed
