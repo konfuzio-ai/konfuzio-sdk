@@ -31,7 +31,8 @@ from konfuzio_sdk.trainer.information_extraction import (
     SeparateLabelsAnnotationMultiClassModel,
 )
 from konfuzio_sdk.api import upload_ai_model
-from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
+from konfuzio_sdk.tokenizer.regex import RegexTokenizer, WhitespaceTokenizer
+from konfuzio_sdk.tokenizer.base import ListTokenizer
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 
 logger = logging.getLogger(__name__)
@@ -103,7 +104,7 @@ class TestSequenceInformationExtraction(unittest.TestCase):
         self.pipeline.fit()
 
     def test_4_save_model(self):
-        """Evaluate the model."""
+        """Save the model."""
         self.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder)
 
     def test_5_evaluate_model(self):
@@ -152,7 +153,7 @@ class TestSequenceInformationSeparateLabelsExtraction(unittest.TestCase):
         self.pipeline.fit()
 
     def test_4_save_model(self):
-        """Evaluate the model."""
+        """Save the model."""
         self.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder)
 
     def test_5_evaluate_model(self):
@@ -201,7 +202,7 @@ class TestSequenceDocumentEntityMulticlassModelExtraction(unittest.TestCase):
         self.pipeline.fit()
 
     def test_4_save_model(self):
-        """Evaluate the model."""
+        """Save the model."""
         self.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder)
 
     def test_5_evaluate_model(self):
@@ -250,7 +251,7 @@ class TestSequenceSeparateLabelsAnnotationMultiClassModelExtraction(unittest.Tes
         self.pipeline.fit()
 
     def test_4_save_model(self):
-        """Evaluate the model."""
+        """Save the model."""
         self.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder)
 
     def test_5_evaluate_model(self):
@@ -266,6 +267,67 @@ class TestSequenceSeparateLabelsAnnotationMultiClassModelExtraction(unittest.Tes
 
     @unittest.skip(reason='Test run offline.')
     def test_7_upload_ai_model(self):
+        """Upload the model."""
+        upload_ai_model(ai_model_path=self.pipeline_path, category_ids=[self.pipeline.category.id_])
+
+
+class TestFindRegexSeparateLabelsAnnotationMultiClassModelExtraction(unittest.TestCase):
+    """Test to train an extraction Model for Documents."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set up the Data and Pipeline."""
+        cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+        cls.pipeline = SeparateLabelsAnnotationMultiClassModel()
+
+    def test_1_configure_pipeline(self):
+        """Make sure the Data and Pipeline is configured."""
+        self.pipeline.tokenizer = ListTokenizer(tokenizers=[])
+        self.pipeline.category = self.project.get_category_by_id(id_=63)
+        self.pipeline.documents = self.pipeline.category.documents()[:5]
+        self.pipeline.test_documents = self.pipeline.category.test_documents()[:1]
+
+    def test_2_find_regex(self):
+        """Fit the tokenizer."""
+        for label in self.pipeline.category.labels:
+            for regex in label.find_regex(category=self.pipeline.category):
+                self.pipeline.tokenizer.tokenizers.append(RegexTokenizer(regex=regex))
+
+    def test_3_make_features(self):
+        """Make sure the Data and Pipeline is configured."""
+        self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
+            documents=self.pipeline.documents
+        )
+        self.pipeline.df_test, self.pipeline.test_label_feature_list = self.pipeline.feature_function(
+            documents=self.pipeline.test_documents
+        )
+
+    def test_4_fit(self) -> None:
+        """Start to train the Model."""
+        self.pipeline.fit()
+
+    def test_5_save_model(self):
+        """Save the model."""
+        self.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder)
+
+    def test_6_evaluate_model(self):
+        """Evaluate the model."""
+        self.pipeline.evaluate_full()
+
+    @unittest.skip(reason='We do not achieve this at the moment.')
+    def test_7_perfect_evaluation_f1(self):
+        """Check 100% strict evaluation score."""
+        assert self.pipeline.evaluation.f1(search=None) == 1
+
+    def test_8_extract_test_document(self):
+        """Extract a randomly selected Test Document."""
+        test_document = self.project.get_document_by_id(44823)
+        result = self.pipeline.extract(document=test_document)
+        # todo: this extract method should use a Document
+        assert len(result['Brutto-Bezug']) > 0  # todo add more test for inference on data level
+
+    @unittest.skip(reason='Test run offline.')
+    def test_9_upload_ai_model(self):
         """Upload the model."""
         upload_ai_model(ai_model_path=self.pipeline_path, category_ids=[self.pipeline.category.id_])
 
@@ -523,7 +585,6 @@ test_data_num = [
 def test_num(test_input, expected, document_id):
     """Test string conversion."""
     assert num_count(test_input) == expected
-
 
 #
 # """Test models in models_labels_multiclass."""
