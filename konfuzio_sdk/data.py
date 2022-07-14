@@ -134,19 +134,19 @@ class Page(Data):
 
     @property
     def text(self):
-        """Get Document text corresponding to the Page"""
+        """Get Document text corresponding to the Page."""
         doc_text = self.document.text
         page_text = doc_text.split('\f')[self.index]
         return page_text
 
     def get_bbox(self):
-        """Get bbox information per character of page."""
-
+        """Get bbox information per character of Page."""
         doc_bbox = self.document.get_bbox()
         page_bbox = {k: doc_bbox[k] for k in doc_bbox.keys() if doc_bbox[k]['page_number']==self.number}
         return page_bbox
 
     def annotations(self):
+        """Get Page Annotations."""
         pass
 
 
