@@ -2891,9 +2891,7 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
         return self.clf
 
     def evaluate_full(self) -> Evaluation:
-        """
-        Evaluate the full pipeline on the pipeline's Test Documents.
-        """
+        """Evaluate the full pipeline on the pipeline's Test Documents."""
         eval_list = []
         for document in self.test_documents:
             extraction_result = self.extract(document=document)
