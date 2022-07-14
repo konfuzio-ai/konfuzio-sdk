@@ -350,7 +350,11 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 30
+        assert len(cls.project.virtual_documents) == 33
+
+    # def test_document_only_needs_project(self):
+    #     """Test that a Document can be created without category"""
+    #     _ = Document(project=self.project)
 
     def test_project_no_label(self):
         """Test that no_label exists in the Labels of the Project and has the expected name."""
@@ -586,6 +590,41 @@ class TestOfflineDataSetup(unittest.TestCase):
         document = Document(project=self.project, category=self.category, text='h', bbox=document_bbox)
         _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
         assert document.get_page_by_index(0).height == 841.68
+
+    def test_page_text(self):
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'p'}
+        }
+        document = Document(project=self.project, category=self.category, text='page1\fpage2', bbox=document_bbox)
+        _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=5)
+        _ = Page(id_=2, number=2, original_size=(595.2, 841.68), document=document, start_offset=6, end_offset=11)
+        assert document.get_page_by_index(0).text == 'page1'
+        assert document.get_page_by_index(1).text == 'page2'
+
+    def test_page_text_offsets(self):
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'p'}
+        }
+        document = Document(project=self.project, category=self.category, text='page1\fpage2', bbox=document_bbox)
+        page1 = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=5)
+        page2 = Page(id_=2, number=2, original_size=(595.2, 841.68), document=document, start_offset=6, end_offset=11)
+        assert page1.text == document.text[page1.start_offset: page1.end_offset]
+        assert page2.text == document.text[page2.start_offset: page2.end_offset]
+
+    def test_page_get_bbox(self):
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'p'},
+            '2': {'x0': 1, 'x1': 0, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': '1'},
+            '8': {'x0': 0, 'x1': 1, 'y0': 10, 'y1': 12, 'top': 10, 'bottom': 11, 'page_number': 2, 'text': 'p'},
+            '10': {'x0': 1, 'x1': 0, 'y0': 10, 'y1': 12, 'top': 10, 'bottom': 11, 'page_number': 2, 'text': '2'}
+        }
+        document = Document(project=self.project, category=self.category, text='p1\fp2', bbox=document_bbox)
+        page1 = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=2)
+        page2 = Page(id_=2, number=2, original_size=(595.2, 841.68), document=document, start_offset=3, end_offset=5)
+        assert '0' in page1.get_bbox() and '2' in page1.get_bbox()
+        assert '8' in page2.get_bbox() and '10' in page2.get_bbox()
+        assert '0' not in page2.get_bbox() and '2' not in page2.get_bbox()
+        assert '8' not in page1.get_bbox() and '10' not in page1.get_bbox()
 
     def test_document_check_bbox_invalid_height_coordinates(self):
         """Test bbox check with invalid x coordinates regarding the page height."""
