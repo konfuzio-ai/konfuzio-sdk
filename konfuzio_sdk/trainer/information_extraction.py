@@ -180,12 +180,12 @@ def get_bboxes_by_coordinates(doc_bbox: Dict, selection_bboxes: List[Dict]) -> L
             {**char_bbox}
             for index, char_bbox in doc_bbox.items()
             if selection_bbox["page_index"] == char_bbox["page_number"] - 1
-               # filter the characters of the document according to their x/y values, so that we only include the
-               # characters that are inside the selection
-               and selection_bbox["x0"] <= char_bbox["x0"]
-               and selection_bbox["x1"] >= char_bbox["x1"]
-               and selection_bbox["y0"] <= char_bbox["y0"]
-               and selection_bbox["y1"] >= char_bbox["y1"]
+            # filter the characters of the document according to their x/y values, so that we only include the
+            # characters that are inside the selection
+            and selection_bbox["x0"] <= char_bbox["x0"]
+            and selection_bbox["x1"] >= char_bbox["x1"]
+            and selection_bbox["y0"] <= char_bbox["y0"]
+            and selection_bbox["y1"] >= char_bbox["y1"]
         ]
 
         final_bboxes.extend(selected_bboxes)
@@ -213,7 +213,7 @@ def flush_buffer(buffer: List[pandas.Series], doc_text: str, merge_vertical=Fals
         for ind, buf in enumerate(buffer):
             starts.append(buf['Start'])
             ends.append(buf['End'])
-            text += doc_text[buf['Start']: buf['End']]
+            text += doc_text[buf['Start'] : buf['End']]
             if ind < n_buf - 1:
                 text += '\n'
     else:
@@ -237,15 +237,15 @@ def flush_buffer(buffer: List[pandas.Series], doc_text: str, merge_vertical=Fals
 
 
 def is_valid_merge(
-        row: pandas.Series,
-        buffer: List[pandas.Series],
-        doc_text: str,
-        label_types: Dict[str, str],
-        doc_bbox: Union[None, Dict] = None,
-        offsets_per_page: Union[None, Dict] = None,
-        merge_vertical: bool = False,
-        threshold: float = 0.0,
-        max_offset_distance: int = 5,
+    row: pandas.Series,
+    buffer: List[pandas.Series],
+    doc_text: str,
+    label_types: Dict[str, str],
+    doc_bbox: Union[None, Dict] = None,
+    offsets_per_page: Union[None, Dict] = None,
+    merge_vertical: bool = False,
+    threshold: float = 0.0,
+    max_offset_distance: int = 5,
 ) -> bool:
     """
     Verify if the merging that we are trying to do is valid.
@@ -306,7 +306,7 @@ def is_valid_merge(
 
     # only merge if text is on same line
     # row can include entity that is already part of the buffer (buffer: Ankerkette Meterware, row: Ankerkette)
-    if '\n' in doc_text[min(buffer[0]['Start'], row['Start']): max(buffer[-1]['End'], row['End'])]:
+    if '\n' in doc_text[min(buffer[0]['Start'], row['Start']) : max(buffer[-1]['End'], row['End'])]:
         return False
     # always merge if not one of these data types
     # never merge numbers or positive numbers
@@ -314,12 +314,12 @@ def is_valid_merge(
         return True
     # only merge percentages if the result of the merge is still a percentage
     if label_types[0] == 'Percentage':
-        text = doc_text[buffer[0]['Start']: row['End']]
+        text = doc_text[buffer[0]['Start'] : row['End']]
         merge = normalize_to_percentage(text)
         return merge is not None
     # only merge date if the result of the merge is still a date
     if label_types[0] == 'Date':
-        text = doc_text[buffer[0]['Start']: row['End']]
+        text = doc_text[buffer[0]['Start'] : row['End']]
         merge = normalize_to_date(text)
         return merge is not None
     # should only get here if we have a single data type that is either Number or Positive Number,
@@ -329,7 +329,7 @@ def is_valid_merge(
 
 
 def is_valid_merge_vertical(
-        row: pandas.Series, buffer: List[pandas.Series], doc_bbox: Dict, offsets_per_page: Dict
+    row: pandas.Series, buffer: List[pandas.Series], doc_bbox: Dict, offsets_per_page: Dict
 ) -> bool:
     """
     Verify if the vertical merging that we are trying to do is valid.
@@ -365,9 +365,9 @@ def is_valid_merge_vertical(
 
     # 1. There is an overlap in x coordinates
     is_overlap = (
-            buffer_bbox['x1'] >= row['x0'] >= buffer_bbox['x0']
-            or buffer_bbox['x1'] >= row['x1'] >= buffer_bbox['x0']
-            or (buffer_bbox['x0'] >= row['x0'] and row['x1'] >= buffer_bbox['x1'])
+        buffer_bbox['x1'] >= row['x0'] >= buffer_bbox['x0']
+        or buffer_bbox['x1'] >= row['x1'] >= buffer_bbox['x0']
+        or (buffer_bbox['x0'] >= row['x0'] and row['x1'] >= buffer_bbox['x1'])
     )  # NOQA
 
     if not is_overlap:
@@ -419,12 +419,12 @@ def is_valid_merge_vertical(
 
 
 def merge_df(
-        df: pandas.DataFrame,
-        doc_text: str,
-        label_type_dict: Dict,
-        doc_bbox: Union[Dict, None] = None,
-        merge_vertical: bool = False,
-        threshold: float = 0.0,
+    df: pandas.DataFrame,
+    doc_text: str,
+    label_type_dict: Dict,
+    doc_bbox: Union[Dict, None] = None,
+    merge_vertical: bool = False,
+    threshold: float = 0.0,
 ) -> pandas.DataFrame:
     """
     Merge a DataFrame of entities with matching predicted sections/labels.
@@ -455,7 +455,7 @@ def merge_df(
             continue
         # if they are valid merges then add to buffer
         if end and is_valid_merge(
-                row, buffer, doc_text, label_types, doc_bbox, offsets_per_page, merge_vertical, threshold
+            row, buffer, doc_text, label_types, doc_bbox, offsets_per_page, merge_vertical, threshold
         ):
             buffer.append(row)
             end = row['End']
@@ -474,13 +474,13 @@ def merge_df(
 
 
 def merge_annotations(
-        res_dict: Dict,
-        doc_text: str,
-        label_type_dict: Dict[str, str],
-        doc_bbox: Union[Dict, None] = None,
-        multiline_labels_names: Union[list, None] = None,
-        merge_vertical: bool = False,
-        labels_threshold: Union[dict, None] = None,
+    res_dict: Dict,
+    doc_text: str,
+    label_type_dict: Dict[str, str],
+    doc_bbox: Union[Dict, None] = None,
+    multiline_labels_names: Union[list, None] = None,
+    merge_vertical: bool = False,
+    labels_threshold: Union[dict, None] = None,
 ) -> Dict:
     """
     Merge annotations by merging neighbouring entities in the res_dict with the same predicted section/label.
@@ -1401,14 +1401,14 @@ def get_line_candidates(document_text, document_bbox, line_list, line_num, candi
 
 
 def process_document_data(
-        document: Document,
-        annotations: List[Annotation],
-        n_nearest: Union[int, List, Tuple] = 2,
-        first_word: bool = True,
-        tokenize_fn: Optional[Callable] = None,
-        substring_features=None,
-        catchphrase_list=None,
-        n_nearest_across_lines: bool = False,
+    document: Document,
+    annotations: List[Annotation],
+    n_nearest: Union[int, List, Tuple] = 2,
+    first_word: bool = True,
+    tokenize_fn: Optional[Callable] = None,
+    substring_features=None,
+    catchphrase_list=None,
+    n_nearest_across_lines: bool = False,
 ) -> Tuple[pandas.DataFrame, List, pandas.DataFrame]:
     """
     Convert the json_data from one Document to a DataFrame that can be used for training or prediction.
@@ -1487,13 +1487,13 @@ def process_document_data(
         if annotation.id_:
             # Annotation
             if (
-                    annotation.is_correct
-                    or (not annotation.is_correct and annotation.revised)
-                    or (
+                annotation.is_correct
+                or (not annotation.is_correct and annotation.revised)
+                or (
                     annotation.confidence
                     and hasattr(annotation.label, 'threshold')
                     and annotation.confidence < annotation.label.threshold
-            )
+                )
             ):
                 pass
             else:
@@ -1533,13 +1533,13 @@ def process_document_data(
                 annotation.spans[0].bbox()
                 if candidate['end_offset'] <= annotation.start_offset:
                     candidate['dist'] = (
-                            annotation.spans[0].bbox().x0 - candidate['x1']
+                        annotation.spans[0].bbox().x0 - candidate['x1']
                     )  # todo hotfix remove ".spans[0]"
                     candidate['pos'] = 0
                     l_list.append(candidate)
                 elif candidate['start_offset'] >= annotation.end_offset:
                     candidate['dist'] = (
-                            candidate['x0'] - annotation.spans[0].bbox().x1
+                        candidate['x0'] - annotation.spans[0].bbox().x1
                     )  # todo hotfix remove ".spans[0]"
                     candidate['pos'] = 0
                     r_list.append(candidate)
@@ -1614,7 +1614,7 @@ def process_document_data(
         # checks for ERRORS
         # todo why accuracy?
         if annotation_dict["confidence"] is None and not (
-                annotation_dict["revised"] is False and annotation_dict["is_correct"] is True
+            annotation_dict["revised"] is False and annotation_dict["is_correct"] is True
         ):
             file_error_data.append(annotation_dict)
 
@@ -1662,13 +1662,13 @@ def process_document_data(
     relative_pos_feature_list = ["relative_position_in_page"]
 
     feature_list = (
-            string_feature_column_order
-            + abs_pos_feature_list
-            + l_keys
-            + r_keys
-            + relative_string_feature_list
-            + relative_pos_feature_list
-            + word_on_page_feature_name_list
+        string_feature_column_order
+        + abs_pos_feature_list
+        + l_keys
+        + r_keys
+        + relative_string_feature_list
+        + relative_pos_feature_list
+        + word_on_page_feature_name_list
     )
     if first_word:
         feature_list += first_word_features
@@ -1701,7 +1701,7 @@ def generate_catchphrase_occurrence_dict(line_list, catchphrase_list, document_t
     _dict = {catchphrase: [] for catchphrase in catchphrase_list}
 
     for line_num, _line in enumerate(line_list):
-        line_text = document_text[_line['start_offset']: _line['end_offset']]
+        line_text = document_text[_line['start_offset'] : _line['end_offset']]
         for catchphrase in catchphrase_list:
             if catchphrase in line_text:
                 _dict[catchphrase].append(line_num)
@@ -1720,16 +1720,17 @@ def generate_feature_dict_from_occurence_dict(occurence_dict, catchphrase_list, 
 
 
 def add_extractions_as_annotations(
-        extractions: pandas.DataFrame, document: Document,
-        label: Label, label_set: LabelSet, annotation_set: AnnotationSet
+    extractions: pandas.DataFrame, document: Document, label: Label, label_set: LabelSet, annotation_set: AnnotationSet
 ) -> None:
     """Add the extraction of a model to the document."""
     if not extractions.empty:
         # TODO: define required fields
         required_fields = ['Start', 'End', 'Accuracy']
         if not set(required_fields).issubset(extractions.columns):
-            raise ValueError(f'Extraction do not contain all required fields: {required_fields}.'
-                             f' Extraction columns: {extractions.columns.to_list()}')
+            raise ValueError(
+                f'Extraction do not contain all required fields: {required_fields}.'
+                f' Extraction columns: {extractions.columns.to_list()}'
+            )
 
         annotations = extractions[required_fields].sort_values(by='Accuracy', ascending=False)
 
@@ -1740,7 +1741,7 @@ def add_extractions_as_annotations(
                 confidence=annotation['Accuracy'],
                 label_set=label_set,
                 annotation_set=annotation_set,
-                spans=[Span(start_offset=annotation['Start'], end_offset=annotation['End'])]
+                spans=[Span(start_offset=annotation['Start'], end_offset=annotation['End'])],
             )
 
 
@@ -1751,7 +1752,7 @@ def extraction_result_to_document(document: Document, extraction_result: dict) -
         text=document.text,
         bbox=document.get_bbox(),
         category=document.category,
-        pages=document.pages
+        pages=document.pages,
     )
     virtual_annotation_set_id = 0  # counter for across mult. Annotation Set groups of a Label Set
 
@@ -2116,9 +2117,9 @@ class GroupAnnotationSets:
             document = self.category.project.get_document_by_id(document_id)
             # Train classifier only on documents with a matching document template.
             if (
-                    hasattr(self, 'default_section_label')
-                    and self.default_section_label
-                    and self.default_section_label != document.category_template
+                hasattr(self, 'default_section_label')
+                and self.default_section_label
+                and self.default_section_label != document.category_template
             ):
                 logger.info(f'Skip document {document} because its template does not match.')
                 continue
@@ -2130,9 +2131,9 @@ class GroupAnnotationSets:
         for document_id, df_doc in df_valid_label_list:
             document = self._get_document(document_id)
             if (
-                    hasattr(self, 'default_section_label')
-                    and self.default_section_label
-                    and self.default_section_label != document.category_template
+                hasattr(self, 'default_section_label')
+                and self.default_section_label
+                and self.default_section_label != document.category_template
             ):
                 logger.info(f'Skip document {document} because its template does not match.')
                 continue
@@ -2242,7 +2243,7 @@ class GroupAnnotationSets:
         return pandas.DataFrame(df_features_new_list)
 
     def convert_label_features_to_template_features(
-            self, feature_df_label: pandas.DataFrame, document_text
+        self, feature_df_label: pandas.DataFrame, document_text
     ) -> pandas.DataFrame:
         """
         Convert the feature_df for the label_clf to a feature_df for the template_clf.
@@ -2432,7 +2433,7 @@ class GroupAnnotationSets:
                                 # we get the label df that is contained within the section
                                 label_df = label_df[
                                     (line_number <= label_df['line']) & (label_df['line'] < next_section_start)
-                                    ]
+                                ]
                                 if label_df.empty:
                                     continue
                                 section_dict[label.name] = label_df  # Add to new result dict
@@ -2509,15 +2510,15 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
     """
 
     def __init__(
-            self,
-            n_nearest: int = 2,
-            first_word: bool = True,
-            n_estimators: int = 100,
-            max_depth: int = 100,
-            no_label_limit: Union[int, float, None] = None,
-            n_nearest_across_lines: bool = False,
-            *args,
-            **kwargs,
+        self,
+        n_nearest: int = 2,
+        first_word: bool = True,
+        n_estimators: int = 100,
+        max_depth: int = 100,
+        no_label_limit: Union[int, float, None] = None,
+        n_nearest_across_lines: bool = False,
+        *args,
+        **kwargs,
     ):
         """DocumentAnnotationModel."""
         super().__init__(*args, **kwargs)
@@ -2899,6 +2900,7 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
             eval_list.append((document, predicted_doc))
 
         self.evaluation = Evaluation(eval_list)
+
         return self.evaluation
 
     def evaluate(self):
