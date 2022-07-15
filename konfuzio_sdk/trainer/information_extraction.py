@@ -1491,7 +1491,7 @@ def process_document_data(
                 or (
                     annotation.confidence
                     and hasattr(annotation.label, 'threshold')
-                    and annotation.confidence < annotation.label.threshold
+                    and annotation.confidence < annotation.label.threshold  # todo shouldn't this be a greater than?
                 )
             ):
                 pass
@@ -2629,10 +2629,14 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
             # todo: use NO_LABEL for any Annotation that has no Label, instead of keeping Label = None
             no_label_annotations = document.annotations(use_correct=False, label=document.project.no_label)
             label_annotations = [x for x in document.annotations(use_correct=False) if x.label.id_ is not None]
-            if not document.is_online:
+            if document.id_ is None:
                 # inference time todo reduce shuffled complexity
-                assert not label_annotations, 'Non online Documents have no human revised Annotations.'
-                raise NotImplementedError(f'{document} is not online, please us process_document_data function.')
+                assert (
+                    not label_annotations
+                ), "Documents that don't come from the server have no human revised Annotations."
+                raise NotImplementedError(
+                    f'{document} does not come from the server, please use process_document_data function.'
+                )
             else:
                 # training time: todo reduce shuffled complexity
                 if isinstance(no_label_limit, int):

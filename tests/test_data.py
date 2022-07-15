@@ -1181,7 +1181,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.assertFalse(is_file(doc.annotation_file_path, raise_exception=False))
         self.assertEqual(None, doc._annotations)
         self.assertTrue(doc.annotations())
-        self.assertEqual(5, len(doc._annotation_sets))
+        self.assertEqual(19, len(doc._annotations))
         self.assertTrue(is_file(doc.annotation_file_path))
         prj.delete()
 
@@ -1193,7 +1193,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.assertFalse(is_file(doc.annotation_set_file_path, raise_exception=False))
         self.assertEqual(None, doc._annotation_sets)
         self.assertTrue(doc.annotation_sets())
-        self.assertEqual(5, len(doc._annotation_sets))
+        self.assertEqual(4, len(doc._annotation_sets))
         self.assertTrue(is_file(doc.annotation_set_file_path))
         prj.delete()
 
@@ -1656,6 +1656,45 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert len(cls.prj.labels[0].annotations(categories=[category])) == cls.annotations_correct
 
 
+class TestKonfuzioForceOfflineData(unittest.TestCase):
+    """Test handle data forced offline."""
+
+    def test_make_sure_annotations_are_not_downloaded_automatically(self):
+        """Test if Annotations are downloaded automatically."""
+        prj = Project(id_=TEST_PROJECT_ID, project_folder='another')
+        doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
+        doc.set_offline()
+        self.assertFalse(is_file(doc.annotation_file_path, raise_exception=False))
+        self.assertEqual(None, doc._annotations)
+        self.assertFalse(doc.annotations())
+        self.assertEqual(0, len(doc._annotations))
+        self.assertFalse(is_file(doc.annotation_file_path, raise_exception=False))
+        prj.delete()
+
+    def test_make_sure_annotation_sets_are_not_downloaded_automatically(self):
+        """Test if Annotation Sets are downloaded automatically."""
+        prj = Project(id_=TEST_PROJECT_ID, project_folder='another2')
+        doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
+        doc.set_offline()
+        self.assertFalse(is_file(doc.annotation_set_file_path, raise_exception=False))
+        self.assertEqual(None, doc._annotation_sets)
+        self.assertFalse(doc.annotation_sets())
+        self.assertEqual(0, len(doc._annotation_sets))
+        self.assertFalse(is_file(doc.annotation_set_file_path, raise_exception=False))
+        prj.delete()
+
+    def test_make_sure_pages_are_not_downloaded_automatically(self):
+        """Test if Pages are downloaded automatically."""
+        prj = Project(id_=TEST_PROJECT_ID, project_folder='another33')
+        doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
+        doc.set_offline()
+        self.assertFalse(is_file(doc.pages_file_path, raise_exception=False))
+        self.assertEqual([], doc._pages)
+        self.assertFalse(doc.pages())
+        self.assertFalse(is_file(doc.pages_file_path, raise_exception=False))
+        prj.delete()
+
+
 class TestFillOperation(unittest.TestCase):
     """Separate Test as we add non Labels to the Project."""
 
@@ -1744,6 +1783,13 @@ class TestData(unittest.TestCase):
         a = Data()
         a.id_ = 0
         self.assertTrue(a.is_online)
+
+    def test_force_offline(self):
+        """Test that data with an ID can be forced offline."""
+        a = Data()
+        a.id_ = 1
+        a.set_offline()
+        self.assertFalse(a.is_online)
 
 
 def test_download_training_and_test_data():

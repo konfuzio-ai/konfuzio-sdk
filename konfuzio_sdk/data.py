@@ -42,6 +42,7 @@ class Data:
     id_ = None
     id_local = None
     session = _konfuzio_session()
+    _force_offline = False
 
     def __eq__(self, other) -> bool:
         """Compare any point of data with their ID, overwrite if needed."""
@@ -66,13 +67,19 @@ class Data:
     @property
     def is_online(self) -> Optional[int]:
         """Define if the Document is saved to the server."""
-        return self.id_ is not None
+        return (self.id_ is not None) and (not self._force_offline)
 
     # todo require to overwrite lose_weight via @abstractmethod
     def lose_weight(self):
         """Delete data of the instance."""
         self.session = None
         return self
+
+    def set_offline(self):
+        """Force data into offline mode."""
+        self._force_offline = True
+        if hasattr(self, '_update'):
+            self._update = False
 
 
 class Page(Data):
@@ -1559,7 +1566,7 @@ class Document(Data):
         """Return Annotation Sets of Documents."""
         if self._annotation_sets is not None:
             return self._annotation_sets
-        if self.id_ and not is_file(self.annotation_set_file_path, raise_exception=False):
+        if self.is_online and not is_file(self.annotation_set_file_path, raise_exception=False):
             self.download_document_details()
         if is_file(self.annotation_set_file_path, raise_exception=False):
             with open(self.annotation_set_file_path, "r") as f:
@@ -2043,11 +2050,12 @@ class Document(Data):
 
     def get_annotations(self) -> List[Annotation]:
         """Get Annotations of the Document."""
-        if self._update or (self.is_online and (self._annotations is None or self._annotation_sets is None)):
-            annotation_file_exists = is_file(self.annotation_file_path, raise_exception=False)
-            annotation_set_file_exists = is_file(self.annotation_set_file_path, raise_exception=False)
+        annotation_file_exists = is_file(self.annotation_file_path, raise_exception=False)
+        annotation_set_file_exists = is_file(self.annotation_set_file_path, raise_exception=False)
 
-            if self.id_ and (not annotation_file_exists or not annotation_set_file_exists or self._update):
+        if self._update or (self.is_online and (self._annotations is None or self._annotation_sets is None)):
+
+            if self.is_online and (not annotation_file_exists or not annotation_set_file_exists or self._update):
                 self.update()  # delete the meta of the Document details and download them again
                 self._update = None  # Make sure we don't repeat to load once updated.
 
@@ -2055,6 +2063,7 @@ class Document(Data):
             self.annotation_sets()
 
             self._annotations = []  # clean Annotations to not create duplicates
+            # We read the annotation file that we just downloaded
             with open(self.annotation_file_path, 'r') as f:
                 raw_annotations = json.load(f)
 
@@ -2067,7 +2076,19 @@ class Document(Data):
             self._update = None  # Make sure we don't repeat to load once loaded.
 
         if self._annotations is None:
+            self.annotation_sets()
             self._annotations = []
+            # We load the annotation file if it exists
+            if annotation_file_exists:
+                with open(self.annotation_file_path, 'r') as f:
+                    raw_annotations = json.load(f)
+
+                for raw_annotation in raw_annotations:
+                    if not raw_annotation['is_correct'] and raw_annotation['revised']:
+                        continue
+                    raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
+                    raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
+                    _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
 
         return self._annotations
 
