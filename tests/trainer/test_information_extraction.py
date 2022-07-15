@@ -33,6 +33,7 @@ from konfuzio_sdk.trainer.information_extraction import (
 from konfuzio_sdk.api import upload_ai_model
 from konfuzio_sdk.tokenizer.regex import RegexTokenizer, WhitespaceTokenizer
 from konfuzio_sdk.tokenizer.base import ListTokenizer
+from konfuzio_sdk.evaluate import Evaluation
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 
 logger = logging.getLogger(__name__)
@@ -113,7 +114,7 @@ class TestSequenceInformationExtraction(unittest.TestCase):
 
     def test_6_extract_test_document(self):
         """Extract a randomly selected Test Document."""
-        test_document = self.project.get_document_by_id(44823)
+        test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         result = self.pipeline.extract(document=test_document)
         assert len(result['Brutto-Bezug']) > 0  # todo add more test for inference on data level
 
@@ -162,7 +163,7 @@ class TestSequenceInformationSeparateLabelsExtraction(unittest.TestCase):
 
     def test_6_extract_test_document(self):
         """Extract a randomly selected Test Document."""
-        test_document = self.project.get_document_by_id(44823)
+        test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         result = self.pipeline.extract(document=test_document)
         assert len(result['Brutto-Bezug']) > 0  # todo add more test for inference on data level
 
@@ -211,7 +212,7 @@ class TestSequenceDocumentEntityMulticlassModelExtraction(unittest.TestCase):
 
     def test_6_extract_test_document(self):
         """Extract a randomly selected Test Document."""
-        test_document = self.project.get_document_by_id(44823)
+        test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         result = self.pipeline.extract(document=test_document)
         assert len(result['Brutto-Bezug']) > 0  # todo add more test for inference on data level
 
@@ -260,7 +261,7 @@ class TestSequenceSeparateLabelsAnnotationMultiClassModelExtraction(unittest.Tes
 
     def test_6_extract_test_document(self):
         """Extract a randomly selected Test Document."""
-        test_document = self.project.get_document_by_id(44823)
+        test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         result = self.pipeline.extract(document=test_document)
         # todo: this extract method should use a Document
         assert len(result['Brutto-Bezug']) > 0  # todo add more test for inference on data level
@@ -292,6 +293,13 @@ class TestFindRegexSeparateLabelsAnnotationMultiClassModelExtraction(unittest.Te
         for label in self.pipeline.category.labels:
             for regex in label.find_regex(category=self.pipeline.category):
                 self.pipeline.tokenizer.tokenizers.append(RegexTokenizer(regex=regex))
+        eval_list = []
+        for document in self.pipeline.test_documents:
+            tokenized_doc = self.pipeline.tokenizer.tokenize(document)
+            eval_list.append((document, tokenized_doc))
+        tokenizer_eval = Evaluation(eval_list)
+        for document in self.pipeline.test_documents:
+            assert tokenizer_eval.recall(search=document) == 1
 
     def test_3_make_features(self):
         """Make sure the Data and Pipeline is configured."""
@@ -317,11 +325,12 @@ class TestFindRegexSeparateLabelsAnnotationMultiClassModelExtraction(unittest.Te
     @unittest.skip(reason='We do not achieve this at the moment.')
     def test_7_perfect_evaluation_f1(self):
         """Check 100% strict evaluation score."""
-        assert self.pipeline.evaluation.f1(search=None) == 1
+        for document in self.pipeline.test_documents:
+            assert self.pipeline.evaluation.f1(search=document) == 1
 
     def test_8_extract_test_document(self):
         """Extract a randomly selected Test Document."""
-        test_document = self.project.get_document_by_id(44823)
+        test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         result = self.pipeline.extract(document=test_document)
         # todo: this extract method should use a Document
         assert len(result['Brutto-Bezug']) > 0  # todo add more test for inference on data level
@@ -585,6 +594,7 @@ test_data_num = [
 def test_num(test_input, expected, document_id):
     """Test string conversion."""
     assert num_count(test_input) == expected
+
 
 #
 # """Test models in models_labels_multiclass."""
