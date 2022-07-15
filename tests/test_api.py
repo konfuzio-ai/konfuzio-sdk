@@ -207,7 +207,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
     def test_get_annotations(self):
         """Download Annotations and the Text from API for a Document and check their offset alignment."""
         annotations = get_document_details(TEST_DOCUMENT_ID, project_id=TEST_PROJECT_ID)['annotations']
-        self.assertEqual(len(annotations), 22)
+        self.assertEqual(len(annotations), 21)
 
     def test_post_document_annotation_multiline_as_bboxes(self):
         """Create a multiline Annotation via API."""
