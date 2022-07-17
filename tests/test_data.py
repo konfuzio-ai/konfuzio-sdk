@@ -350,7 +350,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 33
+        assert len(cls.project.virtual_documents) == 34
 
     # def test_document_only_needs_project(self):
     #     """Test that a Document can be created without category"""
@@ -592,6 +592,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert document.get_page_by_index(0).height == 841.68
 
     def test_page_text(self):
+        """Test text Page."""
         document_bbox = {
             '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'p'}
         }
@@ -602,6 +603,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert document.get_page_by_index(1).text == 'page2'
 
     def test_page_text_offsets(self):
+        """Test text Page offsets."""
         document_bbox = {
             '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'p'}
         }
@@ -612,6 +614,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert page2.text == document.text[page2.start_offset: page2.end_offset]
 
     def test_page_get_bbox(self):
+        """Test getting bbox for Page."""
         document_bbox = {
             '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'p'},
             '2': {'x0': 1, 'x1': 0, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': '1'},
@@ -625,6 +628,41 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert '8' in page2.get_bbox() and '10' in page2.get_bbox()
         assert '0' not in page2.get_bbox() and '2' not in page2.get_bbox()
         assert '8' not in page1.get_bbox() and '10' not in page1.get_bbox()
+
+    def test_page_annotations(self):
+        """Test getting annotations of a Page."""
+        document = Document(project=self.project, category=self.category, text='p\n1\fnap2')
+        span1 = Span(start_offset=0, end_offset=1)
+        span2 = Span(start_offset=2, end_offset=3)
+        span3 = Span(start_offset=7, end_offset=9)
+
+        page1 = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=3)
+        page2 = Page(id_=2, number=2, original_size=(595.2, 841.68), document=document, start_offset=4, end_offset=9)
+
+        annotation1 = Annotation(
+            document=document,
+            is_correct=True,
+            label=self.label,
+            label_set=self.label_set,
+            spans=[span1, span2],
+        )
+        annotation2 = Annotation(
+            document=document,
+            is_correct=True,
+            label=self.label,
+            label_set=self.label_set,
+            spans=[span3],
+        )
+        assert document.get_page_by_index(0).text == 'p\n1'
+        assert document.get_page_by_index(1).text == 'nap2'
+        assert annotation1 in document.annotations()
+        assert annotation2 in document.annotations()
+        assert annotation1 in page1.annotations()
+        assert annotation2 in page2.annotations()
+        assert annotation1 not in page2.annotations()
+        assert annotation2 not in page1.annotations()
+        assert page2.annotations(start_offset=4, end_offset=6) == []
+        assert len(page2.annotations(start_offset=4, end_offset=6, fill=True)) == 1
 
     def test_document_check_bbox_invalid_height_coordinates(self):
         """Test bbox check with invalid x coordinates regarding the page height."""
