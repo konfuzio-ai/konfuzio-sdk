@@ -350,7 +350,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 34
+        assert len(cls.project.virtual_documents) == 35
 
     # def test_document_only_needs_project(self):
     #     """Test that a Document can be created without category"""
@@ -663,6 +663,34 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert annotation2 not in page1.annotations()
         assert page2.annotations(start_offset=4, end_offset=6) == []
         assert len(page2.annotations(start_offset=4, end_offset=6, fill=True)) == 1
+
+    def test_page_spans(self):
+        """Test getting spans from a Page."""
+        document = Document(project=self.project, category=self.category, text='p\n1\fnap2')
+        span1 = Span(start_offset=0, end_offset=1)
+        span2 = Span(start_offset=2, end_offset=3)
+        span3 = Span(start_offset=7, end_offset=9)
+
+        page1 = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=3)
+        page2 = Page(id_=2, number=2, original_size=(595.2, 841.68), document=document, start_offset=4, end_offset=9)
+
+        _ = Annotation(
+            document=document,
+            is_correct=True,
+            label=self.label,
+            label_set=self.label_set,
+            spans=[span1, span2],
+        )
+        _ = Annotation(
+            document=document,
+            is_correct=True,
+            label=self.label,
+            label_set=self.label_set,
+            spans=[span3],
+        )
+
+        assert len(page1.spans)==2
+        assert len(page2.spans)==1
 
     def test_document_check_bbox_invalid_height_coordinates(self):
         """Test bbox check with invalid x coordinates regarding the page height."""

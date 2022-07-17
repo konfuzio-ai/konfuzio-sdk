@@ -146,6 +146,17 @@ class Page(Data):
         """Calculate the number of lines in Page."""
         return len(self.text.split('\n'))
 
+    @property
+    def spans(self):
+        """Return all Spans of the Document."""
+        spans = []
+        for annotation in self.annotations():
+            for span in annotation.spans:
+                if span not in spans:
+                    spans.append(span)
+
+        return sorted(spans)
+
     def get_bbox(self):
         """Get bbox information per character of Page."""
         doc_bbox = self.document.get_bbox()
