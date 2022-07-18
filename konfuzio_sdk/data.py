@@ -138,7 +138,7 @@ class Page(Data):
         doc_text = self.document.text
         page_text = self.document.text[self.start_offset: self.end_offset]
         if doc_text.split('\f')[self.index] != page_text:
-            logger.warning(f'{self} text offsets do not match Document text.')
+            raise IndexError(f'{self} text offsets do not match Document text.')
         return page_text
 
     @property
@@ -148,7 +148,7 @@ class Page(Data):
 
     @property
     def spans(self):
-        """Return all Spans of the Document."""
+        """Return all Spans of the Page."""
         spans = []
         for annotation in self.annotations():
             for span in annotation.spans:
