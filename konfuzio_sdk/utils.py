@@ -224,11 +224,11 @@ def convert_to_bio_scheme(text: str, annotations: List) -> List[Tuple[str, str]]
     tagged_entities = []
     annotations.sort(key=lambda x: x[0])  # todo only spans can be sorted, this does not prevent overlapping
 
-    previous_start = 0
+    previous_end = 0
     end = 0
     if text:
         for start, end, label_name in annotations:
-            prev_text = text[previous_start:start]
+            prev_text = text[previous_end:start]
             for word in nltk.word_tokenize(prev_text):
                 tagged_entities.append((word, 'O'))
 
@@ -242,7 +242,7 @@ def convert_to_bio_scheme(text: str, annotations: List) -> List[Tuple[str, str]]
             else:
                 tagged_entities.append((tmp_list[0], 'B-' + label_name))
 
-            previous_start = start
+            previous_end = end
 
     if end < len(text):
         pos_text = text[end:]
