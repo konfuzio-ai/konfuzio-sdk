@@ -42,6 +42,7 @@ class Data:
     id_ = None
     id_local = None
     session = _konfuzio_session()
+    _update = False
     _force_offline = False
 
     def __eq__(self, other) -> bool:
@@ -78,8 +79,7 @@ class Data:
     def set_offline(self):
         """Force data into offline mode."""
         self._force_offline = True
-        if hasattr(self, '_update'):
-            self._update = False
+        self._update = False
 
 
 class Page(Data):
@@ -202,6 +202,7 @@ class AnnotationSet(Data):
         self.id_ = id_
         self.label_set: LabelSet = label_set
         self.document: Document = document  # we don't add it to the Document as it's added via get_annotations
+        self._force_offline = document._force_offline
         document.add_annotation_set(self)
 
     def __repr__(self):
@@ -291,6 +292,7 @@ class LabelSet(Data):
             self.has_multiple_annotation_sets = kwargs["has_multiple_sections"]
 
         self.project: Project = project
+        self._force_offline = project._force_offline
         self.labels: List[Label] = []
 
         # todo allow to create Labels either on Project or Label Set level, so they are (not) shared among Label Sets.
@@ -350,6 +352,7 @@ class Category(Data):
         self.name = name
         self.name_clean = name_clean
         self.project: Project = project
+        self._force_offline = project._force_offline
         self.label_sets: List[LabelSet] = []
         self.project.add_category(category=self)
 
@@ -430,6 +433,7 @@ class Label(Data):
         self.has_multiple_top_candidates = has_multiple_top_candidates
         self.threshold = threshold
         self.project: Project = project
+        self._force_offline = project._force_offline
         project.add_label(self)
 
         self.label_sets = []
@@ -992,6 +996,7 @@ class Annotation(Data):
         self.normalized = normalized
         self.translated_string = translated_string
         self.document = document
+        self._force_offline = self.document._force_offline
         self.created_by = created_by
         self.revised_by = revised_by
         if custom_offset_string:
@@ -1414,6 +1419,7 @@ class Document(Data):
         self.name = data_file_name
         self.status = status  # status of document online
         self.project = project
+        self._force_offline = project._force_offline
         project.add_document(self)  # check for duplicates by ID before adding the Document to the project
 
         # use hidden variables to store low volume information in instance
@@ -2068,6 +2074,7 @@ class Document(Data):
                 raw_annotations = json.load(f)
 
             for raw_annotation in raw_annotations:
+                # todo should this filter?
                 if not raw_annotation['is_correct'] and raw_annotation['revised']:
                     continue
                 raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
@@ -2084,6 +2091,7 @@ class Document(Data):
                     raw_annotations = json.load(f)
 
                 for raw_annotation in raw_annotations:
+                    # todo should this filter?
                     if not raw_annotation['is_correct'] and raw_annotation['revised']:
                         continue
                     raw_annotation['annotation_set_id'] = raw_annotation.pop('section')

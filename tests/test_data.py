@@ -1659,8 +1659,30 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 class TestKonfuzioForceOfflineData(unittest.TestCase):
     """Test handle data forced offline."""
 
+    def test_force_offline_project(self):
+        """Test that a Project with an ID can be forced offline."""
+        prj = Project(id_=TEST_PROJECT_ID)
+        prj.set_offline()
+        self.assertFalse(prj.is_online)
+        # all Data belonging to that project should be offline without setting individual instances offline
+        category = Category(prj, id_=1)
+        self.assertFalse(category.is_online)
+        label_set = LabelSet(prj, categories=[category], id_=1)
+        self.assertFalse(label_set.is_online)
+        doc = Document(prj, category=category, id_=1)
+        self.assertFalse(doc.is_online)
+        annotation_set = AnnotationSet(doc, label_set, id_=1)
+        self.assertFalse(annotation_set.is_online)
+        label = Label(prj, label_set=label_set, id_=1)
+        self.assertFalse(label.is_online)
+        annotation = Annotation(
+            doc, annotation_set=annotation_set, label_set=label_set, label=label, id_=1, spans=[Span(0, 1)]
+        )
+        self.assertFalse(annotation.is_online)
+        prj.delete()
+
     def test_make_sure_annotations_are_not_downloaded_automatically(self):
-        """Test if Annotations are downloaded automatically."""
+        """Test that Annotations are not downloaded automatically."""
         prj = Project(id_=TEST_PROJECT_ID, project_folder='another')
         doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc.set_offline()
@@ -1669,10 +1691,24 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
         self.assertFalse(doc.annotations())
         self.assertEqual(0, len(doc._annotations))
         self.assertFalse(is_file(doc.annotation_file_path, raise_exception=False))
+        with self.assertRaises(NotImplementedError):
+            doc.download_document_details()
         prj.delete()
 
+    def test_annotations_are_loadable_for_offline_project_with_id_forced_offline(self):
+        """Test that Annotations are loadable for OFFLINE_PROJECT if it's given an ID and forced offline."""
+        prj = Project(id_=TEST_PROJECT_ID, project_folder=OFFLINE_PROJECT)
+        doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
+        doc.set_offline()
+        self.assertTrue(is_file(doc.annotation_file_path, raise_exception=False))
+        self.assertEqual(None, doc._annotations)
+        self.assertTrue(doc.annotations())
+        self.assertEqual(21, len(doc._annotations))
+        with self.assertRaises(NotImplementedError):
+            doc.download_document_details()
+
     def test_make_sure_annotation_sets_are_not_downloaded_automatically(self):
-        """Test if Annotation Sets are downloaded automatically."""
+        """Test that Annotation Sets are not downloaded automatically."""
         prj = Project(id_=TEST_PROJECT_ID, project_folder='another2')
         doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc.set_offline()
@@ -1681,10 +1717,24 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
         self.assertFalse(doc.annotation_sets())
         self.assertEqual(0, len(doc._annotation_sets))
         self.assertFalse(is_file(doc.annotation_set_file_path, raise_exception=False))
+        with self.assertRaises(NotImplementedError):
+            doc.download_document_details()
         prj.delete()
 
+    def test_annotations_sets_are_loadable_for_offline_project_with_id_forced_offline(self):
+        """Test that AnnotationSets are loadable for OFFLINE_PROJECT if it's given an ID and forced offline."""
+        prj = Project(id_=TEST_PROJECT_ID, project_folder=OFFLINE_PROJECT)
+        doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
+        doc.set_offline()
+        self.assertTrue(is_file(doc.annotation_set_file_path, raise_exception=False))
+        self.assertEqual(None, doc._annotation_sets)
+        self.assertTrue(doc.annotation_sets())
+        self.assertEqual(24, len(doc._annotation_sets))
+        with self.assertRaises(NotImplementedError):
+            doc.download_document_details()
+
     def test_make_sure_pages_are_not_downloaded_automatically(self):
-        """Test if Pages are downloaded automatically."""
+        """Test that Pages are not downloaded automatically."""
         prj = Project(id_=TEST_PROJECT_ID, project_folder='another33')
         doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc.set_offline()
@@ -1692,6 +1742,8 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
         self.assertEqual([], doc._pages)
         self.assertFalse(doc.pages())
         self.assertFalse(is_file(doc.pages_file_path, raise_exception=False))
+        with self.assertRaises(NotImplementedError):
+            doc.download_document_details()
         prj.delete()
 
 
@@ -1784,7 +1836,7 @@ class TestData(unittest.TestCase):
         a.id_ = 0
         self.assertTrue(a.is_online)
 
-    def test_force_offline(self):
+    def test_force_offline_data(self):
         """Test that data with an ID can be forced offline."""
         a = Data()
         a.id_ = 1
