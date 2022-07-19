@@ -1782,14 +1782,22 @@ class Document(Data):
         :param update: Update the bio annotations even they are already available
         :return: list of tuples with each word in the text and the respective label
         """
-        # if not is_file(self.bio_scheme_file_path, raise_exception=False) or update:
-
-        converted_text = convert_to_bio_scheme(self)
-
-        with open(self.bio_scheme_file_path, "w", encoding="utf-8") as f:
-            for word, tag in converted_text:
-                f.writelines(word + " " + tag + "\n")
-            f.writelines("\n")
+        converted_text = []
+        if not is_file(self.bio_scheme_file_path, raise_exception=False) or update:
+            converted_text = convert_to_bio_scheme(self)
+            with open(self.bio_scheme_file_path, "w", encoding="utf-8") as f:
+                for word, tag in converted_text:
+                    f.writelines(word + " " + tag + "\n")
+                f.writelines("\n")
+        else:
+            with open(self.bio_scheme_file_path, "r", encoding="utf-8") as f:
+                for line in f.readlines():
+                    if not line.strip():
+                        continue
+                    split_line = line.strip().split(' ')
+                    word = split_line[0]
+                    tag = ' '.join(split_line[1:])  # tag allowed to have multiple words
+                    converted_text.append((word, tag))
 
         return converted_text
 

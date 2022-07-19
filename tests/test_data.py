@@ -1590,6 +1590,14 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         # an Annotation Set needs to be created or retrieved after the Annotation is saved
         assert annotation.annotation_set.id_ == 78730
 
+    def test_bio_scheme_saving_and_loading(self):
+        """Test if generated bio scheme list is identical to loaded from file."""
+        doc = self.prj.documents[0]
+        bio_annotations1 = doc.get_text_in_bio_scheme(update=True)
+        bio_annotations2 = doc.get_text_in_bio_scheme(update=False)
+
+        assert bio_annotations1 == bio_annotations2
+
     @unittest.skip(reason="Issue https://gitlab.com/konfuzio/objectives/-/issues/8664.")
     def test_get_text_in_bio_scheme(self):
         """Test getting Document in the BIO scheme."""
