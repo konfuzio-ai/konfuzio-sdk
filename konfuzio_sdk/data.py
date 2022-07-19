@@ -139,6 +139,64 @@ class Page(Data):
             self.image = Image.open(self.image_path)
         return self.image
 
+    @property
+    def text(self):
+        """Get Document text corresponding to the Page."""
+        doc_text = self.document.text
+        page_text = self.document.text[self.start_offset: self.end_offset]
+        if doc_text.split('\f')[self.index] != page_text:
+            raise IndexError(f'{self} text offsets do not match Document text.')
+        return page_text
+
+    @property
+    def number_of_lines(self) -> int:
+        """Calculate the number of lines in Page."""
+        return len(self.text.split('\n'))
+
+    @property
+    def spans(self):
+        """Return all Spans of the Page."""
+        spans = []
+        for annotation in self.annotations():
+            for span in annotation.spans:
+                if span not in spans:
+                    spans.append(span)
+
+        return sorted(spans)
+
+    def get_bbox(self):
+        """Get bbox information per character of Page."""
+        doc_bbox = self.document.get_bbox()
+        page_bbox = {
+            k: doc_bbox[k]
+            for k in doc_bbox.keys()
+            if doc_bbox[k]["page_number"] == self.number
+        }
+        return page_bbox
+
+    def annotations(
+        self,
+        label: 'Label' = None,
+        use_correct: bool = True,
+        start_offset: int = 0,
+        end_offset: int = None,
+        fill: bool = False,
+    ) -> List['Annotation']:
+        """Get Page Annotations."""
+        start_offset = max(start_offset, self.start_offset)
+        if end_offset is None:
+            end_offset = self.end_offset
+        else:
+            end_offset = min(end_offset, self.end_offset)
+        page_annotations = self.document.annotations(
+            label=label,
+            use_correct=use_correct,
+            start_offset=start_offset,
+            end_offset=end_offset,
+            fill=fill
+        )
+        return page_annotations
+
 
 class Bbox:
     """A bounding box relates to an area of a Document Page."""
@@ -1615,7 +1673,7 @@ class Document(Data):
                     # todo: add option to filter for overruled Annotations where mult.=F
                     # todo: add option to filter for overlapping Annotations, `add_annotation` just checks for identical
                     # filter by start and end offset, include annotations that extend into the offset
-                    if start_offset and end_offset:  # if the start and end offset are specified
+                    if start_offset is not None and end_offset is not None:  # if the start and end offset are specified
                         latest_start = max(span.start_offset, start_offset)
                         earliest_end = min(span.end_offset, end_offset)
                         is_overlapping = latest_start - earliest_end <= 0
