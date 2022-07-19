@@ -10,7 +10,7 @@ class TestLocalTextProject(unittest.TestCase):
     def test_number_of_training_documents(self):
         """Test the number of all training Documents."""
         project = LocalTextProject()
-        assert len(project.documents) == 2
+        assert len(project.documents) == 3
 
     def test_number_of_test_documents(self):
         """Test the number of all test Documents."""
@@ -25,4 +25,4 @@ class TestLocalTextProject(unittest.TestCase):
     def test_number_of_labels(self):
         """Test the number of all labels."""
         project = LocalTextProject()
-        assert len(project.labels) == 3
+        assert len(project.labels) == 5

@@ -99,3 +99,72 @@ class LocalTextProject(Project):
             label_set=label_set,
             spans=[Span(start_offset=0, end_offset=7)],
         )
+
+        # Duplicate dates Label with different confidence (top annotation filter)
+        # different overlapping annotations, diff confident
+
+        doc_3_text = """anno1
+date1:08/12/2001   span1
+date2: 08/12/2001   span2
+"""
+        document_3 = Document(project=self, category=category_2, text=doc_3_text, dataset_status=2)
+
+        label_date = Label(id_=6, text='date', project=self, label_sets=[label_set], has_multiple_top_candidates=True)
+        label_3 = Label(id_=7, text='LabelName 3', project=self, label_sets=[label_set])
+
+        # to be displayed in smart view: #16, #18, #19
+        _ = Annotation(
+            id_=15,
+            document=document_3,
+            is_correct=False,
+            confidence=0.92,
+            label=label_3,
+            label_set=label_set,
+            spans=[Span(start_offset=0, end_offset=5)],
+        )
+
+        _ = Annotation(
+            id_=16,
+            document=document_3,
+            is_correct=True,
+            label=label,
+            label_set=label_set,
+            spans=[Span(start_offset=0, end_offset=5)],
+        )
+        _ = Annotation(
+            id_=17,
+            document=document_3,
+            is_correct=False,
+            confidence=0.3,
+            label=label_date,
+            label_set=label_set,
+            spans=[Span(start_offset=12, end_offset=22)],
+        )
+        _ = Annotation(
+            id_=18,
+            document=document_3,
+            is_correct=False,
+            confidence=0.4,
+            label=label_date,
+            label_set=label_set,
+            spans=[Span(start_offset=38, end_offset=48)],
+        )
+        _ = Annotation(
+            id_=19,
+            document=document_3,
+            is_correct=False,
+            confidence=0.9,
+            label=label_3,
+            label_set=label_set,
+            spans=[Span(start_offset=25, end_offset=30),
+                   Span(start_offset=51, end_offset=56)],
+        )
+        _ = Annotation(
+            id_=20,
+            document=document_3,
+            is_correct=False,
+            confidence=0.6,
+            label=label_3,
+            label_set=label_set,
+            spans=[Span(start_offset=25, end_offset=30)],
+        )
