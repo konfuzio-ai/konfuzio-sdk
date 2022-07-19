@@ -19,6 +19,11 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 ### Fixed
 - Top annotation filter in the SmartView now takes accepted Annotations into account
 
+## 2022-07-19_16-30-46
+
+### Changed
+- New Extraction AIs are saved in a more efficient way
+
 ## 2022-07-05_19-35-21
 
 This version uses Konfuzio Trainer in version v.0.3.15, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Capture Vue in version [0.4.0](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
