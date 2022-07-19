@@ -6,7 +6,7 @@ import pytest
 from pandas import DataFrame
 
 from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span, LabelSet, Label, Category
-from konfuzio_sdk.evaluate import compare, grouped, Evaluation
+from konfuzio_sdk.evaluate import compare, grouped, Evaluation, EvaluationCalculator
 
 from konfuzio_sdk.samples import LocalTextProject
 from tests.variables import TEST_DOCUMENT_ID
@@ -1145,3 +1145,33 @@ class TestEvaluationSecondLabelDocumentBDocumentA(unittest.TestCase):
     def test_true_negatives(self):
         """Evaluate that that nothing is correctly predicted below threshold."""
         assert self.evaluation.tn(search=self.label) == 0
+
+
+class TestEvaluationCalculator(unittest.TestCase):
+    """Test the Evaluation Calculator."""
+
+    def test_evaluation_calculator(self):
+        """Test the Evaluation Calculator."""
+        evaluation_calculator = EvaluationCalculator(tp=40, fp=60, fn=120)
+        assert evaluation_calculator.tn == 0
+        assert evaluation_calculator.precision == 0.4
+        assert evaluation_calculator.recall == 0.25
+        assert evaluation_calculator.f1 == 0.3076923076923077
+
+    def test_evaluation_calculator_zero_not_allowed(self):
+        """Test the Evaluation Calculator raises ValueError when precision or recall are zero."""
+        with self.assertRaises(ValueError):
+            EvaluationCalculator(tp=0, fp=0, fn=100)
+        with self.assertRaises(ValueError):
+            EvaluationCalculator(tp=0, fp=100, fn=0)
+        with self.assertRaises(ValueError):
+            EvaluationCalculator(tp=0, fp=0, fn=0)
+
+    def test_evaluation_calculator_allow_zero(self):
+        """Test the Evaluation Calculator when precision or recall are zero."""
+        zero_precision = EvaluationCalculator(tp=0, fp=0, fn=100, allow_zero=True)
+        assert zero_precision.precision == 0.0
+        zero_recall = EvaluationCalculator(tp=0, fp=100, fn=0, allow_zero=True)
+        assert zero_recall.recall == 0.0
+        zero_f1 = EvaluationCalculator(tp=0, fp=0, fn=0, allow_zero=True)
+        assert zero_f1.f1 == 0.0

@@ -266,3 +266,48 @@ class Evaluation:
         return self.tp(search=search) / (
             self.tp(search=search) + 0.5 * (self.fp(search=search) + self.fn(search=search))
         )
+
+
+class EvaluationCalculator:
+    """Calculate precision, recall, f1, based on TP, FP, FN."""
+
+    def __init__(self, tp: int, fp: int, fn: int, tn: int = 0, allow_zero: bool = False):
+        """
+        Store evaluation information.
+
+        :param tp: True Positives.
+        :param fp: False Positives.
+        :param fn: False Negatives.
+        :param tn: True Negatives.
+        :param allow_zero: If true, assumes zero precision and recall when the straightforward application of the
+        formula would otherwise result in 0/0. Raises ValueError otherwise.
+        """
+        self.tp = tp
+        self.fp = fp
+        self.fn = fn
+        self.tn = tn
+        self._valid(allow_zero)
+
+    def _valid(self, allow_zero: bool = False) -> None:
+        """Check for 0/0 on precision and recall calculation."""
+        if allow_zero:
+            return
+        if self.tp + self.fp == 0:
+            raise ValueError("TP and FP are zero, please specify allow_zero=True if you want precision to be zero.")
+        if self.tp + self.fn == 0:
+            raise ValueError("TP and FN are zero, please specify allow_zero=True if you want recall to be zero.")
+
+    @property
+    def precision(self) -> float:
+        """Apply precision formula. Defaults to zero if TP+FP=0."""
+        return self.tp and self.tp / (self.tp + self.fp)
+
+    @property
+    def recall(self) -> float:
+        """Apply recall formula. Defaults to zero if TP+FN=0."""
+        return self.tp and self.tp / (self.tp + self.fn)
+
+    @property
+    def f1(self) -> float:
+        """Apply F1-score formula. Defaults to zero if precision or recall is zero."""
+        return self.tp and self.tp / (self.tp + 0.5 * (self.fp + self.fn))
