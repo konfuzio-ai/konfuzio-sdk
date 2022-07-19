@@ -81,9 +81,8 @@ class TestOnlineProject(unittest.TestCase):
 
         # existing annotation
         # https://app.konfuzio.com/admin/server/sequenceannotation/?document_id=44823&project=46
-        self.assertEqual(len(doc.annotations(use_correct=False)), 19)
-        # helm: 21.06.2022 changed from 21 to 19 as someone added (?) two annotations?
-        # 22 Annotations if considering negative ones
+        # we are no longer filtering out the rejected annotations so it's 21
+        self.assertEqual(21, len(doc.annotations(use_correct=False)))
         # a multiline Annotation in the top right corner, see https://app.konfuzio.com/a/4419937
         self.assertEqual(66, doc.annotations()[0]._spans[0].start_offset)
         self.assertEqual(78, doc.annotations()[0]._spans[0].end_offset)
@@ -1024,9 +1023,10 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_get_all_spans_of_a_document(self):
         """Test to get all Spans in a Document."""
-        # todo: Before we had 21 Spans after the a code change to allow overlapping Annotations we have 23 Spans
-        #    due to the fact that one Span is not identical, so one Annotation relates to one Span
-        assert len(self.prj.get_document_by_id(TEST_DOCUMENT_ID).spans) == 23
+        # Before we had 21 Spans after the a code change to allow overlapping Annotations we have 23 Spans
+        # due to the fact that one Span is not identical, so one Annotation relates to one Span.
+        # One more for a total of 24 since we are not filtering out the rejected annotations.
+        assert len(self.prj.get_document_by_id(TEST_DOCUMENT_ID).spans) == 24
 
     def test_span_hashable(self):
         """Test if a Span can be hashed."""
@@ -1477,7 +1477,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
         self.assertEqual(len(doc.annotations()), 19)
         assert len(doc.annotations(label=self.prj.get_label_by_id(858))) == 1
-        assert len(doc.annotations(use_correct=False)) == 21  # 22 if considering negative ones
+        assert len(doc.annotations(use_correct=False)) == 22  # 21 if not considering negative ones
 
     def test_document_offset(self):
         """Test Document offsets."""
@@ -1703,7 +1703,7 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
         self.assertTrue(is_file(doc.annotation_file_path, raise_exception=False))
         self.assertEqual(None, doc._annotations)
         self.assertTrue(doc.annotations())
-        self.assertEqual(21, len(doc._annotations))
+        self.assertEqual(22, len(doc._annotations))
         with self.assertRaises(NotImplementedError):
             doc.download_document_details()
 

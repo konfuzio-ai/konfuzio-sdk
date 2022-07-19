@@ -357,7 +357,7 @@ class TestInformationExtraction(unittest.TestCase):
         features, feature_names, errors = pipeline.features(document)
         assert len(feature_names) == 1102  # todo investigate if all features are calculated correctly, see #9289
         assert features['is_correct'].sum() == 19
-        assert features['revised'].sum() == 1
+        assert features['revised'].sum() == 2
 
 
 def test_feat_num_count():

@@ -352,12 +352,14 @@ class TestTokenize(unittest.TestCase):
         """Initialize the test Project."""
         project = Project(id_=None, project_folder=OFFLINE_PROJECT)
         cls.document = project.get_document_by_id(TEST_DOCUMENT_ID)
-        assert len(cls.document.spans) == 23
+        assert len(cls.document.spans) == 24
 
     def test_find_missing_spans(self):
         """Find all missing Spans in a Project."""
         tokenizer = RegexTokenizer(regex=r'\d')
         document = tokenizer.missing_spans(self.document)
-        # Span 365 to 366 (Tax ID) can be found be Tokenizer, two Spans are not correct and don't need to be found
-        assert sum([not span.annotation.is_correct for span in self.document.spans]) == 2
+        # Span 365 to 366 (Tax ID) can be found be Tokenizer
+        # three Spans are not correct and don't need to be found
+        # (1 revised and 2 unrevised)
+        assert sum([not span.annotation.is_correct for span in self.document.spans]) == 3
         self.assertEqual(len(document.spans), 20)
