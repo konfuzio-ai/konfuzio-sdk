@@ -2074,9 +2074,6 @@ class Document(Data):
                 raw_annotations = json.load(f)
 
             for raw_annotation in raw_annotations:
-                # todo should this filter?
-                if not raw_annotation['is_correct'] and raw_annotation['revised']:
-                    continue
                 raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
                 raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
                 _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
@@ -2091,9 +2088,6 @@ class Document(Data):
                     raw_annotations = json.load(f)
 
                 for raw_annotation in raw_annotations:
-                    # todo should this filter?
-                    if not raw_annotation['is_correct'] and raw_annotation['revised']:
-                        continue
                     raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
                     raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
                     _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
