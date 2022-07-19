@@ -1651,6 +1651,10 @@ class Document(Data):
 
         return sorted(annotations)
 
+    def view(self):
+        """Get all annotations viewable in the smart-view. Filter out all others."""
+        pass
+
     @property
     def document_folder(self):
         """Get the path to the folder where all the Document information is cached locally."""
@@ -1779,11 +1783,9 @@ class Document(Data):
         :return: list of tuples with each word in the text and the respective label
         """
         # if not is_file(self.bio_scheme_file_path, raise_exception=False) or update:
-        annotations_in_doc = []
-        for annotation in self.annotations():
-            for span in annotation.spans:
-                annotations_in_doc.append((span.start_offset, span.end_offset, annotation.label.name))
-        converted_text = convert_to_bio_scheme(self.text, annotations_in_doc)
+
+        converted_text = convert_to_bio_scheme(self)
+
         with open(self.bio_scheme_file_path, "w", encoding="utf-8") as f:
             for word, tag in converted_text:
                 f.writelines(word + " " + tag + "\n")
