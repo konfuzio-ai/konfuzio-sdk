@@ -49,4 +49,4 @@ class TestLocalViewProject(unittest.TestCase):
     def test_number_of_labels(self):
         """Test the number of all labels."""
         project = LocalViewProject()
-        assert len(project.labels) == 4
+        assert len(project.labels) == 5

@@ -114,17 +114,19 @@ class LocalViewProject(Project):
         doc_3_text = """anno1
 date1:08/12/2001   span1
 date2: 08/12/2001   span2
+uncertain
 """
-        document_3 = Document(project=self, category=category, text=doc_3_text, dataset_status=2)
+        document = Document(project=self, category=category, text=doc_3_text, dataset_status=2)
         label_set = LabelSet(id_=2, project=self, categories=[category])
         label = Label(id_=1, text='LabelName', project=self, label_sets=[label_set])
         label_date = Label(id_=2, text='date', project=self, label_sets=[label_set], has_multiple_top_candidates=False)
         label_3 = Label(id_=3, text='LabelName 3', project=self, label_sets=[label_set])
+        label_4 = Label(id_=4, text='LabelName 4', project=self, label_sets=[label_set], threshold=0.1)
 
         # to be displayed in smart view: #16, #18, #19
         _ = Annotation(
             id_=15,
-            document=document_3,
+            document=document,
             is_correct=False,
             confidence=0.92,
             label=label_3,
@@ -134,7 +136,7 @@ date2: 08/12/2001   span2
 
         _ = Annotation(
             id_=16,
-            document=document_3,
+            document=document,
             is_correct=True,
             label=label,
             label_set=label_set,
@@ -142,7 +144,7 @@ date2: 08/12/2001   span2
         )
         _ = Annotation(
             id_=17,
-            document=document_3,
+            document=document,
             is_correct=False,
             confidence=0.3,
             label=label_date,
@@ -151,7 +153,7 @@ date2: 08/12/2001   span2
         )
         _ = Annotation(
             id_=18,
-            document=document_3,
+            document=document,
             is_correct=False,
             confidence=0.4,
             label=label_date,
@@ -160,7 +162,7 @@ date2: 08/12/2001   span2
         )
         _ = Annotation(
             id_=19,
-            document=document_3,
+            document=document,
             is_correct=False,
             confidence=0.9,
             label=label_3,
@@ -170,10 +172,19 @@ date2: 08/12/2001   span2
         )
         _ = Annotation(
             id_=20,
-            document=document_3,
+            document=document,
             is_correct=False,
             confidence=0.6,
             label=label_3,
             label_set=label_set,
             spans=[Span(start_offset=25, end_offset=30)],
+        )
+        _ = Annotation(
+            id_=21,
+            document=document,
+            is_correct=False,
+            confidence=0.05,
+            label=label_4,
+            label_set=label_set,
+            spans=[Span(start_offset=57, end_offset=66)],
         )
