@@ -1159,19 +1159,31 @@ class TestEvaluationCalculator(unittest.TestCase):
         assert evaluation_calculator.f1 == 0.3076923076923077
 
     def test_evaluation_calculator_zero_not_allowed(self):
-        """Test the Evaluation Calculator raises ValueError when precision or recall are zero."""
-        with self.assertRaises(ValueError):
-            EvaluationCalculator(tp=0, fp=0, fn=100)
-        with self.assertRaises(ValueError):
-            EvaluationCalculator(tp=0, fp=100, fn=0)
-        with self.assertRaises(ValueError):
-            EvaluationCalculator(tp=0, fp=0, fn=0)
+        """Check that the Evaluation Calculator raises ZeroDivisionError when allow_zero==False.
 
-    def test_evaluation_calculator_allow_zero(self):
-        """Test the Evaluation Calculator when precision or recall are zero."""
-        zero_precision = EvaluationCalculator(tp=0, fp=0, fn=100, allow_zero=True)
-        assert zero_precision.precision == 0.0
-        zero_recall = EvaluationCalculator(tp=0, fp=100, fn=0, allow_zero=True)
-        assert zero_recall.recall == 0.0
-        zero_f1 = EvaluationCalculator(tp=0, fp=0, fn=0, allow_zero=True)
-        assert zero_f1.f1 == 0.0
+        This should happen in situations where precision or recall calculations would produce a division by zero.
+        """
+        with self.assertRaises(ZeroDivisionError) as context:
+            EvaluationCalculator(tp=0, fp=0, fn=100, allow_zero=False)
+            assert 'TP and FP are zero' in context.exception
+        with self.assertRaises(ZeroDivisionError) as context:
+            EvaluationCalculator(tp=0, fp=100, fn=0, allow_zero=False)
+            assert 'TP and FN are zero' in context.exception
+        with self.assertRaises(ZeroDivisionError) as context:
+            EvaluationCalculator(tp=0, fp=0, fn=0, allow_zero=False)
+            assert 'FP and FN are zero' in context.exception
+
+    def test_evaluation_calculator_none_values(self):
+        """Test the Evaluation Calculator when precision or recall are calculated as 0/0."""
+        no_precision = EvaluationCalculator(tp=0, fp=0, fn=100)
+        assert no_precision.precision is None
+        assert no_precision.recall == 0.0
+        assert no_precision.f1 == 0.0
+        no_recall = EvaluationCalculator(tp=0, fp=100, fn=0)
+        assert no_recall.precision == 0.0
+        assert no_recall.recall is None
+        assert no_recall.f1 == 0.0
+        no_f1 = EvaluationCalculator(tp=0, fp=0, fn=0)
+        assert no_f1.precision is None
+        assert no_f1.recall is None
+        assert no_f1.f1 is None
