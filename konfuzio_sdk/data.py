@@ -1728,21 +1728,36 @@ class Document(Data):
             raise ValueError(f'Document {self} without Category must not have Annotations')
         self.get_annotations()
         annotations: List[Annotation] = []
-        add = False
-        # import numpy as np
-        # filled = np.zeros(len(self.text))
-        filled = 0 # binary number keeping track of filled offsets
-        priority_annotations = sorted(self._annotations, key = lambda x: 
-            (not x.is_correct,
-            -x.confidence if x.confidence else 0,
-            min([span.start_offset for span in x.spans])
-            ))
+
+        filled = 0  # binary number keeping track of filled offsets
+        priority_annotations = sorted(self._annotations,
+            key=lambda x: (
+                not x.is_correct,  # x.is_correct == True first
+                -x.confidence if x.confidence else 0,  # higher confidence first
+                min([span.start_offset for span in x.spans])
+            )
+        )
+
+        no_label_duplicates = set()  # for top annotation filter
         for annotation in priority_annotations:
-            if annotation.label.threshold > annotation.confidence:
+            if annotation.confidence and annotation.label.threshold > annotation.confidence:
                 continue
+            spans_num = 0
+            for span in annotation.spans:
+                for i in range(span.start_offset, span.end_offset):
+                    spans_num |= 1 << i
+            if spans_num & filled:
+                # if there's overlap
+                continue
+            if not annotation.label.has_multiple_top_candidates\
+                    and annotation.label.id_ in no_label_duplicates:
+                continue
+            annotations.append(annotation)
+            filled |= spans_num
+            if not annotation.label.has_multiple_top_candidates:
+                no_label_duplicates.add(annotation.label.id_)
 
         return sorted(annotations)
-
 
     @property
     def document_folder(self):

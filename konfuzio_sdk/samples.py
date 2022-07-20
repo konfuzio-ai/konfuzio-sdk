@@ -100,17 +100,26 @@ class LocalTextProject(Project):
             spans=[Span(start_offset=0, end_offset=7)],
         )
 
-        # Duplicate dates Label with different confidence (top annotation filter)
-        # different overlapping annotations, diff confident
+
+class LocalViewProject(Project):
+    """A Project without visual information for offline development monitored by tests in TestLocalTextProject."""
+
+    local_training_document: Document = None
+
+    def __init__(self):
+        """Create basic structure of a Project."""
+        super().__init__(id_=None)
+        category = Category(project=self, id_=3)
 
         doc_3_text = """anno1
 date1:08/12/2001   span1
 date2: 08/12/2001   span2
 """
-        document_3 = Document(project=self, category=category_2, text=doc_3_text, dataset_status=2)
-
-        label_date = Label(id_=6, text='date', project=self, label_sets=[label_set], has_multiple_top_candidates=True)
-        label_3 = Label(id_=7, text='LabelName 3', project=self, label_sets=[label_set])
+        document_3 = Document(project=self, category=category, text=doc_3_text, dataset_status=2)
+        label_set = LabelSet(id_=2, project=self, categories=[category])
+        label = Label(id_=1, text='LabelName', project=self, label_sets=[label_set])
+        label_date = Label(id_=2, text='date', project=self, label_sets=[label_set], has_multiple_top_candidates=False)
+        label_3 = Label(id_=3, text='LabelName 3', project=self, label_sets=[label_set])
 
         # to be displayed in smart view: #16, #18, #19
         _ = Annotation(

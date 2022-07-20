@@ -217,14 +217,13 @@ def convert_to_bio_scheme(document) -> List[Tuple[str, str]]:
     nltk.download('punkt')
 
     spans_in_doc = []
-    for annotation in document.annotations(use_correct=False):  
-        # should use document.view_annotations(?)
+    for annotation in document.view_annotations():
         for span in annotation.spans:
             spans_in_doc.append((span.start_offset, span.end_offset, annotation.label.name))
     text = document.text
 
     tagged_entities = []
-    spans_in_doc.sort(key=lambda x: x[0])  # todo only spans can be sorted, this does not prevent overlapping
+    spans_in_doc.sort(key=lambda x: x[0])
 
     previous_end = 0
     end = 0

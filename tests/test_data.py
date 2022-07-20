@@ -23,6 +23,8 @@ from konfuzio_sdk.data import (
 from konfuzio_sdk.utils import is_file
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID, TEST_PROJECT_ID
 
+from konfuzio_sdk.samples import LocalViewProject
+
 logger = logging.getLogger(__name__)
 
 
@@ -688,8 +690,8 @@ class TestOfflineDataSetup(unittest.TestCase):
             spans=[span3],
         )
 
-        assert len(page1.spans)==2
-        assert len(page2.spans)==1
+        assert len(page1.spans) == 2
+        assert len(page2.spans) == 1
 
     def test_document_check_bbox_invalid_height_coordinates(self):
         """Test bbox check with invalid x coordinates regarding the page height."""
@@ -1858,6 +1860,14 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             doc.download_document_details()
         prj.delete()
+
+    def test_view_annotations(self):
+        """Test that Document.view_annotations() gets all the right annotations."""
+        project = LocalViewProject()
+        document = project.documents[0]
+        annotations = document.view_annotations()
+        assert len(annotations) == 3
+        assert sorted([ann.id_ for ann in annotations]) == [16, 18, 19]
 
 
 class TestFillOperation(unittest.TestCase):
