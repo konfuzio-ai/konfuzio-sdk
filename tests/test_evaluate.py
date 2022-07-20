@@ -1157,6 +1157,10 @@ class TestEvaluationCalculator(unittest.TestCase):
         assert evaluation_calculator.precision == 0.4
         assert evaluation_calculator.recall == 0.25
         assert evaluation_calculator.f1 == 0.3076923076923077
+        evaluation_calculator = EvaluationCalculator(tp=10, fp=0, fn=0)
+        assert evaluation_calculator.precision == 1.0
+        assert evaluation_calculator.recall == 1.0
+        assert evaluation_calculator.f1 == 1.0
 
     def test_evaluation_calculator_zero_not_allowed(self):
         """Check that the Evaluation Calculator raises ZeroDivisionError when allow_zero==False.
