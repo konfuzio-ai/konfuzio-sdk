@@ -1651,9 +1651,27 @@ class Document(Data):
 
         return sorted(annotations)
 
-    def view(self):
+    def view_annotations(self) -> List[Annotation]:
         """Get all annotations viewable in the smart-view. Filter out all others."""
-        pass
+        if self.category is None:
+            raise ValueError(f'Document {self} without Category must not have Annotations')
+        self.get_annotations()
+        annotations: List[Annotation] = []
+        add = False
+        # import numpy as np
+        # filled = np.zeros(len(self.text))
+        filled = 0 # binary number keeping track of filled offsets
+        priority_annotations = sorted(self._annotations, key = lambda x: 
+            (not x.is_correct,
+            -x.confidence if x.confidence else 0,
+            min([span.start_offset for span in x.spans])
+            ))
+        for annotation in priority_annotations:
+            if annotation.label.threshold > annotation.confidence:
+                continue
+
+        return sorted(annotations)
+
 
     @property
     def document_folder(self):

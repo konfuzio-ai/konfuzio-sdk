@@ -217,7 +217,8 @@ def convert_to_bio_scheme(document) -> List[Tuple[str, str]]:
     nltk.download('punkt')
 
     spans_in_doc = []
-    for annotation in document.annotations():
+    for annotation in document.annotations(use_correct=False):  
+        # should use document.view_annotations(?)
         for span in annotation.spans:
             spans_in_doc.append((span.start_offset, span.end_offset, annotation.label.name))
     text = document.text
