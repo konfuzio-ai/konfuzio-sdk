@@ -42,6 +42,8 @@ class Data:
     id_ = None
     id_local = None
     session = _konfuzio_session()
+    _update = False
+    _force_offline = False
 
     def __eq__(self, other) -> bool:
         """Compare any point of data with their ID, overwrite if needed."""
@@ -66,13 +68,18 @@ class Data:
     @property
     def is_online(self) -> Optional[int]:
         """Define if the Document is saved to the server."""
-        return self.id_ is not None
+        return (self.id_ is not None) and (not self._force_offline)
 
     # todo require to overwrite lose_weight via @abstractmethod
     def lose_weight(self):
         """Delete data of the instance."""
         self.session = None
         return self
+
+    def set_offline(self):
+        """Force data into offline mode."""
+        self._force_offline = True
+        self._update = False
 
 
 class Page(Data):
@@ -131,6 +138,64 @@ class Page(Data):
         elif is_file(self.image_path, raise_exception=False):
             self.image = Image.open(self.image_path)
         return self.image
+
+    @property
+    def text(self):
+        """Get Document text corresponding to the Page."""
+        doc_text = self.document.text
+        page_text = self.document.text[self.start_offset: self.end_offset]
+        if doc_text.split('\f')[self.index] != page_text:
+            raise IndexError(f'{self} text offsets do not match Document text.')
+        return page_text
+
+    @property
+    def number_of_lines(self) -> int:
+        """Calculate the number of lines in Page."""
+        return len(self.text.split('\n'))
+
+    @property
+    def spans(self):
+        """Return all Spans of the Page."""
+        spans = []
+        for annotation in self.annotations():
+            for span in annotation.spans:
+                if span not in spans:
+                    spans.append(span)
+
+        return sorted(spans)
+
+    def get_bbox(self):
+        """Get bbox information per character of Page."""
+        doc_bbox = self.document.get_bbox()
+        page_bbox = {
+            k: doc_bbox[k]
+            for k in doc_bbox.keys()
+            if doc_bbox[k]["page_number"] == self.number
+        }
+        return page_bbox
+
+    def annotations(
+        self,
+        label: 'Label' = None,
+        use_correct: bool = True,
+        start_offset: int = 0,
+        end_offset: int = None,
+        fill: bool = False,
+    ) -> List['Annotation']:
+        """Get Page Annotations."""
+        start_offset = max(start_offset, self.start_offset)
+        if end_offset is None:
+            end_offset = self.end_offset
+        else:
+            end_offset = min(end_offset, self.end_offset)
+        page_annotations = self.document.annotations(
+            label=label,
+            use_correct=use_correct,
+            start_offset=start_offset,
+            end_offset=end_offset,
+            fill=fill
+        )
+        return page_annotations
 
 
 class Bbox:
@@ -195,6 +260,7 @@ class AnnotationSet(Data):
         self.id_ = id_
         self.label_set: LabelSet = label_set
         self.document: Document = document  # we don't add it to the Document as it's added via get_annotations
+        self._force_offline = document._force_offline
         document.add_annotation_set(self)
 
     def __repr__(self):
@@ -284,6 +350,7 @@ class LabelSet(Data):
             self.has_multiple_annotation_sets = kwargs["has_multiple_sections"]
 
         self.project: Project = project
+        self._force_offline = project._force_offline
         self.labels: List[Label] = []
 
         # todo allow to create Labels either on Project or Label Set level, so they are (not) shared among Label Sets.
@@ -343,6 +410,7 @@ class Category(Data):
         self.name = name
         self.name_clean = name_clean
         self.project: Project = project
+        self._force_offline = project._force_offline
         self.label_sets: List[LabelSet] = []
         self.project.add_category(category=self)
 
@@ -423,6 +491,7 @@ class Label(Data):
         self.has_multiple_top_candidates = has_multiple_top_candidates
         self.threshold = threshold
         self.project: Project = project
+        self._force_offline = project._force_offline
         project.add_label(self)
 
         self.label_sets = []
@@ -985,6 +1054,7 @@ class Annotation(Data):
         self.normalized = normalized
         self.translated_string = translated_string
         self.document = document
+        self._force_offline = self.document._force_offline
         self.created_by = created_by
         self.revised_by = revised_by
         if custom_offset_string:
@@ -1407,6 +1477,7 @@ class Document(Data):
         self.name = data_file_name
         self.status = status  # status of document online
         self.project = project
+        self._force_offline = project._force_offline
         project.add_document(self)  # check for duplicates by ID before adding the Document to the project
 
         # use hidden variables to store low volume information in instance
@@ -1559,7 +1630,7 @@ class Document(Data):
         """Return Annotation Sets of Documents."""
         if self._annotation_sets is not None:
             return self._annotation_sets
-        if self.id_ and not is_file(self.annotation_set_file_path, raise_exception=False):
+        if self.is_online and not is_file(self.annotation_set_file_path, raise_exception=False):
             self.download_document_details()
         if is_file(self.annotation_set_file_path, raise_exception=False):
             with open(self.annotation_set_file_path, "r") as f:
@@ -1602,7 +1673,7 @@ class Document(Data):
                     # todo: add option to filter for overruled Annotations where mult.=F
                     # todo: add option to filter for overlapping Annotations, `add_annotation` just checks for identical
                     # filter by start and end offset, include annotations that extend into the offset
-                    if start_offset and end_offset:  # if the start and end offset are specified
+                    if start_offset is not None and end_offset is not None:  # if the start and end offset are specified
                         latest_start = max(span.start_offset, start_offset)
                         earliest_end = min(span.end_offset, end_offset)
                         is_overlapping = latest_start - earliest_end <= 0
@@ -2071,11 +2142,12 @@ class Document(Data):
 
     def get_annotations(self) -> List[Annotation]:
         """Get Annotations of the Document."""
-        if self._update or (self.is_online and (self._annotations is None or self._annotation_sets is None)):
-            annotation_file_exists = is_file(self.annotation_file_path, raise_exception=False)
-            annotation_set_file_exists = is_file(self.annotation_set_file_path, raise_exception=False)
+        annotation_file_exists = is_file(self.annotation_file_path, raise_exception=False)
+        annotation_set_file_exists = is_file(self.annotation_set_file_path, raise_exception=False)
 
-            if self.id_ and (not annotation_file_exists or not annotation_set_file_exists or self._update):
+        if self._update or (self.is_online and (self._annotations is None or self._annotation_sets is None)):
+
+            if self.is_online and (not annotation_file_exists or not annotation_set_file_exists or self._update):
                 self.update()  # delete the meta of the Document details and download them again
                 self._update = None  # Make sure we don't repeat to load once updated.
 
@@ -2083,19 +2155,28 @@ class Document(Data):
             self.annotation_sets()
 
             self._annotations = []  # clean Annotations to not create duplicates
+            # We read the annotation file that we just downloaded
             with open(self.annotation_file_path, 'r') as f:
                 raw_annotations = json.load(f)
 
             for raw_annotation in raw_annotations:
-                if not raw_annotation['is_correct'] and raw_annotation['revised']:
-                    continue
                 raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
                 raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
                 _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
             self._update = None  # Make sure we don't repeat to load once loaded.
 
         if self._annotations is None:
+            self.annotation_sets()
             self._annotations = []
+            # We load the annotation file if it exists
+            if annotation_file_exists:
+                with open(self.annotation_file_path, 'r') as f:
+                    raw_annotations = json.load(f)
+
+                for raw_annotation in raw_annotations:
+                    raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
+                    raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
+                    _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
 
         return self._annotations
 

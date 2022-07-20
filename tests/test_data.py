@@ -81,9 +81,8 @@ class TestOnlineProject(unittest.TestCase):
 
         # existing annotation
         # https://app.konfuzio.com/admin/server/sequenceannotation/?document_id=44823&project=46
-        self.assertEqual(len(doc.annotations(use_correct=False)), 19)
-        # helm: 21.06.2022 changed from 21 to 19 as someone added (?) two annotations?
-        # 22 Annotations if considering negative ones
+        # we are no longer filtering out the rejected annotations so it's 21
+        self.assertEqual(21, len(doc.annotations(use_correct=False)))
         # a multiline Annotation in the top right corner, see https://app.konfuzio.com/a/4419937
         self.assertEqual(66, doc.annotations()[0]._spans[0].start_offset)
         self.assertEqual(78, doc.annotations()[0]._spans[0].end_offset)
@@ -350,7 +349,11 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 30
+        assert len(cls.project.virtual_documents) == 35
+
+    # def test_document_only_needs_project(self):
+    #     """Test that a Document can be created without category"""
+    #     _ = Document(project=self.project)
 
     def test_project_no_label(self):
         """Test that no_label exists in the Labels of the Project and has the expected name."""
@@ -586,6 +589,107 @@ class TestOfflineDataSetup(unittest.TestCase):
         document = Document(project=self.project, category=self.category, text='h', bbox=document_bbox)
         _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
         assert document.get_page_by_index(0).height == 841.68
+
+    def test_page_text(self):
+        """Test text Page."""
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'p'}
+        }
+        document = Document(project=self.project, category=self.category, text='page1\fpage2', bbox=document_bbox)
+        _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=5)
+        _ = Page(id_=2, number=2, original_size=(595.2, 841.68), document=document, start_offset=6, end_offset=11)
+        assert document.get_page_by_index(0).text == 'page1'
+        assert document.get_page_by_index(1).text == 'page2'
+
+    def test_page_text_offsets(self):
+        """Test text Page offsets."""
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'p'}
+        }
+        document = Document(project=self.project, category=self.category, text='page1\fpage2', bbox=document_bbox)
+        page1 = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=5)
+        page2 = Page(id_=2, number=2, original_size=(595.2, 841.68), document=document, start_offset=6, end_offset=11)
+        assert page1.text == document.text[page1.start_offset: page1.end_offset]
+        assert page2.text == document.text[page2.start_offset: page2.end_offset]
+
+    def test_page_get_bbox(self):
+        """Test getting bbox for Page."""
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'p'},
+            '2': {'x0': 1, 'x1': 0, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': '1'},
+            '8': {'x0': 0, 'x1': 1, 'y0': 10, 'y1': 12, 'top': 10, 'bottom': 11, 'page_number': 2, 'text': 'p'},
+            '10': {'x0': 1, 'x1': 0, 'y0': 10, 'y1': 12, 'top': 10, 'bottom': 11, 'page_number': 2, 'text': '2'}
+        }
+        document = Document(project=self.project, category=self.category, text='p1\fp2', bbox=document_bbox)
+        page1 = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=2)
+        page2 = Page(id_=2, number=2, original_size=(595.2, 841.68), document=document, start_offset=3, end_offset=5)
+        assert '0' in page1.get_bbox() and '2' in page1.get_bbox()
+        assert '8' in page2.get_bbox() and '10' in page2.get_bbox()
+        assert '0' not in page2.get_bbox() and '2' not in page2.get_bbox()
+        assert '8' not in page1.get_bbox() and '10' not in page1.get_bbox()
+
+    def test_page_annotations(self):
+        """Test getting annotations of a Page."""
+        document = Document(project=self.project, category=self.category, text='p\n1\fnap2')
+        span1 = Span(start_offset=0, end_offset=1)
+        span2 = Span(start_offset=2, end_offset=3)
+        span3 = Span(start_offset=7, end_offset=9)
+
+        page1 = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=3)
+        page2 = Page(id_=2, number=2, original_size=(595.2, 841.68), document=document, start_offset=4, end_offset=9)
+
+        annotation1 = Annotation(
+            document=document,
+            is_correct=True,
+            label=self.label,
+            label_set=self.label_set,
+            spans=[span1, span2],
+        )
+        annotation2 = Annotation(
+            document=document,
+            is_correct=True,
+            label=self.label,
+            label_set=self.label_set,
+            spans=[span3],
+        )
+        assert document.get_page_by_index(0).text == 'p\n1'
+        assert document.get_page_by_index(1).text == 'nap2'
+        assert annotation1 in document.annotations()
+        assert annotation2 in document.annotations()
+        assert annotation1 in page1.annotations()
+        assert annotation2 in page2.annotations()
+        assert annotation1 not in page2.annotations()
+        assert annotation2 not in page1.annotations()
+        assert page2.annotations(start_offset=4, end_offset=6) == []
+        assert len(page2.annotations(start_offset=4, end_offset=6, fill=True)) == 1
+
+    def test_page_spans(self):
+        """Test getting spans from a Page."""
+        document = Document(project=self.project, category=self.category, text='p\n1\fnap2')
+        span1 = Span(start_offset=0, end_offset=1)
+        span2 = Span(start_offset=2, end_offset=3)
+        span3 = Span(start_offset=7, end_offset=9)
+
+        page1 = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=3)
+        page2 = Page(id_=2, number=2, original_size=(595.2, 841.68), document=document, start_offset=4, end_offset=9)
+
+        _ = Annotation(
+            document=document,
+            is_correct=True,
+            label=self.label,
+            label_set=self.label_set,
+            spans=[span1, span2],
+        )
+        _ = Annotation(
+            document=document,
+            is_correct=True,
+            label=self.label,
+            label_set=self.label_set,
+            spans=[span3],
+        )
+
+        assert len(page1.spans)==2
+        assert len(page2.spans)==1
 
     def test_document_check_bbox_invalid_height_coordinates(self):
         """Test bbox check with invalid x coordinates regarding the page height."""
@@ -1024,9 +1128,10 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_get_all_spans_of_a_document(self):
         """Test to get all Spans in a Document."""
-        # todo: Before we had 21 Spans after the a code change to allow overlapping Annotations we have 23 Spans
-        #    due to the fact that one Span is not identical, so one Annotation relates to one Span
-        assert len(self.prj.get_document_by_id(TEST_DOCUMENT_ID).spans) == 23
+        # Before we had 21 Spans after the a code change to allow overlapping Annotations we have 23 Spans
+        # due to the fact that one Span is not identical, so one Annotation relates to one Span.
+        # One more for a total of 24 since we are not filtering out the rejected annotations.
+        assert len(self.prj.get_document_by_id(TEST_DOCUMENT_ID).spans) == 24
 
     def test_span_hashable(self):
         """Test if a Span can be hashed."""
@@ -1181,7 +1286,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.assertFalse(is_file(doc.annotation_file_path, raise_exception=False))
         self.assertEqual(None, doc._annotations)
         self.assertTrue(doc.annotations())
-        self.assertEqual(5, len(doc._annotation_sets))
+        self.assertEqual(19, len(doc._annotations))
         self.assertTrue(is_file(doc.annotation_file_path))
         prj.delete()
 
@@ -1193,7 +1298,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.assertFalse(is_file(doc.annotation_set_file_path, raise_exception=False))
         self.assertEqual(None, doc._annotation_sets)
         self.assertTrue(doc.annotation_sets())
-        self.assertEqual(5, len(doc._annotation_sets))
+        self.assertEqual(4, len(doc._annotation_sets))
         self.assertTrue(is_file(doc.annotation_set_file_path))
         prj.delete()
 
@@ -1477,7 +1582,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
         self.assertEqual(len(doc.annotations()), 19)
         assert len(doc.annotations(label=self.prj.get_label_by_id(858))) == 1
-        assert len(doc.annotations(use_correct=False)) == 21  # 22 if considering negative ones
+        assert len(doc.annotations(use_correct=False)) == 22  # 21 if not considering negative ones
 
     def test_document_offset(self):
         """Test Document offsets."""
@@ -1664,6 +1769,97 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert len(cls.prj.labels[0].annotations(categories=[category])) == cls.annotations_correct
 
 
+class TestKonfuzioForceOfflineData(unittest.TestCase):
+    """Test handle data forced offline."""
+
+    def test_force_offline_project(self):
+        """Test that a Project with an ID can be forced offline."""
+        prj = Project(id_=TEST_PROJECT_ID)
+        prj.set_offline()
+        self.assertFalse(prj.is_online)
+        # all Data belonging to that project should be offline without setting individual instances offline
+        category = Category(prj, id_=1)
+        self.assertFalse(category.is_online)
+        label_set = LabelSet(prj, categories=[category], id_=1)
+        self.assertFalse(label_set.is_online)
+        doc = Document(prj, category=category, id_=1)
+        self.assertFalse(doc.is_online)
+        annotation_set = AnnotationSet(doc, label_set, id_=1)
+        self.assertFalse(annotation_set.is_online)
+        label = Label(prj, label_set=label_set, id_=1)
+        self.assertFalse(label.is_online)
+        annotation = Annotation(
+            doc, annotation_set=annotation_set, label_set=label_set, label=label, id_=1, spans=[Span(0, 1)]
+        )
+        self.assertFalse(annotation.is_online)
+        prj.delete()
+
+    def test_make_sure_annotations_are_not_downloaded_automatically(self):
+        """Test that Annotations are not downloaded automatically."""
+        prj = Project(id_=TEST_PROJECT_ID, project_folder='another')
+        doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
+        doc.set_offline()
+        self.assertFalse(is_file(doc.annotation_file_path, raise_exception=False))
+        self.assertEqual(None, doc._annotations)
+        self.assertFalse(doc.annotations())
+        self.assertEqual(0, len(doc._annotations))
+        self.assertFalse(is_file(doc.annotation_file_path, raise_exception=False))
+        with self.assertRaises(NotImplementedError):
+            doc.download_document_details()
+        prj.delete()
+
+    def test_annotations_are_loadable_for_offline_project_with_id_forced_offline(self):
+        """Test that Annotations are loadable for OFFLINE_PROJECT if it's given an ID and forced offline."""
+        prj = Project(id_=TEST_PROJECT_ID, project_folder=OFFLINE_PROJECT)
+        doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
+        doc.set_offline()
+        self.assertTrue(is_file(doc.annotation_file_path, raise_exception=False))
+        self.assertEqual(None, doc._annotations)
+        self.assertTrue(doc.annotations())
+        self.assertEqual(22, len(doc._annotations))
+        with self.assertRaises(NotImplementedError):
+            doc.download_document_details()
+
+    def test_make_sure_annotation_sets_are_not_downloaded_automatically(self):
+        """Test that Annotation Sets are not downloaded automatically."""
+        prj = Project(id_=TEST_PROJECT_ID, project_folder='another2')
+        doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
+        doc.set_offline()
+        self.assertFalse(is_file(doc.annotation_set_file_path, raise_exception=False))
+        self.assertEqual(None, doc._annotation_sets)
+        self.assertFalse(doc.annotation_sets())
+        self.assertEqual(0, len(doc._annotation_sets))
+        self.assertFalse(is_file(doc.annotation_set_file_path, raise_exception=False))
+        with self.assertRaises(NotImplementedError):
+            doc.download_document_details()
+        prj.delete()
+
+    def test_annotations_sets_are_loadable_for_offline_project_with_id_forced_offline(self):
+        """Test that AnnotationSets are loadable for OFFLINE_PROJECT if it's given an ID and forced offline."""
+        prj = Project(id_=TEST_PROJECT_ID, project_folder=OFFLINE_PROJECT)
+        doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
+        doc.set_offline()
+        self.assertTrue(is_file(doc.annotation_set_file_path, raise_exception=False))
+        self.assertEqual(None, doc._annotation_sets)
+        self.assertTrue(doc.annotation_sets())
+        self.assertEqual(24, len(doc._annotation_sets))
+        with self.assertRaises(NotImplementedError):
+            doc.download_document_details()
+
+    def test_make_sure_pages_are_not_downloaded_automatically(self):
+        """Test that Pages are not downloaded automatically."""
+        prj = Project(id_=TEST_PROJECT_ID, project_folder='another33')
+        doc = prj.get_document_by_id(TEST_DOCUMENT_ID)
+        doc.set_offline()
+        self.assertFalse(is_file(doc.pages_file_path, raise_exception=False))
+        self.assertEqual([], doc._pages)
+        self.assertFalse(doc.pages())
+        self.assertFalse(is_file(doc.pages_file_path, raise_exception=False))
+        with self.assertRaises(NotImplementedError):
+            doc.download_document_details()
+        prj.delete()
+
+
 class TestFillOperation(unittest.TestCase):
     """Separate Test as we add non Labels to the Project."""
 
@@ -1752,6 +1948,13 @@ class TestData(unittest.TestCase):
         a = Data()
         a.id_ = 0
         self.assertTrue(a.is_online)
+
+    def test_force_offline_data(self):
+        """Test that data with an ID can be forced offline."""
+        a = Data()
+        a.id_ = 1
+        a.set_offline()
+        self.assertFalse(a.is_online)
 
 
 def test_download_training_and_test_data():
