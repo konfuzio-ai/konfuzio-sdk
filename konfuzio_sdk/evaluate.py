@@ -271,7 +271,7 @@ class Evaluation:
 class EvaluationCalculator:
     """Calculate precision, recall, f1, based on TP, FP, FN."""
 
-    def __init__(self, tp: int, fp: int, fn: int, tn: int = 0, allow_zero: bool = False):
+    def __init__(self, tp: int, fp: int, fn: int, tn: int = 0, allow_zero: bool = True):
         """
         Store evaluation information.
 
@@ -279,8 +279,8 @@ class EvaluationCalculator:
         :param fp: False Positives.
         :param fn: False Negatives.
         :param tn: True Negatives.
-        :param allow_zero: If true, assumes zero precision and recall when the straightforward application of the
-        formula would otherwise result in 0/0. Raises ValueError otherwise.
+        :param allow_zero: If true, will calculate None for precision and recall when the straightforward application
+        of the formula would otherwise result in 0/0. Raises ZeroDivisionError otherwise.
         """
         self.tp = tp
         self.fp = fp
@@ -288,26 +288,30 @@ class EvaluationCalculator:
         self.tn = tn
         self._valid(allow_zero)
 
-    def _valid(self, allow_zero: bool = False) -> None:
-        """Check for 0/0 on precision and recall calculation."""
+    def _valid(self, allow_zero: bool = True) -> None:
+        """Check for 0/0 on precision, recall, and F1 calculation."""
         if allow_zero:
             return
+        if self.fp + self.fn == 0:
+            raise ZeroDivisionError("FP and FN are zero, please specify allow_zero=True if you want F1 to be None.")
         if self.tp + self.fp == 0:
-            raise ValueError("TP and FP are zero, please specify allow_zero=True if you want precision to be zero.")
+            raise ZeroDivisionError(
+                "TP and FP are zero, please specify allow_zero=True if you want precision to be None."
+            )
         if self.tp + self.fn == 0:
-            raise ValueError("TP and FN are zero, please specify allow_zero=True if you want recall to be zero.")
+            raise ZeroDivisionError("TP and FN are zero, please specify allow_zero=True if you want recall to be None.")
 
     @property
     def precision(self) -> float:
-        """Apply precision formula. Defaults to zero if TP+FP=0."""
-        return self.tp and self.tp / (self.tp + self.fp)
+        """Apply precision formula. Returns None if TP+FP=0."""
+        return None if (self.tp + self.fp == 0) else self.tp / (self.tp + self.fp)
 
     @property
     def recall(self) -> float:
-        """Apply recall formula. Defaults to zero if TP+FN=0."""
-        return self.tp and self.tp / (self.tp + self.fn)
+        """Apply recall formula. Returns None if TP+FN=0."""
+        return None if (self.tp + self.fn == 0) else self.tp / (self.tp + self.fn)
 
     @property
     def f1(self) -> float:
-        """Apply F1-score formula. Defaults to zero if precision or recall is zero."""
-        return self.tp and self.tp / (self.tp + 0.5 * (self.fp + self.fn))
+        """Apply F1-score formula. Returns None if precision and recall are both None."""
+        return None if (self.fp + self.fn == 0) else self.tp / (self.tp + 0.5 * (self.fp + self.fn))
