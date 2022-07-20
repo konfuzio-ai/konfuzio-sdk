@@ -1157,6 +1157,9 @@ class TestEvaluationCalculator(unittest.TestCase):
         assert evaluation_calculator.precision == 0.4
         assert evaluation_calculator.recall == 0.25
         assert evaluation_calculator.f1 == 0.3076923076923077
+
+    def test_evaluation_calculator_perfect_score_can_be_calculated(self):
+        """Check that it's possible to calculate 100% score."""
         evaluation_calculator = EvaluationCalculator(tp=10, fp=0, fn=0)
         assert evaluation_calculator.precision == 1.0
         assert evaluation_calculator.recall == 1.0
