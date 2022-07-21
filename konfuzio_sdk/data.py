@@ -1661,8 +1661,6 @@ class Document(Data):
         :param use_correct: If to filter by correct annotations.
         :return: Annotations in the document.
         """
-        if self.category is None:
-            raise ValueError(f'Document {self} without Category must not have Annotations')
         self.get_annotations()
         annotations: List[Annotation] = []
         add = False
@@ -1724,8 +1722,6 @@ class Document(Data):
 
     def view_annotations(self) -> List[Annotation]:
         """Get the best Annotations, where the Spans are not overlapping."""
-        if self.category is None:
-            raise ValueError(f'Document {self} without Category must not have Annotations')
         self.get_annotations()
         annotations: List[Annotation] = []
 
@@ -2159,6 +2155,9 @@ class Document(Data):
 
     def get_annotations(self) -> List[Annotation]:
         """Get Annotations of the Document."""
+        if self.category is None:
+            raise ValueError(f'Document {self} without Category must not have Annotations')
+
         annotation_file_exists = is_file(self.annotation_file_path, raise_exception=False)
         annotation_set_file_exists = is_file(self.annotation_set_file_path, raise_exception=False)
 
