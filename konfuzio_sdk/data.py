@@ -153,10 +153,22 @@ class Page(Data):
         """Calculate the number of lines in Page."""
         return len(self.text.split('\n'))
 
-    def spans(self):
+    def spans(
+        self,
+        label: 'Label' = None,
+        use_correct: bool = False,
+        start_offset: int = 0,
+        end_offset: int = None,
+        fill: bool = False,
+    ) -> List['Span']:
         """Return all Spans of the Page."""
         spans = []
-        for annotation in self.annotations():
+        annotations = self.annotations(label=label,
+                                       use_correct=use_correct,
+                                       start_offset=start_offset,
+                                       end_offset=end_offset,
+                                       fill=fill)
+        for annotation in annotations:
             for span in annotation.spans:
                 if span not in spans:
                     spans.append(span)
@@ -1540,18 +1552,29 @@ class Document(Data):
 
         return self._no_label_annotation_set
 
-    def spans(self):
+    def spans(
+        self,
+        label: Label = None,
+        use_correct: bool = False,
+        start_offset: int = 0,
+        end_offset: int = None,
+        fill: bool = False,
+    ) -> List[Span]:
         """Return all Spans of the Document."""
         spans = []
-        if self._annotations is None:
-            self.annotations()
 
-        for annotation in self._annotations:
+        annotations = self.annotations(label=label,
+                                       use_correct=use_correct,
+                                       start_offset=start_offset,
+                                       end_offset=end_offset,
+                                       fill=fill)
+
+        for annotation in annotations:
             for span in annotation.spans:
                 if span not in spans:
                     spans.append(span)
 
-        # if self.spans == list(set(self.spans)):
+        # if self.spans() == list(set(self.spans())):
         #     # todo deduplicate Spans. One text offset in a document can ber referenced by many Spans of Annotations
         #     raise NotImplementedError
 
