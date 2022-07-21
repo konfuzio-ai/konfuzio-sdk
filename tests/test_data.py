@@ -688,8 +688,8 @@ class TestOfflineDataSetup(unittest.TestCase):
             spans=[span3],
         )
 
-        assert len(page1.spans)==2
-        assert len(page2.spans)==1
+        assert len(page1.spans())==2
+        assert len(page2.spans())==1
 
     def test_document_check_bbox_invalid_height_coordinates(self):
         """Test bbox check with invalid x coordinates regarding the page height."""
@@ -1131,7 +1131,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         # Before we had 21 Spans after the a code change to allow overlapping Annotations we have 23 Spans
         # due to the fact that one Span is not identical, so one Annotation relates to one Span.
         # One more for a total of 24 since we are not filtering out the rejected annotations.
-        assert len(self.prj.get_document_by_id(TEST_DOCUMENT_ID).spans) == 24
+        assert len(self.prj.get_document_by_id(TEST_DOCUMENT_ID).spans()) == 24
 
     def test_span_hashable(self):
         """Test if a Span can be hashed."""

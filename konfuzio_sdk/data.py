@@ -153,7 +153,6 @@ class Page(Data):
         """Calculate the number of lines in Page."""
         return len(self.text.split('\n'))
 
-    @property
     def spans(self):
         """Return all Spans of the Page."""
         spans = []
@@ -1541,7 +1540,6 @@ class Document(Data):
 
         return self._no_label_annotation_set
 
-    @property
     def spans(self):
         """Return all Spans of the Document."""
         spans = []
