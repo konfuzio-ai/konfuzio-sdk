@@ -23,7 +23,7 @@ from konfuzio_sdk.data import (
 from konfuzio_sdk.utils import is_file
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID, TEST_PROJECT_ID
 
-from konfuzio_sdk.samples import LocalViewProject
+from konfuzio_sdk.samples import LocalTextProject
 
 logger = logging.getLogger(__name__)
 
@@ -1863,11 +1863,11 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
 
     def test_view_annotations(self):
         """Test that Document.view_annotations() gets all the right annotations."""
-        project = LocalViewProject()
-        document = project.documents[0]
+        project = LocalTextProject()
+        document = project.documents[-1]
         annotations = document.view_annotations()
-        assert len(annotations) == 3
-        assert sorted([ann.id_ for ann in annotations]) == [16, 18, 19]
+        assert len(annotations) == 4
+        assert sorted([ann.id_ for ann in annotations]) == [16, 18, 19, 24]
 
 
 class TestFillOperation(unittest.TestCase):

@@ -100,37 +100,34 @@ class LocalTextProject(Project):
             spans=[Span(start_offset=0, end_offset=7)],
         )
 
-
-class LocalViewProject(Project):
-    """A Project without visual information for offline development monitored by tests in TestLocalTextProject."""
-
-    local_training_document: Document = None
-
-    def __init__(self):
-        """Create basic structure of a Project."""
-        super().__init__(id_=None)
-        category = Category(project=self, id_=3)
+        ##########
+        # Document with overlapping Annotations to test view_annotation filtering
 
         doc_3_text = """anno1
 date1:08/12/2001   span1
 date2: 08/12/2001   span2
 uncertain
+ last x
 """
         document = Document(project=self, category=category, text=doc_3_text, dataset_status=2)
-        label_set = LabelSet(id_=2, project=self, categories=[category])
-        label = Label(id_=1, text='LabelName', project=self, label_sets=[label_set])
-        label_date = Label(id_=2, text='date', project=self, label_sets=[label_set], has_multiple_top_candidates=False)
-        label_3 = Label(id_=3, text='LabelName 3', project=self, label_sets=[label_set])
-        label_4 = Label(id_=4, text='LabelName 4', project=self, label_sets=[label_set], threshold=0.1)
+        label_set_2 = LabelSet(id_=3, project=self, categories=[category])
+        view_label = Label(id_=5, text='ViewLabelName', project=self, label_sets=[label_set_2])
+        view_label_date = Label(id_=6, text='date', project=self, label_sets=[label_set_2], has_multiple_top_candidates=False)
+        view_label_3 = Label(id_=7, text='ViewLabelName 3', project=self, label_sets=[label_set_2])
+        view_label_4 = Label(id_=8, text='ViewLabelName 4', project=self, label_sets=[label_set_2], threshold=0.1)
+        view_label_5 = Label(id_=9, text='ViewLabelName 5', project=self, label_sets=[label_set_2])
 
-        # to be displayed in smart view: #16, #18, #19
+        view_annotation_set_test = AnnotationSet(id_=6, document=document, label_set=label_set_2)
+
+        # to be displayed in smart view: #16, #18, #19, #24
         _ = Annotation(
             id_=15,
             document=document,
             is_correct=False,
+            annotation_set=view_annotation_set_test,
             confidence=0.92,
-            label=label_3,
-            label_set=label_set,
+            label=view_label_3,
+            label_set=label_set_2,
             spans=[Span(start_offset=0, end_offset=5)],
         )
 
@@ -138,35 +135,39 @@ uncertain
             id_=16,
             document=document,
             is_correct=True,
-            label=label,
-            label_set=label_set,
+            annotation_set=view_annotation_set_test,
+            label=view_label,
+            label_set=label_set_2,
             spans=[Span(start_offset=0, end_offset=5)],
         )
         _ = Annotation(
             id_=17,
             document=document,
             is_correct=False,
+            annotation_set=view_annotation_set_test,
             confidence=0.3,
-            label=label_date,
-            label_set=label_set,
+            label=view_label_date,
+            label_set=label_set_2,
             spans=[Span(start_offset=12, end_offset=22)],
         )
         _ = Annotation(
             id_=18,
             document=document,
             is_correct=False,
+            annotation_set=view_annotation_set_test,
             confidence=0.4,
-            label=label_date,
-            label_set=label_set,
+            label=view_label_date,
+            label_set=label_set_2,
             spans=[Span(start_offset=38, end_offset=48)],
         )
         _ = Annotation(
             id_=19,
             document=document,
             is_correct=False,
+            annotation_set=view_annotation_set_test,
             confidence=0.9,
-            label=label_3,
-            label_set=label_set,
+            label=view_label_3,
+            label_set=label_set_2,
             spans=[Span(start_offset=25, end_offset=30),
                    Span(start_offset=51, end_offset=56)],
         )
@@ -174,17 +175,50 @@ uncertain
             id_=20,
             document=document,
             is_correct=False,
+            annotation_set=view_annotation_set_test,
             confidence=0.6,
-            label=label_3,
-            label_set=label_set,
+            label=view_label_3,
+            label_set=label_set_2,
             spans=[Span(start_offset=25, end_offset=30)],
         )
         _ = Annotation(
             id_=21,
             document=document,
             is_correct=False,
+            annotation_set=view_annotation_set_test,
             confidence=0.05,
-            label=label_4,
+            label=view_label_4,
             label_set=label_set,
             spans=[Span(start_offset=57, end_offset=66)],
+        )
+        _ = Annotation(
+            id_=22,
+            document=document,
+            is_correct=False,
+            revised=True,
+            annotation_set=view_annotation_set_test,
+            confidence=1,
+            label=view_label_4,
+            label_set=label_set,
+            spans=[Span(start_offset=37, end_offset=49)],
+        )
+        _ = Annotation(
+            id_=23,
+            document=document,
+            is_correct=False,
+            annotation_set=view_annotation_set_test,
+            confidence=0.9,
+            label=view_label_5,
+            label_set=label_set,
+            spans=[Span(start_offset=67, end_offset=73)],
+        )
+        _ = Annotation(
+            id_=24,
+            document=document,
+            is_correct=False,
+            annotation_set=view_annotation_set_test,
+            confidence=0.99,
+            label=view_label_5,
+            label_set=label_set,
+            spans=[Span(start_offset=68, end_offset=72)],
         )

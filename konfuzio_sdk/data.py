@@ -1723,7 +1723,7 @@ class Document(Data):
         return sorted(annotations)
 
     def view_annotations(self) -> List[Annotation]:
-        """Get all annotations viewable in the smart-view. Filter out all others."""
+        """Get the best Annotations, where the Spans are not overlapping."""
         if self.category is None:
             raise ValueError(f'Document {self} without Category must not have Annotations')
         self.get_annotations()
@@ -1741,6 +1741,8 @@ class Document(Data):
         no_label_duplicates = set()  # for top annotation filter
         for annotation in priority_annotations:
             if annotation.confidence and annotation.label.threshold > annotation.confidence:
+                continue
+            if not annotation.is_correct and annotation.revised:  # if marked as incorrect by user
                 continue
             spans_num = 0
             for span in annotation.spans:
