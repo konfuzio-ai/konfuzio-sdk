@@ -896,7 +896,7 @@ class TestEvaluation(unittest.TestCase):
         """Count two Spans from two Training Documents."""
         project = LocalTextProject()
         evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
-        assert evaluation.tp() == 3
+        assert evaluation.tp() == 5
 
     def test_false_positive(self):
         """Count zero Annotations from two Training Documents."""
@@ -904,7 +904,7 @@ class TestEvaluation(unittest.TestCase):
         true_document = project.documents[0]
         predicted_document = project.test_documents[0]
         evaluation = Evaluation(documents=list(zip([true_document], [predicted_document])))
-        assert evaluation.fp() == 2
+        assert evaluation.fp() == 3
 
     def test_true_negatives(self):
         """Count zero Annotations from two Training Documents."""
@@ -945,20 +945,21 @@ class TestEvaluation(unittest.TestCase):
     def test_false_negatives(self):
         """Count zero Annotations from two Training Documents."""
         project = LocalTextProject()
-        predicted_document = project.documents[0]  # A(3,5,Label_1) + A(7,10,Label_2)
-        true_document = project.test_documents[0]  # A(7,10,Label_1)
+        predicted_document = project.documents[0]  # A(0,2,Label_0) + A(3,5,Label_1) + A(7,10,Label_2)
+        true_document = project.test_documents[0]  # A(0,3,Label_0) + A(7,10,Label_1) + A(11,14,Label_2)
         evaluation = Evaluation(documents=list(zip([true_document], [predicted_document])))
         assert evaluation.tp() == 0
-        assert evaluation.fp() == 2
-        assert evaluation.fn() == 1
+        assert evaluation.fp() == 3
+        assert evaluation.fn() == 2
         assert evaluation.tn() == 0
 
     def test_true_positive_label(self):
         """Count two Annotations from two Training Documents and filter by one Label."""
         project = LocalTextProject()
         evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
-        label = project.get_label_by_id(id_=3)  # there is only one Label that is not the NONE_LABEL
-        assert evaluation.tp() == 3
+        # there is only one Label that is not the NONE_LABEL or from a default LabelSet
+        label = project.get_label_by_id(id_=4)
+        assert evaluation.tp() == 5
         assert evaluation.tp(search=label) == 2
         assert evaluation.fp(search=label) == 0
         assert evaluation.fn(search=label) == 0
@@ -976,7 +977,7 @@ class TestEvaluation(unittest.TestCase):
         """Count two Annotations from two Training Documents related to one Label Set."""
         project = LocalTextProject()
         evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
-        label_set = project.get_label_set_by_id(id_=2)
+        label_set = project.get_label_set_by_id(id_=3)
         assert evaluation.tp(search=label_set) == 3
 
 
@@ -986,8 +987,8 @@ class TestEvaluationTwoLabels(unittest.TestCase):
     def setUp(self) -> None:
         """Test evaluation when changing filtered Label and Documents."""
         project = LocalTextProject()
-        document_a = project.documents[0]  # A1(3,5,Label_3) + A2(7,10,Label_4)
-        document_b = project.test_documents[0]  # A3(7,10,Label_3) + A4(11,14,Label_4)
+        document_a = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
+        document_b = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
         self.evaluation = Evaluation(documents=list(zip([document_b], [document_a])))
 
     def test_true_positives(self):
@@ -995,15 +996,15 @@ class TestEvaluationTwoLabels(unittest.TestCase):
         assert self.evaluation.tp() == 0
 
     def test_false_positives(self):
-        """Evaluate that Document A predicts two wrong Spans."""
-        assert self.evaluation.fp() == 2  # A1 and A2
+        """Evaluate that Document A predicts three wrong Spans."""
+        assert self.evaluation.fp() == 3  # A1, A2 and A3
 
     def test_false_negatives(self):
-        """Evaluate that Document A misses to predict one Span."""
-        assert self.evaluation.fn() == 1  # A3 OR A2
+        """Evaluate that Document A misses to predict two Spans."""
+        assert self.evaluation.fn() == 2  # A1 and A2
 
     def test_true_negatives(self):
-        """Evaluate that that nothing is correctly predicted below threshold."""
+        """Evaluate that nothing is correctly predicted below threshold."""
         assert self.evaluation.tn() == 0
 
 
@@ -1013,10 +1014,10 @@ class TestEvaluationFirstLabelDocumentADocumentB(unittest.TestCase):
     def setUp(self) -> None:
         """Test evaluation when changing filtered Label and Documents."""
         project = LocalTextProject()
-        document_a = project.documents[0]  # A1(3,5,Label_3) + A2(7,10,Label_4)
-        document_b = project.test_documents[0]  # A3(7,10,Label_3) + A4(11,14,Label_4)
+        document_a = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
+        document_b = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
         self.evaluation = Evaluation(documents=list(zip([document_b], [document_a])))
-        self.label = project.get_label_by_id(id_=3)
+        self.label = project.get_label_by_id(id_=4)
 
     def test_true_positives(self):
         """Evaluate that all is wrong."""
@@ -1055,10 +1056,10 @@ class TestEvaluationFirstLabelDocumentBDocumentA(unittest.TestCase):
     def setUp(self) -> None:
         """Test evaluation when changing filtered Label and Documents."""
         project = LocalTextProject()
-        document_a = project.documents[0]  # A1(3,5,Label_3) + A2(7,10,Label_4)
-        document_b = project.test_documents[0]  # A3(7,10,Label_3) + A4(11,14,Label_4)
+        document_a = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
+        document_b = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
         self.evaluation = Evaluation(documents=list(zip([document_a], [document_b])))
-        self.label = project.get_label_by_id(id_=3)
+        self.label = project.get_label_by_id(id_=4)
 
     def test_true_positives(self):
         """Evaluate that all is wrong."""
@@ -1083,8 +1084,8 @@ class TestEvaluationSecondLabelDocumentADocumentB(unittest.TestCase):
     def setUp(self) -> None:
         """Test evaluation when changing filtered Label and Documents."""
         project = LocalTextProject()
-        document_a = project.documents[0]  # A1(3,5,Label_3) + A2(7,10,Label_4)
-        document_b = project.test_documents[0]  # A3(7,10,Label_3) + A4(11,14,Label_4)
+        document_a = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
+        document_b = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
         self.evaluation = Evaluation(documents=list(zip([document_b], [document_a])))
         self.label = project.get_label_by_id(id_=4)
 
@@ -1094,11 +1095,11 @@ class TestEvaluationSecondLabelDocumentADocumentB(unittest.TestCase):
 
     def test_false_positives(self):
         """Evaluate that Document A predicts one wrong Spans."""
-        assert self.evaluation.fp(search=self.label) == 1  # A2
+        assert self.evaluation.fp(search=self.label) == 2  # A2 and A3
 
     def test_false_negatives(self):
-        """Evaluate that Document A predicts one wrong Spans."""
-        assert self.evaluation.fn(search=self.label) == 1  # A3
+        """Evaluate that Document A doesn't miss any Spans for Label_1."""
+        assert self.evaluation.fn(search=self.label) == 0
 
     def test_true_negatives(self):
         """Evaluate that that nothing is correctly predicted below threshold."""
@@ -1111,10 +1112,10 @@ class TestEvaluationSecondLabelDocumentBDocumentA(unittest.TestCase):
     def setUp(self) -> None:
         """Test evaluation when changing filtered Label and Documents."""
         project = LocalTextProject()
-        document_a = project.documents[0]  # A1(3,5,Label_3) + A2(7,10,Label_4)
-        document_b = project.test_documents[0]  # A3(7,10,Label_3) + A4(11,14,Label_4)
+        document_a = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
+        document_b = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
         self.evaluation = Evaluation(documents=list(zip([document_a], [document_b])))
-        self.label = project.get_label_by_id(id_=4)
+        self.label = project.get_label_by_id(id_=5)
 
     def test_true_positives(self):
         """Evaluate that all is wrong."""

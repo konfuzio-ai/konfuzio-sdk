@@ -38,11 +38,12 @@ from sklearn.metrics import accuracy_score, precision_recall_fscore_support, f1_
 from sklearn.utils.validation import check_is_fitted
 from tabulate import tabulate
 
-from konfuzio_sdk.data import Document, Annotation, Category, AnnotationSet
+from konfuzio_sdk.data import Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span
 from konfuzio_sdk.normalize import normalize_to_float, normalize_to_date, normalize_to_percentage
 from konfuzio_sdk.regex import regex_matches
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 from konfuzio_sdk.utils import get_timestamp, get_bbox
+from konfuzio_sdk.evaluate import Evaluation
 
 logger = logging.getLogger(__name__)
 
@@ -1718,6 +1719,87 @@ def generate_feature_dict_from_occurence_dict(occurence_dict, catchphrase_list, 
     return _dict
 
 
+def add_extractions_as_annotations(
+    extractions: pandas.DataFrame, document: Document, label: Label, label_set: LabelSet, annotation_set: AnnotationSet
+) -> None:
+    """Add the extraction of a model to the document."""
+    if not extractions.empty:
+        # TODO: define required fields
+        required_fields = ['Start', 'End', 'Accuracy']
+        if not set(required_fields).issubset(extractions.columns):
+            raise ValueError(
+                f'Extraction do not contain all required fields: {required_fields}.'
+                f' Extraction columns: {extractions.columns.to_list()}'
+            )
+
+        annotations = extractions[required_fields].sort_values(by='Accuracy', ascending=False)
+
+        for annotation in annotations.to_dict('records'):  # todo: are Start and End always ints?
+            _ = Annotation(
+                document=document,
+                label=label,
+                confidence=annotation['Accuracy'],
+                label_set=label_set,
+                annotation_set=annotation_set,
+                spans=[Span(start_offset=annotation['Start'], end_offset=annotation['End'])],
+            )
+
+
+def extraction_result_to_document(document: Document, extraction_result: dict) -> Document:
+    """Return a virtual Document annotated with AI Model output."""
+    virtual_doc = Document(
+        project=document.category.project,
+        text=document.text,
+        bbox=document.get_bbox(),
+        category=document.category,
+        pages=document.pages,
+    )
+    virtual_annotation_set_id = 0  # counter for across mult. Annotation Set groups of a Label Set
+
+    # define Annotation Set for the Category Label Set: todo: this is unclear from API side
+    # default Annotation Set will be always added even if there are no predictions for it
+    category_label_set = document.category.project.get_label_set_by_id(document.category.id_)
+    virtual_default_annotation_set = AnnotationSet(
+        document=virtual_doc, label_set=category_label_set, id_=virtual_annotation_set_id
+    )
+
+    for label_or_label_set_name, information in extraction_result.items():
+        if isinstance(information, pandas.DataFrame) and not information.empty:
+            # annotations belong to the default Annotation Set
+            label = document.category.project.get_label_by_name(label_or_label_set_name)
+            add_extractions_as_annotations(
+                document=virtual_doc,
+                extractions=information,
+                label=label,
+                label_set=category_label_set,
+                annotation_set=virtual_default_annotation_set,
+            )
+
+        elif isinstance(information, list) or isinstance(information, dict):
+            # process multi Annotation Sets that are not part of the category Label Set
+            label_set = document.category.project.get_label_set_by_name(label_or_label_set_name)
+
+            if not isinstance(information, list):
+                information = [information]
+
+            for entry in information:  # represents one of pot. multiple annotation-sets belonging of one LabelSet
+                virtual_annotation_set_id += 1
+                virtual_annotation_set = AnnotationSet(
+                    document=virtual_doc, label_set=label_set, id_=virtual_annotation_set_id
+                )
+
+                for label_name, extractions in entry.items():
+                    label = document.category.project.get_label_by_name(label_name)
+                    add_extractions_as_annotations(
+                        document=virtual_doc,
+                        extractions=extractions,
+                        label=label,
+                        label_set=label_set,
+                        annotation_set=virtual_annotation_set,
+                    )
+    return virtual_doc
+
+
 class Trainer:
     """Base Model to extract information from unstructured human readable text."""
 
@@ -1741,6 +1823,8 @@ class Trainer:
         self.y_valid = None
         self.X_test = None
         self.y_test = None
+
+        self.evaluation = None
 
     def build(self, **kwargs):
         """Build an ExtractionModel using train valid split."""
@@ -2813,6 +2897,18 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
 
         return self.clf
 
+    def evaluate_full(self) -> Evaluation:
+        """Evaluate the full pipeline on the pipeline's Test Documents."""
+        eval_list = []
+        for document in self.test_documents:
+            extraction_result = self.extract(document=document)
+            predicted_doc = extraction_result_to_document(document, extraction_result)
+            eval_list.append((document, predicted_doc))
+
+        self.evaluation = Evaluation(eval_list)
+
+        return self.evaluation
+
     def evaluate(self):
         """
         Evaluate the label classifier on a given DataFrame.
@@ -2848,7 +2944,7 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
             for index in range(len(predicted_label_list)):
                 # if the highest probability to a non NO_LABEL class is >=0.2, we say it predicted that class instead
                 # replace predicted label index and probability
-                if only_label_accuracy_list[index] >= 0.2:  # todo: whx 0.2
+                if only_label_accuracy_list[index] >= 0.2:  # todo: why 0.2
                     predicted_label_list[index] = only_label_predicted_label_list[index]
                     accuracy_list[index] = only_label_accuracy_list[index]
         else:
