@@ -7,10 +7,11 @@ import tracemalloc
 import unittest
 
 import pytest
+import pandas as pd
 from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
 
-from konfuzio_sdk.data import Project
+from konfuzio_sdk.data import Project, Document, AnnotationSet
 from konfuzio_sdk.trainer.information_extraction import (
     DocumentAnnotationMultiClassModel,
     num_count,
@@ -26,6 +27,8 @@ from konfuzio_sdk.trainer.information_extraction import (
     strip_accents,
     count_string_differences,
     year_month_day_count,
+    add_extractions_as_annotations,
+    extraction_result_to_document,
     SeparateLabelsEntityMultiClassModel,
     DocumentEntityMulticlassModel,
     SeparateLabelsAnnotationMultiClassModel,
@@ -33,8 +36,8 @@ from konfuzio_sdk.trainer.information_extraction import (
 from konfuzio_sdk.api import upload_ai_model
 from konfuzio_sdk.tokenizer.regex import RegexTokenizer, WhitespaceTokenizer
 from konfuzio_sdk.tokenizer.base import ListTokenizer
-from konfuzio_sdk.evaluate import Evaluation
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
+from konfuzio_sdk.samples import LocalTextProject
 
 logger = logging.getLogger(__name__)
 
@@ -295,16 +298,9 @@ class TestFindRegexSeparateLabelsAnnotationMultiClassModelExtraction(unittest.Te
                 self.pipeline.tokenizer.tokenizers.append(RegexTokenizer(regex=regex))
 
     @unittest.skip(reason='We do not achieve this at the moment.')
-    def test3_perfect_tokenizer_coverage(self):
+    def test_3_perfect_tokenizer_coverage(self):
         """Check 100% tokenizer coverage."""
-        from copy import deepcopy
-
-        # todo integrate into tokenizer.evaluate(documents=pipeline.test_documents) -> Evaluation
-        eval_list = []
-        for document in self.pipeline.test_documents:
-            tokenized_doc = self.pipeline.tokenizer.tokenize(deepcopy(document))
-            eval_list.append((document, tokenized_doc))
-        tokenizer_eval = Evaluation(eval_list)
+        tokenizer_eval = self.pipeline.tokenizer.evaluate_dataset(self.pipeline.test_documents)
         for document in self.pipeline.test_documents:
             assert tokenizer_eval.tokenizer(search=document) == len(document.spans)  # currently 34==35
 
@@ -418,6 +414,10 @@ class TestInformationExtraction(unittest.TestCase):
         pipeline.label_feature_list = ['start_offset', 'end_offset']
         pipeline.category = document.category
         pipeline.extract(document)
+        # todo
+        # virtual_doc = extraction_result_to_document(document, extraction_result)
+        # assert len(virtual_doc.annotations(use_correct=False)) > 0
+        # assert len(virtual_doc.annotation_sets()) > 0
 
     def test_feature_function_with_label_limit(self):
         """Test to generate features with many spatial features.."""
@@ -430,6 +430,251 @@ class TestInformationExtraction(unittest.TestCase):
         assert len(feature_names) == 1102  # todo investigate if all features are calculated correctly, see #9289
         assert features['is_correct'].sum() == 19
         assert features['revised'].sum() == 1
+
+
+class TestAddExtractionAsAnnotation(unittest.TestCase):
+    """Test add an Extraction result as Annotation to a Document."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set LocalTextProject with example prediction."""
+        cls.project = LocalTextProject()
+        cls.category = cls.project.get_category_by_id(1)
+        cls.label_set = cls.project.get_label_set_by_id(3)
+        cls.label = cls.project.get_label_by_id(4)
+        cls.sample_document = cls.project.local_none_document
+        # example of an extraction
+        cls.extraction = {
+            'Start': 15,
+            'End': 20,
+            'Accuracy': 0.2,
+            'page_index': 0,
+            'x0': 10,
+            'x1': 20,
+            'y0': 10,
+            'y1': 20,
+            'top': 200,
+            'bottom': 210,
+        }
+        cls.extraction_df = pd.DataFrame(data=[cls.extraction])
+
+    def test_1_add_extraction_to_sample_document(self):
+        """Test add extraction to the sample document."""
+        annotation_set = AnnotationSet(id_=99, document=self.sample_document, label_set=self.label_set)
+
+        add_extractions_as_annotations(
+            extractions=self.extraction_df,
+            document=self.sample_document,
+            label=self.label,
+            label_set=self.label_set,
+            annotation_set=annotation_set,
+        )
+
+        assert len(self.sample_document.annotations(use_correct=False)) == 1
+
+    def test_2_status_of_annotation_created(self):
+        """Test status of te annotation created in the sample document."""
+        annotation = self.sample_document.annotations(use_correct=False)[0]
+        assert not annotation.is_correct
+        assert not annotation.revised
+
+    def test_3_number_of_spans_of_annotation_created(self):
+        """Test number of Spans in the annotation created in the sample document."""
+        annotation = self.sample_document.annotations(use_correct=False)[0]
+        assert len(annotation.spans) == 1
+
+    def test_4_span_attributes_of_annotation_created(self):
+        """Test attributes of the span in the annotation created in the sample document."""
+        annotation = self.sample_document.annotations(use_correct=False)[0]
+        assert annotation.spans[0].start_offset == self.extraction_df.loc[0, 'Start']
+        assert annotation.spans[0].end_offset == self.extraction_df.loc[0, 'End']
+        # The document used does not have bounding boxes, so we cannot have the coordinates
+        assert annotation.spans[0].offset_string == 'pizza'
+        assert annotation.spans[0].x0 is None
+
+    def test_add_empty_extraction_to_empty_document(self):
+        """Test add empty extraction to an empty document - no text."""
+        document = Document(text='', project=self.project, category=self.category)
+        annotation_set_1 = AnnotationSet(id_=97, document=document, label_set=self.label_set)
+        extraction_df = pd.DataFrame()
+
+        add_extractions_as_annotations(
+            extractions=extraction_df,
+            document=document,
+            label=self.label,
+            label_set=self.label_set,
+            annotation_set=annotation_set_1,
+        )
+        assert document.annotations(use_correct=False) == []
+
+    def test_add_empty_extraction_to_document(self):
+        """Test add empty extraction to a document."""
+        document = Document(text='Hello', project=self.project, category=self.category)
+        annotation_set_1 = AnnotationSet(id_=98, document=document, label_set=self.label_set)
+        extraction_df = pd.DataFrame()
+
+        add_extractions_as_annotations(
+            extractions=extraction_df,
+            document=document,
+            label=self.label,
+            label_set=self.label_set,
+            annotation_set=annotation_set_1,
+        )
+        assert document.annotations(use_correct=False) == []
+
+    def test_add_extraction_to_empty_document(self):
+        """Test add extraction to an empty document - no text."""
+        document = Document(text='', project=self.project, category=self.category)
+        annotation_set_1 = AnnotationSet(id_=1, document=document, label_set=self.label_set)
+
+        add_extractions_as_annotations(
+            extractions=self.extraction_df,
+            document=document,
+            label=self.label,
+            label_set=self.label_set,
+            annotation_set=annotation_set_1,
+        )
+
+        annotation = document.annotations(use_correct=False)[0]
+        # The document used is an empty document, therefore it does not have text or bounding boxes,
+        # so we cannot have the offset string or the coordinates
+        assert annotation.spans[0].offset_string is None
+        assert annotation.spans[0].x0 is None
+        assert annotation.spans[0].y0 is None
+        assert annotation.spans[0].x1 is None
+        assert annotation.spans[0].y1 is None
+
+    def test_add_invalid_extraction(self):
+        """Test add an invalid extraction - missing fields."""
+        document = Document(project=self.project, category=self.category, text='From 14.12.2021 to 1.1.2022.')
+        annotation_set_1 = AnnotationSet(id_=1, document=document, label_set=self.label_set)
+        extraction = {'start_offset': 5, 'end_offset': 10}
+
+        extraction_df = pd.DataFrame(data=[extraction])
+
+        with self.assertRaises(ValueError) as context:
+            add_extractions_as_annotations(
+                extractions=extraction_df,
+                document=document,
+                label=self.label,
+                label_set=self.label_set,
+                annotation_set=annotation_set_1,
+            )
+            assert 'Extraction do not contain all required fields' in context.exception
+
+
+class TestExtractionToDocument(unittest.TestCase):
+    """Test the conversion of the Extraction results from the AI to a Document."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set LocalTextProject with example predictions."""
+        cls.project = LocalTextProject()
+        cls.category = cls.project.get_category_by_id(1)
+        cls.label_set_0 = cls.project.get_label_set_by_id(2)
+        # cls.label_set_1 = cls.project.get_label_set_by_id(3)
+        cls.label_0 = cls.project.get_label_by_id(4)
+        cls.label_1 = cls.project.get_label_by_id(5)
+        cls.sample_document = cls.project.local_none_document
+        # label_set_1 = LabelSet(id_=10, name='label set name', project=project, categories=[category])
+
+        # example 1 of an extraction
+        cls.extraction_1 = {
+            'Start': 5,
+            'End': 10,
+            'Accuracy': 0.2,
+            'page_index': 0,
+            'x0': 10,
+            'x1': 20,
+            'y0': 10,
+            'y1': 20,
+            'top': 200,
+            'bottom': 210,
+        }
+
+        # example 2 of an extraction
+        cls.extraction_2 = {
+            'Start': 15,
+            'End': 20,
+            'Accuracy': 0.2,
+            'page_index': 0,
+            'x0': 20,
+            'x1': 30,
+            'y0': 20,
+            'y1': 30,
+            'top': 200,
+            'bottom': 210,
+        }
+
+    def test_empty_extraction_result_to_document(self):
+        """Test conversion of an empty AI output to a Document."""
+        virtual_doc = extraction_result_to_document(self.sample_document, extraction_result={})
+        assert virtual_doc.annotations(use_correct=False) == []
+
+    def test_empty_extraction_result_to_empty_document(self):
+        """Test conversion of an empty AI output to an empty Document."""
+        document = Document(text='', project=self.project, category=self.category)
+        virtual_doc = extraction_result_to_document(document, extraction_result={})
+        assert virtual_doc.annotations(use_correct=False) == []
+
+    def test_extraction_result_with_empty_dataframe_to_document(self):
+        """Test conversion of an AI output with an empty dataframe to a Document."""
+        document = Document(project=self.project, category=self.category, text='From 14.12.2021 to 1.1.2022.')
+        virtual_doc = extraction_result_to_document(
+            document, extraction_result={'label in category label set': pd.DataFrame()}
+        )
+        assert virtual_doc.annotations(use_correct=False) == []
+
+    def test_extraction_result_with_empty_dictionary_to_document(self):
+        """Test conversion of an AI output with an empty dictionary to a Document."""
+        virtual_doc = extraction_result_to_document(self.sample_document, extraction_result={'LabelSetName': {}})
+        assert virtual_doc.annotations(use_correct=False) == []
+
+    def test_extraction_result_with_empty_list_to_document(self):
+        """Test conversion of an AI output with an empty list to a Document."""
+        virtual_doc = extraction_result_to_document(self.sample_document, extraction_result={'LabelSetName': []})
+        assert virtual_doc.annotations(use_correct=False) == []
+
+    def test_extraction_result_with_empty_list_to_empty_document(self):
+        """Test conversion of an AI output with an empty list to an empty Document."""
+        virtual_doc = extraction_result_to_document(self.sample_document, extraction_result={'LabelSetName': []})
+        assert virtual_doc.annotations(use_correct=False) == []
+
+    def test_extraction_result_for_category_label_set(self):
+        """Test conversion of an AI output with an extraction for a label in the Category Label Set."""
+        extraction_result = {'DefaultLabelName': pd.DataFrame(data=[self.extraction_1])}
+        virtual_doc = extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
+        assert len(virtual_doc.annotations(use_correct=False)) == 1
+        annotation = virtual_doc.annotations(use_correct=False)[0]
+        assert annotation.label.name == 'DefaultLabelName'
+        assert annotation.label_set == self.project.get_label_set_by_name('CategoryName')
+
+    def test_extraction_result_for_label_set_with_single_annotation_set(self):
+        """Test conversion of an AI output with multiple extractions for a label in a Label Set - 1 Annotation Set."""
+        extraction_result = {'LabelSetName': {'LabelName': pd.DataFrame(data=[self.extraction_1, self.extraction_2])}}
+        virtual_doc = extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
+        assert len(virtual_doc.annotations(use_correct=False)) == 2
+        annotation_1 = virtual_doc.annotations(use_correct=False)[0]
+        annotation_2 = virtual_doc.annotations(use_correct=False)[1]
+        assert annotation_1.label.name == annotation_2.label.name == 'LabelName'
+        assert annotation_1.label_set == annotation_2.label_set == self.project.get_label_set_by_name('LabelSetName')
+        assert annotation_1.annotation_set.id_ == annotation_2.annotation_set.id_
+
+    def test_extraction_result_for_label_set_with_multiple_annotation_sets(self):
+        """Test conversion of an AI output with extractions for a label in a Label Set for different Annotation Sets."""
+        extraction_result = {
+            'LabelSetName': [
+                {'LabelName': pd.DataFrame(data=[self.extraction_1])},
+                {'LabelName': pd.DataFrame(data=[self.extraction_2])},
+            ]
+        }
+        virtual_doc = extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
+        assert len(virtual_doc.annotations(use_correct=False)) == 2
+        annotation_1 = virtual_doc.annotations(use_correct=False)[0]
+        annotation_2 = virtual_doc.annotations(use_correct=False)[1]
+        assert annotation_1.label.name == annotation_2.label.name == 'LabelName'
+        assert annotation_1.label_set == annotation_2.label_set == self.project.get_label_set_by_name('LabelSetName')
+        assert annotation_1.annotation_set.id_ != annotation_2.annotation_set.id_
 
 
 def test_feat_num_count():

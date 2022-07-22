@@ -169,6 +169,24 @@ class TestAbstractTokenizer(unittest.TestCase):
         assert result.start_offset[0] == self.span.start_offset
         assert result.end_offset[0] == self.span.end_offset
 
+    def test_evaluate_dataset_input(self):
+        """Test input for the evaluate_category method."""
+        with self.assertRaises(TypeError):
+            self.tokenizer.evaluate_dataset(self.project)
+        with self.assertRaises(AssertionError):
+            self.tokenizer.evaluate_dataset([self.project])
+
+    def test_evaluate_dataset_output_without_test_documents(self):
+        """Test evaluate an empty list of Documents."""
+        with self.assertRaises(ValueError):
+            self.tokenizer.evaluate_dataset([])
+
+    def test_evaluate_dataset_output_with_test_documents(self):
+        """Test evaluate a Category with a test Documents."""
+        result = self.tokenizer.evaluate_dataset(self.category_2.test_documents())
+        assert len(result.data) == 2
+        assert result.data.category_id.dropna().unique() == self.category_2.id_
+
     @unittest.skip(reason='removed narrow implementation to evaluate multiple Documents: evaluate_category')
     def test_evaluate_category_input(self):
         """Test input for the evaluate_category method."""
