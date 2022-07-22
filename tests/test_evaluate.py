@@ -889,14 +889,14 @@ class TestEvaluation(unittest.TestCase):
     def test_project(self):
         """Test that data has not changed."""
         project = LocalTextProject()
-        assert len(project.documents) == 2
+        assert len(project.documents) == 3
         assert len(project.test_documents) == 3
 
     def test_true_positive(self):
         """Count two Spans from two Training Documents."""
         project = LocalTextProject()
         evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
-        assert evaluation.tp() == 3
+        assert evaluation.tp() == 4
 
     def test_false_positive(self):
         """Count zero Annotations from two Training Documents."""
@@ -907,10 +907,10 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation.fp() == 2
 
     def test_true_negatives(self):
-        """Count zero Annotations from two Training Documents."""
+        """Count one Annotation from three Training Documents."""
         project = LocalTextProject()
         evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
-        assert evaluation.tn() == 0
+        assert evaluation.tn() == 1
 
     def test_f1(self):
         """Test to calculate F1 Score."""
@@ -958,7 +958,7 @@ class TestEvaluation(unittest.TestCase):
         project = LocalTextProject()
         evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
         label = project.get_label_by_id(id_=3)  # there is only one Label that is not the NONE_LABEL
-        assert evaluation.tp() == 3
+        assert evaluation.tp() == 4
         assert evaluation.tp(search=label) == 2
         assert evaluation.fp(search=label) == 0
         assert evaluation.fn(search=label) == 0
