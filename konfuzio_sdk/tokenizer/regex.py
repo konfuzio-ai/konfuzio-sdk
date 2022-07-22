@@ -1,5 +1,6 @@
 """Regex tokenizers."""
 import logging
+from re import L
 import time
 
 from konfuzio_sdk.data import Annotation, Document, Category, Span
@@ -21,6 +22,17 @@ class RegexTokenizer(AbstractTokenizer):
     def __repr__(self):
         """Return string representation of the class."""
         return f"{self.__class__.__name__}: {repr(self.regex)}"
+
+    def __hash__(self):
+        """Get unique hash for RegexTokenizer."""
+        return hash(repr(self))
+
+    def __eq__(self, other) -> bool:
+        """Compare RegexTokenizer with another Tokenizer."""
+        if not isinstance(other, RegexTokenizer):
+            return False
+        else:
+            return self.regex == other.regex
 
     def fit(self, category: Category):
         """Fit the tokenizer accordingly with the Documents of the Category."""

@@ -44,6 +44,10 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
         return f"{self.__class__.__name__}"
 
     @abc.abstractmethod
+    def __eq__(self, other) -> bool:
+        """Check if two Tokenizers are the same."""
+
+    @abc.abstractmethod
     def fit(self, category: Category):
         """Fit the tokenizer accordingly with the Documents of the Category."""
 
@@ -155,6 +159,13 @@ class ListTokenizer(AbstractTokenizer):
         """Initialize the list of tokenizers."""
         self.tokenizers = tokenizers
         self.processing_steps = []
+
+    def __eq__(self, other) -> bool:
+        """Compare ListTokenizer with another Tokenizer."""
+        if type(other) is ListTokenizer:
+            return set(self.tokenizers) == set(other.tokenizers)
+        else:
+            return False
 
     def fit(self, category: Category):
         """Call fit on all tokenizers."""

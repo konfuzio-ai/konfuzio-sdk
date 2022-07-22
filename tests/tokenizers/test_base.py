@@ -55,6 +55,9 @@ class TestAbstractTokenizer(unittest.TestCase):
                 self.processing_steps.append(ProcessingStep(self.__repr__(), document, time.monotonic() - t0))
                 pass
 
+            def __eq__(self, other):
+                pass
+
         cls.tokenizer = DummyTokenizer()
 
         cls.project = Project(id_=None)
