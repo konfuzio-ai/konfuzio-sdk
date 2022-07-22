@@ -1,5 +1,5 @@
 """Calculate the accuracy on any level in a  Document."""
-from typing import Tuple, List
+from typing import Tuple, List, Optional
 
 import pandas
 from sklearn.utils.extmath import weighted_mode
@@ -197,17 +197,17 @@ class EvaluationCalculator:
             raise ZeroDivisionError("TP and FN are zero, please specify allow_zero=True if you want recall to be None.")
 
     @property
-    def precision(self) -> float:
+    def precision(self) -> Optional[float]:
         """Apply precision formula. Returns None if TP+FP=0."""
         return None if (self.tp + self.fp == 0) else self.tp / (self.tp + self.fp)
 
     @property
-    def recall(self) -> float:
+    def recall(self) -> Optional[float]:
         """Apply recall formula. Returns None if TP+FN=0."""
         return None if (self.tp + self.fn == 0) else self.tp / (self.tp + self.fn)
 
     @property
-    def f1(self) -> float:
+    def f1(self) -> Optional[float]:
         """Apply F1-score formula. Returns None if precision and recall are both None."""
         return None if (self.tp + self.fp + self.fn == 0) else self.tp / (self.tp + 0.5 * (self.fp + self.fn))
 
