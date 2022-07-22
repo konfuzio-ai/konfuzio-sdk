@@ -1152,11 +1152,11 @@ class TestEvaluationCalculator(unittest.TestCase):
 
     def test_evaluation_calculator(self):
         """Test the Evaluation Calculator."""
-        evaluation_calculator = EvaluationCalculator(tp=40, fp=60, fn=120)
+        evaluation_calculator = EvaluationCalculator(tp=3, fp=22, fn=2)
         assert evaluation_calculator.tn == 0
-        assert evaluation_calculator.precision == 0.4
-        assert evaluation_calculator.recall == 0.25
-        assert evaluation_calculator.f1 == 0.3076923076923077
+        assert evaluation_calculator.precision == 0.12  # 3 / (3 + 22)
+        assert evaluation_calculator.recall == 0.6  # 3 / (3 + 2)
+        assert evaluation_calculator.f1 == 0.2  # 3 / (3 + 0.5 * (22 + 2)) or (2 * 0.12 * 0.6) / (0.12 + 0.6)
 
     def test_evaluation_calculator_perfect_score_can_be_calculated(self):
         """Check that it's possible to calculate 100% score."""
