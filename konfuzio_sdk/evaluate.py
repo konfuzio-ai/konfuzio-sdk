@@ -290,15 +290,15 @@ class Evaluation:
             tp=self.tp(search), fp=self.fp(search), fn=self.fn(search), tn=self.tn(search), allow_zero=allow_zero
         )
 
-    def precision(self, search) -> float:
+    def precision(self, search) -> Optional[float]:
         """Calculate the Precision and see f1 to calculate imbalanced classes."""
         return EvaluationCalculator(tp=self.tp(search=search), fp=self.fp(search=search)).precision
 
-    def recall(self, search) -> float:
+    def recall(self, search) -> Optional[float]:
         """Calculate the Recall and see f1 to calculate imbalanced classes."""
         return EvaluationCalculator(tp=self.tp(search=search), fn=self.fn(search=search)).recall
 
-    def f1(self, search) -> float:
+    def f1(self, search) -> Optional[float]:
         """Calculate the F1 Score of one class.
 
         Please note: As suggested by Opitz et al. (2021) use the arithmetic mean over individual F1 scores.
