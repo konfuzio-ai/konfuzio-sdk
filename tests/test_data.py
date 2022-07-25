@@ -611,8 +611,8 @@ class TestOfflineDataSetup(unittest.TestCase):
         document = Document(project=self.project, category=self.category, text='page1\fpage2', bbox=document_bbox)
         page1 = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=5)
         page2 = Page(id_=2, number=2, original_size=(595.2, 841.68), document=document, start_offset=6, end_offset=11)
-        assert page1.text == document.text[page1.start_offset: page1.end_offset]
-        assert page2.text == document.text[page2.start_offset: page2.end_offset]
+        assert page1.text == document.text[page1.start_offset : page1.end_offset]
+        assert page2.text == document.text[page2.start_offset : page2.end_offset]
 
     def test_page_get_bbox(self):
         """Test getting bbox for Page."""
@@ -620,7 +620,7 @@ class TestOfflineDataSetup(unittest.TestCase):
             '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'p'},
             '2': {'x0': 1, 'x1': 0, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': '1'},
             '8': {'x0': 0, 'x1': 1, 'y0': 10, 'y1': 12, 'top': 10, 'bottom': 11, 'page_number': 2, 'text': 'p'},
-            '10': {'x0': 1, 'x1': 0, 'y0': 10, 'y1': 12, 'top': 10, 'bottom': 11, 'page_number': 2, 'text': '2'}
+            '10': {'x0': 1, 'x1': 0, 'y0': 10, 'y1': 12, 'top': 10, 'bottom': 11, 'page_number': 2, 'text': '2'},
         }
         document = Document(project=self.project, category=self.category, text='p1\fp2', bbox=document_bbox)
         page1 = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=2)
@@ -641,18 +641,10 @@ class TestOfflineDataSetup(unittest.TestCase):
         page2 = Page(id_=2, number=2, original_size=(595.2, 841.68), document=document, start_offset=4, end_offset=9)
 
         annotation1 = Annotation(
-            document=document,
-            is_correct=True,
-            label=self.label,
-            label_set=self.label_set,
-            spans=[span1, span2],
+            document=document, is_correct=True, label=self.label, label_set=self.label_set, spans=[span1, span2]
         )
         annotation2 = Annotation(
-            document=document,
-            is_correct=True,
-            label=self.label,
-            label_set=self.label_set,
-            spans=[span3],
+            document=document, is_correct=True, label=self.label, label_set=self.label_set, spans=[span3]
         )
         assert document.get_page_by_index(0).text == 'p\n1'
         assert document.get_page_by_index(1).text == 'nap2'
@@ -676,19 +668,9 @@ class TestOfflineDataSetup(unittest.TestCase):
         page2 = Page(id_=2, number=2, original_size=(595.2, 841.68), document=document, start_offset=4, end_offset=9)
 
         _ = Annotation(
-            document=document,
-            is_correct=True,
-            label=self.label,
-            label_set=self.label_set,
-            spans=[span1, span2],
+            document=document, is_correct=True, label=self.label, label_set=self.label_set, spans=[span1, span2]
         )
-        _ = Annotation(
-            document=document,
-            is_correct=True,
-            label=self.label,
-            label_set=self.label_set,
-            spans=[span3],
-        )
+        _ = Annotation(document=document, is_correct=True, label=self.label, label_set=self.label_set, spans=[span3])
 
         assert len(page1.spans) == 2
         assert len(page2.spans) == 1
@@ -1864,7 +1846,7 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
     def test_view_annotations(self):
         """Test that Document.view_annotations() gets all the right annotations."""
         project = LocalTextProject()
-        document = project.documents[-1]
+        document = project.test_documents[-1]
         annotations = document.view_annotations()
         assert len(annotations) == 4
         assert sorted([ann.id_ for ann in annotations]) == [16, 18, 19, 24]

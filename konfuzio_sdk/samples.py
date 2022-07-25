@@ -109,10 +109,12 @@ date2: 08/12/2001   span2
 uncertain
  last x
 """
-        document = Document(project=self, category=category, text=doc_3_text, dataset_status=2)
+        document = Document(project=self, category=category, text=doc_3_text, dataset_status=3)
         label_set_2 = LabelSet(id_=3, project=self, categories=[category])
         view_label = Label(id_=5, text='ViewLabelName', project=self, label_sets=[label_set_2])
-        view_label_date = Label(id_=6, text='date', project=self, label_sets=[label_set_2], has_multiple_top_candidates=False)
+        view_label_date = Label(
+            id_=6, text='date', project=self, label_sets=[label_set_2], has_multiple_top_candidates=False
+        )
         view_label_3 = Label(id_=7, text='ViewLabelName 3', project=self, label_sets=[label_set_2])
         view_label_4 = Label(id_=8, text='ViewLabelName 4', project=self, label_sets=[label_set_2], threshold=0.1)
         view_label_5 = Label(id_=9, text='ViewLabelName 5', project=self, label_sets=[label_set_2])
@@ -168,8 +170,7 @@ uncertain
             confidence=0.9,
             label=view_label_3,
             label_set=label_set_2,
-            spans=[Span(start_offset=25, end_offset=30),
-                   Span(start_offset=51, end_offset=56)],
+            spans=[Span(start_offset=25, end_offset=30), Span(start_offset=51, end_offset=56)],
         )
         _ = Annotation(
             id_=20,
