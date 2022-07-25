@@ -18,6 +18,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 
 ### Fixed
 - Top annotation filter in the SmartView now takes accepted Annotations into account
+- Errors messages in case a document could not be processed are now displayed correctly
 
 ## 2022-07-19_16-30-46
 
