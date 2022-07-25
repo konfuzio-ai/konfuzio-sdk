@@ -6,7 +6,7 @@ import pytest
 from pandas import DataFrame
 
 from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span, LabelSet, Label, Category
-from konfuzio_sdk.evaluate import compare, grouped, Evaluation
+from konfuzio_sdk.evaluate import compare, grouped, Evaluation, EvaluationCalculator
 
 from konfuzio_sdk.samples import LocalTextProject
 from tests.variables import TEST_DOCUMENT_ID
@@ -1145,3 +1145,52 @@ class TestEvaluationSecondLabelDocumentBDocumentA(unittest.TestCase):
     def test_true_negatives(self):
         """Evaluate that that nothing is correctly predicted below threshold."""
         assert self.evaluation.tn(search=self.label) == 0
+
+
+class TestEvaluationCalculator(unittest.TestCase):
+    """Test the Evaluation Calculator."""
+
+    def test_evaluation_calculator(self):
+        """Test the Evaluation Calculator."""
+        evaluation_calculator = EvaluationCalculator(tp=3, fp=22, fn=2)
+        assert evaluation_calculator.tn == 0
+        assert evaluation_calculator.precision == 0.12  # 3 / (3 + 22)
+        assert evaluation_calculator.recall == 0.6  # 3 / (3 + 2)
+        assert evaluation_calculator.f1 == 0.2  # 3 / (3 + 0.5 * (22 + 2)) or (2 * 0.12 * 0.6) / (0.12 + 0.6)
+
+    def test_evaluation_calculator_perfect_score_can_be_calculated(self):
+        """Check that it's possible to calculate 100% score."""
+        evaluation_calculator = EvaluationCalculator(tp=10, fp=0, fn=0)
+        assert evaluation_calculator.precision == 1.0
+        assert evaluation_calculator.recall == 1.0
+        assert evaluation_calculator.f1 == 1.0
+
+    def test_evaluation_calculator_zero_not_allowed(self):
+        """Check that the Evaluation Calculator raises ZeroDivisionError when allow_zero==False.
+
+        This should happen in situations where precision or recall calculations would produce a division by zero.
+        """
+        with self.assertRaises(ZeroDivisionError) as context:
+            EvaluationCalculator(tp=0, fp=0, fn=100, allow_zero=False)
+            assert 'TP and FP are zero' in context.exception
+        with self.assertRaises(ZeroDivisionError) as context:
+            EvaluationCalculator(tp=0, fp=100, fn=0, allow_zero=False)
+            assert 'TP and FN are zero' in context.exception
+        with self.assertRaises(ZeroDivisionError) as context:
+            EvaluationCalculator(tp=0, fp=0, fn=0, allow_zero=False)
+            assert 'FP and FN are zero' in context.exception
+
+    def test_evaluation_calculator_none_values(self):
+        """Test the Evaluation Calculator when precision or recall are calculated as 0/0."""
+        no_precision = EvaluationCalculator(tp=0, fp=0, fn=100)
+        assert no_precision.precision is None
+        assert no_precision.recall == 0.0
+        assert no_precision.f1 == 0.0
+        no_recall = EvaluationCalculator(tp=0, fp=100, fn=0)
+        assert no_recall.precision == 0.0
+        assert no_recall.recall is None
+        assert no_recall.f1 == 0.0
+        no_f1 = EvaluationCalculator(tp=0, fp=0, fn=0)
+        assert no_f1.precision is None
+        assert no_f1.recall is None
+        assert no_f1.f1 is None
