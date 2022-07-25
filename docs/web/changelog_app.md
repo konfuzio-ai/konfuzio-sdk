@@ -10,7 +10,7 @@ All notable changes in the server of app.konfuzio.com will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
 
-## Unreleased
+## 2022-07-25_21-20-48
 
 ### Added
 - Allow to set a default assignee for uploaded documents
