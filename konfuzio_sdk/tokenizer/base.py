@@ -48,6 +48,10 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
         """Check if two Tokenizers are the same."""
 
     @abc.abstractmethod
+    def __hash__(self):
+        """Get unique hash for Tokenizer."""
+
+    @abc.abstractmethod
     def fit(self, category: Category):
         """Fit the tokenizer accordingly with the Documents of the Category."""
 
@@ -157,15 +161,19 @@ class ListTokenizer(AbstractTokenizer):
 
     def __init__(self, tokenizers: List['AbstractTokenizer']):
         """Initialize the list of tokenizers."""
-        self.tokenizers = tokenizers
+        self.tokenizers = list(dict.fromkeys(tokenizers))
         self.processing_steps = []
 
     def __eq__(self, other) -> bool:
         """Compare ListTokenizer with another Tokenizer."""
         if type(other) is ListTokenizer:
-            return set(self.tokenizers) == set(other.tokenizers)
+            return self.tokenizers == other.tokenizers
         else:
             return False
+
+    def __hash__(self):
+        """Get unique hash for ListTokenizer."""
+        return hash(tuple(self.tokenizers))
 
     def fit(self, category: Category):
         """Call fit on all tokenizers."""

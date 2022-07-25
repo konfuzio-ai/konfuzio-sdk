@@ -334,6 +334,21 @@ class TestListTokenizer(unittest.TestCase):
         self.tokenizer.lose_weight()
         assert len(self.tokenizer.processing_steps) == 0
 
+    def test_duplicate_check(self):
+        """Test handling of Tokenizer duplicates in ListTokenizer."""
+        test_tokenizer = ListTokenizer(tokenizers=[
+                          WhitespaceTokenizer(),
+                          RegexTokenizer(regex="a"),
+                          RegexTokenizer(regex="b"),
+                          WhitespaceTokenizer(),
+                          RegexTokenizer(regex="a")])
+
+        assert len(test_tokenizer.tokenizers) == 3
+        assert test_tokenizer.tokenizers == [
+                          WhitespaceTokenizer(),
+                          RegexTokenizer(regex="a"),
+                          RegexTokenizer(regex="b")]
+
     def test_processing_runtime_of_list_tokenizer(self):
         """Test that the information of the processing runtime refers to each Tokenizer in the list of Tokenizers."""
         self.tokenizer.processing_steps = []
