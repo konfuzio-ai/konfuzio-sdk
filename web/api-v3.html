@@ -58,6 +58,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#authentication">Authentication</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#basic-http-authentication">Basic HTTP authentication</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cookie-authentication">Cookie authentication</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#single-sign-on-sso-authentication">Single sign-on (SSO) authentication</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#token-authentication">Token authentication</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#curl-example">cURL example</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#python-example">Python example</a></li>
@@ -118,7 +119,7 @@
            <div itemprop="articleBody">
              
   <section id="rest-api-v3">
-<span id="server-api-v3"></span><h1><a class="toc-backref" href="#id34">REST API v3</a><a class="headerlink" href="#rest-api-v3" title="Permalink to this headline">¶</a></h1>
+<span id="server-api-v3"></span><h1><a class="toc-backref" href="#id35">REST API v3</a><a class="headerlink" href="#rest-api-v3" title="Permalink to this headline">¶</a></h1>
 <p>This document aims to provide developers with a high-level overview of what can be accomplished through the Konfuzio API
 v3. For a more thorough description of the available endpoints and their parameters and response, we invite you to
 browse our <a class="reference external" href="http:/app.konfuzio.com/v3/swagger/">Swagger documentation</a>, which also provides an OpenAPI specification
@@ -133,36 +134,37 @@ that can be used to generate language-specific API clients.</p>
 <ul>
 <li><p><a class="reference internal" href="#basic-http-authentication" id="id11">Basic HTTP authentication</a></p></li>
 <li><p><a class="reference internal" href="#cookie-authentication" id="id12">Cookie authentication</a></p></li>
-<li><p><a class="reference internal" href="#token-authentication" id="id13">Token authentication</a></p>
+<li><p><a class="reference internal" href="#single-sign-on-sso-authentication" id="id13">Single sign-on (SSO) authentication</a></p></li>
+<li><p><a class="reference internal" href="#token-authentication" id="id14">Token authentication</a></p>
 <ul>
-<li><p><a class="reference internal" href="#curl-example" id="id14">cURL example</a></p></li>
-<li><p><a class="reference internal" href="#python-example" id="id15">Python example</a></p></li>
+<li><p><a class="reference internal" href="#curl-example" id="id15">cURL example</a></p></li>
+<li><p><a class="reference internal" href="#python-example" id="id16">Python example</a></p></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#response-codes" id="id16">Response codes</a></p></li>
-<li><p><a class="reference internal" href="#pagination" id="id17">Pagination</a></p></li>
-<li><p><a class="reference internal" href="#filtering" id="id18">Filtering</a></p></li>
-<li><p><a class="reference internal" href="#ordering" id="id19">Ordering</a></p></li>
-<li><p><a class="reference internal" href="#fields" id="id20">Fields</a></p></li>
-<li><p><a class="reference internal" href="#guides-and-how-tos" id="id21">Guides and How-Tos</a></p></li>
-<li><p><a class="reference internal" href="#setup-a-project-with-labels-label-sets-and-categories" id="id22">Setup a project with labels, label sets and categories</a></p>
+<li><p><a class="reference internal" href="#response-codes" id="id17">Response codes</a></p></li>
+<li><p><a class="reference internal" href="#pagination" id="id18">Pagination</a></p></li>
+<li><p><a class="reference internal" href="#filtering" id="id19">Filtering</a></p></li>
+<li><p><a class="reference internal" href="#ordering" id="id20">Ordering</a></p></li>
+<li><p><a class="reference internal" href="#fields" id="id21">Fields</a></p></li>
+<li><p><a class="reference internal" href="#guides-and-how-tos" id="id22">Guides and How-Tos</a></p></li>
+<li><p><a class="reference internal" href="#setup-a-project-with-labels-label-sets-and-categories" id="id23">Setup a project with labels, label sets and categories</a></p>
 <ul>
-<li><p><a class="reference internal" href="#create-a-project" id="id23">Create a project</a></p></li>
-<li><p><a class="reference internal" href="#create-a-category" id="id24">Create a category</a></p></li>
-<li><p><a class="reference internal" href="#create-some-labels" id="id25">Create some labels</a></p></li>
-<li><p><a class="reference internal" href="#create-a-label-set" id="id26">Create a label set</a></p></li>
-<li><p><a class="reference internal" href="#next-steps" id="id27">Next steps</a></p></li>
+<li><p><a class="reference internal" href="#create-a-project" id="id24">Create a project</a></p></li>
+<li><p><a class="reference internal" href="#create-a-category" id="id25">Create a category</a></p></li>
+<li><p><a class="reference internal" href="#create-some-labels" id="id26">Create some labels</a></p></li>
+<li><p><a class="reference internal" href="#create-a-label-set" id="id27">Create a label set</a></p></li>
+<li><p><a class="reference internal" href="#next-steps" id="id28">Next steps</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#upload-a-document" id="id28">Upload a document</a></p></li>
-<li><p><a class="reference internal" href="#create-an-annotation" id="id29">Create an annotation</a></p></li>
-<li><p><a class="reference internal" href="#create-training-data-and-train-the-ai" id="id30">Create training data and train the AI</a></p></li>
-<li><p><a class="reference internal" href="#create-your-own-document-dashboard" id="id31">Create your own document dashboard</a></p>
+<li><p><a class="reference internal" href="#upload-a-document" id="id29">Upload a document</a></p></li>
+<li><p><a class="reference internal" href="#create-an-annotation" id="id30">Create an annotation</a></p></li>
+<li><p><a class="reference internal" href="#create-training-data-and-train-the-ai" id="id31">Create training data and train the AI</a></p></li>
+<li><p><a class="reference internal" href="#create-your-own-document-dashboard" id="id32">Create your own document dashboard</a></p>
 <ul>
-<li><p><a class="reference internal" href="#start-from-our-vue-js-code" id="id32">Start from our Vue.js code</a></p></li>
-<li><p><a class="reference internal" href="#start-from-scratch" id="id33">Start from scratch</a></p></li>
+<li><p><a class="reference internal" href="#start-from-our-vue-js-code" id="id33">Start from our Vue.js code</a></p></li>
+<li><p><a class="reference internal" href="#start-from-scratch" id="id34">Start from scratch</a></p></li>
 </ul>
 </li>
 </ul>
@@ -180,19 +182,19 @@ that can be used to generate language-specific API clients.</p>
 </dd>
 </dl>
 <section id="general-information">
-<h2><a class="toc-backref" href="#id35">General Information</a><a class="headerlink" href="#general-information" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id36">General Information</a><a class="headerlink" href="#general-information" title="Permalink to this headline">¶</a></h2>
 <p>The Konfuzio API v3 follows REST conventions and principles. Unless specified otherwise, all endpoints accept both
 JSON-encoded and form-encoded request bodies, according to the specified content type. All endpoints return JSON-encoded
 responses. We use standard HTTP verbs (<code class="docutils literal notranslate"><span class="pre">GET</span></code>, <code class="docutils literal notranslate"><span class="pre">POST</span></code>, <code class="docutils literal notranslate"><span class="pre">PUT</span></code>, <code class="docutils literal notranslate"><span class="pre">PATCH</span></code>, <code class="docutils literal notranslate"><span class="pre">DELETE</span></code>) for actions, and return standard HTTP
 response codes based on the success or failure of the request.</p>
 </section>
 <section id="authentication">
-<h2><a class="toc-backref" href="#id36">Authentication</a><a class="headerlink" href="#authentication" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id37">Authentication</a><a class="headerlink" href="#authentication" title="Permalink to this headline">¶</a></h2>
 <p>Most of our endpoints, excluding those that deal
 with <a class="reference external" href="http://help.konfuzio.com/integrations/public-documents/">public documents</a>, strictly require authentication. We
 support three types of authentication.</p>
 <section id="basic-http-authentication">
-<h3><a class="toc-backref" href="#id37">Basic HTTP authentication</a><a class="headerlink" href="#basic-http-authentication" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id38">Basic HTTP authentication</a><a class="headerlink" href="#basic-http-authentication" title="Permalink to this headline">¶</a></h3>
 <p>Your Konfuzio username (email) and password are sent with every request as HTTP headers in the
 format <code class="docutils literal notranslate"><span class="pre">Authorization:</span> <span class="pre">Basic</span> <span class="pre">&lt;string&gt;</span></code>, where <code class="docutils literal notranslate"><span class="pre">&lt;string&gt;</span></code> is a Base64-encoded string in the
 format <code class="docutils literal notranslate"><span class="pre">&lt;username&gt;:&lt;password&gt;</span></code> (this is usually done automatically by the HTTP client).</p>
@@ -201,13 +203,17 @@ discouraged** for serious/automated use, since it usually involves storing these
 side.</p>
 </section>
 <section id="cookie-authentication">
-<h3><a class="toc-backref" href="#id38">Cookie authentication</a><a class="headerlink" href="#cookie-authentication" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id39">Cookie authentication</a><a class="headerlink" href="#cookie-authentication" title="Permalink to this headline">¶</a></h3>
 <p>A <code class="docutils literal notranslate"><span class="pre">sessionid</span></code> is sent in the <code class="docutils literal notranslate"><span class="pre">cookie</span></code> field of every request.</p>
 <p>This <code class="docutils literal notranslate"><span class="pre">sessionid</span></code> is generated and used by the Konfuzio website when you log in to avoid additional authentication in API
 requests, and should <strong>not</strong> be relied upon by third parties.</p>
 </section>
+<section id="single-sign-on-sso-authentication">
+<h3><a class="toc-backref" href="#id40">Single sign-on (SSO) authentication</a><a class="headerlink" href="#single-sign-on-sso-authentication" title="Permalink to this headline">¶</a></h3>
+<p>SSO authentication is available through <a class="reference external" href="https://www.keycloak.org/">KeyCloak</a>, which is an open source identity and access management solution. This functionality is only offered to our on-prem users. Further documentation regarding our KeyCloak integration can be found on our <a class="reference external" href="https://dev.konfuzio.com/web/on_premises.html#keycloak-integration">on-prem documentation page</a>.</p>
+</section>
 <section id="token-authentication">
-<h3><a class="toc-backref" href="#id39">Token authentication</a><a class="headerlink" href="#token-authentication" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id41">Token authentication</a><a class="headerlink" href="#token-authentication" title="Permalink to this headline">¶</a></h3>
 <p>You send a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request with your Konfuzio username (email) and password to our <a class="reference external" href="link">authentication endpoint</a>, which
 returns a token string that you can use in lieu of your actual credentials for subsequent requests, providing it with a
 HTTP header in the format <code class="docutils literal notranslate"><span class="pre">Authorization:</span> <span class="pre">Token</span> <span class="pre">&lt;token&gt;</span></code>.</p>
@@ -225,7 +231,7 @@ body: <code class="docutils literal notranslate"><span class="pre">{&quot;userna
 header <code class="docutils literal notranslate"><span class="pre">Authorization:</span> <span class="pre">Token</span> <span class="pre">bf20d992c0960876157b53745cdd86fad95e6ff4</span></code>.</p></li>
 </ol>
 <section id="curl-example">
-<h4><a class="toc-backref" href="#id40">cURL example</a><a class="headerlink" href="#curl-example" title="Permalink to this headline">¶</a></h4>
+<h4><a class="toc-backref" href="#id42">cURL example</a><a class="headerlink" href="#curl-example" title="Permalink to this headline">¶</a></h4>
 <p>To get a token:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">--</span><span class="n">request</span> <span class="n">POST</span> \
   <span class="o">--</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">app</span><span class="o">.</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v3</span><span class="o">/</span><span class="n">auth</span><span class="o">/</span> \
@@ -241,7 +247,7 @@ header <code class="docutils literal notranslate"><span class="pre">Authorizatio
 </div>
 </section>
 <section id="python-example">
-<h4><a class="toc-backref" href="#id41">Python example</a><a class="headerlink" href="#python-example" title="Permalink to this headline">¶</a></h4>
+<h4><a class="toc-backref" href="#id43">Python example</a><a class="headerlink" href="#python-example" title="Permalink to this headline">¶</a></h4>
 <p>To get a token:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
 
@@ -275,7 +281,7 @@ header <code class="docutils literal notranslate"><span class="pre">Authorizatio
 </section>
 </section>
 <section id="response-codes">
-<h2><a class="toc-backref" href="#id42">Response codes</a><a class="headerlink" href="#response-codes" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id44">Response codes</a><a class="headerlink" href="#response-codes" title="Permalink to this headline">¶</a></h2>
 <p>All endpoints return an HTTP code that indicates the success of the request. Following the standard, codes starting
 with <code class="docutils literal notranslate"><span class="pre">2</span></code> (<code class="docutils literal notranslate"><span class="pre">200</span></code>, <code class="docutils literal notranslate"><span class="pre">201</span></code>…) indicate success; codes starting with <code class="docutils literal notranslate"><span class="pre">4</span></code> (<code class="docutils literal notranslate"><span class="pre">400</span></code>, <code class="docutils literal notranslate"><span class="pre">401</span></code>…) indicate failure on the client
 side, with the response body containing more information about what failed; codes starting with <code class="docutils literal notranslate"><span class="pre">5</span></code> (<code class="docutils literal notranslate"><span class="pre">500</span></code>, <code class="docutils literal notranslate"><span class="pre">502</span></code>…)
@@ -284,7 +290,7 @@ indicate failure on our side and are usually temporary (if they aren’t, please
 codes are expected for each endpoint.</p>
 </section>
 <section id="pagination">
-<h2><a class="toc-backref" href="#id43">Pagination</a><a class="headerlink" href="#pagination" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id45">Pagination</a><a class="headerlink" href="#pagination" title="Permalink to this headline">¶</a></h2>
 <p>All endpoints that list resources are paginated. Pagination is achieved by providing <code class="docutils literal notranslate"><span class="pre">offset</span></code> and <code class="docutils literal notranslate"><span class="pre">limit</span></code> as <code class="docutils literal notranslate"><span class="pre">GET</span></code>
 parameters to the request. <code class="docutils literal notranslate"><span class="pre">limit</span></code> is the maximum amount of items that should be returned, and <code class="docutils literal notranslate"><span class="pre">offset</span></code> is the amount of
 items that should be skipped from the beginning.</p>
@@ -309,7 +315,7 @@ next 50 items, you should pass <code class="docutils literal notranslate"><span 
 </ul>
 </section>
 <section id="filtering">
-<h2><a class="toc-backref" href="#id44">Filtering</a><a class="headerlink" href="#filtering" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id46">Filtering</a><a class="headerlink" href="#filtering" title="Permalink to this headline">¶</a></h2>
 <p>All endpoints that list resources support some filtering, based on the resource being fetched. These filters are passed
 as <code class="docutils literal notranslate"><span class="pre">GET</span></code> parameters and can be combined.</p>
 <p>Two filters that are usually available on all list endpoints are <code class="docutils literal notranslate"><span class="pre">created_at_after</span></code> and <code class="docutils literal notranslate"><span class="pre">created_at_before</span></code>, which
@@ -320,7 +326,7 @@ December 1, 2021 and February 1, 2022 (specified dates excluded).</p>
 that you want to filter.</p>
 </section>
 <section id="ordering">
-<h2><a class="toc-backref" href="#id45">Ordering</a><a class="headerlink" href="#ordering" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id47">Ordering</a><a class="headerlink" href="#ordering" title="Permalink to this headline">¶</a></h2>
 <p>Most endpoints that list resources support ordering on some fields. The ordering is passed as a single <code class="docutils literal notranslate"><span class="pre">GET</span></code> parameter
 named <code class="docutils literal notranslate"><span class="pre">ordering</span></code> with the field name that you want to order by as the value.</p>
 <p>You can combine multiple ordering fields by separating them with a <code class="docutils literal notranslate"><span class="pre">,</span></code>. For example: <code class="docutils literal notranslate"><span class="pre">?ordering=project,created_at</span></code>.</p>
@@ -330,7 +336,7 @@ example: <code class="docutils literal notranslate"><span class="pre">?ordering=
 the <a class="reference external" href="http:/app.konfuzio.com/v3/swagger/">Swagger documentation</a> for the endpoint that you want to order.</p>
 </section>
 <section id="fields">
-<h2><a class="toc-backref" href="#id46">Fields</a><a class="headerlink" href="#fields" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id48">Fields</a><a class="headerlink" href="#fields" title="Permalink to this headline">¶</a></h2>
 <p>Some endpoints allow you to override the default response schema and specify a subset of fields that you want to be
 returned. You can specify the <code class="docutils literal notranslate"><span class="pre">fields</span></code> <code class="docutils literal notranslate"><span class="pre">GET</span></code> parameter with the field names separated by a <code class="docutils literal notranslate"><span class="pre">,</span></code>.</p>
 <p>For example, you can specify <code class="docutils literal notranslate"><span class="pre">?fields=id,created_at</span></code> to only return the <code class="docutils literal notranslate"><span class="pre">id</span></code> and <code class="docutils literal notranslate"><span class="pre">created_at</span></code> fields in the response.</p>
@@ -338,7 +344,7 @@ returned. You can specify the <code class="docutils literal notranslate"><span c
 using the <code class="docutils literal notranslate"><span class="pre">fields</span></code> parameter. When supported, any field in the response schema can be used in the <code class="docutils literal notranslate"><span class="pre">fields</span></code> parameter.</p>
 </section>
 <section id="guides-and-how-tos">
-<h2><a class="toc-backref" href="#id47">Guides and How-Tos</a><a class="headerlink" href="#guides-and-how-tos" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id49">Guides and How-Tos</a><a class="headerlink" href="#guides-and-how-tos" title="Permalink to this headline">¶</a></h2>
 <p>These guides will teach you how to do common operations with the Konfuzio API. You can refer to
 our <a class="reference external" href="./api_v3.html">API guide</a> for a general overview of how the API works and to
 our <a class="reference external" href="https://app.konfuzio.com/v3/swagger/">Swagger documentation</a> for a full list of all the available endpoints.</p>
@@ -349,43 +355,44 @@ every API call. If you’re copy-pasting the snippets, remember to replace <code
 <div class="contents topic" id="id6">
 <p class="topic-title">Table of Contents</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="#rest-api-v3" id="id34">REST API v3</a></p>
+<li><p><a class="reference internal" href="#rest-api-v3" id="id35">REST API v3</a></p>
 <ul>
-<li><p><a class="reference internal" href="#general-information" id="id35">General Information</a></p></li>
-<li><p><a class="reference internal" href="#authentication" id="id36">Authentication</a></p>
+<li><p><a class="reference internal" href="#general-information" id="id36">General Information</a></p></li>
+<li><p><a class="reference internal" href="#authentication" id="id37">Authentication</a></p>
 <ul>
-<li><p><a class="reference internal" href="#basic-http-authentication" id="id37">Basic HTTP authentication</a></p></li>
-<li><p><a class="reference internal" href="#cookie-authentication" id="id38">Cookie authentication</a></p></li>
-<li><p><a class="reference internal" href="#token-authentication" id="id39">Token authentication</a></p>
+<li><p><a class="reference internal" href="#basic-http-authentication" id="id38">Basic HTTP authentication</a></p></li>
+<li><p><a class="reference internal" href="#cookie-authentication" id="id39">Cookie authentication</a></p></li>
+<li><p><a class="reference internal" href="#single-sign-on-sso-authentication" id="id40">Single sign-on (SSO) authentication</a></p></li>
+<li><p><a class="reference internal" href="#token-authentication" id="id41">Token authentication</a></p>
 <ul>
-<li><p><a class="reference internal" href="#curl-example" id="id40">cURL example</a></p></li>
-<li><p><a class="reference internal" href="#python-example" id="id41">Python example</a></p></li>
+<li><p><a class="reference internal" href="#curl-example" id="id42">cURL example</a></p></li>
+<li><p><a class="reference internal" href="#python-example" id="id43">Python example</a></p></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#response-codes" id="id42">Response codes</a></p></li>
-<li><p><a class="reference internal" href="#pagination" id="id43">Pagination</a></p></li>
-<li><p><a class="reference internal" href="#filtering" id="id44">Filtering</a></p></li>
-<li><p><a class="reference internal" href="#ordering" id="id45">Ordering</a></p></li>
-<li><p><a class="reference internal" href="#fields" id="id46">Fields</a></p></li>
-<li><p><a class="reference internal" href="#guides-and-how-tos" id="id47">Guides and How-Tos</a></p></li>
-<li><p><a class="reference internal" href="#setup-a-project-with-labels-label-sets-and-categories" id="id48">Setup a project with labels, label sets and categories</a></p>
+<li><p><a class="reference internal" href="#response-codes" id="id44">Response codes</a></p></li>
+<li><p><a class="reference internal" href="#pagination" id="id45">Pagination</a></p></li>
+<li><p><a class="reference internal" href="#filtering" id="id46">Filtering</a></p></li>
+<li><p><a class="reference internal" href="#ordering" id="id47">Ordering</a></p></li>
+<li><p><a class="reference internal" href="#fields" id="id48">Fields</a></p></li>
+<li><p><a class="reference internal" href="#guides-and-how-tos" id="id49">Guides and How-Tos</a></p></li>
+<li><p><a class="reference internal" href="#setup-a-project-with-labels-label-sets-and-categories" id="id50">Setup a project with labels, label sets and categories</a></p>
 <ul>
-<li><p><a class="reference internal" href="#create-a-project" id="id49">Create a project</a></p></li>
-<li><p><a class="reference internal" href="#create-a-category" id="id50">Create a category</a></p></li>
-<li><p><a class="reference internal" href="#create-some-labels" id="id51">Create some labels</a></p></li>
-<li><p><a class="reference internal" href="#create-a-label-set" id="id52">Create a label set</a></p></li>
-<li><p><a class="reference internal" href="#next-steps" id="id53">Next steps</a></p></li>
+<li><p><a class="reference internal" href="#create-a-project" id="id51">Create a project</a></p></li>
+<li><p><a class="reference internal" href="#create-a-category" id="id52">Create a category</a></p></li>
+<li><p><a class="reference internal" href="#create-some-labels" id="id53">Create some labels</a></p></li>
+<li><p><a class="reference internal" href="#create-a-label-set" id="id54">Create a label set</a></p></li>
+<li><p><a class="reference internal" href="#next-steps" id="id55">Next steps</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#upload-a-document" id="id54">Upload a document</a></p></li>
-<li><p><a class="reference internal" href="#create-an-annotation" id="id55">Create an annotation</a></p></li>
-<li><p><a class="reference internal" href="#create-training-data-and-train-the-ai" id="id56">Create training data and train the AI</a></p></li>
-<li><p><a class="reference internal" href="#create-your-own-document-dashboard" id="id57">Create your own document dashboard</a></p>
+<li><p><a class="reference internal" href="#upload-a-document" id="id56">Upload a document</a></p></li>
+<li><p><a class="reference internal" href="#create-an-annotation" id="id57">Create an annotation</a></p></li>
+<li><p><a class="reference internal" href="#create-training-data-and-train-the-ai" id="id58">Create training data and train the AI</a></p></li>
+<li><p><a class="reference internal" href="#create-your-own-document-dashboard" id="id59">Create your own document dashboard</a></p>
 <ul>
-<li><p><a class="reference internal" href="#start-from-our-vue-js-code" id="id58">Start from our Vue.js code</a></p></li>
-<li><p><a class="reference internal" href="#start-from-scratch" id="id59">Start from scratch</a></p></li>
+<li><p><a class="reference internal" href="#start-from-our-vue-js-code" id="id60">Start from our Vue.js code</a></p></li>
+<li><p><a class="reference internal" href="#start-from-scratch" id="id61">Start from scratch</a></p></li>
 </ul>
 </li>
 </ul>
@@ -404,11 +411,11 @@ every API call. If you’re copy-pasting the snippets, remember to replace <code
 </dl>
 </section>
 <section id="setup-a-project-with-labels-label-sets-and-categories">
-<h2><a class="toc-backref" href="#id48">Setup a project with labels, label sets and categories</a><a class="headerlink" href="#setup-a-project-with-labels-label-sets-and-categories" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id50">Setup a project with labels, label sets and categories</a><a class="headerlink" href="#setup-a-project-with-labels-label-sets-and-categories" title="Permalink to this headline">¶</a></h2>
 <p>This guide will walk you through the API-based initial setup of a project with all the initial data you need to start
 uploading documents and training the AI.</p>
 <section id="create-a-project">
-<h3><a class="toc-backref" href="#id49">Create a project</a><a class="headerlink" href="#create-a-project" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id51">Create a project</a><a class="headerlink" href="#create-a-project" title="Permalink to this headline">¶</a></h3>
 <p>First you need to set up a <a class="reference external" href="https://help.konfuzio.com/modules/projects/index.html">project</a>. To do so, you will make a
 call to our <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/projects/projects_create">project creation endpoint</a>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">--</span><span class="n">request</span> <span class="n">POST</span> \
@@ -423,7 +430,7 @@ call to our <a class="reference external" href="https://app.konfuzio.com/v3/swag
 of it, as you will need it in the next steps.</p>
 </section>
 <section id="create-a-category">
-<h3><a class="toc-backref" href="#id50">Create a category</a><a class="headerlink" href="#create-a-category" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id52">Create a category</a><a class="headerlink" href="#create-a-category" title="Permalink to this headline">¶</a></h3>
 <p>A <a class="reference external" href="https://help.konfuzio.com/modules/categories/index.html">category</a> is used to group documents by type and can be
 associated to an <a class="reference external" href="https://help.konfuzio.com/modules/extractions/index.html">extraction AI</a>. For example, you might want
 to create a category called “Invoice”. To do so, you will make a call to
@@ -442,7 +449,7 @@ of it, as you will need it in the next steps. You can retrieve a list of your cr
 request to the same endpoint.</p>
 </section>
 <section id="create-some-labels">
-<h3><a class="toc-backref" href="#id51">Create some labels</a><a class="headerlink" href="#create-some-labels" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id53">Create some labels</a><a class="headerlink" href="#create-some-labels" title="Permalink to this headline">¶</a></h3>
 <p><a class="reference external" href="https://help.konfuzio.com/modules/labels/index.html">Labels</a> are used to label annotations with their business context.
 In the case of our invoice category, we might want to have labels such as “amount” and “product”. For each label, we
 need to make a different API request to
@@ -470,7 +477,7 @@ of it, as you will need it in the next steps. You can retrieve a list of your cr
 to the same endpoint.</p>
 </section>
 <section id="create-a-label-set">
-<h3><a class="toc-backref" href="#id52">Create a label set</a><a class="headerlink" href="#create-a-label-set" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id54">Create a label set</a><a class="headerlink" href="#create-a-label-set" title="Permalink to this headline">¶</a></h3>
 <p>A <a class="reference external" href="https://help.konfuzio.com/modules/sets/index.html">label set</a> is used to group labels that make sense together.
 Sometimes these labels might occur multiple times in a document — in our “invoice” example, there’s going to be one set
 of “amount” and “product” for each line item we have in the invoice. We can call it “line item” and we can create it
@@ -491,12 +498,12 @@ to <code class="docutils literal notranslate"><span class="pre">true</span></cod
 invoice.</p>
 </section>
 <section id="next-steps">
-<h3><a class="toc-backref" href="#id53">Next steps</a><a class="headerlink" href="#next-steps" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id55">Next steps</a><a class="headerlink" href="#next-steps" title="Permalink to this headline">¶</a></h3>
 <p>Your basic setup is done! You’re now ready to upload documents and train the AI.</p>
 </section>
 </section>
 <section id="upload-a-document">
-<h2><a class="toc-backref" href="#id54">Upload a document</a><a class="headerlink" href="#upload-a-document" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id56">Upload a document</a><a class="headerlink" href="#upload-a-document" title="Permalink to this headline">¶</a></h2>
 <p>After your initial project setup, you can start uploading documents. To upload a document, you will make a call to
 our <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/documents/documents_create">document creation endpoint</a>.</p>
 <p>Unlike most other endpoints, the document creation endpoint only supports <code class="docutils literal notranslate"><span class="pre">multipart/form-data</span></code> requests (to support
@@ -531,7 +538,7 @@ the <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/do
 document has finished processing, and if so, retrieve the extracted data.</p>
 </section>
 <section id="create-an-annotation">
-<h2><a class="toc-backref" href="#id55">Create an annotation</a><a class="headerlink" href="#create-an-annotation" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id57">Create an annotation</a><a class="headerlink" href="#create-an-annotation" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference external" href="https://help.konfuzio.com/modules/annotations/">Annotations</a> are automatically created by the extraction process when
 you upload a document, but if some data is missing you can annotate it manually to train the AI model to recognize it.</p>
 <p>Creating an annotation via the API requires the client to provide the bounding box coordinates of the relevant text
@@ -576,22 +583,22 @@ can be called via <code class="docutils literal notranslate"><span class="pre">G
 create your annotations programmatically.</p>
 </section>
 <section id="create-training-data-and-train-the-ai">
-<h2><a class="toc-backref" href="#id56">Create training data and train the AI</a><a class="headerlink" href="#create-training-data-and-train-the-ai" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id58">Create training data and train the AI</a><a class="headerlink" href="#create-training-data-and-train-the-ai" title="Permalink to this headline">¶</a></h2>
 <p>Coming soon.</p>
 </section>
 <section id="create-your-own-document-dashboard">
-<h2><a class="toc-backref" href="#id57">Create your own document dashboard</a><a class="headerlink" href="#create-your-own-document-dashboard" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id59">Create your own document dashboard</a><a class="headerlink" href="#create-your-own-document-dashboard" title="Permalink to this headline">¶</a></h2>
 <p>In cases where our <a class="reference external" href="https://help.konfuzio.com/integrations/public-documents/">public documents and iframes</a> are not
 enough, you can build your own solution. Here we explain how you can easily build a read-only dashboard for your
 documents.</p>
 <section id="start-from-our-vue-js-code">
-<h3><a class="toc-backref" href="#id58">Start from our Vue.js code</a><a class="headerlink" href="#start-from-our-vue-js-code" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id60">Start from our Vue.js code</a><a class="headerlink" href="#start-from-our-vue-js-code" title="Permalink to this headline">¶</a></h3>
 <p>Our document dashboard is based on Vue.js and completely implemented via our <a class="reference external" href="https://app.konfuzio.com/api/">public API</a>
 . You can check out our solution <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-capture-vue">on GitHub</a> and customize it to
 your needs. You will find a technical overview and component description in the repository’s <code class="docutils literal notranslate"><span class="pre">README</span></code>.</p>
 </section>
 <section id="start-from-scratch">
-<h3><a class="toc-backref" href="#id59">Start from scratch</a><a class="headerlink" href="#start-from-scratch" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id61">Start from scratch</a><a class="headerlink" href="#start-from-scratch" title="Permalink to this headline">¶</a></h3>
 <p>If you’re using React, Angular or other technologies, you can use our <a class="reference external" href="https://app.konfuzio.com/api/">public API</a> to
 build your own solution.</p>
 <p>For feature parity with our read-only document dashboard, you only need to use two endpoints, and if you’re only
