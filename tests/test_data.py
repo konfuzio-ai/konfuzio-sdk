@@ -351,7 +351,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 35
+        assert len(cls.project.virtual_documents) == 36
 
     # def test_document_only_needs_project(self):
     #     """Test that a Document can be created without category"""
@@ -574,6 +574,26 @@ class TestOfflineDataSetup(unittest.TestCase):
             self.assertFalse(document.check_bbox())
             assert 'has negative or no height' in str(e)
 
+    def test_document_spans(self):
+        """Test getting spans from a Document."""
+        document = Document(project=self.project, category=self.category, text='p\n1\fnap2')
+        span1 = Span(start_offset=0, end_offset=1)
+        span2 = Span(start_offset=2, end_offset=3)
+        span3 = Span(start_offset=4, end_offset=5)
+        span4 = Span(start_offset=6, end_offset=8)
+
+        _ = Annotation(
+            document=document, is_correct=True, label=self.label, label_set=self.label_set, spans=[span1, span2]
+        )
+        _ = Annotation(document=document, is_correct=False, label=self.label, label_set=self.label_set, spans=[span3])
+        _ = Annotation(document=document, is_correct=True, label=self.label, label_set=self.label_set, spans=[span4])
+
+        assert len(document.spans()) == 4
+        assert len(document.spans(use_correct=True)) == 3
+        assert len(document.spans(start_offset=0, end_offset=4)) == 2
+        assert len(document.spans(fill=True)) == 7
+        assert len(document.spans(start_offset=4, end_offset=8, fill=True)) == 3
+
     def test_page_width(self):
         """Test width of Page."""
         document_bbox = {
@@ -638,7 +658,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         span3 = Span(start_offset=7, end_offset=9)
 
         page1 = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=3)
-        page2 = Page(id_=2, number=2, original_size=(595.2, 841.68), document=document, start_offset=4, end_offset=9)
+        page2 = Page(id_=2, number=2, original_size=(595.2, 841.68), document=document, start_offset=4, end_offset=8)
 
         annotation1 = Annotation(
             document=document, is_correct=True, label=self.label, label_set=self.label_set, spans=[span1, span2]
@@ -662,18 +682,27 @@ class TestOfflineDataSetup(unittest.TestCase):
         document = Document(project=self.project, category=self.category, text='p\n1\fnap2')
         span1 = Span(start_offset=0, end_offset=1)
         span2 = Span(start_offset=2, end_offset=3)
-        span3 = Span(start_offset=7, end_offset=9)
+        span3 = Span(start_offset=4, end_offset=5)
+        span4 = Span(start_offset=6, end_offset=8)
 
         page1 = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=3)
-        page2 = Page(id_=2, number=2, original_size=(595.2, 841.68), document=document, start_offset=4, end_offset=9)
+        page2 = Page(id_=2, number=2, original_size=(595.2, 841.68), document=document, start_offset=4, end_offset=8)
 
         _ = Annotation(
             document=document, is_correct=True, label=self.label, label_set=self.label_set, spans=[span1, span2]
         )
-        _ = Annotation(document=document, is_correct=True, label=self.label, label_set=self.label_set, spans=[span3])
+        _ = Annotation(document=document, is_correct=False, label=self.label, label_set=self.label_set, spans=[span3])
+        _ = Annotation(document=document, is_correct=True, label=self.label, label_set=self.label_set, spans=[span4])
 
-        assert len(page1.spans) == 2
-        assert len(page2.spans) == 1
+        assert len(page1.spans()) == 2
+        assert len(page2.spans()) == 2
+        assert len(page2.spans(start_offset=7, end_offset=8)) == 1
+        assert len(page2.spans(use_correct=True)) == 1
+        page_2_spans = page2.spans(fill=True)
+        assert len(page_2_spans) == 3
+        filled_span = page_2_spans[1]
+        assert filled_span.annotation.label.name == 'NO_LABEL'
+        assert document.text[filled_span.start_offset : filled_span.end_offset] == 'a'
 
     def test_document_check_bbox_invalid_height_coordinates(self):
         """Test bbox check with invalid x coordinates regarding the page height."""
