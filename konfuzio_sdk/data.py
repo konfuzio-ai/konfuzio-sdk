@@ -1682,8 +1682,6 @@ class Document(Data):
         :param use_correct: If to filter by correct annotations.
         :return: Annotations in the document.
         """
-        if self.category is None:
-            raise ValueError(f'Document {self} without Category must not have Annotations')
         self.get_annotations()
         annotations: List[Annotation] = []
         add = False
@@ -1740,6 +1738,43 @@ class Document(Data):
                 )
 
                 annotations.append(new_annotation)
+
+        return sorted(annotations)
+
+    def view_annotations(self) -> List[Annotation]:
+        """Get the best Annotations, where the Spans are not overlapping."""
+        self.get_annotations()
+        annotations: List[Annotation] = []
+
+        filled = 0  # binary number keeping track of filled offsets
+        priority_annotations = sorted(self._annotations,
+            key=lambda x: (
+                not x.is_correct,  # x.is_correct == True first
+                -x.confidence if x.confidence else 0,  # higher confidence first
+                min([span.start_offset for span in x.spans])
+            )
+        )
+
+        no_label_duplicates = set()  # for top annotation filter
+        for annotation in priority_annotations:
+            if annotation.confidence and annotation.label.threshold > annotation.confidence:
+                continue
+            if not annotation.is_correct and annotation.revised:  # if marked as incorrect by user
+                continue
+            spans_num = 0
+            for span in annotation.spans:
+                for i in range(span.start_offset, span.end_offset):
+                    spans_num |= 1 << i
+            if spans_num & filled:
+                # if there's overlap
+                continue
+            if not annotation.label.has_multiple_top_candidates\
+                    and annotation.label.id_ in no_label_duplicates:
+                continue
+            annotations.append(annotation)
+            filled |= spans_num
+            if not annotation.label.has_multiple_top_candidates:
+                no_label_duplicates.add(annotation.label.id_)
 
         return sorted(annotations)
 
@@ -1870,16 +1905,22 @@ class Document(Data):
         :param update: Update the bio annotations even they are already available
         :return: list of tuples with each word in the text and the respective label
         """
-        # if not is_file(self.bio_scheme_file_path, raise_exception=False) or update:
-        annotations_in_doc = []
-        for annotation in self.annotations():
-            for span in annotation.spans:
-                annotations_in_doc.append((span.start_offset, span.end_offset, annotation.label.name))
-        converted_text = convert_to_bio_scheme(self.text, annotations_in_doc)
-        with open(self.bio_scheme_file_path, "w", encoding="utf-8") as f:
-            for word, tag in converted_text:
-                f.writelines(word + " " + tag + "\n")
-            f.writelines("\n")
+        converted_text = []
+        if not is_file(self.bio_scheme_file_path, raise_exception=False) or update:
+            converted_text = convert_to_bio_scheme(self)
+            with open(self.bio_scheme_file_path, "w", encoding="utf-8") as f:
+                for word, tag in converted_text:
+                    f.writelines(word + " " + tag + "\n")
+                f.writelines("\n")
+        else:
+            with open(self.bio_scheme_file_path, "r", encoding="utf-8") as f:
+                for line in f.readlines():
+                    if not line.strip():
+                        continue
+                    split_line = line.strip().split(' ')
+                    word = split_line[0]
+                    tag = ' '.join(split_line[1:])  # tag allowed to have multiple words
+                    converted_text.append((word, tag))
 
         return converted_text
 
@@ -2135,6 +2176,9 @@ class Document(Data):
 
     def get_annotations(self) -> List[Annotation]:
         """Get Annotations of the Document."""
+        if self.category is None:
+            raise ValueError(f'Document {self} without Category must not have Annotations')
+
         annotation_file_exists = is_file(self.annotation_file_path, raise_exception=False)
         annotation_set_file_exists = is_file(self.annotation_set_file_path, raise_exception=False)
 

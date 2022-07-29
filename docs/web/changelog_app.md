@@ -10,7 +10,7 @@ All notable changes in the server of app.konfuzio.com will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
 
-## Unreleased
+## 2022-07-25_21-20-48
 
 ### Added
 - Allow to set a default assignee for uploaded documents
@@ -18,6 +18,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 
 ### Fixed
 - Top annotation filter in the SmartView now takes accepted Annotations into account
+- Errors messages in case a document could not be processed are now displayed correctly
 
 ## 2022-07-19_16-30-46
 

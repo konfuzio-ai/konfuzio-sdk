@@ -195,7 +195,7 @@ def does_not_raise():
     yield
 
 
-def convert_to_bio_scheme(text: str, annotations: List) -> List[Tuple[str, str]]:
+def convert_to_bio_scheme(document) -> List[Tuple[str, str]]:
     """
     Mark all the entities in the text as per the BIO scheme.
 
@@ -210,25 +210,26 @@ def convert_to_bio_scheme(text: str, annotations: List) -> List[Tuple[str, str]]
     Nagel I-ORG
     . O
 
-    The start and end offsets are considered having the origin in the beginning of the input text.
-    If only part of the text of the Document is passed, the start and end offsets of the Annotations must be
-    adapted first.
-
-    :param text: text to be annotated in the bio scheme
-    :param annotations: annotations in the Document with start and end offset and Label name
+    :param document: Document to be converted into the bio scheme
     :return: list of tuples with each word in the text an the respective Label
     """
     import nltk
-
     nltk.download('punkt')
-    tagged_entities = []
-    annotations.sort(key=lambda x: x[0])  # todo only spans can be sorted, this does not prevent overlapping
 
-    previous_start = 0
+    spans_in_doc = []
+    for annotation in document.view_annotations():
+        for span in annotation.spans:
+            spans_in_doc.append((span.start_offset, span.end_offset, annotation.label.name))
+    text = document.text
+
+    tagged_entities = []
+    spans_in_doc.sort(key=lambda x: x[0])
+
+    previous_end = 0
     end = 0
     if text:
-        for start, end, label_name in annotations:
-            prev_text = text[previous_start:start]
+        for start, end, label_name in spans_in_doc:
+            prev_text = text[previous_end:start]
             for word in nltk.word_tokenize(prev_text):
                 tagged_entities.append((word, 'O'))
 
@@ -242,7 +243,7 @@ def convert_to_bio_scheme(text: str, annotations: List) -> List[Tuple[str, str]]
             else:
                 tagged_entities.append((tmp_list[0], 'B-' + label_name))
 
-            previous_start = start
+            previous_end = end
 
     if end < len(text):
         pos_text = text[end:]
