@@ -23,6 +23,8 @@ from konfuzio_sdk.data import (
 from konfuzio_sdk.utils import is_file
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID, TEST_PROJECT_ID
 
+from konfuzio_sdk.samples import LocalTextProject
+
 logger = logging.getLogger(__name__)
 
 
@@ -609,8 +611,8 @@ class TestOfflineDataSetup(unittest.TestCase):
         document = Document(project=self.project, category=self.category, text='page1\fpage2', bbox=document_bbox)
         page1 = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=5)
         page2 = Page(id_=2, number=2, original_size=(595.2, 841.68), document=document, start_offset=6, end_offset=11)
-        assert page1.text == document.text[page1.start_offset: page1.end_offset]
-        assert page2.text == document.text[page2.start_offset: page2.end_offset]
+        assert page1.text == document.text[page1.start_offset : page1.end_offset]
+        assert page2.text == document.text[page2.start_offset : page2.end_offset]
 
     def test_page_get_bbox(self):
         """Test getting bbox for Page."""
@@ -618,7 +620,7 @@ class TestOfflineDataSetup(unittest.TestCase):
             '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'p'},
             '2': {'x0': 1, 'x1': 0, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': '1'},
             '8': {'x0': 0, 'x1': 1, 'y0': 10, 'y1': 12, 'top': 10, 'bottom': 11, 'page_number': 2, 'text': 'p'},
-            '10': {'x0': 1, 'x1': 0, 'y0': 10, 'y1': 12, 'top': 10, 'bottom': 11, 'page_number': 2, 'text': '2'}
+            '10': {'x0': 1, 'x1': 0, 'y0': 10, 'y1': 12, 'top': 10, 'bottom': 11, 'page_number': 2, 'text': '2'},
         }
         document = Document(project=self.project, category=self.category, text='p1\fp2', bbox=document_bbox)
         page1 = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=2)
@@ -639,18 +641,10 @@ class TestOfflineDataSetup(unittest.TestCase):
         page2 = Page(id_=2, number=2, original_size=(595.2, 841.68), document=document, start_offset=4, end_offset=9)
 
         annotation1 = Annotation(
-            document=document,
-            is_correct=True,
-            label=self.label,
-            label_set=self.label_set,
-            spans=[span1, span2],
+            document=document, is_correct=True, label=self.label, label_set=self.label_set, spans=[span1, span2]
         )
         annotation2 = Annotation(
-            document=document,
-            is_correct=True,
-            label=self.label,
-            label_set=self.label_set,
-            spans=[span3],
+            document=document, is_correct=True, label=self.label, label_set=self.label_set, spans=[span3]
         )
         assert document.get_page_by_index(0).text == 'p\n1'
         assert document.get_page_by_index(1).text == 'nap2'
@@ -674,22 +668,12 @@ class TestOfflineDataSetup(unittest.TestCase):
         page2 = Page(id_=2, number=2, original_size=(595.2, 841.68), document=document, start_offset=4, end_offset=9)
 
         _ = Annotation(
-            document=document,
-            is_correct=True,
-            label=self.label,
-            label_set=self.label_set,
-            spans=[span1, span2],
+            document=document, is_correct=True, label=self.label, label_set=self.label_set, spans=[span1, span2]
         )
-        _ = Annotation(
-            document=document,
-            is_correct=True,
-            label=self.label,
-            label_set=self.label_set,
-            spans=[span3],
-        )
+        _ = Annotation(document=document, is_correct=True, label=self.label, label_set=self.label_set, spans=[span3])
 
-        assert len(page1.spans)==2
-        assert len(page2.spans)==1
+        assert len(page1.spans) == 2
+        assert len(page2.spans) == 1
 
     def test_document_check_bbox_invalid_height_coordinates(self):
         """Test bbox check with invalid x coordinates regarding the page height."""
@@ -1695,6 +1679,14 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         # an Annotation Set needs to be created or retrieved after the Annotation is saved
         assert annotation.annotation_set.id_ == 78730
 
+    def test_bio_scheme_saving_and_loading(self):
+        """Test if generated bio scheme list is identical to loaded from file."""
+        doc = self.prj.documents[0]
+        bio_annotations1 = doc.get_text_in_bio_scheme(update=True)
+        bio_annotations2 = doc.get_text_in_bio_scheme(update=False)
+
+        assert bio_annotations1 == bio_annotations2
+
     @unittest.skip(reason="Issue https://gitlab.com/konfuzio/objectives/-/issues/8664.")
     def test_get_text_in_bio_scheme(self):
         """Test getting Document in the BIO scheme."""
@@ -1850,6 +1842,14 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             doc.download_document_details()
         prj.delete()
+
+    def test_view_annotations(self):
+        """Test that Document.view_annotations() gets all the right annotations."""
+        project = LocalTextProject()
+        document = project.test_documents[-1]
+        annotations = document.view_annotations()
+        assert len(annotations) == 4
+        assert sorted([ann.id_ for ann in annotations]) == [16, 18, 19, 24]
 
 
 class TestFillOperation(unittest.TestCase):
