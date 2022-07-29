@@ -58,7 +58,7 @@ class RegexTokenizer(AbstractTokenizer):
 
         # Create a revised = False and is_correct = False (defaults) Annotation
         for span in spans:
-            if span not in document.spans:  # (use_correct=False):
+            if span not in document.spans():  # (use_correct=False):
                 # todo this hides the fact, that Tokenizers of different quality can create the same Span
                 # todo we create an overlapping Annotation in case the Tokenizer finds a correct match
                 annotation = Annotation(

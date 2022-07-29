@@ -137,7 +137,7 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
                 spans=[new_span],
             )
         logger.warning(
-            f'{len(remaining_span_doc.spans)} of {len(document.spans)} '
+            f'{len(remaining_span_doc.spans())} of {len(document.spans())} '
             f'correct Spans in {document} the abstract Tokenizer did not find.'
         )
         return remaining_span_doc
