@@ -10,6 +10,13 @@ All notable changes in the server of app.konfuzio.com will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
 
+## 2022-07-28_15-55-29
+
+This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Capture Vue in version [0.0.6](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
+
+### Changed
+- Speed up runtime of Extraction AIs
+
 ## 2022-07-25_21-20-48
 
 ### Added
