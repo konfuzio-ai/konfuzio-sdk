@@ -55,6 +55,9 @@ class TestAbstractTokenizer(unittest.TestCase):
                 self.processing_steps.append(ProcessingStep(self.__repr__(), document, time.monotonic() - t0))
                 pass
 
+            def __eq__(self, other):
+                pass
+
         cls.tokenizer = DummyTokenizer()
 
         cls.project = Project(id_=None)
@@ -331,6 +334,38 @@ class TestListTokenizer(unittest.TestCase):
         self.tokenizer.lose_weight()
         assert len(self.tokenizer.processing_steps) == 0
 
+    def test_equality_check(self):
+        """Test Tokenizer comparison method."""
+        whitespace_regex = RegexTokenizer(regex=r"[^ \n\t\f]+")
+        list_tokenizer_1 = ListTokenizer(tokenizers=[WhitespaceTokenizer(), RegexTokenizer(regex="a")])
+        list_tokenizer_2 = ListTokenizer(tokenizers=[whitespace_regex, RegexTokenizer(regex="a")])
+        list_tokenizer_3 = ListTokenizer(tokenizers=[RegexTokenizer(regex="a"), WhitespaceTokenizer()])
+
+        assert WhitespaceTokenizer() == whitespace_regex
+        assert list_tokenizer_1 == list_tokenizer_2
+        assert list_tokenizer_1 != list_tokenizer_3
+        assert RegexTokenizer(regex="a") != RegexTokenizer(regex="b")
+
+    def test_duplicate_check(self):
+        """Test handling of Tokenizer duplicates in ListTokenizer."""
+        test_tokenizer = ListTokenizer(
+            tokenizers=[
+                WhitespaceTokenizer(),
+                RegexTokenizer(regex="a"),
+                RegexTokenizer(regex="b"),
+                WhitespaceTokenizer(),
+                RegexTokenizer(regex="a"),
+                RegexTokenizer(regex=r"[^ \n\t\f]+"),
+            ]  # equivalent to WhitespaceTokenizer
+        )
+
+        assert len(test_tokenizer.tokenizers) == 3
+        assert test_tokenizer.tokenizers == [
+            WhitespaceTokenizer(),
+            RegexTokenizer(regex="a"),
+            RegexTokenizer(regex="b"),
+        ]
+
     def test_processing_runtime_of_list_tokenizer(self):
         """Test that the information of the processing runtime refers to each Tokenizer in the list of Tokenizers."""
         self.tokenizer.processing_steps = []
@@ -352,7 +387,7 @@ class TestTokenize(unittest.TestCase):
         """Initialize the test Project."""
         project = Project(id_=None, project_folder=OFFLINE_PROJECT)
         cls.document = project.get_document_by_id(TEST_DOCUMENT_ID)
-        assert len(cls.document.spans) == 24
+        assert len(cls.document.spans()) == 24
 
     def test_find_missing_spans(self):
         """Find all missing Spans in a Project."""
@@ -361,5 +396,5 @@ class TestTokenize(unittest.TestCase):
         # Span 365 to 366 (Tax ID) can be found be Tokenizer
         # three Spans are not correct and don't need to be found
         # (1 revised and 2 unrevised)
-        assert sum([not span.annotation.is_correct for span in self.document.spans]) == 3
-        self.assertEqual(len(document.spans), 20)
+        assert sum([not span.annotation.is_correct for span in self.document.spans()]) == 3
+        self.assertEqual(len(document.spans()), 20)

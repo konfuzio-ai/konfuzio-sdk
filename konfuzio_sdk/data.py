@@ -143,7 +143,7 @@ class Page(Data):
     def text(self):
         """Get Document text corresponding to the Page."""
         doc_text = self.document.text
-        page_text = self.document.text[self.start_offset: self.end_offset]
+        page_text = self.document.text[self.start_offset : self.end_offset]
         if doc_text.split('\f')[self.index] != page_text:
             raise IndexError(f'{self} text offsets do not match Document text.')
         return page_text
@@ -153,11 +153,20 @@ class Page(Data):
         """Calculate the number of lines in Page."""
         return len(self.text.split('\n'))
 
-    @property
-    def spans(self):
+    def spans(
+        self,
+        label: 'Label' = None,
+        use_correct: bool = False,
+        start_offset: int = 0,
+        end_offset: int = None,
+        fill: bool = False,
+    ) -> List['Span']:
         """Return all Spans of the Page."""
         spans = []
-        for annotation in self.annotations():
+        annotations = self.annotations(
+            label=label, use_correct=use_correct, start_offset=start_offset, end_offset=end_offset, fill=fill
+        )
+        for annotation in annotations:
             for span in annotation.spans:
                 if span not in spans:
                     spans.append(span)
@@ -167,11 +176,7 @@ class Page(Data):
     def get_bbox(self):
         """Get bbox information per character of Page."""
         doc_bbox = self.document.get_bbox()
-        page_bbox = {
-            k: doc_bbox[k]
-            for k in doc_bbox.keys()
-            if doc_bbox[k]["page_number"] == self.number
-        }
+        page_bbox = {k: doc_bbox[k] for k in doc_bbox.keys() if doc_bbox[k]["page_number"] == self.number}
         return page_bbox
 
     def annotations(
@@ -189,11 +194,7 @@ class Page(Data):
         else:
             end_offset = min(end_offset, self.end_offset)
         page_annotations = self.document.annotations(
-            label=label,
-            use_correct=use_correct,
-            start_offset=start_offset,
-            end_offset=end_offset,
-            fill=fill
+            label=label, use_correct=use_correct, start_offset=start_offset, end_offset=end_offset, fill=fill
         )
         return page_annotations
 
@@ -223,7 +224,9 @@ class Bbox:
         """Define that one Bounding Box on the same page is identical."""
         return self.__hash__() == other.__hash__()
 
-    def _valid(self,):
+    def _valid(
+        self,
+    ):
         """Validate contained data."""
         if self.x0 == self.x1:
             raise ValueError(f'{self} no width in {self.page}.')
@@ -812,7 +815,9 @@ class Span(Data):
         annotation and annotation.add_span(self)  # only add if Span has access to an Annotation
         self._valid()
 
-    def _valid(self,):
+    def _valid(
+        self,
+    ):
         """Validate containted data."""
         if self.end_offset == self.start_offset == 0:
             logger.error(f'{self} is intentionally left empty.')
@@ -1541,19 +1546,27 @@ class Document(Data):
 
         return self._no_label_annotation_set
 
-    @property
-    def spans(self):
+    def spans(
+        self,
+        label: Label = None,
+        use_correct: bool = False,
+        start_offset: int = 0,
+        end_offset: int = None,
+        fill: bool = False,
+    ) -> List[Span]:
         """Return all Spans of the Document."""
         spans = []
-        if self._annotations is None:
-            self.annotations()
 
-        for annotation in self._annotations:
+        annotations = self.annotations(
+            label=label, use_correct=use_correct, start_offset=start_offset, end_offset=end_offset, fill=fill
+        )
+
+        for annotation in annotations:
             for span in annotation.spans:
                 if span not in spans:
                     spans.append(span)
 
-        # if self.spans == list(set(self.spans)):
+        # if self.spans() == list(set(self.spans())):
         #     # todo deduplicate Spans. One text offset in a document can ber referenced by many Spans of Annotations
         #     raise NotImplementedError
 
@@ -1661,8 +1674,6 @@ class Document(Data):
         :param use_correct: If to filter by correct annotations.
         :return: Annotations in the document.
         """
-        if self.category is None:
-            raise ValueError(f'Document {self} without Category must not have Annotations')
         self.get_annotations()
         annotations: List[Annotation] = []
         add = False
@@ -1676,7 +1687,7 @@ class Document(Data):
                     if start_offset is not None and end_offset is not None:  # if the start and end offset are specified
                         latest_start = max(span.start_offset, start_offset)
                         earliest_end = min(span.end_offset, end_offset)
-                        is_overlapping = latest_start - earliest_end <= 0
+                        is_overlapping = latest_start - earliest_end < 0
                     else:
                         is_overlapping = True
 
@@ -1702,7 +1713,7 @@ class Document(Data):
                 offset_text = self.text[missing.start : missing.stop]
                 # we split Spans which span multiple lines, so that one Span comprises one line
                 offset_of_offset = 0
-                line_breaks = [offset_line for offset_line in re.split(r'(\n)', offset_text) if offset_line != '']
+                line_breaks = [offset_line for offset_line in re.split(r'(\n|\f)', offset_text) if offset_line != '']
                 for offset in line_breaks:
                     start = missing.start + offset_of_offset
                     offset_of_offset += len(offset)
@@ -1719,6 +1730,43 @@ class Document(Data):
                 )
 
                 annotations.append(new_annotation)
+
+        return sorted(annotations)
+
+    def view_annotations(self) -> List[Annotation]:
+        """Get the best Annotations, where the Spans are not overlapping."""
+        self.get_annotations()
+        annotations: List[Annotation] = []
+
+        filled = 0  # binary number keeping track of filled offsets
+        priority_annotations = sorted(
+            self._annotations,
+            key=lambda x: (
+                not x.is_correct,  # x.is_correct == True first
+                -x.confidence if x.confidence else 0,  # higher confidence first
+                min([span.start_offset for span in x.spans]),
+            ),
+        )
+
+        no_label_duplicates = set()  # for top annotation filter
+        for annotation in priority_annotations:
+            if annotation.confidence and annotation.label.threshold > annotation.confidence:
+                continue
+            if not annotation.is_correct and annotation.revised:  # if marked as incorrect by user
+                continue
+            spans_num = 0
+            for span in annotation.spans:
+                for i in range(span.start_offset, span.end_offset):
+                    spans_num |= 1 << i
+            if spans_num & filled:
+                # if there's overlap
+                continue
+            if not annotation.label.has_multiple_top_candidates and annotation.label.id_ in no_label_duplicates:
+                continue
+            annotations.append(annotation)
+            filled |= spans_num
+            if not annotation.label.has_multiple_top_candidates:
+                no_label_duplicates.add(annotation.label.id_)
 
         return sorted(annotations)
 
@@ -1849,16 +1897,22 @@ class Document(Data):
         :param update: Update the bio annotations even they are already available
         :return: list of tuples with each word in the text and the respective label
         """
-        # if not is_file(self.bio_scheme_file_path, raise_exception=False) or update:
-        annotations_in_doc = []
-        for annotation in self.annotations():
-            for span in annotation.spans:
-                annotations_in_doc.append((span.start_offset, span.end_offset, annotation.label.name))
-        converted_text = convert_to_bio_scheme(self.text, annotations_in_doc)
-        with open(self.bio_scheme_file_path, "w", encoding="utf-8") as f:
-            for word, tag in converted_text:
-                f.writelines(word + " " + tag + "\n")
-            f.writelines("\n")
+        converted_text = []
+        if not is_file(self.bio_scheme_file_path, raise_exception=False) or update:
+            converted_text = convert_to_bio_scheme(self)
+            with open(self.bio_scheme_file_path, "w", encoding="utf-8") as f:
+                for word, tag in converted_text:
+                    f.writelines(word + " " + tag + "\n")
+                f.writelines("\n")
+        else:
+            with open(self.bio_scheme_file_path, "r", encoding="utf-8") as f:
+                for line in f.readlines():
+                    if not line.strip():
+                        continue
+                    split_line = line.strip().split(' ')
+                    word = split_line[0]
+                    tag = ' '.join(split_line[1:])  # tag allowed to have multiple words
+                    converted_text.append((word, tag))
 
         return converted_text
 
@@ -2029,7 +2083,7 @@ class Document(Data):
             for token in annotation.tokens():
                 for spacer in search:  # todo fix this search, so that we take regex token from other spans into account
                     before_regex = suggest_regex_for_string(
-                        self.text[start_offset - spacer ** 2 : start_offset], replace_characters=True
+                        self.text[start_offset - spacer**2 : start_offset], replace_characters=True
                     )
                     after_regex = suggest_regex_for_string(
                         self.text[end_offset : end_offset + spacer], replace_characters=True
@@ -2114,6 +2168,9 @@ class Document(Data):
 
     def get_annotations(self) -> List[Annotation]:
         """Get Annotations of the Document."""
+        if self.category is None:
+            raise ValueError(f'Document {self} without Category must not have Annotations')
+
         annotation_file_exists = is_file(self.annotation_file_path, raise_exception=False)
         annotation_set_file_exists = is_file(self.annotation_set_file_path, raise_exception=False)
 
