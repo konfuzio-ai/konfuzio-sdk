@@ -181,14 +181,14 @@ uncertain
  last x
 """
         document = Document(project=self, category=category, text=doc_3_text, dataset_status=3)
-        label_set_2 = LabelSet(id_=3, project=self, categories=[category])
-        view_label = Label(id_=5, text='ViewLabelName', project=self, label_sets=[label_set_2])
+        label_set_2 = LabelSet(id_=4, project=self, categories=[category])
+        view_label = Label(id_=8, text='ViewLabelName', project=self, label_sets=[label_set_2])
         view_label_date = Label(
-            id_=6, text='date', project=self, label_sets=[label_set_2], has_multiple_top_candidates=False
+            id_=9, text='date', project=self, label_sets=[label_set_2], has_multiple_top_candidates=False
         )
-        view_label_3 = Label(id_=7, text='ViewLabelName 3', project=self, label_sets=[label_set_2])
-        view_label_4 = Label(id_=8, text='ViewLabelName 4', project=self, label_sets=[label_set_2], threshold=0.1)
-        view_label_5 = Label(id_=9, text='ViewLabelName 5', project=self, label_sets=[label_set_2])
+        view_label_3 = Label(id_=10, text='ViewLabelName 3', project=self, label_sets=[label_set_2])
+        view_label_4 = Label(id_=11, text='ViewLabelName 4', project=self, label_sets=[label_set_2], threshold=0.1)
+        view_label_5 = Label(id_=12, text='ViewLabelName 5', project=self, label_sets=[label_set_2])
 
         view_annotation_set_test = AnnotationSet(id_=6, document=document, label_set=label_set_2)
 
