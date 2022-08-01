@@ -1,5 +1,5 @@
 """Calculate the accuracy on any level in a  Document."""
-from typing import Tuple, List
+from typing import Tuple, List, Optional
 
 import pandas
 from sklearn.utils.extmath import weighted_mode
@@ -163,6 +163,55 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
     return spans
 
 
+class EvaluationCalculator:
+    """Calculate precision, recall, f1, based on TP, FP, FN."""
+
+    def __init__(self, tp: int = 0, fp: int = 0, fn: int = 0, tn: int = 0, allow_zero: bool = True):
+        """
+        Store evaluation information.
+
+        :param tp: True Positives.
+        :param fp: False Positives.
+        :param fn: False Negatives.
+        :param tn: True Negatives.
+        :param allow_zero: If true, will calculate None for precision and recall when the straightforward application
+        of the formula would otherwise result in 0/0. Raises ZeroDivisionError otherwise.
+        """
+        self.tp = tp
+        self.fp = fp
+        self.fn = fn
+        self.tn = tn
+        self._valid(allow_zero)
+
+    def _valid(self, allow_zero: bool = True) -> None:
+        """Check for 0/0 on precision, recall, and F1 calculation."""
+        if allow_zero:
+            return
+        if self.fp + self.fn == 0:
+            raise ZeroDivisionError("FP and FN are zero, please specify allow_zero=True if you want F1 to be None.")
+        if self.tp + self.fp == 0:
+            raise ZeroDivisionError(
+                "TP and FP are zero, please specify allow_zero=True if you want precision to be None."
+            )
+        if self.tp + self.fn == 0:
+            raise ZeroDivisionError("TP and FN are zero, please specify allow_zero=True if you want recall to be None.")
+
+    @property
+    def precision(self) -> Optional[float]:
+        """Apply precision formula. Returns None if TP+FP=0."""
+        return None if (self.tp + self.fp == 0) else self.tp / (self.tp + self.fp)
+
+    @property
+    def recall(self) -> Optional[float]:
+        """Apply recall formula. Returns None if TP+FN=0."""
+        return None if (self.tp + self.fn == 0) else self.tp / (self.tp + self.fn)
+
+    @property
+    def f1(self) -> Optional[float]:
+        """Apply F1-score formula. Returns None if precision and recall are both None."""
+        return None if (self.tp + self.fp + self.fn == 0) else self.tp / (self.tp + 0.5 * (self.fp + self.fn))
+
+
 class Evaluation:
     """Calculated accuracy measures by using the detailed comparison on Span Level."""
 
@@ -235,15 +284,21 @@ class Evaluation:
         """Return the of all Spans that are found by the Tokenizer."""
         return self._query(search=search)["is_found_by_tokenizer"].sum()
 
-    def precision(self, search) -> float:
+    def get_evaluation_data(self, search, allow_zero: bool = True) -> EvaluationCalculator:
+        """Get precision, recall, f1, based on TP, FP, FN."""
+        return EvaluationCalculator(
+            tp=self.tp(search), fp=self.fp(search), fn=self.fn(search), tn=self.tn(search), allow_zero=allow_zero
+        )
+
+    def precision(self, search) -> Optional[float]:
         """Calculate the Precision and see f1 to calculate imbalanced classes."""
-        return self.tp(search=search) / (self.tp(search=search) + self.fp(search=search))
+        return EvaluationCalculator(tp=self.tp(search=search), fp=self.fp(search=search)).precision
 
-    def recall(self, search) -> float:
+    def recall(self, search) -> Optional[float]:
         """Calculate the Recall and see f1 to calculate imbalanced classes."""
-        return self.tp(search=search) / (self.tp(search=search) + self.fn(search=search))
+        return EvaluationCalculator(tp=self.tp(search=search), fn=self.fn(search=search)).recall
 
-    def f1(self, search) -> float:
+    def f1(self, search) -> Optional[float]:
         """Calculate the F1 Score of one class.
 
         Please note: As suggested by Opitz et al. (2021) use the arithmetic mean over individual F1 scores.
@@ -263,6 +318,4 @@ class Evaluation:
             3. If you have three Labels and three documents, calculate six F-1 Scores and use the arithmetic mean.
 
         """
-        return self.tp(search=search) / (
-            self.tp(search=search) + 0.5 * (self.fp(search=search) + self.fn(search=search))
-        )
+        return EvaluationCalculator(tp=self.tp(search=search), fp=self.fp(search=search), fn=self.fn(search=search)).f1

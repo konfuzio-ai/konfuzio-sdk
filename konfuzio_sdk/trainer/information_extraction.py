@@ -1492,7 +1492,7 @@ def process_document_data(
                 or (
                     annotation.confidence
                     and hasattr(annotation.label, 'threshold')
-                    and annotation.confidence < annotation.label.threshold
+                    and annotation.confidence < annotation.label.threshold  # todo shouldn't this be a greater than?
                 )
             ):
                 pass
@@ -2586,7 +2586,7 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
         inference_document = deepcopy(document)
         # 2. tokenize
         self.tokenizer.tokenize(inference_document)
-        if not inference_document.spans:
+        if not inference_document.spans():
             logger.error(f'{self.tokenizer} does not provide Spans for {document}')
             raise NotImplementedError('No error handling when Spans are missing.')
         # 3. preprocessing
@@ -2713,10 +2713,16 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
             # todo: use NO_LABEL for any Annotation that has no Label, instead of keeping Label = None
             no_label_annotations = document.annotations(use_correct=False, label=document.project.no_label)
             label_annotations = [x for x in document.annotations(use_correct=False) if x.label.id_ is not None]
-            if not document.is_online:
+            # We calculate features of documents as long as they have IDs, even if they are offline.
+            # The assumption is that if they have an ID, then the data came either from the API or from the DB.
+            if document.id_ is None:
                 # inference time todo reduce shuffled complexity
-                assert not label_annotations, 'Non online Documents have no human revised Annotations.'
-                raise NotImplementedError(f'{document} is not online, please us process_document_data function.')
+                assert (
+                    not label_annotations
+                ), "Documents that don't come from the server have no human revised Annotations."
+                raise NotImplementedError(
+                    f'{document} does not come from the server, please use process_document_data function.'
+                )
             else:
                 # training time: todo reduce shuffled complexity
                 if isinstance(no_label_limit, int):

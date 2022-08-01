@@ -6,7 +6,7 @@ import pytest
 from pandas import DataFrame
 
 from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span, LabelSet, Label, Category
-from konfuzio_sdk.evaluate import compare, grouped, Evaluation
+from konfuzio_sdk.evaluate import compare, grouped, Evaluation, EvaluationCalculator
 
 from konfuzio_sdk.samples import LocalTextProject
 from tests.variables import TEST_DOCUMENT_ID
@@ -44,7 +44,7 @@ class TestCompare(unittest.TestCase):
         doc_a = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_b = prj.get_document_by_id(TEST_DOCUMENT_ID)  # predicted
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 23  # 24 if considering negative Annotations
+        assert len(evaluation) == 24  # 23 if not considering negative Annotations
         # for an Annotation which is human made, it is nan, so that above threshold is False
         # doc_a 19 + 2 multiline + 2 feedback required + 1 rejected
         assert evaluation["true_positive"].sum() == 21  # 1 multiline with 2 lines = 2 Annotations
@@ -62,7 +62,7 @@ class TestCompare(unittest.TestCase):
         doc_b._annotations.pop(0)  # pop an Annotation that is correct in BOTH  Documents
         assert doc_a._annotations == doc_b._annotations  # first Annotation is removed in both  Documents
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 21  # 22 if considering negative Annotations, 2 Annotations are is_correct false
+        assert len(evaluation) == 22  # 21 if not considering negative Annotations, 2 Annotations are is_correct false
         # doc_a 18 (multiline removed) + 1 multiline + 2 feedback required + 1 rejected
         assert evaluation["true_positive"].sum() == 19
         assert evaluation["false_positive"].sum() == 0
@@ -78,7 +78,7 @@ class TestCompare(unittest.TestCase):
         doc_b._annotations.pop(11)  # pop an Annotation that is correct in BOTH  Documents
         assert doc_a._annotations == doc_b._annotations  # last Annotation is removed in both  Documents
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 22  # 23 if considering negative Annotations, 2 Annotations are is_correct false
+        assert len(evaluation) == 23  # 22 if not considering negative Annotations, 2 Annotations are is_correct false
         # doc_a 18 + 2 multiline + 2 feedback required + 1 rejected
         assert evaluation["true_positive"].sum() == 20
         assert evaluation["false_positive"].sum() == 0
@@ -95,7 +95,7 @@ class TestCompare(unittest.TestCase):
 
         assert len(doc_b.annotations()) == len(doc_a.annotations()) - 1
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 23  # 24 if considering negative Annotations, 2 Annotations are false
+        assert len(evaluation) == 24  # 23 if not considering negative Annotations, 2 Annotations are false
         # doc_a 19 + 2 multiline + 2 feedback required + 1 rejected
         assert evaluation["true_positive"].sum() == 19  # 1 multiline with 2 lines = 2 Annotations
         assert evaluation["false_positive"].sum() == 0
@@ -115,7 +115,7 @@ class TestCompare(unittest.TestCase):
         assert len(doc_a.annotations()) == len(doc_b.annotations()) - 1
         evaluation = compare(doc_a, doc_b)
         # 24 if considering negative Annotations, 2 annotations are false and two have feedback required
-        assert len(evaluation) == 23
+        assert len(evaluation) == 24
         assert evaluation["true_positive"].sum() == 19
         assert evaluation["false_positive"].sum() == 4  # 1 multiline (2 lines == 2 Annotations) + 2 feedback required
         assert evaluation["false_negative"].sum() == 0
@@ -146,7 +146,7 @@ class TestCompare(unittest.TestCase):
 
         assert len(doc_a.annotations()) == len(doc_b.annotations()) - 1
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 23  # 24 if considering negative Annotations, 2 Annotations are false
+        assert len(evaluation) == 24  # 23 if not considering negative Annotations, 2 Annotations are false
         # doc_a 18 + 1 multiline + 2 feedback required + 1 rejected
         assert evaluation["true_positive"].sum() == 19
         assert evaluation["false_positive"].sum() == 2  # 1 multiline (2 lines == 2 Annotations)
@@ -163,7 +163,7 @@ class TestCompare(unittest.TestCase):
             doc_b.add_annotation(annotation)
 
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 23  # 24 if considering negative Annotations, 2 Annotations are false
+        assert len(evaluation) == 24  # 23 if not considering negative Annotations, 2 Annotations are false
         # doc_a 19 + 2 multiline
         assert evaluation["true_positive"].sum() == 20  # due to the fact that we find both offsets of the multiline
         assert evaluation["false_positive"].sum() == 0
@@ -180,7 +180,7 @@ class TestCompare(unittest.TestCase):
             doc_a.add_annotation(annotation)
 
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 23  # 24 if considering negative, 2 Annotations are false
+        assert len(evaluation) == 24  # 23 if not considering negative, 2 Annotations are false
         # doc_a 18 + 2 multiline
         assert evaluation["true_positive"].sum() == 20  # due to the fact that we find both offsets of the multiline
         assert evaluation["false_positive"].sum() == 1
@@ -193,7 +193,7 @@ class TestCompare(unittest.TestCase):
         doc_b = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_a = Document(project=prj, category=doc_b.category)
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 24  # 25 if considering negative Annotations
+        assert len(evaluation) == 25  # 24 if not considering negative Annotations
         assert evaluation["true_positive"].sum() == 0
         # any Annotation above threshold is a false positive independent if it's correct or revised
         assert len([an for an in doc_b.annotations(use_correct=False) if an.confidence > an.label.threshold]) == 21
@@ -208,7 +208,7 @@ class TestCompare(unittest.TestCase):
         doc_b = Document(project=prj, category=doc_a.category)
         evaluation = compare(doc_a, doc_b)
         # 25 if considering negative Annotations, we evaluate on span level an one annotation is multiline
-        assert len(evaluation) == 24
+        assert len(evaluation) == 25
         assert evaluation["true_positive"].sum() == 0
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 21
@@ -237,7 +237,7 @@ class TestCompare(unittest.TestCase):
             doc_b.add_annotation(annotation)
 
         evaluation = compare(doc_a, doc_b)
-        assert len(evaluation) == 23  # 24 if considering negative Annotations,
+        assert len(evaluation) == 24  # 23 if not considering negative Annotations,
         # Evaluation as it is now: everything needs to be find even if multiple=False
         assert evaluation["true_positive"].sum() == 20
         assert evaluation["false_positive"].sum() == 0
@@ -890,7 +890,7 @@ class TestEvaluation(unittest.TestCase):
         """Test that data has not changed."""
         project = LocalTextProject()
         assert len(project.documents) == 2
-        assert len(project.test_documents) == 3
+        assert len(project.test_documents) == 4
 
     def test_true_positive(self):
         """Count two Spans from two Training Documents."""
@@ -919,7 +919,10 @@ class TestEvaluation(unittest.TestCase):
         scores = []
         for label in project.labels:
             if label != project.no_label:
-                scores.append(evaluation.f1(search=label))
+                f1 = evaluation.f1(search=label)
+                # None would mean that there were no candidate Annotations to check for this label
+                if f1 is not None:
+                    scores.append(f1)
         assert mean(scores) == 1.0
 
     def test_precision(self):
@@ -929,7 +932,10 @@ class TestEvaluation(unittest.TestCase):
         scores = []
         for label in project.labels:
             if label != project.no_label:
-                scores.append(evaluation.precision(search=label))
+                precision = evaluation.precision(search=label)
+                # None would mean that there were no candidate Annotations to check for this label
+                if precision is not None:
+                    scores.append(evaluation.precision(search=label))
         assert mean(scores) == 1.0
 
     def test_recall(self):
@@ -939,7 +945,10 @@ class TestEvaluation(unittest.TestCase):
         scores = []
         for label in project.labels:
             if label != project.no_label:
-                scores.append(evaluation.recall(search=label))
+                recall = evaluation.recall(search=label)
+                # None would mean that there were no candidate Annotations to check for this label
+                if recall is not None:
+                    scores.append(evaluation.recall(search=label))
         assert mean(scores) == 1.0
 
     def test_false_negatives(self):
@@ -1146,3 +1155,52 @@ class TestEvaluationSecondLabelDocumentBDocumentA(unittest.TestCase):
     def test_true_negatives(self):
         """Evaluate that that nothing is correctly predicted below threshold."""
         assert self.evaluation.tn(search=self.label) == 0
+
+
+class TestEvaluationCalculator(unittest.TestCase):
+    """Test the Evaluation Calculator."""
+
+    def test_evaluation_calculator(self):
+        """Test the Evaluation Calculator."""
+        evaluation_calculator = EvaluationCalculator(tp=3, fp=22, fn=2)
+        assert evaluation_calculator.tn == 0
+        assert evaluation_calculator.precision == 0.12  # 3 / (3 + 22)
+        assert evaluation_calculator.recall == 0.6  # 3 / (3 + 2)
+        assert evaluation_calculator.f1 == 0.2  # 3 / (3 + 0.5 * (22 + 2)) or (2 * 0.12 * 0.6) / (0.12 + 0.6)
+
+    def test_evaluation_calculator_perfect_score_can_be_calculated(self):
+        """Check that it's possible to calculate 100% score."""
+        evaluation_calculator = EvaluationCalculator(tp=10, fp=0, fn=0)
+        assert evaluation_calculator.precision == 1.0
+        assert evaluation_calculator.recall == 1.0
+        assert evaluation_calculator.f1 == 1.0
+
+    def test_evaluation_calculator_zero_not_allowed(self):
+        """Check that the Evaluation Calculator raises ZeroDivisionError when allow_zero==False.
+
+        This should happen in situations where precision or recall calculations would produce a division by zero.
+        """
+        with self.assertRaises(ZeroDivisionError) as context:
+            EvaluationCalculator(tp=0, fp=0, fn=100, allow_zero=False)
+            assert 'TP and FP are zero' in context.exception
+        with self.assertRaises(ZeroDivisionError) as context:
+            EvaluationCalculator(tp=0, fp=100, fn=0, allow_zero=False)
+            assert 'TP and FN are zero' in context.exception
+        with self.assertRaises(ZeroDivisionError) as context:
+            EvaluationCalculator(tp=0, fp=0, fn=0, allow_zero=False)
+            assert 'FP and FN are zero' in context.exception
+
+    def test_evaluation_calculator_none_values(self):
+        """Test the Evaluation Calculator when precision or recall are calculated as 0/0."""
+        no_precision = EvaluationCalculator(tp=0, fp=0, fn=100)
+        assert no_precision.precision is None
+        assert no_precision.recall == 0.0
+        assert no_precision.f1 == 0.0
+        no_recall = EvaluationCalculator(tp=0, fp=100, fn=0)
+        assert no_recall.precision == 0.0
+        assert no_recall.recall is None
+        assert no_recall.f1 == 0.0
+        no_f1 = EvaluationCalculator(tp=0, fp=0, fn=0)
+        assert no_f1.precision is None
+        assert no_f1.recall is None
+        assert no_f1.f1 is None

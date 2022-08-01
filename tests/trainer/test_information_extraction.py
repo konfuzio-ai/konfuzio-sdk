@@ -142,6 +142,9 @@ class TestSequenceInformationSeparateLabelsExtraction(unittest.TestCase):
         self.pipeline.category = self.project.get_category_by_id(id_=63)
         self.pipeline.documents = self.pipeline.category.documents()[:5]
         self.pipeline.test_documents = self.pipeline.category.test_documents()[:1]
+        # todo have a separate test case for calculating features of offline documents
+        for doc in self.pipeline.documents + self.pipeline.test_documents:
+            doc.set_offline()
 
     def test_2_make_features(self):
         """Make sure the Data and Pipeline is configured."""
@@ -191,6 +194,9 @@ class TestSequenceDocumentEntityMulticlassModelExtraction(unittest.TestCase):
         self.pipeline.category = self.project.get_category_by_id(id_=63)
         self.pipeline.documents = self.pipeline.category.documents()[:5]
         self.pipeline.test_documents = self.pipeline.category.test_documents()[:1]
+        # todo have a separate test case for calculating features of offline documents
+        for doc in self.pipeline.documents + self.pipeline.test_documents:
+            doc.set_offline()
 
     def test_2_make_features(self):
         """Make sure the Data and Pipeline is configured."""
@@ -429,7 +435,7 @@ class TestInformationExtraction(unittest.TestCase):
         features, feature_names, errors = pipeline.features(document)
         assert len(feature_names) == 1102  # todo investigate if all features are calculated correctly, see #9289
         assert features['is_correct'].sum() == 19
-        assert features['revised'].sum() == 1
+        assert features['revised'].sum() == 2
 
 
 class TestAddExtractionAsAnnotation(unittest.TestCase):

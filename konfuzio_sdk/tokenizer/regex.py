@@ -22,6 +22,14 @@ class RegexTokenizer(AbstractTokenizer):
         """Return string representation of the class."""
         return f"{self.__class__.__name__}: {repr(self.regex)}"
 
+    def __hash__(self):
+        """Get unique hash for RegexTokenizer."""
+        return hash(repr(self.regex))
+
+    def __eq__(self, other) -> bool:
+        """Compare RegexTokenizer with another Tokenizer."""
+        return hash(self) == hash(other)
+
     def fit(self, category: Category):
         """Fit the tokenizer accordingly with the Documents of the Category."""
         assert sdk_isinstance(category, Category)
@@ -50,7 +58,7 @@ class RegexTokenizer(AbstractTokenizer):
 
         # Create a revised = False and is_correct = False (defaults) Annotation
         for span in spans:
-            if span not in document.spans:  # (use_correct=False):
+            if span not in document.spans():  # (use_correct=False):
                 # todo this hides the fact, that Tokenizers of different quality can create the same Span
                 # todo we create an overlapping Annotation in case the Tokenizer finds a correct match
                 annotation = Annotation(
