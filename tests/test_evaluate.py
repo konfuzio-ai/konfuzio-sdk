@@ -892,6 +892,12 @@ class TestEvaluation(unittest.TestCase):
         assert len(project.documents) == 2
         assert len(project.test_documents) == 4
 
+    def test_not_strict(self):
+        """Test that evaluation can be initialized with strict mode disabled."""
+        project = LocalTextProject()
+        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)), strict=False)
+        assert evaluation.strict is False
+
     def test_true_positive(self):
         """Count two Spans from two Training Documents."""
         project = LocalTextProject()
