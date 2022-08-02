@@ -217,14 +217,15 @@ class Evaluation:
 
     from konfuzio_sdk.data import Document
 
-    def __init__(self, documents: List[Tuple[Document, Document]]):
+    def __init__(self, documents: List[Tuple[Document, Document]], strict: bool = True):
         """
         Relate to the two document instances.
 
         :param documents: A list of tuple Documents that should be compared.
+        :param strict: A boolean passed to the `compare` function.
         """
         self.documents = documents
-        self.strict = True
+        self.strict = strict
         self.only_use_correct = True
         self.data = None
         self.calculate()
