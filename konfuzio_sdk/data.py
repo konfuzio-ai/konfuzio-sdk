@@ -112,10 +112,10 @@ class Page(Data):
         if self.index is None:
             logger.error(f'Page index is None of {self} in {self.document}.')
             check_page = False
-        if self.height is None:
+        if self.height is None:  # todo why do we allow pages with height<=0?
             logger.error(f'Page Height is None of {self} in {self.document}.')
             check_page = False
-        if self.width is None:
+        if self.width is None:  # todo why do we allow pages with width<=0?
             logger.error(f'Page Width is None of {self} in {self.document}.')
             check_page = False
         assert check_page
@@ -214,7 +214,7 @@ class Bbox:
 
     def __repr__(self):
         """Represent the Box."""
-        return f'{self.__class__.__name__}: {self.x1} {self.y0} {self.y0} {self.y1} on Page {self.page}'
+        return f'{self.__class__.__name__}: {self.x0} {self.x1} {self.y0} {self.y1} on Page {self.page}'
 
     def __hash__(self):
         """Return identical value for a Bounding Box."""
@@ -229,7 +229,7 @@ class Bbox:
     ):
         """Validate contained data."""
         if self.x0 == self.x1:
-            raise ValueError(f'{self} no width in {self.page}.')
+            raise ValueError(f'{self} has no width in {self.page}.')
 
         if self.x0 > self.x1:
             raise ValueError(f'{self} has negative width in {self.page}.')
@@ -245,6 +245,12 @@ class Bbox:
 
         if self.x1 > self.page.width:
             raise ValueError(f'{self} exceeds width of {self.page}.')
+
+        if self.y0 < 0:
+            raise ValueError(f'{self} has negative y coordinate in {self.page}.')
+
+        if self.x0 < 0:
+            raise ValueError(f'{self} has negative x coordinate in {self.page}.')
 
 
 class AnnotationSet(Data):
