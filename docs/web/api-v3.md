@@ -197,7 +197,118 @@ For example, you can specify `?fields=id,created_at` to only return the `id` and
 Refer to the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`_ for a specific endpoint to see if it supports
 using the `fields` parameter. When supported, any field in the response schema can be used in the `fields` parameter.
 
-## Guides and How-Tos
+## Supported OCR languages
+
+The default OCR engine for [Konfuzio Server](https://app.konfuzio.com) supports the following languages:
+
+Afrikaans, Albanian, Asturian, Azerbaijani (Latin), Basque, Belarusian (Cyrillic), Belarusian (Latin), Bislama,
+Bosnian (Latin), Breton, Bulgarian, Buryat (Cyrillic), Catalan, Cebuano, Chamorro, Chinese Simplified, Chinese
+Traditional, Cornish, Corsican, Crimean Tatar (Latin), Croatian, Czech, Danish, Dutch, English, Erzya (Cyrillic),
+Estonian, Faroese, Fijian, Filipino, Finnish, French, Friulian, Gagauz (Latin), Galician, German, Gilbertese,
+Greenlandic, Haitian Creole, Hani, Hawaiian, Hmong Daw (Latin), Hungarian, Icelandic, Inari Sami, Indonesian,
+Interlingua, Inuktitut (Latin), Irish, Italian, Japanese, Javanese, K'iche', Kabuverdianu, Kachin (Latin), Kara-Kalpak (
+Latin), Kara-Kalpak (Cyrillic), Karachay-Balkar, Kashubian, Kazakh (Cyrillic), Kazakh (Latin), Khasi, Korean, Koryak,
+Kosraean, Kumyk (Cyrillic), Kurdish (Latin), Kyrgyz (Cyrillic), Lakota, Latin, Lithuanian, Lower Sorbian, Lule Sami,
+Luxembourgish, Malay (Latin), Maltese, Manx, Maori, Mongolian (Cyrillic), Montenegrin (Cyrillic), Montenegrin (Latin),
+Neapolitan, Niuean, Nogay, Northern Sami (Latin), Norwegian, Occitan, Ossetic, Polish, Portuguese, Ripuarian, Romanian,
+Romansh, Russian, Samoan (Latin), Scots, Scottish Gaelic, Serbian (Cyrillic), Serbian (Latin), Skolt Sami, Slovak,
+Slovenian, Southern Sami, Spanish, Swahili (Latin), Swedish, Tajik (Cyrillic), Tatar (Latin), Tetum, Tongan, Turkish,
+Turkmen (Latin), Tuvan, Upper Sorbian, Uzbek (Cyrillic), Uzbek (Latin), Volapük, Walser, Welsh, Western Frisian, Yucatec
+Maya, Zhuang, Zulu.
+
+The detection of handwritten text is supported for the following languages:
+
+English, Chinese Simplified, French, German, Italian, Portuguese, Spanish.
+
+The availability of OCR languages depends on the selected OCR engine and might differ across configurations (e.g.
+on-premise installation).
+
+## Supported File Types
+
+Konfuzio supports various file types:
+
+### PDFs
+
+Konfuzio supports PDF/A-1a, PDF/A-1b, PDF/A-2a, PDF/A-2b, PDF/A-3a, PDF/A-3b, PDF/X-1a, PDF/1.7, PDF/2.0. An attempt
+will be made to repair corrupted PDFs. Konfuzio does not support AcroForms and AEM (Adobe Experience Manager) form
+content.
+
+### Images
+
+Konfuzio supports JPEG and PNG (including support for alpha channel). _Support for TIFF is experimental._
+
+### Office documents
+
+Konfuzio offers limited support for common office documents like Microsoft® Word (.doc, .docx), Excel (.xls, .xlsx),
+PowerPoint (.ppt, .pptx) and Publisher as well as the Open Document Format (ODF). Uploaded office documents are
+converted to PDFs by Konfuzio. Libre Office is used for the PDF conversion. The layout of the converted office document
+may differ from the original. Office files can not be edited after they have been uploaded.
+
+## OCR Processing
+
+After [uploading a document](https://help.konfuzio.com/modules/documents/index.html#upload-new-documents), depending on
+how your project was set up, the document is automatically queued and processed by our OCR. In the below breakdown we
+try to demystify this process, and give you some insight into all the steps which happen during OCR processing.
+
+### Project settings
+
+We first look at the projects settings to see what base settings have been set up for your documents.
+
+1. **Chosen OCR engine**
+    1. easy
+    2. precise
+
+2. **Chosen processing type**
+    1. OCR
+    2. Embedding
+    3. Embedding and OCR
+
+3. **Chosen auto-rotation option**
+
+   (Only available for precise OCR engine)
+
+    1. None
+    2. Rounded
+    3. Exact
+
+### File pre-processing
+
+During file upload, after the Project settings have been evaluated, we look at the file:
+
+1. We check if the filetype is [supported](https://dev.konfuzio.com/web/api-v3.html#supported-file-types).
+2. We check if the file is valid and/or corrupted.
+3. If the file is corrupted, some repairing is attempted.
+4. We check if the filetype provides embeddings.
+5. We check if the project enforces OCR.
+6. We then conduct OCR on the file.
+7. We check if the image is angled.
+8. We create thumbnails per page.
+9. We create images per page.
+
+
+### OCR Text extraction
+
+During evaluation of both project settings and file, we also process OCR extraction
+
+1. We use the chosen engine on the pre-processed file.
+    1. If "Embedding and OCR" is chosen, internally we check which processing type is the most suitable, and use either
+       Embedding or OCR
+    2. Depending on chosen processing type, some pre-processing may be done:
+        1. Convert non-PDF Documents to a [PDF](https://dev.konfuzio.com/web/api.html#pdfs) 
+           that is being used here
+        2. Convert PDF to text (in case of embeddings)
+    3. If some sort of PDF corruption is detected, within our ability we attempt to repair the PDF
+    4. If the PDF or TIFF is multi page (and valid) we split the document in pages and process each page separately
+2. We check whether auto-rotation was chosen when the precise OCR engine is used]
+    1. If rounded angle correction was chosen, we rotate the image to the nearest 45/90 degrees.
+    2. If exact angle rotation was chosen, we rotate the image at its exact angle rotation value.
+3. We attempt to extract the text from (either ocr, embedded or both)
+    1. OCR may fail because text on the document is technically unreadable, the file is corrupted or empty and cannot be
+       repaired
+    2. OCR may fail because engine does not support the text language
+
+Finally, we return you the extracted text.
+
 
 These guides will teach you how to do common operations with the Konfuzio API. You can refer to
 our [API guide](./api_v3.html) for a general overview of how the API works and to
