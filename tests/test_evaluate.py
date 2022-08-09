@@ -890,7 +890,13 @@ class TestEvaluation(unittest.TestCase):
         """Test that data has not changed."""
         project = LocalTextProject()
         assert len(project.documents) == 2
-        assert len(project.test_documents) == 3
+        assert len(project.test_documents) == 4
+
+    def test_not_strict(self):
+        """Test that evaluation can be initialized with strict mode disabled."""
+        project = LocalTextProject()
+        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)), strict=False)
+        assert evaluation.strict is False
 
     def test_true_positive(self):
         """Count two Spans from two Training Documents."""
@@ -919,7 +925,10 @@ class TestEvaluation(unittest.TestCase):
         scores = []
         for label in project.labels:
             if label != project.no_label:
-                scores.append(evaluation.f1(search=label))
+                f1 = evaluation.f1(search=label)
+                # None would mean that there were no candidate Annotations to check for this label
+                if f1 is not None:
+                    scores.append(f1)
         assert mean(scores) == 1.0
 
     def test_precision(self):
@@ -929,7 +938,10 @@ class TestEvaluation(unittest.TestCase):
         scores = []
         for label in project.labels:
             if label != project.no_label:
-                scores.append(evaluation.precision(search=label))
+                precision = evaluation.precision(search=label)
+                # None would mean that there were no candidate Annotations to check for this label
+                if precision is not None:
+                    scores.append(evaluation.precision(search=label))
         assert mean(scores) == 1.0
 
     def test_recall(self):
@@ -939,7 +951,10 @@ class TestEvaluation(unittest.TestCase):
         scores = []
         for label in project.labels:
             if label != project.no_label:
-                scores.append(evaluation.recall(search=label))
+                recall = evaluation.recall(search=label)
+                # None would mean that there were no candidate Annotations to check for this label
+                if recall is not None:
+                    scores.append(evaluation.recall(search=label))
         assert mean(scores) == 1.0
 
     def test_false_negatives(self):

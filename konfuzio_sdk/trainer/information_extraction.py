@@ -2502,7 +2502,7 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
         inference_document = deepcopy(document)
         # 2. tokenize
         self.tokenizer.tokenize(inference_document)
-        if not inference_document.spans:
+        if not inference_document.spans():
             logger.error(f'{self.tokenizer} does not provide Spans for {document}')
             raise NotImplementedError('No error handling when Spans are missing.')
         # 3. preprocessing

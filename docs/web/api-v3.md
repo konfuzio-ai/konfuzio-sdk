@@ -44,6 +44,11 @@ A `sessionid` is sent in the `cookie` field of every request.
 This `sessionid` is generated and used by the Konfuzio website when you log in to avoid additional authentication in API
 requests, and should **not** be relied upon by third parties.
 
+### Single sign-on (SSO) authentication
+
+SSO authentication is available through [KeyCloak](https://www.keycloak.org/), which is an open source identity and access management solution. This functionality is only offered to our on-prem users. Further documentation regarding our KeyCloak integration can be found on our [on-prem documentation page](https://dev.konfuzio.com/web/on_premises.html#keycloak-integration).
+
+
 ### Token authentication
 
 You send a `POST` request with your Konfuzio username (email) and password to our [authentication endpoint](link), which

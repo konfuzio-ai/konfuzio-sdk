@@ -4,7 +4,7 @@ import unittest
 
 import pytest
 from konfuzio_sdk import IMAGE_FILE, PDF_FILE, OFFICE_FILE
-from konfuzio_sdk.data import Project
+from konfuzio_sdk.data import Project, Document, Annotation, Span, Label, LabelSet, Category
 from konfuzio_sdk.utils import (
     get_id,
     get_timestamp,
@@ -60,9 +60,22 @@ class TestUtils(unittest.TestCase):
 
     def test_convert_to_bio_scheme(self):
         """Test conversion to BIO scheme."""
+        proj = Project(None)
+        category = Category(project=proj, id_=1)
+        label_set = LabelSet(id_=2, project=proj, categories=[category])
+        label = Label(text='Organization', project=proj, label_sets=[label_set])
         text = "Hello, it's Konfuzio."
-        annotations = [(12, 20, 'Organization')]
-        converted_text = convert_to_bio_scheme(text=text, annotations=annotations)
+        doc = Document(proj, text=text, category=category)
+        _ = Annotation(
+            id_=20,
+            document=doc,
+            label=label,
+            label_set=label_set,
+            spans=[Span(start_offset=12, end_offset=20)],
+        )
+
+        converted_text = convert_to_bio_scheme(doc)
+
         assert converted_text == [
             ('Hello', 'O'),
             (',', 'O'),
@@ -74,17 +87,32 @@ class TestUtils(unittest.TestCase):
 
     def test_convert_to_bio_scheme_no_annotations(self):
         """Test conversion to BIO scheme without Annotations."""
+        proj = Project(None)
+        category = Category(project=proj, id_=1)
         text = "Hello, it's Konfuzio."
-        annotations = []
-        converted_text = convert_to_bio_scheme(text=text, annotations=annotations)
+        doc = Document(proj, text=text, category=category)
+
+        converted_text = convert_to_bio_scheme(doc)
         assert len(converted_text) == 6
         assert all([annotation[1] == 'O' for annotation in converted_text])
 
     def test_convert_to_bio_scheme_no_text(self):
         """Test conversion to BIO scheme without text."""
-        text = ''
-        annotations = [(12, 20, 'Organization')]
-        converted_text = convert_to_bio_scheme(text=text, annotations=annotations)
+        proj = Project(None)
+        category = Category(project=proj, id_=1)
+        label_set = LabelSet(id_=2, project=proj, categories=[category])
+        label = Label(text='Organization', project=proj, label_sets=[label_set])
+        text = ""
+        doc = Document(proj, text=text, category=category)
+        _ = Annotation(
+            id_=20,
+            document=doc,
+            label=label,
+            label_set=label_set,
+            spans=[Span(start_offset=12, end_offset=20)],
+        )
+        converted_text = convert_to_bio_scheme(doc)
+
         self.assertEqual(converted_text, [])
 
     def test_map_offsets(self):
