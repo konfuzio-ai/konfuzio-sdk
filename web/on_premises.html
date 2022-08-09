@@ -99,7 +99,9 @@
 <li class="toctree-l3"><a class="reference internal" href="#important-notes">Important notes</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id3">Environment Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#environment-variables-f">Environment Variables f</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#environment-variables-for-read-api-container">Environment Variables for Read API Container</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#environment-variables-for-detectron-container">Environment Variables for Detectron Container</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="changelog_app.html">Changelog</a></li>
@@ -509,9 +511,9 @@ and webhooks. The CI application needs network access to the Konfuzio installati
 </ul>
 </section>
 </section>
-<section id="id3">
-<h2>Environment Variables<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
-<p>Konfuzio Server is fully configured via environment variables, these can be passed as dedicated environment variables or a single .env to the Konfuzio containers. A template for a .env file is provided here:</p>
+<section id="environment-variables-f">
+<h2>Environment Variables f<a class="headerlink" href="#environment-variables-f" title="Permalink to this headline">¶</a></h2>
+<p>Konfuzio Server is fully configured via environment variables, these can be passed as dedicated environment variables or a single .env to the Konfuzio Server containers (registry.gitlab.com/konfuzio/text-annotation/master). A template for a .env file is provided here:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span># False for production, True for local development (mandatory).
 # See https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-DEBUG
 DEBUG=
@@ -649,6 +651,39 @@ KEYCLOAK_TEST_PASSWORD=
 
 # Turn on/off autoretraining (optional).
 TRAIN_EXTRACTION_AI_AUTOMATICALLY_IF_QUEUE_IS_EMPTY=False
+</pre></div>
+</div>
+</section>
+<section id="environment-variables-for-read-api-container">
+<h2>Environment Variables for Read API Container<a class="headerlink" href="#environment-variables-for-read-api-container" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span> # The Azure OCR API key
+AZURE_OCR_KEY=123456789
+ # The URL of the READ API
+AZURE_OCR_BASE_URL=http://host:5000
+# The version of the READ API (optional).
+AZURE_OCR_VERSION=v3.2
+</pre></div>
+</div>
+</section>
+<section id="environment-variables-for-detectron-container">
+<h2>Environment Variables for Detectron Container<a class="headerlink" href="#environment-variables-for-detectron-container" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span># Connect Broker
+BROKER_URL=
+# Connect result backend
+RESULT_BACKEND=
+# Decide if GPU used (True/False)
+GPU=
+# Allow root
+C_FORCE_ROOT=True
+# Connect Sentry (optional)
+SENTRY_ENVIRONMENT=
+SENTRY_RELEASE=
+# Setting for task processing (optional)
+WORKER_SEND_TASK_EVENTS=
+TASK_SEND_SENT_EVENT=
+TASK_TRACK_STARTED=
+TASK_ACKS_ON_FAILURE_OR_TIMEOUT=
+TASK_ACKS_LATE=
 </pre></div>
 </div>
 </section>
