@@ -2598,15 +2598,19 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
             # todo calculate features of Document as defined in pipeline and do not check afterwards
         # 4. prediction and store most likely prediction and its accuracy in separated columns
         results = pandas.DataFrame(data=self.clf.predict_proba(X=independet_variables), columns=self.clf.classes_)
+
+        # Remove no_label predictions
+        if 'NO_LABEL' in results.columns:
+            results = results.drop(['NO_LABEL'], axis=1)
+
+        if 'NO_LABEL_SET' in results.columns:
+            results = results.drop(['NO_LABEL_SET'], axis=1)
+
         df['label_text'] = results.idxmax(axis=1)
         df['Accuracy'] = results.max(axis=1)
         # 5. Translation
         df['Translated_Candidate'] = df['offset_string']  # todo: make translation explicit: It's a cool Feature
         # Main Logic -------------------------
-
-        # Remove no_label predictions
-        if 'NO_LABEL' in results.columns:
-            results = results.drop(['NO_LABEL'], axis=1)
 
         # Do column renaming to be compatible with text-annotation
         # todo: how can multilines be created via SDK

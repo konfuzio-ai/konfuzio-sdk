@@ -186,7 +186,7 @@ class ListTokenizer(AbstractTokenizer):
 
     def fit(self, category: Category):
         """Call fit on all tokenizers."""
-        assert isinstance(category, Category)
+        assert sdk_isinstance(category, Category)
 
         for tokenizer in self.tokenizers:
             tokenizer.fit(category)

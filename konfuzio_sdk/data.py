@@ -1082,7 +1082,7 @@ class Annotation(Data):
 
         if isinstance(label, int):
             self.label: Label = self.document.project.get_label_by_id(label)
-        elif isinstance(label, Label):
+        elif sdk_isinstance(label, Label):
             self.label: Label = label
         else:
             raise ValueError(f'{self.__class__.__name__} {self.id_local} has no Label.')
@@ -1094,7 +1094,7 @@ class Annotation(Data):
         # handles association to an Annotation Set if the Annotation belongs to a Category
         if isinstance(label_set_id, int):
             self.label_set: LabelSet = self.document.project.get_label_set_by_id(label_set_id)
-        elif isinstance(label_set, LabelSet):
+        elif sdk_isinstance(label_set, LabelSet):
             self.label_set = label_set
         else:
             self.label_set = None
