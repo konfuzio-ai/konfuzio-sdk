@@ -412,9 +412,9 @@ Click `SSO` on login page to log in to Konfuzio using keycloak
 - The Keycloak admin user cannot login into Konfuzio Server.
 
 
-## Environment Variables
+## Environment Variables f
 
-Konfuzio Server is fully configured via environment variables, these can be passed as dedicated environment variables or a single .env to the Konfuzio containers. A template for a .env file is provided here:
+Konfuzio Server is fully configured via environment variables, these can be passed as dedicated environment variables or a single .env to the Konfuzio Server containers (registry.gitlab.com/konfuzio/text-annotation/master). A template for a .env file is provided here:
 
 ```text
 # False for production, True for local development (mandatory).
@@ -557,3 +557,34 @@ TRAIN_EXTRACTION_AI_AUTOMATICALLY_IF_QUEUE_IS_EMPTY=False
 
 ```
 
+## Environment Variables for Read API Container
+```text
+ # The Azure OCR API key
+AZURE_OCR_KEY=123456789
+ # The URL of the READ API
+AZURE_OCR_BASE_URL=http://host:5000
+# The version of the READ API (optional).
+AZURE_OCR_VERSION=v3.2
+```
+
+## Environment Variables for Detectron Container
+
+```text
+# Connect Broker
+BROKER_URL=
+# Connect result backend
+RESULT_BACKEND=
+# Decide if GPU used (True/False)
+GPU=
+# Allow root
+C_FORCE_ROOT=True
+# Connect Sentry (optional)
+SENTRY_ENVIRONMENT=
+SENTRY_RELEASE=
+# Setting for task processing (optional)
+WORKER_SEND_TASK_EVENTS=
+TASK_SEND_SENT_EVENT=
+TASK_TRACK_STARTED=
+TASK_ACKS_ON_FAILURE_OR_TIMEOUT=
+TASK_ACKS_LATE=
+```
