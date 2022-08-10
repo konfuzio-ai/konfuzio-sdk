@@ -915,6 +915,7 @@ class Span(Data):
                 y1=max([ch.y1 for c, ch in characters.items() if ch is not None]),
                 page=self.page,
             )
+
         return self._bbox
 
     @property
@@ -1587,6 +1588,7 @@ class Document(Data):
     def check_bbox(self) -> bool:
         """Please see get_bbox of the Document."""
         warn('Deprecate: Modifications before the next stable release expected.', DeprecationWarning, stacklevel=2)
+        self._characters = None
         _ = self.bboxes
         return True
 
@@ -1951,7 +1953,7 @@ class Document(Data):
     def bboxes(self) -> Dict[int, Bbox]:
         """Use the cached bbox version."""
         warn('WIP: Modifications before the next stable release expected.', FutureWarning, stacklevel=2)
-        if self.bboxes_available:
+        if self.bboxes_available and not self._characters:
             bbox = self.get_bbox()
             boxes = {}
             for character_index, box in bbox.items():
