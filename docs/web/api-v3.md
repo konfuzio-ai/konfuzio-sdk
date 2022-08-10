@@ -314,6 +314,7 @@ During evaluation of both project settings and file, we also process OCR extract
 
 Finally, we return you the extracted text.
 
+## Guides and How-Tos
 
 These guides will teach you how to do common operations with the Konfuzio API. You can refer to
 our [API guide](./api_v3.html) for a general overview of how the API works and to
