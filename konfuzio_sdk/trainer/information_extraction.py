@@ -2334,9 +2334,10 @@ class GroupAnnotationSets:
                 collections.Counter(annotation.annotation_set.label_set.name for annotation in line_annotations)
             )
             y = matched_section.label_set.name if matched_section else 'No'
-            df = df.append(
-                {'line': i, 'y': y, 'document': document.id_, **annotations_dict, **counter_dict}, ignore_index=True
+            tmp_df = pandas.DataFrame(
+                [{'line': i, 'y': y, 'document': document.id_, **annotations_dict, **counter_dict}]
             )
+            df = pandas.concat([df, tmp_df], ignore_index=True)
             char_count = new_char_count + 1
         df['text'] = document.text.replace('\f', '\n').split('\n')
         return df.fillna(0)
@@ -2377,7 +2378,8 @@ class GroupAnnotationSets:
                             counter_dict[section_label.name] += 1
                         else:
                             counter_dict[section_label.name] = 1
-            global_df = global_df.append({**annotations_dict, **counter_dict}, ignore_index=True)
+            tmp_df = pandas.DataFrame([{**annotations_dict, **counter_dict}])
+            global_df = pandas.concat([global_df, tmp_df], ignore_index=True)
             char_count = new_char_count + 1
         global_df['text'] = text.replace('\f', '\n').split('\n')
         return global_df.fillna(0)
