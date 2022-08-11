@@ -7,6 +7,27 @@ v3. For a more thorough description of the available endpoints and their paramet
 browse our [Swagger documentation](http:/app.konfuzio.com/v3/swagger/), which also provides an OpenAPI specification
 that can be used to generate language-specific API clients.
 
+<style>
+.video-container {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%;
+  margin: 15px 0px;
+}
+.video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+</style>
+
+<div class="video-container">
+    <iframe class="video" src="https://www.youtube.com/embed/tSk4dCKIQBg" allowfullscreen></iframe>
+</div>
+
 .. contents:: Table of Contents
 :depth: 1
 :local:
