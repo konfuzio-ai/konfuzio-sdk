@@ -535,18 +535,18 @@ KONFUZIO_CACHE_DIR =   # e.g. '/cache', uses tempdir if not set
 # SET TO TRUE TO ACTIVATE KEYCLOAK (optional).
 SSO_ENABLED=True
 
-# If you use keycloak version 17 and later set url like: http(s)://{keycloak_address}:{port}/
-# If you use keycloak version 16 and earlier set url like: http(s)://{keycloak_address}:{port}/auth/
+# If you use keycloak version 17 and later set url like: http(s)://{keycloak_address}:{port}/ (optional).
+# If you use keycloak version 16 and earlier set url like: http(s)://{keycloak_address}:{port}/auth/ (optional).
 KEYCLOAK_URL=
 KEYCLOAK_REALM=  # defaults to master
 
-For Keycloak client creation see: https://www.keycloak.org/docs/latest/server_admin/#assembly-managing-clients_server_administration_guide
+For Keycloak client creation see: https://www.keycloak.org/docs/latest/server_admin/#assembly-managing-clients_server_administration_guide (optional).
 OIDC_RP_SIGN_ALGO=RS256
 OIDC_RP_CLIENT_ID=
 OIDC_RP_CLIENT_SECRET=
 
-# These variables are only used for Keycloak integration tests:
-# The admin variables are for login keycloak admin panel, the test variables are for login to Konfuzio server
+# These variables are only used for Keycloak integration tests: 
+# The admin variables are for login keycloak admin panel, the test variables are for login to Konfuzio server (optional).
 KEYCLOAK_ADMIN_USERNAME=
 KEYCLOAK_ADMIN_PASSWORD=
 KEYCLOAK_TEST_USERNAME=
@@ -555,13 +555,15 @@ KEYCLOAK_TEST_PASSWORD=
 # Turn on/off autoretraining (optional).
 TRAIN_EXTRACTION_AI_AUTOMATICALLY_IF_QUEUE_IS_EMPTY=False
 
+# Turn on/off the immediate generation of sandwich pdf in full document workflow (optional).
+ALWAYS_GENERATE_SANDWICH_PDF=True
 ```
 
 ## Environment Variables for Read API Container
 ```text
- # The Azure OCR API key
+ # The Azure OCR API key (mandatory).
 AZURE_OCR_KEY=123456789
- # The URL of the READ API
+ # The URL of the READ API (mandatory).
 AZURE_OCR_BASE_URL=http://host:5000
 # The version of the READ API (optional).
 AZURE_OCR_VERSION=v3.2
@@ -570,13 +572,13 @@ AZURE_OCR_VERSION=v3.2
 ## Environment Variables for Detectron Container
 
 ```text
-# Connect Broker
+# Connect Broker (mandatory).
 BROKER_URL=
-# Connect result backend
+# Connect result backend (mandatory).
 RESULT_BACKEND=
-# Decide if GPU used (True/False)
+# Decide if GPU used (True/False) (mandatory).
 GPU=
-# Allow root
+# Allow root (mandatory).
 C_FORCE_ROOT=True
 # Connect Sentry (optional)
 SENTRY_ENVIRONMENT=
