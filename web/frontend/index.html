@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Frontend &mdash; Konfuzio  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../../_static/full_green_square.png"/>
+    <link rel="canonical" href="https://dev.konfuzio.com/web/frontend/index.html" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="On-Premises Documentation" href="../on_premises.html" />
+    <link rel="prev" title="REST API v3" href="../api-v3.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Konfuzio
+            <img src="../../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../sdk/configuration_reference.html">Install SDK</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sdk/sourcecode.html">Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sdk/sourcecode.html#tokenizer">Tokenizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sdk/examples/examples.html">Code Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sdk/contribution.html">Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sdk/coordinates_system.html">Coordinates System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../api.html">REST API v2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-v3.html">REST API v3</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Frontend</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#html-iframe-as-public-document">HTML iframe as Public Document</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#mark-a-document-as-public">Mark a document as public</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#share-a-document-with-a-link">Share a document with a link</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#embed-a-konfuzio-document-on-another-website">Embed a Konfuzio document on another website</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#add-your-domain-s-to-the-project-s-domain-whitelist">Add your domain(s) to the project’s domain whitelist</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#integration-of-a-single-document-via-html-iframe">Integration of a single document via HTML iframe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#integration-via-capture-vue">Integration via Capture Vue</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../on_premises.html">On-Premises Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog_app.html">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Konfuzio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Frontend</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/web/frontend/index.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="frontend">
+<h1>Frontend<a class="headerlink" href="#frontend" title="Permalink to this headline">¶</a></h1>
+<section id="html-iframe-as-public-document">
+<h2>HTML iframe as Public Document<a class="headerlink" href="#html-iframe-as-public-document" title="Permalink to this headline">¶</a></h2>
+<p>You can mark your documents as <em>public</em>. Marking documents as public will generate a <strong>read-only</strong>, <strong>publicly accessible view</strong>, that does not require authentication. This allows you to share a link to the document and its extracted data, or embed it in another website.</p>
+<section id="mark-a-document-as-public">
+<h3>Mark a document as public<a class="headerlink" href="#mark-a-document-as-public" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Select your document from the document list on the Konfuzio dashboard.</p></li>
+<li><p>Click on the “Details” link near the document name in the top bar.</p></li>
+<li><p>Check the “Is public” checkbox.</p></li>
+<li><p>Click “Save and continue editing”.</p></li>
+<li><p>After saving, new options will appear at the bottom of this page.</p></li>
+</ol>
+</section>
+<section id="share-a-document-with-a-link">
+<h3>Share a document with a link<a class="headerlink" href="#share-a-document-with-a-link" title="Permalink to this headline">¶</a></h3>
+<p>From the details page, you can copy a public URL to your document, which you can share with other people. Apart from the URL, it does not contain any Konfuzio branding.</p>
+<p>This lightweight version contains an image version of the PDF pages, and its currently extracted metadata (annotation sets, label sets, labels). Any modification you make to the document in the SmartView or TextView is reflected here.</p>
+<p>Currently this public view is not allowed to be indexed by search engines.</p>
+<p>If you need to programmatically generate public links, you can use the format <code class="docutils literal notranslate"><span class="pre">https://app.konfuzio.com/d/&lt;id&gt;/</span></code>. You can retrieve the <code class="docutils literal notranslate"><span class="pre">id</span></code> of a document from your Konfuzio dashboard or the API. Document <code class="docutils literal notranslate"><span class="pre">id</span></code>s which don’t exist or are not public will return a 404.</p>
+</section>
+<section id="embed-a-konfuzio-document-on-another-website">
+<h3>Embed a Konfuzio document on another website<a class="headerlink" href="#embed-a-konfuzio-document-on-another-website" title="Permalink to this headline">¶</a></h3>
+<p>From the details page, you can copy an example HTML snippet that allows you to embed a public document within an <code class="docutils literal notranslate"><span class="pre">iframe</span></code>. Visually, it looks the same as the above-mentioned public document view, and in fact its internal implementation is the same. However, to prevent abuse, you first need to configure your project’s “domain whitelist” setting. This only needs to be done <em>once</em> per project for each domain you want to allow.</p>
+<section id="add-your-domain-s-to-the-project-s-domain-whitelist">
+<h4>Add your domain(s) to the project’s domain whitelist<a class="headerlink" href="#add-your-domain-s-to-the-project-s-domain-whitelist" title="Permalink to this headline">¶</a></h4>
+<ol class="arabic simple">
+<li><p>On the Konfuzio dashboard, open the left-side menu and click “Projects”.</p></li>
+<li><p>Click on the project associated to the document(s) you want to make public.</p></li>
+<li><p>In the “Domain whitelist” field, add the domains where you’re going to embed your document(s), one per line and without “http” or “https”.</p>
+<ul class="simple">
+<li><p>For example, if you want to embed a document on <code class="docutils literal notranslate"><span class="pre">https://www.example.org</span></code>, you should add <code class="docutils literal notranslate"><span class="pre">www.example.org</span></code> to the list.</p></li>
+</ul>
+</li>
+<li><p>Click “Save”.</p></li>
+</ol>
+<p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>{admonition} Note
+:class: important
+This process <strong>will NOT</strong> make all your project’s documents public by default. It simply estabilishes which domains are allowed to embed public documents for this project. You will still need to mark documents as public by yourself.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>#### Customize the `iframe`
+
+By default, we provide a bare-bones HTML snippet that looks similar to this:
+
+```html
+&lt;iframe src=&quot;https://app.konfuzio.com/d/&lt;id&gt;/&quot; width=&quot;100%&quot; height=&quot;600&quot; frameborder=&quot;0&quot;&gt;&lt;/iframe&gt;
+</pre></div>
+</div>
+<p>This creates on your page an <code class="docutils literal notranslate"><span class="pre">iframe</span></code> with 100% width (full width of its container) and a height of 600 pixels, that doesn’t have a border. You can customize the <code class="docutils literal notranslate"><span class="pre">iframe</span></code>‘s size and other options by changing these and other attributes (see <a class="reference external" href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe">iframe documentation</a>).</p>
+<p>Currently you cannot customize the style (fonts, color, etc.) of the <code class="docutils literal notranslate"><span class="pre">iframe</span></code>‘s content. While we plan to offer more customization options in the future, advanced users might want to take a look at our <a class="reference external" href="https://dev.konfuzio.com">create your own dashboard guide</a>.</p>
+</section>
+</section>
+</section>
+<section id="integration-of-a-single-document-via-html-iframe">
+<h2>Integration of a single document via HTML iframe<a class="headerlink" href="#integration-of-a-single-document-via-html-iframe" title="Permalink to this headline">¶</a></h2>
+<p>Coming soon.</p>
+</section>
+<section id="integration-via-capture-vue">
+<h2>Integration via Capture Vue<a class="headerlink" href="#integration-via-capture-vue" title="Permalink to this headline">¶</a></h2>
+<p>Coming soon.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../api-v3.html" class="btn btn-neutral float-left" title="REST API v3" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../on_premises.html" class="btn btn-neutral float-right" title="On-Premises Documentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Helm und Nagel GmbH.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-D02B3QF8Z3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-D02B3QF8Z3');
+</script>
+<script src="https://cmp.osano.com/16CVyMSbk3Iar1G3f/97ee6223-b0cb-4f8c-abd6-a25a0d6f6507/osano.js"></script>
+
+
+</body>
+</html>
