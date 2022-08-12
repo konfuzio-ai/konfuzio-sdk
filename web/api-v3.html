@@ -54,23 +54,24 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="api.html">REST API v2</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">REST API v3</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#general-information">General Information</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#authentication">Authentication</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#basic-http-authentication">Basic HTTP authentication</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#cookie-authentication">Cookie authentication</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#single-sign-on-sso-authentication">Single sign-on (SSO) authentication</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#token-authentication">Token authentication</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#general-information">General Information</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#authentication">Authentication</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#basic-http-authentication">Basic HTTP authentication</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cookie-authentication">Cookie authentication</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#single-sign-on-sso-authentication">Single sign-on (SSO) authentication</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#token-authentication">Token authentication</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#curl-example">cURL example</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#python-example">Python example</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#response-codes">Response codes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pagination">Pagination</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#filtering">Filtering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ordering">Ordering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fields">Fields</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#coordinates-and-bounding-boxes">Coordinates and bounding boxes</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#response-codes">Response codes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#pagination">Pagination</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#filtering">Filtering</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#ordering">Ordering</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#fields">Fields</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#supported-ocr-languages">Supported OCR languages</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#supported-file-types">Supported File Types</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#pdfs">PDFs</a></li>
@@ -84,21 +85,23 @@
 <li class="toctree-l3"><a class="reference internal" href="#ocr-text-extraction">OCR Text extraction</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#guides-and-how-tos">Guides and How-Tos</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#setup-a-project-with-labels-label-sets-and-categories">Setup a project with labels, label sets and categories</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#create-a-project">Create a project</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#create-a-category">Create a category</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#create-some-labels">Create some labels</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#create-a-label-set">Create a label set</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#next-steps">Next steps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#guides-and-how-tos">Guides and How-Tos</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#setup-a-project-with-labels-label-sets-and-categories">Setup a project with labels, label sets and categories</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#create-a-project">Create a project</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#create-a-category">Create a category</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#create-some-labels">Create some labels</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#create-a-label-set">Create a label set</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#next-steps">Next steps</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#upload-a-document">Upload a document</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#create-an-annotation">Create an annotation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#create-training-data-and-train-the-ai">Create training data and train the AI</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#create-your-own-document-dashboard">Create your own document dashboard</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#start-from-our-vue-js-code">Start from our Vue.js code</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#start-from-scratch">Start from scratch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#upload-a-document">Upload a document</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-an-annotation">Create an annotation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-training-data-and-train-the-ai">Create training data and train the AI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-your-own-document-dashboard">Create your own document dashboard</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#start-from-our-vue-js-code">Start from our Vue.js code</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#start-from-scratch">Start from scratch</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -133,7 +136,7 @@
            <div itemprop="articleBody">
              
   <section id="rest-api-v3">
-<span id="server-api-v3"></span><h1><a class="toc-backref" href="#id44">REST API v3</a><a class="headerlink" href="#rest-api-v3" title="Permalink to this headline">¶</a></h1>
+<h1><a class="toc-backref" href="#id8">REST API v3</a><a class="headerlink" href="#rest-api-v3" title="Permalink to this headline">¶</a></h1>
 <p>This document aims to provide developers with a high-level overview of what can be accomplished through the Konfuzio API
 v3. For a more thorough description of the available endpoints and their parameters and response, we invite you to
 browse our <a class="reference external" href="http:/app.konfuzio.com/v3/swagger/">Swagger documentation</a>, which also provides an OpenAPI specification
@@ -160,18 +163,16 @@ that can be used to generate language-specific API clients.</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="#rest-api-v3" id="id8">REST API v3</a></p>
 <ul>
-<li><p><a class="reference internal" href="#general-information" id="id9">General Information</a></p></li>
+<li><p><a class="reference internal" href="#general-information" id="id9">General Information</a></p>
+<ul>
 <li><p><a class="reference internal" href="#authentication" id="id10">Authentication</a></p>
 <ul>
 <li><p><a class="reference internal" href="#basic-http-authentication" id="id11">Basic HTTP authentication</a></p></li>
 <li><p><a class="reference internal" href="#cookie-authentication" id="id12">Cookie authentication</a></p></li>
 <li><p><a class="reference internal" href="#single-sign-on-sso-authentication" id="id13">Single sign-on (SSO) authentication</a></p></li>
-<li><p><a class="reference internal" href="#token-authentication" id="id14">Token authentication</a></p>
-<ul>
+<li><p><a class="reference internal" href="#token-authentication" id="id14">Token authentication</a></p></li>
 <li><p><a class="reference internal" href="#curl-example" id="id15">cURL example</a></p></li>
 <li><p><a class="reference internal" href="#python-example" id="id16">Python example</a></p></li>
-</ul>
-</li>
 </ul>
 </li>
 <li><p><a class="reference internal" href="#response-codes" id="id17">Response codes</a></p></li>
@@ -179,94 +180,98 @@ that can be used to generate language-specific API clients.</p>
 <li><p><a class="reference internal" href="#filtering" id="id19">Filtering</a></p></li>
 <li><p><a class="reference internal" href="#ordering" id="id20">Ordering</a></p></li>
 <li><p><a class="reference internal" href="#fields" id="id21">Fields</a></p></li>
-<li><p><a class="reference internal" href="#supported-ocr-languages" id="id22">Supported OCR languages</a></p></li>
-<li><p><a class="reference internal" href="#supported-file-types" id="id23">Supported File Types</a></p>
-<ul>
-<li><p><a class="reference internal" href="#pdfs" id="id24">PDFs</a></p></li>
-<li><p><a class="reference internal" href="#images" id="id25">Images</a></p></li>
-<li><p><a class="reference internal" href="#office-documents" id="id26">Office documents</a></p></li>
+<li><p><a class="reference internal" href="#coordinates-and-bounding-boxes" id="id22">Coordinates and bounding boxes</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#ocr-processing" id="id27">OCR Processing</a></p>
+<li><p><a class="reference internal" href="#supported-ocr-languages" id="id23">Supported OCR languages</a></p></li>
+<li><p><a class="reference internal" href="#supported-file-types" id="id24">Supported File Types</a></p>
 <ul>
-<li><p><a class="reference internal" href="#project-settings" id="id28">Project settings</a></p></li>
-<li><p><a class="reference internal" href="#file-pre-processing" id="id29">File pre-processing</a></p></li>
-<li><p><a class="reference internal" href="#ocr-text-extraction" id="id30">OCR Text extraction</a></p></li>
+<li><p><a class="reference internal" href="#pdfs" id="id25">PDFs</a></p></li>
+<li><p><a class="reference internal" href="#images" id="id26">Images</a></p></li>
+<li><p><a class="reference internal" href="#office-documents" id="id27">Office documents</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#guides-and-how-tos" id="id31">Guides and How-Tos</a></p></li>
-<li><p><a class="reference internal" href="#setup-a-project-with-labels-label-sets-and-categories" id="id32">Setup a project with labels, label sets and categories</a></p>
+<li><p><a class="reference internal" href="#ocr-processing" id="id28">OCR Processing</a></p>
 <ul>
-<li><p><a class="reference internal" href="#create-a-project" id="id33">Create a project</a></p></li>
-<li><p><a class="reference internal" href="#create-a-category" id="id34">Create a category</a></p></li>
-<li><p><a class="reference internal" href="#create-some-labels" id="id35">Create some labels</a></p></li>
-<li><p><a class="reference internal" href="#create-a-label-set" id="id36">Create a label set</a></p></li>
-<li><p><a class="reference internal" href="#next-steps" id="id37">Next steps</a></p></li>
+<li><p><a class="reference internal" href="#project-settings" id="id29">Project settings</a></p></li>
+<li><p><a class="reference internal" href="#file-pre-processing" id="id30">File pre-processing</a></p></li>
+<li><p><a class="reference internal" href="#ocr-text-extraction" id="id31">OCR Text extraction</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#upload-a-document" id="id38">Upload a document</a></p></li>
-<li><p><a class="reference internal" href="#create-an-annotation" id="id39">Create an annotation</a></p></li>
-<li><p><a class="reference internal" href="#create-training-data-and-train-the-ai" id="id40">Create training data and train the AI</a></p></li>
-<li><p><a class="reference internal" href="#create-your-own-document-dashboard" id="id41">Create your own document dashboard</a></p>
+<li><p><a class="reference internal" href="#guides-and-how-tos" id="id32">Guides and How-Tos</a></p>
 <ul>
-<li><p><a class="reference internal" href="#start-from-our-vue-js-code" id="id42">Start from our Vue.js code</a></p></li>
-<li><p><a class="reference internal" href="#start-from-scratch" id="id43">Start from scratch</a></p></li>
+<li><p><a class="reference internal" href="#setup-a-project-with-labels-label-sets-and-categories" id="id33">Setup a project with labels, label sets and categories</a></p>
+<ul>
+<li><p><a class="reference internal" href="#create-a-project" id="id34">Create a project</a></p></li>
+<li><p><a class="reference internal" href="#create-a-category" id="id35">Create a category</a></p></li>
+<li><p><a class="reference internal" href="#create-some-labels" id="id36">Create some labels</a></p></li>
+<li><p><a class="reference internal" href="#create-a-label-set" id="id37">Create a label set</a></p></li>
+<li><p><a class="reference internal" href="#next-steps" id="id38">Next steps</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#upload-a-document" id="id39">Upload a document</a></p></li>
+<li><p><a class="reference internal" href="#create-an-annotation" id="id40">Create an annotation</a></p></li>
+<li><p><a class="reference internal" href="#create-training-data-and-train-the-ai" id="id41">Create training data and train the AI</a></p></li>
+<li><p><a class="reference internal" href="#create-your-own-document-dashboard" id="id42">Create your own document dashboard</a></p>
+<ul>
+<li><p><a class="reference internal" href="#start-from-our-vue-js-code" id="id43">Start from our Vue.js code</a></p></li>
+<li><p><a class="reference internal" href="#start-from-scratch" id="id44">Start from scratch</a></p></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
 </li>
 </ul>
 </div>
-<dl class="field-list simple">
-<dt class="field-odd">depth</dt>
-<dd class="field-odd"><p>1</p>
-</dd>
-<dt class="field-even">local</dt>
-<dd class="field-even"><p></p></dd>
-<dt class="field-odd">backlinks</dt>
-<dd class="field-odd"><p>none</p>
-</dd>
-</dl>
 <section id="general-information">
-<h2><a class="toc-backref" href="#id45">General Information</a><a class="headerlink" href="#general-information" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id9">General Information</a><a class="headerlink" href="#general-information" title="Permalink to this headline">¶</a></h2>
 <p>The Konfuzio API v3 follows REST conventions and principles. Unless specified otherwise, all endpoints accept both
 JSON-encoded and form-encoded request bodies, according to the specified content type. All endpoints return JSON-encoded
 responses. We use standard HTTP verbs (<code class="docutils literal notranslate"><span class="pre">GET</span></code>, <code class="docutils literal notranslate"><span class="pre">POST</span></code>, <code class="docutils literal notranslate"><span class="pre">PUT</span></code>, <code class="docutils literal notranslate"><span class="pre">PATCH</span></code>, <code class="docutils literal notranslate"><span class="pre">DELETE</span></code>) for actions, and return standard HTTP
 response codes based on the success or failure of the request.</p>
-</section>
 <section id="authentication">
-<h2><a class="toc-backref" href="#id46">Authentication</a><a class="headerlink" href="#authentication" title="Permalink to this headline">¶</a></h2>
+<h3><a class="toc-backref" href="#id10">Authentication</a><a class="headerlink" href="#authentication" title="Permalink to this headline">¶</a></h3>
 <p>Most of our endpoints, excluding those that deal
 with <a class="reference external" href="http://help.konfuzio.com/integrations/public-documents/">public documents</a>, strictly require authentication. We
 support three types of authentication.</p>
 <section id="basic-http-authentication">
-<h3><a class="toc-backref" href="#id47">Basic HTTP authentication</a><a class="headerlink" href="#basic-http-authentication" title="Permalink to this headline">¶</a></h3>
+<h4><a class="toc-backref" href="#id11">Basic HTTP authentication</a><a class="headerlink" href="#basic-http-authentication" title="Permalink to this headline">¶</a></h4>
 <p>Your Konfuzio username (email) and password are sent with every request as HTTP headers in the
 format <code class="docutils literal notranslate"><span class="pre">Authorization:</span> <span class="pre">Basic</span> <span class="pre">&lt;string&gt;</span></code>, where <code class="docutils literal notranslate"><span class="pre">&lt;string&gt;</span></code> is a Base64-encoded string in the
 format <code class="docutils literal notranslate"><span class="pre">&lt;username&gt;:&lt;password&gt;</span></code> (this is usually done automatically by the HTTP client).</p>
-<p>While this approach doesn’t require additional setup and is useful for testing in the Swagger page, it is **
-discouraged** for serious/automated use, since it usually involves storing these credentials in plain text on the client
-side.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>While this approach doesn’t require additional setup and is useful for testing in the Swagger page, it is
+<strong>discouraged</strong> for serious/automated use, since it usually involves storing these credentials in plain text on the
+client side.</p>
+</div>
 </section>
 <section id="cookie-authentication">
-<h3><a class="toc-backref" href="#id48">Cookie authentication</a><a class="headerlink" href="#cookie-authentication" title="Permalink to this headline">¶</a></h3>
+<h4><a class="toc-backref" href="#id12">Cookie authentication</a><a class="headerlink" href="#cookie-authentication" title="Permalink to this headline">¶</a></h4>
 <p>A <code class="docutils literal notranslate"><span class="pre">sessionid</span></code> is sent in the <code class="docutils literal notranslate"><span class="pre">cookie</span></code> field of every request.</p>
 <p>This <code class="docutils literal notranslate"><span class="pre">sessionid</span></code> is generated and used by the Konfuzio website when you log in to avoid additional authentication in API
 requests, and should <strong>not</strong> be relied upon by third parties.</p>
 </section>
 <section id="single-sign-on-sso-authentication">
-<h3><a class="toc-backref" href="#id49">Single sign-on (SSO) authentication</a><a class="headerlink" href="#single-sign-on-sso-authentication" title="Permalink to this headline">¶</a></h3>
-<p>SSO authentication is available through <a class="reference external" href="https://www.keycloak.org/">KeyCloak</a>, which is an open source identity and access management solution. This functionality is only offered to our on-prem users. Further documentation regarding our KeyCloak integration can be found on our <a class="reference external" href="https://dev.konfuzio.com/web/on_premises.html#keycloak-integration">on-prem documentation page</a>.</p>
+<h4><a class="toc-backref" href="#id13">Single sign-on (SSO) authentication</a><a class="headerlink" href="#single-sign-on-sso-authentication" title="Permalink to this headline">¶</a></h4>
+<p>SSO authentication is available through <a class="reference external" href="https://www.keycloak.org/">KeyCloak</a>, which is an open source identity and
+access management solution. This functionality is only offered to our on-prem users. Further documentation regarding our
+KeyCloak integration can be found on our
+<a class="reference external" href="https://dev.konfuzio.com/web/on_premises.html#keycloak-integration">on-prem documentation page</a>.</p>
 </section>
 <section id="token-authentication">
-<h3><a class="toc-backref" href="#id50">Token authentication</a><a class="headerlink" href="#token-authentication" title="Permalink to this headline">¶</a></h3>
+<h4><a class="toc-backref" href="#id14">Token authentication</a><a class="headerlink" href="#token-authentication" title="Permalink to this headline">¶</a></h4>
 <p>You send a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request with your Konfuzio username (email) and password to our <a class="reference external" href="link">authentication endpoint</a>, which
 returns a token string that you can use in lieu of your actual credentials for subsequent requests, providing it with a
 HTTP header in the format <code class="docutils literal notranslate"><span class="pre">Authorization:</span> <span class="pre">Token</span> <span class="pre">&lt;token&gt;</span></code>.</p>
 <p>This token doesn’t currently expire, so you can use indefinitely, but you can delete it (and regenerated) via
 the <a class="reference external" href="link">authentication DELETE endpoint</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>This is the authentication method you <strong>should</strong> use if you’re building an external service that consumes the Konfuzio
 API.</p>
+</div>
 <p>An example workflow would look like:</p>
 <ol class="arabic simple">
 <li><p>User registers to app.konfuzio.com with email “<a class="reference external" href="mailto:example&#37;&#52;&#48;example&#46;org">example<span>&#64;</span>example<span>&#46;</span>org</a>” and password “examplepassword”.</p></li>
@@ -276,8 +281,9 @@ body: <code class="docutils literal notranslate"><span class="pre">{&quot;userna
 <li><p>For any subsequent request, the user provides the HTTP
 header <code class="docutils literal notranslate"><span class="pre">Authorization:</span> <span class="pre">Token</span> <span class="pre">bf20d992c0960876157b53745cdd86fad95e6ff4</span></code>.</p></li>
 </ol>
+</section>
 <section id="curl-example">
-<h4><a class="toc-backref" href="#id51">cURL example</a><a class="headerlink" href="#curl-example" title="Permalink to this headline">¶</a></h4>
+<h4><a class="toc-backref" href="#id15">cURL example</a><a class="headerlink" href="#curl-example" title="Permalink to this headline">¶</a></h4>
 <p>To get a token:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">--</span><span class="n">request</span> <span class="n">POST</span> \
   <span class="o">--</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">app</span><span class="o">.</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v3</span><span class="o">/</span><span class="n">auth</span><span class="o">/</span> \
@@ -293,11 +299,11 @@ header <code class="docutils literal notranslate"><span class="pre">Authorizatio
 </div>
 </section>
 <section id="python-example">
-<h4><a class="toc-backref" href="#id52">Python example</a><a class="headerlink" href="#python-example" title="Permalink to this headline">¶</a></h4>
+<h4><a class="toc-backref" href="#id16">Python example</a><a class="headerlink" href="#python-example" title="Permalink to this headline">¶</a></h4>
 <p>To get a token:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
 
-<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://testing.konfuzio.com/api/v3/auth/&quot;</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://app.konfuzio.com/api/v3/auth/&quot;</span>
 
 <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;example@example.org&quot;</span><span class="p">,</span>
@@ -312,7 +318,7 @@ header <code class="docutils literal notranslate"><span class="pre">Authorizatio
 <p>To use the token:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
 
-<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://testing.konfuzio.com/api/v3/projects/&quot;</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://app.konfuzio.com/api/v3/projects/&quot;</span>
 
 <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;Authorization&quot;</span><span class="p">:</span> <span class="s2">&quot;Token bf20d992c0960876157b53745cdd86fad95e6ff4&quot;</span>
@@ -325,18 +331,21 @@ header <code class="docutils literal notranslate"><span class="pre">Authorizatio
 </div>
 </section>
 </section>
-</section>
 <section id="response-codes">
-<h2><a class="toc-backref" href="#id53">Response codes</a><a class="headerlink" href="#response-codes" title="Permalink to this headline">¶</a></h2>
+<h3><a class="toc-backref" href="#id17">Response codes</a><a class="headerlink" href="#response-codes" title="Permalink to this headline">¶</a></h3>
 <p>All endpoints return an HTTP code that indicates the success of the request. Following the standard, codes starting
 with <code class="docutils literal notranslate"><span class="pre">2</span></code> (<code class="docutils literal notranslate"><span class="pre">200</span></code>, <code class="docutils literal notranslate"><span class="pre">201</span></code>…) indicate success; codes starting with <code class="docutils literal notranslate"><span class="pre">4</span></code> (<code class="docutils literal notranslate"><span class="pre">400</span></code>, <code class="docutils literal notranslate"><span class="pre">401</span></code>…) indicate failure on the client
 side, with the response body containing more information about what failed; codes starting with <code class="docutils literal notranslate"><span class="pre">5</span></code> (<code class="docutils literal notranslate"><span class="pre">500</span></code>, <code class="docutils literal notranslate"><span class="pre">502</span></code>…)
-indicate failure on our side and are usually temporary (if they aren’t, please <a class="reference external" href="link">contact us</a>).</p>
+indicate failure on our side and are usually temporary (if they aren’t, please
+<a class="reference external" href="https://konfuzio.com/support/">contact us</a>).</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
 <p>The <a class="reference external" href="http:/app.konfuzio.com/v3/swagger/">Swagger documentation</a> provides a more detailed breakdown of which response
 codes are expected for each endpoint.</p>
+</div>
 </section>
 <section id="pagination">
-<h2><a class="toc-backref" href="#id54">Pagination</a><a class="headerlink" href="#pagination" title="Permalink to this headline">¶</a></h2>
+<h3><a class="toc-backref" href="#id18">Pagination</a><a class="headerlink" href="#pagination" title="Permalink to this headline">¶</a></h3>
 <p>All endpoints that list resources are paginated. Pagination is achieved by providing <code class="docutils literal notranslate"><span class="pre">offset</span></code> and <code class="docutils literal notranslate"><span class="pre">limit</span></code> as <code class="docutils literal notranslate"><span class="pre">GET</span></code>
 parameters to the request. <code class="docutils literal notranslate"><span class="pre">limit</span></code> is the maximum amount of items that should be returned, and <code class="docutils literal notranslate"><span class="pre">offset</span></code> is the amount of
 items that should be skipped from the beginning.</p>
@@ -361,36 +370,82 @@ next 50 items, you should pass <code class="docutils literal notranslate"><span 
 </ul>
 </section>
 <section id="filtering">
-<h2><a class="toc-backref" href="#id55">Filtering</a><a class="headerlink" href="#filtering" title="Permalink to this headline">¶</a></h2>
+<h3><a class="toc-backref" href="#id19">Filtering</a><a class="headerlink" href="#filtering" title="Permalink to this headline">¶</a></h3>
 <p>All endpoints that list resources support some filtering, based on the resource being fetched. These filters are passed
 as <code class="docutils literal notranslate"><span class="pre">GET</span></code> parameters and can be combined.</p>
 <p>Two filters that are usually available on all list endpoints are <code class="docutils literal notranslate"><span class="pre">created_at_after</span></code> and <code class="docutils literal notranslate"><span class="pre">created_at_before</span></code>, which
 filters for items that have been created after or before the specified date. So you could
 use <code class="docutils literal notranslate"><span class="pre">?created_at_before=2022-02-01&amp;created_at_after=2021-12-01</span></code> to only return items that have been created between
 December 1, 2021 and February 1, 2022 (specified dates excluded).</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
 <p>For more filtering options, refer to the <a class="reference external" href="http:/app.konfuzio.com/v3/swagger/">Swagger documentation</a> for the endpoint
 that you want to filter.</p>
+</div>
 </section>
 <section id="ordering">
-<h2><a class="toc-backref" href="#id56">Ordering</a><a class="headerlink" href="#ordering" title="Permalink to this headline">¶</a></h2>
+<h3><a class="toc-backref" href="#id20">Ordering</a><a class="headerlink" href="#ordering" title="Permalink to this headline">¶</a></h3>
 <p>Most endpoints that list resources support ordering on some fields. The ordering is passed as a single <code class="docutils literal notranslate"><span class="pre">GET</span></code> parameter
 named <code class="docutils literal notranslate"><span class="pre">ordering</span></code> with the field name that you want to order by as the value.</p>
 <p>You can combine multiple ordering fields by separating them with a <code class="docutils literal notranslate"><span class="pre">,</span></code>. For example: <code class="docutils literal notranslate"><span class="pre">?ordering=project,created_at</span></code>.</p>
 <p>You can specify that you want the ordering to be reversed by prefixing the field name with a <code class="docutils literal notranslate"><span class="pre">-</span></code>. For
 example: <code class="docutils literal notranslate"><span class="pre">?ordering=-created_at</span></code>.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
 <p>For a list of fields that can be used for ordering, refer to
 the <a class="reference external" href="http:/app.konfuzio.com/v3/swagger/">Swagger documentation</a> for the endpoint that you want to order.</p>
+</div>
 </section>
 <section id="fields">
-<h2><a class="toc-backref" href="#id57">Fields</a><a class="headerlink" href="#fields" title="Permalink to this headline">¶</a></h2>
+<h3><a class="toc-backref" href="#id21">Fields</a><a class="headerlink" href="#fields" title="Permalink to this headline">¶</a></h3>
 <p>Some endpoints allow you to override the default response schema and specify a subset of fields that you want to be
 returned. You can specify the <code class="docutils literal notranslate"><span class="pre">fields</span></code> <code class="docutils literal notranslate"><span class="pre">GET</span></code> parameter with the field names separated by a <code class="docutils literal notranslate"><span class="pre">,</span></code>.</p>
 <p>For example, you can specify <code class="docutils literal notranslate"><span class="pre">?fields=id,created_at</span></code> to only return the <code class="docutils literal notranslate"><span class="pre">id</span></code> and <code class="docutils literal notranslate"><span class="pre">created_at</span></code> fields in the response.</p>
-<p>Refer to the <a class="reference external" href="http:/app.konfuzio.com/v3/swagger/">Swagger documentation</a> for a specific endpoint to see if it supports
-using the <code class="docutils literal notranslate"><span class="pre">fields</span></code> parameter. When supported, any field in the response schema can be used in the <code class="docutils literal notranslate"><span class="pre">fields</span></code> parameter.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>Refer to the <a class="reference external" href="http:/app.konfuzio.com/v3/swagger/">Swagger documentation</a> for a specific endpoint to see if it
+supports using the <cite>fields</cite> parameter. When supported, any field in the response schema can be used in the <cite>fields</cite>
+parameter.</p>
+</div>
+</section>
+<section id="coordinates-and-bounding-boxes">
+<h3><a class="toc-backref" href="#id22">Coordinates and bounding boxes</a><a class="headerlink" href="#coordinates-and-bounding-boxes" title="Permalink to this headline">¶</a></h3>
+<p>There are three concepts related to coordinates and bounding boxes that are used throughout the API v3:</p>
+<ul class="simple">
+<li><p><strong>Bounding boxes</strong> (or <strong>bboxes</strong>). A bbox is a rectangle representing a subset of a document page. It has the
+following properties:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">x0</span></code>, <code class="docutils literal notranslate"><span class="pre">xy</span></code>, <code class="docutils literal notranslate"><span class="pre">y0</span></code>, <code class="docutils literal notranslate"><span class="pre">y1</span></code>: the four points representing the coordinates of the rectangle on the page.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">page_index</span></code>: the page of the document the bbox refers too.</p></li>
+</ul>
+</li>
+<li><p><strong>Spans</strong>. A span, like the bbox, is a rectangle representing a subset of a document page; unlike the bbox, it also
+represents the <em>text data</em> contained inside the rectangle. So it has the same properties as the bbox, but it adds
+more:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">offset_string</span></code> (optional when user-provided): the text contained inside this span. This can be manually set by the
+user if the text existing at the specified coordinates is wrong.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">offset_string_original</span></code> (read-only): the text that was originally present at the specified coordinates. This is
+usually the same as <code class="docutils literal notranslate"><span class="pre">offset_string</span></code> unless it has been changed manually.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">start_offset</span></code>, <code class="docutils literal notranslate"><span class="pre">end_offset</span></code> (read-only): the start and end character of the text contained inside this span, in
+relation to the document’s text.</p></li>
+</ul>
+</li>
+<li><p><strong>Character bounding boxes</strong> (or <strong>char bboxes</strong>). A char bbox is a rectangle representing a single character on the
+page of a document. This is always returned by the Konfuzio server and cannot be set manually. It has the same
+properties as the bbox, but it adds more:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">text</span></code> (read-only): the single character contained by this bbox.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">line_index</span></code> (read-only): the line the character is in, related to all the lines in the document.</p></li>
+</ul>
+</li>
+</ul>
+<p>If the endpoint you’re working with uses a <code class="docutils literal notranslate"><span class="pre">span</span></code> or <code class="docutils literal notranslate"><span class="pre">bbox</span></code> field, refer to its Swagger schema and to the summary above
+to understand which fields it needs.</p>
+</section>
 </section>
 <section id="supported-ocr-languages">
-<h2><a class="toc-backref" href="#id58">Supported OCR languages</a><a class="headerlink" href="#supported-ocr-languages" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id23">Supported OCR languages</a><a class="headerlink" href="#supported-ocr-languages" title="Permalink to this headline">¶</a></h2>
 <p>The default OCR engine for <a class="reference external" href="https://app.konfuzio.com">Konfuzio Server</a> supports the following languages:</p>
 <p>Afrikaans, Albanian, Asturian, Azerbaijani (Latin), Basque, Belarusian (Cyrillic), Belarusian (Latin), Bislama,
 Bosnian (Latin), Breton, Bulgarian, Buryat (Cyrillic), Catalan, Cebuano, Chamorro, Chinese Simplified, Chinese
@@ -412,20 +467,20 @@ Maya, Zhuang, Zulu.</p>
 on-premise installation).</p>
 </section>
 <section id="supported-file-types">
-<h2><a class="toc-backref" href="#id59">Supported File Types</a><a class="headerlink" href="#supported-file-types" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id24">Supported File Types</a><a class="headerlink" href="#supported-file-types" title="Permalink to this headline">¶</a></h2>
 <p>Konfuzio supports various file types:</p>
 <section id="pdfs">
-<h3><a class="toc-backref" href="#id60">PDFs</a><a class="headerlink" href="#pdfs" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id25">PDFs</a><a class="headerlink" href="#pdfs" title="Permalink to this headline">¶</a></h3>
 <p>Konfuzio supports PDF/A-1a, PDF/A-1b, PDF/A-2a, PDF/A-2b, PDF/A-3a, PDF/A-3b, PDF/X-1a, PDF/1.7, PDF/2.0. An attempt
 will be made to repair corrupted PDFs. Konfuzio does not support AcroForms and AEM (Adobe Experience Manager) form
 content.</p>
 </section>
 <section id="images">
-<h3><a class="toc-backref" href="#id61">Images</a><a class="headerlink" href="#images" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id26">Images</a><a class="headerlink" href="#images" title="Permalink to this headline">¶</a></h3>
 <p>Konfuzio supports JPEG and PNG (including support for alpha channel). <em>Support for TIFF is experimental.</em></p>
 </section>
 <section id="office-documents">
-<h3><a class="toc-backref" href="#id62">Office documents</a><a class="headerlink" href="#office-documents" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id27">Office documents</a><a class="headerlink" href="#office-documents" title="Permalink to this headline">¶</a></h3>
 <p>Konfuzio offers limited support for common office documents like Microsoft® Word (.doc, .docx), Excel (.xls, .xlsx),
 PowerPoint (.ppt, .pptx) and Publisher as well as the Open Document Format (ODF). Uploaded office documents are
 converted to PDFs by Konfuzio. Libre Office is used for the PDF conversion. The layout of the converted office document
@@ -433,12 +488,12 @@ may differ from the original. Office files can not be edited after they have bee
 </section>
 </section>
 <section id="ocr-processing">
-<h2><a class="toc-backref" href="#id63">OCR Processing</a><a class="headerlink" href="#ocr-processing" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id28">OCR Processing</a><a class="headerlink" href="#ocr-processing" title="Permalink to this headline">¶</a></h2>
 <p>After <a class="reference external" href="https://help.konfuzio.com/modules/documents/index.html#upload-new-documents">uploading a document</a>, depending on
 how your project was set up, the document is automatically queued and processed by our OCR. In the below breakdown we
 try to demystify this process, and give you some insight into all the steps which happen during OCR processing.</p>
 <section id="project-settings">
-<h3><a class="toc-backref" href="#id64">Project settings</a><a class="headerlink" href="#project-settings" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id29">Project settings</a><a class="headerlink" href="#project-settings" title="Permalink to this headline">¶</a></h3>
 <p>We first look at the projects settings to see what base settings have been set up for your documents.</p>
 <ol class="arabic">
 <li><p><strong>Chosen OCR engine</strong></p>
@@ -465,7 +520,7 @@ try to demystify this process, and give you some insight into all the steps whic
 </ol>
 </section>
 <section id="file-pre-processing">
-<h3><a class="toc-backref" href="#id65">File pre-processing</a><a class="headerlink" href="#file-pre-processing" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id30">File pre-processing</a><a class="headerlink" href="#file-pre-processing" title="Permalink to this headline">¶</a></h3>
 <p>During file upload, after the Project settings have been evaluated, we look at the file:</p>
 <ol class="arabic simple">
 <li><p>We check if the filetype is <a class="reference external" href="https://dev.konfuzio.com/web/api-v3.html#supported-file-types">supported</a>.</p></li>
@@ -480,7 +535,7 @@ try to demystify this process, and give you some insight into all the steps whic
 </ol>
 </section>
 <section id="ocr-text-extraction">
-<h3><a class="toc-backref" href="#id66">OCR Text extraction</a><a class="headerlink" href="#ocr-text-extraction" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id31">OCR Text extraction</a><a class="headerlink" href="#ocr-text-extraction" title="Permalink to this headline">¶</a></h3>
 <p>During evaluation of both project settings and file, we also process OCR extraction</p>
 <ol class="arabic simple">
 <li><p>We use the chosen engine on the pre-processed file.</p>
@@ -516,93 +571,20 @@ repaired</p></li>
 </section>
 </section>
 <section id="guides-and-how-tos">
-<h2><a class="toc-backref" href="#id67">Guides and How-Tos</a><a class="headerlink" href="#guides-and-how-tos" title="Permalink to this headline">¶</a></h2>
-<p>These guides will teach you how to do common operations with the Konfuzio API. You can refer to
-our <a class="reference external" href="./api_v3.html">API guide</a> for a general overview of how the API works and to
-our <a class="reference external" href="https://app.konfuzio.com/v3/swagger/">Swagger documentation</a> for a full list of all the available endpoints.</p>
+<h2><a class="toc-backref" href="#id32">Guides and How-Tos</a><a class="headerlink" href="#guides-and-how-tos" title="Permalink to this headline">¶</a></h2>
+<p>These guides will teach you how to do common operations with the Konfuzio API. You can refer to the
+<a class="reference external" href="#general-information">general information</a> section above for a general overview of how the API works and to our
+<a class="reference external" href="https://app.konfuzio.com/v3/swagger/">Swagger documentation</a> for a full list of all the available endpoints.</p>
 <p>The example snippets use cURL, but you can easily convert them to your preferred language manually or using tools
 like <a class="reference external" href="https://curlconverter.com">cURL Converter</a>.</p>
-<p>The guides assume you already have a <a class="reference external" href="./api_v3.html#token-authentication">token</a> that you will use in the headers of
+<p>The guides assume you already have a <a class="reference external" href="#token-authentication">token</a> that you will use in the headers of
 every API call. If you’re copy-pasting the snippets, remember to replace <code class="docutils literal notranslate"><span class="pre">YOUR_TOKEN</span></code> with the actual token value.</p>
-<div class="contents topic" id="id6">
-<p class="topic-title">Table of Contents</p>
-<ul class="simple">
-<li><p><a class="reference internal" href="#rest-api-v3" id="id44">REST API v3</a></p>
-<ul>
-<li><p><a class="reference internal" href="#general-information" id="id45">General Information</a></p></li>
-<li><p><a class="reference internal" href="#authentication" id="id46">Authentication</a></p>
-<ul>
-<li><p><a class="reference internal" href="#basic-http-authentication" id="id47">Basic HTTP authentication</a></p></li>
-<li><p><a class="reference internal" href="#cookie-authentication" id="id48">Cookie authentication</a></p></li>
-<li><p><a class="reference internal" href="#single-sign-on-sso-authentication" id="id49">Single sign-on (SSO) authentication</a></p></li>
-<li><p><a class="reference internal" href="#token-authentication" id="id50">Token authentication</a></p>
-<ul>
-<li><p><a class="reference internal" href="#curl-example" id="id51">cURL example</a></p></li>
-<li><p><a class="reference internal" href="#python-example" id="id52">Python example</a></p></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p><a class="reference internal" href="#response-codes" id="id53">Response codes</a></p></li>
-<li><p><a class="reference internal" href="#pagination" id="id54">Pagination</a></p></li>
-<li><p><a class="reference internal" href="#filtering" id="id55">Filtering</a></p></li>
-<li><p><a class="reference internal" href="#ordering" id="id56">Ordering</a></p></li>
-<li><p><a class="reference internal" href="#fields" id="id57">Fields</a></p></li>
-<li><p><a class="reference internal" href="#supported-ocr-languages" id="id58">Supported OCR languages</a></p></li>
-<li><p><a class="reference internal" href="#supported-file-types" id="id59">Supported File Types</a></p>
-<ul>
-<li><p><a class="reference internal" href="#pdfs" id="id60">PDFs</a></p></li>
-<li><p><a class="reference internal" href="#images" id="id61">Images</a></p></li>
-<li><p><a class="reference internal" href="#office-documents" id="id62">Office documents</a></p></li>
-</ul>
-</li>
-<li><p><a class="reference internal" href="#ocr-processing" id="id63">OCR Processing</a></p>
-<ul>
-<li><p><a class="reference internal" href="#project-settings" id="id64">Project settings</a></p></li>
-<li><p><a class="reference internal" href="#file-pre-processing" id="id65">File pre-processing</a></p></li>
-<li><p><a class="reference internal" href="#ocr-text-extraction" id="id66">OCR Text extraction</a></p></li>
-</ul>
-</li>
-<li><p><a class="reference internal" href="#guides-and-how-tos" id="id67">Guides and How-Tos</a></p></li>
-<li><p><a class="reference internal" href="#setup-a-project-with-labels-label-sets-and-categories" id="id68">Setup a project with labels, label sets and categories</a></p>
-<ul>
-<li><p><a class="reference internal" href="#create-a-project" id="id69">Create a project</a></p></li>
-<li><p><a class="reference internal" href="#create-a-category" id="id70">Create a category</a></p></li>
-<li><p><a class="reference internal" href="#create-some-labels" id="id71">Create some labels</a></p></li>
-<li><p><a class="reference internal" href="#create-a-label-set" id="id72">Create a label set</a></p></li>
-<li><p><a class="reference internal" href="#next-steps" id="id73">Next steps</a></p></li>
-</ul>
-</li>
-<li><p><a class="reference internal" href="#upload-a-document" id="id74">Upload a document</a></p></li>
-<li><p><a class="reference internal" href="#create-an-annotation" id="id75">Create an annotation</a></p></li>
-<li><p><a class="reference internal" href="#create-training-data-and-train-the-ai" id="id76">Create training data and train the AI</a></p></li>
-<li><p><a class="reference internal" href="#create-your-own-document-dashboard" id="id77">Create your own document dashboard</a></p>
-<ul>
-<li><p><a class="reference internal" href="#start-from-our-vue-js-code" id="id78">Start from our Vue.js code</a></p></li>
-<li><p><a class="reference internal" href="#start-from-scratch" id="id79">Start from scratch</a></p></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">depth</dt>
-<dd class="field-odd"><p>1</p>
-</dd>
-<dt class="field-even">local</dt>
-<dd class="field-even"><p></p></dd>
-<dt class="field-odd">backlinks</dt>
-<dd class="field-odd"><p>none</p>
-</dd>
-</dl>
-</section>
 <section id="setup-a-project-with-labels-label-sets-and-categories">
-<h2><a class="toc-backref" href="#id68">Setup a project with labels, label sets and categories</a><a class="headerlink" href="#setup-a-project-with-labels-label-sets-and-categories" title="Permalink to this headline">¶</a></h2>
+<h3><a class="toc-backref" href="#id33">Setup a project with labels, label sets and categories</a><a class="headerlink" href="#setup-a-project-with-labels-label-sets-and-categories" title="Permalink to this headline">¶</a></h3>
 <p>This guide will walk you through the API-based initial setup of a project with all the initial data you need to start
 uploading documents and training the AI.</p>
 <section id="create-a-project">
-<h3><a class="toc-backref" href="#id69">Create a project</a><a class="headerlink" href="#create-a-project" title="Permalink to this headline">¶</a></h3>
+<h4><a class="toc-backref" href="#id34">Create a project</a><a class="headerlink" href="#create-a-project" title="Permalink to this headline">¶</a></h4>
 <p>First you need to set up a <a class="reference external" href="https://help.konfuzio.com/modules/projects/index.html">project</a>. To do so, you will make a
 call to our <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/projects/projects_create">project creation endpoint</a>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">--</span><span class="n">request</span> <span class="n">POST</span> \
@@ -617,7 +599,7 @@ call to our <a class="reference external" href="https://app.konfuzio.com/v3/swag
 of it, as you will need it in the next steps.</p>
 </section>
 <section id="create-a-category">
-<h3><a class="toc-backref" href="#id70">Create a category</a><a class="headerlink" href="#create-a-category" title="Permalink to this headline">¶</a></h3>
+<h4><a class="toc-backref" href="#id35">Create a category</a><a class="headerlink" href="#create-a-category" title="Permalink to this headline">¶</a></h4>
 <p>A <a class="reference external" href="https://help.konfuzio.com/modules/categories/index.html">category</a> is used to group documents by type and can be
 associated to an <a class="reference external" href="https://help.konfuzio.com/modules/extractions/index.html">extraction AI</a>. For example, you might want
 to create a category called “Invoice”. To do so, you will make a call to
@@ -636,7 +618,7 @@ of it, as you will need it in the next steps. You can retrieve a list of your cr
 request to the same endpoint.</p>
 </section>
 <section id="create-some-labels">
-<h3><a class="toc-backref" href="#id71">Create some labels</a><a class="headerlink" href="#create-some-labels" title="Permalink to this headline">¶</a></h3>
+<h4><a class="toc-backref" href="#id36">Create some labels</a><a class="headerlink" href="#create-some-labels" title="Permalink to this headline">¶</a></h4>
 <p><a class="reference external" href="https://help.konfuzio.com/modules/labels/index.html">Labels</a> are used to label annotations with their business context.
 In the case of our invoice category, we might want to have labels such as “amount” and “product”. For each label, we
 need to make a different API request to
@@ -664,7 +646,7 @@ of it, as you will need it in the next steps. You can retrieve a list of your cr
 to the same endpoint.</p>
 </section>
 <section id="create-a-label-set">
-<h3><a class="toc-backref" href="#id72">Create a label set</a><a class="headerlink" href="#create-a-label-set" title="Permalink to this headline">¶</a></h3>
+<h4><a class="toc-backref" href="#id37">Create a label set</a><a class="headerlink" href="#create-a-label-set" title="Permalink to this headline">¶</a></h4>
 <p>A <a class="reference external" href="https://help.konfuzio.com/modules/sets/index.html">label set</a> is used to group labels that make sense together.
 Sometimes these labels might occur multiple times in a document — in our “invoice” example, there’s going to be one set
 of “amount” and “product” for each line item we have in the invoice. We can call it “line item” and we can create it
@@ -685,16 +667,19 @@ to <code class="docutils literal notranslate"><span class="pre">true</span></cod
 invoice.</p>
 </section>
 <section id="next-steps">
-<h3><a class="toc-backref" href="#id73">Next steps</a><a class="headerlink" href="#next-steps" title="Permalink to this headline">¶</a></h3>
+<h4><a class="toc-backref" href="#id38">Next steps</a><a class="headerlink" href="#next-steps" title="Permalink to this headline">¶</a></h4>
 <p>Your basic setup is done! You’re now ready to upload documents and train the AI.</p>
 </section>
 </section>
 <section id="upload-a-document">
-<h2><a class="toc-backref" href="#id74">Upload a document</a><a class="headerlink" href="#upload-a-document" title="Permalink to this headline">¶</a></h2>
+<h3><a class="toc-backref" href="#id39">Upload a document</a><a class="headerlink" href="#upload-a-document" title="Permalink to this headline">¶</a></h3>
 <p>After your initial project setup, you can start uploading documents. To upload a document, you will make a call to
 our <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/documents/documents_create">document creation endpoint</a>.</p>
-<p>Unlike most other endpoints, the document creation endpoint only supports <code class="docutils literal notranslate"><span class="pre">multipart/form-data</span></code> requests (to support
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Unlike most other endpoints, the document creation endpoint only supports <cite>multipart/form-data</cite> requests (to support
 file uploading), so you won’t have to JSON-encode your request this time.</p>
+</div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">--</span><span class="n">request</span> <span class="n">POST</span> \
   <span class="o">--</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">app</span><span class="o">.</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v3</span><span class="o">/</span><span class="n">documents</span><span class="o">/</span> \
   <span class="o">--</span><span class="n">header</span> <span class="s1">&#39;Content-Type: multipart/form-data&#39;</span> \
@@ -725,7 +710,7 @@ the <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/do
 document has finished processing, and if so, retrieve the extracted data.</p>
 </section>
 <section id="create-an-annotation">
-<h2><a class="toc-backref" href="#id75">Create an annotation</a><a class="headerlink" href="#create-an-annotation" title="Permalink to this headline">¶</a></h2>
+<h3><a class="toc-backref" href="#id40">Create an annotation</a><a class="headerlink" href="#create-an-annotation" title="Permalink to this headline">¶</a></h3>
 <p><a class="reference external" href="https://help.konfuzio.com/modules/annotations/">Annotations</a> are automatically created by the extraction process when
 you upload a document, but if some data is missing you can annotate it manually to train the AI model to recognize it.</p>
 <p>Creating an annotation via the API requires the client to provide the bounding box coordinates of the relevant text
@@ -742,9 +727,7 @@ usually looks like this:</p>
     <span class="s2">&quot;is_revised&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
     <span class="s2">&quot;span&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
-            <span class="s2">&quot;bottom&quot;</span><span class="p">:</span> <span class="mf">133.59</span><span class="p">,</span>
             <span class="s2">&quot;page_index&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-            <span class="s2">&quot;top&quot;</span><span class="p">:</span> <span class="mf">123.59</span><span class="p">,</span>
             <span class="s2">&quot;x0&quot;</span><span class="p">:</span> <span class="mf">59.52</span><span class="p">,</span>
             <span class="s2">&quot;x1&quot;</span><span class="p">:</span> <span class="mf">84.42</span><span class="p">,</span>
             <span class="s2">&quot;y0&quot;</span><span class="p">:</span> <span class="mf">708.31</span><span class="p">,</span>
@@ -761,44 +744,45 @@ You can find the list of existing annotation sets by using the <code class="docu
 create a new annotation set associated with that label set. You can only do this if the label set
 has <code class="docutils literal notranslate"><span class="pre">has_multiple_sections</span></code> set to <code class="docutils literal notranslate"><span class="pre">true</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">label</span></code> should use the correct <code class="docutils literal notranslate"><span class="pre">LABEL_ID</span></code> for your annotation.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">span</span></code> is a list of bounding box objects.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">span</span></code> is a <a class="reference external" href="#coordinates-and-bounding-boxes">list of spans</a>.</p></li>
 <li><p>Other fields are optional.</p></li>
 </ul>
-<p>To generate the correct <code class="docutils literal notranslate"><span class="pre">span</span></code> for your annotation, we also provide
-the <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/documents/documents_bbox_retrieve">document bbox retrieve endpoint</a>, which
+<p>To generate the correct <code class="docutils literal notranslate"><span class="pre">span</span></code> for your annotation, we also provide the
+<a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/documents/documents_bbox_retrieve">document bbox retrieve endpoint</a>, which
 can be called via <code class="docutils literal notranslate"><span class="pre">GET</span></code> to return a list of all the words in the document with their bounding boxes, that you can use to
 create your annotations programmatically.</p>
 </section>
 <section id="create-training-data-and-train-the-ai">
-<h2><a class="toc-backref" href="#id76">Create training data and train the AI</a><a class="headerlink" href="#create-training-data-and-train-the-ai" title="Permalink to this headline">¶</a></h2>
+<h3><a class="toc-backref" href="#id41">Create training data and train the AI</a><a class="headerlink" href="#create-training-data-and-train-the-ai" title="Permalink to this headline">¶</a></h3>
 <p>Coming soon.</p>
 </section>
 <section id="create-your-own-document-dashboard">
-<h2><a class="toc-backref" href="#id77">Create your own document dashboard</a><a class="headerlink" href="#create-your-own-document-dashboard" title="Permalink to this headline">¶</a></h2>
+<h3><a class="toc-backref" href="#id42">Create your own document dashboard</a><a class="headerlink" href="#create-your-own-document-dashboard" title="Permalink to this headline">¶</a></h3>
 <p>In cases where our <a class="reference external" href="https://help.konfuzio.com/integrations/public-documents/">public documents and iframes</a> are not
 enough, you can build your own solution. Here we explain how you can easily build a read-only dashboard for your
 documents.</p>
 <section id="start-from-our-vue-js-code">
-<h3><a class="toc-backref" href="#id78">Start from our Vue.js code</a><a class="headerlink" href="#start-from-our-vue-js-code" title="Permalink to this headline">¶</a></h3>
-<p>Our document dashboard is based on Vue.js and completely implemented via our <a class="reference external" href="https://app.konfuzio.com/api/">public API</a>
-. You can check out our solution <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-capture-vue">on GitHub</a> and customize it to
-your needs. You will find a technical overview and component description in the repository’s <code class="docutils literal notranslate"><span class="pre">README</span></code>.</p>
+<h4><a class="toc-backref" href="#id43">Start from our Vue.js code</a><a class="headerlink" href="#start-from-our-vue-js-code" title="Permalink to this headline">¶</a></h4>
+<p>Our document dashboard is based on Vue.js and completely implemented with the API v3. You can check out our solution
+<a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-capture-vue">on GitHub</a> and customize it to your needs. You will find a
+technical overview and component description in the repository’s <code class="docutils literal notranslate"><span class="pre">README</span></code>.</p>
 </section>
 <section id="start-from-scratch">
-<h3><a class="toc-backref" href="#id79">Start from scratch</a><a class="headerlink" href="#start-from-scratch" title="Permalink to this headline">¶</a></h3>
-<p>If you’re using React, Angular or other technologies, you can use our <a class="reference external" href="https://app.konfuzio.com/api/">public API</a> to
-build your own solution.</p>
+<h4><a class="toc-backref" href="#id44">Start from scratch</a><a class="headerlink" href="#start-from-scratch" title="Permalink to this headline">¶</a></h4>
+<p>If you’re using React, Angular or other technologies, you can use API v3 to build your own solution.</p>
 <p>For feature parity with our read-only document dashboard, you only need to use two endpoints, and if you’re only
 handling public documents, you don’t need authentication for these two endpoints.</p>
 <ul class="simple">
-<li><p>The <strong>document detail</strong> (link to swagger) endpoint provides general information about the document you’re querying, as
-well as its extracted data. Most of the data you will need is inside the <code class="docutils literal notranslate"><span class="pre">annotation_sets</span></code> object of the response.</p></li>
-<li><p>The <strong>document page detail</strong> (link to swagger) endpoint provides information about a document’s page, including
-its <code class="docutils literal notranslate"><span class="pre">entites</span></code> (a list of words inside the page, with their coordinates) and its <code class="docutils literal notranslate"><span class="pre">page_image</span></code> (a URL you can use to
-load the image version of the page).</p></li>
+<li><p>The <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/documents/documents_retrieve">document detail</a> endpoint provides general
+information about the document you’re querying, as well as its extracted data. Most of the data you will need is
+inside the <code class="docutils literal notranslate"><span class="pre">annotation_sets</span></code> object of the response.</p></li>
+<li><p>The <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/documents/documents_pages_retrieve">document page detail</a> endpoint
+provides information about a document’s page, including its <code class="docutils literal notranslate"><span class="pre">entites</span></code> (a list of words inside the page, with their
+coordinates) and its <code class="docutils literal notranslate"><span class="pre">page_image</span></code> (a URL you can use to load the image version of the page).</p></li>
 </ul>
-<p>For more advanced use cases, you can refer to our <a class="reference external" href="https://app.konfuzio.com/api/">API help</a> and/or contact support for
-guidance.</p>
+<p>For more advanced use cases, you can refer to our <a class="reference external" href="http:/app.konfuzio.com/v3/swagger/">Swagger documentation</a> and/or
+contact support for guidance.</p>
+</section>
 </section>
 </section>
 </section>
