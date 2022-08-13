@@ -9,7 +9,7 @@
 |
 
 ##########################
-Konfuzio Developer’s Guide
+Konfuzio Developer Center
 ##########################
 
 Konfuzio is a data-centric Document AI tool to build intelligent document workflows. It provides
