@@ -304,11 +304,14 @@ In this example we start three containers, the first one to serve the Konfuzio w
 
 #### [Optional] 6. Use Flower to monitor tasks
 
-[Flower](https://flower.readthedocs.io/en/latest/screenshots.html) can be used a task monitoring tool. Flower will be only accessible for Konfuzio superusers.
+[Flower](https://flower.readthedocs.io/en/latest/screenshots.html) can be used a task monitoring tool. Flower will be only accessible for Konfuzio superusers. Flower is part of the Konfuzio Server Docker Image.
 
 ```
-docker pull mher/flower:0.9.7 
-docker run --rm --name flower -d -p 5555:5555  mher/flower:0.9.7 --adress 0.0.0.0 --url_prefix=flower --broker=redis://:@10.0.0.1:6379/0
+`docker run --name flower -d --add-host=host:10.0.0.1 \`  
+`--env-file /konfuzio-vm/text-annotation.env \`  
+`--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \`  
+`registry.gitlab.com/konfuzio/text-annotation/master:latest \`  
+`celery -A app flower --url_prefix=flower --address=0.0.0.0 --port=5555` 
 ```
 
 The Konfuzio Server application acts as a reverse proxy an servers the flower application. Therefore, django needs to know the flower url. `FLOWER_URL=http://host:5555/flower`
