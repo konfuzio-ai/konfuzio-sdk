@@ -402,9 +402,12 @@ The container needs to be able to access IP addresses and hostnames used in the 
 </section>
 <section id="optional-6-use-flower-to-monitor-tasks">
 <h4>[Optional] 6. Use Flower to monitor tasks<a class="headerlink" href="#optional-6-use-flower-to-monitor-tasks" title="Permalink to this headline">¶</a></h4>
-<p><a class="reference external" href="https://flower.readthedocs.io/en/latest/screenshots.html">Flower</a> can be used a task monitoring tool. Flower will be only accessible for Konfuzio superusers.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">pull</span> <span class="n">mher</span><span class="o">/</span><span class="n">flower</span><span class="p">:</span><span class="mf">0.9</span><span class="o">.</span><span class="mi">7</span>
-<span class="n">docker</span> <span class="n">run</span> <span class="o">--</span><span class="n">rm</span> <span class="o">--</span><span class="n">name</span> <span class="n">flower</span> <span class="o">-</span><span class="n">d</span> <span class="o">-</span><span class="n">p</span> <span class="mi">5555</span><span class="p">:</span><span class="mi">5555</span>  <span class="n">mher</span><span class="o">/</span><span class="n">flower</span><span class="p">:</span><span class="mf">0.9</span><span class="o">.</span><span class="mi">7</span> <span class="o">--</span><span class="n">adress</span> <span class="mf">0.0</span><span class="o">.</span><span class="mf">0.0</span> <span class="o">--</span><span class="n">url_prefix</span><span class="o">=</span><span class="n">flower</span> <span class="o">--</span><span class="n">broker</span><span class="o">=</span><span class="n">redis</span><span class="p">:</span><span class="o">//</span><span class="p">:</span><span class="nd">@10</span><span class="o">.</span><span class="mf">0.0</span><span class="o">.</span><span class="mi">1</span><span class="p">:</span><span class="mi">6379</span><span class="o">/</span><span class="mi">0</span>
+<p><a class="reference external" href="https://flower.readthedocs.io/en/latest/screenshots.html">Flower</a> can be used a task monitoring tool. Flower will be only accessible for Konfuzio superusers. Flower is part of the Konfuzio Server Docker Image.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>`docker run --name flower -d --add-host=host:10.0.0.1 \`
+`--env-file /konfuzio-vm/text-annotation.env \`
+`--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \`
+`registry.gitlab.com/konfuzio/text-annotation/master:latest \`
+`celery -A app flower --url_prefix=flower --address=0.0.0.0 --port=5555`
 </pre></div>
 </div>
 <p>The Konfuzio Server application acts as a reverse proxy an servers the flower application. Therefore, django needs to know the flower url. <code class="docutils literal notranslate"><span class="pre">FLOWER_URL=http://host:5555/flower</span></code></p>
