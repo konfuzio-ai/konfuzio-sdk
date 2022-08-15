@@ -19,7 +19,7 @@ This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK 
 
 ### Fixed
 - Fix an issue which causes some Extraction AIs to crash on multipage documents. 
-- Fix an issue that prevent the calculation of bounding boxes for small or slightly rotated characters. 
+- Fix an issue that prevents the calculation of bounding boxes for small or slightly rotated characters. 
 
 ## 2022-07-25_21-20-48
 
