@@ -304,7 +304,7 @@ In this example we start three containers, the first one to serve the Konfuzio w
 
 #### [Optional] 6. Use Flower to monitor tasks
 
-[Flower](https://flower.readthedocs.io/en/latest/screenshots.html) can be used a task monitoring tool. Flower will be only accessible for Konfuzio superusers. Flower is part of the Konfuzio Server Docker Image.
+[Flower](https://flower.readthedocs.io/en/latest/screenshots.html) can be used a task monitoring tool. Flower will be only accessible for Konfuzio superusers and is part of the Konfuzio Server Docker Image.
 
 ```
 `docker run --name flower -d --add-host=host:10.0.0.1 \`  
