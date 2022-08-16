@@ -39,7 +39,7 @@ from konfuzio_sdk.tokenizer.base import ListTokenizer
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 from konfuzio_sdk.samples import LocalTextProject
 
-from konfuzio_sdk.evaluate import Evaluation, compare
+from konfuzio_sdk.evaluate import Evaluation
 
 logger = logging.getLogger(__name__)
 
@@ -113,22 +113,6 @@ class TestNewSDKInformationExtraction(unittest.TestCase):
         evaluation = Evaluation([(app_doc44855, virt_doc)], strict=True)
         evaluation.data.to_csv('test_eval_44855_app_sdk_1.csv')
         assert evaluation.f1(None) == 1.0
-
-    @unittest.skip(reason='Test run offline.')
-    def test44855_tokenizer(self):
-        """Test with doc 44855."""
-        app_doc44855 = self.project.get_document_by_id(311644)
-        for ann in app_doc44855.annotations(use_correct=False):
-            ann.is_correct = True
-
-        result = self.pipeline.extract(app_doc44855)
-        virt_doc = extraction_result_to_document(app_doc44855, result)
-
-        comp_res = compare(app_doc44855, virt_doc)
-
-        assert comp_res['is_found_by_tokenizer'].sum() == len(comp_res['is_found_by_tokenizer'])
-
-        # doc2 = self.project.get_document_by_id(44855)
 
     @unittest.skip(reason='Test run offline.')
     def test_eval_44865_sdk(self):
