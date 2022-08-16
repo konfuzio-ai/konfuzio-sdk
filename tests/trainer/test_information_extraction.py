@@ -98,6 +98,9 @@ class TestNewSDKInformationExtraction(unittest.TestCase):
 
         cls.pipeline.fit()
         # pipeline_path = cls.pipeline.save(output_dir='.')
+        #             with bz2.open(pickle_path, 'rb') as f:
+
+    #                 file_data = dill.load(f)
 
     @unittest.skip(reason='Test run offline.')
     def test_sdk_vs_server_diff_44855(self):
@@ -113,6 +116,29 @@ class TestNewSDKInformationExtraction(unittest.TestCase):
         evaluation = Evaluation([(app_doc44855, virt_doc)], strict=True)
         evaluation.data.to_csv('test_eval_44855_app_sdk_1.csv')
         assert evaluation.f1(None) == 1.0
+
+    @unittest.skip(reason='Test run offline.')
+    def test_sdk_clf_44855(self):
+        """Test to get initial clf label classification output."""
+        app_doc44855 = self.project.get_document_by_id(311644)
+
+        inference_document = app_doc44855.__deepcopy__(None)
+        # 2. tokenize
+        self.pipeline.tokenizer.tokenize(inference_document)
+
+        # 3. preprocessing
+        df, _feature_names, _raw_errors = self.pipeline.features(inference_document)
+        independet_variables = df[self.pipeline.label_feature_list]
+
+        # 4. prediction and store most likely prediction and its accuracy in separated columns
+        results = pd.DataFrame(
+            data=self.pipeline.clf.predict_proba(X=independet_variables), columns=self.pipeline.clf.classes_
+        )
+        df['label_text'] = results.idxmax(axis=1)
+        df['Accuracy'] = results.max(axis=1)
+        # 5. Translation
+        df['Translated_Candidate'] = df['offset_string']  # todo: make translation explicit: It's a cool Feature
+        df.to_csv('test_sdk_clf_1.csv')
 
     @unittest.skip(reason='Test run offline.')
     def test_sdk_vs_server_diff_44855_tokenizer(self):
