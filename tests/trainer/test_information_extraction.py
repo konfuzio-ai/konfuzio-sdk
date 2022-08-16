@@ -115,6 +115,23 @@ class TestNewSDKInformationExtraction(unittest.TestCase):
         assert evaluation.f1(None) == 1.0
 
     @unittest.skip(reason='Test run offline.')
+    def test_sdk_vs_server_diff_44855_tokenizer(self):
+        """Test to find differerences between SDK tokenizer and server with test doc 44855 from project 46."""
+        app_doc44855 = self.project.get_document_by_id(311644)
+        for ann in app_doc44855.annotations(use_correct=False):
+            ann.is_correct = True
+
+        # result = self.pipeline.extract(app_doc44855)
+        tokenized_doc = app_doc44855.__deepcopy__(None)
+        self.pipeline.tokenizer.tokenize(tokenized_doc)
+        # virt_doc = extraction_result_to_document(app_doc44855, result)
+
+        # comp_res = compare(app_doc44855, virt_doc)
+        evaluation = Evaluation([(app_doc44855, tokenized_doc)], strict=True)
+        evaluation.data.to_csv('test_eval_44855_app_sdk_tokenizer_1.csv')
+        # assert evaluation.f1(None) == 1.0
+
+    @unittest.skip(reason='Test run offline.')
     def test_eval_44865_sdk(self):
         """Test sdk with reupploaded 1st test doc in project 46 (id=44855)."""
         app_doc44865_test_doc = self.project.get_document_by_id(314250)
