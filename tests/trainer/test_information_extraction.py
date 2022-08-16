@@ -39,6 +39,8 @@ from konfuzio_sdk.tokenizer.base import ListTokenizer
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 from konfuzio_sdk.samples import LocalTextProject
 
+from konfuzio_sdk.evaluate import Evaluation, compare
+
 logger = logging.getLogger(__name__)
 
 FEATURE_COUNT = 49
@@ -70,6 +72,146 @@ def display_top(snapshot, key_type='lineno', limit=30):
         logger.info("%s other: %.1f KiB" % (len(other), size / 1024))
     total = sum(stat.size for stat in top_stats)
     logger.info("Total allocated size: %.1f KiB" % (total / 1024))
+
+
+class TestNewSDKInformationExtraction(unittest.TestCase):
+    """Test New SDK Information Extraction."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set up the Data and Pipeline."""
+        tracemalloc.start()
+        cls.project = Project(id_=46, update=True)
+        cls.pipeline = DocumentEntityMulticlassModel()
+
+        cls.pipeline.category = cls.project.categories[0]
+        documents = cls.project.documents
+        cls.pipeline.test_documents = cls.pipeline.category.test_documents()
+        documents = [doc for doc in documents if doc.category]
+        assert len(documents) == 25
+        cls.pipeline.tokenizer = WhitespaceTokenizer()
+        for doc in documents:
+            cls.pipeline.tokenizer.tokenize(doc)
+
+        cls.pipeline.df_train, cls.pipeline.label_feature_list = cls.pipeline.feature_function(documents=documents)
+        cls.pipeline.df_test, cls.pipeline.test_label_feature_list = cls.pipeline.feature_function(
+            documents=cls.pipeline.test_documents
+        )
+
+        cls.pipeline.fit()
+
+        display_top(tracemalloc.take_snapshot())
+
+    @unittest.skip(reason='Test run offline.')
+    def test44855(self):
+        """Test with test doc 44855."""
+        app_doc44855 = self.project.get_document_by_id(311644)
+        for ann in app_doc44855.annotations(use_correct=False):
+            ann.is_correct = True
+
+        result = self.pipeline.extract(app_doc44855)
+        virt_doc = extraction_result_to_document(app_doc44855, result)
+
+        # comp_res = compare(app_doc44855, virt_doc)
+        evaluation = Evaluation([(app_doc44855, virt_doc)], strict=True)
+
+        assert evaluation.f1(None) == 1.0
+
+    @unittest.skip(reason='Test run offline.')
+    def test44855_tokenizer(self):
+        """Test with test doc 44855."""
+        app_doc44855 = self.project.get_document_by_id(311644)
+        for ann in app_doc44855.annotations(use_correct=False):
+            ann.is_correct = True
+
+        result = self.pipeline.extract(app_doc44855)
+        virt_doc = extraction_result_to_document(app_doc44855, result)
+
+        comp_res = compare(app_doc44855, virt_doc)
+
+        assert comp_res['is_found_by_tokenizer'].sum() == len(comp_res['is_found_by_tokenizer'])
+
+        # doc2 = self.project.get_document_by_id(44855)
+
+    @unittest.skip(reason='Test run offline.')
+    def test_eval_44865_sdk(self):
+        """Test with test doc 44865."""
+        app_doc44865_test_doc = self.project.get_document_by_id(314250)
+
+        extraction_result = self.pipeline.extract(document=app_doc44865_test_doc)
+        predicted_doc = extraction_result_to_document(app_doc44865_test_doc, extraction_result)
+        eval_list = [(app_doc44865_test_doc, predicted_doc)]
+
+        evaluation = Evaluation(eval_list, strict=True)
+
+        evaluation.data.to_csv('test_eval_44865_sdk_1.csv')
+
+    @unittest.skip(reason='Test run offline.')
+    def test_eval_44866_sdk(self):
+        """Test with test doc 44866."""
+        app_doc44866_test_doc = self.project.get_document_by_id(314074)
+
+        extraction_result = self.pipeline.extract(document=app_doc44866_test_doc)
+        predicted_doc = extraction_result_to_document(app_doc44866_test_doc, extraction_result)
+        eval_list = [(app_doc44866_test_doc, predicted_doc)]
+
+        evaluation = Evaluation(eval_list, strict=True)
+
+        evaluation.data.to_csv('test_eval_44866_sdk_1.csv')
+
+    @unittest.skip(reason='Test run offline.')
+    def test_eval_44867_sdk(self):
+        """Test with test doc 44867."""
+        app_doc44867_test_doc = self.project.get_document_by_id(314249)
+
+        extraction_result = self.pipeline.extract(document=app_doc44867_test_doc)
+        predicted_doc = extraction_result_to_document(app_doc44867_test_doc, extraction_result)
+        eval_list = [(app_doc44867_test_doc, predicted_doc)]
+
+        evaluation = Evaluation(eval_list, strict=True)
+
+        evaluation.data.to_csv('test_eval_44867_sdk_1.csv')
+
+    # @unittest.skip(reason='Test run offline.')
+    # def test_eval_sdk(self):
+
+    #     app_doc44865_eval = self.project.get_document_by_id(314250)
+    #     app_doc44866_eval = self.project.get_document_by_id(314074)
+    #     app_doc44867_eval = self.project.get_document_by_id(314249)
+    #     app_docs = [app_doc44865_eval, app_doc44866_eval, app_doc44867_eval]
+
+    #     eval_list = []
+    #     for i, document in enumerate(app_docs):
+    #         extraction_result = self.pipeline.extract(document=document)
+    #         predicted_doc = extraction_result_to_document(document, extraction_result)
+    #         eval_list.append((document, predicted_doc))
+
+    #     evaluation = Evaluation(eval_list, strict=True)
+
+    #     assert evaluation.f1(None) == 1.0 # 0.8546255506607929 # 0.8660714285714286
+    #     # return self.evaluation
+
+    # @unittest.skip(reason='Test run offline.')
+    # def test_eval_app(self):
+
+    #     app_doc44865_eval = self.project.get_document_by_id(314250)
+    #     app_doc44866_eval = self.project.get_document_by_id(314074)
+    #     app_doc44867_eval = self.project.get_document_by_id(314249)
+    #     app_docs_eval = [app_doc44865_eval, app_doc44866_eval, app_doc44867_eval]
+    #     app_doc44865 = self.project.get_document_by_id(314273)
+    #     app_doc44866 = self.project.get_document_by_id(314272)
+    #     app_doc44867 = self.project.get_document_by_id(314274)
+    #     app_docs = [app_doc44865, app_doc44866, app_doc44867]
+    #     eval_list = []
+    #     for i, document in enumerate(app_docs_eval):
+    #         eval_list.append((document, app_docs[i]))
+
+    #     evaluation = Evaluation(eval_list, strict=True)
+    #     # F1 0.8725868725868726
+    #     # TP 113
+    #     # FP 33
+    #     # FN 0
+    #     assert evaluation.f1(None) == 1.0
 
 
 class TestSequenceInformationExtraction(unittest.TestCase):
