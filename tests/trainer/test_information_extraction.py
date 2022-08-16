@@ -80,10 +80,8 @@ class TestNewSDKInformationExtraction(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the Data and Pipeline."""
-        tracemalloc.start()
         cls.project = Project(id_=46, update=True)
         cls.pipeline = DocumentEntityMulticlassModel()
-
         cls.pipeline.category = cls.project.categories[0]
         documents = cls.project.documents
         cls.pipeline.test_documents = cls.pipeline.category.test_documents()
@@ -99,12 +97,11 @@ class TestNewSDKInformationExtraction(unittest.TestCase):
         )
 
         cls.pipeline.fit()
-
-        display_top(tracemalloc.take_snapshot())
+        # pipeline_path = cls.pipeline.save(output_dir='.')
 
     @unittest.skip(reason='Test run offline.')
-    def test44855(self):
-        """Test with test doc 44855."""
+    def test_sdk_vs_server_diff_44855(self):
+        """Test to find differerences between SDK and server with test doc 44855 from project 46."""
         app_doc44855 = self.project.get_document_by_id(311644)
         for ann in app_doc44855.annotations(use_correct=False):
             ann.is_correct = True
@@ -114,12 +111,12 @@ class TestNewSDKInformationExtraction(unittest.TestCase):
 
         # comp_res = compare(app_doc44855, virt_doc)
         evaluation = Evaluation([(app_doc44855, virt_doc)], strict=True)
-
+        evaluation.data.to_csv('test_eval_44855_app_sdk_1.csv')
         assert evaluation.f1(None) == 1.0
 
     @unittest.skip(reason='Test run offline.')
     def test44855_tokenizer(self):
-        """Test with test doc 44855."""
+        """Test with doc 44855."""
         app_doc44855 = self.project.get_document_by_id(311644)
         for ann in app_doc44855.annotations(use_correct=False):
             ann.is_correct = True
@@ -135,7 +132,7 @@ class TestNewSDKInformationExtraction(unittest.TestCase):
 
     @unittest.skip(reason='Test run offline.')
     def test_eval_44865_sdk(self):
-        """Test with test doc 44865."""
+        """Test sdk with reupploaded 1st test doc in project 46 (id=44855)."""
         app_doc44865_test_doc = self.project.get_document_by_id(314250)
 
         extraction_result = self.pipeline.extract(document=app_doc44865_test_doc)
@@ -148,7 +145,7 @@ class TestNewSDKInformationExtraction(unittest.TestCase):
 
     @unittest.skip(reason='Test run offline.')
     def test_eval_44866_sdk(self):
-        """Test with test doc 44866."""
+        """Test sdk with reupploaded 2nd test doc in project 46 (id=44856)."""
         app_doc44866_test_doc = self.project.get_document_by_id(314074)
 
         extraction_result = self.pipeline.extract(document=app_doc44866_test_doc)
@@ -161,7 +158,7 @@ class TestNewSDKInformationExtraction(unittest.TestCase):
 
     @unittest.skip(reason='Test run offline.')
     def test_eval_44867_sdk(self):
-        """Test with test doc 44867."""
+        """Test sdk with reupploaded 3rd test doc in project 46 (id=44857)."""
         app_doc44867_test_doc = self.project.get_document_by_id(314249)
 
         extraction_result = self.pipeline.extract(document=app_doc44867_test_doc)
