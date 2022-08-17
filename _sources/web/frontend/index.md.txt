@@ -51,10 +51,7 @@ This creates on your page an `iframe` with 100% width (full width of its contain
 
 Currently you cannot customize the style (fonts, color, etc.) of the `iframe`'s content. While we plan to offer more customization options in the future, advanced users might want to take a look at our [create your own dashboard guide](https://dev.konfuzio.com).
 
-## Integration of a single document via HTML iframe 
-  
-Coming soon. 
   
 ## Integration via Capture Vue
   
-Coming soon.
+See [GitHub](https://github.com/konfuzio-ai/konfuzio-capture-vue#documentation)
