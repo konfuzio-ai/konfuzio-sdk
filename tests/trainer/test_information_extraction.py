@@ -81,6 +81,7 @@ class TestNewSDKInformationExtraction(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Set up the Data and Pipeline."""
         cls.project = Project(id_=46, update=True)
+
         cls.pipeline = DocumentEntityMulticlassModel()
         cls.pipeline.category = cls.project.categories[0]
         documents = cls.project.documents
@@ -97,14 +98,23 @@ class TestNewSDKInformationExtraction(unittest.TestCase):
         )
 
         cls.pipeline.fit()
-        # pipeline_path = cls.pipeline.save(output_dir='.')
-        #             with bz2.open(pickle_path, 'rb') as f:
 
-    #                 file_data = dill.load(f)
+        # pipeline_path = cls.pipeline.save(output_dir='.')
+
+        # t_doc = cls.pipeline.test_documents[2]
+        # cls.pipeline.tokenizer.tokenize(t_doc)
+        # df, feat_list = cls.pipeline.feature_function(documents=[t_doc])
+        # df = df[feat_list]
+        # df.to_csv(str(cls.pipeline.test_documents[2].id_) + '_sdk_features_2' + '.csv')
+        # raise
+        # import dill
+        # import bz2
+        # with bz2.open('2022-08-16-09-34-43_lohnabrechnung.pkl', 'rb') as f:
+        #     cls.pipeline = dill.load(f)
 
     @unittest.skip(reason='Test run offline.')
     def test_sdk_vs_server_diff_44855(self):
-        """Test to find differerences between SDK and server with test doc 44855 from project 46."""
+        """Test to find differerences between SDK and server with doc 44855 from project 46."""
         app_doc44855 = self.project.get_document_by_id(311644)
         for ann in app_doc44855.annotations(use_correct=False):
             ann.is_correct = True
@@ -112,10 +122,26 @@ class TestNewSDKInformationExtraction(unittest.TestCase):
         result = self.pipeline.extract(app_doc44855)
         virt_doc = extraction_result_to_document(app_doc44855, result)
 
+        # for ann in virt_doc.annotations(use_correct=False):
+        #     assert len(ann.spans) == 1
+
         # comp_res = compare(app_doc44855, virt_doc)
         evaluation = Evaluation([(app_doc44855, virt_doc)], strict=True)
         evaluation.data.to_csv('test_eval_44855_app_sdk_1.csv')
         assert evaluation.f1(None) == 1.0
+
+    @unittest.skip(reason='Test run offline.')
+    def test_sdk_vs_server_diff(self):
+        """Test to find differerences between SDK and server with reupploaded test docs from project 46."""
+        for doc_id in [(314272, 44865), (314273, 44866), (314274, 44867)]:
+            app_doc = self.project.get_document_by_id(doc_id[0])
+            for ann in app_doc.annotations(use_correct=False):
+                ann.is_correct = True
+
+            result = self.pipeline.extract(app_doc)
+            virt_doc = extraction_result_to_document(app_doc, result)
+            evaluation = Evaluation([(app_doc, virt_doc)], strict=True)
+            evaluation.data.to_csv(f'test_eval_{doc_id[1]}_sdk_vs_server_1.csv')
 
     @unittest.skip(reason='Test run offline.')
     def test_sdk_clf_44855(self):
@@ -141,8 +167,32 @@ class TestNewSDKInformationExtraction(unittest.TestCase):
         df.to_csv('test_sdk_clf_1.csv')
 
     @unittest.skip(reason='Test run offline.')
+    def test_sdk_clf(self):
+        """Test to get initial clf label classification output for reupploaded test docs from project 46.."""
+        for doc_id in [(314272, 44865), (314273, 44866), (314274, 44867)]:
+            app_doc = self.project.get_document_by_id(doc_id[0])
+
+            inference_document = app_doc.__deepcopy__(None)
+            # 2. tokenize
+            self.pipeline.tokenizer.tokenize(inference_document)
+
+            # 3. preprocessing
+            df, _feature_names, _raw_errors = self.pipeline.features(inference_document)
+            independet_variables = df[self.pipeline.label_feature_list]
+
+            # 4. prediction and store most likely prediction and its accuracy in separated columns
+            results = pd.DataFrame(
+                data=self.pipeline.clf.predict_proba(X=independet_variables), columns=self.pipeline.clf.classes_
+            )
+            df['label_text'] = results.idxmax(axis=1)
+            df['Accuracy'] = results.max(axis=1)
+            # 5. Translation
+            df['Translated_Candidate'] = df['offset_string']
+            df.to_csv(f'test_sdk_clf_{doc_id[1]}_1.csv')
+
+    @unittest.skip(reason='Test run offline.')
     def test_sdk_vs_server_diff_44855_tokenizer(self):
-        """Test to find differerences between SDK tokenizer and server with test doc 44855 from project 46."""
+        """Test to find differerences between SDK tokenizer and server with doc 44855 from project 46."""
         app_doc44855 = self.project.get_document_by_id(311644)
         for ann in app_doc44855.annotations(use_correct=False):
             ann.is_correct = True
@@ -158,8 +208,30 @@ class TestNewSDKInformationExtraction(unittest.TestCase):
         # assert evaluation.f1(None) == 1.0
 
     @unittest.skip(reason='Test run offline.')
+    def test_sdk_vs_server_diff_tokenizer(self):
+        """Test to find differerences between SDK tokenizer and server annotations with test docs from project 46."""
+        for doc_id in [(314250, 44865), (314074, 44866), (314249, 44867)]:
+            app_doc = self.project.get_document_by_id(doc_id[0])
+            for ann in app_doc.annotations(use_correct=False):
+                ann.is_correct = True
+
+            # result = self.pipeline.extract(app_doc44855)
+            tokenized_doc = app_doc.__deepcopy__(None)
+            self.pipeline.tokenizer.tokenize(tokenized_doc)
+            # virt_doc = extraction_result_to_document(app_doc44855, result)
+
+            # comp_res = compare(app_doc44855, virt_doc)
+            evaluation = Evaluation([(app_doc, tokenized_doc)], strict=True)
+            evaluation.data.to_csv(f'test_eval_{doc_id[1]}_app_sdk_tokenizer_1.csv')
+            # assert evaluation.f1(None) == 1.0
+
+        #         >>> df = pd.read_csv(f'test_eval_{}_app_sdk_tokenizer_1.csv')
+        #         >>> for i, row in df[(df['is_found_by_tokenizer']==False) & (df['is_matched'] == True)].iterrows():
+        #         ...     print(doc.text[int(row['start_offset']):int(row['end_offset'])])
+
+    @unittest.skip(reason='Test run offline.')
     def test_eval_44865_sdk(self):
-        """Test sdk with reupploaded 1st test doc in project 46 (id=44855)."""
+        """Test sdk with reupploaded 1st test doc in project 46 (id=44865)."""
         app_doc44865_test_doc = self.project.get_document_by_id(314250)
 
         extraction_result = self.pipeline.extract(document=app_doc44865_test_doc)
@@ -172,7 +244,7 @@ class TestNewSDKInformationExtraction(unittest.TestCase):
 
     @unittest.skip(reason='Test run offline.')
     def test_eval_44866_sdk(self):
-        """Test sdk with reupploaded 2nd test doc in project 46 (id=44856)."""
+        """Test sdk with reupploaded 2nd test doc in project 46 (id=44866)."""
         app_doc44866_test_doc = self.project.get_document_by_id(314074)
 
         extraction_result = self.pipeline.extract(document=app_doc44866_test_doc)
@@ -185,7 +257,7 @@ class TestNewSDKInformationExtraction(unittest.TestCase):
 
     @unittest.skip(reason='Test run offline.')
     def test_eval_44867_sdk(self):
-        """Test sdk with reupploaded 3rd test doc in project 46 (id=44857)."""
+        """Test sdk with reupploaded 3rd test doc in project 46 (id=44867)."""
         app_doc44867_test_doc = self.project.get_document_by_id(314249)
 
         extraction_result = self.pipeline.extract(document=app_doc44867_test_doc)
