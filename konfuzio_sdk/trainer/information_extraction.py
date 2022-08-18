@@ -2702,7 +2702,25 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
         self.documents = None
         self.test_documents = None
 
-    def feature_function(self, documents: List[Document], no_label_limit=None) -> Tuple[List[pandas.DataFrame], list]:
+    def label_train_doc(self, doc, orig_doc):
+        """Assign labels to Annotations in newly tokenized virtual training document."""
+        doc_spans = orig_doc.spans(use_correct=True)
+        s_i = 0
+        for span in doc.spans():
+            while s_i < len(doc_spans) and span.start_offset > doc_spans[s_i].end_offset:
+                s_i += 1
+            if s_i >= len(doc_spans):
+                break
+            if span.end_offset < doc_spans[s_i].start_offset:
+                continue
+
+            r = range(doc_spans[s_i].start_offset, doc_spans[s_i].end_offset + 1)
+            if span.start_offset in r and span.end_offset in r:
+                span.annotation.label = doc_spans[s_i].annotation.label
+
+    def feature_function(
+        self, documents: List[Document], no_label_limit=None, retokenize=True
+    ) -> Tuple[List[pandas.DataFrame], list]:
         """Calculate features per Span of Annotations."""
         logger.info('Start generating features.')
         df_real_list = []
@@ -2717,8 +2735,18 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
             # todo check for tokenizer: self.tokenizer.tokenize(document)  # todo: do we need it?
             # todo check removed  if x.x0 and x.y0
             # todo: use NO_LABEL for any Annotation that has no Label, instead of keeping Label = None
+            if retokenize:
+                virt_document = deepcopy(document)
+                self.tokenizer.tokenize(virt_document)
+                self.label_train_doc(virt_document, document)
+                virt_document.id_ = document.id_
+                document = virt_document
+            else:
+                self.tokenizer.tokenize(document)
+
             no_label_annotations = document.annotations(use_correct=False, label=document.project.no_label)
             label_annotations = [x for x in document.annotations(use_correct=False) if x.label.id_ is not None]
+
             # We calculate features of documents as long as they have IDs, even if they are offline.
             # The assumption is that if they have an ID, then the data came either from the API or from the DB.
             if document.id_ is None:

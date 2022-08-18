@@ -1490,7 +1490,7 @@ class Document(Data):
         self._text: str = text
         self._characters: Dict[int, Bbox] = None
         self._bbox_json = bbox
-        self.bboxes_available: bool = self.is_online or self._bbox_json
+        self.bboxes_available: bool = True if (self.is_online or self._bbox_json) else False
         self._hocr = None
         self._pages: List[Page] = []
 
@@ -1595,7 +1595,7 @@ class Document(Data):
     def __deepcopy__(self, memo) -> 'Document':
         """Create a new Document of the instance."""
         document = Document(
-            id=None,
+            id_=None,
             project=self.project,
             category=self.category,
             text=self.text,
