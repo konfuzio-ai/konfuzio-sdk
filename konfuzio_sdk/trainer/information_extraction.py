@@ -2704,7 +2704,7 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
         self.documents = None
         self.test_documents = None
 
-    def label_train_document(self, virtual_document, original_document):
+    def label_train_document(self, virtual_document: Document, original_document: Document):
         """Assign labels to Annotations in newly tokenized virtual training document."""
         doc_spans = original_document.spans(use_correct=True)
         s_i = 0

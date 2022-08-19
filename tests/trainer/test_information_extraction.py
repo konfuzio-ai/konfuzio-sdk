@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Test to train an Extraction AI."""
+from copy import deepcopy
 import linecache
 import logging
 import math
@@ -101,6 +102,27 @@ class TestDocumentEntityMultiClassModel(unittest.TestCase):
         evaluation = self.pipeline.evaluate_full()
 
         assert evaluation.f1(None) > 0.9
+
+    def test_label_train_document(self):
+        """Test label_train_document method for feature extraction."""
+        project = LocalTextProject()
+        document = project.local_training_document
+
+        virtual_doc = deepcopy(document)
+        virtual_doc = self.pipeline.tokenizer.tokenize(virtual_doc)
+        self.pipeline.label_train_document(virtual_doc, document)
+
+        annotations = virtual_doc.annotations(use_correct=False)
+
+        assert len(annotations) == 5
+        assert " ".join(ann.offset_string[0] for ann in annotations) == "Hi all, I like fish."
+        assert [ann.label.name for ann in annotations] == [
+            'DefaultLabelName',
+            'NO_LABEL',
+            'LabelName 2',
+            'NO_LABEL',
+            'NO_LABEL',
+        ]
 
 
 class TestSeparateLabelsEntityMultiClassModel(unittest.TestCase):
