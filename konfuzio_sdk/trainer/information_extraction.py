@@ -1301,10 +1301,12 @@ def annotation_to_dict(annotation: Annotation, include_pos: bool = False) -> dic
     else:
         area = annotation.spans[0].bbox().x0 * annotation.spans[0].bbox().y0
 
+    document_id = annotation.document.copy_of_id if annotation.document.copy_of_id else annotation.document.id_
+
     # gets the data into a dict
     annotation_dict = {
         "id": annotation.id_,
-        "document_id": annotation.document.id_ if annotation.document else None,
+        "document_id": document_id,
         "offset_string": ''.join(annotation.offset_string),  # todo this is unreal data because we combine multiline
         "normalized": annotation.normalized,
         "label_text": annotation.label.name if annotation.label else None,
@@ -2702,11 +2704,11 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
         self.documents = None
         self.test_documents = None
 
-    def label_train_doc(self, doc, orig_doc):
+    def label_train_document(self, virtual_document, original_document):
         """Assign labels to Annotations in newly tokenized virtual training document."""
-        doc_spans = orig_doc.spans(use_correct=True)
+        doc_spans = original_document.spans(use_correct=True)
         s_i = 0
-        for span in doc.spans():
+        for span in virtual_document.spans():
             while s_i < len(doc_spans) and span.start_offset > doc_spans[s_i].end_offset:
                 s_i += 1
             if s_i >= len(doc_spans):
@@ -2738,8 +2740,7 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
             if retokenize:
                 virt_document = deepcopy(document)
                 self.tokenizer.tokenize(virt_document)
-                self.label_train_doc(virt_document, document)
-                virt_document.id_ = document.id_
+                self.label_train_document(virt_document, document)
                 document = virt_document
             else:
                 self.tokenizer.tokenize(document)
@@ -2749,7 +2750,7 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
 
             # We calculate features of documents as long as they have IDs, even if they are offline.
             # The assumption is that if they have an ID, then the data came either from the API or from the DB.
-            if document.id_ is None:
+            if document.id_ is None and document.copy_of_id is None:
                 # inference time todo reduce shuffled complexity
                 assert (
                     not label_annotations

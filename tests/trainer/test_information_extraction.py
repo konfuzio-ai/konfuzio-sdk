@@ -74,6 +74,63 @@ def display_top(snapshot, key_type='lineno', limit=30):
     logger.info("Total allocated size: %.1f KiB" % (total / 1024))
 
 
+class TestDocumentEntityMultiClassModel(unittest.TestCase):
+    """Test New SDK Information Extraction."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set up the Data and Pipeline."""
+        cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+
+        cls.pipeline = DocumentEntityMulticlassModel()
+
+        cls.pipeline.tokenizer = WhitespaceTokenizer()
+
+        cls.pipeline.category = cls.project.get_category_by_id(id_=63)
+        documents = cls.project.documents
+        cls.pipeline.test_documents = cls.pipeline.category.test_documents()
+        documents = [doc for doc in documents if doc.category]
+        assert len(documents) == 25
+
+        cls.pipeline.df_train, cls.pipeline.label_feature_list = cls.pipeline.feature_function(documents=documents)
+
+        cls.pipeline.fit()
+
+    def test_evaluation(self):
+        """Evaluate DocumentEntityMultiClassModel."""
+        evaluation = self.pipeline.evaluate_full()
+
+        assert evaluation.f1(None) > 0.9
+
+
+class TestSeparateLabelsEntityMultiClassModel(unittest.TestCase):
+    """Test New SDK Information Extraction."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set up the Data and Pipeline."""
+        cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+
+        cls.pipeline = SeparateLabelsEntityMultiClassModel()
+        cls.pipeline.tokenizer = WhitespaceTokenizer()
+        cls.pipeline.category = cls.project.get_category_by_id(id_=63)
+
+        documents = cls.project.documents
+        cls.pipeline.test_documents = cls.pipeline.category.test_documents()
+        documents = [doc for doc in documents if doc.category]
+        assert len(documents) == 25
+
+        cls.pipeline.df_train, cls.pipeline.label_feature_list = cls.pipeline.feature_function(documents=documents)
+
+        cls.pipeline.fit()
+
+    def test_evaluation(self):
+        """Evaluate DocumentEntityMultiClassModel."""
+        evaluation = self.pipeline.evaluate_full()
+
+        assert evaluation.f1(None) > 0.9
+
+
 class TestNewSDKInformationExtraction(unittest.TestCase):
     """Test New SDK Information Extraction."""
 
@@ -89,8 +146,6 @@ class TestNewSDKInformationExtraction(unittest.TestCase):
         documents = [doc for doc in documents if doc.category]
         assert len(documents) == 25
         cls.pipeline.tokenizer = WhitespaceTokenizer()
-        for doc in documents:
-            cls.pipeline.tokenizer.tokenize(doc)
 
         cls.pipeline.df_train, cls.pipeline.label_feature_list = cls.pipeline.feature_function(documents=documents)
         cls.pipeline.df_test, cls.pipeline.test_label_feature_list = cls.pipeline.feature_function(
@@ -99,14 +154,6 @@ class TestNewSDKInformationExtraction(unittest.TestCase):
 
         cls.pipeline.fit()
 
-        # pipeline_path = cls.pipeline.save(output_dir='.')
-
-        # t_doc = cls.pipeline.test_documents[2]
-        # cls.pipeline.tokenizer.tokenize(t_doc)
-        # df, feat_list = cls.pipeline.feature_function(documents=[t_doc])
-        # df = df[feat_list]
-        # df.to_csv(str(cls.pipeline.test_documents[2].id_) + '_sdk_features_2' + '.csv')
-        # raise
         # import dill
         # import bz2
         # with bz2.open('2022-08-16-09-34-43_lohnabrechnung.pkl', 'rb') as f:
@@ -163,7 +210,7 @@ class TestNewSDKInformationExtraction(unittest.TestCase):
         df['label_text'] = results.idxmax(axis=1)
         df['Accuracy'] = results.max(axis=1)
         # 5. Translation
-        df['Translated_Candidate'] = df['offset_string']  # todo: make translation explicit: It's a cool Feature
+        df['Translated_Candidate'] = df['offset_string']
         df.to_csv('test_sdk_clf_1.csv')
 
     @unittest.skip(reason='Test run offline.')
@@ -289,7 +336,7 @@ class TestNewSDKInformationExtraction(unittest.TestCase):
 
     # @unittest.skip(reason='Test run offline.')
     # def test_eval_app(self):
-
+    #     """"""
     #     app_doc44865_eval = self.project.get_document_by_id(314250)
     #     app_doc44866_eval = self.project.get_document_by_id(314074)
     #     app_doc44867_eval = self.project.get_document_by_id(314249)
@@ -303,10 +350,10 @@ class TestNewSDKInformationExtraction(unittest.TestCase):
     #         eval_list.append((document, app_docs[i]))
 
     #     evaluation = Evaluation(eval_list, strict=True)
-    #     # F1 0.8725868725868726
-    #     # TP 113
-    #     # FP 33
-    #     # FN 0
+    # #     # F1 0.8725868725868726
+    # #     # TP 113
+    # #     # FP 33
+    # #     # FN 0
     #     assert evaluation.f1(None) == 1.0
 
 
