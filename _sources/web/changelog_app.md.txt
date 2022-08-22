@@ -10,6 +10,29 @@ All notable changes in the server of app.konfuzio.com will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
 
+## Unreleased
+
+### Added
+- Auto-rotation for documents for all angles (until now only 90 degree angles have been supported).
+- Information about the embedded fonts of PDF documents.
+- Improve Swagger API definition for bounding boxes.
+- Superusers can inspect the logs of AI trainings and AI run.
+- Add threshold attribure to the Category endpoint(API V3).
+- Show minimum/medium/maximimum runtime of AIs.
+- Add the callback_url attribute to (API V3).
+
+### Changed
+- Improve visibility of the left navigation bar.
+- Create sandwich PDFs on demand (until now they have been created on document upload).
+
+### Fixed
+- Top annoation filter in the SmartView now considers unrevised annotations.
+- Fix an issue in which a Document cannot be processed because negative bounding boxes are detected. 
+- Fix an issue which caused the processing time to be shown as negative.
+
+This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Capture Vue in version [0.0.6](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
+
+
 ## 2022-07-28_15-55-29
 
 This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Capture Vue in version [0.0.6](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
