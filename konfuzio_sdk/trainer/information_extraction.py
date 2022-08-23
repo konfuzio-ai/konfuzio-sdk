@@ -1749,13 +1749,14 @@ def add_extractions_as_annotations(
 
 def extraction_result_to_document(document: Document, extraction_result: dict) -> Document:
     """Return a virtual Document annotated with AI Model output."""
-    virtual_doc = Document(
-        project=document.category.project,
-        text=document.text,
-        bbox=document.get_bbox(),
-        category=document.category,
-        pages=document.pages,
-    )
+    virtual_doc = deepcopy(document)
+    # Document(
+    #     project=document.category.project,
+    #     text=document.text,
+    #     bbox=document.get_bbox(),
+    #     category=document.category,
+    #     pages=document.pages,
+    # )
     virtual_annotation_set_id = 0  # counter for across mult. Annotation Set groups of a Label Set
 
     # define Annotation Set for the Category Label Set: todo: this is unclear from API side
@@ -2791,7 +2792,7 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
             df_real_list.append(temp_df_real)
             df_raw_errors_list.append(temp_df_raw_errors)
 
-        feature_list = list(set(feature_list))
+        feature_list = list(dict.fromkeys(feature_list))  # remove duplicates while maintaining order
 
         if df_real_list:
             df_real_list = pandas.concat(df_real_list).reset_index(drop=True)
