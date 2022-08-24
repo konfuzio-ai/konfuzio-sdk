@@ -88,7 +88,6 @@ class TestDocumentEntityMultiClassModel(unittest.TestCase):
         self.pipeline.tokenizer = WhitespaceTokenizer()
         self.pipeline.category = self.project.get_category_by_id(id_=63)
         self.pipeline.documents = self.pipeline.category.documents()[:5]
-        # assert len(self.pipeline.documents) == 25
         self.pipeline.test_documents = self.pipeline.category.test_documents()[:1]
         # todo have a separate test case for calculating features of offline documents
         # for doc in self.pipeline.documents + self.pipeline.test_documents:
@@ -119,7 +118,7 @@ class TestDocumentEntityMultiClassModel(unittest.TestCase):
         """Evaluate DocumentEntityMultiClassModel."""
         evaluation = self.pipeline.evaluate_full()
 
-        assert evaluation.f1(None) == 0.8108108108108109  # 0.9237668161434978 
+        assert evaluation.f1(None) == 0.8108108108108109
 
     def test_7_extract_test_document(self):
         """Extract a randomly selected Test Document."""
@@ -144,7 +143,6 @@ class TestSeparateLabelsEntityMultiClassModel(unittest.TestCase):
         self.pipeline.tokenizer = WhitespaceTokenizer()
         self.pipeline.category = self.project.get_category_by_id(id_=63)
         self.pipeline.documents = self.pipeline.category.documents()[:5]
-        # assert len(self.pipeline.documents) == 25
         self.pipeline.test_documents = self.pipeline.category.test_documents()[:1]
         # todo have a separate test case for calculating features of offline documents
         # for doc in self.pipeline.documents + self.pipeline.test_documents:
@@ -181,7 +179,7 @@ class TestSeparateLabelsEntityMultiClassModel(unittest.TestCase):
         """Evaluate DocumentEntityMultiClassModel."""
         evaluation = self.pipeline.evaluate_full()
 
-        assert evaluation.f1(None) == 0.8108108108108109  # 0.9237668161434978  # 0.8083333333333333
+        assert evaluation.f1(None) == 0.8108108108108109
 
 
 # class TestNewSDKInformationExtraction(unittest.TestCase):
@@ -665,8 +663,8 @@ class TestInformationExtraction(unittest.TestCase):
         features, feature_names, errors = pipeline.features(document)
         assert len(feature_names) == 270  # todo investigate if all features are calculated correctly, see #9289
         # feature order should stay the same to get predictable results
-        assert feature_names[-1] == 'first_word_y1'  
-        assert feature_names[42] == 'feat_substring_count_h'  
+        assert feature_names[-1] == 'first_word_y1'
+        assert feature_names[42] == 'feat_substring_count_h'
 
     def test_extract_with_unfitted_clf(self):
         """Test to extract a Document."""
