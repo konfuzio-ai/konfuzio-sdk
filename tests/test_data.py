@@ -1396,7 +1396,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         for document in prj.documents:
             document.text
         after = _getsize(prj)
-        assert after / before > 1.8
+        assert 1.7 < after / before < 1.8
 
     def test_create_new_doc_via_text_and_bbox(self):
         """Test to create a new Document which by a text and a bbox."""

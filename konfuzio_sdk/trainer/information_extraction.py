@@ -1806,7 +1806,7 @@ def extraction_result_to_document(document: Document, extraction_result: dict) -
 class Trainer:
     """Base Model to extract information from unstructured human readable text."""
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         """Initialize ExtractionModel."""
         # Go through keyword arguments, and either save their values to our
         # instance, or raise an error.
@@ -2724,7 +2724,13 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
     def feature_function(
         self, documents: List[Document], no_label_limit=None, retokenize=True
     ) -> Tuple[List[pandas.DataFrame], list]:
-        """Calculate features per Span of Annotations."""
+        """Calculate features per Span of Annotations.
+
+        :param documents: List of documents to extract features from.
+        :param no_label_limit: Int or Float to limit number of new annotations to create during tokenization.
+        :param retokenize: Bool for whether to recreate annotations from scratch or use already existing annotations.
+        :return: Dataframe of features and list of feature names.
+        """
         logger.info('Start generating features.')
         df_real_list = []
         df_raw_errors_list = []

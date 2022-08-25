@@ -87,11 +87,13 @@ class TestDocumentEntityMultiClassModel(unittest.TestCase):
         """Make sure the Data and Pipeline is configured."""
         self.pipeline.tokenizer = WhitespaceTokenizer()
         self.pipeline.category = self.project.get_category_by_id(id_=63)
-        self.pipeline.documents = self.pipeline.category.documents()[:5]
-        self.pipeline.test_documents = self.pipeline.category.test_documents()[:1]
+
+        train_doc_ids = [44823, 44834, 44839, 44840, 44841]
+        self.pipeline.documents = [self.project.get_document_by_id(doc_id) for doc_id in train_doc_ids]
+
+        test_doc_ids = [44865]
+        self.pipeline.test_documents = [self.project.get_document_by_id(doc_id) for doc_id in test_doc_ids]
         # todo have a separate test case for calculating features of offline documents
-        # for doc in self.pipeline.documents + self.pipeline.test_documents:
-        #     doc.set_offline()
 
     def test_2_make_features(self):
         """Make sure the Data and Pipeline is configured."""
@@ -126,7 +128,36 @@ class TestDocumentEntityMultiClassModel(unittest.TestCase):
         result = self.pipeline.extract(document=test_document)
 
         assert type(result) is dict
-        assert len(result['Brutto-Bezug'][0].keys()) == 3  # todo add more test for inference on data level
+        res_doc = extraction_result_to_document(test_document, result)
+
+        anns = res_doc.annotations(use_correct=False)
+
+        assert len(anns) == 20
+
+        assert (anns[0].label.name, anns[0].start_offset, anns[0].end_offset) == ('Austellungsdatum', 159, 169)
+        assert (anns[1].label.name, anns[1].start_offset, anns[1].end_offset) == ('Personalausweis', 352, 357)
+        assert (anns[2].label.name, anns[2].start_offset, anns[2].end_offset) == ('Steuerklasse', 365, 366)
+        assert (anns[3].label.name, anns[3].start_offset, anns[3].end_offset) == ('Personalausweis', 1194, 1199)
+        assert (anns[4].label.name, anns[4].start_offset, anns[4].end_offset) == ('Gesamt-Brutto', 1498, 1504)
+        assert (anns[5].label.name, anns[5].start_offset, anns[5].end_offset) == ('Vorname', 1507, 1518)
+        assert (anns[6].label.name, anns[6].start_offset, anns[6].end_offset) == ('Nachname', 1519, 1527)
+        assert (anns[7].label.name, anns[7].start_offset, anns[7].end_offset) == ('Gesamt-Brutto', 1582, 1587)
+        assert (anns[8].label.name, anns[8].start_offset, anns[8].end_offset) == ('Lohnart', 1758, 1762)
+        assert (anns[9].label.name, anns[9].start_offset, anns[9].end_offset) == ('Bezeichnung', 1763, 1769)
+        assert (anns[10].label.name, anns[10].start_offset, anns[10].end_offset) == ('Betrag', 1831, 1839)
+        assert (anns[11].label.name, anns[11].start_offset, anns[11].end_offset) == ('Gesamt-Brutto', 2111, 2119)
+        assert (anns[12].label.name, anns[12].start_offset, anns[12].end_offset) == ('Sozialversicherung', 2255, 2262)
+        assert (anns[13].label.name, anns[13].start_offset, anns[13].end_offset) == ('Sozialversicherung', 2269, 2274)
+        assert (anns[14].label.name, anns[14].start_offset, anns[14].end_offset) == ('Sozialversicherung', 2281, 2285)
+        assert (anns[15].label.name, anns[15].start_offset, anns[15].end_offset) == ('Sozialversicherung', 2292, 2296)
+        assert (anns[16].label.name, anns[16].start_offset, anns[16].end_offset) == (
+            'Steuerrechtliche Abzüge',
+            2324,
+            2330,
+        )
+        assert (anns[17].label.name, anns[17].start_offset, anns[17].end_offset) == ('Netto-Verdienst', 3004, 3012)
+        assert (anns[18].label.name, anns[18].start_offset, anns[18].end_offset) == ('Steuer-Brutto', 3141, 3149)
+        assert (anns[19].label.name, anns[19].start_offset, anns[19].end_offset) == ('Auszahlungsbetrag', 3777, 3785)
 
 
 class TestSeparateLabelsEntityMultiClassModel(unittest.TestCase):
@@ -142,11 +173,13 @@ class TestSeparateLabelsEntityMultiClassModel(unittest.TestCase):
         """Make sure the Data and Pipeline is configured."""
         self.pipeline.tokenizer = WhitespaceTokenizer()
         self.pipeline.category = self.project.get_category_by_id(id_=63)
-        self.pipeline.documents = self.pipeline.category.documents()[:5]
-        self.pipeline.test_documents = self.pipeline.category.test_documents()[:1]
+
+        train_doc_ids = [44823, 44834, 44839, 44840, 44841]
+        self.pipeline.documents = [self.project.get_document_by_id(doc_id) for doc_id in train_doc_ids]
+
+        test_doc_ids = [44865]
+        self.pipeline.test_documents = [self.project.get_document_by_id(doc_id) for doc_id in test_doc_ids]
         # todo have a separate test case for calculating features of offline documents
-        # for doc in self.pipeline.documents + self.pipeline.test_documents:
-        #     doc.set_offline()
 
     def test_2_make_features(self):
         """Make sure the Data and Pipeline is configured."""
@@ -164,22 +197,53 @@ class TestSeparateLabelsEntityMultiClassModel(unittest.TestCase):
         assert os.path.isfile(self.pipeline_path)
         os.remove(self.pipeline_path)  # cleanup
 
-    def test_5_extract_test_document(self):
-        """Extract a randomly selected Test Document."""
-        test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-        result = self.pipeline.extract(document=test_document)
-        assert len(result['Brutto-Bezug']) > 0  # todo add more test for inference on data level
-
     @unittest.skip(reason='Test run offline.')
-    def test_6_upload_ai_model(self):
+    def test_5_upload_ai_model(self):
         """Upload the model."""
         upload_ai_model(ai_model_path=self.pipeline_path, category_ids=[self.pipeline.category.id_])
 
-    def test_7_evaluate_full(self):
+    def test_6_evaluate_full(self):
         """Evaluate DocumentEntityMultiClassModel."""
         evaluation = self.pipeline.evaluate_full()
 
         assert evaluation.f1(None) == 0.8108108108108109
+
+    def test_7_extract_test_document(self):
+        """Extract a randomly selected Test Document."""
+        test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        result = self.pipeline.extract(document=test_document)
+
+        assert type(result) is dict
+        res_doc = extraction_result_to_document(test_document, result)
+
+        anns = res_doc.annotations(use_correct=False)
+
+        assert len(anns) == 20
+
+        assert (anns[0].label.name, anns[0].start_offset, anns[0].end_offset) == ('Austellungsdatum', 159, 169)
+        assert (anns[1].label.name, anns[1].start_offset, anns[1].end_offset) == ('Personalausweis', 352, 357)
+        assert (anns[2].label.name, anns[2].start_offset, anns[2].end_offset) == ('Steuerklasse', 365, 366)
+        assert (anns[3].label.name, anns[3].start_offset, anns[3].end_offset) == ('Personalausweis', 1194, 1199)
+        assert (anns[4].label.name, anns[4].start_offset, anns[4].end_offset) == ('Gesamt-Brutto', 1498, 1504)
+        assert (anns[5].label.name, anns[5].start_offset, anns[5].end_offset) == ('Vorname', 1507, 1518)
+        assert (anns[6].label.name, anns[6].start_offset, anns[6].end_offset) == ('Nachname', 1519, 1527)
+        assert (anns[7].label.name, anns[7].start_offset, anns[7].end_offset) == ('Gesamt-Brutto', 1582, 1587)
+        assert (anns[8].label.name, anns[8].start_offset, anns[8].end_offset) == ('Lohnart', 1758, 1762)
+        assert (anns[9].label.name, anns[9].start_offset, anns[9].end_offset) == ('Bezeichnung', 1763, 1769)
+        assert (anns[10].label.name, anns[10].start_offset, anns[10].end_offset) == ('Betrag', 1831, 1839)
+        assert (anns[11].label.name, anns[11].start_offset, anns[11].end_offset) == ('Gesamt-Brutto', 2111, 2119)
+        assert (anns[12].label.name, anns[12].start_offset, anns[12].end_offset) == ('Sozialversicherung', 2255, 2262)
+        assert (anns[13].label.name, anns[13].start_offset, anns[13].end_offset) == ('Sozialversicherung', 2269, 2274)
+        assert (anns[14].label.name, anns[14].start_offset, anns[14].end_offset) == ('Sozialversicherung', 2281, 2285)
+        assert (anns[15].label.name, anns[15].start_offset, anns[15].end_offset) == ('Sozialversicherung', 2292, 2296)
+        assert (anns[16].label.name, anns[16].start_offset, anns[16].end_offset) == (
+            'Steuerrechtliche Abzüge',
+            2324,
+            2330,
+        )
+        assert (anns[17].label.name, anns[17].start_offset, anns[17].end_offset) == ('Netto-Verdienst', 3004, 3012)
+        assert (anns[18].label.name, anns[18].start_offset, anns[18].end_offset) == ('Steuer-Brutto', 3141, 3149)
+        assert (anns[19].label.name, anns[19].start_offset, anns[19].end_offset) == ('Auszahlungsbetrag', 3777, 3785)
 
 
 # class TestNewSDKInformationExtraction(unittest.TestCase):
