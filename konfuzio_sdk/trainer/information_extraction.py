@@ -1293,52 +1293,54 @@ def plot_label_distribution(df_list: list, df_name_list=None) -> None:
 #     return selected_df, rest_df
 
 
-def annotation_to_dict(annotation: Annotation, include_pos: bool = False) -> dict:
+def span_to_dict(span: Span, include_pos: bool = False) -> dict:
     """Convert an annotation to a dictionary."""
     # Calculate area.
-    if annotation.spans[0].bbox().x0 is None or annotation.spans[0].bbox().y0 is None:
+    if span.bbox().x0 is None or span.bbox().y0 is None:
         raise NotImplementedError
     else:
-        area = annotation.spans[0].bbox().x0 * annotation.spans[0].bbox().y0
+        area = span.bbox().x0 * span.bbox().y0
 
-    document_id = annotation.document.copy_of_id if annotation.document.copy_of_id else annotation.document.id_
+    document_id = (
+        span.annotation.document.copy_of_id if span.annotation.document.copy_of_id else span.annotation.document.id_
+    )
 
     # gets the data into a dict
     annotation_dict = {
-        "id": annotation.id_,
+        "id": span.annotation.id_,
         "document_id": document_id,
-        "offset_string": ''.join(annotation.offset_string),  # todo this is unreal data because we combine multiline
-        "normalized": annotation.normalized,
-        "label_text": annotation.label.name if annotation.label else None,
-        "revised": annotation.revised,
-        "is_correct": annotation.is_correct,
-        "confidence": annotation.confidence,
-        "x0": annotation.spans[0].bbox().x0,
-        "y0": annotation.spans[0].bbox().y0,
-        "x1": annotation.spans[0].bbox().x1,
-        "y1": annotation.spans[0].bbox().y1,
-        "page_index": annotation.spans[0].page.index,  # todo as attribute not on annotation level anymore
-        "line_index": annotation.spans[0].line_index,  # todo as attribute not on annotation level anymore
+        "offset_string": ''.join(span.offset_string),  # todo this is unreal data because we combine multiline
+        "normalized": span.normalized,
+        "label_text": span.annotation.label.name if span.annotation.label else None,
+        "revised": span.annotation.revised,
+        "is_correct": span.annotation.is_correct,
+        "confidence": span.annotation.confidence,
+        "x0": span.bbox().x0,
+        "y0": span.bbox().y0,
+        "x1": span.bbox().x1,
+        "y1": span.bbox().y1,
+        "page_index": span.page.index,  # todo as attribute not on annotation level anymore
+        "line_index": span.line_index,  # todo as attribute not on annotation level anymore
         "area": area,
-        "top": annotation.spans[0].top,  # todo as attribute not on annotation level anymore
-        "bottom": annotation.spans[0].bottom,  # todo as attribute not on annotation level anymore
-        "start_offset": annotation.start_offset,
-        "end_offset": annotation.end_offset,
+        "top": span.top,  # todo as attribute not on annotation level anymore
+        "bottom": span.bottom,  # todo as attribute not on annotation level anymore
+        "start_offset": span.start_offset,
+        "end_offset": span.end_offset,
     }
 
-    for index, item in enumerate(annotation.l_list):
+    for index, item in enumerate(span.l_list):
         annotation_dict['l_dist' + str(index)] = item['dist']
         annotation_dict['l_offset_string' + str(index)] = item['offset_string']
         if include_pos:
             annotation_dict['l_pos' + str(index)] = item['pos']
-    for index, item in enumerate(annotation.r_list):
+    for index, item in enumerate(span.r_list):
         annotation_dict['r_dist' + str(index)] = item['dist']
         annotation_dict['r_offset_string' + str(index)] = item['offset_string']
         if include_pos:
             annotation_dict['r_pos' + str(index)] = item['pos']
 
     # WIP: word on page feature
-    for index, item in enumerate(annotation.word_on_page_features):
+    for index, item in enumerate(span.word_on_page_features):
         annotation_dict['word_on_page_feat' + str(index)] = item
 
     # if annotation.label and annotation.label.threshold:
@@ -1346,8 +1348,8 @@ def annotation_to_dict(annotation: Annotation, include_pos: bool = False) -> dic
     # else:
     #     annotation_dict["threshold"] = 0.1
 
-    if hasattr(annotation, 'catchphrase_dict'):
-        for catchphrase, dist in annotation.catchphrase_dict.items():
+    if hasattr(span, 'catchphrase_dict'):
+        for catchphrase, dist in span.catchphrase_dict.items():
             annotation_dict['catchphrase_dist_' + catchphrase] = dist
 
     return annotation_dict
@@ -1404,7 +1406,7 @@ def get_line_candidates(document_text, document_bbox, line_list, line_num, candi
 
 def process_document_data(
     document: Document,
-    annotations: List[Annotation],
+    spans: List[Span],
     n_nearest: Union[int, List, Tuple] = 2,
     first_word: bool = True,
     tokenize_fn: Optional[Callable] = None,
@@ -1440,7 +1442,7 @@ def process_document_data(
     document_text = document.text
     document_n_pages = document.number_of_pages
 
-    if document_text == '' or document_bbox == {} or len(annotations) == 0:
+    if document_text == '' or document_bbox == {} or len(spans) == 0:
         # if the document text is empty or if there are no ocr'd characters
         # then return an empty dataframe for the data, an empty feature list and an empty dataframe for the "error" data
         raise NotImplementedError
@@ -1465,7 +1467,7 @@ def process_document_data(
         first_word_y1 = first_candidate['y1']
 
     # todo document.annotations () should be sorted already - check or update this function
-    annotations.sort(key=lambda x: x.start_offset)
+    spans.sort(key=lambda x: x.start_offset)
 
     # WIP: Word on page feature
     page_text_list = document_text.split('\f')
@@ -1474,7 +1476,7 @@ def process_document_data(
     _line_num = -1
     _catchphrase_dict = None
     candidates_cache = dict()
-    for annotation in annotations:
+    for span in spans:
 
         word_on_page_feature_list = []
         word_on_page_feature_name_list = []
@@ -1482,24 +1484,25 @@ def process_document_data(
         # WIP: Word on page feature
         if substring_features:
             for index, substring_feature in enumerate(substring_features):
-                word_on_page_feature_list.append(substring_on_page(substring_feature, annotation, page_text_list))
+                word_on_page_feature_list.append(substring_on_page(substring_feature, span, page_text_list))
                 word_on_page_feature_name_list.append(f'word_on_page_feat{index}')
-        annotation.word_on_page_features = word_on_page_feature_list
+        span.word_on_page_features = word_on_page_feature_list
 
-        if annotation.id_:
+        if span.annotation.id_:
             # Annotation
             if (
-                annotation.is_correct
-                or (not annotation.is_correct and annotation.revised)
+                span.annotation.is_correct
+                or (not span.annotation.is_correct and span.annotation.revised)
                 or (
-                    annotation.confidence
-                    and hasattr(annotation.label, 'threshold')
-                    and annotation.confidence < annotation.label.threshold  # todo shouldn't this be a greater than?
+                    span.annotation.confidence
+                    and hasattr(span.annotation.label, 'threshold')
+                    and span.annotation.confidence
+                    < span.annotation.label.threshold  # todo shouldn't this be a greater than?
                 )
             ):
                 pass
             else:
-                logger.error(f'Annotation (ID {annotation.id_}) found that is not fit for the use in dataset!')
+                logger.error(f'Annotation (ID {span.annotation.id_}) found that is not fit for the use in dataset!')
 
         # find the line containing the annotation
         # tokenize that line to get all candidates
@@ -1508,17 +1511,17 @@ def process_document_data(
         # store the line_start_offset so if the next annotation is on the same line then we use the same
         # line_candidiates list and therefore saves us tokenizing the same line again
         for line_num, line in enumerate(line_list):
-            if line['start_offset'] <= annotation.end_offset and line['end_offset'] >= annotation.start_offset:
+            if line['start_offset'] <= span.end_offset and line['end_offset'] >= span.start_offset:
 
                 # get the catchphrase features
                 if catchphrase_list is not None and len(catchphrase_list) != 0:
                     if line_num == _line_num:
-                        annotation.catchphrase_dict = _catchphrase_dict
+                        span.catchphrase_dict = _catchphrase_dict
                     else:
                         _catchphrase_dict = generate_feature_dict_from_occurence_dict(
                             occurrence_dict, catchphrase_list, line_num
                         )
-                        annotation.catchphrase_dict = _catchphrase_dict
+                        span.catchphrase_dict = _catchphrase_dict
                         _line_num = line_num
 
                 line_candidates, candidates_cache = get_line_candidates(
@@ -1532,17 +1535,13 @@ def process_document_data(
         # todo add way to calculate distance features between spans consistently
         for candidate in line_candidates:
             try:
-                annotation.spans[0].bbox()
-                if candidate['end_offset'] <= annotation.start_offset:
-                    candidate['dist'] = (
-                        annotation.spans[0].bbox().x0 - candidate['x1']
-                    )  # todo hotfix remove ".spans[0]"
+                span.bbox()
+                if candidate['end_offset'] <= span.start_offset:
+                    candidate['dist'] = span.bbox().x0 - candidate['x1']  # todo hotfix remove ".spans[0]"
                     candidate['pos'] = 0
                     l_list.append(candidate)
-                elif candidate['start_offset'] >= annotation.end_offset:
-                    candidate['dist'] = (
-                        candidate['x0'] - annotation.spans[0].bbox().x1
-                    )  # todo hotfix remove ".spans[0]"
+                elif candidate['start_offset'] >= span.end_offset:
+                    candidate['dist'] = candidate['x0'] - span.bbox().x1  # todo hotfix remove ".spans[0]"
                     candidate['pos'] = 0
                     r_list.append(candidate)
             except ValueError as e:
@@ -1557,10 +1556,10 @@ def process_document_data(
                 )
                 for candidate in line_candidates:
                     candidate['dist'] = min(
-                        abs(annotation.x0 - candidate['x0']),
-                        abs(annotation.x0 - candidate['x1']),
-                        abs(annotation.x1 - candidate['x0']),
-                        abs(annotation.x1 - candidate['x1']),
+                        abs(span.x0 - candidate['x0']),
+                        abs(span.x0 - candidate['x1']),
+                        abs(span.x1 - candidate['x0']),
+                        abs(span.x1 - candidate['x1']),
                     )
                     candidate['pos'] = -i
                 prev_line_candidates.extend(line_candidates)
@@ -1576,10 +1575,10 @@ def process_document_data(
                 )
                 for candidate in line_candidates:
                     candidate['dist'] = min(
-                        abs(annotation.x0 - candidate['x0']),
-                        abs(annotation.x0 - candidate['x1']),
-                        abs(annotation.x1 - candidate['x0']),
-                        abs(annotation.x1 - candidate['x1']),
+                        abs(span.x0 - candidate['x0']),
+                        abs(span.x0 - candidate['x1']),
+                        abs(span.x1 - candidate['x0']),
+                        abs(span.x1 - candidate['x1']),
                     )
                     candidate['pos'] = i
                 next_line_candidates.extend(line_candidates)
@@ -1600,29 +1599,27 @@ def process_document_data(
         while len(n_smallest_r_list) < n_right_nearest:
             n_smallest_r_list.append({'offset_string': '', 'dist': 100000, 'pos': 0})
 
-        annotation.r_list = n_smallest_r_list[:n_right_nearest]
-        annotation.l_list = n_smallest_l_list[:n_left_nearest]
+        span.r_list = n_smallest_r_list[:n_right_nearest]
+        span.l_list = n_smallest_l_list[:n_left_nearest]
 
         # set first word features
         if first_word:
-            annotation.first_word_x0 = first_word_x0
-            annotation.first_word_y0 = first_word_y0
-            annotation.first_word_x1 = first_word_x1
-            annotation.first_word_y1 = first_word_y1
-            annotation.first_word_string = first_word_string
+            span.first_word_x0 = first_word_x0
+            span.first_word_y0 = first_word_y0
+            span.first_word_x1 = first_word_x1
+            span.first_word_y1 = first_word_y1
+            span.first_word_string = first_word_string
 
-        annotation_dict = annotation_to_dict(annotation=annotation, include_pos=n_nearest_across_lines)
+        span_dict = span_to_dict(span=span, include_pos=n_nearest_across_lines)
 
         # checks for ERRORS
         # todo why accuracy?
-        if annotation_dict["confidence"] is None and not (
-            annotation_dict["revised"] is False and annotation_dict["is_correct"] is True
-        ):
-            file_error_data.append(annotation_dict)
+        if span_dict["confidence"] is None and not (span_dict["revised"] is False and span_dict["is_correct"] is True):
+            file_error_data.append(span_dict)
 
         # adds the sample_data to the list
-        if annotation_dict["page_index"] is not None:
-            file_data_raw.append(annotation_dict)
+        if span_dict["page_index"] is not None:
+            file_data_raw.append(span_dict)
 
     # creates the dataframe
     df = pandas.DataFrame(file_data_raw)
@@ -2331,7 +2328,9 @@ class GroupAnnotationSets:
                     matched_section: AnnotationSet = section
                     break
 
-            line_annotations = [x for x in document_annotations if char_count <= x.start_offset < new_char_count]
+            line_annotations = [
+                x for x in document_annotations if char_count <= x.spans[0].start_offset < new_char_count
+            ]
             annotations_dict = dict((x.label.name, True) for x in line_annotations)
             counter_dict = dict(
                 collections.Counter(annotation.annotation_set.label_set.name for annotation in line_annotations)
@@ -2552,7 +2551,7 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
         """Calculate features using the best working default values that can be overwritten with self values."""
         df, _feature_list, _temp_df_raw_errors = process_document_data(
             document=document,
-            annotations=document.annotations(use_correct=False),
+            spans=document.spans(use_correct=False),
             n_nearest=self.n_nearest if hasattr(self, 'n_nearest') else 2,
             first_word=self.first_word if hasattr(self, 'first_word') else True,
             tokenize_fn=self.tokenizer.tokenize,  # todo: we are tokenizing the document multiple times
