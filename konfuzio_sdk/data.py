@@ -905,7 +905,8 @@ class Span(Data):
             warn('WIP: Modifications before the next stable release expected.', FutureWarning, stacklevel=2)
             # todo: verify that one Span relates to Character in on line of text
             character_range = range(self.start_offset, self.end_offset)
-            characters = {key: self.annotation.document.bboxes.get(key) for key in character_range}
+            document = self.annotation.document
+            characters = {key: document.bboxes.get(key) for key in character_range if document.text[key] != ' '}
             if not all(characters.values()):
                 logger.error(f'{self} contains Chractacters that don\'t provide a Bounding Box.')
             self._bbox = Bbox(
