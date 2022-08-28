@@ -227,15 +227,14 @@ class Bbox:
     def _valid(
         self,
     ):
-        """Validate contained data."""
-        if self.x0 == self.x1:
-            raise ValueError(f'{self} has no width in {self.page}.')
+        """
+        Validate contained data.
 
+        We allow zero width/height in bboxes for compatibility reasons since some OCR engines can sometimes return such
+        kinds of character level bboxes.
+        """
         if self.x0 > self.x1:
             raise ValueError(f'{self} has negative width in {self.page}.')
-
-        if self.y0 == self.y1:
-            raise ValueError(f'{self} has no height in {self.page}.')
 
         if self.y0 > self.y1:
             raise ValueError(f'{self} has negative height in {self.page}.')
