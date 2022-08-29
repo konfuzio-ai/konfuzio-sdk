@@ -17,7 +17,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 - Information about the embedded fonts of PDF documents.
 - Improve Swagger API definition for bounding boxes.
 - Superusers can inspect the logs of AI trainings and AI run.
-- Add threshold attribure to the Category endpoint(API V3).
+- Add threshold attribute to the Category endpoint (API V3).
 - Show minimum/medium/maximimum runtime of AIs.
 - Add the callback_url attribute to (API V3).
 
