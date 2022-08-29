@@ -12,13 +12,15 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 
 ## Unreleased
 
+This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Capture Vue in version [0.0.8](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
+
 ### Added
 - [Auto-rotation for documents for all angles (until now only 90 degree angles have been supported).](https://help.konfuzio.com/modules/projects/index.html#automatically-rotate-documents)
-- Information about the embedded fonts of PDF documents.
-- Improve Swagger API definition for bounding boxes.
+- [Information about the embedded fonts of PDF documents.](https://help.konfuzio.com/modules/documents/index.html#fonts)
 - [Superusers can inspect the logs of AI trainings and AI run.](https://help.konfuzio.com/modules/superuserdocuments/index.html)
+- [Show minimum/medium/maximum loading time and runtime of AIs.](https://help.konfuzio.com/modules/extractions/index.html#loading-time-in-seconds)
+- Improve Swagger API definition for bounding boxes  (API V3).
 - Add threshold attribute to the Category endpoint (API V3).
-- Show minimum/medium/maximum runtime of AIs.
 - Add the callback_url attribute to (API V3).
 
 ### Changed
@@ -29,8 +31,6 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 - Top annotation filter in the SmartView now considers unrevised annotations.
 - Fix an issue in which a Document cannot be processed because negative bounding boxes are detected. 
 - Fix an issue which caused the processing time to be shown as negative.
-
-This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Capture Vue in version [0.0.8](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
 
 
 ## 2022-07-28_15-55-29
