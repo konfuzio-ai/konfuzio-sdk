@@ -13,7 +13,7 @@ from typing import Optional, List, Union, Tuple, Dict
 from warnings import warn
 
 import dateutil.parser
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 from tqdm import tqdm
 
 from konfuzio_sdk.api import (
@@ -138,6 +138,30 @@ class Page(Data):
         elif is_file(self.image_path, raise_exception=False):
             self.image = Image.open(self.image_path)
         return self.image
+
+    def get_annotations_image(self, image: Image = None):
+        """Get Document Page as PNG with annotations shown."""
+        if image is None:
+            image = self.get_image()
+        image = image.convert('RGB')
+        # bbox information are based on a downscaled image
+        scale_mult = image.size[1] / self.height
+
+        anns = self.annotations(use_correct=False)
+
+        for ann in anns:
+            pos = [
+                scale_mult * ann.spans[0].bbox().x0,
+                scale_mult * (self.height - ann.spans[0].bbox().y0),
+                scale_mult * ann.spans[0].bbox().x1,
+                scale_mult * (self.height - ann.spans[0].bbox().y1),
+            ]
+            draw = ImageDraw.Draw(image)
+            draw.rectangle(pos, outline='blue', width=2)
+
+            font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSerifBold.ttf", 24, encoding="unic")
+            draw.text((pos[0], pos[3] - 24), ann.label.name, fill='blue', font=font)
+        return image
 
     @property
     def text(self):
@@ -932,10 +956,17 @@ class Span(Data):
         else:
             return None
 
+    @property
+    def area(self):
+        """Return area feature between top left corner and span."""
+        if not self.bbox() or (self.bbox().x0 is None or self.bbox().y0 is None):
+            return None
+        return self.bbox().x0 * self.bbox().y0
+
     def eval_dict(self):
         """Return any information needed to evaluate the Span."""
         if self.start_offset == self.end_offset == 0:
-            eval = {
+            span_dict = {
                 "id_local": None,
                 "id_": None,
                 "confidence": None,
@@ -969,9 +1000,11 @@ class Span(Data):
                 "y0_relative": None,
                 "y1_relative": None,
                 "page_index_relative": None,
+                "area": 0,
+                "label_text": None,
             }
         else:
-            eval = {
+            span_dict = {
                 "id_local": self.annotation.id_local,
                 "id_": self.annotation.id_,
                 "confidence": self.annotation.confidence,
@@ -996,22 +1029,31 @@ class Span(Data):
             }
 
             if self.bbox():
-                eval["x0"] = self.bbox().x0
-                eval["x1"] = self.bbox().x1
-                eval["y0"] = self.bbox().y0
-                eval["y1"] = self.bbox().y1
+                span_dict["x0"] = self.bbox().x0
+                span_dict["x1"] = self.bbox().x1
+                span_dict["y0"] = self.bbox().y0
+                span_dict["y1"] = self.bbox().y1
 
             if self.page:  # todo separate as eval_dict on Page level
-                eval["page_index"] = self.page.index
-                eval["page_width"] = self.page.width
-                eval["page_height"] = self.page.height
-                eval["x0_relative"] = self.bbox().x0 / self.page.width
-                eval["x1_relative"] = self.bbox().x1 / self.page.width
-                eval["y0_relative"] = self.bbox().y0 / self.page.height
-                eval["y1_relative"] = self.bbox().y1 / self.page.height
-                eval["page_index_relative"] = self.page.index / self.annotation.document.number_of_pages
+                span_dict["page_index"] = self.page.index
+                span_dict["page_width"] = self.page.width
+                span_dict["page_height"] = self.page.height
+                span_dict["x0_relative"] = self.bbox().x0 / self.page.width
+                span_dict["x1_relative"] = self.bbox().x1 / self.page.width
+                span_dict["y0_relative"] = self.bbox().y0 / self.page.height
+                span_dict["y1_relative"] = self.bbox().y1 / self.page.height
+                span_dict["page_index_relative"] = self.page.index / self.annotation.document.number_of_pages
 
-        return eval
+            document_id = (
+                self.annotation.document.copy_of_id
+                if self.annotation.document.copy_of_id
+                else self.annotation.document.id_
+            )
+            span_dict["document_id"] = document_id
+            span_dict["area"] = self.area
+            span_dict["label_text"] = self.annotation.label.name if self.annotation.label else None
+
+        return span_dict
 
 
 class Annotation(Data):

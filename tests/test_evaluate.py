@@ -902,7 +902,7 @@ class TestEvaluation(unittest.TestCase):
         """Count two Spans from two Training Documents."""
         project = LocalTextProject()
         evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
-        assert evaluation.tp() == 5
+        assert evaluation.tp() == sum([len(doc.spans()) for doc in project.documents])
 
     def test_false_positive(self):
         """Count zero Annotations from two Training Documents."""
@@ -974,7 +974,7 @@ class TestEvaluation(unittest.TestCase):
         evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
         # there is only one Label that is not the NONE_LABEL or from a default LabelSet
         label = project.get_label_by_id(id_=4)
-        assert evaluation.tp() == 5
+        assert evaluation.tp() == sum([len(doc.spans()) for doc in project.documents])
         assert evaluation.tp(search=label) == 2
         assert evaluation.fp(search=label) == 0
         assert evaluation.fn(search=label) == 0

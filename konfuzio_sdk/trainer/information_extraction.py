@@ -1293,68 +1293,6 @@ def plot_label_distribution(df_list: list, df_name_list=None) -> None:
 #     return selected_df, rest_df
 
 
-def span_to_dict(span: Span, include_pos: bool = False) -> dict:
-    """Convert an annotation to a dictionary."""
-    # Calculate area.
-    if span.bbox().x0 is None or span.bbox().y0 is None:
-        raise NotImplementedError
-    else:
-        area = span.bbox().x0 * span.bbox().y0
-
-    document_id = (
-        span.annotation.document.copy_of_id if span.annotation.document.copy_of_id else span.annotation.document.id_
-    )
-
-    # gets the data into a dict
-    annotation_dict = {
-        "id": span.annotation.id_,
-        "document_id": document_id,
-        "offset_string": ''.join(span.offset_string),  # todo this is unreal data because we combine multiline
-        "normalized": span.normalized,
-        "label_text": span.annotation.label.name if span.annotation.label else None,
-        "revised": span.annotation.revised,
-        "is_correct": span.annotation.is_correct,
-        "confidence": span.annotation.confidence,
-        "x0": span.bbox().x0,
-        "y0": span.bbox().y0,
-        "x1": span.bbox().x1,
-        "y1": span.bbox().y1,
-        "page_index": span.page.index,  # todo as attribute not on annotation level anymore
-        "line_index": span.line_index,  # todo as attribute not on annotation level anymore
-        "area": area,
-        "top": span.top,  # todo as attribute not on annotation level anymore
-        "bottom": span.bottom,  # todo as attribute not on annotation level anymore
-        "start_offset": span.start_offset,
-        "end_offset": span.end_offset,
-    }
-
-    for index, item in enumerate(span.l_list):
-        annotation_dict['l_dist' + str(index)] = item['dist']
-        annotation_dict['l_offset_string' + str(index)] = item['offset_string']
-        if include_pos:
-            annotation_dict['l_pos' + str(index)] = item['pos']
-    for index, item in enumerate(span.r_list):
-        annotation_dict['r_dist' + str(index)] = item['dist']
-        annotation_dict['r_offset_string' + str(index)] = item['offset_string']
-        if include_pos:
-            annotation_dict['r_pos' + str(index)] = item['pos']
-
-    # WIP: word on page feature
-    for index, item in enumerate(span.word_on_page_features):
-        annotation_dict['word_on_page_feat' + str(index)] = item
-
-    # if annotation.label and annotation.label.threshold:
-    #     annotation_dict["threshold"] = annotation.label.threshold
-    # else:
-    #     annotation_dict["threshold"] = 0.1
-
-    if hasattr(span, 'catchphrase_dict'):
-        for catchphrase, dist in span.catchphrase_dict.items():
-            annotation_dict['catchphrase_dist_' + catchphrase] = dist
-
-    return annotation_dict
-
-
 def get_first_candidate(document_text, document_bbox, line_list):
     """Get the first candidate in a document."""
     # todo allow to have mult tokenizers?
@@ -1442,7 +1380,7 @@ def process_document_data(
     document_text = document.text
     document_n_pages = document.number_of_pages
 
-    if document_text == '' or document_bbox == {} or len(spans) == 0:
+    if document_text is None or document_bbox == {} or len(spans) == 0:
         # if the document text is empty or if there are no ocr'd characters
         # then return an empty dataframe for the data, an empty feature list and an empty dataframe for the "error" data
         raise NotImplementedError
@@ -1486,7 +1424,6 @@ def process_document_data(
             for index, substring_feature in enumerate(substring_features):
                 word_on_page_feature_list.append(substring_on_page(substring_feature, span, page_text_list))
                 word_on_page_feature_name_list.append(f'word_on_page_feat{index}')
-        span.word_on_page_features = word_on_page_feature_list
 
         if span.annotation.id_:
             # Annotation
@@ -1496,8 +1433,7 @@ def process_document_data(
                 or (
                     span.annotation.confidence
                     and hasattr(span.annotation.label, 'threshold')
-                    and span.annotation.confidence
-                    < span.annotation.label.threshold  # todo shouldn't this be a greater than?
+                    and span.annotation.confidence > span.annotation.label.threshold
                 )
             ):
                 pass
@@ -1599,8 +1535,8 @@ def process_document_data(
         while len(n_smallest_r_list) < n_right_nearest:
             n_smallest_r_list.append({'offset_string': '', 'dist': 100000, 'pos': 0})
 
-        span.r_list = n_smallest_r_list[:n_right_nearest]
-        span.l_list = n_smallest_l_list[:n_left_nearest]
+        r_list = n_smallest_r_list[:n_right_nearest]
+        l_list = n_smallest_l_list[:n_left_nearest]
 
         # set first word features
         if first_word:
@@ -1610,10 +1546,34 @@ def process_document_data(
             span.first_word_y1 = first_word_y1
             span.first_word_string = first_word_string
 
-        span_dict = span_to_dict(span=span, include_pos=n_nearest_across_lines)
+        span_dict = span.eval_dict()
+        # span_to_dict(span=span, include_pos=n_nearest_across_lines)
+
+        for index, item in enumerate(l_list):
+            span_dict['l_dist' + str(index)] = item['dist']
+            span_dict['l_offset_string' + str(index)] = item['offset_string']
+            if n_nearest_across_lines:
+                span_dict['l_pos' + str(index)] = item['pos']
+        for index, item in enumerate(r_list):
+            span_dict['r_dist' + str(index)] = item['dist']
+            span_dict['r_offset_string' + str(index)] = item['offset_string']
+            if n_nearest_across_lines:
+                span_dict['r_pos' + str(index)] = item['pos']
+
+        # WIP: word on page feature
+        for index, item in enumerate(word_on_page_feature_list):
+            span_dict['word_on_page_feat' + str(index)] = item
+
+        # if annotation.label and annotation.label.threshold:
+        #     annotation_dict["threshold"] = annotation.label.threshold
+        # else:
+        #     annotation_dict["threshold"] = 0.1
+
+        if _catchphrase_dict:
+            for catchphrase, dist in _catchphrase_dict.items():
+                span_dict['catchphrase_dist_' + catchphrase] = dist
 
         # checks for ERRORS
-        # todo why accuracy?
         if span_dict["confidence"] is None and not (span_dict["revised"] is False and span_dict["is_correct"] is True):
             file_error_data.append(span_dict)
 

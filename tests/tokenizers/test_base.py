@@ -174,14 +174,14 @@ class TestAbstractTokenizer(unittest.TestCase):
 
     def test_evaluate_dataset_input(self):
         """Test input for the evaluate_category method."""
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError, match='is not iterable'):
             self.tokenizer.evaluate_dataset(self.project)
-        with self.assertRaises(AssertionError):
+        with pytest.raises(AssertionError, match='Invalid document type'):
             self.tokenizer.evaluate_dataset([self.project])
 
     def test_evaluate_dataset_output_without_test_documents(self):
         """Test evaluate an empty list of Documents."""
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError, match='No objects to concatenate'):
             self.tokenizer.evaluate_dataset([])
 
     def test_evaluate_dataset_output_with_test_documents(self):

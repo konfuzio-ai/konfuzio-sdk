@@ -7,6 +7,7 @@ import math
 import tracemalloc
 import unittest
 import os
+from requests import HTTPError
 
 import pytest
 import pandas as pd
@@ -74,6 +75,30 @@ def display_top(snapshot, key_type='lineno', limit=30):
     logger.info("Total allocated size: %.1f KiB" % (total / 1024))
 
 
+entity_results_data = [
+    (0, ('Austellungsdatum', 159, 169)),
+    (1, ('Personalausweis', 352, 357)),
+    (2, ('Steuerklasse', 365, 366)),
+    (3, ('Personalausweis', 1194, 1199)),
+    (4, ('Gesamt-Brutto', 1498, 1504)),
+    (5, ('Vorname', 1507, 1518)),
+    (6, ('Nachname', 1519, 1527)),
+    (7, ('Gesamt-Brutto', 1582, 1587)),
+    (8, ('Lohnart', 1758, 1762)),
+    (9, ('Bezeichnung', 1763, 1769)),
+    (10, ('Betrag', 1831, 1839)),
+    (11, ('Gesamt-Brutto', 2111, 2119)),
+    (12, ('Sozialversicherung', 2255, 2262)),
+    (13, ('Sozialversicherung', 2269, 2274)),
+    (14, ('Sozialversicherung', 2281, 2285)),
+    (15, ('Sozialversicherung', 2292, 2296)),
+    (16, ('Steuerrechtliche Abzüge', 2324, 2330)),
+    (17, ('Netto-Verdienst', 3004, 3012)),
+    (18, ('Steuer-Brutto', 3141, 3149)),
+    (19, ('Auszahlungsbetrag', 3777, 3785)),
+]
+
+
 class TestDocumentEntityMultiClassModel(unittest.TestCase):
     """Test New SDK Information Extraction."""
 
@@ -107,14 +132,18 @@ class TestDocumentEntityMultiClassModel(unittest.TestCase):
 
     def test_4_save_model(self):
         """Save the model."""
-        self.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder)
-        assert os.path.isfile(self.pipeline_path)
-        os.remove(self.pipeline_path)  # cleanup
+        self.pipeline.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder)
+        assert os.path.isfile(self.pipeline.pipeline_path)
+        # os.remove(self.pipeline.pipeline_path)  # cleanup
 
-    @unittest.skip(reason='Test run offline.')
     def test_5_upload_ai_model(self):
         """Upload the model."""
-        upload_ai_model(ai_model_path=self.pipeline_path, category_ids=[self.pipeline.category.id_])
+        assert os.path.isfile(self.pipeline.pipeline_path)
+
+        try:
+            upload_ai_model(ai_model_path=self.pipeline.pipeline_path, category_ids=[self.pipeline.category.id_])
+        except HTTPError as e:
+            assert '403' in str(e)
 
     def test_6_evaluate_full(self):
         """Evaluate DocumentEntityMultiClassModel."""
@@ -130,34 +159,15 @@ class TestDocumentEntityMultiClassModel(unittest.TestCase):
         assert type(result) is dict
         res_doc = extraction_result_to_document(test_document, result)
 
-        anns = res_doc.annotations(use_correct=False)
+        self.tests_annotations = res_doc.annotations(use_correct=False)
 
-        assert len(anns) == 20
+        assert len(self.tests_annotations) == 20
 
-        assert (anns[0].label.name, anns[0].start_offset, anns[0].end_offset) == ('Austellungsdatum', 159, 169)
-        assert (anns[1].label.name, anns[1].start_offset, anns[1].end_offset) == ('Personalausweis', 352, 357)
-        assert (anns[2].label.name, anns[2].start_offset, anns[2].end_offset) == ('Steuerklasse', 365, 366)
-        assert (anns[3].label.name, anns[3].start_offset, anns[3].end_offset) == ('Personalausweis', 1194, 1199)
-        assert (anns[4].label.name, anns[4].start_offset, anns[4].end_offset) == ('Gesamt-Brutto', 1498, 1504)
-        assert (anns[5].label.name, anns[5].start_offset, anns[5].end_offset) == ('Vorname', 1507, 1518)
-        assert (anns[6].label.name, anns[6].start_offset, anns[6].end_offset) == ('Nachname', 1519, 1527)
-        assert (anns[7].label.name, anns[7].start_offset, anns[7].end_offset) == ('Gesamt-Brutto', 1582, 1587)
-        assert (anns[8].label.name, anns[8].start_offset, anns[8].end_offset) == ('Lohnart', 1758, 1762)
-        assert (anns[9].label.name, anns[9].start_offset, anns[9].end_offset) == ('Bezeichnung', 1763, 1769)
-        assert (anns[10].label.name, anns[10].start_offset, anns[10].end_offset) == ('Betrag', 1831, 1839)
-        assert (anns[11].label.name, anns[11].start_offset, anns[11].end_offset) == ('Gesamt-Brutto', 2111, 2119)
-        assert (anns[12].label.name, anns[12].start_offset, anns[12].end_offset) == ('Sozialversicherung', 2255, 2262)
-        assert (anns[13].label.name, anns[13].start_offset, anns[13].end_offset) == ('Sozialversicherung', 2269, 2274)
-        assert (anns[14].label.name, anns[14].start_offset, anns[14].end_offset) == ('Sozialversicherung', 2281, 2285)
-        assert (anns[15].label.name, anns[15].start_offset, anns[15].end_offset) == ('Sozialversicherung', 2292, 2296)
-        assert (anns[16].label.name, anns[16].start_offset, anns[16].end_offset) == (
-            'Steuerrechtliche Abzüge',
-            2324,
-            2330,
-        )
-        assert (anns[17].label.name, anns[17].start_offset, anns[17].end_offset) == ('Netto-Verdienst', 3004, 3012)
-        assert (anns[18].label.name, anns[18].start_offset, anns[18].end_offset) == ('Steuer-Brutto', 3141, 3149)
-        assert (anns[19].label.name, anns[19].start_offset, anns[19].end_offset) == ('Auszahlungsbetrag', 3777, 3785)
+    # @pytest.mark.parametrize("ann_i,expected", entity_results_data)
+    # def test_8_test_annotations(self, ann_i, expected):
+    #     """"""
+    #     anns = self.tests_annotations[ann_i]
+    #     assert (anns[ann_i].label.name, anns[ann_i].start_offset, anns[ann_i].end_offset) == expected
 
 
 class TestSeparateLabelsEntityMultiClassModel(unittest.TestCase):
@@ -193,14 +203,18 @@ class TestSeparateLabelsEntityMultiClassModel(unittest.TestCase):
 
     def test_4_save_model(self):
         """Save the model."""
-        self.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder)
-        assert os.path.isfile(self.pipeline_path)
-        os.remove(self.pipeline_path)  # cleanup
+        self.pipeline.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder)
+        assert os.path.isfile(self.pipeline.pipeline_path)
+        # os.remove(self.pipeline.pipeline_path)  # cleanup
 
-    @unittest.skip(reason='Test run offline.')
     def test_5_upload_ai_model(self):
         """Upload the model."""
-        upload_ai_model(ai_model_path=self.pipeline_path, category_ids=[self.pipeline.category.id_])
+        assert os.path.isfile(self.pipeline.pipeline_path)
+
+        try:
+            upload_ai_model(ai_model_path=self.pipeline.pipeline_path, category_ids=[self.pipeline.category.id_])
+        except HTTPError as e:
+            assert '403' in str(e)
 
     def test_6_evaluate_full(self):
         """Evaluate DocumentEntityMultiClassModel."""
@@ -244,454 +258,6 @@ class TestSeparateLabelsEntityMultiClassModel(unittest.TestCase):
         assert (anns[17].label.name, anns[17].start_offset, anns[17].end_offset) == ('Netto-Verdienst', 3004, 3012)
         assert (anns[18].label.name, anns[18].start_offset, anns[18].end_offset) == ('Steuer-Brutto', 3141, 3149)
         assert (anns[19].label.name, anns[19].start_offset, anns[19].end_offset) == ('Auszahlungsbetrag', 3777, 3785)
-
-
-# class TestNewSDKInformationExtraction(unittest.TestCase):
-#     """Test New SDK Information Extraction."""
-
-#     @classmethod
-#     def setUpClass(cls) -> None:
-#         """Set up the Data and Pipeline."""
-#         cls.project = Project(id_=46, update=True)
-
-#         cls.pipeline = DocumentEntityMulticlassModel()
-#         cls.pipeline.category = cls.project.categories[0]
-#         documents = cls.project.documents
-#         cls.pipeline.test_documents = cls.pipeline.category.test_documents()
-#         documents = [doc for doc in documents if doc.category]
-#         assert len(documents) == 25
-#         cls.pipeline.tokenizer = WhitespaceTokenizer()
-
-#         cls.pipeline.df_train, cls.pipeline.label_feature_list = cls.pipeline.feature_function(documents=documents)
-#         cls.pipeline.df_test, cls.pipeline.test_label_feature_list = cls.pipeline.feature_function(
-#             documents=cls.pipeline.test_documents
-#         )
-
-#         cls.pipeline.fit()
-
-#         # import dill
-#         # import bz2
-#         # with bz2.open('2022-08-16-09-34-43_lohnabrechnung.pkl', 'rb') as f:
-#         #     cls.pipeline = dill.load(f)
-
-#     @unittest.skip(reason='Test run offline.')
-#     def test_sdk_vs_server_diff_44855(self):
-#         """Test to find differerences between SDK and server with doc 44855 from project 46."""
-#         app_doc44855 = self.project.get_document_by_id(311644)
-#         for ann in app_doc44855.annotations(use_correct=False):
-#             ann.is_correct = True
-
-#         result = self.pipeline.extract(app_doc44855)
-#         virt_doc = extraction_result_to_document(app_doc44855, result)
-
-#         # for ann in virt_doc.annotations(use_correct=False):
-#         #     assert len(ann.spans) == 1
-
-#         # comp_res = compare(app_doc44855, virt_doc)
-#         evaluation = Evaluation([(app_doc44855, virt_doc)], strict=True)
-#         evaluation.data.to_csv('test_eval_44855_app_sdk_1.csv')
-#         assert evaluation.f1(None) == 1.0
-
-#     @unittest.skip(reason='Test run offline.')
-#     def test_sdk_vs_server_diff(self):
-#         """Test to find differerences between SDK and server with reupploaded test docs from project 46."""
-#         for doc_id in [(314272, 44865), (314273, 44866), (314274, 44867)]:
-#             app_doc = self.project.get_document_by_id(doc_id[0])
-#             for ann in app_doc.annotations(use_correct=False):
-#                 ann.is_correct = True
-
-#             result = self.pipeline.extract(app_doc)
-#             virt_doc = extraction_result_to_document(app_doc, result)
-#             evaluation = Evaluation([(app_doc, virt_doc)], strict=True)
-#             evaluation.data.to_csv(f'test_eval_{doc_id[1]}_sdk_vs_server_1.csv')
-
-#     @unittest.skip(reason='Test run offline.')
-#     def test_sdk_clf_44855(self):
-#         """Test to get initial clf label classification output."""
-#         app_doc44855 = self.project.get_document_by_id(311644)
-
-#         inference_document = app_doc44855.__deepcopy__(None)
-#         # 2. tokenize
-#         self.pipeline.tokenizer.tokenize(inference_document)
-
-#         # 3. preprocessing
-#         df, _feature_names, _raw_errors = self.pipeline.features(inference_document)
-#         independet_variables = df[self.pipeline.label_feature_list]
-
-#         # 4. prediction and store most likely prediction and its accuracy in separated columns
-#         results = pd.DataFrame(
-#             data=self.pipeline.clf.predict_proba(X=independet_variables), columns=self.pipeline.clf.classes_
-#         )
-#         df['label_text'] = results.idxmax(axis=1)
-#         df['Accuracy'] = results.max(axis=1)
-#         # 5. Translation
-#         df['Translated_Candidate'] = df['offset_string']
-#         df.to_csv('test_sdk_clf_1.csv')
-
-#     @unittest.skip(reason='Test run offline.')
-#     def test_sdk_clf(self):
-#         """Test to get initial clf label classification output for reupploaded test docs from project 46.."""
-#         for doc_id in [(314272, 44865), (314273, 44866), (314274, 44867)]:
-#             app_doc = self.project.get_document_by_id(doc_id[0])
-
-#             inference_document = app_doc.__deepcopy__(None)
-#             # 2. tokenize
-#             self.pipeline.tokenizer.tokenize(inference_document)
-
-#             # 3. preprocessing
-#             df, _feature_names, _raw_errors = self.pipeline.features(inference_document)
-#             independet_variables = df[self.pipeline.label_feature_list]
-
-#             # 4. prediction and store most likely prediction and its accuracy in separated columns
-#             results = pd.DataFrame(
-#                 data=self.pipeline.clf.predict_proba(X=independet_variables), columns=self.pipeline.clf.classes_
-#             )
-#             df['label_text'] = results.idxmax(axis=1)
-#             df['Accuracy'] = results.max(axis=1)
-#             # 5. Translation
-#             df['Translated_Candidate'] = df['offset_string']
-#             df.to_csv(f'test_sdk_clf_{doc_id[1]}_1.csv')
-
-#     @unittest.skip(reason='Test run offline.')
-#     def test_sdk_vs_server_diff_44855_tokenizer(self):
-#         """Test to find differerences between SDK tokenizer and server with doc 44855 from project 46."""
-#         app_doc44855 = self.project.get_document_by_id(311644)
-#         for ann in app_doc44855.annotations(use_correct=False):
-#             ann.is_correct = True
-
-#         # result = self.pipeline.extract(app_doc44855)
-#         tokenized_doc = app_doc44855.__deepcopy__(None)
-#         self.pipeline.tokenizer.tokenize(tokenized_doc)
-#         # virt_doc = extraction_result_to_document(app_doc44855, result)
-
-#         # comp_res = compare(app_doc44855, virt_doc)
-#         evaluation = Evaluation([(app_doc44855, tokenized_doc)], strict=True)
-#         evaluation.data.to_csv('test_eval_44855_app_sdk_tokenizer_1.csv')
-#         # assert evaluation.f1(None) == 1.0
-
-#     @unittest.skip(reason='Test run offline.')
-#     def test_sdk_vs_server_diff_tokenizer(self):
-#         """Test to find differerences between SDK tokenizer and server annotations with test docs from project 46."""
-#         for doc_id in [(314250, 44865), (314074, 44866), (314249, 44867)]:
-#             app_doc = self.project.get_document_by_id(doc_id[0])
-#             for ann in app_doc.annotations(use_correct=False):
-#                 ann.is_correct = True
-
-#             # result = self.pipeline.extract(app_doc44855)
-#             tokenized_doc = app_doc.__deepcopy__(None)
-#             self.pipeline.tokenizer.tokenize(tokenized_doc)
-#             # virt_doc = extraction_result_to_document(app_doc44855, result)
-
-#             # comp_res = compare(app_doc44855, virt_doc)
-#             evaluation = Evaluation([(app_doc, tokenized_doc)], strict=True)
-#             evaluation.data.to_csv(f'test_eval_{doc_id[1]}_app_sdk_tokenizer_1.csv')
-#             # assert evaluation.f1(None) == 1.0
-
-#         #         >>> df = pd.read_csv(f'test_eval_{}_app_sdk_tokenizer_1.csv')
-#         #         >>> for i, row in df[(df['is_found_by_tokenizer']==False) & (df['is_matched'] == True)].iterrows():
-#         #         ...     print(doc.text[int(row['start_offset']):int(row['end_offset'])])
-
-#     @unittest.skip(reason='Test run offline.')
-#     def test_eval_44865_sdk(self):
-#         """Test sdk with reupploaded 1st test doc in project 46 (id=44865)."""
-#         app_doc44865_test_doc = self.project.get_document_by_id(314250)
-
-#         extraction_result = self.pipeline.extract(document=app_doc44865_test_doc)
-#         predicted_doc = extraction_result_to_document(app_doc44865_test_doc, extraction_result)
-#         eval_list = [(app_doc44865_test_doc, predicted_doc)]
-
-#         evaluation = Evaluation(eval_list, strict=True)
-
-#         evaluation.data.to_csv('test_eval_44865_sdk_1.csv')
-
-#     @unittest.skip(reason='Test run offline.')
-#     def test_eval_44866_sdk(self):
-#         """Test sdk with reupploaded 2nd test doc in project 46 (id=44866)."""
-#         app_doc44866_test_doc = self.project.get_document_by_id(314074)
-
-#         extraction_result = self.pipeline.extract(document=app_doc44866_test_doc)
-#         predicted_doc = extraction_result_to_document(app_doc44866_test_doc, extraction_result)
-#         eval_list = [(app_doc44866_test_doc, predicted_doc)]
-
-#         evaluation = Evaluation(eval_list, strict=True)
-
-#         evaluation.data.to_csv('test_eval_44866_sdk_1.csv')
-
-#     @unittest.skip(reason='Test run offline.')
-#     def test_eval_44867_sdk(self):
-#         """Test sdk with reupploaded 3rd test doc in project 46 (id=44867)."""
-#         app_doc44867_test_doc = self.project.get_document_by_id(314249)
-
-#         extraction_result = self.pipeline.extract(document=app_doc44867_test_doc)
-#         predicted_doc = extraction_result_to_document(app_doc44867_test_doc, extraction_result)
-#         eval_list = [(app_doc44867_test_doc, predicted_doc)]
-
-#         evaluation = Evaluation(eval_list, strict=True)
-
-#         evaluation.data.to_csv('test_eval_44867_sdk_1.csv')
-
-#     # @unittest.skip(reason='Test run offline.')
-#     # def test_eval_sdk(self):
-
-#     #     app_doc44865_eval = self.project.get_document_by_id(314250)
-#     #     app_doc44866_eval = self.project.get_document_by_id(314074)
-#     #     app_doc44867_eval = self.project.get_document_by_id(314249)
-#     #     app_docs = [app_doc44865_eval, app_doc44866_eval, app_doc44867_eval]
-
-#     #     eval_list = []
-#     #     for i, document in enumerate(app_docs):
-#     #         extraction_result = self.pipeline.extract(document=document)
-#     #         predicted_doc = extraction_result_to_document(document, extraction_result)
-#     #         eval_list.append((document, predicted_doc))
-
-#     #     evaluation = Evaluation(eval_list, strict=True)
-
-#     #     assert evaluation.f1(None) == 1.0 # 0.8546255506607929 # 0.8660714285714286
-#     #     # return self.evaluation
-
-#     # @unittest.skip(reason='Test run offline.')
-#     # def test_eval_app(self):
-#     #     """"""
-#     #     app_doc44865_eval = self.project.get_document_by_id(314250)
-#     #     app_doc44866_eval = self.project.get_document_by_id(314074)
-#     #     app_doc44867_eval = self.project.get_document_by_id(314249)
-#     #     app_docs_eval = [app_doc44865_eval, app_doc44866_eval, app_doc44867_eval]
-#     #     app_doc44865 = self.project.get_document_by_id(314273)
-#     #     app_doc44866 = self.project.get_document_by_id(314272)
-#     #     app_doc44867 = self.project.get_document_by_id(314274)
-#     #     app_docs = [app_doc44865, app_doc44866, app_doc44867]
-#     #     eval_list = []
-#     #     for i, document in enumerate(app_docs_eval):
-#     #         eval_list.append((document, app_docs[i]))
-
-#     #     evaluation = Evaluation(eval_list, strict=True)
-#     # #     # F1 0.8725868725868726
-#     # #     # TP 113
-#     # #     # FP 33
-#     # #     # FN 0
-#     #     assert evaluation.f1(None) == 1.0
-
-# class TestSequenceInformationSeparateLabelsExtraction(unittest.TestCase):
-#     """Test to train an extraction Model for Documents."""
-
-#     @classmethod
-#     def setUpClass(cls) -> None:
-#         """Set up the Data and Pipeline."""
-#         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-#         cls.pipeline = SeparateLabelsEntityMultiClassModel()
-
-#     def test_1_configure_pipeline(self):
-#         """Make sure the Data and Pipeline is configured."""
-#         self.pipeline.tokenizer = WhitespaceTokenizer()
-#         self.pipeline.category = self.project.get_category_by_id(id_=63)
-#         self.pipeline.documents = self.pipeline.category.documents()[:5]
-#         self.pipeline.test_documents = self.pipeline.category.test_documents()[:1]
-#         # todo have a separate test case for calculating features of offline documents
-#         for doc in self.pipeline.documents + self.pipeline.test_documents:
-#             doc.set_offline()
-
-#     def test_2_make_features(self):
-#         """Make sure the Data and Pipeline is configured."""
-#         self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
-#             documents=self.pipeline.documents
-#         )
-#         self.pipeline.df_test, self.pipeline.test_label_feature_list = self.pipeline.feature_function(
-#             documents=self.pipeline.test_documents
-#         )
-
-#     def test_3_fit(self) -> None:
-#         """Start to train the Model."""
-#         self.pipeline.fit()
-
-#     def test_4_save_model(self):
-#         """Save the model."""
-#         self.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder)
-
-#     def test_5_evaluate_model(self):
-#         """Evaluate the model."""
-#         self.pipeline.evaluate()
-
-#     def test_6_extract_test_document(self):
-#         """Extract a randomly selected Test Document."""
-#         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-#         result = self.pipeline.extract(document=test_document)
-#         assert len(result['Brutto-Bezug']) > 0  # todo add more test for inference on data level
-
-#     @unittest.skip(reason='Test run offline.')
-#     def test_7_upload_ai_model(self):
-#         """Upload the model."""
-#         upload_ai_model(ai_model_path=self.pipeline_path, category_ids=[self.pipeline.category.id_])
-
-
-# class TestSequenceDocumentEntityMulticlassModelExtraction(unittest.TestCase):
-#     """Test to train an extraction Model for Documents."""
-
-#     @classmethod
-#     def setUpClass(cls) -> None:
-#         """Set up the Data and Pipeline."""
-#         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-#         cls.pipeline = DocumentEntityMulticlassModel()
-
-#     def test_1_configure_pipeline(self):
-#         """Make sure the Data and Pipeline is configured."""
-#         self.pipeline.tokenizer = WhitespaceTokenizer()
-#         self.pipeline.category = self.project.get_category_by_id(id_=63)
-#         self.pipeline.documents = self.pipeline.category.documents()[:5]
-#         self.pipeline.test_documents = self.pipeline.category.test_documents()[:1]
-#         # todo have a separate test case for calculating features of offline documents
-#         for doc in self.pipeline.documents + self.pipeline.test_documents:
-#             doc.set_offline()
-
-#     def test_2_make_features(self):
-#         """Make sure the Data and Pipeline is configured."""
-#         self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
-#             documents=self.pipeline.documents
-#         )
-#         self.pipeline.df_test, self.pipeline.test_label_feature_list = self.pipeline.feature_function(
-#             documents=self.pipeline.test_documents
-#         )
-
-#     def test_3_fit(self) -> None:
-#         """Start to train the Model."""
-#         self.pipeline.fit()
-
-#     def test_4_save_model(self):
-#         """Save the model."""
-#         self.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder)
-
-#     def test_5_evaluate_model(self):
-#         """Evaluate the model."""
-#         self.pipeline.evaluate()
-
-#     def test_6_extract_test_document(self):
-#         """Extract a randomly selected Test Document."""
-#         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-#         result = self.pipeline.extract(document=test_document)
-#         assert len(result['Brutto-Bezug']) > 0  # todo add more test for inference on data level
-
-#     @unittest.skip(reason='Test run offline.')
-#     def test_7_upload_ai_model(self):
-#         """Upload the model."""
-#         upload_ai_model(ai_model_path=self.pipeline_path, category_ids=[self.pipeline.category.id_])
-
-
-# class TestSequenceSeparateLabelsAnnotationMultiClassModelExtraction(unittest.TestCase):
-#     """Test to train an extraction Model for Documents."""
-
-#     @classmethod
-#     def setUpClass(cls) -> None:
-#         """Set up the Data and Pipeline."""
-#         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-#         cls.pipeline = SeparateLabelsAnnotationMultiClassModel()
-
-#     def test_1_configure_pipeline(self):
-#         """Make sure the Data and Pipeline is configured."""
-#         self.pipeline.tokenizer = WhitespaceTokenizer()
-#         self.pipeline.category = self.project.get_category_by_id(id_=63)
-#         self.pipeline.documents = self.pipeline.category.documents()[:5]
-#         self.pipeline.test_documents = self.pipeline.category.test_documents()[:1]
-
-#     def test_2_make_features(self):
-#         """Make sure the Data and Pipeline is configured."""
-#         self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
-#             documents=self.pipeline.documents
-#         )
-#         self.pipeline.df_test, self.pipeline.test_label_feature_list = self.pipeline.feature_function(
-#             documents=self.pipeline.test_documents
-#         )
-
-#     def test_3_fit(self) -> None:
-#         """Start to train the Model."""
-#         self.pipeline.fit()
-
-#     def test_4_save_model(self):
-#         """Save the model."""
-#         self.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder)
-
-#     def test_5_evaluate_model(self):
-#         """Evaluate the model."""
-#         self.pipeline.evaluate()
-
-#     def test_6_extract_test_document(self):
-#         """Extract a randomly selected Test Document."""
-#         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-#         result = self.pipeline.extract(document=test_document)
-#         # todo: this extract method should use a Document
-#         assert len(result['Brutto-Bezug']) > 0  # todo add more test for inference on data level
-
-#     @unittest.skip(reason='Test run offline.')
-#     def test_7_upload_ai_model(self):
-#         """Upload the model."""
-#         upload_ai_model(ai_model_path=self.pipeline_path, category_ids=[self.pipeline.category.id_])
-
-
-# class TestFindRegexSeparateLabelsAnnotationMultiClassModelExtraction(unittest.TestCase):
-#     """Test to train an extraction Model for Documents."""
-
-#     @classmethod
-#     def setUpClass(cls) -> None:
-#         """Set up the Data and Pipeline."""
-#         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-#         cls.pipeline = SeparateLabelsAnnotationMultiClassModel()
-
-#     def test_1_configure_pipeline(self):
-#         """Make sure the Data and Pipeline is configured."""
-#         self.pipeline.tokenizer = ListTokenizer(tokenizers=[])
-#         self.pipeline.category = self.project.get_category_by_id(id_=63)
-#         self.pipeline.documents = self.pipeline.category.documents()[:5]
-#         self.pipeline.test_documents = self.pipeline.category.test_documents()[:1]
-
-#     def test_2_find_regex(self):
-#         """Fit the tokenizer."""
-#         for label in self.pipeline.category.labels:
-#             for regex in label.find_regex(category=self.pipeline.category):
-#                 self.pipeline.tokenizer.tokenizers.append(RegexTokenizer(regex=regex))
-
-#     @unittest.skip(reason='We do not achieve this at the moment.')
-#     def test_3_perfect_tokenizer_coverage(self):
-#         """Check 100% tokenizer coverage."""
-#         tokenizer_eval = self.pipeline.tokenizer.evaluate_dataset(self.pipeline.test_documents)
-#         for document in self.pipeline.test_documents:
-#             assert tokenizer_eval.tokenizer(search=document) == len(document.spans)  # currently 34==35
-
-#     def test_4_make_features(self):
-#         """Make sure the Data and Pipeline is configured."""
-#         self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
-#             documents=self.pipeline.documents
-#         )
-#         self.pipeline.df_test, self.pipeline.test_label_feature_list = self.pipeline.feature_function(
-#             documents=self.pipeline.test_documents
-#         )
-
-#     def test_5_fit(self) -> None:
-#         """Start to train the Model."""
-#         self.pipeline.fit()
-
-#     def test_6_save_model(self):
-#         """Save the model."""
-#         self.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder)
-
-#     def test_7_evaluate_model(self):
-#         """Evaluate the model."""
-#         self.pipeline.evaluate_full()
-
-#     @unittest.skip(reason='We do not achieve this at the moment.')
-#     def test_8_perfect_evaluation_f1(self):
-#         """Check 100% strict evaluation score."""
-#         for document in self.pipeline.test_documents:
-#             assert self.pipeline.evaluation.f1(search=document) == 1
-
-#     def test_9_extract_test_document(self):
-#         """Extract a randomly selected Test Document."""
-#         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-#         result = self.pipeline.extract(document=test_document)
-#         # todo: this extract method should use a Document
-#         assert len(result['Brutto-Bezug']) > 0  # todo add more test for inference on data level
-
-#     @unittest.skip(reason='Test run offline.')
-#     def test_10_upload_ai_model(self):
-#         """Upload the model."""
-#         upload_ai_model(ai_model_path=self.pipeline_path, category_ids=[self.pipeline.category.id_])
 
 
 class TestInformationExtraction(unittest.TestCase):
@@ -929,7 +495,7 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
 
         extraction_df = pd.DataFrame(data=[extraction])
 
-        with self.assertRaises(ValueError) as context:
+        with pytest.raises(ValueError, match='Extraction do not contain all required fields'):
             add_extractions_as_annotations(
                 extractions=extraction_df,
                 document=document,
@@ -937,7 +503,6 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
                 label_set=self.label_set,
                 annotation_set=annotation_set_1,
             )
-            assert 'Extraction do not contain all required fields' in context.exception
 
 
 class TestExtractionToDocument(unittest.TestCase):

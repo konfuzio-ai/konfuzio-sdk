@@ -88,7 +88,7 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
         """
         eval_list = []
         for document in dataset_documents:
-            assert sdk_isinstance(document, Document)
+            assert sdk_isinstance(document, Document), f"Invalid document type: {type(document)}. Should be Document."
             document.annotations()  # Load Annotations before doing tokenization
             virtual_doc = deepcopy(document)
             self.tokenize(virtual_doc)
