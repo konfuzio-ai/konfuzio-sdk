@@ -13,12 +13,12 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 ## Unreleased
 
 ### Added
-- Auto-rotation for documents for all angles (until now only 90 degree angles have been supported).
+- [Auto-rotation for documents for all angles (until now only 90 degree angles have been supported).](https://help.konfuzio.com/modules/projects/index.html#automatically-rotate-documents)
 - Information about the embedded fonts of PDF documents.
 - Improve Swagger API definition for bounding boxes.
-- Superusers can inspect the logs of AI trainings and AI run.
+- [Superusers can inspect the logs of AI trainings and AI run.](https://help.konfuzio.com/modules/superuserdocuments/index.html)
 - Add threshold attribute to the Category endpoint (API V3).
-- Show minimum/medium/maximimum runtime of AIs.
+- Show minimum/medium/maximum runtime of AIs.
 - Add the callback_url attribute to (API V3).
 
 ### Changed
