@@ -26,11 +26,11 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 - Create sandwich PDFs on demand (until now they have been created on document upload).
 
 ### Fixed
-- Top annoation filter in the SmartView now considers unrevised annotations.
+- Top annotation filter in the SmartView now considers unrevised annotations.
 - Fix an issue in which a Document cannot be processed because negative bounding boxes are detected. 
 - Fix an issue which caused the processing time to be shown as negative.
 
-This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Capture Vue in version [0.0.6](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
+This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Capture Vue in version [0.0.8](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
 
 
 ## 2022-07-28_15-55-29
