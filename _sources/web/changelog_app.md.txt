@@ -17,7 +17,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 - Give Users the option to view/change to the Tokenization via Regexes ([Internal Issue](https://gitlab.com/konfuzio/objectives/-/issues/9271)).
 - Show Evaluation per Document for all test and training documents ([Internal Issue](https://gitlab.com/konfuzio/objectives/-/issues/9242)).
 - Add Categorization Support to the [SDK](https://github.com/konfuzio-ai/konfuzio-sdk/) ([Internal Issue](https://gitlab.com/konfuzio/objectives/-/issues/9481)).
-- Add option to order Labels in the context of Label-Sets ([Internal Issue](https://gitlab.com/konfuzio/objectives/-/issues/8932])).
+- Add option to order Labels in the context of Label-Sets ([Internal Issue](https://gitlab.com/konfuzio/objectives/-/issues/8932)).
 
 ## Next Release
 
