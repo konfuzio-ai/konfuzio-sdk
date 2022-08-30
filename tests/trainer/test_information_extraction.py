@@ -6,6 +6,7 @@ import logging
 import math
 import tracemalloc
 import unittest
+import parameterized
 import os
 from requests import HTTPError
 
@@ -107,6 +108,7 @@ class TestDocumentEntityMultiClassModel(unittest.TestCase):
         """Set up the Data and Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
         cls.pipeline = DocumentEntityMulticlassModel()
+        cls.tests_annotations = list()
 
     def test_1_configure_pipeline(self):
         """Make sure the Data and Pipeline is configured."""
@@ -159,23 +161,15 @@ class TestDocumentEntityMultiClassModel(unittest.TestCase):
         assert type(result) is dict
 
         res_doc = extraction_result_to_document(test_document, result)
-        tests_annotations = res_doc.annotations(use_correct=False)
+        self.tests_annotations += res_doc.annotations(use_correct=False)
+        assert len(self.tests_annotations) == 20
 
-        assert len(tests_annotations) == 20
-
-        tests_bools = []
-        for ann_i, expected in enumerate(entity_results_data):
-            ann = tests_annotations[ann_i]
-            ann_tuple = (ann.label.name, ann.start_offset, ann.end_offset)
-            tests_bools.append(ann_tuple == expected[1])
-
-        assert tests_bools == [True] * len(tests_bools)
-
-    # @pytest.mark.parametrize("ann_i,expected", entity_results_data)
-    # def test_8_test_annotations(self, ann_i, expected):
-    # anns = self.tests_annotations[ann_i]
-    # assert (anns[ann_i].label.name, anns[ann_i].start_offset, anns[ann_i].end_offset) == expected
-    # https://github.com/pytest-dev/pytest/issues/541
+    @parameterized.parameterized.expand(entity_results_data)
+    def test_8_test_annotations(self, i, expected):
+        """Test extracted annotations."""
+        ann = self.tests_annotations[i]
+        ann_tuple = (ann.label.name, ann.start_offset, ann.end_offset)
+        assert ann_tuple == expected
 
 
 class TestSeparateLabelsEntityMultiClassModel(unittest.TestCase):
@@ -186,6 +180,7 @@ class TestSeparateLabelsEntityMultiClassModel(unittest.TestCase):
         """Set up the Data and Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
         cls.pipeline = SeparateLabelsEntityMultiClassModel()
+        cls.tests_annotations = list()
 
     def test_1_configure_pipeline(self):
         """Make sure the Data and Pipeline is configured."""
@@ -238,17 +233,15 @@ class TestSeparateLabelsEntityMultiClassModel(unittest.TestCase):
         assert type(result) is dict
 
         res_doc = extraction_result_to_document(test_document, result)
-        tests_annotations = res_doc.annotations(use_correct=False)
+        self.tests_annotations += res_doc.annotations(use_correct=False)
+        assert len(self.tests_annotations) == 20
 
-        assert len(tests_annotations) == 20
-
-        tests_bools = []
-        for ann_i, expected in enumerate(entity_results_data):
-            ann = tests_annotations[ann_i]
-            ann_tuple = (ann.label.name, ann.start_offset, ann.end_offset)
-            tests_bools.append(ann_tuple == expected[1])
-
-        assert tests_bools == [True] * len(tests_bools)
+    @parameterized.parameterized.expand(entity_results_data)
+    def test_8_test_annotations(self, i, expected):
+        """Test extracted annotations."""
+        ann = self.tests_annotations[i]
+        ann_tuple = (ann.label.name, ann.start_offset, ann.end_offset)
+        assert ann_tuple == expected
 
 
 class TestInformationExtraction(unittest.TestCase):

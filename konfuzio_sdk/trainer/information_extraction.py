@@ -1359,6 +1359,9 @@ def process_document_data(
     column_order for training
     """
     logger.info(f'Start generating features for document {document}.')
+
+    assert spans == sorted(spans)  # should be already sorted
+
     file_error_data = []
     file_data_raw = []
 

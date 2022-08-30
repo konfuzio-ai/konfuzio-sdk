@@ -141,8 +141,11 @@ class Page(Data):
 
     def get_annotations_image(self, image: Image = None):
         """Get Document Page as PNG with annotations shown."""
-        if image is None:
+        if image is None and self.document.id_ is not None:
             image = self.get_image()
+        elif image is None and self.document.copy_of_id is not None:
+            original_doc = self.document.project.get_document_by_id(self.document.copy_of_id)
+            image = original_doc.get_page_by_index(self.index).get_image()
         image = image.convert('RGB')
         # bbox information are based on a downscaled image
         scale_mult = image.size[1] / self.height
@@ -958,7 +961,7 @@ class Span(Data):
 
     @property
     def area(self):
-        """Return area feature between top left corner and span."""
+        """Return area feature between top left corner and Span."""
         if not self.bbox() or (self.bbox().x0 is None or self.bbox().y0 is None):
             return None
         return self.bbox().x0 * self.bbox().y0
@@ -1045,9 +1048,9 @@ class Span(Data):
                 span_dict["page_index_relative"] = self.page.index / self.annotation.document.number_of_pages
 
             document_id = (
-                self.annotation.document.copy_of_id
-                if self.annotation.document.copy_of_id
-                else self.annotation.document.id_
+                self.annotation.document.id_
+                if self.annotation.document.id_ is not None
+                else self.annotation.document.copy_of_id
             )
             span_dict["document_id"] = document_id
             span_dict["area"] = self.area
