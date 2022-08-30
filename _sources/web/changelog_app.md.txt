@@ -36,6 +36,7 @@ This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK 
 ### Changed
 - Improve visibility of the left navigation bar.
 - [Create sandwich PDFs on demand (until now they have been created on document upload)](https://dev.konfuzio.com/web/on_premises.html#environment-variables-for-konfuzio-server).
+- Add content-type header ("Content-Type": "application/json") to the callback response.
 
 ### Fixed
 - Top annotation filter in the SmartView now considers unrevised annotations.
