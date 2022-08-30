@@ -1707,13 +1707,6 @@ def add_extractions_as_annotations(
 
 def extraction_result_to_document(document: Document, extraction_result: dict) -> Document:
     """Return a virtual Document annotated with AI Model output."""
-    for key in extraction_result:
-        try:
-            document.category.project.get_label_by_name(key)
-        except IndexError as e:
-            logger.error("Error: dictionary contains unrecognized label.")
-            raise e
-
     virtual_doc = deepcopy(document)
     # Document(
     #     project=document.category.project,
