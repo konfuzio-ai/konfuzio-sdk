@@ -16,6 +16,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 - Add Usage based Billing ([Internal Documentation](https://gitlab.com/konfuzio/manual/-/merge_requests/23/diffs), [Internal Issue](https://gitlab.com/konfuzio/objectives/-/issues/8235)).
 - Give Users the option to view/change to the Tokenization via Regexes ([Internal Issue](https://gitlab.com/konfuzio/objectives/-/issues/9271)).
 - Show Evaluation per Document for all test and training documents ([Internal Issue](https://gitlab.com/konfuzio/objectives/-/issues/9242)).
+- Add Categorization Support to the [SDK](https://github.com/konfuzio-ai/konfuzio-sdk/) ([Internal Issue](https://gitlab.com/konfuzio/objectives/-/issues/9481)).
 
 ## Next Release
 
