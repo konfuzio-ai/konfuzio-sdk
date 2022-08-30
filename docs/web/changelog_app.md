@@ -14,6 +14,8 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 
 - Add Project-based permissions via Roles ([Internal Documentation](https://gitlab.com/konfuzio/manual/-/merge_requests/21/diffs), [Internal Issue](https://gitlab.com/konfuzio/objectives/-/issues/7364)).
 - Add Usage based Billing ([Internal Documentation](https://gitlab.com/konfuzio/manual/-/merge_requests/23/diffs), [Internal Issue](https://gitlab.com/konfuzio/objectives/-/issues/8235)).
+- Give Users the option to view/change to the Tokenization via Regexes ([Internal Issue](https://gitlab.com/konfuzio/objectives/-/issues/9271)).
+- Show Evaluation per Document for all test and training documents ([Internal Issue](https://gitlab.com/konfuzio/objectives/-/issues/9242)).
 
 ## Next Release
 
