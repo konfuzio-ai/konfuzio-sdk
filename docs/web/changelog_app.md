@@ -17,7 +17,7 @@ This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK 
 ### Added
 - [Auto-rotation for documents for all angles (until now only 90 degree angles have been supported).](https://help.konfuzio.com/modules/projects/index.html#automatically-rotate-documents)
 - [Information about the embedded fonts of PDF documents.](https://help.konfuzio.com/modules/documents/index.html#fonts)
-- [Superusers can inspect the logs of AI trainings and AI run.](https://help.konfuzio.com/modules/superuserdocuments/index.html)
+- [Superusers can inspect the logs of AI trainings and AI run.](https://help.konfuzio.com/modules/superuserdocuments/index.html#extraction-log)
 - [Show minimum/medium/maximum loading time and runtime of AIs.](https://help.konfuzio.com/modules/extractions/index.html#loading-time-in-seconds)
 - [Improve Swagger API definition for bounding boxes  (API V3).](https://testing.konfuzio.com/v3/swagger/#/documents/documents_retrieve)
 - [Add threshold attribute to the Category endpoint (API V3).](https://testing.konfuzio.com/v3/swagger/#/categories/categories_retrieve)
