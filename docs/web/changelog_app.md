@@ -12,8 +12,8 @@ and this project adheres to [Calendar Versioning](https://calver.org/overview.ht
 
 ## Planned
 
-- Add Project-based permissions via Roles([Internal Documentation](https://gitlab.com/konfuzio/manual/-/merge_requests/21/diffs), [Internal Issue](https://gitlab.com/konfuzio/objectives/-/issues/7364).
-- Add Usage based Billing([Internal Documentation](https://gitlab.com/konfuzio/manual/-/merge_requests/23/diffs), [Internal Issue](https://gitlab.com/konfuzio/objectives/-/issues/8235).
+- Add Project-based permissions via Roles ([Internal Documentation](https://gitlab.com/konfuzio/manual/-/merge_requests/21/diffs), [Internal Issue](https://gitlab.com/konfuzio/objectives/-/issues/7364)).
+- Add Usage based Billing ([Internal Documentation](https://gitlab.com/konfuzio/manual/-/merge_requests/23/diffs), [Internal Issue](https://gitlab.com/konfuzio/objectives/-/issues/8235)).
 
 ## Next Release
 
