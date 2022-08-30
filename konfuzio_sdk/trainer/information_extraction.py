@@ -1469,15 +1469,16 @@ def process_document_data(
         r_list = []
 
         # todo add way to calculate distance features between spans consistently
+        # https://gitlab.com/konfuzio/objectives/-/issues/9688
         for candidate in line_candidates:
             try:
                 span.bbox()
                 if candidate['end_offset'] <= span.start_offset:
-                    candidate['dist'] = span.bbox().x0 - candidate['x1']  # todo hotfix remove ".spans[0]"
+                    candidate['dist'] = span.bbox().x0 - candidate['x1']
                     candidate['pos'] = 0
                     l_list.append(candidate)
                 elif candidate['start_offset'] >= span.end_offset:
-                    candidate['dist'] = candidate['x0'] - span.bbox().x1  # todo hotfix remove ".spans[0]"
+                    candidate['dist'] = candidate['x0'] - span.bbox().x1
                     candidate['pos'] = 0
                     r_list.append(candidate)
             except ValueError as e:
