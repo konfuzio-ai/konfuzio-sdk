@@ -256,7 +256,7 @@ class Bbox:
     ):
         """Validate contained data."""
         if self.x0 == self.x1:
-            raise ValueError(f'{self} no width in {self.page}.')
+            raise ValueError(f'{self} has no width in {self.page}.')
 
         if self.x0 > self.x1:
             raise ValueError(f'{self} has negative width in {self.page}.')
@@ -272,6 +272,12 @@ class Bbox:
 
         if self.x1 > self.page.width:
             raise ValueError(f'{self} exceeds width of {self.page}.')
+
+        if self.y0 < 0:
+            raise ValueError(f'{self} has negative y coordinate in {self.page}.')
+
+        if self.x0 < 0:
+            raise ValueError(f'{self} has negative x coordinate in {self.page}.')
 
     @property
     def area(self):
