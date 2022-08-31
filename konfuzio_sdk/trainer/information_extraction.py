@@ -1621,7 +1621,7 @@ def process_document_data(
 
     df["relative_position_in_page"] = df["page_index"] / document_n_pages
 
-    abs_pos_feature_list = ["x0", "y0", "x1", "y1", "page_index", "area"]
+    abs_pos_feature_list = ["x0", "y0", "x1", "y1", "page_index", "area_quadrant_two"]  # , "area"]
     relative_pos_feature_list = ["relative_position_in_page"]
 
     feature_list = (

@@ -1361,6 +1361,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.assertEqual(span.bbox().x1, 442.8)
         self.assertEqual(span.bbox().y0, 808.831)
         self.assertEqual(span.bbox().y1, 817.831)
+        self.assertEqual(span.bbox().area, 151.2)
 
     def test_size_of_project(self):
         """Test size of Project and compare it to the size after Documents have been loaded."""
@@ -1397,6 +1398,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
             document.text
         after = _getsize(prj)
         assert 1.7 < after / before < 1.8
+        assert _getsize([doc.text for doc in prj.documents]) + before < after + 500
 
     def test_create_new_doc_via_text_and_bbox(self):
         """Test to create a new Document which by a text and a bbox."""

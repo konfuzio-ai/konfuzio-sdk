@@ -273,6 +273,11 @@ class Bbox:
         if self.x1 > self.page.width:
             raise ValueError(f'{self} exceeds width of {self.page}.')
 
+    @property
+    def area(self):
+        """Return area covered by the Bbox."""
+        return round(abs(self.x0 - self.x1) * abs(self.y0 - self.y1), 3)
+
 
 class AnnotationSet(Data):
     """An Annotation Set is a group of Annotations. The Labels of those Annotations refer to the same Label Set."""
@@ -959,13 +964,6 @@ class Span(Data):
         else:
             return None
 
-    @property
-    def area(self):
-        """Return area feature between top left corner and Span."""
-        if not self.bbox() or (self.bbox().x0 is None or self.bbox().y0 is None):
-            return None
-        return self.bbox().x0 * self.bbox().y0
-
     def eval_dict(self):
         """Return any information needed to evaluate the Span."""
         if self.start_offset == self.end_offset == 0:
@@ -1003,6 +1001,7 @@ class Span(Data):
                 "y0_relative": None,
                 "y1_relative": None,
                 "page_index_relative": None,
+                "area_quadrant_two": 0,
                 "area": 0,
                 "label_text": None,
             }
@@ -1037,6 +1036,10 @@ class Span(Data):
                 span_dict["y0"] = self.bbox().y0
                 span_dict["y1"] = self.bbox().y1
 
+                # https://www.cuemath.com/geometry/quadrant/
+                span_dict["area_quadrant_two"] = self.bbox().x0 * self.bbox().y0
+                span_dict["area"] = self.bbox().area
+
             if self.page:  # todo separate as eval_dict on Page level
                 span_dict["page_index"] = self.page.index
                 span_dict["page_width"] = self.page.width
@@ -1053,7 +1056,6 @@ class Span(Data):
                 else self.annotation.document.copy_of_id
             )
             span_dict["document_id"] = document_id
-            span_dict["area"] = self.area
             span_dict["label_text"] = self.annotation.label.name if self.annotation.label else None
 
         return span_dict
