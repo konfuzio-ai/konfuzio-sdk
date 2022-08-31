@@ -13,6 +13,8 @@ Self-hosted Konfuzio Server can be upgraded according to the [documentation](htt
 
 ## Planned
 
+You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server features our team is actively working on. This list covers a planning horizon of 12 weeks. 
+
 - Superusers can define custom Roles for Members: Inviting Users can select from those Roles when inviting new Members to a Project. ([Internal Documentation](https://gitlab.com/konfuzio/manual/-/merge_requests/21/diffs), [Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/7364)).
 - Add self-service customer center to manage contracts and invoices ([Internal Documentation](https://gitlab.com/konfuzio/manual/-/merge_requests/23/diffs), [Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/8235)).
 - Calculate and access Tokenizers via the web interface. The name Tokenizer might be revised. The SDK refers to this concept as Tokenizer. ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9271)).
@@ -24,7 +26,7 @@ Self-hosted Konfuzio Server can be upgraded according to the [documentation](htt
 
 ## Next Release
 
-This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Capture Vue in version [0.0.8](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
+This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Capture Vue in version [0.0.8](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/). Per sprint we aim to have one relase.
 
 ### Added
 - [Auto-rotation for documents for all angles (until now only 90 degree angles have been supported).](https://help.konfuzio.com/modules/projects/index.html#automatically-rotate-documents)
