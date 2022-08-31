@@ -5,7 +5,7 @@
 
 # On-Premises Documentation
 
-The recommended way to operate a production-ready and scalabe Konfuzio installation is via Kubernetes. An alternative and more light-weight deployment option is the [Single VM setup](/web/on_premises.html#alternative-deployment-options). 
+The recommended way to operate a production-ready and scalabe Konfuzio installation is via Kubernetes. An alternative and more light-weight deployment option is the [Single VM setup](/web/on_premises.html#alternative-deployment-options). On-Premise Konfuzio installations allow to create Superuser accounts which can access all [Documents](https://help.konfuzio.com/modules/superuserdocuments/index.html), [Projects](https://help.konfuzio.com/modules/superuserprojects/index.html) and [AIs](https://help.konfuzio.com/modules/superuserais/index.html) via a dedicated view.
 
 ## Kubernetes
 
@@ -260,7 +260,7 @@ The Tag "latest" should be replaced with an actual version. A list of available 
 #### 2. Setup PostgreSQL, Redis, BlobStorage/FileSystemStorage
 The database credentials are needed in the next step. You may want to use psql and redis-cli to check if database credentials are working.
 
-In case you use FileSystemStorage and Docker volume mounts, you need to make sure the volume can be accessed by the konfuzio docker user (uid=999). You might want to run "chown 999:999 -R /konfuzio-vm/text-annotation/data" on the hiost VM.
+In case you use FileSystemStorage and Docker volume mounts, you need to make sure the volume can be accessed by the konfuzio docker user (uid=999). You might want to run "chown 999:999 -R /konfuzio-vm/text-annotation/data" on the host VM.
 
 #### 3. Setup environment variable file
 Copy the /code/.env.example file from the container and adapt it to your settings. The .env file can be saved anywhere on the host VM. In this example we use "/konfuzio-vm/text-annotation.env".
@@ -304,11 +304,14 @@ In this example we start three containers, the first one to serve the Konfuzio w
 
 #### [Optional] 6. Use Flower to monitor tasks
 
-[Flower](https://flower.readthedocs.io/en/latest/screenshots.html) can be used a task monitoring tool. Flower will be only accessible for Konfuzio superusers.
+[Flower](https://flower.readthedocs.io/en/latest/screenshots.html) can be used a task monitoring tool. Flower will be only accessible for Konfuzio superusers and is part of the Konfuzio Server Docker Image.
 
 ```
-docker pull mher/flower:0.9.7 
-docker run --rm --name flower -d -p 5555:5555  mher/flower:0.9.7 --adress 0.0.0.0 --url_prefix=flower --broker=redis://:@10.0.0.1:6379/0
+`docker run --name flower -d --add-host=host:10.0.0.1 \`  
+`--env-file /konfuzio-vm/text-annotation.env \`  
+`--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \`  
+`registry.gitlab.com/konfuzio/text-annotation/master:latest \`  
+`celery -A app flower --url_prefix=flower --address=0.0.0.0 --port=5555` 
 ```
 
 The Konfuzio Server application acts as a reverse proxy an servers the flower application. Therefore, django needs to know the flower url. `FLOWER_URL=http://host:5555/flower`
@@ -412,9 +415,9 @@ Click `SSO` on login page to log in to Konfuzio using keycloak
 - The Keycloak admin user cannot login into Konfuzio Server.
 
 
-## Environment Variables
+## Environment Variables for Konfuzio Server
 
-Konfuzio Server is fully configured via environment variables, these can be passed as dedicated environment variables or a single .env to the Konfuzio containers. A template for a .env file is provided here:
+Konfuzio Server is fully configured via environment variables, these can be passed as dedicated environment variables or a single .env to the Konfuzio Server containers (registry.gitlab.com/konfuzio/text-annotation/master). A template for a .env file is provided here:
 
 ```text
 # False for production, True for local development (mandatory).
@@ -535,18 +538,18 @@ KONFUZIO_CACHE_DIR =   # e.g. '/cache', uses tempdir if not set
 # SET TO TRUE TO ACTIVATE KEYCLOAK (optional).
 SSO_ENABLED=True
 
-# If you use keycloak version 17 and later set url like: http(s)://{keycloak_address}:{port}/
-# If you use keycloak version 16 and earlier set url like: http(s)://{keycloak_address}:{port}/auth/
+# If you use keycloak version 17 and later set url like: http(s)://{keycloak_address}:{port}/ (optional).
+# If you use keycloak version 16 and earlier set url like: http(s)://{keycloak_address}:{port}/auth/ (optional).
 KEYCLOAK_URL=
 KEYCLOAK_REALM=  # defaults to master
 
-For Keycloak client creation see: https://www.keycloak.org/docs/latest/server_admin/#assembly-managing-clients_server_administration_guide
+For Keycloak client creation see: https://www.keycloak.org/docs/latest/server_admin/#assembly-managing-clients_server_administration_guide (optional).
 OIDC_RP_SIGN_ALGO=RS256
 OIDC_RP_CLIENT_ID=
 OIDC_RP_CLIENT_SECRET=
 
-# These variables are only used for Keycloak integration tests:
-# The admin variables are for login keycloak admin panel, the test variables are for login to Konfuzio server
+# These variables are only used for Keycloak integration tests: 
+# The admin variables are for login keycloak admin panel, the test variables are for login to Konfuzio server (optional).
 KEYCLOAK_ADMIN_USERNAME=
 KEYCLOAK_ADMIN_PASSWORD=
 KEYCLOAK_TEST_USERNAME=
@@ -555,5 +558,38 @@ KEYCLOAK_TEST_PASSWORD=
 # Turn on/off autoretraining (optional).
 TRAIN_EXTRACTION_AI_AUTOMATICALLY_IF_QUEUE_IS_EMPTY=False
 
+# Turn on/off the immediate generation of sandwich pdf in full document workflow (optional).
+ALWAYS_GENERATE_SANDWICH_PDF=True
 ```
 
+## Environment Variables for Read API Container
+```text
+ # The Azure OCR API key (mandatory).
+AZURE_OCR_KEY=123456789
+ # The URL of the READ API (mandatory).
+AZURE_OCR_BASE_URL=http://host:5000
+# The version of the READ API (optional).
+AZURE_OCR_VERSION=v3.2
+```
+
+## Environment Variables for Detectron Container
+
+```text
+# Connect Broker (mandatory).
+BROKER_URL=
+# Connect result backend (mandatory).
+RESULT_BACKEND=
+# Decide if GPU used (True/False) (mandatory).
+GPU=
+# Allow root (mandatory).
+C_FORCE_ROOT=True
+# Connect Sentry (optional).
+SENTRY_ENVIRONMENT=
+SENTRY_RELEASE=
+# Setting for task processing (optional).
+WORKER_SEND_TASK_EVENTS=
+TASK_SEND_SENT_EVENT=
+TASK_TRACK_STARTED=
+TASK_ACKS_ON_FAILURE_OR_TIMEOUT=
+TASK_ACKS_LATE=
+```

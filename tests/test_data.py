@@ -351,7 +351,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 36
+        assert len(cls.project.virtual_documents) == 43
 
     # def test_document_only_needs_project(self):
     #     """Test that a Document can be created without category"""
@@ -484,16 +484,34 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert annotation.spans[0].bbox() is None  # Span bboxes must be explicitly loaded using span.bbox
         # Here this would be failing even when calling span.bbox as the test document does not have a bbox.
 
-    def test_get_span_bbox_with_characters_without_height(self):
-        """Test get the bbox of a Span where the characters do not have height (OCR problem)."""
-        document_bbox = {'1': {'x0': 0, 'x1': 1, 'y0': 1, 'y1': 1, 'page_number': 1}}
+    def test_get_span_bbox_with_characters_without_height_allowed(self):
+        """
+        Test get the bbox of a Span where the characters do not have height (OCR problem).
+
+        Without specifying strict validation, we allow such bboxes.
+        """
+        document_bbox = {'1': {'text': 'e', 'x0': 0, 'x1': 1, 'y0': 1, 'y1': 1, 'page_number': 1}}
         document = Document(project=self.project, category=self.category, text='hello', bbox=document_bbox)
         span = Span(start_offset=1, end_offset=2)
         _ = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
-        _ = Page(id_=1, number=1, original_size=(595.2, 0), document=document, start_offset=0, end_offset=1)
-        with self.assertRaises(ValueError) as context:
+        _ = Page(id_=1, number=1, original_size=(595.2, 300.0), document=document, start_offset=0, end_offset=1)
+        self.assertTrue(span.bbox())
+
+    def test_get_span_bbox_with_characters_without_height_strict_validation(self):
+        """
+        Test get the bbox of a Span where the characters do not have height (OCR problem).
+
+        With strict validation specified, we don't allow such bboxes.
+        """
+        document_bbox = {'1': {'text': 'e', 'x0': 0, 'x1': 1, 'y0': 1, 'y1': 1, 'page_number': 1}}
+        document = Document(
+            project=self.project, category=self.category, text='hello', bbox=document_bbox, strict_bbox_validation=True
+        )
+        span = Span(start_offset=1, end_offset=2)
+        _ = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
+        _ = Page(id_=1, number=1, original_size=(595.2, 300.0), document=document, start_offset=0, end_offset=1)
+        with pytest.raises(ValueError, match='has no height in Page 0.'):
             span.bbox()
-            assert 'coordinate y1 should be bigger than y0.' in context.exception
 
     def test_get_span_bbox_with_characters_without_width_missing_bbox(self):
         """Test get the bbox of a Span where the characters do not have width (OCR problem)."""
@@ -501,18 +519,77 @@ class TestOfflineDataSetup(unittest.TestCase):
         document = Document(project=self.project, category=self.category, text='hello', bbox=document_bbox)
         span = Span(start_offset=1, end_offset=2)
         _ = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
-        _ = Page(id_=1, number=1, original_size=(595.2, 0), document=document, start_offset=0, end_offset=1)
+        _ = Page(id_=1, number=1, original_size=(595.2, 300.0), document=document, start_offset=0, end_offset=1)
         with pytest.raises(ValueError, match='provides Character "None" document text refers to "e"'):
             span.bbox()
 
-    def test_get_span_bbox_with_characters_without_width(self):
-        """Test get the bbox of a Span where the characters do not have width (OCR problem)."""
+    def test_get_span_bbox_with_characters_without_width_allowed(self):
+        """
+        Test get the bbox of a Span where the characters do not have width (OCR problem).
+
+        Without strict validation specified, we allow such bboxes.
+        """
         document_bbox = {'0': {'x0': 1, 'x1': 1, 'y0': 0, 'y1': 1, 'page_number': 1, 'text': 'h'}}
+        document = Document(project=self.project, category=self.category, text='hello', bbox=document_bbox)
+        span = Span(start_offset=0, end_offset=1)
+        _ = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
+        _ = Page(id_=1, number=1, original_size=(595.2, 300.0), document=document, start_offset=0, end_offset=1)
+        self.assertTrue(span.bbox())
+
+    def test_get_span_bbox_with_characters_without_width_strict_validation(self):
+        """
+        Test get the bbox of a Span where the characters do not have width (OCR problem).
+
+        With strict validation specified, we allow such bboxes.
+        """
+        document_bbox = {'0': {'x0': 1, 'x1': 1, 'y0': 0, 'y1': 1, 'page_number': 1, 'text': 'h'}}
+        document = Document(
+            project=self.project, category=self.category, text='hello', bbox=document_bbox, strict_bbox_validation=True
+        )
+        span = Span(start_offset=0, end_offset=1)
+        _ = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
+        _ = Page(id_=1, number=1, original_size=(595.2, 300.0), document=document, start_offset=0, end_offset=1)
+        with pytest.raises(ValueError, match='has no width in Page 0'):
+            span.bbox()
+
+    def test_get_span_bbox_with_characters_with_negative_x_coord(self):
+        """Test get the bbox of a Span where the characters have negative x coordinates (OCR problem)."""
+        document_bbox = {'1': {'text': 'e', 'x0': -1, 'x1': 1, 'y0': 0, 'y1': 1, 'page_number': 1}}
         document = Document(project=self.project, category=self.category, text='hello', bbox=document_bbox)
         span = Span(start_offset=1, end_offset=2)
         _ = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
-        _ = Page(id_=1, number=1, original_size=(595.2, 0), document=document, start_offset=0, end_offset=1)
-        with pytest.raises(ValueError, match='no width in Page 0'):
+        _ = Page(id_=1, number=1, original_size=(595.2, 300.0), document=document, start_offset=0, end_offset=3)
+        with pytest.raises(ValueError, match='negative x coordinate'):
+            span.bbox()
+
+    def test_get_span_bbox_with_characters_with_negative_y_coord(self):
+        """Test get the bbox of a Span where the characters have negative x coordinates (OCR problem)."""
+        document_bbox = {'1': {'text': 'e', 'x0': 0, 'x1': 1, 'y0': -1, 'y1': 1, 'page_number': 1}}
+        document = Document(project=self.project, category=self.category, text='hello', bbox=document_bbox)
+        span = Span(start_offset=1, end_offset=2)
+        _ = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
+        _ = Page(id_=1, number=1, original_size=(595.2, 300.0), document=document, start_offset=0, end_offset=3)
+        with pytest.raises(ValueError, match='negative y coordinate'):
+            span.bbox()
+
+    def test_get_span_bbox_with_characters_with_x_coord_outside_page_width(self):
+        """Test get the bbox of a Span where the characters have negative x coordinates (OCR problem)."""
+        document_bbox = {'1': {'text': 'e', 'x0': 596, 'x1': 597, 'y0': 0, 'y1': 1, 'page_number': 1}}
+        document = Document(project=self.project, category=self.category, text='hello', bbox=document_bbox)
+        span = Span(start_offset=1, end_offset=2)
+        _ = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
+        _ = Page(id_=1, number=1, original_size=(595.2, 300.0), document=document, start_offset=0, end_offset=3)
+        with pytest.raises(ValueError, match='exceeds width of Page 0'):
+            span.bbox()
+
+    def test_get_span_bbox_with_characters_with_y_coord_outside_page_height(self):
+        """Test get the bbox of a Span where the characters have negative x coordinates (OCR problem)."""
+        document_bbox = {'1': {'text': 'e', 'x0': 0, 'x1': 1, 'y0': 301, 'y1': 302, 'page_number': 1}}
+        document = Document(project=self.project, category=self.category, text='hello', bbox=document_bbox)
+        span = Span(start_offset=1, end_offset=2)
+        _ = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
+        _ = Page(id_=1, number=1, original_size=(595.2, 300.0), document=document, start_offset=0, end_offset=3)
+        with pytest.raises(ValueError, match='exceeds height of Page 0'):
             span.bbox()
 
     def test_get_span_bbox_with_unavailable_characters(self):
@@ -539,40 +616,49 @@ class TestOfflineDataSetup(unittest.TestCase):
         }
         document = Document(project=self.project, category=self.category, text='h', bbox=document_bbox)
         _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
-        self.assertTrue(document.check_bbox())
+        self.assertTrue(document.bboxes)
 
-    def test_document_check_bbox_invalid_x_coordinates(self):
-        """Test bbox check with invalid x coordinates."""
-        document_bbox = {
-            '0': {'x0': 1, 'x1': 1, 'y0': 0, 'y1': 1, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
-        }
-        document = Document(project=self.project, category=self.category, text='h', bbox=document_bbox)
-        _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
-        with pytest.raises(ValueError) as e:
-            self.assertFalse(document.check_bbox())
-            assert 'has negative or no height' in str(e)
-
-    def test_document_check_bbox_invalid_y_coordinates(self):
-        """Test bbox check with invalid y coordinates."""
-        document_bbox = {
-            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 0, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
-        }
-        document = Document(project=self.project, category=self.category, text='h', bbox=document_bbox)
-        _ = Page(id_=1, number=1, original_size=(595.2, 0), document=document, start_offset=0, end_offset=1)
-        with pytest.raises(ValueError) as e:
-            self.assertFalse(document.check_bbox())
-            assert 'has negative or no height' in str(e)
-
-    def test_document_check_bbox_invalid_width_coordinates(self):
-        """Test bbox check with invalid x coordinates regarding the page width."""
+    def test_document_check_bbox_zero_height_allowed(self):
+        """Test bbox check with zero height without strict validation."""
         document_bbox = {
             '0': {'x0': 0, 'x1': 2, 'y0': 0, 'y1': 0, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
         }
         document = Document(project=self.project, category=self.category, text='h', bbox=document_bbox)
         _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
-        with pytest.raises(ValueError) as e:
-            self.assertFalse(document.check_bbox())
-            assert 'has negative or no height' in str(e)
+        self.assertTrue(document.bboxes)
+
+    def test_document_check_bbox_zero_height_strict_validation(self):
+        """Test bbox check with zero height with strict validation, which does not allow it."""
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 2, 'y0': 0, 'y1': 0, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
+        }
+        document = Document(
+            project=self.project, category=self.category, text='h', bbox=document_bbox, strict_bbox_validation=True
+        )
+        _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
+        with pytest.raises(ValueError, match='has no height'):
+            document.bboxes
+
+    def test_document_check_bbox_zero_width_allowed(self):
+        """Test bbox check with zero width without strict validation."""
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 0, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
+        }
+        document = Document(project=self.project, category=self.category, text='h', bbox=document_bbox)
+        _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
+        self.assertTrue(document.bboxes)
+
+    def test_document_check_bbox_zero_width_strict_validation(self):
+        """Test bbox check with zero width with strict validation, which does not allow it."""
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 0, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
+        }
+        document = Document(
+            project=self.project, category=self.category, text='h', bbox=document_bbox, strict_bbox_validation=True
+        )
+        _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
+        with pytest.raises(ValueError, match='has no width'):
+            document.bboxes
 
     def test_document_spans(self):
         """Test getting spans from a Document."""
@@ -712,7 +798,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         document = Document(project=self.project, category=self.category, text='h', bbox=document_bbox)
         _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
         with pytest.raises(ValueError, match='has negative width'):
-            document.check_bbox()
+            document.bboxes
 
     def test_document_check_duplicated_annotations(self):
         """Test Annotations check when an error is raised due to duplicated Annotations by get_annotations."""
@@ -1619,10 +1705,10 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         """Test bbox check."""
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
         virtual_doc = deepcopy(doc)
-        self.assertTrue(virtual_doc.check_bbox())
+        self.assertTrue(virtual_doc.bboxes)
         virtual_doc._text = '123' + doc.text  # Change text to bring bbox out of sync.
         with pytest.raises(ValueError, match='Bbox provides Character "n" document text refers to "l"'):
-            virtual_doc.check_bbox()
+            virtual_doc.bboxes
 
     @unittest.skip(reason='Waiting for API to support to add to default Annotation Set')
     def test_document_add_new_annotation(self):
