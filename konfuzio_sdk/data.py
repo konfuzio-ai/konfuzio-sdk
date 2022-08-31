@@ -200,9 +200,15 @@ class Page(Data):
 
 
 class Bbox:
-    """A bounding box relates to an area of a Document Page."""
+    """
+    A bounding box relates to an area of a Document Page.
 
-    def __init__(self, x0: int, x1: int, y0: int, y1: int, page: Page):
+    :param strict_validation: If False, it allows bounding boxes to have zero width or height. This option is available
+    and defaults to False for compatibility reasons since some OCR engines can sometimes return character level bboxes
+    with zero width or height.
+    """
+
+    def __init__(self, x0: int, x1: int, y0: int, y1: int, page: Page, strict_validation: bool = False):
         """Store information and validate."""
         self.x0: int = x0
         self.x1: int = x1
@@ -210,7 +216,7 @@ class Bbox:
         self.y1: int = y1
         self.angle: float = 0.0  # not yet used
         self.page: Page = page
-        self._valid()
+        self._valid(strict_validation)
 
     def __repr__(self):
         """Represent the Box."""
@@ -224,18 +230,36 @@ class Bbox:
         """Define that one Bounding Box on the same page is identical."""
         return self.__hash__() == other.__hash__()
 
-    def _valid(
-        self,
-    ):
-        """Validate contained data."""
+    def _valid(self, strict: bool = False):
+        """
+        Validate contained data.
+
+        :param strict: If False, it allows bounding boxes to have zero width or height. This option is available
+        and defaults to False for compatibility reasons since some OCR engines can sometimes return character level
+        bboxes with zero width or height.
+        """
         if self.x0 == self.x1:
-            raise ValueError(f'{self} has no width in {self.page}.')
+            if strict:
+                raise ValueError(f'{self} has no width in {self.page}.')
+            else:
+                # todo add link to documentation page relating to feature calculation for the RandomForest ExtractionAI
+                logger.error(
+                    f'{self} has no width in {self.page}. Some of our AIs use the area of bboxes as a feature'
+                    f'during training and prediction, which will be zero.'
+                )
 
         if self.x0 > self.x1:
             raise ValueError(f'{self} has negative width in {self.page}.')
 
         if self.y0 == self.y1:
-            raise ValueError(f'{self} has no height in {self.page}.')
+            if strict:
+                raise ValueError(f'{self} has no height in {self.page}.')
+            else:
+                # todo add link to documentation page relating to feature calculation for the RandomForest ExtractionAI
+                logger.error(
+                    f'{self} has no height in {self.page}. Some of our AIs use the area of bboxes as a feature'
+                    f'during training and prediction, which will be zero.'
+                )
 
         if self.y0 > self.y1:
             raise ValueError(f'{self} has negative height in {self.page}.')
@@ -1436,6 +1460,7 @@ class Document(Data):
         category: Category = None,
         text: str = None,
         bbox: dict = None,
+        strict_bbox_validation: bool = False,
         pages: list = None,
         update: bool = None,
         copy_of_id: Union[int, None] = None,
@@ -1455,6 +1480,9 @@ class Document(Data):
         :param updated_at: Updated information
         :param assignee: Assignee of the Document
         :param bbox: Bounding box information per character in the PDF (dict)
+        :param strict_bbox_validation: If False, it allows bounding boxes to have zero width or height. This option is
+                        available and defaults to False for compatibility reasons since some OCR engines can sometimes
+                        return character level bboxes with zero width or height.
         :param pages: List of page sizes.
         :param update: Annotations, Annotation Sets will not be loaded by default. True will load it from the API.
                         False from local files
@@ -1496,6 +1524,7 @@ class Document(Data):
         self._characters: Dict[int, Bbox] = None
         self._bbox_json = bbox
         self.bboxes_available: bool = self.is_online or self._bbox_json
+        self._strict_bbox_validation = strict_bbox_validation
         self._hocr = None
         self._pages: List[Page] = []
 
@@ -1974,7 +2003,9 @@ class Document(Data):
                         f'{self} Bbox provides Character "{box_character}" document text refers to '
                         f'"{document_character}" with ID "{character_index}".'
                     )
-                boxes[int(character_index)] = Bbox(x0=x0, x1=x1, y0=y0, y1=y1, page=page)
+                boxes[int(character_index)] = Bbox(
+                    x0=x0, x1=x1, y0=y0, y1=y1, page=page, strict_validation=self._strict_bbox_validation
+                )
             self._characters = boxes
         return self._characters
 
