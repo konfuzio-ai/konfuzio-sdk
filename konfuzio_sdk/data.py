@@ -234,7 +234,9 @@ class Bbox:
         """
         Validate contained data.
 
-        :param strict: If False, it allows bounding boxes to have zero width or height.
+        :param strict: If False, it allows bounding boxes to have zero width or height. This option is available
+        and defaults to False for compatibility reasons since some OCR engines can sometimes return character level
+        bboxes with zero width or height.
         """
         if self.x0 == self.x1:
             if strict:
