@@ -837,10 +837,6 @@ class Span(Data):
         self.end_offset = end_offset
         self.top = None
         self.bottom = None
-        self.x0 = None
-        self.x1 = None
-        self.y0 = None
-        self.y1 = None
         self._line_index = None
         self._page: Union[Page, None] = None
         self._bbox: Union[Bbox, None] = None

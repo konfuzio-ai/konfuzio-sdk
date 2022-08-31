@@ -417,7 +417,7 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
         assert annotation.spans[0].end_offset == self.extraction_df.loc[0, 'End']
         # The document used does not have bounding boxes, so we cannot have the coordinates
         assert annotation.spans[0].offset_string == 'pizza'
-        assert annotation.spans[0].x0 is None
+        assert annotation.spans[0].bbox() is None
 
     def test_add_empty_extraction_to_empty_document(self):
         """Test add empty extraction to an empty document - no text."""
@@ -466,10 +466,7 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
         # The document used is an empty document, therefore it does not have text or bounding boxes,
         # so we cannot have the offset string or the coordinates
         assert annotation.spans[0].offset_string is None
-        assert annotation.spans[0].x0 is None
-        assert annotation.spans[0].y0 is None
-        assert annotation.spans[0].x1 is None
-        assert annotation.spans[0].y1 is None
+        assert annotation.spans[0].bbox() is None
 
     def test_add_invalid_extraction(self):
         """Test add an invalid extraction - missing fields."""

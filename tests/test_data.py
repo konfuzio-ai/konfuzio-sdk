@@ -481,7 +481,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         span = Span(start_offset=1, end_offset=2)
         annotation = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
         assert annotation.spans[0].annotation is not None
-        assert annotation.spans[0].x0 is None  # Span bboxes must be explicitly loaded using span.bbox
+        assert annotation.spans[0].bbox() is None  # Span bboxes must be explicitly loaded using span.bbox
         # Here this would be failing even when calling span.bbox as the test document does not have a bbox.
 
     def test_get_span_bbox_with_characters_without_height(self):
