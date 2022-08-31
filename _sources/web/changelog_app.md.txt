@@ -1,23 +1,26 @@
 .. meta::
-   :description: All notable changes in the server of app.konfuzio.com will be documented in this file, following the calendar versioning.
+   :description: Konfuzio Server Changlog to inform developers, partners and user about all notable changes.
 
 .. _Server Changelog:
 
 # Changelog
 
-All notable changes in the server of app.konfuzio.com will be documented in this file.
+All notable changes in the Konfuzio Server will be documented according to the principles defined by [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Calendar Versioning](https://calver.org/overview.html).
+The changelog adheres to [Calendar Versioning](https://calver.org/overview.html) and the release tag relates to the date and time when those changes have been released to app.konfuzio.com. 
+
+Self-hosted Konfuzio Server can be upgraded according to the [documentation](https://dev.konfuzio.com/web/on_premises.html#upgrade).
 
 ## Planned
 
-- Add Project-based permissions via Roles ([Internal Documentation](https://gitlab.com/konfuzio/manual/-/merge_requests/21/diffs), [Internal Issue](https://gitlab.com/konfuzio/objectives/-/issues/7364)).
-- Add Usage based Billing ([Internal Documentation](https://gitlab.com/konfuzio/manual/-/merge_requests/23/diffs), [Internal Issue](https://gitlab.com/konfuzio/objectives/-/issues/8235)).
-- Give Users the option to view/change to the Tokenization via Regexes ([Internal Issue](https://gitlab.com/konfuzio/objectives/-/issues/9271)).
-- Show Evaluation per Document for all test and training documents ([Internal Issue](https://gitlab.com/konfuzio/objectives/-/issues/9242)).
-- Add Categorization Support to the [SDK](https://github.com/konfuzio-ai/konfuzio-sdk/) ([Internal Issue](https://gitlab.com/konfuzio/objectives/-/issues/9481)).
-- Add option to order Labels in the context of Label-Sets ([Internal Issue](https://gitlab.com/konfuzio/objectives/-/issues/8932)).
+- Superusers can define custom Roles for Members: Inviting Users can select from those Roles when inviting new Members to a Project. ([Internal Documentation](https://gitlab.com/konfuzio/manual/-/merge_requests/21/diffs), [Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/7364)).
+- Add self-service customer center to manage contracts and invoices ([Internal Documentation](https://gitlab.com/konfuzio/manual/-/merge_requests/23/diffs), [Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/8235)).
+- Calculate and access Tokenizers via the web interface. The name Tokenizer might be revised. The SDK refers to this concept as Tokenizer. ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9271)).
+- Add a filter to the list of Documents to find Documents that need to be revised by humans. ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9242)).
+- Train custom Page-based Categorization AI via [SDK](https://github.com/konfuzio-ai/konfuzio-sdk/) ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9481)).
+- Sort Labels in Label-Sets to allow users to customize the UI per Category ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/8932)).
+- First stable release of Capture Vue in version [0.1.0](#).
+- Suggest page breaks if one file contains multiple Documents ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9656)
 
 ## Next Release
 
@@ -31,7 +34,7 @@ This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK 
 - [Improve Swagger API definition for bounding boxes  (API V3).](https://testing.konfuzio.com/v3/swagger/#/documents/documents_retrieve)
 - [Add threshold attribute to the Category endpoint (API V3).](https://testing.konfuzio.com/v3/swagger/#/categories/categories_retrieve)
 - [Add the callback_url attribute to (API V3).](https://testing.konfuzio.com/v3/swagger/#/documents/documents_create)
-- [Add /me endpoint (API V3).](https://app.konfuzio.com/v3/swagger/#/auth/auth_me_retrieve)
+- [Add /me Authentification endpoint (API V3).](https://app.konfuzio.com/v3/swagger/#/auth/auth_me_retrieve)
 
 ### Changed
 - Improve visibility of the left navigation bar.
