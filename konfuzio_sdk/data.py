@@ -1478,6 +1478,9 @@ class Document(Data):
         :param updated_at: Updated information
         :param assignee: Assignee of the Document
         :param bbox: Bounding box information per character in the PDF (dict)
+        :param strict_bbox_validation: If False, it allows bounding boxes to have zero width or height. This option is
+                        available and defaults to False for compatibility reasons since some OCR engines can sometimes
+                        return character level bboxes with zero width or height.
         :param pages: List of page sizes.
         :param update: Annotations, Annotation Sets will not be loaded by default. True will load it from the API.
                         False from local files
