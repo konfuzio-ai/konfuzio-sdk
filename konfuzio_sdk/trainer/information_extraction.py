@@ -1686,6 +1686,8 @@ def add_extractions_as_annotations(
     extractions: pandas.DataFrame, document: Document, label: Label, label_set: LabelSet, annotation_set: AnnotationSet
 ) -> None:
     """Add the extraction of a model to the document."""
+    if not isinstance(extractions, pandas.DataFrame):
+        raise TypeError(f'Provided extraction object should be a Dataframe, got a {type(extractions)} instead')
     if not extractions.empty:
         # TODO: define required fields
         required_fields = ['Start', 'End', 'Accuracy']
@@ -1695,29 +1697,26 @@ def add_extractions_as_annotations(
                 f' Extraction columns: {extractions.columns.to_list()}'
             )
 
-        annotations = extractions[required_fields].sort_values(by='Accuracy', ascending=False)
+        extracted_spans = extractions[required_fields].sort_values(by='Accuracy', ascending=False)
 
-        for annotation in annotations.to_dict('records'):  # todo: are Start and End always ints?
-            _ = Annotation(
+        for span in extracted_spans.to_dict('records'):  # todo: are Start and End always ints?
+            annotation = Annotation(
                 document=document,
                 label=label,
-                confidence=annotation['Accuracy'],
+                confidence=span['Accuracy'],
                 label_set=label_set,
                 annotation_set=annotation_set,
-                spans=[Span(start_offset=annotation['Start'], end_offset=annotation['End'])],
+                spans=[Span(start_offset=span['Start'], end_offset=span['End'])],
             )
+            if annotation.spans[0].offset_string is None:
+                raise NotImplementedError(
+                    f"Extracted {annotation} does not have a correspondence in the " f"text of {document}."
+                )
 
 
 def extraction_result_to_document(document: Document, extraction_result: dict) -> Document:
     """Return a virtual Document annotated with AI Model output."""
     virtual_doc = deepcopy(document)
-    # Document(
-    #     project=document.category.project,
-    #     text=document.text,
-    #     bbox=document.get_bbox(),
-    #     category=document.category,
-    #     pages=document.pages,
-    # )
     virtual_annotation_set_id = 0  # counter for across mult. Annotation Set groups of a Label Set
 
     # define Annotation Set for the Category Label Set: todo: this is unclear from API side

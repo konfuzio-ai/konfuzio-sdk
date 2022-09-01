@@ -905,15 +905,15 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation.tp() == sum([len(doc.spans()) for doc in project.documents])
 
     def test_false_positive(self):
-        """Count zero Annotations from two Training Documents."""
+        """Count 3 false positives from one Training Document."""
         project = LocalTextProject()
-        true_document = project.documents[0]
-        predicted_document = project.test_documents[0]
+        true_document = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
+        predicted_document = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
         evaluation = Evaluation(documents=list(zip([true_document], [predicted_document])))
-        assert evaluation.fp() == 3
+        assert evaluation.fp() == 3  # A4, A5, A6
 
     def test_true_negatives(self):
-        """Count zero Annotations from two Training Documents."""
+        """Count zero false negatives from two Training Documents (correctly, nothing is predicted under threshold)."""
         project = LocalTextProject()
         evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
         assert evaluation.tn() == 0
@@ -960,13 +960,13 @@ class TestEvaluation(unittest.TestCase):
     def test_false_negatives(self):
         """Count zero Annotations from two Training Documents."""
         project = LocalTextProject()
-        predicted_document = project.documents[0]  # A(0,2,Label_0) + A(3,5,Label_1) + A(7,10,Label_2)
-        true_document = project.test_documents[0]  # A(0,3,Label_0) + A(7,10,Label_1) + A(11,14,Label_2)
+        predicted_document = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
+        true_document = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
         evaluation = Evaluation(documents=list(zip([true_document], [predicted_document])))
-        assert evaluation.tp() == 0
-        assert evaluation.fp() == 3
-        assert evaluation.fn() == 2
-        assert evaluation.tn() == 0
+        assert evaluation.tp() == 0  # nothing correctly predicted
+        assert evaluation.fp() == 3  # A1, A2, A3
+        assert evaluation.fn() == 2  # A4, A6
+        assert evaluation.tn() == 0  # nothing to predict under threshold
 
     def test_true_positive_label(self):
         """Count two Annotations from two Training Documents and filter by one Label."""
@@ -989,7 +989,7 @@ class TestEvaluation(unittest.TestCase):
             assert 'Document None (None) must have a ID.' in e
 
     def test_true_positive_label_set(self):
-        """Count two Annotations from two Training Documents related to one Label Set."""
+        """Count 3 true positives within a specific label set."""
         project = LocalTextProject()
         evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
         label_set = project.get_label_set_by_id(id_=3)

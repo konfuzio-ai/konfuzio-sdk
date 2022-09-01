@@ -188,7 +188,11 @@ class TestAbstractTokenizer(unittest.TestCase):
         """Test evaluate a Category with a test Documents."""
         result = self.tokenizer.evaluate_dataset(self.category_2.test_documents())
         assert len(result.data) == 2
-        assert result.data.category_id.dropna().unique() == self.category_2.id_
+        assert result.data.loc[0]["category_id"] == self.category_2.id_
+        import numpy as np
+
+        # an empty span for the NO_LABEL_SET is always created
+        assert np.isnan(result.data.loc[1]["category_id"])
 
     @unittest.skip(reason='removed narrow implementation to evaluate multiple Documents: evaluate_category')
     def test_evaluate_category_input(self):

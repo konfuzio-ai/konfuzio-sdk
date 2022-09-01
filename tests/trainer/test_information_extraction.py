@@ -35,11 +35,10 @@ from konfuzio_sdk.trainer.information_extraction import (
     extraction_result_to_document,
     SeparateLabelsEntityMultiClassModel,
     DocumentEntityMulticlassModel,
-    SeparateLabelsAnnotationMultiClassModel,
+    # SeparateLabelsAnnotationMultiClassModel,
 )
 from konfuzio_sdk.api import upload_ai_model
-from konfuzio_sdk.tokenizer.regex import RegexTokenizer, WhitespaceTokenizer
-from konfuzio_sdk.tokenizer.base import ListTokenizer
+from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 from konfuzio_sdk.samples import LocalTextProject
 
@@ -454,19 +453,16 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
         document = Document(text='', project=self.project, category=self.category)
         annotation_set_1 = AnnotationSet(id_=1, document=document, label_set=self.label_set)
 
-        add_extractions_as_annotations(
-            extractions=self.extraction_df,
-            document=document,
-            label=self.label,
-            label_set=self.label_set,
-            annotation_set=annotation_set_1,
-        )
-
-        annotation = document.annotations(use_correct=False)[0]
         # The document used is an empty document, therefore it does not have text or bounding boxes,
-        # so we cannot have the offset string or the coordinates
-        assert annotation.spans[0].offset_string is None
-        assert annotation.spans[0].bbox() is None
+        # so we cannot have the offset string or the coordinates and it shouldn't have been extracted at all
+        with pytest.raises(NotImplementedError, match='does not have a correspondence in the text of Document'):
+            add_extractions_as_annotations(
+                extractions=self.extraction_df,
+                document=document,
+                label=self.label,
+                label_set=self.label_set,
+                annotation_set=annotation_set_1,
+            )
 
     def test_add_invalid_extraction(self):
         """Test add an invalid extraction - missing fields."""
@@ -598,6 +594,40 @@ class TestExtractionToDocument(unittest.TestCase):
         assert annotation_1.label.name == annotation_2.label.name == 'LabelName'
         assert annotation_1.label_set == annotation_2.label_set == self.project.get_label_set_by_name('LabelSetName')
         assert annotation_1.annotation_set.id_ != annotation_2.annotation_set.id_
+
+    def test_extraction_result_for_non_existing_label(self):
+        """Test conversion of an AI output with extractions for a label that does not exist in the doc's category."""
+        extraction_result = {
+            'LabelSetName': [
+                {'LabelName': pd.DataFrame(data=[self.extraction_1])},
+                {'NonExistingLabelName': pd.DataFrame(data=[self.extraction_2])},
+            ]
+        }
+        with pytest.raises(IndexError):
+            extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
+
+    def test_extraction_result_for_non_existing_label_set(self):
+        """Test conversion of an AI output with extractions for a labelset that does not exist in the doc's category."""
+        extraction_result = {
+            'LabelSetName': [{'LabelName': pd.DataFrame(data=[self.extraction_1])}],
+            'NonExistingLabelSet': [{'LabelName': pd.DataFrame(data=[self.extraction_2])}],
+        }
+        with pytest.raises(IndexError):
+            extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
+
+    def test_extraction_result_with_non_dataframe_object(self):
+        """Test conversion of an AI output with extractions containing objects that are not Dataframes."""
+        extraction_result = {'LabelSetName': [{'LabelName': self.extraction_1}]}
+        with pytest.raises(TypeError, match='Provided extraction object should be a Dataframe, got a'):
+            extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
+
+    def test_extraction_result_with_invalid_dataframe(self):
+        """Test conversion of an AI output with extractions invalid Dataframe columns."""
+        invalid_df = pd.DataFrame(data=[self.extraction_2])
+        invalid_df = invalid_df.drop(columns=["Start"])
+        extraction_result = {'LabelSetName': [{'LabelName': invalid_df}]}
+        with pytest.raises(ValueError, match='Extraction do not contain all required fields'):
+            extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
 
 
 def test_feat_num_count():
