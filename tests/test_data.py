@@ -1714,7 +1714,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.assertTrue(virtual_doc.bboxes)
         virtual_doc._text = '123' + doc.text  # Change text to bring bbox out of sync.
         with pytest.raises(ValueError, match='Bbox provides Character "n" document text refers to "l"'):
-            virtual_doc.bboxes
+            virtual_doc.check_bbox()
 
     @unittest.skip(reason='Waiting for API to support to add to default Annotation Set')
     def test_document_add_new_annotation(self):
