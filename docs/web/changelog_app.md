@@ -17,6 +17,7 @@ You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server
 
 - Superusers can define custom Roles for Members: Inviting Users can select from those Roles when inviting new Members to a Project. ([Internal Documentation](https://gitlab.com/konfuzio/manual/-/merge_requests/21/diffs), [Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/7364)).
 - Add self-service customer center to manage contracts and invoices ([Internal Documentation](https://gitlab.com/konfuzio/manual/-/merge_requests/23/diffs), [Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/8235)).
+- API v3 endpoint to sort and split Pages into Documents with different categories containted in one file ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9452)).
 - Calculate and access Tokenizers via the web interface. The name Tokenizer might be revised. The SDK refers to this concept as Tokenizer. ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9271)).
 - Add a filter to the list of Documents to find Documents that need to be revised by humans. ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9242)).
 - Train custom Page-based Categorization AI via [SDK](https://github.com/konfuzio-ai/konfuzio-sdk/) ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9481)).
@@ -47,6 +48,7 @@ This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK 
 - Improve visibility of the left navigation bar.
 - [Create sandwich PDFs on demand (until now they have been created on document upload)](https://dev.konfuzio.com/web/on_premises.html#environment-variables-for-konfuzio-server).
 - Add content-type header ("Content-Type": "application/json") to the callback response.
+- [Update Power Query Excel Documentation](https://help.konfuzio.com/integrations/excel/index.html) with animated screencasts
 
 ### Fixed
 - Top annotation filter in the SmartView now considers unrevised annotations.
