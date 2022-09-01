@@ -5,6 +5,8 @@
 
 # On-Premises Documentation
 
+On-premises, also known as self-hosted, is a setup that allows Konfuzio to be implemented 100% on your own infrastructure. In practice, it means that you know where your data is stored, how it's handled and who gets hold of it. This is because you keep the data on your own servers.
+
 The recommended way to operate a production-ready and scalabe Konfuzio installation is via Kubernetes. An alternative and more light-weight deployment option is the [Single VM setup](/web/on_premises.html#alternative-deployment-options). On-Premise Konfuzio installations allow to create Superuser accounts which can access all [Documents](https://help.konfuzio.com/modules/superuserdocuments/index.html), [Projects](https://help.konfuzio.com/modules/superuserprojects/index.html) and [AIs](https://help.konfuzio.com/modules/superuserais/index.html) via a dedicated view.
 
 ## Kubernetes
@@ -414,8 +416,61 @@ Click `SSO` on login page to log in to Konfuzio using keycloak
 
 - The Keycloak admin user cannot login into Konfuzio Server.
 
+## Migrations AIs and Projects
 
-## Environment Variables for Konfuzio Server
+### Migrate an Extraction or Categorization AI
+
+This feature is only available for on-prem customers.
+
+### Download extraction AI from source instance
+
+In a first step the extraction AI needs to be downloaded from the target Konfuzio instance. In order to download the extraction AI you need to be a superuser.
+The extraction AI can be downloaded from the superuser AI page.
+
+![select_AI.png](./migration-between-konfuzio-server-instances/select_AI.png)
+
+Click on the extraction AI you want to migrate.
+
+![download_AI.png](./migration-between-konfuzio-server-instances/download_AI.png)
+
+Download the AI file.
+
+### Upload Extraction or Category AI to target instance
+
+Upload the downloaded extraction AI via superuser AI page.
+
+![upload_AI.png](./migration-between-konfuzio-server-instances/upload_AI.png)
+
+### Note:
+
+In case of an Extraction AI, a target category needs to be chosen. A project relation is made by means of choosing a "project - category" relation in "Available Category". No project should be assigned in the shown "Available projects" select box.
+In comparison for a Categorization AI the targe project has to be chosen from "Available projects".
+
+
+![create_label_sets.png](./migration-between-konfuzio-server-instances/create_label_sets.png)
+
+If you upload the extraction AI to a new project without the labels and label set, you need to enable "Create labels and templates" on the respective project. 
+
+
+### Migrate a Project
+
+Export the project data from the source Konfuzio server system.  
+```
+pip install konfuzio_sdk  
+konfuzio_sdk init  
+konfuzio_sdk export_project <PROJECT_ID>
+```
+
+The export will be saved in a folder with the name data_<project_id>. This folder needs to be transferred to the target system
+The first argument is the path to the export folder, the second is the project name of the imported project on the target system.
+
+```
+python manage.py project_import "/konfuzio-target-system/data_123/" "NewProjectName"
+```
+
+## Environment Variables
+
+### Environment Variables for Konfuzio Server
 
 Konfuzio Server is fully configured via environment variables, these can be passed as dedicated environment variables or a single .env to the Konfuzio Server containers (registry.gitlab.com/konfuzio/text-annotation/master). A template for a .env file is provided here:
 
@@ -562,7 +617,7 @@ TRAIN_EXTRACTION_AI_AUTOMATICALLY_IF_QUEUE_IS_EMPTY=False
 ALWAYS_GENERATE_SANDWICH_PDF=True
 ```
 
-## Environment Variables for Read API Container
+### Environment Variables for Read API Container
 ```text
  # The Azure OCR API key (mandatory).
 AZURE_OCR_KEY=123456789
@@ -572,7 +627,7 @@ AZURE_OCR_BASE_URL=http://host:5000
 AZURE_OCR_VERSION=v3.2
 ```
 
-## Environment Variables for Detectron Container
+### Environment Variables for Detectron Container
 
 ```text
 # Connect Broker (mandatory).

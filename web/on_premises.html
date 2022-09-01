@@ -100,9 +100,20 @@
 <li class="toctree-l3"><a class="reference internal" href="#important-notes">Important notes</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#environment-variables-for-konfuzio-server">Environment Variables for Konfuzio Server</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#environment-variables-for-read-api-container">Environment Variables for Read API Container</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#environment-variables-for-detectron-container">Environment Variables for Detectron Container</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#migrations-ais-and-projects">Migrations AIs and Projects</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#migrate-an-extraction-or-categorization-ai">Migrate an Extraction or Categorization AI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#download-extraction-ai-from-source-instance">Download extraction AI from source instance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#upload-extraction-or-category-ai-to-target-instance">Upload Extraction or Category AI to target instance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#note">Note:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#migrate-a-project">Migrate a Project</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">Environment Variables</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-konfuzio-server">Environment Variables for Konfuzio Server</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-read-api-container">Environment Variables for Read API Container</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-detectron-container">Environment Variables for Detectron Container</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="changelog_app.html">Changelog</a></li>
@@ -134,6 +145,7 @@
              
   <section id="on-premises-documentation">
 <span id="server-installation"></span><h1>On-Premises Documentation<a class="headerlink" href="#on-premises-documentation" title="Permalink to this headline">¶</a></h1>
+<p>On-premises, also known as self-hosted, is a setup that allows Konfuzio to be implemented 100% on your own infrastructure. In practice, it means that you know where your data is stored, how it’s handled and who gets hold of it. This is because you keep the data on your own servers.</p>
 <p>The recommended way to operate a production-ready and scalabe Konfuzio installation is via Kubernetes. An alternative and more light-weight deployment option is the <a class="reference external" href="/web/on_premises.html#alternative-deployment-options">Single VM setup</a>. On-Premise Konfuzio installations allow to create Superuser accounts which can access all <a class="reference external" href="https://help.konfuzio.com/modules/superuserdocuments/index.html">Documents</a>, <a class="reference external" href="https://help.konfuzio.com/modules/superuserprojects/index.html">Projects</a> and <a class="reference external" href="https://help.konfuzio.com/modules/superuserais/index.html">AIs</a> via a dedicated view.</p>
 <section id="kubernetes">
 <h2>Kubernetes<a class="headerlink" href="#kubernetes" title="Permalink to this headline">¶</a></h2>
@@ -515,8 +527,52 @@ and webhooks. The CI application needs network access to the Konfuzio installati
 </ul>
 </section>
 </section>
+<section id="migrations-ais-and-projects">
+<h2>Migrations AIs and Projects<a class="headerlink" href="#migrations-ais-and-projects" title="Permalink to this headline">¶</a></h2>
+<section id="migrate-an-extraction-or-categorization-ai">
+<h3>Migrate an Extraction or Categorization AI<a class="headerlink" href="#migrate-an-extraction-or-categorization-ai" title="Permalink to this headline">¶</a></h3>
+<p>This feature is only available for on-prem customers.</p>
+</section>
+<section id="download-extraction-ai-from-source-instance">
+<h3>Download extraction AI from source instance<a class="headerlink" href="#download-extraction-ai-from-source-instance" title="Permalink to this headline">¶</a></h3>
+<p>In a first step the extraction AI needs to be downloaded from the target Konfuzio instance. In order to download the extraction AI you need to be a superuser.
+The extraction AI can be downloaded from the superuser AI page.</p>
+<a class="reference external image-reference" href="./migration-between-konfuzio-server-instances/select_AI.png"><img alt="select_AI.png" src="../_images/select_AI.png" /></a>
+<p>Click on the extraction AI you want to migrate.</p>
+<a class="reference external image-reference" href="./migration-between-konfuzio-server-instances/download_AI.png"><img alt="download_AI.png" src="../_images/download_AI.png" /></a>
+<p>Download the AI file.</p>
+</section>
+<section id="upload-extraction-or-category-ai-to-target-instance">
+<h3>Upload Extraction or Category AI to target instance<a class="headerlink" href="#upload-extraction-or-category-ai-to-target-instance" title="Permalink to this headline">¶</a></h3>
+<p>Upload the downloaded extraction AI via superuser AI page.</p>
+<a class="reference external image-reference" href="./migration-between-konfuzio-server-instances/upload_AI.png"><img alt="upload_AI.png" src="../_images/upload_AI.png" /></a>
+</section>
+<section id="note">
+<h3>Note:<a class="headerlink" href="#note" title="Permalink to this headline">¶</a></h3>
+<p>In case of an Extraction AI, a target category needs to be chosen. A project relation is made by means of choosing a “project - category” relation in “Available Category”. No project should be assigned in the shown “Available projects” select box.
+In comparison for a Categorization AI the targe project has to be chosen from “Available projects”.</p>
+<a class="reference external image-reference" href="./migration-between-konfuzio-server-instances/create_label_sets.png"><img alt="create_label_sets.png" src="../_images/create_label_sets.png" /></a>
+<p>If you upload the extraction AI to a new project without the labels and label set, you need to enable “Create labels and templates” on the respective project.</p>
+</section>
+<section id="migrate-a-project">
+<h3>Migrate a Project<a class="headerlink" href="#migrate-a-project" title="Permalink to this headline">¶</a></h3>
+<p>Export the project data from the source Konfuzio server system.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">konfuzio_sdk</span>
+<span class="n">konfuzio_sdk</span> <span class="n">init</span>
+<span class="n">konfuzio_sdk</span> <span class="n">export_project</span> <span class="o">&lt;</span><span class="n">PROJECT_ID</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>The export will be saved in a folder with the name <a href="#id4"><span class="problematic" id="id5">data_</span></a><span class="raw-html-m2r"><project_id></span>. This folder needs to be transferred to the target system
+The first argument is the path to the export folder, the second is the project name of the imported project on the target system.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">project_import</span> <span class="s2">&quot;/konfuzio-target-system/data_123/&quot;</span> <span class="s2">&quot;NewProjectName&quot;</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id3">
+<h2>Environment Variables<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
 <section id="environment-variables-for-konfuzio-server">
-<h2>Environment Variables for Konfuzio Server<a class="headerlink" href="#environment-variables-for-konfuzio-server" title="Permalink to this headline">¶</a></h2>
+<h3>Environment Variables for Konfuzio Server<a class="headerlink" href="#environment-variables-for-konfuzio-server" title="Permalink to this headline">¶</a></h3>
 <p>Konfuzio Server is fully configured via environment variables, these can be passed as dedicated environment variables or a single .env to the Konfuzio Server containers (registry.gitlab.com/konfuzio/text-annotation/master). A template for a .env file is provided here:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span># False for production, True for local development (mandatory).
 # See https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-DEBUG
@@ -662,7 +718,7 @@ ALWAYS_GENERATE_SANDWICH_PDF=True
 </div>
 </section>
 <section id="environment-variables-for-read-api-container">
-<h2>Environment Variables for Read API Container<a class="headerlink" href="#environment-variables-for-read-api-container" title="Permalink to this headline">¶</a></h2>
+<h3>Environment Variables for Read API Container<a class="headerlink" href="#environment-variables-for-read-api-container" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span> # The Azure OCR API key (mandatory).
 AZURE_OCR_KEY=123456789
  # The URL of the READ API (mandatory).
@@ -673,7 +729,7 @@ AZURE_OCR_VERSION=v3.2
 </div>
 </section>
 <section id="environment-variables-for-detectron-container">
-<h2>Environment Variables for Detectron Container<a class="headerlink" href="#environment-variables-for-detectron-container" title="Permalink to this headline">¶</a></h2>
+<h3>Environment Variables for Detectron Container<a class="headerlink" href="#environment-variables-for-detectron-container" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span># Connect Broker (mandatory).
 BROKER_URL=
 # Connect result backend (mandatory).
@@ -693,6 +749,7 @@ TASK_ACKS_ON_FAILURE_OR_TIMEOUT=
 TASK_ACKS_LATE=
 </pre></div>
 </div>
+</section>
 </section>
 </section>
 
