@@ -416,7 +416,7 @@ Click `SSO` on login page to log in to Konfuzio using keycloak
 
 - The Keycloak admin user cannot login into Konfuzio Server.
 
-## Migrations AIs and Projects
+## Migrate AIs and Projects
 
 ### Migrate an Extraction or Categorization AI
 
