@@ -28,7 +28,9 @@ You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server
 - Make all List Views sortable by click on column ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9470)).
 
 ## Next Release
-- Coming Soon
+
+### Added
+- Save feedback that there are no Annotations for a Label/Label-Set combination in a document ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9163)).
 
 ## 2022-08-30_20-38-24
 
