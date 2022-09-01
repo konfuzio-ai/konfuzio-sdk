@@ -34,7 +34,7 @@ You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server
 
 ## 2022-08-30_20-38-24
 
-This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Capture Vue in version [0.0.8](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/). Per sprint we aim to have one relase.
+This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Capture Vue in version [0.0.8](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
 
 ### Added
 - [Auto-rotation for documents for all angles (until now only 90 degree angles have been supported).](https://help.konfuzio.com/modules/projects/index.html#automatically-rotate-documents)
