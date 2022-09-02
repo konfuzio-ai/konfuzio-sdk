@@ -319,11 +319,20 @@ may differ from the original. Office files can not be edited after they have bee
 
 The following content limits apply to Konfuzio SaaS.
 
-| Content limit                                                | Default Value          |
-| ------------------------------------------------------------ | ---------------------- |
-| Maximum image resolution (limit does not apply to PDF files) | 10 megapixels per page |
-| Maximum file size per request                                | not limited            |
-| Pages per Document                                           | 250 pages              |
+| Content limit                                                | Default Value                   |
+| ------------------------------------------------------------ | ------------------------------- |
+| Maximum image resolution (limit does not apply to PDF files) | megapixels not limited per page |
+| Maximum file size per request                                | not limited                     |
+| Maximum number of Pages per Document (synchronous requests)  | 250 pages                       |
+| Maximum number of Pages (batch/asynchronous requests)        | 250 pages                       |
+| Concurrent processor version training requests               | one per Category                |
+| Concurrent files processing per Project (Batch / Parallel)   | not limited                     |
+| Requests per minute                                          | not limited                     |
+| Synchronous requests process requests per minute             | not limited                     |
+| Asynchronous requests process requests per minute            | not limited                     |
+| Number of pages in active processing                         | not limited                     |
+| Review document requests per minute                          | not limited                     |
+
 
 If you would like to increase your content limits, submit request for your project as a [Support Ticket](https://konfuzio.com/en/support/).
 
