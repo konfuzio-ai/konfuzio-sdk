@@ -279,24 +279,57 @@ on-premise installation).
 
 ## Supported File Types
 
-Konfuzio supports various file types:
+### File Types
 
-### PDFs
+Konfuzio supports the following Document types.
+
+For information about file size and page limits, refer to the Content Limits, if you are using Konfuzio SaaS.
+
+| Name                                    | File Extension(s) | [MIME Type](https://www.iana.org/assignments/media-types/media-types.xhtml) |
+| --------------------------------------- | ----------------- | --------------------------------------------------------------------------- |
+| Portable Document Format (PDF)          | `.pdf`            | `application/pdf`                                                           |
+| Tag Image File Format (TIFF)            | `.tiff`, `.tif`   | `image/tiff`                                                                |
+| Joint Photographic Experts Group (JPEG) | `.jpg`, `.jpeg`   | `image/jpeg`                                                                |
+| Portable Network Graphics (PNG)         | `.png`            | `image/png`                                                                 |
+| Excel                                   | `.xls`, `.xlsx`   |  several, see details below                                                 |
+| PowerPoint                              | `.ppt`, `.pptx`   |  several, see details below                                                 |
+| Word                                    | `.doc`, `.docx`   |  several, see details below                                                 |
+
+
+Note that some of these image formats are "lossy" (for example, JPEG). Reducing file sizes for lossy formats may result in a degradation of image quality and accuracy of results from Konfuzio.
+
+#### PDFs
 
 Konfuzio supports PDF/A-1a, PDF/A-1b, PDF/A-2a, PDF/A-2b, PDF/A-3a, PDF/A-3b, PDF/X-1a, PDF/1.7, PDF/2.0. An attempt
 will be made to repair corrupted PDFs. Konfuzio does not support AcroForms and AEM (Adobe Experience Manager) form
 content.
 
-### Images
+#### Images
 
-Konfuzio supports JPEG and PNG (including support for alpha channel). _Support for TIFF is experimental._
+Konfuzio supports JPEG, TIFF and PNG (including support for alpha channel).
 
-### Office documents
+#### Office documents
 
 Konfuzio offers limited support for common office documents like Microsoft® Word (.doc, .docx), Excel (.xls, .xlsx),
 PowerPoint (.ppt, .pptx) and Publisher as well as the Open Document Format (ODF). Uploaded office documents are
 converted to PDFs by Konfuzio. Libre Office is used for the PDF conversion. The layout of the converted office document
 may differ from the original. Office files can not be edited after they have been uploaded.
+
+### Content limits
+
+The following content limits apply to Konfuzio SaaS.
+
+| Content limit                                                | Default Value          |
+| ------------------------------------------------------------ | ---------------------- |
+| Maximum image resolution (limit does not apply to PDF files) | 10 megapixels per page |
+| Maximum file size per request                                | not limited            |
+| Pages per Document                                           | 250 pages              |
+
+If you would like to increase your content limits, submit request for your project as a [Support Ticket](https://konfuzio.com/en/support/).
+
+### Document scan resolution
+
+For most accurate OCR results from Konfuzio, document scans should be a minimum of 200 dpi [(dots per inch)](https://en.wikipedia.org/wiki/Dots_per_inch). 300 dpi and higher will generally produce the best results.
 
 ## OCR Processing
 
