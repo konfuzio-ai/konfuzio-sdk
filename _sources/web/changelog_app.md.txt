@@ -32,7 +32,7 @@ You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server
 ### Added
 - Save feedback that there are no Annotations for a Label/Label-Set combination in a document ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9163)).
 
-## 2022-09-01_11-32-58
+## 2022-09-04_09-11-18
 
 This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Capture Vue in version [0.0.8](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
 
