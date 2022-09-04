@@ -1427,21 +1427,21 @@ def process_document_data(
             for index, substring_feature in enumerate(substring_features):
                 word_on_page_feature_list.append(substring_on_page(substring_feature, span, page_text_list))
                 word_on_page_feature_name_list.append(f'word_on_page_feat{index}')
-
-        if span.annotation.id_:
-            # Annotation
-            if (
-                span.annotation.is_correct
-                or (not span.annotation.is_correct and span.annotation.revised)
-                or (
-                    span.annotation.confidence
-                    and hasattr(span.annotation.label, 'threshold')
-                    and span.annotation.confidence > span.annotation.label.threshold
-                )
-            ):
-                pass
-            else:
-                logger.error(f'Annotation (ID {span.annotation.id_}) found that is not fit for the use in dataset!')
+        # if span.annotation.id_:
+        #     # Annotation
+        #     logger.error(f'{span}')
+        #     if (
+        #         span.annotation.is_correct
+        #         or (not span.annotation.is_correct and span.annotation.revised)
+        #         or (
+        #             span.annotation.confidence
+        #             and hasattr(span.annotation.label, 'threshold')
+        #             and span.annotation.confidence > span.annotation.label.threshold
+        #         )
+        #     ):
+        #         pass
+        #     else:
+        #         logger.error(f'Annotation (ID {span.annotation.id_}) found that is not fit for the use in dataset!')
 
         # find the line containing the annotation
         # tokenize that line to get all candidates
@@ -2706,6 +2706,24 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
             # todo check for tokenizer: self.tokenizer.tokenize(document)  # todo: do we need it?
             # todo check removed  if x.x0 and x.y0
             # todo: use NO_LABEL for any Annotation that has no Label, instead of keeping Label = None
+            for span in document.spans(use_correct=False):
+                if span.annotation.id_:
+                    # Annotation
+                    if (
+                        span.annotation.is_correct
+                        or (not span.annotation.is_correct and span.annotation.revised)
+                        or (
+                            span.annotation.confidence
+                            and hasattr(span.annotation.label, 'threshold')
+                            and span.annotation.confidence < span.annotation.label.threshold  # why "<" ?
+                        )
+                    ):
+                        pass
+                    else:
+                        logger.error(
+                            f'Annotation (ID {span.annotation.id_}) found that is not fit for the use in dataset!'
+                        )
+
             if retokenize:
                 virt_document = deepcopy(document)
                 self.tokenizer.tokenize(virt_document)
