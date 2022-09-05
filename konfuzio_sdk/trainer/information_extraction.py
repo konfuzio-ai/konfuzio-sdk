@@ -2709,17 +2709,20 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
             for span in document.spans(use_correct=False):
                 if span.annotation.id_:
                     # Annotation
+                    # we use "<" below because we don't want to have unconfirmed annotations in the training set,
+                    # and the ones below threshold wouldn't be considered anyway
                     if (
                         span.annotation.is_correct
                         or (not span.annotation.is_correct and span.annotation.revised)
                         or (
                             span.annotation.confidence
                             and hasattr(span.annotation.label, 'threshold')
-                            and span.annotation.confidence < span.annotation.label.threshold  # why "<" ?
+                            and span.annotation.confidence < span.annotation.label.threshold
                         )
                     ):
                         pass
                     else:
+                        # todo should we be raising an exception instead?
                         logger.error(
                             f'Annotation (ID {span.annotation.id_}) found that is not fit for the use in dataset!'
                         )
