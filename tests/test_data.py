@@ -19,6 +19,7 @@ from konfuzio_sdk.data import (
     download_training_and_test_data,
     Category,
     Page,
+    Bbox,
 )
 from konfuzio_sdk.utils import is_file
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID, TEST_PROJECT_ID
@@ -351,7 +352,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 43
+        assert len(cls.project.virtual_documents) == 47
 
     # def test_document_only_needs_project(self):
     #     """Test that a Document can be created without category"""
@@ -659,6 +660,50 @@ class TestOfflineDataSetup(unittest.TestCase):
         _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
         with pytest.raises(ValueError, match='has no width'):
             document.bboxes
+
+    def test_docs_with_same_bbox_hash(self):
+        """Test that bbox insertion order doesn't change the hash of the bboxes in a document."""
+        document1_bbox = {
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'},
+            '1': {'x0': 1, 'x1': 2, 'y0': 1, 'y1': 3, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'e'},
+        }
+        document1 = Document(project=self.project, category=self.category, text='hello', bbox=document1_bbox)
+        _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document1, start_offset=0, end_offset=1)
+        document2_bbox = {
+            '1': {'x0': 1, 'x1': 2, 'y0': 1, 'y1': 3, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'e'},
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'},
+        }
+        document2 = Document(project=self.project, category=self.category, text='hello', bbox=document2_bbox)
+        _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document2, start_offset=0, end_offset=1)
+        assert document1._bbox_hash == document2._bbox_hash
+
+    def test_document_text_modified(self):
+        """Test that we can detect changes in the text of a document."""
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
+        }
+        document = Document(
+            project=self.project, category=self.category, text='hello', bbox=document_bbox, strict_bbox_validation=True
+        )
+        _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
+        self.assertTrue(document.text)
+        self.assertFalse(document._check_text_or_bbox_modified())
+        document._text = "123" + document.text
+        self.assertTrue(document._check_text_or_bbox_modified())
+
+    def test_document_bbox_modified(self):
+        """Test that we can detect changes in the bboxes of a document."""
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
+        }
+        document = Document(
+            project=self.project, category=self.category, text='hello', bbox=document_bbox, strict_bbox_validation=True
+        )
+        page = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
+        self.assertTrue(document.bboxes)
+        self.assertFalse(document._check_text_or_bbox_modified())
+        document._characters[1] = Bbox(x0=1, x1=2, y0=1, y1=3, page=page, strict_validation=True)
+        self.assertTrue(document._check_text_or_bbox_modified())
 
     def test_document_spans(self):
         """Test getting spans from a Document."""
@@ -1488,8 +1533,10 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         # strings in prj take slightly less space than in a list
         assert _getsize([doc.text for doc in prj.documents]) + before < after + 500
 
+        # the text of the document is the only thing causing the size difference
         for document in prj.documents:
             document._text = None
+            document._text_hash = hash(None)
         assert _getsize(prj) == before
 
     def test_create_new_doc_via_text_and_bbox(self):
@@ -1714,7 +1761,27 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.assertTrue(virtual_doc.bboxes)
         virtual_doc._text = '123' + doc.text  # Change text to bring bbox out of sync.
         with pytest.raises(ValueError, match='Bbox provides Character "n" document text refers to "l"'):
+            virtual_doc.bboxes
+
+    def test_hashing_bboxes_faster_than_recalculation(self):
+        """Test that it's 100x faster to compare hashes of text and bboxes rathar than force recalculation of bboxes."""
+        import time
+
+        doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
+        virtual_doc = deepcopy(doc)
+        virtual_doc.bboxes
+
+        t0 = time.monotonic()
+        for _ in range(100):
+            virtual_doc.bboxes
+        t_hash = time.monotonic() - t0
+
+        t0 = time.monotonic()
+        for _ in range(100):
             virtual_doc.check_bbox()
+        t_recalculate = time.monotonic() - t0
+
+        assert t_hash / t_recalculate < 1 / 100
 
     @unittest.skip(reason='Waiting for API to support to add to default Annotation Set')
     def test_document_add_new_annotation(self):

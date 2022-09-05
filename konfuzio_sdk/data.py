@@ -97,12 +97,12 @@ class Page(Data):
         """Create a Page for a Document."""
         self.id_ = id_
         self.document = document
+        self.number = number
+        self.index = number - 1
         document.add_page(self)
         self.start_offset = start_offset
         self.end_offset = end_offset
         self.image = None
-        self.number = number
-        self.index = number - 1
         self._original_size = original_size
         self.width = self._original_size[0]
         self.height = self._original_size[1]
@@ -123,6 +123,10 @@ class Page(Data):
     def __hash__(self):
         """Define that one Page per Document is unique."""
         return (self.document, self.index)
+
+    def __eq__(self, other: 'Page') -> bool:
+        """Define how one Page is identical."""
+        return self.__hash__() == other.__hash__()
 
     def __repr__(self):
         """Return the name of the Document incl. the ID."""
@@ -1565,7 +1569,9 @@ class Document(Data):
 
         # use hidden variables to store low volume information in instance
         self._text: str = text
+        self._text_hash = hash(self._text)
         self._characters: Dict[int, Bbox] = None
+        self._bbox_hash = hash(self._characters)
         self._bbox_json = bbox
         self.bboxes_available: bool = True if (self.is_online or self._bbox_json) else False
         self._strict_bbox_validation = strict_bbox_validation
@@ -2028,10 +2034,21 @@ class Document(Data):
         return bbox
 
     @property
+    def _hashable_characters(self) -> Optional[frozenset]:
+        """Convert bbox dict into a hashable type."""
+        return frozenset(self._characters) if self._characters is not None else None
+
+    def _check_text_or_bbox_modified(self) -> bool:
+        """Check if either the document text or its bboxes have been modified in memory."""
+        text_modified = self._text_hash != hash(self._text)
+        bbox_modified = self._bbox_hash != hash(self._hashable_characters)
+        return text_modified or bbox_modified
+
+    @property
     def bboxes(self) -> Dict[int, Bbox]:
         """Use the cached bbox version."""
         warn('WIP: Modifications before the next stable release expected.', FutureWarning, stacklevel=2)
-        if self.bboxes_available and self._characters is None:
+        if self.bboxes_available and (self._characters is None or self._check_text_or_bbox_modified()):
             bbox = self.get_bbox()
             boxes = {}
             for character_index, box in bbox.items():
@@ -2052,6 +2069,7 @@ class Document(Data):
                     x0=x0, x1=x1, y0=y0, y1=y1, page=page, strict_validation=self._strict_bbox_validation
                 )
             self._characters = boxes
+            self._bbox_hash = hash(self._hashable_characters)
         return self._characters
 
     @property
@@ -2064,7 +2082,7 @@ class Document(Data):
         if is_file(self.txt_file_path, raise_exception=False):
             with open(self.txt_file_path, "r", encoding="utf-8") as f:
                 self._text = f.read()
-
+        self._text_hash = hash(self._text)
         return self._text
 
     def add_page(self, page: Page):
