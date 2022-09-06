@@ -2722,9 +2722,9 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
                     ):
                         pass
                     else:
-                        # todo should we be raising an exception instead?
                         logger.error(
-                            f'Annotation (ID {span.annotation.id_}) found that is not fit for the use in dataset!'
+                            f"{span.annotation} is unrevised in this dataset and may impact model performance!"
+                            f"Please revise it manually by either confirming it, rejecting it, or modifying it."
                         )
 
             if retokenize:

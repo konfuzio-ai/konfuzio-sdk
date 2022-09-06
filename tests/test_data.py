@@ -669,12 +669,14 @@ class TestOfflineDataSetup(unittest.TestCase):
         }
         document1 = Document(project=self.project, category=self.category, text='hello', bbox=document1_bbox)
         _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document1, start_offset=0, end_offset=1)
+        document1.set_text_bbox_hashes()
         document2_bbox = {
             '1': {'x0': 1, 'x1': 2, 'y0': 1, 'y1': 3, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'e'},
             '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'},
         }
         document2 = Document(project=self.project, category=self.category, text='hello', bbox=document2_bbox)
         _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document2, start_offset=0, end_offset=1)
+        document2.set_text_bbox_hashes()
         assert document1._bbox_hash == document2._bbox_hash
 
     def test_document_text_modified(self):
@@ -687,6 +689,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         )
         _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
         self.assertTrue(document.text)
+        document.set_text_bbox_hashes()
         self.assertFalse(document._check_text_or_bbox_modified())
         document._text = "123" + document.text
         self.assertTrue(document._check_text_or_bbox_modified())
@@ -701,6 +704,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         )
         page = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
         self.assertTrue(document.bboxes)
+        document.set_text_bbox_hashes()
         self.assertFalse(document._check_text_or_bbox_modified())
         document._characters[1] = Bbox(x0=1, x1=2, y0=1, y1=3, page=page, strict_validation=True)
         self.assertTrue(document._check_text_or_bbox_modified())
@@ -1536,7 +1540,6 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         # the text of the document is the only thing causing the size difference
         for document in prj.documents:
             document._text = None
-            document._text_hash = hash(None)
         assert _getsize(prj) == before
 
     def test_create_new_doc_via_text_and_bbox(self):
@@ -1759,9 +1762,10 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
         virtual_doc = deepcopy(doc)
         self.assertTrue(virtual_doc.bboxes)
+        virtual_doc.set_text_bbox_hashes()
         virtual_doc._text = '123' + doc.text  # Change text to bring bbox out of sync.
         with pytest.raises(ValueError, match='Bbox provides Character "n" document text refers to "l"'):
-            virtual_doc.bboxes
+            virtual_doc.check_bbox()
 
     def test_hashing_bboxes_faster_than_recalculation(self):
         """Test that it's 100x faster to compare hashes of text and bboxes rathar than force recalculation of bboxes."""
@@ -1773,6 +1777,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
         t0 = time.monotonic()
         for _ in range(100):
+            virtual_doc._check_text_or_bbox_modified()
             virtual_doc.bboxes
         t_hash = time.monotonic() - t0
 

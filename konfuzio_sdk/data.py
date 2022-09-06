@@ -1569,9 +1569,9 @@ class Document(Data):
 
         # use hidden variables to store low volume information in instance
         self._text: str = text
-        self._text_hash = hash(self._text)
+        self._text_hash = None
         self._characters: Dict[int, Bbox] = None
-        self._bbox_hash = hash(self._characters)
+        self._bbox_hash = None
         self._bbox_json = bbox
         self.bboxes_available: bool = True if (self.is_online or self._bbox_json) else False
         self._strict_bbox_validation = strict_bbox_validation
@@ -1669,12 +1669,24 @@ class Document(Data):
 
         return result
 
-    def check_bbox(self) -> bool:
-        """Please see get_bbox of the Document."""
-        warn('Deprecate: Modifications before the next stable release expected.', DeprecationWarning, stacklevel=2)
-        self._characters = None
-        _ = self.bboxes
-        return True
+    def check_bbox(self) -> None:
+        """
+        Run validation checks on the document text and bboxes.
+
+        This is run when the document is initialized, and usually it's not needed to be run again because a document's
+        text and bboxes are not expected to change within the Konfuzio Server.
+
+        You can run this manually instead if your pipeline allows changing the text or the bbox during the lifetime of
+        a document. Will raise ValueError if the bboxes don't match with the text of the document, or if bboxes have
+        invalid coordinates (outside page borders) or invalid size (negative width or height).
+
+        This check is usually slow, and it can be made faster by calling document.set_text_bbox_hashes() right after
+        initializing the document, which will enable running a hash comparison during this check.
+        """
+        warn('WIP: Modifications before the next stable release expected.', FutureWarning, stacklevel=2)
+        if self._check_text_or_bbox_modified():
+            self._characters = None
+            _ = self.bboxes
 
     def __deepcopy__(self, memo) -> 'Document':
         """Create a new Document of the instance."""
@@ -2038,6 +2050,11 @@ class Document(Data):
         """Convert bbox dict into a hashable type."""
         return frozenset(self._characters) if self._characters is not None else None
 
+    def set_text_bbox_hashes(self) -> None:
+        """Update hashes of document text and bboxes. Can be used for checking later on if any changes happened."""
+        self._text_hash = hash(self._text)
+        self._bbox_hash = hash(self._hashable_characters)
+
     def _check_text_or_bbox_modified(self) -> bool:
         """Check if either the document text or its bboxes have been modified in memory."""
         text_modified = self._text_hash != hash(self._text)
@@ -2048,7 +2065,7 @@ class Document(Data):
     def bboxes(self) -> Dict[int, Bbox]:
         """Use the cached bbox version."""
         warn('WIP: Modifications before the next stable release expected.', FutureWarning, stacklevel=2)
-        if self.bboxes_available and (self._characters is None or self._check_text_or_bbox_modified()):
+        if self.bboxes_available and self._characters is None:
             bbox = self.get_bbox()
             boxes = {}
             for character_index, box in bbox.items():
@@ -2069,7 +2086,6 @@ class Document(Data):
                     x0=x0, x1=x1, y0=y0, y1=y1, page=page, strict_validation=self._strict_bbox_validation
                 )
             self._characters = boxes
-            self._bbox_hash = hash(self._hashable_characters)
         return self._characters
 
     @property
@@ -2082,7 +2098,6 @@ class Document(Data):
         if is_file(self.txt_file_path, raise_exception=False):
             with open(self.txt_file_path, "r", encoding="utf-8") as f:
                 self._text = f.read()
-        self._text_hash = hash(self._text)
         return self._text
 
     def add_page(self, page: Page):
