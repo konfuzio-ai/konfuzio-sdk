@@ -2186,7 +2186,7 @@ class Document(Data):
     def regex(self, start_offset: int, end_offset: int, search=None, max_findings_per_page=100) -> List[str]:
         """Suggest a list of regex which can be used to get the Span of a document."""
         if search is None:
-            search = [2, 5, 10]
+            search = [1, 3, 5]  # [2, 5, 10]
         if start_offset < 0:
             raise IndexError(f'The start offset must be a positive number but is {start_offset}')
         if end_offset > len(self.text):
