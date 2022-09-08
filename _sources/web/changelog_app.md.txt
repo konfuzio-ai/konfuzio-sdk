@@ -20,7 +20,6 @@ You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server
 - Calculate and access Tokenizers via the web interface. The name Tokenizer might be revised. The SDK refers to this concept as Tokenizer. ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9271)).
 - Add a filter to the list of Documents to find Documents that need to be revised by humans. ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9242)).
 - Train custom Page-based Categorization AI via [SDK](https://github.com/konfuzio-ai/konfuzio-sdk/) ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9481)).
-- Sort Labels in Label-Sets to allow users to customize the UI per Category ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/8932)).
 - First stable release of Capture Vue in version [0.1.0](#).
 - Suggest page breaks if one file contains multiple Documents ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/7671)).
 - Redirect https://app.konfuzio.com/api/ to stable API Version 3 ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9692)).
@@ -31,6 +30,7 @@ You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server
 ### Added
 - Save feedback that there are no Annotations for a Label/Label-Set combination in a document ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9163)).
 - Superusers can define custom Roles for Members: Inviting Users can select from those Roles when inviting new Members to a Project. ([Internal Documentation](https://gitlab.com/konfuzio/manual/-/merge_requests/21/diffs), [Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/7364)).
+- Sort Labels in Label-Sets to allow users to customize the UI per Category ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/8932)).
 
 ## 2022-09-04_09-11-18
 
