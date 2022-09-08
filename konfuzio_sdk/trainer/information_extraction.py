@@ -2722,8 +2722,8 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
                     ):
                         pass
                     else:
-                        logger.error(
-                            f"{span.annotation} is unrevised in this dataset and may impact model performance!"
+                        raise ValueError(
+                            f"{span.annotation} is unrevised in this dataset and can't be used for training!"
                             f"Please revise it manually by either confirming it, rejecting it, or modifying it."
                         )
 

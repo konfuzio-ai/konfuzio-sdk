@@ -123,6 +123,22 @@ class TestDocumentEntityMultiClassModel(unittest.TestCase):
 
     def test_2_make_features(self):
         """Make sure the Data and Pipeline is configured."""
+        # we have intentional unrevised annotations in the Training set which will block feature calculation
+        with pytest.raises(ValueError, match="is unrevised in this dataset and can't be used for training"):
+            self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
+                documents=self.pipeline.documents
+            )
+        # if we set them as revised and rejected, the features can be calculated again
+        doc_with_unrevised_anns = self.project.get_document_by_id(44823)
+        unrevised_annotations = [
+            a
+            for a in doc_with_unrevised_anns.annotations(use_correct=False)
+            if not a.revised and not a.is_correct and a.confidence > 0.1
+        ]
+        expected_unrevised_ids = [9760937, 9647432]
+        for i, a in enumerate(unrevised_annotations):
+            assert a.id_ == expected_unrevised_ids[i]
+            a.revised = True
         self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
             documents=self.pipeline.documents
         )
@@ -195,6 +211,22 @@ class TestSeparateLabelsEntityMultiClassModel(unittest.TestCase):
 
     def test_2_make_features(self):
         """Make sure the Data and Pipeline is configured."""
+        # we have intentional unrevised annotations in the Training set which will block feature calculation
+        with pytest.raises(ValueError, match="is unrevised in this dataset and can't be used for training"):
+            self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
+                documents=self.pipeline.documents
+            )
+        # if we set them as revised and rejected, the features can be calculated again
+        doc_with_unrevised_anns = self.project.get_document_by_id(44823)
+        unrevised_annotations = [
+            a
+            for a in doc_with_unrevised_anns.annotations(use_correct=False)
+            if not a.revised and not a.is_correct and a.confidence > 0.1
+        ]
+        expected_unrevised_ids = [9760937, 9647432]
+        for i, a in enumerate(unrevised_annotations):
+            assert a.id_ == expected_unrevised_ids[i]
+            a.revised = True
         self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
             documents=self.pipeline.documents
         )
