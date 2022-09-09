@@ -2623,7 +2623,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         if self.use_separate_labels:
             res_dict = self.separate_labels(res_dict)
-        return res_dict
+
+        return extraction_result_to_document(document, res_dict)
 
     def merge_dict(self, res_dict: Dict, document) -> Dict:
         """WIP."""
@@ -2656,7 +2657,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
                 labels_threshold=label_threshold_dict,
             )
 
-        return extraction_result_to_document(document, merged_res_dict)
+        return merged_res_dict
 
     def separate_labels(self, res_dict: 'Dict') -> 'Dict':
         """
@@ -3035,1020 +3036,1020 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         return df_dict
 
 
-class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
-    """Encode visual and textual features to extract text regions.
-
-    Fit a extraction pipeline to extract linked Annotations.
-
-    Both Label and Label Set classifiers are using a RandomForestClassifier from scikit-learn to run in a low memory and
-    single CPU environment. A random forest classifier is a group of decision trees classifiers, see:
-    https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
-
-    The parameters of this class allow to select the Tokenizer, to configure the Label and Label Set classifiers and to
-    select the type of features used by the Label and Label Set classifiers.
-
-    They are divided in:
-    - tokenizer selection
-    - parametrization of the Label classifier
-    - parametrization of the Label Set classifier
-    - features for the Label classifier
-    - features for the Label Set classifier
-
-    By default, the text of the Documents is split into smaller chunks of text based on whitespaces
-    ('tokenizer_whitespace'). That means that all words present in the text will be shown to the AI. It is possible to
-    define if the splitting of the text into smaller chunks should be done based on regexes learned from the
-    Spans of the Annotations of the Category ('tokenizer_regex') or if to use a model from Spacy library for German
-    language ('tokenizer_spacy'). Another option is to use a pre-defined list of tokenizers based on regexes
-    ('tokenizer_regex_list') and, on top of the pre-defined list, to create tokenizers that match what is missed
-    by those ('tokenizer_regex_combination').
-
-    Some parameters of the scikit-learn RandomForestClassifier used for the Label and/or Label Set classifier
-    can be set directly in Konfuzio Server ('label_n_estimators', 'label_max_depth', 'label_class_weight',
-    'label_random_state', 'label_set_n_estimators', 'label_set_max_depth').
-
-    Features are measurable pieces of data of the Annotation. By default, a combination of features is used that
-    includes features built from the text of the Annotation ('string_features'), features built from the position of
-    the Annotation in the Document ('spatial_features') and features from the Spans created by a WhitespaceTokenizer on
-    the left or on the right of the Annotation ('n_nearest_left', 'n_nearest_right', 'n_nearest_across_lines).
-    It is possible to exclude any of them ('spatial_features', 'string_features', 'n_nearest_left', 'n_nearest_right')
-    or to specify the number of Spans created by a WhitespaceTokenizer to consider
-    ('n_nearest_left', 'n_nearest_right').
-
-    While extracting, the Label Set classifier takes the predictions from the Label classifier as input.
-    The Label Set classifier groups them intoAnnotation sets.
-    It is possible to define the confidence threshold for the predictions to be considered by the
-    Label Set classifier ('label_set_confidence_threshold'). However, the label_set_confidence_threshold is not applied
-    to the final predictions of the Extraction AI.
-    """
-
-    def __init__(
-        self,
-        n_nearest: int = 2,
-        first_word: bool = True,
-        n_estimators: int = 100,
-        max_depth: int = 100,
-        no_label_limit: Union[int, float, None] = None,
-        n_nearest_across_lines: bool = False,
-        *args,
-        **kwargs,
-    ):
-        """DocumentAnnotationModel."""
-        super().__init__(*args, **kwargs)
-        GroupAnnotationSets.__init__(self)
-        # self.label_list = None
-        self.label_feature_list = None
-
-        # If this is True use the generic regex generator
-        self.use_generic_regex = True
-        self.category: Category = None
-        self.n_nearest = n_nearest
-        self.first_word = first_word
-        self.max_depth = max_depth
-        self.n_estimators = n_estimators
-        self.no_label_limit = no_label_limit
-        self.n_nearest_across_lines = n_nearest_across_lines
-        self.train_split_percentage = None
-
-        self.substring_features = kwargs.get('substring_features', None)
-        self.catchphrase_features = kwargs.get('catchphrase_features', None)
-
-        self.regexes = None  # set later
-        self.tokenizer = None
-
-    def features(self, document: Document):
-        """Calculate features using the best working default values that can be overwritten with self values."""
-        df, _feature_list, _temp_df_raw_errors = process_document_data(
-            document=document,
-            spans=document.spans(use_correct=False),
-            n_nearest=self.n_nearest if hasattr(self, 'n_nearest') else 2,
-            first_word=self.first_word if hasattr(self, 'first_word') else True,
-            tokenize_fn=self.tokenizer.tokenize,  # todo: we are tokenizing the document multiple times
-            catchphrase_list=self.catchphrase_features if hasattr(self, 'catchphrase_features') else None,
-            substring_features=self.substring_features if hasattr(self, 'substring_features') else None,
-            n_nearest_across_lines=self.n_nearest_across_lines if hasattr(self, 'n_nearest_across_lines') else False,
-        )
-        return df, _feature_list, _temp_df_raw_errors
-
-    def extract(self, document: Document) -> 'Dict':
-        """
-        Infer information from a given Document.
-
-        :param text: HTML or raw text of document
-        :param bbox: Bbox of the document
-        :return: dictionary of labels and top candidates
-
-        :raises:
-         AttributeError: When missing a Tokenizer
-         NotFittedError: When CLF is not fitted
-
-        """
-        if self.tokenizer is None:
-            raise AttributeError(f'{self} missing Tokenizer.')
-
-        if self.clf is None and hasattr(self, 'label_clf'):  # Can be removed for models after 09.10.2020
-            self.clf = self.label_clf
-
-        if self.clf is None:
-            raise AttributeError(f'{self} does not provide a Label Classifier. Please add it.')
-        else:
-            check_is_fitted(self.clf)
-
-        # Main Logic -------------------------
-        # 1. start inference with new document
-        inference_document = deepcopy(document)
-        # 2. tokenize
-        self.tokenizer.tokenize(inference_document)
-        if not inference_document.spans():
-            logger.error(f'{self.tokenizer} does not provide Spans for {document}')
-            raise NotImplementedError('No error handling when Spans are missing.')
-        # 3. preprocessing
-        df, _feature_names, _raw_errors = self.features(inference_document)
-        try:
-            independet_variables = df[self.label_feature_list]
-        except KeyError:
-            raise KeyError(f'Features of {document} do not match the features of the pipeline.')
-            # todo calculate features of Document as defined in pipeline and do not check afterwards
-        # 4. prediction and store most likely prediction and its accuracy in separated columns
-        results = pandas.DataFrame(data=self.clf.predict_proba(X=independet_variables), columns=self.clf.classes_)
-
-        # Remove no_label predictions
-        if 'NO_LABEL' in results.columns:
-            results = results.drop(['NO_LABEL'], axis=1)
-
-        if 'NO_LABEL_SET' in results.columns:
-            results = results.drop(['NO_LABEL_SET'], axis=1)
-
-        df['label_text'] = results.idxmax(axis=1)
-        df['Accuracy'] = results.max(axis=1)
-        # 5. Translation
-        df['Translated_Candidate'] = df['offset_string']  # todo: make translation explicit: It's a cool Feature
-        # Main Logic -------------------------
-
-        # Do column renaming to be compatible with text-annotation
-        # todo: how can multilines be created via SDK
-        # todo: why do we need to adjust the woring for Server?
-        # todo: which other attributes could be send in the extraction method?
-        df.rename(
-            columns={
-                'start_offset': 'Start',
-                'end_offset': 'End',
-                'page_index': 'page_index',
-                'offset_string': 'Candidate',
-                'regex': 'Regex',
-                'threshold': 'OptimalThreshold',
-            },
-            inplace=True,
-        )
-
-        # Convert DataFrame to Dict with labels as keys and label dataframes as value.
-        res_dict = {}
-        for label_text in set(df['label_text']):
-            label_df = df[df['label_text'] == label_text].copy()
-            if not label_df.empty:
-                res_dict[label_text] = label_df
-
-        # Filter results that are bellow the extract threshold
-        # (helpful to reduce the size in case of many predictions/ big documents)
-        if hasattr(self, 'extract_threshold') and self.extract_threshold is not None:
-            logger.info('Filtering res_dict')
-            for label, value in res_dict.items():
-                if isinstance(value, pandas.DataFrame):
-                    res_dict[label] = value[value['Accuracy'] > self.extract_threshold]
-
-        # Try to calculate sections based on template classifier.
-        if hasattr(self, 'template_clf'):  # todo smarter handling of multiple clf
-            res_dict = self.extract_template_with_clf(inference_document.text, res_dict)
-
-        # place annotations back
-        # document._annotations = doc_annotations
-
-        return res_dict
-
-    # def create_candidates_dataset(self, *args, **kwargs):
-    #     """
-    #     Build DocumentAnnotation Model for this project.
-    #
-    #     :param klass: Custom DocumentAnnotationModel e.g. Invoice(DocumentAnnotationModel)
-    #     :return: path to the pickled document model as str
-    #     """
-    #     if self.use_generic_regex:
-    #         for label in self.labels:
-    #             label.regex(multiprocessing=self.multiprocessing)
-    #         self.regexes = [regex for label in self.labels for regex in label.regex()]
-    #     # Use default entity generating regex if there a no regexes at hand.
-    #     else:
-    #         self.regexes = ['[^ \n\t\f]+']
-    #
-    #     if not hasattr(self, 'no_label_limit'):
-    #         self.no_label_limit = None
-    #
-    #     self.df_train, self.label_feature_list = self.feature_function(
-    #         documents=self.documents, no_label_limit=self.no_label_limit
-    #     )
-    #
-    #     if self.df_train.empty:
-    #         logger.warning('df_train is empty! No training data found.')
-    #         return None
-    #
-    #     self.df_test, test_label_feature_list = self.feature_function(
-    #         documents=self.test_documents, no_label_limit=self.no_label_limit
-    #     )
-    #
-    #     if not self.df_test.empty:
-    #         assert self.label_feature_list == test_label_feature_list
-    #
-    #     # updates the label_feature_list according to the outdated_feature_list
-    #     outdated_features_list = ['feat_date_count']
-    #     for outdated_feature in outdated_features_list:
-    #         self.label_feature_list = [feat for feat in self.label_feature_list if outdated_feature not in feat]
-    #
-    #     return self
-
-    def lose_weight(self):
-        """Lose weight before pickling."""
-        super().lose_weight()
-
-        # remove documents
-        self.documents = None
-        self.test_documents = None
-
-    def label_train_document(self, virtual_document: Document, original_document: Document):
-        """Assign labels to Annotations in newly tokenized virtual training document."""
-        doc_spans = original_document.spans(use_correct=True)
-        s_i = 0
-        for span in virtual_document.spans():
-            while s_i < len(doc_spans) and span.start_offset > doc_spans[s_i].end_offset:
-                s_i += 1
-            if s_i >= len(doc_spans):
-                break
-            if span.end_offset < doc_spans[s_i].start_offset:
-                continue
-
-            r = range(doc_spans[s_i].start_offset, doc_spans[s_i].end_offset + 1)
-            if span.start_offset in r and span.end_offset in r:
-                span.annotation.label = doc_spans[s_i].annotation.label
-
-    def feature_function(
-        self, documents: List[Document], no_label_limit=None, retokenize=True
-    ) -> Tuple[List[pandas.DataFrame], list]:
-        """Calculate features per Span of Annotations.
-
-        :param documents: List of documents to extract features from.
-        :param no_label_limit: Int or Float to limit number of new annotations to create during tokenization.
-        :param retokenize: Bool for whether to recreate annotations from scratch or use already existing annotations.
-        :return: Dataframe of features and list of feature names.
-        """
-        logger.info('Start generating features.')
-        df_real_list = []
-        df_raw_errors_list = []
-        feature_list = []
-
-        # todo make regex Tokenizer optional as those will be saved by the Server
-        # if not hasattr(self, 'regexes'):  # Can be removed for models after 09.10.2020
-        #    self.regexes = [regex for label_model in self.labels for regex in label_model.label.regex()]
-
-        for document in documents:
-            # todo check for tokenizer: self.tokenizer.tokenize(document)  # todo: do we need it?
-            # todo check removed  if x.x0 and x.y0
-            # todo: use NO_LABEL for any Annotation that has no Label, instead of keeping Label = None
-            for span in document.spans(use_correct=False):
-                if span.annotation.id_:
-                    # Annotation
-                    # we use "<" below because we don't want to have unconfirmed annotations in the training set,
-                    # and the ones below threshold wouldn't be considered anyway
-                    if (
-                        span.annotation.is_correct
-                        or (not span.annotation.is_correct and span.annotation.revised)
-                        or (
-                            span.annotation.confidence
-                            and hasattr(span.annotation.label, 'threshold')
-                            and span.annotation.confidence < span.annotation.label.threshold
-                        )
-                    ):
-                        pass
-                    else:
-                        raise ValueError(
-                            f"{span.annotation} is unrevised in this dataset and can't be used for training!"
-                            f"Please revise it manually by either confirming it, rejecting it, or modifying it."
-                        )
-
-            if retokenize:
-                virt_document = deepcopy(document)
-                self.tokenizer.tokenize(virt_document)
-                self.label_train_document(virt_document, document)
-                document = virt_document
-            else:
-                self.tokenizer.tokenize(document)
-
-            no_label_annotations = document.annotations(use_correct=False, label=document.project.no_label)
-            label_annotations = [x for x in document.annotations(use_correct=False) if x.label.id_ is not None]
-
-            # We calculate features of documents as long as they have IDs, even if they are offline.
-            # The assumption is that if they have an ID, then the data came either from the API or from the DB.
-            if document.id_ is None and document.copy_of_id is None:
-                # inference time todo reduce shuffled complexity
-                assert (
-                    not label_annotations
-                ), "Documents that don't come from the server have no human revised Annotations."
-                raise NotImplementedError(
-                    f'{document} does not come from the server, please use process_document_data function.'
-                )
-            else:
-                # training time: todo reduce shuffled complexity
-                if isinstance(no_label_limit, int):
-                    n_no_labels = no_label_limit
-                elif isinstance(no_label_limit, float):
-                    n_no_labels = int(len(label_annotations) * no_label_limit)
-                else:
-                    assert no_label_limit is None
-
-                if no_label_limit is not None:
-                    no_label_annotations = self.get_best_no_label_annotations(
-                        n_no_labels, label_annotations, no_label_annotations
-                    )
-                    logger.info(
-                        f'Document {document} NO_LABEL annotations has been reduced to {len(no_label_annotations)}'
-                    )
-
-            logger.info(f'Document {document} has {len(label_annotations)} labeled annotations')
-            logger.info(f'Document {document} has {len(no_label_annotations)} NO_LABEL annotations')
-
-            # todo: check if eq method of Annotation prevents duplicates
-            # annotations = self._filter_annotations_for_duplicates(label_annotations + no_label_annotations)
-
-            t0 = time.monotonic()
-
-            temp_df_real, _feature_list, temp_df_raw_errors = self.features(document)
-
-            logger.info(f'Document {document} processed in {time.monotonic() - t0:.1f} seconds.')
-
-            feature_list += _feature_list
-            df_real_list.append(temp_df_real)
-            df_raw_errors_list.append(temp_df_raw_errors)
-
-        feature_list = list(dict.fromkeys(feature_list))  # remove duplicates while maintaining order
-
-        if df_real_list:
-            df_real_list = pandas.concat(df_real_list).reset_index(drop=True)
-        else:
-            raise NotImplementedError  # = pandas.DataFrame()
-
-        return df_real_list, feature_list
-
-    # def get_best_no_label_annotations(
-    #     self, n_no_labels: int, label_annotations: List[Annotation], no_label_annotations: List[Annotation]
-    # ) -> List[Annotation]:
-    #     """Select no_label annotations which are probably most beneficial for training."""
-    #     # store our chosen "best" NO_LABELS
-    #     best_no_label_annotations = []
-    #
-    #     # get all the real label offset strings and offsets
-    #     label_texts = set([a.offset_string for a in label_annotations])
-    #     offsets = set([(a.start_offset, a.end_offset) for a in label_annotations])
-    #
-    #     _no_label_annotations = []
-    #
-    #     random.shuffle(no_label_annotations)
-    #
-    #     # for every NO_LABEL that has an exact string match (but not an offset match)
-    #     # to a real label, we add it to the best_no_label_annotations
-    #     for annotation in no_label_annotations:
-    #         offset_string = annotation.offset_string
-    #         start_offset = annotation.start_offset
-    #         end_offset = annotation.end_offset
-    #         if offset_string in label_texts and (start_offset, end_offset) not in offsets:
-    #             best_no_label_annotations.append(annotation)
-    #         else:
-    #             _no_label_annotations.append(annotation)
-    #
-    #     # if we have enough NO_LABELS, we stop here
-    #     if len(best_no_label_annotations) >= n_no_labels:
-    #         return best_no_label_annotations[:n_no_labels]
-    #
-    #     no_label_annotations = _no_label_annotations
-    #     _no_label_annotations = collections.defaultdict(list)
-    #
-    #     # if we didn't have enough exact matches then we want our NO_LABELS to be the same
-    #     # data_type as our real labels
-    #     # we count the amount of each data_type in the real labels
-    #     # then calculate how many NO_LABEL of each data_type we need
-    #     data_type_count = collections.Counter()
-    #     data_type_count.update([a.label.data_type for a in label_annotations])
-    #     for data_type, count in data_type_count.items():
-    #         data_type_count[data_type] = n_no_labels * count / len(label_annotations)
-    #
-    #     random.shuffle(no_label_annotations)
-    #
-    #     # we now loop through the NO_LABELS that weren't exact matches and add them to
-    #     # the _no_label_annotations dict if we still need more of that data_type
-    #     # any that belong to a different data_type are added under the 'extra' key
-    #     for annotation in no_label_annotations:
-    #         data_type = self.predict_data_type(annotation)
-    #         if data_type in data_type_count:
-    #             if len(_no_label_annotations[data_type]) < data_type_count[data_type]:
-    #                 _no_label_annotations[data_type].append(annotation)
-    #             else:
-    #                 _no_label_annotations['extra'].append(annotation)
-    #         else:
-    #             _no_label_annotations['extra'].append(annotation)
-    #
-    #     # we now add the NO_LABEL annotations with the desired data_type to our
-    #     # "best" NO_LABELS
-    #     for data_type, _ in data_type_count.most_common():
-    #         best_no_label_annotations.extend(_no_label_annotations[data_type])
-    #
-    #     random.shuffle(best_no_label_annotations)
-    #
-    #     if len(best_no_label_annotations) >= n_no_labels:
-    #         return best_no_label_annotations[:n_no_labels]
-    #
-    #     # if we still didn't have enough we append the 'extra' NO_LABEL annotations here
-    #     best_no_label_annotations.extend(_no_label_annotations['extra'])
-    #
-    #     # we don't shuffle before we trim the array here so the 'extra' NO_LABEL annotations
-    #     # are the ones being cut off at the end
-    #     return best_no_label_annotations[:n_no_labels]
-    #
-    # def train_valid_split(self):
-    #     """Split documents randomly into valid and train data."""
-    #     logger.info('Splitting into train and valid')
-    #
-    #     logger.info('Setting NO_LABEL in df_train')
-    #     self.df_train.loc[~self.df_train.is_correct, 'label_text'] = 'NO_LABEL'
-    #
-    #     # if we don't want to split into train/valid then set df_valid to empty df
-    #     if self.train_split_percentage == 1:
-    #         self.df_valid = pandas.DataFrame()
-    #     else:
-    #         # else, first find labels which only appear once so can't be stratified
-    #         single_labels = [lbl for (lbl, cnt) in self.df_train['label_text'].value_counts().items() if cnt <= 1]
-    #         if single_labels:
-    #             # if we find any, add to df_singles df
-    #             logger.info(f'Following labels appear only once in df_train so are not in df_valid: {single_labels}')
-    #             df_singles = self.df_train.groupby('label_text').filter(lambda x: len(x) == 1)
-    #
-    #         # drop labels that only appear once in df_train as they cannot be stratified
-    #         self.df_train = self.df_train.groupby('label_text').filter(lambda x: len(x) > 1)
-    #
-    #         # do stratified split
-    #         self.df_train, self.df_valid = train_test_split(
-    #             self.df_train,
-    #             train_size=self.train_split_percentage,
-    #             stratify=self.df_train['label_text'],
-    #             random_state=1,
-    #         )
-    #
-    #         # if we found any single labels, add them back to df_train
-    #         if single_labels:
-    #             self.df_train = pandas.concat([self.df_train, df_singles])
-    #
-    #     if self.df_train.empty:
-    #         raise Exception('Not enough data to train an AI model.')
-    #
-    #     if self.df_train[self.label_feature_list].isnull().values.any():
-    #         raise Exception('Sample with NaN within the training data found! Check code!')
-    #
-    #     if not self.df_valid.empty:
-    #         if self.df_valid[self.label_feature_list].isnull().values.any():
-    #             raise Exception('Sample with NaN within the validation data found! Check code!')
-
-    def fit(self) -> RandomForestClassifier:
-        """Given training data and the feature list this function returns the trained regression model."""
-        logger.info('Start training of Multi-class Label Classifier.')
-
-        # balanced gives every label the same weight so that the sample_number doesn't effect the results
-        self.clf = RandomForestClassifier(
-            class_weight="balanced", n_estimators=self.n_estimators, max_depth=self.max_depth, random_state=420
-        )
-
-        self.clf.fit(self.df_train[self.label_feature_list], self.df_train['label_text'])
-
-        self.fit_template_clf()
-
-        return self.clf
-
-    def evaluate_full(self, strict: bool = True) -> Evaluation:
-        """Evaluate the full pipeline on the pipeline's Test Documents."""
-        eval_list = []
-        for document in self.test_documents:
-            extraction_result = self.extract(document=document)
-            predicted_doc = extraction_result_to_document(document, extraction_result)
-            eval_list.append((document, predicted_doc))
-
-        self.evaluation = Evaluation(eval_list, strict=strict)
-
-        return self.evaluation
-
-    def evaluate(self):
-        """
-        Evaluate the label classifier on a given DataFrame.
-
-        Evaluates by computing the accuracy, balanced accuracy and f1-score across all labels
-        plus the f1-score, precision and recall across each label individually.
-        """
-        # copy the df as we do not want to modify it
-        df = self.df_test.copy()
-
-        # get probability of each class
-        _results = pandas.DataFrame(
-            data=self.clf.predict_proba(X=df[self.label_feature_list]), columns=self.clf.classes_
-        )
-
-        # get predicted label index over all classes
-        predicted_label_list = list(_results.idxmax(axis=1))
-        # get predicted label probability over all classes
-        accuracy_list = list(_results.max(axis=1))
-
-        # get another dataframe with only the probability over the classes that aren't NO_LABEL
-        _results_only_label = pandas.DataFrame()
-        if 'NO_LABEL' in _results.columns:
-            _results_only_label = _results.drop(['NO_LABEL'], axis=1)
-
-        if _results_only_label.shape[1] > 0:
-            # get predicted label index over all classes that are not NO_LABEL
-            only_label_predicted_label_list = list(_results_only_label.idxmax(axis=1))
-            # get predicted label probability over all classes that are not NO_LABEL
-            only_label_accuracy_list = list(_results_only_label.max(axis=1))
-
-            # for each predicted label (over all classes)
-            for index in range(len(predicted_label_list)):
-                # if the highest probability to a non NO_LABEL class is >=0.2, we say it predicted that class instead
-                # replace predicted label index and probability
-                if only_label_accuracy_list[index] >= 0.2:  # todo: why 0.2
-                    predicted_label_list[index] = only_label_predicted_label_list[index]
-                    accuracy_list[index] = only_label_accuracy_list[index]
-        else:
-            logger.info('\n[WARNING] _results_only_label is empty.\n')
-
-        # add a column for predicted label index
-        df.insert(loc=0, column='predicted_label_text', value=predicted_label_list)
-
-        # add a column for prediction probability (not actually accuracy)
-        df.insert(loc=0, column='Accuracy', value=accuracy_list)
-
-        # get and sort the importance of each feature
-        feature_importances = self.clf.feature_importances_
-
-        feature_importances_list = sorted(
-            list(zip(self.label_feature_list, feature_importances)), key=lambda item: item[1], reverse=True
-        )
-
-        # computes the general metrics, i.e. across all labels
-        y_true = df['label_text']
-        y_pred = df['predicted_label_text']
-
-        # gets accuracy, balanced accuracy and f1-score over all labels
-        results_general = {
-            'label': 'general/all annotations',
-            'accuracy': accuracy_score(y_true, y_pred),
-            'balanced accuracy': balanced_accuracy_score(y_true, y_pred),
-            'f1-score': f1_score(y_true, y_pred, average='weighted'),
-        }
-
-        # gets accuracy, balanced accuracy and f1-score over all labels (except for 'NO_LABEL'/'NO_LABEL')
-        y_true_filtered = []
-        y_pred_filtered = []
-        for s_true, s_pred in zip(y_true, y_pred):
-            if not (s_true == 'NO_LABEL' and s_pred == 'NO_LABEL'):
-                y_true_filtered.append(s_true)
-                y_pred_filtered.append(s_pred)
-        results_general_filtered = {
-            'label': 'all annotations except TP of NO_LABEL',
-            'accuracy': accuracy_score(y_true_filtered, y_pred_filtered),
-            'balanced accuracy': balanced_accuracy_score(y_true_filtered, y_pred_filtered),
-            'f1-score': f1_score(y_true_filtered, y_pred_filtered, average='weighted'),
-        }
-
-        # compute all metrics again, but per label
-        labels = list(set(df['label_text']))
-        precision, recall, fscore, support = precision_recall_fscore_support(y_pred, y_true, labels=labels)
-
-        # store results for each label
-        results_labels_list = []
-
-        for i, label in enumerate(labels):
-            results = {
-                'label': label,
-                'accuracy': None,
-                'balanced accuracy': None,
-                'f1-score': fscore[i],
-                'precision': precision[i],
-                'recall': recall[i],
-            }
-            results_labels_list.append(results)
-
-        # sort results for each label in descending order by their f1-score
-        results_labels_list_sorted = sorted(results_labels_list, key=lambda k: k['f1-score'], reverse=True)
-
-        # combine general results and label specific results into one dict
-        results_summary = {
-            'general': results_general,
-            'general_filtered': results_general_filtered,
-            'label-specific': results_labels_list_sorted,
-        }
-
-        # get the probability_distribution
-        prob_dict = self._get_probability_distribution(df, start_from=0.2)
-        prob_list = [(k, v) for k, v in prob_dict.items()]
-        prob_list.sort(key=lambda tup: tup[0])
-        df_prob = pandas.DataFrame(prob_list, columns=['Range of predicted Accuracy', 'Real Accuracy in this range'])
-
-        # log results and feature importance and probability distribution as tables
-        logger.info(
-            '\n'
-            + tabulate(
-                pandas.DataFrame([results_general, results_general_filtered] + results_labels_list_sorted),
-                floatfmt=".1%",
-                headers="keys",
-                tablefmt="pipe",
-            )
-            + '\n'
-        )
-
-        logger.info(
-            '\n'
-            + tabulate(
-                pandas.DataFrame(feature_importances_list, columns=['feature_name', 'feature_importance']),
-                floatfmt=".4%",
-                headers="keys",
-                tablefmt="pipe",
-            )
-            + '\n'
-        )
-
-        logger.info('\n' + tabulate(df_prob, floatfmt=".2%", headers="keys", tablefmt="pipe") + '\n')
-
-        return results_summary
-
-    def _get_probability_distribution(self, df, start_from=0.2):
-        """Calculate the probability distribution according to the range of confidence."""
-        # group by accuracy
-        step_size = 0.1
-        step_list = numpy.arange(start_from, 1 + step_size, step_size)
-        df_dict = {}
-        for index, step in enumerate(step_list):
-            if index + 1 < len(step_list):
-                lower_bound = round(step, 2)
-                upper_bound = round(step_list[index + 1], 2)
-                df_range = df[df['Accuracy'].between(lower_bound, upper_bound)]
-                df_range_acc = accuracy_score(df_range['label_text'], df_range['predicted_label_text'])
-                df_dict[str(lower_bound) + '-' + str(upper_bound)] = df_range_acc
-
-        return df_dict
-
-    # def _filter_annotations_for_duplicates(self, doc_annotations_list: List['Annotation']):
-    #     """
-    #     Filter the annotations for duplicates.
-    #
-    #     A duplicate is characterized by having the same start_offset,
-    #     end_offset and label_text. Duplicates have to be filtered as there should be only one logical truth per
-    #     specific text_offset and label.
-    #     """
-    #     annotations_filtered = []
-    #     res = collections.defaultdict(list)
-    #
-    #     for annotation in doc_annotations_list:
-    #         key = f'{annotation.start_offset}"_"{annotation.end_offset}'
-    #         res[key].append(annotation)
-    #
-    #     annotations_bundled = list(res.values())
-    #     for annotation_cluster in annotations_bundled:
-    #         if len(annotation_cluster) > 1:
-    #             found = False
-    #             for annotation in annotation_cluster:
-    #                 if annotation.is_correct is True:
-    #                     found = True
-    #                     annotations_filtered.append(annotation)
-    #
-    #             if found is False:
-    #                 annotations_filtered.append(annotation_cluster[0])
-    #
-    #         else:
-    #             annotations_filtered.append(annotation_cluster[0])
-    #
-    #     return annotations_filtered
-
-
-class SeparateLabelsAnnotationMultiClassModel(DocumentAnnotationMultiClassModel):
-    """
-    Model that should be used when we want to treat labels shared by different templates as different labels.
-
-    The extract method needs to undo the changes done in the labels of the project (project.separate_labels()).
-    """
-
-    def __init__(self, *args, **kwargs):
-        """Initialize DocumentEntityMulticlassModel."""
-        DocumentAnnotationMultiClassModel.__init__(self, *args, **kwargs)
-
-    def extract(self, document: Document) -> 'Dict':
-        """
-        Undo the renaming of the labels when using project.separate_labels().
-
-        In this way we have the output of the extraction in the correct format.
-        """
-        res_dict = DocumentAnnotationMultiClassModel.extract(self, document=document)
-
-        new_res = {}
-        for key, value in res_dict.items():
-            # if the value is a list, is because the key corresponds to a section label with multiple sections
-            # the key has already the name of the section label
-            # we need to go to each element of the list, which is a dictionary, and
-            # rewrite the label name (remove the section label name) in the keys
-            if isinstance(value, list):
-                section_label = key
-                if section_label not in new_res.keys():
-                    new_res[section_label] = []
-
-                for found_section in value:
-                    new_found_section = {}
-                    for label, df in found_section.items():
-                        if '__' in label:
-                            label = label.split('__')[1]
-                            df.label_text = label
-                            df.label = label
-                        new_found_section[label] = df
-
-                    new_res[section_label].append(new_found_section)
-
-            # if the value is a dictionary, is because he key corresponds to a section label without multiple sections
-            # we need to rewrite the label name (remove the section label name) in the keys
-            elif isinstance(value, dict):
-                section_label = key
-                if section_label not in new_res.keys():
-                    new_res[section_label] = {}
-
-                for label, df in value.items():
-                    if '__' in label:
-                        label = label.split('__')[1]
-                        df.label_text = label
-                        df.label = label
-                    new_res[section_label][label] = df
-
-            # otherwise the value must be directly a dataframe and it will correspond to the default section
-            # can also correspond to labels which the template clf couldn't attribute to any template.
-            # so we still check if we have the changed label name
-            elif '__' in key:
-                section_label = key.split('__')[0]
-                if section_label not in new_res.keys():
-                    new_res[section_label] = {}
-                key = key.split('__')[1]
-                value.label_text = key
-                value.label = key
-                # if the section label already exists and allows multi sections
-                if isinstance(new_res[section_label], list):
-                    new_res[section_label].append({key: value})
-                else:
-                    new_res[section_label][key] = value
-            else:
-                new_res[key] = value
-
-        return new_res
-
-
-class DocumentEntityMulticlassModel(DocumentAnnotationMultiClassModel, GroupAnnotationSets):
-    """Creates Annotations by extracting all entities and then finding which overlap with existing annotations."""
-
-    def __init__(self, *args, **kwargs):
-        """Initialize DocumentEntityMulticlassModel."""
-        DocumentAnnotationMultiClassModel.__init__(self, *args, **kwargs)
-
-        self.use_generic_regex = False
-        self.multiline_labels = []
-
-        # set tokenizer if it wasn't set already
-        if not hasattr(self, "tokenizer"):
-            self.tokenizer = WhitespaceTokenizer()
-
-    # def get_annotations(self):
-    #     """Convert Documents to entities."""
-    #     logger.info('Getting annotations')
-    #
-    #     # loop over each document and test document
-    #     for document in self.documents + self.test_documents:
-    #         document = self.tokenizer.tokenize(document)
-    #
-    #         # flush existing annotations
-    #         annotations = document._annotations
-    #         document._annotations = []
-    #
-    #         # check for multiline annotations
-    #         annotations = split_multiline_annotations(annotations, self.multiline_labels)
-    #
-    #         # flush annotations added during split of multiline
-    #         document._annotations = []
-    #
-    #         # get exact matches
-    #         matches = document.annotations()
-    #         remaining_annotations = list(set(document.annotations(use_correct=False))-set(document.annotations()))
-    # matches, remaining_annotations, remaining_entities = self.get_exact_matches_and_filter_mached(
-    #     annotations, document.annotations()
-    # )
-
-    # get entity matches for the rest
-    # (only call after the first one as this filters out annotations with no start and/or end offset)
-    # matches += self.get_entity_matches(remaining_annotations, remaining_entities)
-
-    # convert the matches to annotations and add them to the document
-    # self.add_matches_as_document_annotation(matches, document)
-
-    # logger.info('All annotations processed.')
-
-    # def add_matches_as_document_annotation(self, matches, document):
-    #     """Convert a match into a fitting annotation."""
-    #     # get document bbox for creating annotations
-    #     bbox = document.get_bbox()
-    #
-    #     # go through the matches
-    #     for match in matches:
-    #         # create annotation from entity
-    #         e = Annotation(
-    #             start_offset=match['entity']['start_offset'],
-    #             end_offset=match['entity']['end_offset'],
-    #             document=document,
-    #             bbox=get_bbox(
-    #                 bbox, start_offset=match['entity']['start_offset'], end_offset=match['entity']['end_offset']
-    #             ),
-    #         )
-    #
-    #         # set the corresponding attributes for the entity annotation to match that of the actual annotation
-    #         for key, value in match['annotation'].__dict__.items():
-    #             if key in ['start_offset', 'end_offset', 'offset_string', 'offset_string_original']:
-    #                 continue
-    #             setattr(e, key, value)
-    #
-    #         # add the entity as an annotation to the document
-    #         document.add_annotation(e)
-
-    # def get_exact_matches_and_filter_mached(self, annotations, entities) -> Tuple[List[Dict], List[Dict]]:
-    #     """
-    #     Only give back annotation-entity combinations that are considered exact.
-    #
-    #     This is the case if annotation spans the entire entity (or more).
-    #     If an annotation is not completely exactly matched, add it to the unmatched list
-    #     """
-    #     unmachted_list = []
-    #     match_list = []
-    #     matched_entities = []
-    #
-    #     for annotation in annotations:
-    #
-    #         # filter out annotations with missing start or end offset
-    #         if annotation.start_offset is None or annotation.end_offset is None:
-    #             continue
-    #
-    #         start_found = False
-    #         end_found = False
-    #         for entity in entities:
-    #             # check if the annotation spans the whole entity
-    #             if entity['start_offset'] >= annotation.
-    #             start_offset and entity['end_offset'] <= annotation.end_offset:
-    #                 match_list.append({'entity': entity, 'annotation': annotation})
-    #
-    #                 # you can't just remove the entity because that causes the iterator to jump by one
-    #                 matched_entities.append(entity)
-    #
-    #                 # update start and end found
-    #                 if entity['start_offset'] == annotation.start_offset:
-    #                     start_found = True
-    #                 if entity['end_offset'] == annotation.end_offset:
-    #                     end_found = True
-    #
-    #             # if we go past the annotation end, stop looking for entities (assuming they are in order)
-    #             elif entity['start_offset'] > annotation.end_offset:
-    #                 break
-    #
-    #         # see if the annotation was completly machted
-    #         if not (start_found and end_found):
-    #             unmachted_list.append(annotation)
-    #
-    #     return match_list, unmachted_list, [entity for entity in entities if entity not in matched_entities]
-
-    # def get_entity_matches(self, annotations, entities) -> List[Dict]:
-    #     """Catch all exceptetions. Here we just match every entity with an annotation that lies within them."""
-    #     matches = []
-    #
-    #     for annotation in annotations:
-    #         for entity in entities:
-    #             # matches if entity starts before the annotation ends and ends after the annotation starts
-    #             if entity['start_offset'] <= annotation.
-    #             end_offset and entity['end_offset'] >= annotation.start_offset:
-    #                 matches.append({'entity': entity, 'annotation': annotation})
-    #             # if we go past the annotation end, stop looking for entities (assuming they are in order)
-    #             elif entity['start_offset'] > annotation.end_offset:
-    #                 break
-    #
-    #     return matches
-
-    def extract(self, document: Document) -> Dict:
-        """Run clf."""
-        res_dict = super().extract(document=document)
-
-        label_type_dict = {label.name: label.data_type for label in self.category.labels}
-        label_threshold_dict = {
-            label.name: label.threshold if hasattr(label, 'threshold') else 0.1 for label in self.category.labels
-        }
-
-        res_dict = remove_empty_dataframes_from_extraction(res_dict)
-        res_dict = filter_low_confidence_extractions(res_dict, label_threshold_dict)
-
-        merged_res_dict = merge_annotations(
-            res_dict=res_dict,
-            doc_text=document.text,
-            label_type_dict=label_type_dict,
-            doc_bbox=document.get_bbox(),
-            labels_threshold=label_threshold_dict,
-        )
-
-        # If the training has labels with multiline annotations, we try to merge entities vertically
-        if hasattr(self, 'multiline_labels'):
-            multiline_labels_names = [label.name for label in self.multiline_labels]
-            merged_res_dict = merge_annotations(
-                res_dict=merged_res_dict,
-                doc_text=document.text,
-                label_type_dict=label_type_dict,
-                doc_bbox=document.get_bbox(),
-                multiline_labels_names=multiline_labels_names,
-                merge_vertical=True,
-                labels_threshold=label_threshold_dict,
-            )
-
-        return merged_res_dict
-
-
-class SeparateLabelsEntityMultiClassModel(DocumentEntityMulticlassModel):
-    """
-    Model that should be used when we want to treat labels shared by different templates as different labels.
-
-    The extract method needs to undo the changes done in the labels of the project (project.separate_labels()).
-    """
-
-    def __init__(self, extract_threshold=None, *args, **kwargs):
-        """Initialize DocumentEntityMulticlassModel."""
-        DocumentEntityMulticlassModel.__init__(self, *args, **kwargs)
-        self.extract_threshold = extract_threshold
-
-    def extract(self, document: Document) -> 'Dict':
-        """
-        Undo the renaming of the labels when using project.separate_labels().
-
-        In this way we have the output of the extraction in the correct format.
-        """
-        # from konfuzio.models_labels_multiclass import DocumentEntityMulticlassModel
-
-        res_dict = DocumentEntityMulticlassModel.extract(self, document=document)
-
-        new_res = {}
-        for key, value in res_dict.items():
-            # if the value is a list, is because the key corresponds to a section label with multiple sections
-            # the key has already the name of the section label
-            # we need to go to each element of the list, which is a dictionary, and
-            # rewrite the label name (remove the section label name) in the keys
-            if isinstance(value, list):
-                section_label = key
-                if section_label not in new_res.keys():
-                    new_res[section_label] = []
-
-                for found_section in value:
-                    new_found_section = {}
-                    for label, df in found_section.items():
-                        if '__' in label:
-                            label = label.split('__')[1]
-                            df.label_text = label
-                            df.label = label
-                        new_found_section[label] = df
-
-                    new_res[section_label].append(new_found_section)
-
-            # if the value is a dictionary, is because he key corresponds to a section label without multiple sections
-            # we need to rewrite the label name (remove the section label name) in the keys
-            elif isinstance(value, dict):
-                section_label = key
-                if section_label not in new_res.keys():
-                    new_res[section_label] = {}
-
-                for label, df in value.items():
-                    if '__' in label:
-                        label = label.split('__')[1]
-                        df.label_text = label
-                        df.label = label
-                    new_res[section_label][label] = df
-
-            # otherwise the value must be directly a dataframe and it will correspond to the default section
-            # can also correspond to labels which the template clf couldn't attribute to any template.
-            # so we still check if we have the changed label name
-            elif '__' in key:
-                section_label = key.split('__')[0]
-                if section_label not in new_res.keys():
-                    new_res[section_label] = {}
-                key = key.split('__')[1]
-                value.label_text = key
-                value.label = key
-                # if the section label already exists and allows multi sections
-                if isinstance(new_res[section_label], list):
-                    new_res[section_label].append({key: value})
-                else:
-                    new_res[section_label][key] = value
-            else:
-                new_res[key] = value
-
-        return new_res
+# class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
+#     """Encode visual and textual features to extract text regions.
+
+#     Fit a extraction pipeline to extract linked Annotations.
+
+#     Both Label and Label Set classifiers are using a RandomForestClassifier from scikit-learn to run in a low memory and
+#     single CPU environment. A random forest classifier is a group of decision trees classifiers, see:
+#     https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
+
+#     The parameters of this class allow to select the Tokenizer, to configure the Label and Label Set classifiers and to
+#     select the type of features used by the Label and Label Set classifiers.
+
+#     They are divided in:
+#     - tokenizer selection
+#     - parametrization of the Label classifier
+#     - parametrization of the Label Set classifier
+#     - features for the Label classifier
+#     - features for the Label Set classifier
+
+#     By default, the text of the Documents is split into smaller chunks of text based on whitespaces
+#     ('tokenizer_whitespace'). That means that all words present in the text will be shown to the AI. It is possible to
+#     define if the splitting of the text into smaller chunks should be done based on regexes learned from the
+#     Spans of the Annotations of the Category ('tokenizer_regex') or if to use a model from Spacy library for German
+#     language ('tokenizer_spacy'). Another option is to use a pre-defined list of tokenizers based on regexes
+#     ('tokenizer_regex_list') and, on top of the pre-defined list, to create tokenizers that match what is missed
+#     by those ('tokenizer_regex_combination').
+
+#     Some parameters of the scikit-learn RandomForestClassifier used for the Label and/or Label Set classifier
+#     can be set directly in Konfuzio Server ('label_n_estimators', 'label_max_depth', 'label_class_weight',
+#     'label_random_state', 'label_set_n_estimators', 'label_set_max_depth').
+
+#     Features are measurable pieces of data of the Annotation. By default, a combination of features is used that
+#     includes features built from the text of the Annotation ('string_features'), features built from the position of
+#     the Annotation in the Document ('spatial_features') and features from the Spans created by a WhitespaceTokenizer on
+#     the left or on the right of the Annotation ('n_nearest_left', 'n_nearest_right', 'n_nearest_across_lines).
+#     It is possible to exclude any of them ('spatial_features', 'string_features', 'n_nearest_left', 'n_nearest_right')
+#     or to specify the number of Spans created by a WhitespaceTokenizer to consider
+#     ('n_nearest_left', 'n_nearest_right').
+
+#     While extracting, the Label Set classifier takes the predictions from the Label classifier as input.
+#     The Label Set classifier groups them intoAnnotation sets.
+#     It is possible to define the confidence threshold for the predictions to be considered by the
+#     Label Set classifier ('label_set_confidence_threshold'). However, the label_set_confidence_threshold is not applied
+#     to the final predictions of the Extraction AI.
+#     """
+
+#     def __init__(
+#         self,
+#         n_nearest: int = 2,
+#         first_word: bool = True,
+#         n_estimators: int = 100,
+#         max_depth: int = 100,
+#         no_label_limit: Union[int, float, None] = None,
+#         n_nearest_across_lines: bool = False,
+#         *args,
+#         **kwargs,
+#     ):
+#         """DocumentAnnotationModel."""
+#         super().__init__(*args, **kwargs)
+#         GroupAnnotationSets.__init__(self)
+#         # self.label_list = None
+#         self.label_feature_list = None
+
+#         # If this is True use the generic regex generator
+#         self.use_generic_regex = True
+#         self.category: Category = None
+#         self.n_nearest = n_nearest
+#         self.first_word = first_word
+#         self.max_depth = max_depth
+#         self.n_estimators = n_estimators
+#         self.no_label_limit = no_label_limit
+#         self.n_nearest_across_lines = n_nearest_across_lines
+#         self.train_split_percentage = None
+
+#         self.substring_features = kwargs.get('substring_features', None)
+#         self.catchphrase_features = kwargs.get('catchphrase_features', None)
+
+#         self.regexes = None  # set later
+#         self.tokenizer = None
+
+#     def features(self, document: Document):
+#         """Calculate features using the best working default values that can be overwritten with self values."""
+#         df, _feature_list, _temp_df_raw_errors = process_document_data(
+#             document=document,
+#             spans=document.spans(use_correct=False),
+#             n_nearest=self.n_nearest if hasattr(self, 'n_nearest') else 2,
+#             first_word=self.first_word if hasattr(self, 'first_word') else True,
+#             tokenize_fn=self.tokenizer.tokenize,  # todo: we are tokenizing the document multiple times
+#             catchphrase_list=self.catchphrase_features if hasattr(self, 'catchphrase_features') else None,
+#             substring_features=self.substring_features if hasattr(self, 'substring_features') else None,
+#             n_nearest_across_lines=self.n_nearest_across_lines if hasattr(self, 'n_nearest_across_lines') else False,
+#         )
+#         return df, _feature_list, _temp_df_raw_errors
+
+#     def extract(self, document: Document) -> 'Dict':
+#         """
+#         Infer information from a given Document.
+
+#         :param text: HTML or raw text of document
+#         :param bbox: Bbox of the document
+#         :return: dictionary of labels and top candidates
+
+#         :raises:
+#          AttributeError: When missing a Tokenizer
+#          NotFittedError: When CLF is not fitted
+
+#         """
+#         if self.tokenizer is None:
+#             raise AttributeError(f'{self} missing Tokenizer.')
+
+#         if self.clf is None and hasattr(self, 'label_clf'):  # Can be removed for models after 09.10.2020
+#             self.clf = self.label_clf
+
+#         if self.clf is None:
+#             raise AttributeError(f'{self} does not provide a Label Classifier. Please add it.')
+#         else:
+#             check_is_fitted(self.clf)
+
+#         # Main Logic -------------------------
+#         # 1. start inference with new document
+#         inference_document = deepcopy(document)
+#         # 2. tokenize
+#         self.tokenizer.tokenize(inference_document)
+#         if not inference_document.spans():
+#             logger.error(f'{self.tokenizer} does not provide Spans for {document}')
+#             raise NotImplementedError('No error handling when Spans are missing.')
+#         # 3. preprocessing
+#         df, _feature_names, _raw_errors = self.features(inference_document)
+#         try:
+#             independet_variables = df[self.label_feature_list]
+#         except KeyError:
+#             raise KeyError(f'Features of {document} do not match the features of the pipeline.')
+#             # todo calculate features of Document as defined in pipeline and do not check afterwards
+#         # 4. prediction and store most likely prediction and its accuracy in separated columns
+#         results = pandas.DataFrame(data=self.clf.predict_proba(X=independet_variables), columns=self.clf.classes_)
+
+#         # Remove no_label predictions
+#         if 'NO_LABEL' in results.columns:
+#             results = results.drop(['NO_LABEL'], axis=1)
+
+#         if 'NO_LABEL_SET' in results.columns:
+#             results = results.drop(['NO_LABEL_SET'], axis=1)
+
+#         df['label_text'] = results.idxmax(axis=1)
+#         df['Accuracy'] = results.max(axis=1)
+#         # 5. Translation
+#         df['Translated_Candidate'] = df['offset_string']  # todo: make translation explicit: It's a cool Feature
+#         # Main Logic -------------------------
+
+#         # Do column renaming to be compatible with text-annotation
+#         # todo: how can multilines be created via SDK
+#         # todo: why do we need to adjust the woring for Server?
+#         # todo: which other attributes could be send in the extraction method?
+#         df.rename(
+#             columns={
+#                 'start_offset': 'Start',
+#                 'end_offset': 'End',
+#                 'page_index': 'page_index',
+#                 'offset_string': 'Candidate',
+#                 'regex': 'Regex',
+#                 'threshold': 'OptimalThreshold',
+#             },
+#             inplace=True,
+#         )
+
+#         # Convert DataFrame to Dict with labels as keys and label dataframes as value.
+#         res_dict = {}
+#         for label_text in set(df['label_text']):
+#             label_df = df[df['label_text'] == label_text].copy()
+#             if not label_df.empty:
+#                 res_dict[label_text] = label_df
+
+#         # Filter results that are bellow the extract threshold
+#         # (helpful to reduce the size in case of many predictions/ big documents)
+#         if hasattr(self, 'extract_threshold') and self.extract_threshold is not None:
+#             logger.info('Filtering res_dict')
+#             for label, value in res_dict.items():
+#                 if isinstance(value, pandas.DataFrame):
+#                     res_dict[label] = value[value['Accuracy'] > self.extract_threshold]
+
+#         # Try to calculate sections based on template classifier.
+#         if hasattr(self, 'template_clf'):  # todo smarter handling of multiple clf
+#             res_dict = self.extract_template_with_clf(inference_document.text, res_dict)
+
+#         # place annotations back
+#         # document._annotations = doc_annotations
+
+#         return res_dict
+
+#     # def create_candidates_dataset(self, *args, **kwargs):
+#     #     """
+#     #     Build DocumentAnnotation Model for this project.
+#     #
+#     #     :param klass: Custom DocumentAnnotationModel e.g. Invoice(DocumentAnnotationModel)
+#     #     :return: path to the pickled document model as str
+#     #     """
+#     #     if self.use_generic_regex:
+#     #         for label in self.labels:
+#     #             label.regex(multiprocessing=self.multiprocessing)
+#     #         self.regexes = [regex for label in self.labels for regex in label.regex()]
+#     #     # Use default entity generating regex if there a no regexes at hand.
+#     #     else:
+#     #         self.regexes = ['[^ \n\t\f]+']
+#     #
+#     #     if not hasattr(self, 'no_label_limit'):
+#     #         self.no_label_limit = None
+#     #
+#     #     self.df_train, self.label_feature_list = self.feature_function(
+#     #         documents=self.documents, no_label_limit=self.no_label_limit
+#     #     )
+#     #
+#     #     if self.df_train.empty:
+#     #         logger.warning('df_train is empty! No training data found.')
+#     #         return None
+#     #
+#     #     self.df_test, test_label_feature_list = self.feature_function(
+#     #         documents=self.test_documents, no_label_limit=self.no_label_limit
+#     #     )
+#     #
+#     #     if not self.df_test.empty:
+#     #         assert self.label_feature_list == test_label_feature_list
+#     #
+#     #     # updates the label_feature_list according to the outdated_feature_list
+#     #     outdated_features_list = ['feat_date_count']
+#     #     for outdated_feature in outdated_features_list:
+#     #         self.label_feature_list = [feat for feat in self.label_feature_list if outdated_feature not in feat]
+#     #
+#     #     return self
+
+#     def lose_weight(self):
+#         """Lose weight before pickling."""
+#         super().lose_weight()
+
+#         # remove documents
+#         self.documents = None
+#         self.test_documents = None
+
+#     def label_train_document(self, virtual_document: Document, original_document: Document):
+#         """Assign labels to Annotations in newly tokenized virtual training document."""
+#         doc_spans = original_document.spans(use_correct=True)
+#         s_i = 0
+#         for span in virtual_document.spans():
+#             while s_i < len(doc_spans) and span.start_offset > doc_spans[s_i].end_offset:
+#                 s_i += 1
+#             if s_i >= len(doc_spans):
+#                 break
+#             if span.end_offset < doc_spans[s_i].start_offset:
+#                 continue
+
+#             r = range(doc_spans[s_i].start_offset, doc_spans[s_i].end_offset + 1)
+#             if span.start_offset in r and span.end_offset in r:
+#                 span.annotation.label = doc_spans[s_i].annotation.label
+
+#     def feature_function(
+#         self, documents: List[Document], no_label_limit=None, retokenize=True
+#     ) -> Tuple[List[pandas.DataFrame], list]:
+#         """Calculate features per Span of Annotations.
+
+#         :param documents: List of documents to extract features from.
+#         :param no_label_limit: Int or Float to limit number of new annotations to create during tokenization.
+#         :param retokenize: Bool for whether to recreate annotations from scratch or use already existing annotations.
+#         :return: Dataframe of features and list of feature names.
+#         """
+#         logger.info('Start generating features.')
+#         df_real_list = []
+#         df_raw_errors_list = []
+#         feature_list = []
+
+#         # todo make regex Tokenizer optional as those will be saved by the Server
+#         # if not hasattr(self, 'regexes'):  # Can be removed for models after 09.10.2020
+#         #    self.regexes = [regex for label_model in self.labels for regex in label_model.label.regex()]
+
+#         for document in documents:
+#             # todo check for tokenizer: self.tokenizer.tokenize(document)  # todo: do we need it?
+#             # todo check removed  if x.x0 and x.y0
+#             # todo: use NO_LABEL for any Annotation that has no Label, instead of keeping Label = None
+#             for span in document.spans(use_correct=False):
+#                 if span.annotation.id_:
+#                     # Annotation
+#                     # we use "<" below because we don't want to have unconfirmed annotations in the training set,
+#                     # and the ones below threshold wouldn't be considered anyway
+#                     if (
+#                         span.annotation.is_correct
+#                         or (not span.annotation.is_correct and span.annotation.revised)
+#                         or (
+#                             span.annotation.confidence
+#                             and hasattr(span.annotation.label, 'threshold')
+#                             and span.annotation.confidence < span.annotation.label.threshold
+#                         )
+#                     ):
+#                         pass
+#                     else:
+#                         raise ValueError(
+#                             f"{span.annotation} is unrevised in this dataset and can't be used for training!"
+#                             f"Please revise it manually by either confirming it, rejecting it, or modifying it."
+#                         )
+
+#             if retokenize:
+#                 virt_document = deepcopy(document)
+#                 self.tokenizer.tokenize(virt_document)
+#                 self.label_train_document(virt_document, document)
+#                 document = virt_document
+#             else:
+#                 self.tokenizer.tokenize(document)
+
+#             no_label_annotations = document.annotations(use_correct=False, label=document.project.no_label)
+#             label_annotations = [x for x in document.annotations(use_correct=False) if x.label.id_ is not None]
+
+#             # We calculate features of documents as long as they have IDs, even if they are offline.
+#             # The assumption is that if they have an ID, then the data came either from the API or from the DB.
+#             if document.id_ is None and document.copy_of_id is None:
+#                 # inference time todo reduce shuffled complexity
+#                 assert (
+#                     not label_annotations
+#                 ), "Documents that don't come from the server have no human revised Annotations."
+#                 raise NotImplementedError(
+#                     f'{document} does not come from the server, please use process_document_data function.'
+#                 )
+#             else:
+#                 # training time: todo reduce shuffled complexity
+#                 if isinstance(no_label_limit, int):
+#                     n_no_labels = no_label_limit
+#                 elif isinstance(no_label_limit, float):
+#                     n_no_labels = int(len(label_annotations) * no_label_limit)
+#                 else:
+#                     assert no_label_limit is None
+
+#                 if no_label_limit is not None:
+#                     no_label_annotations = self.get_best_no_label_annotations(
+#                         n_no_labels, label_annotations, no_label_annotations
+#                     )
+#                     logger.info(
+#                         f'Document {document} NO_LABEL annotations has been reduced to {len(no_label_annotations)}'
+#                     )
+
+#             logger.info(f'Document {document} has {len(label_annotations)} labeled annotations')
+#             logger.info(f'Document {document} has {len(no_label_annotations)} NO_LABEL annotations')
+
+#             # todo: check if eq method of Annotation prevents duplicates
+#             # annotations = self._filter_annotations_for_duplicates(label_annotations + no_label_annotations)
+
+#             t0 = time.monotonic()
+
+#             temp_df_real, _feature_list, temp_df_raw_errors = self.features(document)
+
+#             logger.info(f'Document {document} processed in {time.monotonic() - t0:.1f} seconds.')
+
+#             feature_list += _feature_list
+#             df_real_list.append(temp_df_real)
+#             df_raw_errors_list.append(temp_df_raw_errors)
+
+#         feature_list = list(dict.fromkeys(feature_list))  # remove duplicates while maintaining order
+
+#         if df_real_list:
+#             df_real_list = pandas.concat(df_real_list).reset_index(drop=True)
+#         else:
+#             raise NotImplementedError  # = pandas.DataFrame()
+
+#         return df_real_list, feature_list
+
+#     # def get_best_no_label_annotations(
+#     #     self, n_no_labels: int, label_annotations: List[Annotation], no_label_annotations: List[Annotation]
+#     # ) -> List[Annotation]:
+#     #     """Select no_label annotations which are probably most beneficial for training."""
+#     #     # store our chosen "best" NO_LABELS
+#     #     best_no_label_annotations = []
+#     #
+#     #     # get all the real label offset strings and offsets
+#     #     label_texts = set([a.offset_string for a in label_annotations])
+#     #     offsets = set([(a.start_offset, a.end_offset) for a in label_annotations])
+#     #
+#     #     _no_label_annotations = []
+#     #
+#     #     random.shuffle(no_label_annotations)
+#     #
+#     #     # for every NO_LABEL that has an exact string match (but not an offset match)
+#     #     # to a real label, we add it to the best_no_label_annotations
+#     #     for annotation in no_label_annotations:
+#     #         offset_string = annotation.offset_string
+#     #         start_offset = annotation.start_offset
+#     #         end_offset = annotation.end_offset
+#     #         if offset_string in label_texts and (start_offset, end_offset) not in offsets:
+#     #             best_no_label_annotations.append(annotation)
+#     #         else:
+#     #             _no_label_annotations.append(annotation)
+#     #
+#     #     # if we have enough NO_LABELS, we stop here
+#     #     if len(best_no_label_annotations) >= n_no_labels:
+#     #         return best_no_label_annotations[:n_no_labels]
+#     #
+#     #     no_label_annotations = _no_label_annotations
+#     #     _no_label_annotations = collections.defaultdict(list)
+#     #
+#     #     # if we didn't have enough exact matches then we want our NO_LABELS to be the same
+#     #     # data_type as our real labels
+#     #     # we count the amount of each data_type in the real labels
+#     #     # then calculate how many NO_LABEL of each data_type we need
+#     #     data_type_count = collections.Counter()
+#     #     data_type_count.update([a.label.data_type for a in label_annotations])
+#     #     for data_type, count in data_type_count.items():
+#     #         data_type_count[data_type] = n_no_labels * count / len(label_annotations)
+#     #
+#     #     random.shuffle(no_label_annotations)
+#     #
+#     #     # we now loop through the NO_LABELS that weren't exact matches and add them to
+#     #     # the _no_label_annotations dict if we still need more of that data_type
+#     #     # any that belong to a different data_type are added under the 'extra' key
+#     #     for annotation in no_label_annotations:
+#     #         data_type = self.predict_data_type(annotation)
+#     #         if data_type in data_type_count:
+#     #             if len(_no_label_annotations[data_type]) < data_type_count[data_type]:
+#     #                 _no_label_annotations[data_type].append(annotation)
+#     #             else:
+#     #                 _no_label_annotations['extra'].append(annotation)
+#     #         else:
+#     #             _no_label_annotations['extra'].append(annotation)
+#     #
+#     #     # we now add the NO_LABEL annotations with the desired data_type to our
+#     #     # "best" NO_LABELS
+#     #     for data_type, _ in data_type_count.most_common():
+#     #         best_no_label_annotations.extend(_no_label_annotations[data_type])
+#     #
+#     #     random.shuffle(best_no_label_annotations)
+#     #
+#     #     if len(best_no_label_annotations) >= n_no_labels:
+#     #         return best_no_label_annotations[:n_no_labels]
+#     #
+#     #     # if we still didn't have enough we append the 'extra' NO_LABEL annotations here
+#     #     best_no_label_annotations.extend(_no_label_annotations['extra'])
+#     #
+#     #     # we don't shuffle before we trim the array here so the 'extra' NO_LABEL annotations
+#     #     # are the ones being cut off at the end
+#     #     return best_no_label_annotations[:n_no_labels]
+#     #
+#     # def train_valid_split(self):
+#     #     """Split documents randomly into valid and train data."""
+#     #     logger.info('Splitting into train and valid')
+#     #
+#     #     logger.info('Setting NO_LABEL in df_train')
+#     #     self.df_train.loc[~self.df_train.is_correct, 'label_text'] = 'NO_LABEL'
+#     #
+#     #     # if we don't want to split into train/valid then set df_valid to empty df
+#     #     if self.train_split_percentage == 1:
+#     #         self.df_valid = pandas.DataFrame()
+#     #     else:
+#     #         # else, first find labels which only appear once so can't be stratified
+#     #         single_labels = [lbl for (lbl, cnt) in self.df_train['label_text'].value_counts().items() if cnt <= 1]
+#     #         if single_labels:
+#     #             # if we find any, add to df_singles df
+#     #             logger.info(f'Following labels appear only once in df_train so are not in df_valid: {single_labels}')
+#     #             df_singles = self.df_train.groupby('label_text').filter(lambda x: len(x) == 1)
+#     #
+#     #         # drop labels that only appear once in df_train as they cannot be stratified
+#     #         self.df_train = self.df_train.groupby('label_text').filter(lambda x: len(x) > 1)
+#     #
+#     #         # do stratified split
+#     #         self.df_train, self.df_valid = train_test_split(
+#     #             self.df_train,
+#     #             train_size=self.train_split_percentage,
+#     #             stratify=self.df_train['label_text'],
+#     #             random_state=1,
+#     #         )
+#     #
+#     #         # if we found any single labels, add them back to df_train
+#     #         if single_labels:
+#     #             self.df_train = pandas.concat([self.df_train, df_singles])
+#     #
+#     #     if self.df_train.empty:
+#     #         raise Exception('Not enough data to train an AI model.')
+#     #
+#     #     if self.df_train[self.label_feature_list].isnull().values.any():
+#     #         raise Exception('Sample with NaN within the training data found! Check code!')
+#     #
+#     #     if not self.df_valid.empty:
+#     #         if self.df_valid[self.label_feature_list].isnull().values.any():
+#     #             raise Exception('Sample with NaN within the validation data found! Check code!')
+
+#     def fit(self) -> RandomForestClassifier:
+#         """Given training data and the feature list this function returns the trained regression model."""
+#         logger.info('Start training of Multi-class Label Classifier.')
+
+#         # balanced gives every label the same weight so that the sample_number doesn't effect the results
+#         self.clf = RandomForestClassifier(
+#             class_weight="balanced", n_estimators=self.n_estimators, max_depth=self.max_depth, random_state=420
+#         )
+
+#         self.clf.fit(self.df_train[self.label_feature_list], self.df_train['label_text'])
+
+#         self.fit_template_clf()
+
+#         return self.clf
+
+#     def evaluate_full(self, strict: bool = True) -> Evaluation:
+#         """Evaluate the full pipeline on the pipeline's Test Documents."""
+#         eval_list = []
+#         for document in self.test_documents:
+#             extraction_result = self.extract(document=document)
+#             predicted_doc = extraction_result_to_document(document, extraction_result)
+#             eval_list.append((document, predicted_doc))
+
+#         self.evaluation = Evaluation(eval_list, strict=strict)
+
+#         return self.evaluation
+
+#     def evaluate(self):
+#         """
+#         Evaluate the label classifier on a given DataFrame.
+
+#         Evaluates by computing the accuracy, balanced accuracy and f1-score across all labels
+#         plus the f1-score, precision and recall across each label individually.
+#         """
+#         # copy the df as we do not want to modify it
+#         df = self.df_test.copy()
+
+#         # get probability of each class
+#         _results = pandas.DataFrame(
+#             data=self.clf.predict_proba(X=df[self.label_feature_list]), columns=self.clf.classes_
+#         )
+
+#         # get predicted label index over all classes
+#         predicted_label_list = list(_results.idxmax(axis=1))
+#         # get predicted label probability over all classes
+#         accuracy_list = list(_results.max(axis=1))
+
+#         # get another dataframe with only the probability over the classes that aren't NO_LABEL
+#         _results_only_label = pandas.DataFrame()
+#         if 'NO_LABEL' in _results.columns:
+#             _results_only_label = _results.drop(['NO_LABEL'], axis=1)
+
+#         if _results_only_label.shape[1] > 0:
+#             # get predicted label index over all classes that are not NO_LABEL
+#             only_label_predicted_label_list = list(_results_only_label.idxmax(axis=1))
+#             # get predicted label probability over all classes that are not NO_LABEL
+#             only_label_accuracy_list = list(_results_only_label.max(axis=1))
+
+#             # for each predicted label (over all classes)
+#             for index in range(len(predicted_label_list)):
+#                 # if the highest probability to a non NO_LABEL class is >=0.2, we say it predicted that class instead
+#                 # replace predicted label index and probability
+#                 if only_label_accuracy_list[index] >= 0.2:  # todo: why 0.2
+#                     predicted_label_list[index] = only_label_predicted_label_list[index]
+#                     accuracy_list[index] = only_label_accuracy_list[index]
+#         else:
+#             logger.info('\n[WARNING] _results_only_label is empty.\n')
+
+#         # add a column for predicted label index
+#         df.insert(loc=0, column='predicted_label_text', value=predicted_label_list)
+
+#         # add a column for prediction probability (not actually accuracy)
+#         df.insert(loc=0, column='Accuracy', value=accuracy_list)
+
+#         # get and sort the importance of each feature
+#         feature_importances = self.clf.feature_importances_
+
+#         feature_importances_list = sorted(
+#             list(zip(self.label_feature_list, feature_importances)), key=lambda item: item[1], reverse=True
+#         )
+
+#         # computes the general metrics, i.e. across all labels
+#         y_true = df['label_text']
+#         y_pred = df['predicted_label_text']
+
+#         # gets accuracy, balanced accuracy and f1-score over all labels
+#         results_general = {
+#             'label': 'general/all annotations',
+#             'accuracy': accuracy_score(y_true, y_pred),
+#             'balanced accuracy': balanced_accuracy_score(y_true, y_pred),
+#             'f1-score': f1_score(y_true, y_pred, average='weighted'),
+#         }
+
+#         # gets accuracy, balanced accuracy and f1-score over all labels (except for 'NO_LABEL'/'NO_LABEL')
+#         y_true_filtered = []
+#         y_pred_filtered = []
+#         for s_true, s_pred in zip(y_true, y_pred):
+#             if not (s_true == 'NO_LABEL' and s_pred == 'NO_LABEL'):
+#                 y_true_filtered.append(s_true)
+#                 y_pred_filtered.append(s_pred)
+#         results_general_filtered = {
+#             'label': 'all annotations except TP of NO_LABEL',
+#             'accuracy': accuracy_score(y_true_filtered, y_pred_filtered),
+#             'balanced accuracy': balanced_accuracy_score(y_true_filtered, y_pred_filtered),
+#             'f1-score': f1_score(y_true_filtered, y_pred_filtered, average='weighted'),
+#         }
+
+#         # compute all metrics again, but per label
+#         labels = list(set(df['label_text']))
+#         precision, recall, fscore, support = precision_recall_fscore_support(y_pred, y_true, labels=labels)
+
+#         # store results for each label
+#         results_labels_list = []
+
+#         for i, label in enumerate(labels):
+#             results = {
+#                 'label': label,
+#                 'accuracy': None,
+#                 'balanced accuracy': None,
+#                 'f1-score': fscore[i],
+#                 'precision': precision[i],
+#                 'recall': recall[i],
+#             }
+#             results_labels_list.append(results)
+
+#         # sort results for each label in descending order by their f1-score
+#         results_labels_list_sorted = sorted(results_labels_list, key=lambda k: k['f1-score'], reverse=True)
+
+#         # combine general results and label specific results into one dict
+#         results_summary = {
+#             'general': results_general,
+#             'general_filtered': results_general_filtered,
+#             'label-specific': results_labels_list_sorted,
+#         }
+
+#         # get the probability_distribution
+#         prob_dict = self._get_probability_distribution(df, start_from=0.2)
+#         prob_list = [(k, v) for k, v in prob_dict.items()]
+#         prob_list.sort(key=lambda tup: tup[0])
+#         df_prob = pandas.DataFrame(prob_list, columns=['Range of predicted Accuracy', 'Real Accuracy in this range'])
+
+#         # log results and feature importance and probability distribution as tables
+#         logger.info(
+#             '\n'
+#             + tabulate(
+#                 pandas.DataFrame([results_general, results_general_filtered] + results_labels_list_sorted),
+#                 floatfmt=".1%",
+#                 headers="keys",
+#                 tablefmt="pipe",
+#             )
+#             + '\n'
+#         )
+
+#         logger.info(
+#             '\n'
+#             + tabulate(
+#                 pandas.DataFrame(feature_importances_list, columns=['feature_name', 'feature_importance']),
+#                 floatfmt=".4%",
+#                 headers="keys",
+#                 tablefmt="pipe",
+#             )
+#             + '\n'
+#         )
+
+#         logger.info('\n' + tabulate(df_prob, floatfmt=".2%", headers="keys", tablefmt="pipe") + '\n')
+
+#         return results_summary
+
+#     def _get_probability_distribution(self, df, start_from=0.2):
+#         """Calculate the probability distribution according to the range of confidence."""
+#         # group by accuracy
+#         step_size = 0.1
+#         step_list = numpy.arange(start_from, 1 + step_size, step_size)
+#         df_dict = {}
+#         for index, step in enumerate(step_list):
+#             if index + 1 < len(step_list):
+#                 lower_bound = round(step, 2)
+#                 upper_bound = round(step_list[index + 1], 2)
+#                 df_range = df[df['Accuracy'].between(lower_bound, upper_bound)]
+#                 df_range_acc = accuracy_score(df_range['label_text'], df_range['predicted_label_text'])
+#                 df_dict[str(lower_bound) + '-' + str(upper_bound)] = df_range_acc
+
+#         return df_dict
+
+#     # def _filter_annotations_for_duplicates(self, doc_annotations_list: List['Annotation']):
+#     #     """
+#     #     Filter the annotations for duplicates.
+#     #
+#     #     A duplicate is characterized by having the same start_offset,
+#     #     end_offset and label_text. Duplicates have to be filtered as there should be only one logical truth per
+#     #     specific text_offset and label.
+#     #     """
+#     #     annotations_filtered = []
+#     #     res = collections.defaultdict(list)
+#     #
+#     #     for annotation in doc_annotations_list:
+#     #         key = f'{annotation.start_offset}"_"{annotation.end_offset}'
+#     #         res[key].append(annotation)
+#     #
+#     #     annotations_bundled = list(res.values())
+#     #     for annotation_cluster in annotations_bundled:
+#     #         if len(annotation_cluster) > 1:
+#     #             found = False
+#     #             for annotation in annotation_cluster:
+#     #                 if annotation.is_correct is True:
+#     #                     found = True
+#     #                     annotations_filtered.append(annotation)
+#     #
+#     #             if found is False:
+#     #                 annotations_filtered.append(annotation_cluster[0])
+#     #
+#     #         else:
+#     #             annotations_filtered.append(annotation_cluster[0])
+#     #
+#     #     return annotations_filtered
+
+
+# class SeparateLabelsAnnotationMultiClassModel(DocumentAnnotationMultiClassModel):
+#     """
+#     Model that should be used when we want to treat labels shared by different templates as different labels.
+
+#     The extract method needs to undo the changes done in the labels of the project (project.separate_labels()).
+#     """
+
+#     def __init__(self, *args, **kwargs):
+#         """Initialize DocumentEntityMulticlassModel."""
+#         DocumentAnnotationMultiClassModel.__init__(self, *args, **kwargs)
+
+#     def extract(self, document: Document) -> 'Dict':
+#         """
+#         Undo the renaming of the labels when using project.separate_labels().
+
+#         In this way we have the output of the extraction in the correct format.
+#         """
+#         res_dict = DocumentAnnotationMultiClassModel.extract(self, document=document)
+
+#         new_res = {}
+#         for key, value in res_dict.items():
+#             # if the value is a list, is because the key corresponds to a section label with multiple sections
+#             # the key has already the name of the section label
+#             # we need to go to each element of the list, which is a dictionary, and
+#             # rewrite the label name (remove the section label name) in the keys
+#             if isinstance(value, list):
+#                 section_label = key
+#                 if section_label not in new_res.keys():
+#                     new_res[section_label] = []
+
+#                 for found_section in value:
+#                     new_found_section = {}
+#                     for label, df in found_section.items():
+#                         if '__' in label:
+#                             label = label.split('__')[1]
+#                             df.label_text = label
+#                             df.label = label
+#                         new_found_section[label] = df
+
+#                     new_res[section_label].append(new_found_section)
+
+#             # if the value is a dictionary, is because he key corresponds to a section label without multiple sections
+#             # we need to rewrite the label name (remove the section label name) in the keys
+#             elif isinstance(value, dict):
+#                 section_label = key
+#                 if section_label not in new_res.keys():
+#                     new_res[section_label] = {}
+
+#                 for label, df in value.items():
+#                     if '__' in label:
+#                         label = label.split('__')[1]
+#                         df.label_text = label
+#                         df.label = label
+#                     new_res[section_label][label] = df
+
+#             # otherwise the value must be directly a dataframe and it will correspond to the default section
+#             # can also correspond to labels which the template clf couldn't attribute to any template.
+#             # so we still check if we have the changed label name
+#             elif '__' in key:
+#                 section_label = key.split('__')[0]
+#                 if section_label not in new_res.keys():
+#                     new_res[section_label] = {}
+#                 key = key.split('__')[1]
+#                 value.label_text = key
+#                 value.label = key
+#                 # if the section label already exists and allows multi sections
+#                 if isinstance(new_res[section_label], list):
+#                     new_res[section_label].append({key: value})
+#                 else:
+#                     new_res[section_label][key] = value
+#             else:
+#                 new_res[key] = value
+
+#         return new_res
+
+
+# class DocumentEntityMulticlassModel(DocumentAnnotationMultiClassModel, GroupAnnotationSets):
+#     """Creates Annotations by extracting all entities and then finding which overlap with existing annotations."""
+
+#     def __init__(self, *args, **kwargs):
+#         """Initialize DocumentEntityMulticlassModel."""
+#         DocumentAnnotationMultiClassModel.__init__(self, *args, **kwargs)
+
+#         self.use_generic_regex = False
+#         self.multiline_labels = []
+
+#         # set tokenizer if it wasn't set already
+#         if not hasattr(self, "tokenizer"):
+#             self.tokenizer = WhitespaceTokenizer()
+
+#     # def get_annotations(self):
+#     #     """Convert Documents to entities."""
+#     #     logger.info('Getting annotations')
+#     #
+#     #     # loop over each document and test document
+#     #     for document in self.documents + self.test_documents:
+#     #         document = self.tokenizer.tokenize(document)
+#     #
+#     #         # flush existing annotations
+#     #         annotations = document._annotations
+#     #         document._annotations = []
+#     #
+#     #         # check for multiline annotations
+#     #         annotations = split_multiline_annotations(annotations, self.multiline_labels)
+#     #
+#     #         # flush annotations added during split of multiline
+#     #         document._annotations = []
+#     #
+#     #         # get exact matches
+#     #         matches = document.annotations()
+#     #         remaining_annotations = list(set(document.annotations(use_correct=False))-set(document.annotations()))
+#     # matches, remaining_annotations, remaining_entities = self.get_exact_matches_and_filter_mached(
+#     #     annotations, document.annotations()
+#     # )
+
+#     # get entity matches for the rest
+#     # (only call after the first one as this filters out annotations with no start and/or end offset)
+#     # matches += self.get_entity_matches(remaining_annotations, remaining_entities)
+
+#     # convert the matches to annotations and add them to the document
+#     # self.add_matches_as_document_annotation(matches, document)
+
+#     # logger.info('All annotations processed.')
+
+#     # def add_matches_as_document_annotation(self, matches, document):
+#     #     """Convert a match into a fitting annotation."""
+#     #     # get document bbox for creating annotations
+#     #     bbox = document.get_bbox()
+#     #
+#     #     # go through the matches
+#     #     for match in matches:
+#     #         # create annotation from entity
+#     #         e = Annotation(
+#     #             start_offset=match['entity']['start_offset'],
+#     #             end_offset=match['entity']['end_offset'],
+#     #             document=document,
+#     #             bbox=get_bbox(
+#     #                 bbox, start_offset=match['entity']['start_offset'], end_offset=match['entity']['end_offset']
+#     #             ),
+#     #         )
+#     #
+#     #         # set the corresponding attributes for the entity annotation to match that of the actual annotation
+#     #         for key, value in match['annotation'].__dict__.items():
+#     #             if key in ['start_offset', 'end_offset', 'offset_string', 'offset_string_original']:
+#     #                 continue
+#     #             setattr(e, key, value)
+#     #
+#     #         # add the entity as an annotation to the document
+#     #         document.add_annotation(e)
+
+#     # def get_exact_matches_and_filter_mached(self, annotations, entities) -> Tuple[List[Dict], List[Dict]]:
+#     #     """
+#     #     Only give back annotation-entity combinations that are considered exact.
+#     #
+#     #     This is the case if annotation spans the entire entity (or more).
+#     #     If an annotation is not completely exactly matched, add it to the unmatched list
+#     #     """
+#     #     unmachted_list = []
+#     #     match_list = []
+#     #     matched_entities = []
+#     #
+#     #     for annotation in annotations:
+#     #
+#     #         # filter out annotations with missing start or end offset
+#     #         if annotation.start_offset is None or annotation.end_offset is None:
+#     #             continue
+#     #
+#     #         start_found = False
+#     #         end_found = False
+#     #         for entity in entities:
+#     #             # check if the annotation spans the whole entity
+#     #             if entity['start_offset'] >= annotation.
+#     #             start_offset and entity['end_offset'] <= annotation.end_offset:
+#     #                 match_list.append({'entity': entity, 'annotation': annotation})
+#     #
+#     #                 # you can't just remove the entity because that causes the iterator to jump by one
+#     #                 matched_entities.append(entity)
+#     #
+#     #                 # update start and end found
+#     #                 if entity['start_offset'] == annotation.start_offset:
+#     #                     start_found = True
+#     #                 if entity['end_offset'] == annotation.end_offset:
+#     #                     end_found = True
+#     #
+#     #             # if we go past the annotation end, stop looking for entities (assuming they are in order)
+#     #             elif entity['start_offset'] > annotation.end_offset:
+#     #                 break
+#     #
+#     #         # see if the annotation was completly machted
+#     #         if not (start_found and end_found):
+#     #             unmachted_list.append(annotation)
+#     #
+#     #     return match_list, unmachted_list, [entity for entity in entities if entity not in matched_entities]
+
+#     # def get_entity_matches(self, annotations, entities) -> List[Dict]:
+#     #     """Catch all exceptetions. Here we just match every entity with an annotation that lies within them."""
+#     #     matches = []
+#     #
+#     #     for annotation in annotations:
+#     #         for entity in entities:
+#     #             # matches if entity starts before the annotation ends and ends after the annotation starts
+#     #             if entity['start_offset'] <= annotation.
+#     #             end_offset and entity['end_offset'] >= annotation.start_offset:
+#     #                 matches.append({'entity': entity, 'annotation': annotation})
+#     #             # if we go past the annotation end, stop looking for entities (assuming they are in order)
+#     #             elif entity['start_offset'] > annotation.end_offset:
+#     #                 break
+#     #
+#     #     return matches
+
+#     def extract(self, document: Document) -> Dict:
+#         """Run clf."""
+#         res_dict = super().extract(document=document)
+
+#         label_type_dict = {label.name: label.data_type for label in self.category.labels}
+#         label_threshold_dict = {
+#             label.name: label.threshold if hasattr(label, 'threshold') else 0.1 for label in self.category.labels
+#         }
+
+#         res_dict = remove_empty_dataframes_from_extraction(res_dict)
+#         res_dict = filter_low_confidence_extractions(res_dict, label_threshold_dict)
+
+#         merged_res_dict = merge_annotations(
+#             res_dict=res_dict,
+#             doc_text=document.text,
+#             label_type_dict=label_type_dict,
+#             doc_bbox=document.get_bbox(),
+#             labels_threshold=label_threshold_dict,
+#         )
+
+#         # If the training has labels with multiline annotations, we try to merge entities vertically
+#         if hasattr(self, 'multiline_labels'):
+#             multiline_labels_names = [label.name for label in self.multiline_labels]
+#             merged_res_dict = merge_annotations(
+#                 res_dict=merged_res_dict,
+#                 doc_text=document.text,
+#                 label_type_dict=label_type_dict,
+#                 doc_bbox=document.get_bbox(),
+#                 multiline_labels_names=multiline_labels_names,
+#                 merge_vertical=True,
+#                 labels_threshold=label_threshold_dict,
+#             )
+
+#         return merged_res_dict
+
+
+# class SeparateLabelsEntityMultiClassModel(DocumentEntityMulticlassModel):
+#     """
+#     Model that should be used when we want to treat labels shared by different templates as different labels.
+
+#     The extract method needs to undo the changes done in the labels of the project (project.separate_labels()).
+#     """
+
+#     def __init__(self, extract_threshold=None, *args, **kwargs):
+#         """Initialize DocumentEntityMulticlassModel."""
+#         DocumentEntityMulticlassModel.__init__(self, *args, **kwargs)
+#         self.extract_threshold = extract_threshold
+
+#     def extract(self, document: Document) -> 'Dict':
+#         """
+#         Undo the renaming of the labels when using project.separate_labels().
+
+#         In this way we have the output of the extraction in the correct format.
+#         """
+#         # from konfuzio.models_labels_multiclass import DocumentEntityMulticlassModel
+
+#         res_dict = DocumentEntityMulticlassModel.extract(self, document=document)
+
+#         new_res = {}
+#         for key, value in res_dict.items():
+#             # if the value is a list, is because the key corresponds to a section label with multiple sections
+#             # the key has already the name of the section label
+#             # we need to go to each element of the list, which is a dictionary, and
+#             # rewrite the label name (remove the section label name) in the keys
+#             if isinstance(value, list):
+#                 section_label = key
+#                 if section_label not in new_res.keys():
+#                     new_res[section_label] = []
+
+#                 for found_section in value:
+#                     new_found_section = {}
+#                     for label, df in found_section.items():
+#                         if '__' in label:
+#                             label = label.split('__')[1]
+#                             df.label_text = label
+#                             df.label = label
+#                         new_found_section[label] = df
+
+#                     new_res[section_label].append(new_found_section)
+
+#             # if the value is a dictionary, is because he key corresponds to a section label without multiple sections
+#             # we need to rewrite the label name (remove the section label name) in the keys
+#             elif isinstance(value, dict):
+#                 section_label = key
+#                 if section_label not in new_res.keys():
+#                     new_res[section_label] = {}
+
+#                 for label, df in value.items():
+#                     if '__' in label:
+#                         label = label.split('__')[1]
+#                         df.label_text = label
+#                         df.label = label
+#                     new_res[section_label][label] = df
+
+#             # otherwise the value must be directly a dataframe and it will correspond to the default section
+#             # can also correspond to labels which the template clf couldn't attribute to any template.
+#             # so we still check if we have the changed label name
+#             elif '__' in key:
+#                 section_label = key.split('__')[0]
+#                 if section_label not in new_res.keys():
+#                     new_res[section_label] = {}
+#                 key = key.split('__')[1]
+#                 value.label_text = key
+#                 value.label = key
+#                 # if the section label already exists and allows multi sections
+#                 if isinstance(new_res[section_label], list):
+#                     new_res[section_label].append({key: value})
+#                 else:
+#                     new_res[section_label][key] = value
+#             else:
+#                 new_res[key] = value
+
+#         return new_res

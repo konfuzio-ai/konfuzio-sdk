@@ -17,7 +17,7 @@ from sklearn.ensemble import RandomForestClassifier
 
 from konfuzio_sdk.data import Project, Document, AnnotationSet
 from konfuzio_sdk.trainer.information_extraction import (
-    DocumentAnnotationMultiClassModel,
+    # DocumentAnnotationMultiClassModel,
     num_count,
     date_count,
     digit_count,
@@ -33,8 +33,8 @@ from konfuzio_sdk.trainer.information_extraction import (
     year_month_day_count,
     add_extractions_as_annotations,
     extraction_result_to_document,
-    SeparateLabelsEntityMultiClassModel,
-    DocumentEntityMulticlassModel,
+    # SeparateLabelsEntityMultiClassModel,
+    # DocumentEntityMulticlassModel,
     RFExtractionAI,
     # SeparateLabelsAnnotationMultiClassModel,
 )
@@ -346,7 +346,100 @@ class TestRegexModel(unittest.TestCase):
         """Evaluate DocumentEntityMultiClassModel."""
         evaluation = self.pipeline.evaluate_full()
 
-        assert evaluation.f1(None) == 0.8405797101449275
+        assert evaluation.f1(None) == 0.9056603773584906  # 0.8405797101449275
+
+    def test_7_extract_test_document(self):
+        """Extract a randomly selected Test Document."""
+        test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        res_doc = self.pipeline.extract(document=test_document)
+
+        self.tests_annotations += res_doc.annotations(use_correct=False)
+        assert len(self.tests_annotations) == 20
+
+    @parameterized.parameterized.expand(entity_results_data)
+    def test_8_test_annotations(self, i, expected):
+        """Test extracted annotations."""
+        ann = self.tests_annotations[i]
+        ann_tuple = (ann.label.name, ann.start_offset, ann.end_offset)
+        assert ann_tuple == expected
+
+
+class TestSeparateLabelsRegexModel(unittest.TestCase):
+    """Test New SDK Information Extraction."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set up the Data and Pipeline."""
+        cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+        cls.pipeline = RFExtractionAI(use_separate_labels=True)
+        cls.tests_annotations = list()
+
+    def test_1_configure_pipeline(self):
+        """Make sure the Data and Pipeline is configured."""
+        self.pipeline.tokenizer = ListTokenizer(tokenizers=[])
+        self.pipeline.category = self.project.get_category_by_id(id_=63)
+
+        for label in self.pipeline.category.labels:
+            #     for regex in label.regex(categories=[pipeline.category]): # find_regex(category=pipeline.category):
+            for regex in label.find_regex(category=self.pipeline.category):
+                #     for regex in label.find_regex():
+                self.pipeline.tokenizer.tokenizers.append(RegexTokenizer(regex=regex))
+
+        # train_doc_ids = [44823, 44834, 44839, 44840, 44841]
+        # self.pipeline.documents = [self.project.get_document_by_id(doc_id) for doc_id in train_doc_ids]
+        self.pipeline.documents = self.project.get_category_by_id(63).documents()
+
+        # test_doc_ids = [44865]
+        # self.pipeline.test_documents = [self.project.get_document_by_id(doc_id) for doc_id in test_doc_ids]
+        self.pipeline.test_documents = self.project.get_category_by_id(63).test_documents()
+        # todo have a separate test case for calculating features of offline documents
+
+    def test_2_make_features(self):
+        """Make sure the Data and Pipeline is configured."""
+        # we have intentional unrevised annotations in the Training set which will block feature calculation
+        with pytest.raises(ValueError, match="is unrevised in this dataset and can't be used for training"):
+            self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
+                documents=self.pipeline.documents
+            )
+        # if we set them as revised and rejected, the features can be calculated again
+        doc_with_unrevised_anns = self.project.get_document_by_id(44823)
+        unrevised_annotations = [
+            a
+            for a in doc_with_unrevised_anns.annotations(use_correct=False)
+            if not a.revised and not a.is_correct and a.confidence > 0.1
+        ]
+        expected_unrevised_ids = [9760937, 9647432]
+        for i, a in enumerate(unrevised_annotations):
+            assert a.id_ == expected_unrevised_ids[i]
+            a.revised = True
+        self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
+            documents=self.pipeline.documents, retokenize=False
+        )
+
+    def test_3_fit(self) -> None:
+        """Start to train the Model."""
+        self.pipeline.fit()
+
+    def test_4_save_model(self):
+        """Save the model."""
+        self.pipeline.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder)
+        assert os.path.isfile(self.pipeline.pipeline_path)
+        # os.remove(self.pipeline.pipeline_path)  # cleanup
+
+    def test_5_upload_ai_model(self):
+        """Upload the model."""
+        assert os.path.isfile(self.pipeline.pipeline_path)
+
+        try:
+            upload_ai_model(ai_model_path=self.pipeline.pipeline_path, category_ids=[self.pipeline.category.id_])
+        except HTTPError as e:
+            assert '403' in str(e)
+
+    def test_6_evaluate_full(self):
+        """Evaluate DocumentEntityMultiClassModel."""
+        evaluation = self.pipeline.evaluate_full()
+
+        assert evaluation.f1(None) == 0.9056603773584906  # 0.8405797101449275
 
     def test_7_extract_test_document(self):
         """Extract a randomly selected Test Document."""
