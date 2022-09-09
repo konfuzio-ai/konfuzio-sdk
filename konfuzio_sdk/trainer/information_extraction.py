@@ -1700,33 +1700,43 @@ def add_extractions_as_annotations(
         extracted_spans = extractions[required_fields].sort_values(by='Accuracy', ascending=False)
 
         for span in extracted_spans.to_dict('records'):  # todo: are Start and End always ints?
-            start = span['Start']
-            end = span['End']
-            offset_string = document.text[start:end]
-            bbox0 = document.bboxes[start]
-            bbox1 = document.bboxes[end - 1]
-            ann_bbox = {
-                'bottom': bbox0.page.height - bbox0.y0,
-                'end_offset': end,
-                'line_number': len(document.text[:start].split('\n')),
-                'offset_string': offset_string,
-                'offset_string_original': offset_string,
-                'page_index': bbox0.page.index,
-                'start_offset': start,
-                'top': bbox0.page.height - bbox0.y1,
-                'x0': bbox0.x0,
-                'x1': bbox1.x1,
-                'y0': bbox0.y0,
-                'y1': bbox1.y1,
-            }
-            annotation = Annotation(
-                document=document,
-                label=label,
-                confidence=span['Accuracy'],
-                label_set=label_set,
-                annotation_set=annotation_set,
-                bboxes=[ann_bbox],
-            )
+            if document.bboxes is not None:
+                start = span['Start']
+                end = span['End']
+                offset_string = document.text[start:end]
+                bbox0 = document.bboxes[start]
+                bbox1 = document.bboxes[end - 1]
+                ann_bbox = {
+                    'bottom': bbox0.page.height - bbox0.y0,
+                    'end_offset': end,
+                    'line_number': len(document.text[:start].split('\n')),
+                    'offset_string': offset_string,
+                    'offset_string_original': offset_string,
+                    'page_index': bbox0.page.index,
+                    'start_offset': start,
+                    'top': bbox0.page.height - bbox0.y1,
+                    'x0': bbox0.x0,
+                    'x1': bbox1.x1,
+                    'y0': bbox0.y0,
+                    'y1': bbox1.y1,
+                }
+                annotation = Annotation(
+                    document=document,
+                    label=label,
+                    confidence=span['Accuracy'],
+                    label_set=label_set,
+                    annotation_set=annotation_set,
+                    bboxes=[ann_bbox],
+                )
+            else:
+                annotation = Annotation(
+                    document=document,
+                    label=label,
+                    confidence=span['Accuracy'],
+                    label_set=label_set,
+                    annotation_set=annotation_set,
+                    spans=[Span(start_offset=span['Start'], end_offset=span['End'])],
+                )
             if annotation.spans[0].offset_string is None:
                 raise NotImplementedError(
                     f"Extracted {annotation} does not have a correspondence in the " f"text of {document}."
