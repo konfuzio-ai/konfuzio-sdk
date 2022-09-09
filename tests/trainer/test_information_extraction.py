@@ -662,6 +662,71 @@ class TestExtractionToDocument(unittest.TestCase):
             extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
 
 
+class TestGetExtractionResults(unittest.TestCase):
+    """Test the conversion of the Extraction results from the AI to a Document."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set LocalTextProject with example predictions."""
+        cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+        cls.document = cls.project.get_document_by_id(44867)
+        cls.result_dict = {
+            'Lohnabrechnung': {
+                'Vorname': pd.DataFrame(
+                    data={
+                        'Candidate': ['Simon-Muster'],
+                        'Translated_Candidate': ['Simon-Muster'],
+                        'Accuracy': [0.94],
+                        'Start': [1273],
+                        'End': [1285],
+                    }
+                ),
+                'Nachname': pd.DataFrame(
+                    data={
+                        'Candidate': ['Merlot'],
+                        'Translated_Candidate': ['Merlot'],
+                        'Accuracy': [0.67],
+                        'Start': [1287],
+                        'End': [1293],
+                    }
+                ),
+            }
+        }
+
+    def test_get_extraction_results_with_virtual_doc(self):
+        """Get back the extractions from our virtual doc."""
+        virtual_doc = extraction_result_to_document(self.document, self.result_dict)
+        ann1, ann2 = virtual_doc.annotations(use_correct=False)
+        assert ann1.bboxes[0] == {
+            'bottom': 212.84699999999998,
+            'end_offset': 1285,
+            'line_number': 22,
+            'offset_string': 'Simon-Muster',
+            'offset_string_original': 'Simon-Muster',
+            'page_index': 0,
+            'start_offset': 1273,
+            'top': 204.84699999999998,
+            'x0': 66.0,
+            'x1': 137.04,
+            'y0': 628.833,
+            'y1': 636.833,
+        }
+        assert ann2.bboxes[0] == {
+            'bottom': 212.84699999999998,
+            'end_offset': 1293,
+            'line_number': 22,
+            'offset_string': 'Merlot',
+            'offset_string_original': 'Merlot',
+            'page_index': 0,
+            'start_offset': 1287,
+            'top': 204.84699999999998,
+            'x0': 143.28,
+            'x1': 178.56,
+            'y0': 628.833,
+            'y1': 636.833,
+        }
+
+
 def test_feat_num_count():
     """Test string conversion."""
     # Debug code for df: df[df[self.label_feature_list].isin([np.nan, np.inf, -np.inf]).any(1)]
