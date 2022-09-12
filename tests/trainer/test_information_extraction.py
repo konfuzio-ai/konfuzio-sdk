@@ -32,7 +32,7 @@ from konfuzio_sdk.trainer.information_extraction import (
     count_string_differences,
     year_month_day_count,
     add_extractions_as_annotations,
-    extraction_result_to_document,
+    # extraction_result_to_document,
     # SeparateLabelsEntityMultiClassModel,
     # DocumentEntityMulticlassModel,
     RFExtractionAI,
@@ -287,18 +287,16 @@ class TestRegexModel(unittest.TestCase):
         self.pipeline.category = self.project.get_category_by_id(id_=63)
 
         for label in self.pipeline.category.labels:
-            #     for regex in label.regex(categories=[pipeline.category]): # find_regex(category=pipeline.category):
             for regex in label.find_regex(category=self.pipeline.category):
-                #     for regex in label.find_regex():
                 self.pipeline.tokenizer.tokenizers.append(RegexTokenizer(regex=regex))
 
-        # train_doc_ids = [44823, 44834, 44839, 44840, 44841]
-        # self.pipeline.documents = [self.project.get_document_by_id(doc_id) for doc_id in train_doc_ids]
-        self.pipeline.documents = self.project.get_category_by_id(63).documents()
+        train_doc_ids = [44823, 44834, 44839, 44840, 44841]
+        self.pipeline.documents = [self.project.get_document_by_id(doc_id) for doc_id in train_doc_ids]
+        # self.pipeline.documents = self.project.get_category_by_id(63).documents()
 
-        # test_doc_ids = [44865]
-        # self.pipeline.test_documents = [self.project.get_document_by_id(doc_id) for doc_id in test_doc_ids]
-        self.pipeline.test_documents = self.project.get_category_by_id(63).test_documents()
+        test_doc_ids = [44865]
+        self.pipeline.test_documents = [self.project.get_document_by_id(doc_id) for doc_id in test_doc_ids]
+        # self.pipeline.test_documents = self.project.get_category_by_id(63).test_documents()
         # todo have a separate test case for calculating features of offline documents
 
     def test_2_make_features(self):
@@ -346,7 +344,7 @@ class TestRegexModel(unittest.TestCase):
         """Evaluate DocumentEntityMultiClassModel."""
         evaluation = self.pipeline.evaluate_full()
 
-        assert evaluation.f1(None) == 0.9056603773584906  # 0.8405797101449275
+        assert evaluation.f1(None) == 0.821917808219178
 
     def test_7_extract_test_document(self):
         """Extract a randomly selected Test Document."""
@@ -380,18 +378,16 @@ class TestSeparateLabelsRegexModel(unittest.TestCase):
         self.pipeline.category = self.project.get_category_by_id(id_=63)
 
         for label in self.pipeline.category.labels:
-            #     for regex in label.regex(categories=[pipeline.category]): # find_regex(category=pipeline.category):
             for regex in label.find_regex(category=self.pipeline.category):
-                #     for regex in label.find_regex():
                 self.pipeline.tokenizer.tokenizers.append(RegexTokenizer(regex=regex))
 
-        # train_doc_ids = [44823, 44834, 44839, 44840, 44841]
-        # self.pipeline.documents = [self.project.get_document_by_id(doc_id) for doc_id in train_doc_ids]
-        self.pipeline.documents = self.project.get_category_by_id(63).documents()
+        train_doc_ids = [44823, 44834, 44839, 44840, 44841]
+        self.pipeline.documents = [self.project.get_document_by_id(doc_id) for doc_id in train_doc_ids]
+        # self.pipeline.documents = self.project.get_category_by_id(63).documents()
 
-        # test_doc_ids = [44865]
-        # self.pipeline.test_documents = [self.project.get_document_by_id(doc_id) for doc_id in test_doc_ids]
-        self.pipeline.test_documents = self.project.get_category_by_id(63).test_documents()
+        test_doc_ids = [44865]
+        self.pipeline.test_documents = [self.project.get_document_by_id(doc_id) for doc_id in test_doc_ids]
+        # self.pipeline.test_documents = self.project.get_category_by_id(63).test_documents()
         # todo have a separate test case for calculating features of offline documents
 
     def test_2_make_features(self):
@@ -439,7 +435,7 @@ class TestSeparateLabelsRegexModel(unittest.TestCase):
         """Evaluate DocumentEntityMultiClassModel."""
         evaluation = self.pipeline.evaluate_full()
 
-        assert evaluation.f1(None) == 0.9056603773584906  # 0.8405797101449275
+        assert evaluation.f1(None) == 0.821917808219178
 
     def test_7_extract_test_document(self):
         """Extract a randomly selected Test Document."""
@@ -478,9 +474,8 @@ class TestInformationExtraction(unittest.TestCase):
         document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         pipeline = RFExtractionAI()
         pipeline.tokenizer = WhitespaceTokenizer()
-        with pytest.raises(AttributeError) as einfo:
+        with pytest.raises(AttributeError, match='does not provide a Label Classifier'):
             pipeline.extract(document)
-        assert 'does not provide a Label Classifier' in str(einfo.value)
 
     def test_feature_function(self):
         """Test to generate features."""
@@ -499,9 +494,8 @@ class TestInformationExtraction(unittest.TestCase):
         pipeline = RFExtractionAI()
         pipeline.tokenizer = WhitespaceTokenizer()
         pipeline.clf = RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1)
-        with pytest.raises(AttributeError) as einfo:
+        with pytest.raises(AttributeError, match='instance is not fitted yet'):
             _, _ = pipeline.extract(document)
-        assert 'instance is not fitted yet' in str(einfo.value)
 
     def test_extract_with_fitted_clf(self):
         """Test to extract a Document."""
@@ -513,9 +507,8 @@ class TestInformationExtraction(unittest.TestCase):
             n_samples=1000, n_features=4, n_informative=2, n_redundant=0, random_state=0, shuffle=False
         )
         pipeline.clf.fit(X, y)
-        with pytest.raises(KeyError) as einfo:
+        with pytest.raises(KeyError, match='do not match the features of the pipeline'):
             pipeline.extract(document)
-        assert 'do not match the features of the pipeline' in str(einfo.value)
 
     def test_extract_with_correctly_fitted_clf(self):
         """Test to extract a Document."""
@@ -529,9 +522,9 @@ class TestInformationExtraction(unittest.TestCase):
         pipeline.clf.fit(X, y)
         pipeline.label_feature_list = ['start_offset', 'end_offset']
         pipeline.category = document.category
-        pipeline.extract(document)
+
         # todo
-        # virtual_doc = extraction_result_to_document(document, extraction_result)
+        # virtual_doc = pipeline.extract(document)
         # assert len(virtual_doc.annotations(use_correct=False)) > 0
         # assert len(virtual_doc.annotation_sets()) > 0
 
@@ -741,42 +734,50 @@ class TestExtractionToDocument(unittest.TestCase):
 
     def test_empty_extraction_result_to_document(self):
         """Test conversion of an empty AI output to a Document."""
-        virtual_doc = extraction_result_to_document(self.sample_document, extraction_result={})
+        virtual_doc = RFExtractionAI().extraction_result_to_document(self.sample_document, extraction_result={})
         assert virtual_doc.annotations(use_correct=False) == []
 
     def test_empty_extraction_result_to_empty_document(self):
         """Test conversion of an empty AI output to an empty Document."""
         document = Document(text='', project=self.project, category=self.category)
-        virtual_doc = extraction_result_to_document(document, extraction_result={})
+        virtual_doc = RFExtractionAI().extraction_result_to_document(document, extraction_result={})
         assert virtual_doc.annotations(use_correct=False) == []
 
     def test_extraction_result_with_empty_dataframe_to_document(self):
         """Test conversion of an AI output with an empty dataframe to a Document."""
         document = Document(project=self.project, category=self.category, text='From 14.12.2021 to 1.1.2022.')
-        virtual_doc = extraction_result_to_document(
+        virtual_doc = RFExtractionAI().extraction_result_to_document(
             document, extraction_result={'label in category label set': pd.DataFrame()}
         )
         assert virtual_doc.annotations(use_correct=False) == []
 
     def test_extraction_result_with_empty_dictionary_to_document(self):
         """Test conversion of an AI output with an empty dictionary to a Document."""
-        virtual_doc = extraction_result_to_document(self.sample_document, extraction_result={'LabelSetName': {}})
+        virtual_doc = RFExtractionAI().extraction_result_to_document(
+            self.sample_document, extraction_result={'LabelSetName': {}}
+        )
         assert virtual_doc.annotations(use_correct=False) == []
 
     def test_extraction_result_with_empty_list_to_document(self):
         """Test conversion of an AI output with an empty list to a Document."""
-        virtual_doc = extraction_result_to_document(self.sample_document, extraction_result={'LabelSetName': []})
+        virtual_doc = RFExtractionAI().extraction_result_to_document(
+            self.sample_document, extraction_result={'LabelSetName': []}
+        )
         assert virtual_doc.annotations(use_correct=False) == []
 
     def test_extraction_result_with_empty_list_to_empty_document(self):
         """Test conversion of an AI output with an empty list to an empty Document."""
-        virtual_doc = extraction_result_to_document(self.sample_document, extraction_result={'LabelSetName': []})
+        virtual_doc = RFExtractionAI().extraction_result_to_document(
+            self.sample_document, extraction_result={'LabelSetName': []}
+        )
         assert virtual_doc.annotations(use_correct=False) == []
 
     def test_extraction_result_for_category_label_set(self):
         """Test conversion of an AI output with an extraction for a label in the Category Label Set."""
         extraction_result = {'DefaultLabelName': pd.DataFrame(data=[self.extraction_1])}
-        virtual_doc = extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
+        virtual_doc = RFExtractionAI().extraction_result_to_document(
+            self.sample_document, extraction_result=extraction_result
+        )
         assert len(virtual_doc.annotations(use_correct=False)) == 1
         annotation = virtual_doc.annotations(use_correct=False)[0]
         assert annotation.label.name == 'DefaultLabelName'
@@ -785,7 +786,9 @@ class TestExtractionToDocument(unittest.TestCase):
     def test_extraction_result_for_label_set_with_single_annotation_set(self):
         """Test conversion of an AI output with multiple extractions for a label in a Label Set - 1 Annotation Set."""
         extraction_result = {'LabelSetName': {'LabelName': pd.DataFrame(data=[self.extraction_1, self.extraction_2])}}
-        virtual_doc = extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
+        virtual_doc = RFExtractionAI().extraction_result_to_document(
+            self.sample_document, extraction_result=extraction_result
+        )
         assert len(virtual_doc.annotations(use_correct=False)) == 2
         annotation_1 = virtual_doc.annotations(use_correct=False)[0]
         annotation_2 = virtual_doc.annotations(use_correct=False)[1]
@@ -801,7 +804,9 @@ class TestExtractionToDocument(unittest.TestCase):
                 {'LabelName': pd.DataFrame(data=[self.extraction_2])},
             ]
         }
-        virtual_doc = extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
+        virtual_doc = RFExtractionAI().extraction_result_to_document(
+            self.sample_document, extraction_result=extraction_result
+        )
         assert len(virtual_doc.annotations(use_correct=False)) == 2
         annotation_1 = virtual_doc.annotations(use_correct=False)[0]
         annotation_2 = virtual_doc.annotations(use_correct=False)[1]
@@ -818,7 +823,7 @@ class TestExtractionToDocument(unittest.TestCase):
             ]
         }
         with pytest.raises(IndexError):
-            extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
+            RFExtractionAI().extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
 
     def test_extraction_result_for_non_existing_label_set(self):
         """Test conversion of an AI output with extractions for a labelset that does not exist in the doc's category."""
@@ -827,13 +832,13 @@ class TestExtractionToDocument(unittest.TestCase):
             'NonExistingLabelSet': [{'LabelName': pd.DataFrame(data=[self.extraction_2])}],
         }
         with pytest.raises(IndexError):
-            extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
+            RFExtractionAI().extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
 
     def test_extraction_result_with_non_dataframe_object(self):
         """Test conversion of an AI output with extractions containing objects that are not Dataframes."""
         extraction_result = {'LabelSetName': [{'LabelName': self.extraction_1}]}
         with pytest.raises(TypeError, match='Provided extraction object should be a Dataframe, got a'):
-            extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
+            RFExtractionAI().extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
 
     def test_extraction_result_with_invalid_dataframe(self):
         """Test conversion of an AI output with extractions invalid Dataframe columns."""
@@ -841,7 +846,7 @@ class TestExtractionToDocument(unittest.TestCase):
         invalid_df = invalid_df.drop(columns=["Start"])
         extraction_result = {'LabelSetName': [{'LabelName': invalid_df}]}
         with pytest.raises(ValueError, match='Extraction do not contain all required fields'):
-            extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
+            RFExtractionAI().extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
 
 
 def test_feat_num_count():

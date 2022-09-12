@@ -68,92 +68,6 @@ def get_offsets_per_page(doc_text: str) -> Dict:
     return starts_ends_per_page
 
 
-def filter_dataframe(df: pandas.DataFrame, label_name: str, labels_threshold: dict) -> pandas.DataFrame:
-    """Filter dataframe rows accordingly with the Accuracy value.
-
-    Rows (extractions) where the accuracy value is below the threshold defined for the label are removed.
-
-    :param df: Dataframe with extraction results
-    :param label_name: Name of the label
-    :param labels_threshold: Dictionary with the threshold values for each label
-    :returns: Filtered dataframe
-    """
-    try:
-        _label_threshold = labels_threshold[label_name]
-    except KeyError:
-        _label_threshold = 0.1
-
-    filtered = df[df['Accuracy'] >= _label_threshold]
-
-    return filtered
-
-
-def filter_low_confidence_extractions(result: Dict, labels_threshold: Dict) -> Dict:
-    """Remove extractions with confidence below the threshold defined for the respective label.
-
-    The input is a dictionary where the values can be:
-    - dataframe
-    - dictionary where the values are dataframes
-    - list of dictionaries  where the values are dataframes
-
-    :param result: Extraction results
-    :param labels_threshold: Dictionary with the threshold values for each label
-    :returns: Filtered dictionary.
-    """
-    for k in list(result.keys()):
-        if isinstance(result[k], pandas.DataFrame):
-            filtered = filter_dataframe(result[k], k, labels_threshold)
-            if filtered.empty:
-                del result[k]
-            else:
-                result[k] = filtered
-
-        elif isinstance(result[k], list):
-            for e, element in enumerate(result[k]):
-                for sk in list(element.keys()):
-                    if isinstance(element[sk], pandas.DataFrame):
-                        filtered = filter_dataframe(result[k][e][sk], sk, labels_threshold)
-                        if filtered.empty:
-                            del result[k][e][sk]
-                        else:
-                            result[k][e][sk] = filtered
-
-        elif isinstance(result[k], dict):
-            for ssk in list(result[k].keys()):
-                if isinstance(result[k][ssk], pandas.DataFrame):
-                    filtered = filter_dataframe(result[k][ssk], ssk, labels_threshold)
-                    if filtered.empty:
-                        del result[k][ssk]
-                    else:
-                        result[k][ssk] = filtered
-
-    return result
-
-
-def remove_empty_dataframes_from_extraction(result: Dict) -> Dict:
-    """Remove empty dataframes from the result of an Extraction AI.
-
-    The input is a dictionary where the values can be:
-    - dataframe
-    - dictionary where the values are dataframes
-    - list of dictionaries  where the values are dataframes
-    """
-    for k in list(result.keys()):
-        if isinstance(result[k], pandas.DataFrame) and result[k].empty:
-            del result[k]
-        elif isinstance(result[k], list):
-            for e, element in enumerate(result[k]):
-                for sk in list(element.keys()):
-                    if isinstance(element[sk], pandas.DataFrame) and element[sk].empty:
-                        del result[k][e][sk]
-        elif isinstance(result[k], dict):
-            for ssk in list(result[k].keys()):
-                if isinstance(result[k][ssk], pandas.DataFrame) and result[k][ssk].empty:
-                    del result[k][ssk]
-
-    return result
-
-
 def get_bboxes_by_coordinates(doc_bbox: Dict, selection_bboxes: List[Dict]) -> List[Dict]:
     """
     Get the bboxes of the characters contained in the selection bboxes.
@@ -445,7 +359,6 @@ def merge_df(
         df.sort_values(by=['y0'])
         offsets_per_page = get_offsets_per_page(doc_text)
         label_types = []
-
     else:
         label_types = [label_type_dict[row['label_text']] for _, row in df.iterrows()]
 
@@ -617,54 +530,54 @@ def merge_annotations(
     return merged_res_dict
 
 
-def split_multiline_annotations(annotations: List['Annotation'], multiline_labels: list) -> List['Annotation']:
-    """
-    Verify if there are annotations which involve multiple lines and split them into individual ones.
+# def split_multiline_annotations(annotations: List['Annotation'], multiline_labels: list) -> List['Annotation']:
+#     """
+#     Verify if there are annotations which involve multiple lines and split them into individual ones.
 
-    For example, if an annotation includes 3 lines, 3 new annotations are created.
-    This is necessary to have the correct offset strings.
-    The offset string of an annotation is built considering only the start and end offset.
-    In the multiline case, the start offset would be in the first line and the end offset in the last line.
-    Everything that is in the middle would be included.
+#     For example, if an annotation includes 3 lines, 3 new annotations are created.
+#     This is necessary to have the correct offset strings.
+#     The offset string of an annotation is built considering only the start and end offset.
+#     In the multiline case, the start offset would be in the first line and the end offset in the last line.
+#     Everything that is in the middle would be included.
 
-    :param annotations: Annotations to be verified.
-    :return: Splitted annotations.
-    """
-    new_annotations = []
+#     :param annotations: Annotations to be verified.
+#     :return: Splitted annotations.
+#     """
+#     new_annotations = []
 
-    for annotation in annotations:
-        if annotation.is_multiline:
-            # Keep track of which labels have this type of annotations. Important to limit the cases where vertical
-            # merge of entities should be applied.
-            if annotation.label not in multiline_labels:
-                multiline_labels.append(annotation.label)
+#     for annotation in annotations:
+#         if annotation.is_multiline:
+#             # Keep track of which labels have this type of annotations. Important to limit the cases where vertical
+#             # merge of entities should be applied.
+#             if annotation.label not in multiline_labels:
+#                 multiline_labels.append(annotation.label)
 
-            for line_annotation in annotation.bboxes:
-                bbox = {
-                    'top': line_annotation['top'],
-                    'bottom': line_annotation['bottom'],
-                    'x0': line_annotation['x0'],
-                    'x1': line_annotation['x1'],
-                    'y0': line_annotation['y0'],
-                    'y1': line_annotation['y1'],
-                }
+#             for line_annotation in annotation.bboxes:
+#                 bbox = {
+#                     'top': line_annotation['top'],
+#                     'bottom': line_annotation['bottom'],
+#                     'x0': line_annotation['x0'],
+#                     'x1': line_annotation['x1'],
+#                     'y0': line_annotation['y0'],
+#                     'y1': line_annotation['y1'],
+#                 }
 
-                # Document is necessary as input to have the offset string.
-                # Other parameters are necessary because are not included in line_annotation.
-                annot = Annotation(
-                    document=annotation.document,
-                    label=annotation.label,
-                    is_correct=annotation.is_correct,
-                    revised=annotation.revised,
-                    annotation_set=annotation.annotation_set,
-                    bbox=bbox,
-                    **line_annotation,
-                )
-                new_annotations.append(annot)
-        else:
-            new_annotations.append(annotation)
+#                 # Document is necessary as input to have the offset string.
+#                 # Other parameters are necessary because are not included in line_annotation.
+#                 annot = Annotation(
+#                     document=annotation.document,
+#                     label=annotation.label,
+#                     is_correct=annotation.is_correct,
+#                     revised=annotation.revised,
+#                     annotation_set=annotation.annotation_set,
+#                     bbox=bbox,
+#                     **line_annotation,
+#                 )
+#                 new_annotations.append(annot)
+#         else:
+#             new_annotations.append(annotation)
 
-    return new_annotations
+#     return new_annotations
 
 
 def substring_count(list: list, substring: str) -> list:
@@ -1714,55 +1627,6 @@ def add_extractions_as_annotations(
                 )
 
 
-def extraction_result_to_document(document: Document, extraction_result: dict) -> Document:
-    """Return a virtual Document annotated with AI Model output."""
-    virtual_doc = deepcopy(document)
-    virtual_annotation_set_id = 0  # counter for across mult. Annotation Set groups of a Label Set
-
-    # define Annotation Set for the Category Label Set: todo: this is unclear from API side
-    # default Annotation Set will be always added even if there are no predictions for it
-    category_label_set = document.category.project.get_label_set_by_id(document.category.id_)
-    virtual_default_annotation_set = AnnotationSet(
-        document=virtual_doc, label_set=category_label_set, id_=virtual_annotation_set_id
-    )
-
-    for label_or_label_set_name, information in extraction_result.items():
-        if isinstance(information, pandas.DataFrame) and not information.empty:
-            # annotations belong to the default Annotation Set
-            label = document.category.project.get_label_by_name(label_or_label_set_name)
-            add_extractions_as_annotations(
-                document=virtual_doc,
-                extractions=information,
-                label=label,
-                label_set=category_label_set,
-                annotation_set=virtual_default_annotation_set,
-            )
-
-        elif isinstance(information, list) or isinstance(information, dict):
-            # process multi Annotation Sets that are not part of the category Label Set
-            label_set = document.category.project.get_label_set_by_name(label_or_label_set_name)
-
-            if not isinstance(information, list):
-                information = [information]
-
-            for entry in information:  # represents one of pot. multiple annotation-sets belonging of one LabelSet
-                virtual_annotation_set_id += 1
-                virtual_annotation_set = AnnotationSet(
-                    document=virtual_doc, label_set=label_set, id_=virtual_annotation_set_id
-                )
-
-                for label_name, extractions in entry.items():
-                    label = document.category.project.get_label_by_name(label_name)
-                    add_extractions_as_annotations(
-                        document=virtual_doc,
-                        extractions=extractions,
-                        label=label,
-                        label_set=label_set,
-                        annotation_set=virtual_annotation_set,
-                    )
-    return virtual_doc
-
-
 class Trainer:
     """Base Model to extract information from unstructured human readable text."""
 
@@ -2047,6 +1911,7 @@ class GroupAnnotationSets:
         self.n_nearest_template = 5
         self.max_depth = 100
         self.n_estimators = 100
+        self.template_clf = None
 
     def fit_template_clf(self) -> Tuple[Optional[object], Optional[List['str']]]:
         """
@@ -2512,6 +2377,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         # self.regexes = None  # set later
         self.tokenizer = None
 
+        self.clf = None
+
     def features(self, document: Document):
         """Calculate features using the best working default values that can be overwritten with self values."""
         df, _feature_list, _temp_df_raw_errors = process_document_data(
@@ -2542,13 +2409,13 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         if self.tokenizer is None:
             raise AttributeError(f'{self} missing Tokenizer.')
 
-        if self.clf is None and hasattr(self, 'label_clf'):  # Can be removed for models after 09.10.2020
-            self.clf = self.label_clf
-
         if self.clf is None:
             raise AttributeError(f'{self} does not provide a Label Classifier. Please add it.')
         else:
             check_is_fitted(self.clf)
+
+        if self.template_clf is None:
+            logger.warning('{self} does not provide a LabelSet Classfier.')
 
         # Main Logic -------------------------
         # 1. start inference with new document
@@ -2612,29 +2479,34 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
                 if isinstance(value, pandas.DataFrame):
                     res_dict[label] = value[value['Accuracy'] > self.extract_threshold]
 
-        # Try to calculate sections based on template classifier.
-        if hasattr(self, 'template_clf'):  # todo smarter handling of multiple clf
-            res_dict = self.extract_template_with_clf(inference_document.text, res_dict)
-
-        # place annotations back
-        # document._annotations = doc_annotations
-
-        res_dict = self.merge_dict(res_dict, document)
-
-        if self.use_separate_labels:
-            res_dict = self.separate_labels(res_dict)
-
-        return extraction_result_to_document(document, res_dict)
-
-    def merge_dict(self, res_dict: Dict, document) -> Dict:
-        """WIP."""
-        label_type_dict = {label.name: label.data_type for label in self.category.labels}
         label_threshold_dict = {
             label.name: label.threshold if hasattr(label, 'threshold') else 0.1 for label in self.category.labels
         }
 
-        res_dict = remove_empty_dataframes_from_extraction(res_dict)
-        res_dict = filter_low_confidence_extractions(res_dict, label_threshold_dict)
+        res_dict = self.remove_empty_dataframes_from_extraction(res_dict)
+        res_dict = self.filter_low_confidence_extractions(res_dict, label_threshold_dict)
+
+        res_dict = self.merge_dict(res_dict, document, label_threshold_dict)
+
+        # Try to calculate sections based on template classifier.
+        if self.template_clf is not None:  # todo smarter handling of multiple clf
+            res_dict = self.extract_template_with_clf(inference_document.text, res_dict)
+
+        # res_dict = self.merge_dict(res_dict, document)
+
+        # place annotations back
+        # document._annotations = doc_annotations
+
+        if self.use_separate_labels:
+            res_dict = self.separate_labels(res_dict)
+
+        virtual_doc = self.extraction_result_to_document(document, res_dict)
+
+        return virtual_doc
+
+    def merge_dict(self, res_dict: Dict, document: Document, label_threshold_dict: Dict) -> Dict:
+        """WIP."""
+        label_type_dict = {str(label.name): label.data_type for label in self.category.labels}
 
         merged_res_dict = merge_annotations(
             res_dict=res_dict,
@@ -2687,7 +2559,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
                     new_res[section_label].append(new_found_section)
 
-            # if the value is a dictionary, is because he key corresponds to a section label without multiple sections
+            # if the value is a dictionary, is because the key corresponds to a section label without multiple sections
             # we need to rewrite the label name (remove the section label name) in the keys
             elif isinstance(value, dict):
                 section_label = key
@@ -2720,6 +2592,137 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
                 new_res[key] = value
 
         return new_res
+
+    def remove_empty_dataframes_from_extraction(self, result: Dict) -> Dict:
+        """Remove empty dataframes from the result of an Extraction AI.
+
+        The input is a dictionary where the values can be:
+        - dataframe
+        - dictionary where the values are dataframes
+        - list of dictionaries  where the values are dataframes
+        """
+        for k in list(result.keys()):
+            if isinstance(result[k], pandas.DataFrame) and result[k].empty:
+                del result[k]
+            elif isinstance(result[k], list):
+                for e, element in enumerate(result[k]):
+                    for sk in list(element.keys()):
+                        if isinstance(element[sk], pandas.DataFrame) and element[sk].empty:
+                            del result[k][e][sk]
+            elif isinstance(result[k], dict):
+                for ssk in list(result[k].keys()):
+                    if isinstance(result[k][ssk], pandas.DataFrame) and result[k][ssk].empty:
+                        del result[k][ssk]
+
+        return result
+
+    def filter_low_confidence_extractions(self, result: Dict, labels_threshold: Dict) -> Dict:
+        """Remove extractions with confidence below the threshold defined for the respective label.
+
+        The input is a dictionary where the values can be:
+        - dataframe
+        - dictionary where the values are dataframes
+        - list of dictionaries  where the values are dataframes
+
+        :param result: Extraction results
+        :param labels_threshold: Dictionary with the threshold values for each label
+        :returns: Filtered dictionary.
+        """
+        for k in list(result.keys()):
+            if isinstance(result[k], pandas.DataFrame):
+                filtered = self.filter_dataframe(result[k], k, labels_threshold)
+                if filtered.empty:
+                    del result[k]
+                else:
+                    result[k] = filtered
+
+            elif isinstance(result[k], list):
+                for e, element in enumerate(result[k]):
+                    for sk in list(element.keys()):
+                        if isinstance(element[sk], pandas.DataFrame):
+                            filtered = self.filter_dataframe(result[k][e][sk], sk, labels_threshold)
+                            if filtered.empty:
+                                del result[k][e][sk]
+                            else:
+                                result[k][e][sk] = filtered
+
+            elif isinstance(result[k], dict):
+                for ssk in list(result[k].keys()):
+                    if isinstance(result[k][ssk], pandas.DataFrame):
+                        filtered = self.filter_dataframe(result[k][ssk], ssk, labels_threshold)
+                        if filtered.empty:
+                            del result[k][ssk]
+                        else:
+                            result[k][ssk] = filtered
+
+        return result
+
+    def filter_dataframe(self, df: pandas.DataFrame, label_name: str, labels_threshold: dict) -> pandas.DataFrame:
+        """Filter dataframe rows accordingly with the Accuracy value.
+
+        Rows (extractions) where the accuracy value is below the threshold defined for the label are removed.
+
+        :param df: Dataframe with extraction results
+        :param label_name: Name of the label
+        :param labels_threshold: Dictionary with the threshold values for each label
+        :returns: Filtered dataframe
+        """
+        try:
+            _label_threshold = labels_threshold[label_name]
+        except KeyError:
+            _label_threshold = 0.1
+
+        filtered = df[df['Accuracy'] >= _label_threshold]
+
+        return filtered
+
+    def extraction_result_to_document(self, document: Document, extraction_result: dict) -> Document:
+        """Return a virtual Document annotated with AI Model output."""
+        virtual_doc = deepcopy(document)
+        virtual_annotation_set_id = 0  # counter for across mult. Annotation Set groups of a Label Set
+
+        # define Annotation Set for the Category Label Set: todo: this is unclear from API side
+        # default Annotation Set will be always added even if there are no predictions for it
+        category_label_set = document.category.project.get_label_set_by_id(document.category.id_)
+        virtual_default_annotation_set = AnnotationSet(
+            document=virtual_doc, label_set=category_label_set, id_=virtual_annotation_set_id
+        )
+
+        for label_or_label_set_name, information in extraction_result.items():
+            if isinstance(information, pandas.DataFrame) and not information.empty:
+                # annotations belong to the default Annotation Set
+                label = document.category.project.get_label_by_name(label_or_label_set_name)
+                add_extractions_as_annotations(
+                    document=virtual_doc,
+                    extractions=information,
+                    label=label,
+                    label_set=category_label_set,
+                    annotation_set=virtual_default_annotation_set,
+                )
+
+            elif isinstance(information, list) or isinstance(information, dict):
+                # process multi Annotation Sets that are not part of the category Label Set
+                label_set = document.category.project.get_label_set_by_name(label_or_label_set_name)
+
+                if not isinstance(information, list):
+                    information = [information]
+
+                for entry in information:  # represents one of pot. multiple annotation-sets belonging of one LabelSet
+                    virtual_annotation_set_id += 1
+                    virtual_annotation_set = AnnotationSet(
+                        document=virtual_doc, label_set=label_set, id_=virtual_annotation_set_id
+                    )
+
+                    for label_name, extractions in entry.items():
+                        label = document.category.project.get_label_by_name(label_name)
+                        add_extractions_as_annotations(
+                            document=virtual_doc,
+                            extractions=extractions,
+                            label=label,
+                            label_set=label_set,
+                            annotation_set=virtual_annotation_set,
+                        )
+        return virtual_doc
 
     def lose_weight(self):
         """Lose weight before pickling."""

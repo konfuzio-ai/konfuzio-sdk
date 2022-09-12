@@ -778,32 +778,31 @@ class Label(Data):
                     if new_regex not in regex_found:
                         regex_made.append(proposal)
 
-        return regex_made
-        # logger.info(
-        #     f'For Label {self.name} we found {len(regex_made)} regex proposals for {len(all_annotations)} annotations.'
-        # )
+        logger.info(
+            f'For Label {self.name} we found {len(regex_made)} regex proposals for {len(all_annotations)} annotations.'
+        )
 
-        # # todo replace by compare
-        # evaluations = [
-        #     self.evaluate_regex(
-        #         _regex_made, category=category, annotations=all_annotations, filtered_group=f'{self.id_}_'
-        #     )
-        #     for _regex_made in regex_made
-        # ]
+        # todo replace by compare
+        evaluations = [
+            self.evaluate_regex(
+                _regex_made, category=category, annotations=all_annotations, filtered_group=f'{self.id_}_'
+            )
+            for _regex_made in regex_made
+        ]
 
-        # logger.info(
-        #     f'We compare {len(evaluations)} regex for {len(all_annotations)} correct Annotations for Category '
-        #     f'{category}.'
-        # )
+        logger.info(
+            f'We compare {len(evaluations)} regex for {len(all_annotations)} correct Annotations for Category '
+            f'{category}.'
+        )
 
-        # try:
-        #     logger.info(f'Evaluate {self} for best regex.')
-        #     best_regex = get_best_regex(evaluations)
-        # except ValueError:
-        #     logger.exception(f'We cannot find regex for {self} with a f_score > 0.')
-        #     best_regex = []
+        try:
+            logger.info(f'Evaluate {self} for best regex.')
+            best_regex = get_best_regex(evaluations)
+        except ValueError:
+            logger.exception(f'We cannot find regex for {self} with a f_score > 0.')
+            best_regex = []
 
-        # return best_regex
+        return best_regex
 
     def regex(self, categories: List[Category], update=False) -> List:
         """Calculate regex to be used in the LabelExtractionModel."""
@@ -2585,7 +2584,7 @@ class Project(Data):
         for label in self.labels:
             if label.name == name:
                 return label
-        raise IndexError
+        raise IndexError(f'Label name {name} was not found in {self}.')
 
     def get_label_by_id(self, id_: int) -> Label:
         """
@@ -2596,7 +2595,7 @@ class Project(Data):
         for label in self.labels:
             if label.id_ == id_:
                 return label
-        raise IndexError
+        raise IndexError(f'Label id {id} was not found in {self}.')
 
     def get_label_set_by_name(self, name: str) -> LabelSet:
         """Return a Label Set by ID."""

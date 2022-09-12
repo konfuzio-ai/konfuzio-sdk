@@ -377,9 +377,9 @@ class TestTokensMultipleCategories(unittest.TestCase):
         self.label._evaluations = {}
         # we can have a different regex selected if the regexes are very similar because of slightly variations in
         # runtime
-        assert regexes == ['(?:(?P<Label_3_W_5_3>all))\\,'] or regexes == [
-            '[A-ZÄÖÜ][a-zäöüß][ ]+(?:(?P<Label_3_W_5_3>all))\\,'
-        ]
+        assert regexes == ['[ ]+(?:(?P<Label_3_W_5_3>all))\\,']
+        # regexes == ['(?:(?P<Label_3_W_5_3>all))\\,'] or\
+        # regexes == ['[A-ZÄÖÜ][a-zäöüß][ ]+(?:(?P<Label_3_W_5_3>all))\\,'] or\
 
     def test_annotation_tokens(self):
         """Test tokens created for an Annotation."""
