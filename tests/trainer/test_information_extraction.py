@@ -280,10 +280,10 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
 
 @parameterized.parameterized_class(
-    ('use_seperate_labels'),
+    ('use_seperate_labels', 'evaluate_full_result'),
     [
-        (False,),
-        (True,),
+        (False, 0.8055555555555556),
+        (True, 0.8055555555555556),
     ],
 )
 class TestRegexRFExtractionAI(unittest.TestCase):
@@ -359,7 +359,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         """Evaluate DocumentEntityMultiClassModel."""
         evaluation = self.pipeline.evaluate_full()
 
-        assert evaluation.f1(None) == 0.8055555555555556  # 0.821917808219178
+        assert evaluation.f1(None) == self.evaluate_full_result  # 0.8055555555555556  # 0.821917808219178
 
     def test_7_extract_test_document(self):
         """Extract a randomly selected Test Document."""
@@ -375,6 +375,14 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         ann = self.tests_annotations[i]
         ann_tuple = (ann.label.name, ann.start_offset, ann.end_offset)
         assert ann_tuple == expected
+
+    # @classmethod
+    # def tearDownClass(cls) -> None:
+    #     """Clear regex folder."""
+    #     dir = os.path.join(OFFLINE_PROJECT, 'regex')
+
+    #     for f in os.listdir(dir):
+    #         os.remove(os.path.join(dir, f))
 
 
 # class TestSeparateLabelsRegexModel(unittest.TestCase):

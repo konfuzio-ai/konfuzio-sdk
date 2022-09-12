@@ -624,7 +624,7 @@ class Label(Data):
             tokens = []
         return tokens
 
-    def tokens(self, categories: List[Category], update=False) -> dict:
+    def tokens(self, categories: List[Category], update=True) -> dict:
         """Calculate tokens to be used in the regex of the Label."""
         for category in categories:
             tokens_file_path = os.path.join(
