@@ -10,7 +10,6 @@ import shutil
 import time
 import random
 import zipfile
-from collections import defaultdict
 from copy import deepcopy
 from typing import Optional, List, Union, Tuple, Dict
 from warnings import warn
@@ -2454,7 +2453,7 @@ class Project(Data):
             self.write_project_files()
         self.get_meta()
         self.get_labels()
-        self.get_label_sets()
+        self.get_label_sets(reload=True)
         self.get_categories()
         self.init_or_update_document()
         return self
@@ -2522,9 +2521,9 @@ class Project(Data):
                     label_set.add_category(category)  # The Label Set is linked to a Category it created
                     category.add_label_set(label_set)
 
-    def get_label_sets(self, update=False):
+    def get_label_sets(self, reload=False):
         """Get Label Sets in the Project."""
-        if self.label_sets == [] or update:
+        if self.label_sets == [] or reload:
             with open(self.label_sets_file_path, "r") as f:
                 label_sets_data = json.load(f)
 
@@ -2730,7 +2729,6 @@ class Project(Data):
     #     # return all default template documents
     #     return default_template_documents, default_labels
 
-
     def separate_labels(self, default_label_sets: List = None):
         """
         Create separated labels for labels which are shared between SectionLabels.
@@ -2751,6 +2749,7 @@ class Project(Data):
 
         If the labels of the project should be used in the original format for other tasks, for example, for the
         business evaluation, the project should be reloaded after the training.
+
         """
         if not default_label_sets:
             default_label_sets = [x for x in self.get_label_sets() if x.is_default]
@@ -2766,9 +2765,10 @@ class Project(Data):
         for default_label_set in default_label_sets:
             try:
                 # Use patched documents to also use knowledge from other document types which share some labels.
-                _documents = (
-                    self.documents
-                )  # + self.test_documents # deepcopy(self.documents + self.test_documents) #default_section_documents_dict[default_label_set.id]
+                _documents = self.documents  # + self.test_documents
+                # deepcopy(self.documents + self.test_documents)
+                # default_section_documents_dict[default_label_set.id]
+
                 _documents = [doc for doc in _documents if doc.category]
                 if len(_documents) == 0:
                     logger.error(f'There are no documents for {default_label_set.name}.')
@@ -2799,16 +2799,13 @@ class Project(Data):
                                     new_label = next(x for x in self.labels if new_label_name == x.name)
                                 else:
                                     new_label = Label(
-                                        id_=random.randrange(-999999, -1),
+                                        id_=random.randrange(1e7, 1e12),
                                         text=new_label_name,
                                         text_clean=new_label_name_clean,
                                         get_data_type_display=annotation.label.data_type,
                                         description=annotation.label.description,
                                         project=annotation.label.project,
                                         threshold=0.1,
-                                        # token_full_replacement=annotation.label.token_full_replacement,
-                                        # token_whitespace_replacement=annotation.label.token_whitespace_replacement,
-                                        # token_number_replacement=annotation.label.token_number_replacement,
                                         has_multiple_top_candidates=annotation.label.has_multiple_top_candidates,
                                     )
                                     prj_section_label.add_label(new_label)

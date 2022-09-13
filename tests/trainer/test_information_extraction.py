@@ -285,7 +285,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
     ('use_seperate_labels', 'evaluate_full_result'),
     [
         (False, 0.8055555555555556),
-        (True, 0.8055555555555556),
+        (True, 0.8333333333333334),
     ],
 )
 class TestRegexRFExtractionAI(unittest.TestCase):
