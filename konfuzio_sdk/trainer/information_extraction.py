@@ -1921,7 +1921,7 @@ class GroupAnnotationSets:
         :return:
         """
         # Only train template clf is there are non default templates
-        self.section_labels = self.category.label_sets  # todo what is it?
+        self.label_sets = self.category.label_sets  # todo what is it?
         if not [lset for lset in self.category.label_sets if not lset.is_default]:
             # todo see https://gitlab.com/konfuzio/objectives/-/issues/2247
             # todo check for NO_LABEL_SET if we should keep it
@@ -1944,13 +1944,13 @@ class GroupAnnotationSets:
         for document_id, df_doc in df_train_label_list:
             document = self.category.project.get_document_by_id(document_id)
             # Train classifier only on documents with a matching document template.
-            if (
-                hasattr(self, 'default_section_label')
-                and self.default_section_label
-                and self.default_section_label != document.category_template
-            ):
-                logger.info(f'Skip document {document} because its template does not match.')
-                continue
+            # if (
+            #     hasattr(self, 'default_section_label')
+            #     and self.default_section_label
+            #     and self.default_section_label != document.category_template
+            # ):
+            #     logger.info(f'Skip document {document} because its template does not match.')
+            #     continue
             df_train_template_list.append(self.convert_label_features_to_template_features(df_doc, document.text))
             df_train_ground_truth_list.append(self.build_document_template_feature(document))
 
@@ -1958,13 +1958,13 @@ class GroupAnnotationSets:
         df_valid_ground_truth_list = []
         for document_id, df_doc in df_valid_label_list:
             document = self._get_document(document_id)
-            if (
-                hasattr(self, 'default_section_label')
-                and self.default_section_label
-                and self.default_section_label != document.category_template
-            ):
-                logger.info(f'Skip document {document} because its template does not match.')
-                continue
+            # if (
+            #     hasattr(self, 'default_section_label')
+            #     and self.default_section_label
+            #     and self.default_section_label != document.category_template
+            # ):
+            #     logger.info(f'Skip document {document} because its template does not match.')
+            #     continue
             df_valid_template_list.append(self.convert_label_features_to_template_features(df_doc, document.text))
             df_valid_ground_truth_list.append(self.build_document_template_feature(document))
 
@@ -2202,12 +2202,12 @@ class GroupAnnotationSets:
                     label = next(x for x in self.category.project.labels if x.name == annotation['label'])
                 except StopIteration:
                     continue
-                for section_label in self.section_labels:
-                    if label in section_label.labels:
-                        if section_label.name in counter_dict.keys():
-                            counter_dict[section_label.name] += 1
+                for label_set in self.label_sets:
+                    if label in label_set.labels:
+                        if label_set.name in counter_dict.keys():
+                            counter_dict[label_set.name] += 1
                         else:
-                            counter_dict[section_label.name] = 1
+                            counter_dict[label_set.name] = 1
             tmp_df = pandas.DataFrame([{**annotations_dict, **counter_dict}])
             global_df = pandas.concat([global_df, tmp_df], ignore_index=True)
             char_count = new_char_count + 1
@@ -2234,11 +2234,11 @@ class GroupAnnotationSets:
         text_replaced = text.replace('\f', '\n')
 
         # Add extractions from non-default sections.
-        for section_label in [x for x in self.section_labels if not x.is_default]:
+        for label_set in [x for x in self.label_sets if not x.is_default]:
             # Add Extraction from SectionLabels with multiple sections (as list).
-            if section_label.has_multiple_annotation_sets:
-                new_res_dict[section_label.name] = []
-                detected_sections = res_templates[res_templates[0] == section_label.name]
+            if label_set.has_multiple_annotation_sets:
+                new_res_dict[label_set.name] = []
+                detected_sections = res_templates[res_templates[0] == label_set.name]
                 # List of tuples, e.g. [(1, DefaultSectionName), (14, DetailedSectionName), ...]
                 # line_list = [(index, row[0]) for index, row in detected_sections.iterrows()]
                 if not detected_sections.empty:
@@ -2247,7 +2247,7 @@ class GroupAnnotationSets:
                     for line_number, section_name in detected_sections.iterrows():
                         section_dict = {}
                         # we try to find the labels that match that section
-                        for label in section_label.labels:
+                        for label in label_set.labels:
                             if label.name in res_dict.keys():
                                 label_df = res_dict[label.name]
                                 if label_df.empty:
@@ -2272,21 +2272,21 @@ class GroupAnnotationSets:
                                 # Remove from input dict
                                 res_dict[label.name] = res_dict[label.name].drop(label_df.index)
                         i += 1
-                        new_res_dict[section_label.name].append(section_dict)
+                        new_res_dict[label_set.name].append(section_dict)
             # Add Extraction from SectionLabels with single section (as dict).
             else:
                 _dict = {}
-                for label in section_label.labels:
+                for label in label_set.labels:
                     if label.name in res_dict.keys():
                         _dict[label.name] = res_dict[label.name]
                         del res_dict[label.name]
                 if _dict:
-                    new_res_dict[section_label.name] = _dict
+                    new_res_dict[label_set.name] = _dict
                 continue
 
         # Finally add remaining extractions to default section (if they are allowed to be there).
-        for section_label in [x for x in self.section_labels if x.is_default]:
-            for label in section_label.labels:
+        for label_set in [x for x in self.label_sets if x.is_default]:
+            for label in label_set.labels:
                 if label.name in res_dict.keys():
                     new_res_dict[label.name] = res_dict[label.name]
                     del res_dict[label.name]

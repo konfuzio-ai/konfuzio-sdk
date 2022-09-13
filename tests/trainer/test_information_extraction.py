@@ -17,7 +17,6 @@ from sklearn.ensemble import RandomForestClassifier
 
 from konfuzio_sdk.data import Project, Document, AnnotationSet
 from konfuzio_sdk.trainer.information_extraction import (
-    # DocumentAnnotationMultiClassModel,
     num_count,
     date_count,
     digit_count,
@@ -33,10 +32,7 @@ from konfuzio_sdk.trainer.information_extraction import (
     year_month_day_count,
     add_extractions_as_annotations,
     # extraction_result_to_document,
-    # SeparateLabelsEntityMultiClassModel,
-    # DocumentEntityMulticlassModel,
     RFExtractionAI,
-    # SeparateLabelsAnnotationMultiClassModel,
 )
 from konfuzio_sdk.api import upload_ai_model
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer

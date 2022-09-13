@@ -2522,7 +2522,7 @@ class Project(Data):
                     category.add_label_set(label_set)
 
     def get_label_sets(self, reload=False):
-        """Get Label Sets in the Project."""
+        """Get LabelSets in the Project."""
         if self.label_sets == [] or reload:
             with open(self.label_sets_file_path, "r") as f:
                 label_sets_data = json.load(f)
@@ -2753,6 +2753,7 @@ class Project(Data):
         """
         if not default_label_sets:
             default_label_sets = [x for x in self.get_label_sets() if x.is_default]
+        assert len(default_label_sets) == 1
 
         # Group documents by default section_label and prepare for training.
         # default_section_documents_dict, _ = self.get_default_template_documents(
@@ -2761,7 +2762,6 @@ class Project(Data):
         #     project_section_labels=self.get_label_sets(),
         #     merge_multi_default=False
         # )
-
         for default_label_set in default_label_sets:
             try:
                 # Use patched documents to also use knowledge from other document types which share some labels.
