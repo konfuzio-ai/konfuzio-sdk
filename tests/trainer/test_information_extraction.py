@@ -102,10 +102,10 @@ entity_results_data = [
 
 
 @parameterized.parameterized_class(
-    ('use_seperate_labels'),
+    ('use_seperate_labels', 'evaluate_full_result'),
     [
-        (False,),
-        (True,),
+        (False, 0.8108108108108109),
+        (True, 0.8266666666666667),
     ],
 )
 class TestWhitespaceRFExtractionAI(unittest.TestCase):
@@ -116,6 +116,8 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         """Set up the Data and Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
         cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_seperate_labels)
+        if cls.use_seperate_labels:
+            cls.project.separate_labels()
 
         cls.tests_annotations = list()
 
@@ -176,7 +178,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         """Evaluate DocumentEntityMultiClassModel."""
         evaluation = self.pipeline.evaluate_full()
 
-        assert evaluation.f1(None) == 0.8108108108108109
+        assert evaluation.f1(None) == self.evaluate_full_result
 
     def test_7_extract_test_document(self):
         """Extract a randomly selected Test Document."""
@@ -294,6 +296,9 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         """Set up the Data and Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
         cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_seperate_labels)
+        if cls.use_seperate_labels:
+            cls.project.separate_labels()
+
         cls.tests_annotations = list()
 
     def test_1_configure_pipeline(self):

@@ -2544,9 +2544,9 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             # we need to go to each element of the list, which is a dictionary, and
             # rewrite the label name (remove the section label name) in the keys
             if isinstance(value, list):
-                section_label = key
-                if section_label not in new_res.keys():
-                    new_res[section_label] = []
+                label_set = key
+                if label_set not in new_res.keys():
+                    new_res[label_set] = []
 
                 for found_section in value:
                     new_found_section = {}
@@ -2557,37 +2557,37 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
                             df.label = label
                         new_found_section[label] = df
 
-                    new_res[section_label].append(new_found_section)
+                    new_res[label_set].append(new_found_section)
 
             # if the value is a dictionary, is because the key corresponds to a section label without multiple sections
             # we need to rewrite the label name (remove the section label name) in the keys
             elif isinstance(value, dict):
-                section_label = key
-                if section_label not in new_res.keys():
-                    new_res[section_label] = {}
+                label_set = key
+                if label_set not in new_res.keys():
+                    new_res[label_set] = {}
 
                 for label, df in value.items():
                     if '__' in label:
                         label = label.split('__')[1]
                         df.label_text = label
                         df.label = label
-                    new_res[section_label][label] = df
+                    new_res[label_set][label] = df
 
             # otherwise the value must be directly a dataframe and it will correspond to the default section
             # can also correspond to labels which the template clf couldn't attribute to any template.
             # so we still check if we have the changed label name
             elif '__' in key:
-                section_label = key.split('__')[0]
-                if section_label not in new_res.keys():
-                    new_res[section_label] = {}
+                label_set = key.split('__')[0]
+                if label_set not in new_res.keys():
+                    new_res[label_set] = {}
                 key = key.split('__')[1]
                 value.label_text = key
                 value.label = key
                 # if the section label already exists and allows multi sections
-                if isinstance(new_res[section_label], list):
-                    new_res[section_label].append({key: value})
+                if isinstance(new_res[label_set], list):
+                    new_res[label_set].append({key: value})
                 else:
-                    new_res[section_label][key] = value
+                    new_res[label_set][key] = value
             else:
                 new_res[key] = value
 
