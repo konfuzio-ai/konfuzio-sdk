@@ -98,10 +98,10 @@ entity_results_data = [
 
 
 @parameterized.parameterized_class(
-    ('use_seperate_labels', 'evaluate_full_result'),
+    ('use_separate_labels', 'evaluate_full_result'),
     [
-        (False, 0.8108108108108109),
-        (True, 0.8108108108108109),
+        (False, 0.7945205479452054),
+        (True, 0.7945205479452054),
     ],
 )
 class TestWhitespaceRFExtractionAI(unittest.TestCase):
@@ -111,7 +111,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Set up the Data and Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-        cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_seperate_labels)
+        cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_separate_labels)
         # if cls.use_seperate_labels:
         #     cls.project.separate_labels()
 
@@ -124,9 +124,12 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
         train_doc_ids = [44823, 44834, 44839, 44840, 44841]
         self.pipeline.documents = [self.project.get_document_by_id(doc_id) for doc_id in train_doc_ids]
+        # self.pipeline.documents = self.project.get_category_by_id(63).documents()
 
         test_doc_ids = [44865]
         self.pipeline.test_documents = [self.project.get_document_by_id(doc_id) for doc_id in test_doc_ids]
+        # self.pipeline.test_documents = self.project.get_category_by_id(63).test_documents()
+
         # todo have a separate test case for calculating features of offline documents
 
     def test_2_make_features(self):
@@ -278,10 +281,10 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
 
 @parameterized.parameterized_class(
-    ('use_seperate_labels', 'evaluate_full_result'),
+    ('use_separate_labels', 'evaluate_full_result'),
     [
-        (False, 0.8055555555555556),
-        (True, 0.8333333333333334),
+        (False, 0.821917808219178),
+        (True, 0.821917808219178),
     ],
 )
 class TestRegexRFExtractionAI(unittest.TestCase):
@@ -291,7 +294,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Set up the Data and Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-        cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_seperate_labels)
+        cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_separate_labels)
         # if cls.use_seperate_labels:
         #     cls.project.separate_labels()
 

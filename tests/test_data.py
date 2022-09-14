@@ -442,7 +442,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         """Define fallback threshold for a Label."""
         project = Project(id_=None)
         label = Label(project=project, text='Third Offline Label')
-        assert label.threshold == 0.0
+        assert label.threshold == 0.1
 
     def test_to_add_label_to_project(self):
         """Add one Label to a Project."""

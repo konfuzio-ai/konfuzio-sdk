@@ -158,7 +158,7 @@ def is_valid_merge(
     doc_bbox: Union[None, Dict] = None,
     offsets_per_page: Union[None, Dict] = None,
     merge_vertical: bool = False,
-    threshold: float = 0.0,
+    threshold: float = 0.1,
     max_offset_distance: int = 5,
 ) -> bool:
     """
@@ -188,13 +188,14 @@ def is_valid_merge(
 
     # Horizontal case
     # only merge if candidate is above accuracy threshold for merging
-    if threshold is None:
-        threshold = 0.1
+    # if threshold is None:
+    #     threshold = 0.1
 
-    if row['Accuracy'] < threshold:
+    if row['Accuracy'] < row['label_threshold']:
         return False
     # only merge if all are the same data type
     if len(set(label_types)) > 1:
+        # if row['data_type'] != buffer['data_type']:
         return False
 
     if doc_bbox is not None:
@@ -335,10 +336,10 @@ def is_valid_merge_vertical(
 def merge_df(
     df: pandas.DataFrame,
     doc_text: str,
-    label_type_dict: Dict,
+    # label_type_dict: Dict,
     doc_bbox: Union[Dict, None] = None,
     merge_vertical: bool = False,
-    threshold: float = 0.0,
+    threshold: float = 0.1,
 ) -> pandas.DataFrame:
     """
     Merge a DataFrame of entities with matching predicted sections/labels.
@@ -360,15 +361,22 @@ def merge_df(
         offsets_per_page = get_offsets_per_page(doc_text)
         label_types = []
     else:
-        label_types = [label_type_dict[row['label_name']] for _, row in df.iterrows()]
+        label_types = [row['data_type'] for _, row in df.iterrows()]
 
     for _, row in df.iterrows():  # iterate over the rows in the DataFrame
         # skip extractions bellow threshold
-        if row['Accuracy'] < threshold:
+        if row['Accuracy'] < row['label_threshold']:  # threshold:
             continue
         # if they are valid merges then add to buffer
         if end and is_valid_merge(
-            row, buffer, doc_text, label_types, doc_bbox, offsets_per_page, merge_vertical, threshold
+            row,
+            buffer,
+            doc_text,
+            label_types,
+            doc_bbox,
+            offsets_per_page,
+            merge_vertical,
+            row['label_threshold'],  # threshold
         ):
             buffer.append(row)
             end = row['End']
@@ -389,7 +397,7 @@ def merge_df(
 def merge_annotations(
     res_dict: Dict,
     doc_text: str,
-    label_type_dict: Dict[str, str],
+    # label_type_dict: Dict[str, str],
     doc_bbox: Union[Dict, None] = None,
     multiline_labels_names: Union[list, None] = None,
     merge_vertical: bool = False,
@@ -468,15 +476,15 @@ def merge_annotations(
         assert doc_bbox is not None
         assert multiline_labels_names is not None
 
-    if labels_threshold is None:
-        labels_threshold = {label_name: 0.0 for label_name, _ in label_type_dict.items()}
+    # if labels_threshold is None:
+    #     labels_threshold = {label_name: 0.0 for label_name, _ in label_type_dict.items()}
 
     merged_res_dict = dict()  # stores final results
     for section_label, items in res_dict.items():
-        try:
-            _fix_label_threshold = labels_threshold[section_label]
-        except KeyError:
-            _fix_label_threshold = 0.1
+        # try:
+        #     _fix_label_threshold = labels_threshold[section_label]
+        # except KeyError:
+        #     _fix_label_threshold = 0.1
 
         if isinstance(items, pandas.DataFrame):  # perform merge on DataFrames within res_dict
             if merge_vertical:
@@ -485,10 +493,10 @@ def merge_annotations(
                     merged_df = merge_df(
                         df=items,
                         doc_text=doc_text,
-                        label_type_dict=label_type_dict,
+                        # label_type_dict=label_type_dict,
                         doc_bbox=doc_bbox,
                         merge_vertical=merge_vertical,
-                        threshold=_fix_label_threshold,
+                        # threshold=_fix_label_threshold,
                     )
                 else:
                     merged_df = items
@@ -496,9 +504,9 @@ def merge_annotations(
                 merged_df = merge_df(
                     df=items,
                     doc_text=doc_text,
-                    label_type_dict=label_type_dict,
+                    # label_type_dict=label_type_dict,
                     doc_bbox=doc_bbox,
-                    threshold=_fix_label_threshold,
+                    # threshold=_fix_label_threshold,
                 )
             merged_res_dict[section_label] = merged_df
         # if the value of the res_dict is not a DataFrame then we recursively call merge_annotations on it
@@ -508,11 +516,11 @@ def merge_annotations(
                 merge_annotations(
                     res_dict=i,
                     doc_text=doc_text,
-                    label_type_dict=label_type_dict,
+                    # label_type_dict=label_type_dict,
                     doc_bbox=doc_bbox,
                     multiline_labels_names=multiline_labels_names,
                     merge_vertical=merge_vertical,
-                    labels_threshold=labels_threshold,
+                    # labels_threshold=labels_threshold,
                 )
                 for i in items
             ]
@@ -521,11 +529,11 @@ def merge_annotations(
             merged_res_dict[section_label] = merge_annotations(
                 res_dict=items,
                 doc_text=doc_text,
-                label_type_dict=label_type_dict,
+                # label_type_dict=label_type_dict,
                 doc_bbox=doc_bbox,
                 multiline_labels_names=multiline_labels_names,
                 merge_vertical=merge_vertical,
-                labels_threshold=labels_threshold,
+                # labels_threshold=labels_threshold,
             )
     return merged_res_dict
 
@@ -2091,7 +2099,7 @@ class GroupAnnotationSets:
             results = results.drop(['NO_LABEL'], axis=1)
 
         # Store most likely prediction and its accuracy in separated columns
-        feature_df_label['label_name'] = results.idxmax(axis=1)
+        feature_df_label['result_name'] = results.idxmax(axis=1)
         feature_df_label['Accuracy'] = results.max(axis=1)
 
         # Do column renaming to be compatible with text-annotation
@@ -2106,7 +2114,8 @@ class GroupAnnotationSets:
             inplace=True,
         )
         feature_df_label['Translated_Candidate'] = feature_df_label['Candidate']
-        feature_df_label['label'] = feature_df_label['label_name']
+        feature_df_label['label'] = feature_df_label['result_name']
+        # feature_df_label['target'] = feature_df_label['result_name']
 
         # convert the transformed df to the new template features
         feature_df_template = self.build_document_template_feature_X(document_text, feature_df_label).filter(
@@ -2391,7 +2400,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             substring_features=self.substring_features if hasattr(self, 'substring_features') else None,
             n_nearest_across_lines=self.n_nearest_across_lines if hasattr(self, 'n_nearest_across_lines') else False,
         )
-        if self.separate_labels:
+        if self.use_separate_labels:
             df['target'] = df['label_name']
             df['target'] += ("__" + df['label_set_name']).replace('__NO_LABEL_SET', '')
         else:
@@ -2436,12 +2445,12 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         # 3. preprocessing
         df, _feature_names, _raw_errors = self.features(inference_document)
         try:
-            independet_variables = df[self.label_feature_list]
+            independent_variables = df[self.label_feature_list]
         except KeyError:
             raise KeyError(f'Features of {document} do not match the features of the pipeline.')
             # todo calculate features of Document as defined in pipeline and do not check afterwards
         # 4. prediction and store most likely prediction and its accuracy in separated columns
-        results = pandas.DataFrame(data=self.clf.predict_proba(X=independet_variables), columns=self.clf.classes_)
+        results = pandas.DataFrame(data=self.clf.predict_proba(X=independent_variables), columns=self.clf.classes_)
 
         # Remove no_label predictions
         if 'NO_LABEL' in results.columns:
@@ -2450,7 +2459,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         if 'NO_LABEL_SET' in results.columns:
             results = results.drop(['NO_LABEL_SET'], axis=1)
 
-        df['label_name'] = results.idxmax(axis=1)
+        df['result_name'] = results.idxmax(axis=1)
         df['Accuracy'] = results.max(axis=1)
         # 5. Translation
         df['Translated_Candidate'] = df['offset_string']  # todo: make translation explicit: It's a cool Feature
@@ -2474,27 +2483,33 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         # Convert DataFrame to Dict with labels as keys and label dataframes as value.
         res_dict = {}
-        for label_name in set(df['label_name']):
-            label_df = df[df['label_name'] == label_name].copy()
-            if not label_df.empty:
-                res_dict[label_name] = label_df
+        for result_name in set(df['result_name']):
+            result_df = df[df['result_name'] == result_name].copy()
+            if not result_df.empty:
+                res_dict[result_name] = result_df
 
         # Filter results that are bellow the extract threshold
         # (helpful to reduce the size in case of many predictions/ big documents)
+
         if hasattr(self, 'extract_threshold') and self.extract_threshold is not None:
             logger.info('Filtering res_dict')
-            for label, value in res_dict.items():
+            for result_name, value in res_dict.items():
                 if isinstance(value, pandas.DataFrame):
-                    res_dict[label] = value[value['Accuracy'] > self.extract_threshold]
+                    res_dict[result_name] = value[value['Accuracy'] > self.extract_threshold]
 
-        label_threshold_dict = {
-            label.name: label.threshold if hasattr(label, 'threshold') else 0.1 for label in self.category.labels
-        }
+        # if not self.use_separate_labels:
+        #     label_threshold_dict = {
+        #         label.name: label.threshold if hasattr(label, 'threshold') else 0.1 for label in self.category.labels
+        #     }
+        # else:
+        label_threshold_dict = None
+        # for res_name in res_dict:
+        #     label_threshold_dict[res_name] = 0.1
 
         res_dict = self.remove_empty_dataframes_from_extraction(res_dict)
         res_dict = self.filter_low_confidence_extractions(res_dict, label_threshold_dict)
 
-        res_dict = self.merge_dict(res_dict, document, label_threshold_dict)
+        res_dict = self.merge_dict(res_dict, inference_document, label_threshold_dict)
 
         # Try to calculate sections based on template classifier.
         if self.template_clf is not None:  # todo smarter handling of multiple clf
@@ -2508,18 +2523,18 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         if self.use_separate_labels:
             res_dict = self.separate_labels(res_dict)
 
-        virtual_doc = self.extraction_result_to_document(document, res_dict)
+        virtual_doc = self.extraction_result_to_document(inference_document, res_dict)
 
         return virtual_doc
 
     def merge_dict(self, res_dict: Dict, document: Document, label_threshold_dict: Dict) -> Dict:
         """WIP."""
-        label_type_dict = {str(label.name): label.data_type for label in self.category.labels}
+        # label_type_dict = {} #{str(label.name): label.data_type for label in self.category.labels}
 
         merged_res_dict = merge_annotations(
             res_dict=res_dict,
             doc_text=document.text,
-            label_type_dict=label_type_dict,
+            # label_type_dict=label_type_dict,
             doc_bbox=document.get_bbox(),
             labels_threshold=label_threshold_dict,
         )
@@ -2530,7 +2545,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             merged_res_dict = merge_annotations(
                 res_dict=merged_res_dict,
                 doc_text=document.text,
-                label_type_dict=label_type_dict,
+                # label_type_dict=label_type_dict,
                 doc_bbox=document.get_bbox(),
                 multiline_labels_names=multiline_labels_names,
                 merge_vertical=True,
@@ -2675,12 +2690,14 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         :param labels_threshold: Dictionary with the threshold values for each label
         :returns: Filtered dataframe
         """
-        try:
-            _label_threshold = labels_threshold[label_name]
-        except KeyError:
-            _label_threshold = 0.1
-
-        filtered = df[df['Accuracy'] >= _label_threshold]
+        # try:
+        #     _label_threshold = labels_threshold[label_name]
+        # except KeyError:
+        #     _label_threshold = 0.1
+        # logger.error(df['label_threshold'])
+        filtered = df[df['Accuracy'] >= df['label_threshold']]  # _label_threshold]
+        # filtered = filtered[filtered['result_name'].str.contains("NO_LABEL")]
+        # filtered['NO_LABEL' not in filtered['result_name']]
 
         return filtered
 
@@ -2806,7 +2823,25 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
                 self.label_train_document(virt_document, document)
                 document = virt_document
             else:
-                self.tokenizer.tokenize(document)
+                virt_document = deepcopy(document)
+                for ann in document.annotations():
+                    new_spans = []
+                    for span in ann.spans:
+                        new_span = Span(start_offset=span.start_offset, end_offset=span.end_offset)
+                        new_spans.append(new_span)
+
+                    _ = Annotation(
+                        document=virt_document,
+                        annotation_set=virt_document.no_label_annotation_set,
+                        label=ann.label,  # track which tokenizer created the span by using a Label
+                        label_set=virt_document.project.no_label_set,
+                        category=virt_document.category,
+                        spans=new_spans,
+                    )
+
+                self.tokenizer.tokenize(virt_document)
+                document = virt_document
+                # self.tokenizer.tokenize(document)
 
             # if self.separate_labels:
             #     self.join_labels(document)

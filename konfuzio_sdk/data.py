@@ -8,9 +8,7 @@ import pathlib
 import re
 import shutil
 import time
-import random
 import zipfile
-from copy import deepcopy
 from typing import Optional, List, Union, Tuple, Dict
 from warnings import warn
 
@@ -538,7 +536,7 @@ class Label(Data):
         description: str = None,
         label_sets=None,
         has_multiple_top_candidates: bool = False,
-        threshold: float = 0.0,
+        threshold: float = 0.1,
         *initial_data,
         **kwargs,
     ):
@@ -1036,6 +1034,7 @@ class Span(Data):
                 "area": 0,
                 "label_name": None,
                 "label_set_name": None,
+                "data_type": None,
             }
         else:
             span_dict = {
@@ -1060,6 +1059,7 @@ class Span(Data):
                 "document_id_local": self.annotation.document.id_local,
                 "category_id": self.annotation.document.category.id_,
                 "line_index": self.line_index,
+                "data_type": self.annotation.label.data_type,
             }
 
             if self.bbox():
