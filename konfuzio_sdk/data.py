@@ -1034,7 +1034,8 @@ class Span(Data):
                 "page_index_relative": None,
                 "area_quadrant_two": 0,
                 "area": 0,
-                "label_text": None,
+                "label_name": None,
+                "label_set_name": None,
             }
         else:
             span_dict = {
@@ -1087,7 +1088,8 @@ class Span(Data):
                 else self.annotation.document.copy_of_id
             )
             span_dict["document_id"] = document_id
-            span_dict["label_text"] = self.annotation.label.name if self.annotation.label else None
+            span_dict["label_name"] = self.annotation.label.name if self.annotation.label else None
+            span_dict["label_set_name"] = self.annotation.label_set.name if self.annotation.label_set else None
 
         return span_dict
 
@@ -2729,94 +2731,94 @@ class Project(Data):
     #     # return all default template documents
     #     return default_template_documents, default_labels
 
-    def separate_labels(self, default_label_sets: List = None):
-        """
-        Create separated labels for labels which are shared between SectionLabels.
+    # def separate_labels(self, default_label_sets: List = None):
+    #     """
+    #     Create separated labels for labels which are shared between SectionLabels.
 
-        This should be used only for the training purpose.
+    #     This should be used only for the training purpose.
 
-        For all documents in the project (training + test) for each category, we check all annotations in sections that
-        do not belong to the category template.
+    #     For all documents in the project (training + test) for each category, we check all annotations in sections that
+    #     do not belong to the category template.
 
-        For each label that we find, we rewrite the name of the label, adding the template name, followed by "__" and
-        the original name of the label.
-        E.g.: template: Shipper, Label: Name -> Label: Shipper__Name
+    #     For each label that we find, we rewrite the name of the label, adding the template name, followed by "__" and
+    #     the original name of the label.
+    #     E.g.: template: Shipper, Label: Name -> Label: Shipper__Name
 
-        Notes:
-        When using this method, the labels in the project are changed. This should be used in combination with the model
-        models_labels_multiclass.SeparateLabelsAnnotationMultiClassModel so that these changes are undone in the extract
-        and the output contains the correct labels names.
+    #     Notes:
+    #     When using this method, the labels in the project are changed. This should be used in combination with the model
+    #     models_labels_multiclass.SeparateLabelsAnnotationMultiClassModel so that these changes are undone in the extract
+    #     and the output contains the correct labels names.
 
-        If the labels of the project should be used in the original format for other tasks, for example, for the
-        business evaluation, the project should be reloaded after the training.
+    #     If the labels of the project should be used in the original format for other tasks, for example, for the
+    #     business evaluation, the project should be reloaded after the training.
 
-        """
-        if not default_label_sets:
-            default_label_sets = [x for x in self.get_label_sets() if x.is_default]
-        assert len(default_label_sets) == 1
+    #     """
+    #     if not default_label_sets:
+    #         default_label_sets = [x for x in self.get_label_sets() if x.is_default]
+    #     assert len(default_label_sets) == 1
 
-        # Group documents by default section_label and prepare for training.
-        # default_section_documents_dict, _ = self.get_default_template_documents(
-        #     documents=self.documents + self.test_documents,
-        #     selected_default_section_labels=default_label_sets,
-        #     project_section_labels=self.get_label_sets(),
-        #     merge_multi_default=False
-        # )
-        for default_label_set in default_label_sets:
-            try:
-                # Use patched documents to also use knowledge from other document types which share some labels.
-                _documents = self.documents  # + self.test_documents
-                # deepcopy(self.documents + self.test_documents)
-                # default_section_documents_dict[default_label_set.id]
+    #     # Group documents by default section_label and prepare for training.
+    #     # default_section_documents_dict, _ = self.get_default_template_documents(
+    #     #     documents=self.documents + self.test_documents,
+    #     #     selected_default_section_labels=default_label_sets,
+    #     #     project_section_labels=self.get_label_sets(),
+    #     #     merge_multi_default=False
+    #     # )
+    #     for default_label_set in default_label_sets:
+    #         try:
+    #             # Use patched documents to also use knowledge from other document types which share some labels.
+    #             _documents = self.documents + self.test_documents
+    #             # deepcopy(self.documents + self.test_documents)
+    #             # default_section_documents_dict[default_label_set.id]
 
-                _documents = [doc for doc in _documents if doc.category]
-                if len(_documents) == 0:
-                    logger.error(f'There are no documents for {default_label_set.name}.')
-                    continue
+    #             _documents = [doc for doc in _documents if doc.category]
+    #             if len(_documents) == 0:
+    #                 logger.error(f'There are no documents for {default_label_set.name}.')
+    #                 continue
 
-                for document in _documents:
-                    # Should we move this to a separate function?
-                    if len(document.annotations()) == 0:
-                        continue
-                    document_default_sections = [
-                        x
-                        for x in document.annotation_sets()
-                        if x.label_set.is_default  # and x.label_set == document.category_template
-                    ]
-                    if len(document_default_sections) != 1:
-                        raise Exception(
-                            f'Exactly 1 default section is expected. '
-                            f'There is {len(document_default_sections)} in document {document.id_}'
-                        )
-                    for annotation_set in document.annotation_sets():
-                        label_set = annotation_set.label_set
-                        prj_section_label = self.get_label_set_by_id(label_set.id_)
-                        if label_set.is_default is False:
-                            for annotation in annotation_set.annotations:
-                                new_label_name = label_set.name + '__' + annotation.label.name
-                                new_label_name_clean = label_set.name_clean + '__' + annotation.label.name_clean
-                                if new_label_name in [x.name for x in self.labels]:
-                                    new_label = next(x for x in self.labels if new_label_name == x.name)
-                                else:
-                                    new_label = Label(
-                                        id_=random.randrange(1e7, 1e12),
-                                        text=new_label_name,
-                                        text_clean=new_label_name_clean,
-                                        get_data_type_display=annotation.label.data_type,
-                                        description=annotation.label.description,
-                                        project=annotation.label.project,
-                                        threshold=0.1,
-                                        has_multiple_top_candidates=annotation.label.has_multiple_top_candidates,
-                                    )
-                                    prj_section_label.add_label(new_label)
-                                annotation.label = new_label
+    #             for document in _documents:
+    #                 # Should we move this to a separate function?
+    #                 if len(document.annotations()) == 0:
+    #                     continue
+    #                 document_default_sections = [
+    #                     x
+    #                     for x in document.annotation_sets()
+    #                     if x.label_set.is_default  # and x.label_set == document.category_template
+    #                 ]
+    #                 if len(document_default_sections) != 1:
+    #                     raise Exception(
+    #                         f'Exactly 1 default section is expected. '
+    #                         f'There is {len(document_default_sections)} in document {document.id_}'
+    #                     )
+    #                 for annotation_set in document.annotation_sets():
+    #                     label_set = annotation_set.label_set
+    #                     prj_section_label = self.get_label_set_by_id(label_set.id_)
+    #                     if label_set.is_default is False:
+    #                         for annotation in annotation_set.annotations:
+    #                             new_label_name = label_set.name + '__' + annotation.label.name
+    #                             new_label_name_clean = label_set.name_clean + '__' + annotation.label.name_clean
+    #                             if new_label_name in [x.name for x in self.labels]:
+    #                                 new_label = next(x for x in self.labels if new_label_name == x.name)
+    #                             else:
+    #                                 new_label = Label(
+    #                                     id_=random.randrange(1e7, 1e12),
+    #                                     text=new_label_name,
+    #                                     text_clean=new_label_name_clean,
+    #                                     get_data_type_display=annotation.label.data_type,
+    #                                     description=annotation.label.description,
+    #                                     project=annotation.label.project,
+    #                                     threshold=0.1,
+    #                                     has_multiple_top_candidates=annotation.label.has_multiple_top_candidates,
+    #                                 )
+    #                                 prj_section_label.add_label(new_label)
+    #                             annotation.label = new_label
 
-            except Exception as e:
-                logger.error(f'Separate labels for {default_label_set} failed because of >>{e}<<.')
-                raise
-                return None
+    #         except Exception as e:
+    #             logger.error(f'Separate labels for {default_label_set} failed because of >>{e}<<.')
+    #             raise
+    #             # return None
 
-        return self
+    #     return self
 
     def delete(self):
         """Delete the Project folder."""

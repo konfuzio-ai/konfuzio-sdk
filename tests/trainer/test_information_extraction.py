@@ -101,7 +101,7 @@ entity_results_data = [
     ('use_seperate_labels', 'evaluate_full_result'),
     [
         (False, 0.8108108108108109),
-        (True, 0.8266666666666667),
+        (True, 0.8108108108108109),
     ],
 )
 class TestWhitespaceRFExtractionAI(unittest.TestCase):
@@ -112,8 +112,8 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         """Set up the Data and Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
         cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_seperate_labels)
-        if cls.use_seperate_labels:
-            cls.project.separate_labels()
+        # if cls.use_seperate_labels:
+        #     cls.project.separate_labels()
 
         cls.tests_annotations = list()
 
@@ -292,8 +292,8 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         """Set up the Data and Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
         cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_seperate_labels)
-        if cls.use_seperate_labels:
-            cls.project.separate_labels()
+        # if cls.use_seperate_labels:
+        #     cls.project.separate_labels()
 
         cls.tests_annotations = list()
 

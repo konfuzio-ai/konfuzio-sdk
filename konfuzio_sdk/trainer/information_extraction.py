@@ -113,8 +113,8 @@ def flush_buffer(buffer: List[pandas.Series], doc_text: str, merge_vertical=Fals
 
     A buffer is a list of pandas.Series objects.
     """
-    if 'label_text' in buffer[0]:
-        label = buffer[0]['label_text']
+    if 'label_name' in buffer[0]:
+        label = buffer[0]['label_name']
     elif 'label' in buffer[0]:
         label = buffer[0]['label']
 
@@ -360,7 +360,7 @@ def merge_df(
         offsets_per_page = get_offsets_per_page(doc_text)
         label_types = []
     else:
-        label_types = [label_type_dict[row['label_text']] for _, row in df.iterrows()]
+        label_types = [label_type_dict[row['label_name']] for _, row in df.iterrows()]
 
     for _, row in df.iterrows():  # iterate over the rows in the DataFrame
         # skip extractions bellow threshold
@@ -1037,7 +1037,7 @@ def plot_label_distribution(df_list: list, df_name_list=None) -> None:
     logger.info('Percentage of total samples (per dataset) that have a certain label:')
     rel_dict_list = []
     for df in df_list:
-        rel_dict_list.append(_convert_to_relative_dict(collections.Counter(list(df['label_text']))))
+        rel_dict_list.append(_convert_to_relative_dict(collections.Counter(list(df['label_name']))))
     logger.info(
         '\n'
         + tabulate(
@@ -1064,7 +1064,7 @@ def plot_label_distribution(df_list: list, df_name_list=None) -> None:
     for df in df_list:
         doc_count_dict = {}
         doc_count = len(set(df['document_id']))
-        toup_list = list(zip(list(df['label_text']), list(df['document_id'])))
+        toup_list = list(zip(list(df['label_name']), list(df['document_id'])))
         list_dict = Convert(toup_list, {})
         for key, value in list_dict.items():
             doc_count_dict[key] = float(len(set(value)) / doc_count)
@@ -2091,7 +2091,7 @@ class GroupAnnotationSets:
             results = results.drop(['NO_LABEL'], axis=1)
 
         # Store most likely prediction and its accuracy in separated columns
-        feature_df_label['label_text'] = results.idxmax(axis=1)
+        feature_df_label['label_name'] = results.idxmax(axis=1)
         feature_df_label['Accuracy'] = results.max(axis=1)
 
         # Do column renaming to be compatible with text-annotation
@@ -2106,7 +2106,7 @@ class GroupAnnotationSets:
             inplace=True,
         )
         feature_df_label['Translated_Candidate'] = feature_df_label['Candidate']
-        feature_df_label['label'] = feature_df_label['label_text']
+        feature_df_label['label'] = feature_df_label['label_name']
 
         # convert the transformed df to the new template features
         feature_df_template = self.build_document_template_feature_X(document_text, feature_df_label).filter(
@@ -2391,6 +2391,11 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             substring_features=self.substring_features if hasattr(self, 'substring_features') else None,
             n_nearest_across_lines=self.n_nearest_across_lines if hasattr(self, 'n_nearest_across_lines') else False,
         )
+        if self.separate_labels:
+            df['target'] = df['label_name']
+            df['target'] += ("__" + df['label_set_name']).replace('__NO_LABEL_SET', '')
+        else:
+            df['target'] = df['label_name']
         return df, _feature_list, _temp_df_raw_errors
 
     def extract(self, document: Document) -> 'Dict':
@@ -2417,6 +2422,9 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         if self.template_clf is None:
             logger.warning('{self} does not provide a LabelSet Classfier.')
 
+        # if self.separate_labels:
+        #     self.join_labels(document)
+
         # Main Logic -------------------------
         # 1. start inference with new document
         inference_document = deepcopy(document)
@@ -2442,7 +2450,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         if 'NO_LABEL_SET' in results.columns:
             results = results.drop(['NO_LABEL_SET'], axis=1)
 
-        df['label_text'] = results.idxmax(axis=1)
+        df['label_name'] = results.idxmax(axis=1)
         df['Accuracy'] = results.max(axis=1)
         # 5. Translation
         df['Translated_Candidate'] = df['offset_string']  # todo: make translation explicit: It's a cool Feature
@@ -2466,10 +2474,10 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         # Convert DataFrame to Dict with labels as keys and label dataframes as value.
         res_dict = {}
-        for label_text in set(df['label_text']):
-            label_df = df[df['label_text'] == label_text].copy()
+        for label_name in set(df['label_name']):
+            label_df = df[df['label_name'] == label_name].copy()
             if not label_df.empty:
-                res_dict[label_text] = label_df
+                res_dict[label_name] = label_df
 
         # Filter results that are bellow the extract threshold
         # (helpful to reduce the size in case of many predictions/ big documents)
@@ -2553,7 +2561,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
                     for label, df in found_section.items():
                         if '__' in label:
                             label = label.split('__')[1]
-                            df.label_text = label
+                            df.label_name = label
                             df.label = label
                         new_found_section[label] = df
 
@@ -2569,7 +2577,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
                 for label, df in value.items():
                     if '__' in label:
                         label = label.split('__')[1]
-                        df.label_text = label
+                        df.label_name = label
                         df.label = label
                     new_res[label_set][label] = df
 
@@ -2581,7 +2589,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
                 if label_set not in new_res.keys():
                     new_res[label_set] = {}
                 key = key.split('__')[1]
-                value.label_text = key
+                value.label_name = key
                 value.label = key
                 # if the section label already exists and allows multi sections
                 if isinstance(new_res[label_set], list):
@@ -2800,6 +2808,9 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             else:
                 self.tokenizer.tokenize(document)
 
+            # if self.separate_labels:
+            #     self.join_labels(document)
+
             no_label_annotations = document.annotations(use_correct=False, label=document.project.no_label)
             label_annotations = [x for x in document.annotations(use_correct=False) if x.label.id_ is not None]
 
@@ -2855,6 +2866,45 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         return df_real_list, feature_list
 
+    # def join_labels(self, document: Document):
+    #         # for document in _documents:
+    #     # Should we move this to a separate function?
+    #     import random
+    #     if len(document.annotations()) == 0:
+    #         return
+    #     document_default_sections = [
+    #         ann_set
+    #         for ann_set in document.annotation_sets()
+    #         if ann_set.label_set.is_default  # and x.label_set == document.category_template
+    #     ]
+    #     if len(document_default_sections) != 1:
+    #         raise Exception(
+    #             f'Exactly 1 default section is expected. '
+    #             f'There is {len(document_default_sections)} in document {document.id_}'
+    #         )
+    #     for annotation_set in document.annotation_sets():
+    #         label_set = annotation_set.label_set
+    #         prj_section_label = document.project.get_label_set_by_id(label_set.id_)
+    #         if label_set.is_default is False:
+    #             for annotation in annotation_set.annotations:
+    #                 new_label_name = label_set.name + '__' + annotation.label.name
+    #                 new_label_name_clean = label_set.name_clean + '__' + annotation.label.name_clean
+    #                 if new_label_name in [x.name for x in document.project.labels]:
+    #                     new_label = next(x for x in document.project.labels if new_label_name == x.name)
+    #                 else:
+    #                     new_label = Label(
+    #                         id_=random.randrange(1e7, 1e12),
+    #                         text=new_label_name,
+    #                         text_clean=new_label_name_clean,
+    #                         get_data_type_display=annotation.label.data_type,
+    #                         description=annotation.label.description,
+    #                         project=annotation.label.project,
+    #                         threshold=0.1,
+    #                         has_multiple_top_candidates=annotation.label.has_multiple_top_candidates,
+    #                     )
+    #                     prj_section_label.add_label(new_label)
+    #                 annotation.label = new_label
+
     def fit(self) -> RandomForestClassifier:
         """Given training data and the feature list this function returns the trained regression model."""
         logger.info('Start training of Multi-class Label Classifier.')
@@ -2864,7 +2914,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             class_weight="balanced", n_estimators=self.n_estimators, max_depth=self.max_depth, random_state=420
         )
 
-        self.clf.fit(self.df_train[self.label_feature_list], self.df_train['label_text'])
+        self.clf.fit(self.df_train[self.label_feature_list], self.df_train['target'])
 
         self.fit_template_clf()
 
@@ -2936,7 +2986,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         )
 
         # computes the general metrics, i.e. across all labels
-        y_true = df['label_text']
+        y_true = df['label_name']
         y_pred = df['predicted_label_text']
 
         # gets accuracy, balanced accuracy and f1-score over all labels
@@ -2962,7 +3012,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         }
 
         # compute all metrics again, but per label
-        labels = list(set(df['label_text']))
+        labels = list(set(df['label_name']))
         precision, recall, fscore, support = precision_recall_fscore_support(y_pred, y_true, labels=labels)
 
         # store results for each label
@@ -3033,7 +3083,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
                 lower_bound = round(step, 2)
                 upper_bound = round(step_list[index + 1], 2)
                 df_range = df[df['Accuracy'].between(lower_bound, upper_bound)]
-                df_range_acc = accuracy_score(df_range['label_text'], df_range['predicted_label_text'])
+                df_range_acc = accuracy_score(df_range['label_name'], df_range['predicted_label_text'])
                 df_dict[str(lower_bound) + '-' + str(upper_bound)] = df_range_acc
 
         return df_dict
