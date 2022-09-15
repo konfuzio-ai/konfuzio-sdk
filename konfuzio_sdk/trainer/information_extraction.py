@@ -195,7 +195,6 @@ def is_valid_merge(
         return False
     # only merge if all are the same data type
     if len(set(label_types)) > 1:
-        # if row['data_type'] != buffer['data_type']:
         return False
 
     if doc_bbox is not None:
@@ -401,7 +400,6 @@ def merge_annotations(
     doc_bbox: Union[Dict, None] = None,
     multiline_labels_names: Union[list, None] = None,
     merge_vertical: bool = False,
-    labels_threshold: Union[dict, None] = None,
 ) -> Dict:
     """
     Merge annotations by merging neighbouring entities in the res_dict with the same predicted section/label.
@@ -493,10 +491,8 @@ def merge_annotations(
                     merged_df = merge_df(
                         df=items,
                         doc_text=doc_text,
-                        # label_type_dict=label_type_dict,
                         doc_bbox=doc_bbox,
                         merge_vertical=merge_vertical,
-                        # threshold=_fix_label_threshold,
                     )
                 else:
                     merged_df = items
@@ -504,9 +500,7 @@ def merge_annotations(
                 merged_df = merge_df(
                     df=items,
                     doc_text=doc_text,
-                    # label_type_dict=label_type_dict,
                     doc_bbox=doc_bbox,
-                    # threshold=_fix_label_threshold,
                 )
             merged_res_dict[section_label] = merged_df
         # if the value of the res_dict is not a DataFrame then we recursively call merge_annotations on it
@@ -516,11 +510,9 @@ def merge_annotations(
                 merge_annotations(
                     res_dict=i,
                     doc_text=doc_text,
-                    # label_type_dict=label_type_dict,
                     doc_bbox=doc_bbox,
                     multiline_labels_names=multiline_labels_names,
                     merge_vertical=merge_vertical,
-                    # labels_threshold=labels_threshold,
                 )
                 for i in items
             ]
@@ -529,11 +521,9 @@ def merge_annotations(
             merged_res_dict[section_label] = merge_annotations(
                 res_dict=items,
                 doc_text=doc_text,
-                # label_type_dict=label_type_dict,
                 doc_bbox=doc_bbox,
                 multiline_labels_names=multiline_labels_names,
                 merge_vertical=merge_vertical,
-                # labels_threshold=labels_threshold,
             )
     return merged_res_dict
 
@@ -2431,9 +2421,6 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         if self.template_clf is None:
             logger.warning('{self} does not provide a LabelSet Classfier.')
 
-        # if self.separate_labels:
-        #     self.join_labels(document)
-
         # Main Logic -------------------------
         # 1. start inference with new document
         inference_document = deepcopy(document)
@@ -2497,25 +2484,14 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
                 if isinstance(value, pandas.DataFrame):
                     res_dict[result_name] = value[value['Accuracy'] > self.extract_threshold]
 
-        # if not self.use_separate_labels:
-        #     label_threshold_dict = {
-        #         label.name: label.threshold if hasattr(label, 'threshold') else 0.1 for label in self.category.labels
-        #     }
-        # else:
-        label_threshold_dict = None
-        # for res_name in res_dict:
-        #     label_threshold_dict[res_name] = 0.1
-
         res_dict = self.remove_empty_dataframes_from_extraction(res_dict)
-        res_dict = self.filter_low_confidence_extractions(res_dict, label_threshold_dict)
+        res_dict = self.filter_low_confidence_extractions(res_dict)
 
-        res_dict = self.merge_dict(res_dict, inference_document, label_threshold_dict)
+        res_dict = self.merge_dict(res_dict, inference_document)
 
         # Try to calculate sections based on template classifier.
         if self.template_clf is not None:  # todo smarter handling of multiple clf
             res_dict = self.extract_template_with_clf(inference_document.text, res_dict)
-
-        # res_dict = self.merge_dict(res_dict, document)
 
         # place annotations back
         # document._annotations = doc_annotations
@@ -2523,20 +2499,16 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         if self.use_separate_labels:
             res_dict = self.separate_labels(res_dict)
 
-        virtual_doc = self.extraction_result_to_document(inference_document, res_dict)
+        virtual_doc = self.extraction_result_to_document(document, res_dict)
 
         return virtual_doc
 
-    def merge_dict(self, res_dict: Dict, document: Document, label_threshold_dict: Dict) -> Dict:
+    def merge_dict(self, res_dict: Dict, document: Document) -> Dict:
         """WIP."""
-        # label_type_dict = {} #{str(label.name): label.data_type for label in self.category.labels}
-
         merged_res_dict = merge_annotations(
             res_dict=res_dict,
             doc_text=document.text,
-            # label_type_dict=label_type_dict,
             doc_bbox=document.get_bbox(),
-            labels_threshold=label_threshold_dict,
         )
 
         # If the training has labels with multiline annotations, we try to merge entities vertically
@@ -2545,11 +2517,9 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             merged_res_dict = merge_annotations(
                 res_dict=merged_res_dict,
                 doc_text=document.text,
-                # label_type_dict=label_type_dict,
                 doc_bbox=document.get_bbox(),
                 multiline_labels_names=multiline_labels_names,
                 merge_vertical=True,
-                labels_threshold=label_threshold_dict,
             )
 
         return merged_res_dict
@@ -2639,7 +2609,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         return result
 
-    def filter_low_confidence_extractions(self, result: Dict, labels_threshold: Dict) -> Dict:
+    def filter_low_confidence_extractions(self, result: Dict) -> Dict:
         """Remove extractions with confidence below the threshold defined for the respective label.
 
         The input is a dictionary where the values can be:
@@ -2653,7 +2623,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         """
         for k in list(result.keys()):
             if isinstance(result[k], pandas.DataFrame):
-                filtered = self.filter_dataframe(result[k], k, labels_threshold)
+                filtered = self.filter_dataframe(result[k])
                 if filtered.empty:
                     del result[k]
                 else:
@@ -2663,7 +2633,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
                 for e, element in enumerate(result[k]):
                     for sk in list(element.keys()):
                         if isinstance(element[sk], pandas.DataFrame):
-                            filtered = self.filter_dataframe(result[k][e][sk], sk, labels_threshold)
+                            filtered = self.filter_dataframe(result[k][e][sk])
                             if filtered.empty:
                                 del result[k][e][sk]
                             else:
@@ -2672,7 +2642,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             elif isinstance(result[k], dict):
                 for ssk in list(result[k].keys()):
                     if isinstance(result[k][ssk], pandas.DataFrame):
-                        filtered = self.filter_dataframe(result[k][ssk], ssk, labels_threshold)
+                        filtered = self.filter_dataframe(result[k][ssk])
                         if filtered.empty:
                             del result[k][ssk]
                         else:
@@ -2680,7 +2650,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         return result
 
-    def filter_dataframe(self, df: pandas.DataFrame, label_name: str, labels_threshold: dict) -> pandas.DataFrame:
+    def filter_dataframe(self, df: pandas.DataFrame) -> pandas.DataFrame:
         """Filter dataframe rows accordingly with the Accuracy value.
 
         Rows (extractions) where the accuracy value is below the threshold defined for the label are removed.
@@ -2695,9 +2665,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         # except KeyError:
         #     _label_threshold = 0.1
         # logger.error(df['label_threshold'])
-        filtered = df[df['Accuracy'] >= df['label_threshold']]  # _label_threshold]
-        # filtered = filtered[filtered['result_name'].str.contains("NO_LABEL")]
-        # filtered['NO_LABEL' not in filtered['result_name']]
+        filtered = df[df['Accuracy'] >= df['label_threshold']]
 
         return filtered
 
@@ -2841,10 +2809,6 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
                 self.tokenizer.tokenize(virt_document)
                 document = virt_document
-                # self.tokenizer.tokenize(document)
-
-            # if self.separate_labels:
-            #     self.join_labels(document)
 
             no_label_annotations = document.annotations(use_correct=False, label=document.project.no_label)
             label_annotations = [x for x in document.annotations(use_correct=False) if x.label.id_ is not None]
