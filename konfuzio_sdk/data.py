@@ -1323,13 +1323,13 @@ class Annotation(Data):
 
         if not self.is_online:
             response = post_document_annotation(
-                project_id=self.project.id_,
+                project_id=self.document.project.id_,
                 document_id=self.document.id_,
                 start_offset=self.start_offset,
                 end_offset=self.end_offset,
                 label_id=self.label.id_,
                 label_set_id=label_set_id,
-                accuracy=self.confidence,
+                confidence=self.confidence,
                 is_correct=self.is_correct,
                 revised=self.revised,
                 annotation_set=self.annotation_set,
