@@ -7,6 +7,7 @@ from copy import copy, deepcopy
 import pytest
 from PIL.PngImagePlugin import PngImageFile
 
+from konfuzio_sdk.api import delete_document_annotation
 from konfuzio_sdk.data import (
     Project,
     Annotation,
@@ -109,6 +110,32 @@ class TestOnlineProject(unittest.TestCase):
         for page in doc.pages():
             image = page.get_image()
             assert type(image) is PngImageFile
+
+    def test_create_annotation(self):
+        """Test to add an Annotation to the document."""
+        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        label = self.project.labels[8]
+        annotation = Annotation(
+            document=doc,
+            spans=[Span(start_offset=1590,
+                        end_offset=1602)],
+            label=label,
+            label_set=label.label_sets[0],
+            accuracy=1.0,
+            is_correct=True
+        )
+        annotation.save()
+
+        assert Span(start_offset=1590, end_offset=1602) in doc.spans()
+
+    def test_delete_annotation(self):
+        """Test to delete an Annotation from the document."""
+        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        annot = [x for x in doc.get_annotations() if x.start_offset == 1590 and x.end_offset == 1602]
+        annot[0].delete()
+        delete_document_annotation(TEST_DOCUMENT_ID, annot[0].id_, TEST_PROJECT_ID)
+
+        assert annot[0] not in doc.get_annotations()
 
 
 class TestOfflineExampleData(unittest.TestCase):
