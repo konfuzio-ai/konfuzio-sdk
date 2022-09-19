@@ -7,7 +7,9 @@
 
 On-premises, also known as self-hosted, is a setup that allows Konfuzio to be implemented 100% on your own infrastructure. In practice, it means that you know where your data is stored, how it's handled and who gets hold of it. This is because you keep the data on your own servers.
 
-The recommended way to operate a production-ready and scalabe Konfuzio installation is via Kubernetes. An alternative and more light-weight deployment option is the [Single VM setup](/web/on_premises.html#alternative-deployment-options). On-Premise Konfuzio installations allow to create Superuser accounts which can access all [Documents](https://help.konfuzio.com/modules/superuserdocuments/index.html), [Projects](https://help.konfuzio.com/modules/superuserprojects/index.html) and [AIs](https://help.konfuzio.com/modules/superuserais/index.html) via a dedicated view.
+A common way to operate a production-ready and scalabe Konfuzio installation is via Kubernetes. An alternative and more light-weight deployment option is the [Single VM setup via Docker](/web/on_premises.html#alternative-deployment-options). We recommend to use the option which is more familiar to you.
+
+On-Premise Konfuzio installations allow to create Superuser accounts which can access all [Documents](https://help.konfuzio.com/modules/superuserdocuments/index.html), [Projects](https://help.konfuzio.com/modules/superuserprojects/index.html) and [AIs](https://help.konfuzio.com/modules/superuserais/index.html) via a dedicated view.
 
 ## Kubernetes
 
@@ -157,10 +159,9 @@ settings in the command line options.
 The resource requests, and number of replicas for the Konfuzio components in this
 setup are set by default to be adequate for a small production deployment. This is
 intended to fit in a cluster with at least 16 vCPU with AVX2 support enabled, 32 GB of
-RAM and one Nvidia GPU which supports at least CUDA10.1 and CUDNN 7.0. If you are
+RAM and one Nvidia GPU with minimum 4GB which supports at least CUDA10.1 and CUDNN 7.0. If you are
 trying to deploy a non-production instance, you can reduce the defaults in order to fit
-into a smaller cluster. Konfuzio can work withoutGPU, however runtime for extraction
-and training of medium to large dataset will be significantly slower.
+into a smaller cluster. Konfuzio can work without a GPU. The GPU is used to train and run Categorization AIs. We observe a 5x faster training and a 2x faster execution on GPU compared to CPU. Most Konfuzio Installations do not use GPUs.
 
 #### Deploy using Helm
 

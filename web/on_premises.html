@@ -75,7 +75,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#docker">Docker</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id2">Single VM setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#single-vm-setup">Single VM setup</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#download-docker-image">1. Download Docker Image</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#setup-postgresql-redis-blobstorage-filesystemstorage">2. Setup PostgreSQL, Redis, BlobStorage/FileSystemStorage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#setup-environment-variable-file">3. Setup environment variable file</a></li>
@@ -108,7 +108,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#migrate-a-project">Migrate a Project</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id3">Environment Variables</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id2">Environment Variables</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-konfuzio-server">Environment Variables for Konfuzio Server</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-read-api-container">Environment Variables for Read API Container</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-detectron-container">Environment Variables for Detectron Container</a></li>
@@ -146,7 +146,8 @@
   <section id="on-premises-documentation">
 <span id="server-installation"></span><h1>On-Premises Documentation<a class="headerlink" href="#on-premises-documentation" title="Permalink to this headline">¶</a></h1>
 <p>On-premises, also known as self-hosted, is a setup that allows Konfuzio to be implemented 100% on your own infrastructure. In practice, it means that you know where your data is stored, how it’s handled and who gets hold of it. This is because you keep the data on your own servers.</p>
-<p>The recommended way to operate a production-ready and scalabe Konfuzio installation is via Kubernetes. An alternative and more light-weight deployment option is the <a class="reference external" href="/web/on_premises.html#alternative-deployment-options">Single VM setup</a>. On-Premise Konfuzio installations allow to create Superuser accounts which can access all <a class="reference external" href="https://help.konfuzio.com/modules/superuserdocuments/index.html">Documents</a>, <a class="reference external" href="https://help.konfuzio.com/modules/superuserprojects/index.html">Projects</a> and <a class="reference external" href="https://help.konfuzio.com/modules/superuserais/index.html">AIs</a> via a dedicated view.</p>
+<p>A common way to operate a production-ready and scalabe Konfuzio installation is via Kubernetes. An alternative and more light-weight deployment option is the <a class="reference external" href="/web/on_premises.html#alternative-deployment-options">Single VM setup via Docker</a>. We recommend to use the option which is more familiar to you.</p>
+<p>On-Premise Konfuzio installations allow to create Superuser accounts which can access all <a class="reference external" href="https://help.konfuzio.com/modules/superuserdocuments/index.html">Documents</a>, <a class="reference external" href="https://help.konfuzio.com/modules/superuserprojects/index.html">Projects</a> and <a class="reference external" href="https://help.konfuzio.com/modules/superuserais/index.html">AIs</a> via a dedicated view.</p>
 <section id="kubernetes">
 <h2>Kubernetes<a class="headerlink" href="#kubernetes" title="Permalink to this headline">¶</a></h2>
 <section id="required-tools">
@@ -280,10 +281,9 @@ settings in the command line options.</p>
 <p>The resource requests, and number of replicas for the Konfuzio components in this
 setup are set by default to be adequate for a small production deployment. This is
 intended to fit in a cluster with at least 16 vCPU with AVX2 support enabled, 32 GB of
-RAM and one Nvidia GPU which supports at least CUDA10.1 and CUDNN 7.0. If you are
+RAM and one Nvidia GPU with minimum 4GB which supports at least CUDA10.1 and CUDNN 7.0. If you are
 trying to deploy a non-production instance, you can reduce the defaults in order to fit
-into a smaller cluster. Konfuzio can work withoutGPU, however runtime for extraction
-and training of medium to large dataset will be significantly slower.</p>
+into a smaller cluster. Konfuzio can work without a GPU. The GPU is used to train and run Categorization AIs. We observe a 5x faster training and a 2x faster execution on GPU compared to CPU. Most Konfuzio Installations do not use GPUs.</p>
 </section>
 </section>
 <section id="deploy-using-helm">
@@ -347,8 +347,8 @@ step. Without a backup, Konfuzio data might be lost if the upgrade fails.</p></l
 </section>
 <section id="docker">
 <h2>Docker<a class="headerlink" href="#docker" title="Permalink to this headline">¶</a></h2>
-<section id="id2">
-<h3>Single VM setup<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<section id="single-vm-setup">
+<h3>Single VM setup<a class="headerlink" href="#single-vm-setup" title="Permalink to this headline">¶</a></h3>
 <p>Konfuzio can be configured to run on a single virtual machine, without relying on
 Kubernetes. In this scenario, all necessary containers are started manually or with a
 container orchestration tool of your choice.</p>
@@ -562,15 +562,15 @@ In comparison for a Categorization AI the targe project has to be chosen from �
 <span class="n">konfuzio_sdk</span> <span class="n">export_project</span> <span class="o">&lt;</span><span class="n">PROJECT_ID</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<p>The export will be saved in a folder with the name <a href="#id4"><span class="problematic" id="id5">data_</span></a><span class="raw-html-m2r"><project_id></span>. This folder needs to be transferred to the target system
+<p>The export will be saved in a folder with the name <a href="#id3"><span class="problematic" id="id4">data_</span></a><span class="raw-html-m2r"><project_id></span>. This folder needs to be transferred to the target system
 The first argument is the path to the export folder, the second is the project name of the imported project on the target system.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">project_import</span> <span class="s2">&quot;/konfuzio-target-system/data_123/&quot;</span> <span class="s2">&quot;NewProjectName&quot;</span>
 </pre></div>
 </div>
 </section>
 </section>
-<section id="id3">
-<h2>Environment Variables<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<section id="id2">
+<h2>Environment Variables<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
 <section id="environment-variables-for-konfuzio-server">
 <h3>Environment Variables for Konfuzio Server<a class="headerlink" href="#environment-variables-for-konfuzio-server" title="Permalink to this headline">¶</a></h3>
 <p>Konfuzio Server is fully configured via environment variables, these can be passed as dedicated environment variables or a single .env to the Konfuzio Server containers (registry.gitlab.com/konfuzio/text-annotation/master). A template for a .env file is provided here:</p>
