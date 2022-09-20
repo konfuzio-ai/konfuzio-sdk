@@ -158,7 +158,7 @@ settings in the command line options.
 
 The resource requests, and number of replicas for the Konfuzio components in this
 setup are set by default to be adequate for a small production deployment. This is
-intended to fit in a cluster with at least 8 vCPU with AVX2 support enabled, 16 GB of
+intended to fit in a cluster with at least 8 vCPU with AVX2 support enabled, 32 GB of
 RAM and one Nvidia GPU with minimum 4GB which supports at least CUDA10.1 and CUDNN 7.0. If you are
 trying to deploy a non-production instance, you can reduce the defaults in order to fit
 into a smaller cluster. Konfuzio can work without a GPU. The GPU is used to train and run Categorization AIs. We observe a 5x faster training and a 2x faster execution on GPU compared to CPU. Most Konfuzio Installations do not use GPUs.
@@ -237,7 +237,7 @@ Kubernetes. In this scenario, all necessary containers are started manually or w
 container orchestration tool of your choice.
 
 We recommend a virtual machine with a minimum of 8 vCPU (incl. AVX2 support) and
-16 GB of RAM and an installed Docker runtime. A Nvidia GPU is recommended but not
+32 GB of RAM and an installed Docker runtime. A Nvidia GPU is recommended but not
 required. In this setup Konfuzio is running in the context of the Docker executor,
 therefore there are no strict requirements for the VMs operating systems. However, we
 recommend a Linux VM with Debian, Ubuntu, CentOS,or Redhat Linux.
