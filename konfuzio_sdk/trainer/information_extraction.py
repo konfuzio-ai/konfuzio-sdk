@@ -117,6 +117,7 @@ def flush_buffer(buffer: List[pandas.Series], doc_text: str, merge_vertical=Fals
         label = buffer[0]['label_name']
     elif 'label' in buffer[0]:
         label = buffer[0]['label']
+    # elif 'target'
 
     # considering multiline case
     if merge_vertical:
@@ -593,7 +594,7 @@ def dict_to_dataframe(res_dict):
     df = pandas.DataFrame()
     for name in res_dict.keys():
         label_df = res_dict[name]
-        label_df['label'] = name
+        label_df['result_name'] = name
         df = df.append(label_df, sort=True)
     return df
 
@@ -1927,13 +1928,13 @@ class GroupAnnotationSets:
         logger.info('Start training of Multi-class Label Set Classifier.')
         # ignores the section count as it actually worsens results
         # todo check if no category labels should be ignored
-        self.template_feature_list = [label.name for label in self.category.project.labels]
+        # self.template_feature_list = [label.name for label in self.category.project.labels]
+        self.template_feature_list = list(self.clf.classes_)  # ?
         n_nearest = self.n_nearest_template if hasattr(self, 'n_nearest_template') else 0
 
         # Pretty long feature generation
         df_train_label = self.df_train
         # df_valid_label = self.df_valid
-        df_valid_label_list = []  # todo why?
 
         df_train_label_list = [(document_id, df_doc) for document_id, df_doc in df_train_label.groupby('document_id')]
 
@@ -1952,59 +1953,61 @@ class GroupAnnotationSets:
             df_train_template_list.append(self.convert_label_features_to_template_features(df_doc, document.text))
             df_train_ground_truth_list.append(self.build_document_template_feature(document))
 
-        df_valid_template_list = []
-        df_valid_ground_truth_list = []
-        for document_id, df_doc in df_valid_label_list:
-            document = self._get_document(document_id)
-            # if (
-            #     hasattr(self, 'default_section_label')
-            #     and self.default_section_label
-            #     and self.default_section_label != document.category_template
-            # ):
-            #     logger.info(f'Skip document {document} because its template does not match.')
-            #     continue
-            df_valid_template_list.append(self.convert_label_features_to_template_features(df_doc, document.text))
-            df_valid_ground_truth_list.append(self.build_document_template_feature(document))
+        # df_valid_template_list = []
+        # df_valid_ground_truth_list = []
+
+        # df_valid_label_list = []  # todo why?
+        # for document_id, df_doc in df_valid_label_list:
+        #     document = self._get_document(document_id)
+        #     # if (
+        #     #     hasattr(self, 'default_section_label')
+        #     #     and self.default_section_label
+        #     #     and self.default_section_label != document.category_template
+        #     # ):
+        #     #     logger.info(f'Skip document {document} because its template does not match.')
+        #     #     continue
+        #     df_valid_template_list.append(self.convert_label_features_to_template_features(df_doc, document.text))
+        #     df_valid_ground_truth_list.append(self.build_document_template_feature(document))
 
         df_train_expanded_features_list = [
             self.generate_relative_line_features(n_nearest, pandas.DataFrame(df, columns=self.template_feature_list))
             for df in df_train_template_list
         ]
-        df_valid_expanded_features_list = [
-            self.generate_relative_line_features(n_nearest, pandas.DataFrame(df, columns=self.template_feature_list))
-            for df in df_valid_template_list
-        ]
+        # df_valid_expanded_features_list = [
+        #     self.generate_relative_line_features(n_nearest, pandas.DataFrame(df, columns=self.template_feature_list))
+        #     for df in df_valid_template_list
+        # ]
 
         df_train_ground_truth = pandas.DataFrame(
             pandas.concat(df_train_ground_truth_list), columns=self.template_feature_list + ['y']
         )
-        if len(df_valid_expanded_features_list) > 0:
-            df_valid_ground_truth = pandas.DataFrame(
-                pandas.concat(df_valid_ground_truth_list), columns=self.template_feature_list + ['y']
-            )
+        # if len(df_valid_expanded_features_list) > 0:
+        #     df_valid_ground_truth = pandas.DataFrame(
+        #         pandas.concat(df_valid_ground_truth_list), columns=self.template_feature_list + ['y']
+        #     )
 
         self.template_expanded_feature_list = list(df_train_expanded_features_list[0].columns)
 
         df_train_expanded_features = pandas.DataFrame(
             pandas.concat(df_train_expanded_features_list), columns=self.template_expanded_feature_list
         )
-        if len(df_valid_expanded_features_list) > 0:
-            df_valid_expanded_features = pandas.DataFrame(
-                pandas.concat(df_valid_expanded_features_list), columns=self.template_expanded_feature_list
-            )
+        # if len(df_valid_expanded_features_list) > 0:
+        #     df_valid_expanded_features = pandas.DataFrame(
+        #         pandas.concat(df_valid_expanded_features_list), columns=self.template_expanded_feature_list
+        #     )
 
         y_train = numpy.array(df_train_ground_truth['y']).astype('str')
         x_train = df_train_expanded_features[self.template_expanded_feature_list]
 
-        if len(df_valid_expanded_features_list) > 0:
-            y_valid = numpy.array(df_valid_ground_truth['y']).astype('str')
-            x_valid = df_valid_expanded_features[self.template_expanded_feature_list]
+        # if len(df_valid_expanded_features_list) > 0:
+        #     y_valid = numpy.array(df_valid_ground_truth['y']).astype('str')
+        #     x_valid = df_valid_expanded_features[self.template_expanded_feature_list]
 
         # fillna(0) is used here as not every label is found in every document at least once
         x_train.fillna(0, inplace=True)
 
-        if len(df_valid_expanded_features_list) > 0:
-            x_valid.fillna(0, inplace=True)
+        # if len(df_valid_expanded_features_list) > 0:
+        #     x_valid.fillna(0, inplace=True)
 
         # No features available
         if x_train.empty:
@@ -2016,10 +2019,10 @@ class GroupAnnotationSets:
         clf = RandomForestClassifier(n_estimators=self.n_estimators, max_depth=self.max_depth, random_state=420)
         clf.fit(x_train, y_train)
 
-        if len(df_valid_expanded_features_list) > 0:
-            y_pred = clf.predict(x_valid)
-            # evaluate the clf
-            self.evaluate_template_clf(y_valid, y_pred, clf.classes_)
+        # if len(df_valid_expanded_features_list) > 0:
+        #     y_pred = clf.predict(x_valid)
+        #     # evaluate the clf
+        #     self.evaluate_template_clf(y_valid, y_pred, clf.classes_)
 
         self.template_clf = clf
         return self.template_clf, self.template_feature_list
@@ -2104,7 +2107,7 @@ class GroupAnnotationSets:
             inplace=True,
         )
         feature_df_label['Translated_Candidate'] = feature_df_label['Candidate']
-        feature_df_label['label'] = feature_df_label['result_name']
+
         # feature_df_label['target'] = feature_df_label['result_name']
 
         # convert the transformed df to the new template features
@@ -2186,19 +2189,20 @@ class GroupAnnotationSets:
         char_count = 0
         # Using OptimalThreshold is a bad idea as it might defer between training (actual treshold from the label)
         # and runtime (default treshold.
+
         df = df[df['Accuracy'] >= 0.1]  # df['OptimalThreshold']]
         for i, line in enumerate(text.replace('\f', '\n').split('\n')):
             new_char_count = char_count + len(line)
             assert line == text[char_count:new_char_count]
             line_df = df[(char_count <= df['Start']) & (df['End'] <= new_char_count)]
             annotations = [row for index, row in line_df.iterrows()]
-            annotations_dict = dict((x['label'], True) for x in annotations)
+            annotations_dict = dict((x['result_name'], True) for x in annotations)
             counter_dict = {}
             # annotations_accuracy_dict = defaultdict(lambda: 0)
             for annotation in annotations:
                 # annotations_accuracy_dict[f'{annotation["label"]}_accuracy'] += annotation['Accuracy']
                 try:
-                    label = next(x for x in self.category.project.labels if x.name == annotation['label'])
+                    label = next(x for x in self.category.project.labels if x.name == annotation['result_name'])
                 except StopIteration:
                     continue
                 for label_set in self.label_sets:
@@ -2236,19 +2240,28 @@ class GroupAnnotationSets:
         for label_set in [x for x in self.label_sets if not x.is_default]:
             # Add Extraction from SectionLabels with multiple sections (as list).
             if label_set.has_multiple_annotation_sets:
+                logger.error(label_set.name + " : label_set.has_multiple_annotation_sets")
                 new_res_dict[label_set.name] = []
                 detected_sections = res_templates[res_templates[0] == label_set.name]
                 # List of tuples, e.g. [(1, DefaultSectionName), (14, DetailedSectionName), ...]
                 # line_list = [(index, row[0]) for index, row in detected_sections.iterrows()]
                 if not detected_sections.empty:
+                    logger.error(label_set.name + " : not detected_sections.empty")
                     i = 0
                     # for each line of a certain section label
                     for line_number, section_name in detected_sections.iterrows():
                         section_dict = {}
                         # we try to find the labels that match that section
-                        for label in label_set.labels:
-                            if label.name in res_dict.keys():
-                                label_df = res_dict[label.name]
+                        for label in label_set.labels:  # tf
+                            target_label_name = (
+                                label.name if not self.use_separate_labels else label_set.name + '__' + label.name
+                            )
+                            logger.error(target_label_name + " : target_label_name")
+
+                            if target_label_name in res_dict.keys():
+                                logger.error(target_label_name + " in res_dict.keys()")
+
+                                label_df = res_dict[target_label_name]
                                 if label_df.empty:
                                     continue
                                 # todo: the next line is memory heavy
@@ -2267,28 +2280,38 @@ class GroupAnnotationSets:
                                 ]
                                 if label_df.empty:
                                     continue
-                                section_dict[label.name] = label_df  # Add to new result dict
+                                section_dict[target_label_name] = label_df  # Add to new result dict
                                 # Remove from input dict
-                                res_dict[label.name] = res_dict[label.name].drop(label_df.index)
+                                res_dict[target_label_name] = res_dict[target_label_name].drop(label_df.index)
                         i += 1
                         new_res_dict[label_set.name].append(section_dict)
             # Add Extraction from SectionLabels with single section (as dict).
             else:
                 _dict = {}
                 for label in label_set.labels:
-                    if label.name in res_dict.keys():
-                        _dict[label.name] = res_dict[label.name]
-                        del res_dict[label.name]
+                    target_label_name = (
+                        label.name if not self.use_separate_labels else label_set.name + '__' + label.name
+                    )
+                    logger.error(target_label_name + " PPP")
+
+                    if target_label_name in res_dict.keys():
+                        _dict[target_label_name] = res_dict[target_label_name]
+                        del res_dict[target_label_name]  # ?
                 if _dict:
                     new_res_dict[label_set.name] = _dict
                 continue
 
         # Finally add remaining extractions to default section (if they are allowed to be there).
         for label_set in [x for x in self.label_sets if x.is_default]:
+            logger.error("@@ is default label set")
+
             for label in label_set.labels:
-                if label.name in res_dict.keys():
-                    new_res_dict[label.name] = res_dict[label.name]
-                    del res_dict[label.name]
+                target_label_name = label.name if not self.use_separate_labels else label_set.name + '__' + label.name
+                logger.error(target_label_name + " @@")
+
+                if target_label_name in res_dict.keys():
+                    new_res_dict[target_label_name] = res_dict[target_label_name]
+                    del res_dict[target_label_name]  # ?
             continue
 
         return new_res_dict
@@ -2391,8 +2414,11 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             n_nearest_across_lines=self.n_nearest_across_lines if hasattr(self, 'n_nearest_across_lines') else False,
         )
         if self.use_separate_labels:
-            df['target'] = df['label_name']
-            df['target'] += ("__" + df['label_set_name']).replace('__NO_LABEL_SET', '')
+            # df['target'] = df['label_name']
+            # df['target'] += ("__" + df['label_set_name']).replace('__NO_LABEL_SET', '')
+            df['target'] = df['label_set_name'] + '__' + df['label_name']
+            df['target'] = df['target'].replace('NO_LABEL_SET__', '')
+            # self.label_set_to_target_labels[df['label_set_name']].add(df['target'])
         else:
             df['target'] = df['label_name']
         return df, _feature_list, _temp_df_raw_errors
@@ -2445,6 +2471,9 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         if 'NO_LABEL_SET' in results.columns:
             results = results.drop(['NO_LABEL_SET'], axis=1)
+
+        if 'NO_LABEL_SET__NO_LABEL' in results.columns:
+            results = results.drop(['NO_LABEL_SET__NO_LABEL'], axis=1)
 
         df['result_name'] = results.idxmax(axis=1)
         df['Accuracy'] = results.max(axis=1)
@@ -2740,6 +2769,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             r = range(doc_spans[s_i].start_offset, doc_spans[s_i].end_offset + 1)
             if span.start_offset in r and span.end_offset in r:
                 span.annotation.label = doc_spans[s_i].annotation.label
+                span.annotation.label_set = doc_spans[s_i].annotation.label_set
+                span.annotation.annotation_set = doc_spans[s_i].annotation.annotation_set
 
     def feature_function(
         self, documents: List[Document], no_label_limit=None, retokenize=True
@@ -2798,14 +2829,16 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
                         new_span = Span(start_offset=span.start_offset, end_offset=span.end_offset)
                         new_spans.append(new_span)
 
-                    _ = Annotation(
+                    new_ann = Annotation(
                         document=virt_document,
                         annotation_set=virt_document.no_label_annotation_set,
-                        label=ann.label,  # track which tokenizer created the span by using a Label
+                        label=ann.label,
                         label_set=virt_document.project.no_label_set,
                         category=virt_document.category,
                         spans=new_spans,
                     )
+                    new_ann.label_set = ann.label_set
+                    new_ann.annotation_set = ann.annotation_set
 
                 self.tokenizer.tokenize(virt_document)
                 document = virt_document
