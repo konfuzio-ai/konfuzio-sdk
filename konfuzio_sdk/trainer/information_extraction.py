@@ -113,11 +113,13 @@ def flush_buffer(buffer: List[pandas.Series], doc_text: str, merge_vertical=Fals
 
     A buffer is a list of pandas.Series objects.
     """
+    assert 'label_name' in buffer[0]
     if 'label_name' in buffer[0]:
         label = buffer[0]['label_name']
-    elif 'label' in buffer[0]:
-        label = buffer[0]['label']
-    # elif 'target'
+    # elif 'label' in buffer[0]:
+    #     label = buffer[0]['label']
+
+    # if 'target' in buffer[0]:
 
     # considering multiline case
     if merge_vertical:
@@ -139,7 +141,8 @@ def flush_buffer(buffer: List[pandas.Series], doc_text: str, merge_vertical=Fals
     res_dict = dict()
     res_dict['Start'] = starts
     res_dict['End'] = ends
-    res_dict['label'] = label
+    # res_dict['label'] = label
+    res_dict['label_name'] = label
     res_dict['Candidate'] = text
     res_dict['Translated_Candidate'] = res_dict['Candidate']
     res_dict['Translation'] = None
@@ -339,7 +342,6 @@ def merge_df(
     # label_type_dict: Dict,
     doc_bbox: Union[Dict, None] = None,
     merge_vertical: bool = False,
-    threshold: float = 0.1,
 ) -> pandas.DataFrame:
     """
     Merge a DataFrame of entities with matching predicted sections/labels.
@@ -365,7 +367,7 @@ def merge_df(
 
     for _, row in df.iterrows():  # iterate over the rows in the DataFrame
         # skip extractions bellow threshold
-        if row['Accuracy'] < row['label_threshold']:  # threshold:
+        if row['Accuracy'] < row['label_threshold']:
             continue
         # if they are valid merges then add to buffer
         if end and is_valid_merge(
@@ -509,13 +511,13 @@ def merge_annotations(
             # if it's a list then it is a list of sections
             merged_res_dict[section_label] = [
                 merge_annotations(
-                    res_dict=i,
+                    res_dict=item,
                     doc_text=doc_text,
                     doc_bbox=doc_bbox,
                     multiline_labels_names=multiline_labels_names,
                     merge_vertical=merge_vertical,
                 )
-                for i in items
+                for item in items
             ]
         elif isinstance(items, dict):
             # if it's a dict then it is a res_dict within a list of sections
@@ -1930,6 +1932,7 @@ class GroupAnnotationSets:
         # todo check if no category labels should be ignored
         # self.template_feature_list = [label.name for label in self.category.project.labels]
         self.template_feature_list = list(self.clf.classes_)  # ?
+        # logger.warning("template_feature_list:", self.template_feature_list)
         n_nearest = self.n_nearest_template if hasattr(self, 'n_nearest_template') else 0
 
         # Pretty long feature generation
@@ -2197,20 +2200,21 @@ class GroupAnnotationSets:
             line_df = df[(char_count <= df['Start']) & (df['End'] <= new_char_count)]
             annotations = [row for index, row in line_df.iterrows()]
             annotations_dict = dict((x['result_name'], True) for x in annotations)
-            counter_dict = {}
+            counter_dict = {}  # why?
             # annotations_accuracy_dict = defaultdict(lambda: 0)
-            for annotation in annotations:
-                # annotations_accuracy_dict[f'{annotation["label"]}_accuracy'] += annotation['Accuracy']
-                try:
-                    label = next(x for x in self.category.project.labels if x.name == annotation['result_name'])
-                except StopIteration:
-                    continue
-                for label_set in self.label_sets:
-                    if label in label_set.labels:
-                        if label_set.name in counter_dict.keys():
-                            counter_dict[label_set.name] += 1
-                        else:
-                            counter_dict[label_set.name] = 1
+            # for annotation in annotations:
+            # annotations_accuracy_dict[f'{annotation["label"]}_accuracy'] += annotation['Accuracy']
+            # try:
+
+            #     label = next(x for x in self.category.project.labels if x.name == annotation['result_name'])
+            # except StopIteration:
+            #     continue
+            # for label_set in self.label_sets:
+            #     if label in label_set.labels:
+            #         if label_set.name in counter_dict.keys():
+            #             counter_dict[label_set.name] += 1
+            #         else:
+            #             counter_dict[label_set.name] = 1
             tmp_df = pandas.DataFrame([{**annotations_dict, **counter_dict}])
             global_df = pandas.concat([global_df, tmp_df], ignore_index=True)
             char_count = new_char_count + 1
@@ -2240,13 +2244,12 @@ class GroupAnnotationSets:
         for label_set in [x for x in self.label_sets if not x.is_default]:
             # Add Extraction from SectionLabels with multiple sections (as list).
             if label_set.has_multiple_annotation_sets:
-                logger.error(label_set.name + " : label_set.has_multiple_annotation_sets")
                 new_res_dict[label_set.name] = []
                 detected_sections = res_templates[res_templates[0] == label_set.name]
                 # List of tuples, e.g. [(1, DefaultSectionName), (14, DetailedSectionName), ...]
                 # line_list = [(index, row[0]) for index, row in detected_sections.iterrows()]
                 if not detected_sections.empty:
-                    logger.error(label_set.name + " : not detected_sections.empty")
+                    # logger.error(label_set.name + " : not detected_sections.empty")
                     i = 0
                     # for each line of a certain section label
                     for line_number, section_name in detected_sections.iterrows():
@@ -2256,10 +2259,10 @@ class GroupAnnotationSets:
                             target_label_name = (
                                 label.name if not self.use_separate_labels else label_set.name + '__' + label.name
                             )
-                            logger.error(target_label_name + " : target_label_name")
+                            # logger.error(target_label_name + " : target_label_name")
 
                             if target_label_name in res_dict.keys():
-                                logger.error(target_label_name + " in res_dict.keys()")
+                                # logger.error(target_label_name + " in res_dict.keys()")
 
                                 label_df = res_dict[target_label_name]
                                 if label_df.empty:
@@ -2271,8 +2274,10 @@ class GroupAnnotationSets:
                                 )
                                 try:
                                     next_section_start: int = detected_sections.index[i + 1]  # line_list[i + 1][0]
-                                except Exception:
+                                except IndexError:  # ?
                                     next_section_start: int = text_replaced.count('\n') + 1
+                                except Exception:
+                                    raise
 
                                 # we get the label df that is contained within the section
                                 label_df = label_df[
@@ -2292,7 +2297,7 @@ class GroupAnnotationSets:
                     target_label_name = (
                         label.name if not self.use_separate_labels else label_set.name + '__' + label.name
                     )
-                    logger.error(target_label_name + " PPP")
+                    # logger.error(target_label_name + " PPP")
 
                     if target_label_name in res_dict.keys():
                         _dict[target_label_name] = res_dict[target_label_name]
@@ -2303,11 +2308,11 @@ class GroupAnnotationSets:
 
         # Finally add remaining extractions to default section (if they are allowed to be there).
         for label_set in [x for x in self.label_sets if x.is_default]:
-            logger.error("@@ is default label set")
+            # logger.error("@@ is default label set")
 
             for label in label_set.labels:
                 target_label_name = label.name if not self.use_separate_labels else label_set.name + '__' + label.name
-                logger.error(target_label_name + " @@")
+                # logger.error(target_label_name + " @@")
 
                 if target_label_name in res_dict.keys():
                     new_res_dict[target_label_name] = res_dict[target_label_name]
@@ -2414,11 +2419,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             n_nearest_across_lines=self.n_nearest_across_lines if hasattr(self, 'n_nearest_across_lines') else False,
         )
         if self.use_separate_labels:
-            # df['target'] = df['label_name']
-            # df['target'] += ("__" + df['label_set_name']).replace('__NO_LABEL_SET', '')
             df['target'] = df['label_set_name'] + '__' + df['label_name']
-            df['target'] = df['target'].replace('NO_LABEL_SET__', '')
-            # self.label_set_to_target_labels[df['label_set_name']].add(df['target'])
+            # df['target'] = df['target'].replace('NO_LABEL_SET__', '')
         else:
             df['target'] = df['label_name']
         return df, _feature_list, _temp_df_raw_errors

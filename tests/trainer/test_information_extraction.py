@@ -44,6 +44,8 @@ logger = logging.getLogger(__name__)
 
 FEATURE_COUNT = 49
 
+TEST_WITH_FULL_DATASET = False
+
 
 def display_top(snapshot, key_type='lineno', limit=30):
     """Trace memory allocations, see https://docs.python.org/3/library/tracemalloc.html."""
@@ -100,8 +102,8 @@ entity_results_data = [
 @parameterized.parameterized_class(
     ('use_separate_labels', 'evaluate_full_result'),
     [
-        (False, 0.7945205479452054),
-        (True, 0.7945205479452054),
+        (False, 0.7945205479452054),  # w/ full dataset: 0.9237668161434978
+        (True, 0.7945205479452054),  # w/ full dataset: 0.9783549783549783
     ],
 )
 class TestWhitespaceRFExtractionAI(unittest.TestCase):
@@ -112,8 +114,6 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         """Set up the Data and Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
         cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_separate_labels)
-        # if cls.use_seperate_labels:
-        #     cls.project.separate_labels()
 
         cls.tests_annotations = list()
 
@@ -122,13 +122,17 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         self.pipeline.tokenizer = WhitespaceTokenizer()
         self.pipeline.category = self.project.get_category_by_id(id_=63)
 
-        train_doc_ids = [44823, 44834, 44839, 44840, 44841]
-        self.pipeline.documents = [self.project.get_document_by_id(doc_id) for doc_id in train_doc_ids]
-        # self.pipeline.documents = self.project.get_category_by_id(63).documents()
+        if not TEST_WITH_FULL_DATASET:
+            train_doc_ids = [44823, 44834, 44839, 44840, 44841]
+            self.pipeline.documents = [self.project.get_document_by_id(doc_id) for doc_id in train_doc_ids]
+        else:
+            self.pipeline.documents = self.project.get_category_by_id(63).documents()
 
-        test_doc_ids = [44865]
-        self.pipeline.test_documents = [self.project.get_document_by_id(doc_id) for doc_id in test_doc_ids]
-        # self.pipeline.test_documents = self.project.get_category_by_id(63).test_documents()
+        if not TEST_WITH_FULL_DATASET:
+            test_doc_ids = [44865]
+            self.pipeline.test_documents = [self.project.get_document_by_id(doc_id) for doc_id in test_doc_ids]
+        else:
+            self.pipeline.test_documents = self.project.get_category_by_id(63).test_documents()
 
         # todo have a separate test case for calculating features of offline documents
 
@@ -198,8 +202,8 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 @parameterized.parameterized_class(
     ('use_separate_labels', 'evaluate_full_result'),
     [
-        (False, 0.821917808219178),
-        (True, 0.821917808219178),
+        (False, 0.821917808219178),  # w/ full dataset: 0.8773584905660378
+        (True, 0.8),  # w/ full dataset: 0.9327354260089686
     ],
 )
 class TestRegexRFExtractionAI(unittest.TestCase):
@@ -222,13 +226,18 @@ class TestRegexRFExtractionAI(unittest.TestCase):
             for regex in label.find_regex(category=self.pipeline.category):
                 self.pipeline.tokenizer.tokenizers.append(RegexTokenizer(regex=regex))
 
-        train_doc_ids = [44823, 44834, 44839, 44840, 44841]
-        self.pipeline.documents = [self.project.get_document_by_id(doc_id) for doc_id in train_doc_ids]
-        # self.pipeline.documents = self.project.get_category_by_id(63).documents()
+        if not TEST_WITH_FULL_DATASET:
+            train_doc_ids = [44823, 44834, 44839, 44840, 44841]
+            self.pipeline.documents = [self.project.get_document_by_id(doc_id) for doc_id in train_doc_ids]
+        else:
+            self.pipeline.documents = self.project.get_category_by_id(63).documents()
 
-        test_doc_ids = [44865]
-        self.pipeline.test_documents = [self.project.get_document_by_id(doc_id) for doc_id in test_doc_ids]
-        # self.pipeline.test_documents = self.project.get_category_by_id(63).test_documents()
+        if not TEST_WITH_FULL_DATASET:
+            test_doc_ids = [44865]
+            self.pipeline.test_documents = [self.project.get_document_by_id(doc_id) for doc_id in test_doc_ids]
+        else:
+            self.pipeline.test_documents = self.project.get_category_by_id(63).test_documents()
+
         # todo have a separate test case for calculating features of offline documents
 
     def test_2_make_features(self):
@@ -276,7 +285,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         """Evaluate DocumentEntityMultiClassModel."""
         evaluation = self.pipeline.evaluate_full()
 
-        assert evaluation.f1(None) == self.evaluate_full_result  # 0.8055555555555556  # 0.821917808219178
+        assert evaluation.f1(None) == self.evaluate_full_result
 
     def test_7_extract_test_document(self):
         """Extract a randomly selected Test Document."""
