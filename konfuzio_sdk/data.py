@@ -2582,7 +2582,7 @@ class Project(Data):
         for document in self._documents:
             if document.id_ == document_id:
                 return document
-        raise IndexError
+        raise IndexError(f'Document id {document_id} was not found in {self}.')
 
     def get_label_by_name(self, name: str) -> Label:
         """Return Label by its name."""
@@ -2600,14 +2600,14 @@ class Project(Data):
         for label in self.labels:
             if label.id_ == id_:
                 return label
-        raise IndexError(f'Label id {id} was not found in {self}.')
+        raise IndexError(f'Label id {id_} was not found in {self}.')
 
     def get_label_set_by_name(self, name: str) -> LabelSet:
         """Return a Label Set by ID."""
         for label_set in self.label_sets:
             if label_set.name == name:
                 return label_set
-        raise IndexError
+        raise IndexError(f'LabelSet name {name} was not found in {self}.')
 
     def get_label_set_by_id(self, id_: int) -> LabelSet:
         """
@@ -2618,7 +2618,7 @@ class Project(Data):
         for label_set in self.label_sets:
             if label_set.id_ == id_:
                 return label_set
-        raise IndexError
+        raise IndexError(f'LabelSet id {id_} was not found in {self}.')
 
     def get_category_by_id(self, id_: int) -> Category:
         """
@@ -2629,7 +2629,7 @@ class Project(Data):
         for category in self.categories:
             if category.id_ == id_:
                 return category
-        raise IndexError
+        raise IndexError(f'Category id {id_} was not found in {self}.')
 
     # def get_default_template_documents(self, documents: List, selected_default_section_labels: List,
     #                                    project_section_labels: list, merge_multi_default: bool) \

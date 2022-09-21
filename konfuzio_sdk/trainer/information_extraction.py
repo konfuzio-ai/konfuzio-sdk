@@ -2420,7 +2420,6 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         )
         if self.use_separate_labels:
             df['target'] = df['label_set_name'] + '__' + df['label_name']
-            # df['target'] = df['target'].replace('NO_LABEL_SET__', '')
         else:
             df['target'] = df['label_name']
         return df, _feature_list, _temp_df_raw_errors
@@ -2524,9 +2523,6 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         if self.template_clf is not None:  # todo smarter handling of multiple clf
             res_dict = self.extract_template_with_clf(inference_document.text, res_dict)
 
-        # place annotations back
-        # document._annotations = doc_annotations
-
         if self.use_separate_labels:
             res_dict = self.separate_labels(res_dict)
 
@@ -2535,7 +2531,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         return virtual_doc
 
     def merge_dict(self, res_dict: Dict, document: Document) -> Dict:
-        """WIP."""
+        """Merge contiguous spans with same classification."""
         merged_res_dict = merge_annotations(
             res_dict=res_dict,
             doc_text=document.text,
