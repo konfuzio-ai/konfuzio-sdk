@@ -9,7 +9,13 @@ import unittest
 from konfuzio_sdk.data import Project, Document
 
 # from konfuzio_sdk.api import upload_ai_model
-from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
+from tests.variables import (
+    OFFLINE_PROJECT,
+    TEST_DOCUMENT_ID,
+    TEST_PAYSLIPS_CATEGORY_ID,
+    TEST_CATEGORIZATION_DOCUMENT_ID,
+    TEST_RECEIPTS_CATEGORY_ID,
+)
 from konfuzio_sdk.trainer.document_categorization import BaseCategorizationModel
 
 logger = logging.getLogger(__name__)
@@ -27,8 +33,12 @@ class TestBaseCategorizationModel(unittest.TestCase):
     def test_1_configure_pipeline(self) -> None:
         """Make sure the Data and Pipeline is configured."""
         self.categorization_pipeline.categories = self.project.categories
-        self.categorization_pipeline.documents = self.categorization_pipeline.project.documents
-        self.categorization_pipeline.test_documents = self.categorization_pipeline.project.test_documents
+        payslips_training_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).documents()
+        receipts_training_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).documents()
+        self.categorization_pipeline.documents = payslips_training_documents + receipts_training_documents
+        payslips_test_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).test_documents()
+        receipts_test_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).test_documents()
+        self.categorization_pipeline.test_documents = payslips_test_documents + receipts_test_documents
 
     def test_2_fit(self) -> None:
         """Start to train the Model."""
@@ -41,7 +51,7 @@ class TestBaseCategorizationModel(unittest.TestCase):
         self.categorization_pipeline.pipeline_path = self.categorization_pipeline.save(
             output_dir=self.project.model_folder
         )
-        assert os.path.isfile(self.categorization_pipeline.pipeline_path)
+        assert not os.path.isfile(self.categorization_pipeline.pipeline_path)
         # os.remove(self.pipeline.pipeline_path)  # cleanup
 
     @unittest.skip(reason="To be defined how to upload a categorization model.")
@@ -55,17 +65,36 @@ class TestBaseCategorizationModel(unittest.TestCase):
         # except HTTPError as e:
         #    assert '403' in str(e)
 
+    @unittest.skip(reason="Categorization Evaluation not implemented.")
     def test_5_evaluate(self):
         """Evaluate BaseCategorizationModel."""
         evaluation = self.categorization_pipeline.evaluate()
 
-        assert evaluation.f1() is None
+        assert evaluation.f1() == 1.0
 
-    def test_6_categorize_test_document(self):
-        """Test extracted category by categorizing a randomly selected Test Document."""
-        test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-        self.result = self.categorization_pipeline.categorize(document=test_document)
+    def test_6_categorize_test_documents(self):
+        """Test extracted category by categorizing two randomly selected Test Documents."""
+        test_payslip_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        test_payslip_document.category = None
+        result = self.categorization_pipeline.categorize(document=test_payslip_document)
 
-        assert isinstance(self.result, Document)
-        assert self.result.category is not None
-        assert self.result.category.id_ == 63
+        assert isinstance(result, Document)
+        assert result.category is not None
+        assert result.category.id_ == TEST_PAYSLIPS_CATEGORY_ID
+
+        test_receipt_document = self.project.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID)
+        test_receipt_document.category = None
+        result = self.categorization_pipeline.categorize(document=test_receipt_document)
+
+        assert isinstance(result, Document)
+        assert result.category is not None
+        assert result.category.id_ == TEST_RECEIPTS_CATEGORY_ID
+
+    def test_7_cannot_categorize_test_document(self):
+        """Test cannot extract category for a specifically selected Test Document."""
+        test_receipt_document = self.project.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID).test_documents()[0]
+        test_receipt_document.category = None
+        result = self.categorization_pipeline.categorize(document=test_receipt_document)
+
+        assert isinstance(result, Document)
+        assert result.category is None

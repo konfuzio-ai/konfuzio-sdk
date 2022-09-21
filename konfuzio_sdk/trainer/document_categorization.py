@@ -1,11 +1,12 @@
 """Implements a DocumentModel."""
 
 import os
+import re
 
 # import sys
 import logging
 from copy import deepcopy
-from typing import Union
+from typing import Union, List
 from warnings import warn
 
 # import pathlib
@@ -13,25 +14,41 @@ from warnings import warn
 # import cloudpickle
 
 from konfuzio_sdk.utils import get_timestamp
-from konfuzio_sdk.data import Project, Document
+from konfuzio_sdk.data import Project, Document, Category
 from konfuzio_sdk.evaluate import CategoryEvaluation
 
 logger = logging.getLogger(__name__)
 
 warn('This module is WIP: https://gitlab.com/konfuzio/objectives/-/issues/9481', FutureWarning, stacklevel=2)
 
-# Common category names translated in common languages and normalized (no accents).
-# Language order: English, German, Italian, Spanish.
+# Common category names translated in English and German in multiple variations.
 SUPPORTED_CATEGORY_NAMES = [
-    ['invoice', 'rechnung', 'fattura', 'factura'],
-    ['certificate', 'zertifikat', 'certificato', 'certificado'],
-    ['receipt', 'quittung', 'scontrino', 'recibo'],
-    ['energy certificate', 'energieausweis', 'certificato energetico', 'certificado energetico'],
-    ['delivery note', 'lieferschein', 'bolla accompagnamento', 'nota entrega'],
-    ['identity card', 'personalausweis', 'carta identita', 'tarjeta identificacion'],
-    ['payslip', 'lohnabrechnung', 'busta paga', 'nomina'],
-    ['passport', 'reisepass', 'passaporto', 'pasaporte'],
+    ['invoice', 'rechnung'],
+    ['certificate', 'zertifikat'],
+    ['receipt', 'quittung', 'kundenbeleg'],
+    ['energy certificate', 'energieausweis'],
+    ['delivery note', 'lieferschein'],
+    ['identity card', 'personalausweis'],
+    ['payslip', 'lohnabrechnung', 'bezüge'],
+    ['passport', 'reisepass'],
 ]
+
+
+def get_category_name_for_fallback_prediction(category: Category) -> str:
+    """Turn a category name to lowercase, remove parentheses and brackets with their contents, and trim spaces."""
+    return re.sub(r'\([^)]*\)', '', category.name.lower()).strip()
+
+
+def build_list_of_relevant_categories(training_categories: List[Category]) -> List[List[str]]:
+    """Filter for category name variations which correspond to the given categories, starting from a predefined list."""
+    relevant_categories = [
+        category
+        for category in SUPPORTED_CATEGORY_NAMES
+        if any([get_category_name_for_fallback_prediction(c) in category for c in training_categories])
+    ]
+    for training_category in training_categories:
+        relevant_categories.append([training_category.name.lower()])
+    return relevant_categories
 
 
 class BaseCategorizationModel:
@@ -74,9 +91,8 @@ class BaseCategorizationModel:
         """Use as placeholder Function."""
         # todo implementation
         # todo how to unify with Trainer.save() of information_extraction.py ?
-        logger.warning(f'{self} uses a fallback logic for categorizing documents, no need to save model to disk.')
+        logger.warning(f'{self} uses a fallback logic for categorizing documents, this will not save model to disk.')
         pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_categorization_prj{self.project.id_}.pkl')
-        open(pkl_file_path, 'w')
         return pkl_file_path
 
     def evaluate(self) -> CategoryEvaluation:
@@ -86,24 +102,37 @@ class BaseCategorizationModel:
         self.evaluation = CategoryEvaluation(documents=())
         return self.evaluation
 
-    def categorize(self, document: Document) -> Document:
+    def categorize(self, document: Document, recategorize: bool = True) -> Document:
         """Run categorization."""
         virtual_doc = deepcopy(document)
-        category_classes = [cat for cat in SUPPORTED_CATEGORY_NAMES if any([c.name in cat for c in self.categories])]
-        found_cat_class = None
-        for cat in category_classes:
-            if found_cat_class is not None:
+        if (document.category is not None) and (not recategorize):
+            logger.info(
+                f'In {document}, the category was already specified as {document.category}, so it wasn\'t categorized '
+                f'again. Please use recategorize=True to force running the Categorization AI again on this document.'
+            )
+            return virtual_doc
+
+        relevant_categories = build_list_of_relevant_categories(self.categories)
+        found_compatible_category_names = None
+        doc_text = virtual_doc.text.lower()
+        for alternative_names_for_category in relevant_categories:
+            if found_compatible_category_names is not None:
                 break
-            for search_cat_name in cat:
-                if search_cat_name in virtual_doc.text:
-                    found_cat_class = cat
+            for candidate_category_name in alternative_names_for_category:
+                if candidate_category_name in doc_text:
+                    found_compatible_category_names = alternative_names_for_category
                     break
-        if found_cat_class is None:
+
+        if found_compatible_category_names is None:
             logger.warning(
                 f'{self} could not find the category of {document} by using the fallback logic '
                 f'with pre-defined common categories.'
             )
             return virtual_doc
-        found_cat = [c for c in self.categories if c.name in found_cat_class][0]
-        virtual_doc.category = found_cat
+        found_category = [
+            category
+            for category in self.categories
+            if get_category_name_for_fallback_prediction(category) in found_compatible_category_names
+        ][0]
+        virtual_doc.category = found_category
         return virtual_doc
