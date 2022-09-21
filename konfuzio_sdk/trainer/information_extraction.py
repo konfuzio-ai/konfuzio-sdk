@@ -116,10 +116,6 @@ def flush_buffer(buffer: List[pandas.Series], doc_text: str, merge_vertical=Fals
     assert 'label_name' in buffer[0]
     if 'label_name' in buffer[0]:
         label = buffer[0]['label_name']
-    # elif 'label' in buffer[0]:
-    #     label = buffer[0]['label']
-
-    # if 'target' in buffer[0]:
 
     # considering multiline case
     if merge_vertical:
@@ -2030,15 +2026,6 @@ class GroupAnnotationSets:
         self.template_clf = clf
         return self.template_clf, self.template_feature_list
 
-    # def _get_document(self, document_id):
-    #     """Return the document text for a specific document_id."""
-    #     for document in self.documents:
-    #         if document.id_ == document_id:
-    #             return document
-    #
-    #     logger.error('No document fitting this document_id: ' + str(document_id) + ' found!')
-    #     return None
-
     def generate_relative_line_features(self, n_nearest: int, df_features: pandas.DataFrame) -> pandas.DataFrame:
         """Add the features of the n_nearest previous and next lines."""
         if n_nearest == 0:
@@ -2249,7 +2236,6 @@ class GroupAnnotationSets:
                 # List of tuples, e.g. [(1, DefaultSectionName), (14, DetailedSectionName), ...]
                 # line_list = [(index, row[0]) for index, row in detected_sections.iterrows()]
                 if not detected_sections.empty:
-                    # logger.error(label_set.name + " : not detected_sections.empty")
                     i = 0
                     # for each line of a certain section label
                     for line_number, section_name in detected_sections.iterrows():
@@ -2259,10 +2245,8 @@ class GroupAnnotationSets:
                             target_label_name = (
                                 label.name if not self.use_separate_labels else label_set.name + '__' + label.name
                             )
-                            # logger.error(target_label_name + " : target_label_name")
 
                             if target_label_name in res_dict.keys():
-                                # logger.error(target_label_name + " in res_dict.keys()")
 
                                 label_df = res_dict[target_label_name]
                                 if label_df.empty:
@@ -2297,7 +2281,6 @@ class GroupAnnotationSets:
                     target_label_name = (
                         label.name if not self.use_separate_labels else label_set.name + '__' + label.name
                     )
-                    # logger.error(target_label_name + " PPP")
 
                     if target_label_name in res_dict.keys():
                         _dict[target_label_name] = res_dict[target_label_name]
@@ -2308,12 +2291,8 @@ class GroupAnnotationSets:
 
         # Finally add remaining extractions to default section (if they are allowed to be there).
         for label_set in [x for x in self.label_sets if x.is_default]:
-            # logger.error("@@ is default label set")
-
             for label in label_set.labels:
                 target_label_name = label.name if not self.use_separate_labels else label_set.name + '__' + label.name
-                # logger.error(target_label_name + " @@")
-
                 if target_label_name in res_dict.keys():
                     new_res_dict[target_label_name] = res_dict[target_label_name]
                     del res_dict[target_label_name]  # ?
@@ -2377,13 +2356,14 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         no_label_limit: Union[int, float, None] = None,
         n_nearest_across_lines: bool = False,
         use_separate_labels=False,
+        tokenizer=None,
         *args,
         **kwargs,
     ):
         """RFExtractionAI."""
         super().__init__(*args, **kwargs)
         GroupAnnotationSets.__init__(self)
-        # self.label_list = None
+
         self.label_feature_list = None
         self.use_separate_labels = use_separate_labels
 
@@ -2401,8 +2381,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         self.substring_features = kwargs.get('substring_features', None)
         self.catchphrase_features = kwargs.get('catchphrase_features', None)
 
-        # self.regexes = None  # set later
-        self.tokenizer = None
+        self.tokenizer = tokenizer
 
         self.clf = None
 
@@ -2531,7 +2510,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         return virtual_doc
 
     def merge_dict(self, res_dict: Dict, document: Document) -> Dict:
-        """Merge contiguous spans with same classification."""
+        """Merge contiguous spans with same predicted label."""
         merged_res_dict = merge_annotations(
             res_dict=res_dict,
             doc_text=document.text,
@@ -2683,17 +2662,9 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         Rows (extractions) where the accuracy value is below the threshold defined for the label are removed.
 
         :param df: Dataframe with extraction results
-        :param label_name: Name of the label
-        :param labels_threshold: Dictionary with the threshold values for each label
         :returns: Filtered dataframe
         """
-        # try:
-        #     _label_threshold = labels_threshold[label_name]
-        # except KeyError:
-        #     _label_threshold = 0.1
-        # logger.error(df['label_threshold'])
         filtered = df[df['Accuracy'] >= df['label_threshold']]
-
         return filtered
 
     def extraction_result_to_document(self, document: Document, extraction_result: dict) -> Document:
@@ -2896,45 +2867,6 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         return df_real_list, feature_list
 
-    # def join_labels(self, document: Document):
-    #         # for document in _documents:
-    #     # Should we move this to a separate function?
-    #     import random
-    #     if len(document.annotations()) == 0:
-    #         return
-    #     document_default_sections = [
-    #         ann_set
-    #         for ann_set in document.annotation_sets()
-    #         if ann_set.label_set.is_default  # and x.label_set == document.category_template
-    #     ]
-    #     if len(document_default_sections) != 1:
-    #         raise Exception(
-    #             f'Exactly 1 default section is expected. '
-    #             f'There is {len(document_default_sections)} in document {document.id_}'
-    #         )
-    #     for annotation_set in document.annotation_sets():
-    #         label_set = annotation_set.label_set
-    #         prj_section_label = document.project.get_label_set_by_id(label_set.id_)
-    #         if label_set.is_default is False:
-    #             for annotation in annotation_set.annotations:
-    #                 new_label_name = label_set.name + '__' + annotation.label.name
-    #                 new_label_name_clean = label_set.name_clean + '__' + annotation.label.name_clean
-    #                 if new_label_name in [x.name for x in document.project.labels]:
-    #                     new_label = next(x for x in document.project.labels if new_label_name == x.name)
-    #                 else:
-    #                     new_label = Label(
-    #                         id_=random.randrange(1e7, 1e12),
-    #                         text=new_label_name,
-    #                         text_clean=new_label_name_clean,
-    #                         get_data_type_display=annotation.label.data_type,
-    #                         description=annotation.label.description,
-    #                         project=annotation.label.project,
-    #                         threshold=0.1,
-    #                         has_multiple_top_candidates=annotation.label.has_multiple_top_candidates,
-    #                     )
-    #                     prj_section_label.add_label(new_label)
-    #                 annotation.label = new_label
-
     def fit(self) -> RandomForestClassifier:
         """Given training data and the feature list this function returns the trained regression model."""
         logger.info('Start training of Multi-class Label Classifier.')
@@ -2961,162 +2893,162 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         return self.evaluation
 
-    def evaluate(self):
-        """
-        Evaluate the label classifier on a given DataFrame.
+    # def evaluate(self):
+    #     """
+    #     Evaluate the label classifier on a given DataFrame.
 
-        Evaluates by computing the accuracy, balanced accuracy and f1-score across all labels
-        plus the f1-score, precision and recall across each label individually.
-        """
-        # copy the df as we do not want to modify it
-        df = self.df_test.copy()
+    #     Evaluates by computing the accuracy, balanced accuracy and f1-score across all labels
+    #     plus the f1-score, precision and recall across each label individually.
+    #     """
+    #     # copy the df as we do not want to modify it
+    #     df = self.df_test.copy()
 
-        # get probability of each class
-        _results = pandas.DataFrame(
-            data=self.clf.predict_proba(X=df[self.label_feature_list]), columns=self.clf.classes_
-        )
+    #     # get probability of each class
+    #     _results = pandas.DataFrame(
+    #         data=self.clf.predict_proba(X=df[self.label_feature_list]), columns=self.clf.classes_
+    #     )
 
-        # get predicted label index over all classes
-        predicted_label_list = list(_results.idxmax(axis=1))
-        # get predicted label probability over all classes
-        accuracy_list = list(_results.max(axis=1))
+    #     # get predicted label index over all classes
+    #     predicted_label_list = list(_results.idxmax(axis=1))
+    #     # get predicted label probability over all classes
+    #     accuracy_list = list(_results.max(axis=1))
 
-        # get another dataframe with only the probability over the classes that aren't NO_LABEL
-        _results_only_label = pandas.DataFrame()
-        if 'NO_LABEL' in _results.columns:
-            _results_only_label = _results.drop(['NO_LABEL'], axis=1)
+    #     # get another dataframe with only the probability over the classes that aren't NO_LABEL
+    #     _results_only_label = pandas.DataFrame()
+    #     if 'NO_LABEL' in _results.columns:
+    #         _results_only_label = _results.drop(['NO_LABEL'], axis=1)
 
-        if _results_only_label.shape[1] > 0:
-            # get predicted label index over all classes that are not NO_LABEL
-            only_label_predicted_label_list = list(_results_only_label.idxmax(axis=1))
-            # get predicted label probability over all classes that are not NO_LABEL
-            only_label_accuracy_list = list(_results_only_label.max(axis=1))
+    #     if _results_only_label.shape[1] > 0:
+    #         # get predicted label index over all classes that are not NO_LABEL
+    #         only_label_predicted_label_list = list(_results_only_label.idxmax(axis=1))
+    #         # get predicted label probability over all classes that are not NO_LABEL
+    #         only_label_accuracy_list = list(_results_only_label.max(axis=1))
 
-            # for each predicted label (over all classes)
-            for index in range(len(predicted_label_list)):
-                # if the highest probability to a non NO_LABEL class is >=0.2, we say it predicted that class instead
-                # replace predicted label index and probability
-                if only_label_accuracy_list[index] >= 0.2:  # todo: why 0.2
-                    predicted_label_list[index] = only_label_predicted_label_list[index]
-                    accuracy_list[index] = only_label_accuracy_list[index]
-        else:
-            logger.info('\n[WARNING] _results_only_label is empty.\n')
+    #         # for each predicted label (over all classes)
+    #         for index in range(len(predicted_label_list)):
+    #             # if the highest probability to a non NO_LABEL class is >=0.2, we say it predicted that class instead
+    #             # replace predicted label index and probability
+    #             if only_label_accuracy_list[index] >= 0.2:  # todo: why 0.2
+    #                 predicted_label_list[index] = only_label_predicted_label_list[index]
+    #                 accuracy_list[index] = only_label_accuracy_list[index]
+    #     else:
+    #         logger.info('\n[WARNING] _results_only_label is empty.\n')
 
-        # add a column for predicted label index
-        df.insert(loc=0, column='predicted_label_text', value=predicted_label_list)
+    #     # add a column for predicted label index
+    #     df.insert(loc=0, column='predicted_label_text', value=predicted_label_list)
 
-        # add a column for prediction probability (not actually accuracy)
-        df.insert(loc=0, column='Accuracy', value=accuracy_list)
+    #     # add a column for prediction probability (not actually accuracy)
+    #     df.insert(loc=0, column='Accuracy', value=accuracy_list)
 
-        # get and sort the importance of each feature
-        feature_importances = self.clf.feature_importances_
+    #     # get and sort the importance of each feature
+    #     feature_importances = self.clf.feature_importances_
 
-        feature_importances_list = sorted(
-            list(zip(self.label_feature_list, feature_importances)), key=lambda item: item[1], reverse=True
-        )
+    #     feature_importances_list = sorted(
+    #         list(zip(self.label_feature_list, feature_importances)), key=lambda item: item[1], reverse=True
+    #     )
 
-        # computes the general metrics, i.e. across all labels
-        y_true = df['label_name']
-        y_pred = df['predicted_label_text']
+    #     # computes the general metrics, i.e. across all labels
+    #     y_true = df['label_name']
+    #     y_pred = df['predicted_label_text']
 
-        # gets accuracy, balanced accuracy and f1-score over all labels
-        results_general = {
-            'label': 'general/all annotations',
-            'accuracy': accuracy_score(y_true, y_pred),
-            'balanced accuracy': balanced_accuracy_score(y_true, y_pred),
-            'f1-score': f1_score(y_true, y_pred, average='weighted'),
-        }
+    #     # gets accuracy, balanced accuracy and f1-score over all labels
+    #     results_general = {
+    #         'label': 'general/all annotations',
+    #         'accuracy': accuracy_score(y_true, y_pred),
+    #         'balanced accuracy': balanced_accuracy_score(y_true, y_pred),
+    #         'f1-score': f1_score(y_true, y_pred, average='weighted'),
+    #     }
 
-        # gets accuracy, balanced accuracy and f1-score over all labels (except for 'NO_LABEL'/'NO_LABEL')
-        y_true_filtered = []
-        y_pred_filtered = []
-        for s_true, s_pred in zip(y_true, y_pred):
-            if not (s_true == 'NO_LABEL' and s_pred == 'NO_LABEL'):
-                y_true_filtered.append(s_true)
-                y_pred_filtered.append(s_pred)
-        results_general_filtered = {
-            'label': 'all annotations except TP of NO_LABEL',
-            'accuracy': accuracy_score(y_true_filtered, y_pred_filtered),
-            'balanced accuracy': balanced_accuracy_score(y_true_filtered, y_pred_filtered),
-            'f1-score': f1_score(y_true_filtered, y_pred_filtered, average='weighted'),
-        }
+    #     # gets accuracy, balanced accuracy and f1-score over all labels (except for 'NO_LABEL'/'NO_LABEL')
+    #     y_true_filtered = []
+    #     y_pred_filtered = []
+    #     for s_true, s_pred in zip(y_true, y_pred):
+    #         if not (s_true == 'NO_LABEL' and s_pred == 'NO_LABEL'):
+    #             y_true_filtered.append(s_true)
+    #             y_pred_filtered.append(s_pred)
+    #     results_general_filtered = {
+    #         'label': 'all annotations except TP of NO_LABEL',
+    #         'accuracy': accuracy_score(y_true_filtered, y_pred_filtered),
+    #         'balanced accuracy': balanced_accuracy_score(y_true_filtered, y_pred_filtered),
+    #         'f1-score': f1_score(y_true_filtered, y_pred_filtered, average='weighted'),
+    #     }
 
-        # compute all metrics again, but per label
-        labels = list(set(df['label_name']))
-        precision, recall, fscore, support = precision_recall_fscore_support(y_pred, y_true, labels=labels)
+    #     # compute all metrics again, but per label
+    #     labels = list(set(df['label_name']))
+    #     precision, recall, fscore, support = precision_recall_fscore_support(y_pred, y_true, labels=labels)
 
-        # store results for each label
-        results_labels_list = []
+    #     # store results for each label
+    #     results_labels_list = []
 
-        for i, label in enumerate(labels):
-            results = {
-                'label': label,
-                'accuracy': None,
-                'balanced accuracy': None,
-                'f1-score': fscore[i],
-                'precision': precision[i],
-                'recall': recall[i],
-            }
-            results_labels_list.append(results)
+    #     for i, label in enumerate(labels):
+    #         results = {
+    #             'label': label,
+    #             'accuracy': None,
+    #             'balanced accuracy': None,
+    #             'f1-score': fscore[i],
+    #             'precision': precision[i],
+    #             'recall': recall[i],
+    #         }
+    #         results_labels_list.append(results)
 
-        # sort results for each label in descending order by their f1-score
-        results_labels_list_sorted = sorted(results_labels_list, key=lambda k: k['f1-score'], reverse=True)
+    #     # sort results for each label in descending order by their f1-score
+    #     results_labels_list_sorted = sorted(results_labels_list, key=lambda k: k['f1-score'], reverse=True)
 
-        # combine general results and label specific results into one dict
-        results_summary = {
-            'general': results_general,
-            'general_filtered': results_general_filtered,
-            'label-specific': results_labels_list_sorted,
-        }
+    #     # combine general results and label specific results into one dict
+    #     results_summary = {
+    #         'general': results_general,
+    #         'general_filtered': results_general_filtered,
+    #         'label-specific': results_labels_list_sorted,
+    #     }
 
-        # get the probability_distribution
-        prob_dict = self._get_probability_distribution(df, start_from=0.2)
-        prob_list = [(k, v) for k, v in prob_dict.items()]
-        prob_list.sort(key=lambda tup: tup[0])
-        df_prob = pandas.DataFrame(prob_list, columns=['Range of predicted Accuracy', 'Real Accuracy in this range'])
+    #     # get the probability_distribution
+    #     prob_dict = self._get_probability_distribution(df, start_from=0.2)
+    #     prob_list = [(k, v) for k, v in prob_dict.items()]
+    #     prob_list.sort(key=lambda tup: tup[0])
+    #     df_prob = pandas.DataFrame(prob_list, columns=['Range of predicted Accuracy', 'Real Accuracy in this range'])
 
-        # log results and feature importance and probability distribution as tables
-        logger.info(
-            '\n'
-            + tabulate(
-                pandas.DataFrame([results_general, results_general_filtered] + results_labels_list_sorted),
-                floatfmt=".1%",
-                headers="keys",
-                tablefmt="pipe",
-            )
-            + '\n'
-        )
+    #     # log results and feature importance and probability distribution as tables
+    #     logger.info(
+    #         '\n'
+    #         + tabulate(
+    #             pandas.DataFrame([results_general, results_general_filtered] + results_labels_list_sorted),
+    #             floatfmt=".1%",
+    #             headers="keys",
+    #             tablefmt="pipe",
+    #         )
+    #         + '\n'
+    #     )
 
-        logger.info(
-            '\n'
-            + tabulate(
-                pandas.DataFrame(feature_importances_list, columns=['feature_name', 'feature_importance']),
-                floatfmt=".4%",
-                headers="keys",
-                tablefmt="pipe",
-            )
-            + '\n'
-        )
+    #     logger.info(
+    #         '\n'
+    #         + tabulate(
+    #             pandas.DataFrame(feature_importances_list, columns=['feature_name', 'feature_importance']),
+    #             floatfmt=".4%",
+    #             headers="keys",
+    #             tablefmt="pipe",
+    #         )
+    #         + '\n'
+    #     )
 
-        logger.info('\n' + tabulate(df_prob, floatfmt=".2%", headers="keys", tablefmt="pipe") + '\n')
+    #     logger.info('\n' + tabulate(df_prob, floatfmt=".2%", headers="keys", tablefmt="pipe") + '\n')
 
-        return results_summary
+    #     return results_summary
 
-    def _get_probability_distribution(self, df, start_from=0.2):
-        """Calculate the probability distribution according to the range of confidence."""
-        # group by accuracy
-        step_size = 0.1
-        step_list = numpy.arange(start_from, 1 + step_size, step_size)
-        df_dict = {}
-        for index, step in enumerate(step_list):
-            if index + 1 < len(step_list):
-                lower_bound = round(step, 2)
-                upper_bound = round(step_list[index + 1], 2)
-                df_range = df[df['Accuracy'].between(lower_bound, upper_bound)]
-                df_range_acc = accuracy_score(df_range['label_name'], df_range['predicted_label_text'])
-                df_dict[str(lower_bound) + '-' + str(upper_bound)] = df_range_acc
+    # def _get_probability_distribution(self, df, start_from=0.2):
+    #     """Calculate the probability distribution according to the range of confidence."""
+    #     # group by accuracy
+    #     step_size = 0.1
+    #     step_list = numpy.arange(start_from, 1 + step_size, step_size)
+    #     df_dict = {}
+    #     for index, step in enumerate(step_list):
+    #         if index + 1 < len(step_list):
+    #             lower_bound = round(step, 2)
+    #             upper_bound = round(step_list[index + 1], 2)
+    #             df_range = df[df['Accuracy'].between(lower_bound, upper_bound)]
+    #             df_range_acc = accuracy_score(df_range['label_name'], df_range['predicted_label_text'])
+    #             df_dict[str(lower_bound) + '-' + str(upper_bound)] = df_range_acc
 
-        return df_dict
+    #     return df_dict
 
 
 # class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
