@@ -624,7 +624,7 @@ class Label(Data):
             tokens = []
         return tokens
 
-    def tokens(self, categories: List[Category], update=True) -> dict:
+    def tokens(self, categories: List[Category], update=False) -> dict:
         """Calculate tokens to be used in the regex of the Label."""
         for category in categories:
             tokens_file_path = os.path.join(
@@ -638,7 +638,6 @@ class Label(Data):
                 if os.path.exists(self.project.regex_folder):
                     with open(tokens_file_path, 'w') as f:
                         json.dump(category_tokens, f, indent=2, sort_keys=True)
-
             else:
                 logger.info(f'Load existing tokens for Label {self.name} in Category {category}.')
                 with open(tokens_file_path, 'r') as f:
@@ -2199,31 +2198,29 @@ class Document(Data):
         regex_to_remove_groupnames = re.compile('<.*?>')
         annotations = self.annotations(start_offset=start_offset, end_offset=end_offset)
         for annotation in annotations:
-            for token in annotation.tokens():
-                for spacer in search:  # todo fix this search, so that we take regex token from other spans into account
-                    before_regex = suggest_regex_for_string(
-                        self.text[start_offset - spacer**2 : start_offset], replace_characters=True
-                    )
-                    after_regex = suggest_regex_for_string(
-                        self.text[end_offset : end_offset + spacer], replace_characters=True
-                    )
-                    # proposal = before_regex + token['regex'] + after_regex
-                    proposal = before_regex + annotation.regex() + after_regex
+            # for token in annotation.tokens():
+            for spacer in search:  # todo fix this search, so that we take regex token from other spans into account
+                before_regex = suggest_regex_for_string(
+                    self.text[start_offset - spacer**2 : start_offset], replace_characters=True
+                )
+                after_regex = suggest_regex_for_string(
+                    self.text[end_offset : end_offset + spacer], replace_characters=True
+                )
+                # proposal = before_regex + token['regex'] + after_regex
+                proposal = before_regex + annotation.regex() + after_regex
 
-                    # check for duplicates
-                    regex_found = [re.sub(regex_to_remove_groupnames, '', reg) for reg in proposals]
-                    new_regex = re.sub(regex_to_remove_groupnames, '', proposal)
-                    if new_regex not in regex_found:
-                        if max_findings_per_page:
-                            num_matches = len(re.findall(proposal, self.text))
-                            if num_matches / (self.text.count('\f') + 1) < max_findings_per_page:
-                                proposals.append(proposal)
-                            else:
-                                logger.info(
-                                    f'Skip to evaluate regex {repr(proposal)} as it finds {num_matches} in {self}.'
-                                )
-                        else:
+                # check for duplicates
+                regex_found = [re.sub(regex_to_remove_groupnames, '', reg) for reg in proposals]
+                new_regex = re.sub(regex_to_remove_groupnames, '', proposal)
+                if new_regex not in regex_found:
+                    if max_findings_per_page:
+                        num_matches = len(re.findall(proposal, self.text))
+                        if num_matches / (self.text.count('\f') + 1) < max_findings_per_page:
                             proposals.append(proposal)
+                        else:
+                            logger.info(f'Skip to evaluate regex {repr(proposal)} as it finds {num_matches} in {self}.')
+                    else:
+                        proposals.append(proposal)
 
         return proposals
 
