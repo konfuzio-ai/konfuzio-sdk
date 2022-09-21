@@ -22,7 +22,13 @@ from konfuzio_sdk.data import (
     Bbox,
 )
 from konfuzio_sdk.utils import is_file
-from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID, TEST_PROJECT_ID
+from tests.variables import (
+    OFFLINE_PROJECT,
+    TEST_DOCUMENT_ID,
+    TEST_PROJECT_ID,
+    TEST_PAYSLIPS_CATEGORY_ID,
+    TEST_RECEIPTS_CATEGORY_ID,
+)
 
 from konfuzio_sdk.samples import LocalTextProject
 
@@ -119,11 +125,16 @@ class TestOfflineExampleData(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Initialize the test Project."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+        cls.payslips_category = cls.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID)
+        cls.receipts_category = cls.project.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID)
 
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.documents) == 26
+        assert len(cls.payslips_category.documents()) == 25
+        assert len(cls.receipts_category.documents()) == 25
+        assert cls.project.get_document_by_id(44864).category is None
+        assert len(cls.project.documents) == 51
 
     def test_copy(self):
         """Test that copy is not allowed as it needs to be implemented for every SDK concept."""
@@ -147,7 +158,9 @@ class TestOfflineExampleData(unittest.TestCase):
 
     def test_project_num_label(self):
         """Test that no_label exists in the Labels of the Project and has the expected name."""
-        self.assertEqual(len(self.project.labels), 19)
+        self.assertEqual(19, len(self.payslips_category.labels))
+        self.assertEqual(30, len(self.receipts_category.labels))
+        self.assertEqual(19 + 30 - 1, len(self.project.labels))  # subtract one to avoid double counting the NO_LABEL
 
     def test_no_label(self):
         """Test if NO_LABEL is available."""
@@ -1192,7 +1205,7 @@ class TestKonfuzioDataCustomPath(unittest.TestCase):
         prj.delete()
 
 
-class TestKonfuzioOneVirtualOneRealCategory(unittest.TestCase):
+class TestKonfuzioOneVirtualTwoRealCategories(unittest.TestCase):
     """Test handle data."""
 
     @classmethod
@@ -1205,19 +1218,21 @@ class TestKonfuzioOneVirtualOneRealCategory(unittest.TestCase):
 
     def test_get_labels_of_virtual_category(self):
         """Return only related Labels as Information Extraction can be trained per Category."""
-        assert len(self.project.categories[1].labels) == 1  # virtual created Categories have no NO_LABEL
+        assert len(self.project.categories[-1].labels) == 1  # virtual created Categories have no NO_LABEL
 
     def test_get_labels_of_category(self):
         """Return only related Labels as Information Extraction can be trained per Category."""
-        real_category = self.project.get_category_by_id(63)
-        assert len(real_category.labels) == len(self.project.labels) - 1
+        real_category1 = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID)
+        real_category2 = self.project.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID)
+        # we calculate the set to avoid double counting the NO_LABEL
+        assert len(set(real_category1.labels + real_category2.labels)) == len(self.project.labels) - 1
 
 
 class TestKonfuzioDataSetup(unittest.TestCase):
     """Test handle data."""
 
-    document_count = 26
-    test_document_count = 3
+    document_count = 51
+    test_document_count = 4
     annotations_correct = 24
     # 24 created by human
     # https://app.konfuzio.com/admin/server/sequenceannotation/?
@@ -1237,7 +1252,8 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_get_labels_of_category(self):
         """Return only related Labels as Information Extraction can be trained per Category."""
-        assert len(self.prj.categories[0].labels) == len(self.prj.labels)
+        # we calculate the set to avoid double counting the NO_LABEL
+        assert len(set(self.prj.categories[0].labels + self.prj.categories[1].labels)) == len(self.prj.labels)
 
     def test_document_with_no_category_must_have_no_annotations(self):
         """Test if we skip Annotations in no Category Documents."""
@@ -1289,7 +1305,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_number_of_label_sets(self):
         """Test Label Sets numbers."""
         # Online Label Sets + added during tests +  no_label_set
-        assert len(self.prj.label_sets) == 7
+        assert len(self.prj.label_sets) == 13
 
     # def test_check_tokens(self):
     #     """Test to find not matched Annotations."""
@@ -1318,7 +1334,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_category(self):
         """Test if Category of main Label Set is initialized correctly."""
-        assert len(self.prj.categories) == 1
+        assert len(self.prj.categories) == 2
         assert self.prj.categories[0].id_ == 63
         assert self.prj.label_sets[0].categories[0].id_ == 63
 
@@ -1391,9 +1407,22 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_categories(self):
         """Test get Labels in the Project."""
-        assert self.prj.categories.__len__() == 1
-        assert self.prj.categories[0].name == 'Lohnabrechnung'
+        assert self.prj.categories.__len__() == 2
+        payslips_category = self.prj.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID)
+        assert payslips_category.name == 'Lohnabrechnung'
         # We have 5 Label Sets, Lohnabrechnung is Category and a Label Set as it hold labels, however a Category
+        # cannot hold labels
+        assert sorted([label_set.name for label_set in self.prj.categories[0].label_sets]) == [
+            'Brutto-Bezug',
+            'Lohnabrechnung',
+            'NO_LABEL_SET',
+            'Netto-Bezug',
+            'Steuer',
+            'Verdiensibescheinigung',
+        ]
+        receipts_category = self.prj.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID)
+        assert receipts_category.name == 'Quittung (GERMAN)'
+        # We have 5 Label Sets, Quittung is Category and a Label Set as it hold labels, however a Category
         # cannot hold labels
         assert sorted([label_set.name for label_set in self.prj.categories[0].label_sets]) == [
             'Brutto-Bezug',
@@ -1568,7 +1597,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_labels(self):
         """Test get Labels in the Project."""
-        assert [label.name for label in sorted(self.prj.labels)] == [
+        assert [label.name for label in sorted(self.prj.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).labels)] == [
             'Austellungsdatum',
             'Auszahlungsbetrag',
             'Bank inkl. IBAN',
@@ -1588,6 +1617,38 @@ class TestKonfuzioDataSetup(unittest.TestCase):
             'Steuerklasse',
             'Steuerrechtliche Abzüge',
             'Vorname',
+        ]
+        assert [label.name for label in sorted(self.prj.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID).labels)] == [
+            'Ansprechpartner',
+            'Anzahl / Menge',
+            'Artikelbezeichnung',
+            'Artikelnummer',
+            'Ausstelldatum',
+            'Bedienung Nr',
+            'BonNr',
+            'Brutto (Ergebnis der MwSt. Berechnung)',
+            'Einheit',
+            'Einzelpreis (Brutto)',
+            'Filial-/Markt-Nummer',
+            'Firmenname',
+            'Gesamtpreis (Brutto)',
+            'Hausnummer',
+            'Kassennummer',
+            'Mehrwertsteuerbetrag',
+            'Mehrwertsteuersatz',
+            'NO_LABEL',
+            'Netto (Basis der MwSt. Berechnung)',
+            'Ort',
+            'Postleitzahl',
+            'Rechnungsnummer',
+            'Referenz auf MwSt',
+            'Steuernummer',
+            'Straße',
+            'Telefonnummer',
+            'Uhrzeit',
+            'Umsatzsteuer-Identifikationsnummer',
+            'Währung',
+            'Zahlungsmethode',
         ]
 
     def test_project(self):
@@ -1897,7 +1958,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_number_of_all_documents(self):
         """Count the number of all available documents online."""
         project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-        assert len(project._documents) == 44
+        assert len(project._documents) == 57
 
     def test_create_empty_annotation(self):
         """

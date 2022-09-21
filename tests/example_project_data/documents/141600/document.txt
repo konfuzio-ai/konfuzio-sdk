@@ -1,0 +1,151 @@
+                    IKEA
+ IKEA  Deutschland Gmbh  & Co.KG
+ Nordpark  17,  06237  Leuna  OT  Kötschlitz
+  Tel  .:  061  92  /  93  999  99  (Ortstarif)
+  Sondereingabe:  Kunde aus  81539
+    Artikel  90200269             23073
+     NOMINELL  2AL  schwarz             20,00     O
+    Artikel  20336836              23073
+    FLINTAN  Drehst  VISSL              70,00
+                                                                              0
+    Summe                                             90,00
+     Anzahl  Artikel:            2
+    MASTERCARD                                   90,00  EUR
+  -K-U-N-D-E-N-B-E-L-E-G-
+                     ECO
+                     IKEA
+             Deutschland
+           GmbH  &  Co.  KG
+                Leipzig
+  Terminal-ID  :      54091158
+ TA-Nr 529987        BNr  6767
+          Kartenzahlung
+             contactless
+         DEBIT  MASTERCARD
+     EUR  90,00
+PAN          ############7637
+Karte  0
+ EMV-AID      A0000000041010
+  VU-Nr                   4556132885
+  AIDPara             0100000002
+ Genehmigungs-Nr      N7RD7S
+Datum  14.03.20  13:10 Uhr
+ EMV-Daten
+ 0000008000//0000000000/F
+ C509C8800/FC509C8800/010
+002///6C103F56/80
+ Zahlung  erfolgt
+  ========================
+  AS-Proc-Code  =  00  075
+ 00
+ Capt  .-  Ref  .=  0000
+  00  GENEHMIGT
+ ========================
+  BITTE  BELEG  AUFBEWAHREN
+  Mwst  inklusiv:
+  KENNZ  RATE                 NETTO            STEUER
+  0           19,0  %              75,63              14,37
+  Kassierer:                             62
+  Datum       Uhrzeit      EH         KA      Bon
+  14.03.20  13:10:38          139  62              16
+  DE-130504827
+  IKEA  Deutschland  Gmbh  &  Co.KG
+  Rechnungsdatum  =  Lieferdatum
+  Barcodenummer = Rechnungsnummer
+                         0139006200161403202018                                                                IKEA
+     gesetzlichenMängelansprüchebleibenvon
+     diesemRückgaberechtunberührt.
+     SEPA Lastschriftmandat
+    Ichermächtigeoben/umseitiggenanntes Unternehmen,einmalig eine Zahlungvon
+     meinem KontomittelsLastschrifteinzuziehen.Bei Nichteinlösung derLastschrifter-
+    mächtige ich das Unternehmen oder die TeleCash Gmbh & Co. KG, Marienbader
+    Platz1, 61348BadHomburgv.d.Höhe (Gläubiger-ID DE80RLS00000190298,
+    „TeleCash")zum neuerlichenEinzug desZahlungsbetrages zzgl. Kosten (z.B.Rück-
+    lastschriftentgeltmeinesKreditinstituts).Zugleich weise ich mein Kreditinstitutan,
+    die aufmeinKontogezogeneLastschrifteinzulösen.
+    Hiermit willige ich ein, dassim Falle einerRücklastschrift meine Bankverbindungzur
+    AdressermittlungandieSCHUFAHolding AGweitergegebenwird.Nähere Informatio-
+    nenüberdieSCHUFAerhaltenSieunterschufa.de/datenschutz.
+    Hinweis: Ichkann innerhalbvonachtWochen,beginnendmit dem  Belastungsdatum,
+    die Erstattung desbelastetenBetragesverlangen.Esgelten dabei die mitmeinem
+    Kreditinstitutvereinbarten Bedingungen.DerLastschrifteinzugerfolgt frühestens am
+    nächstenBankarbeitstag.
+    Adressweitergabe
+    IchweisemeinKreditinstitutunwiderruflichan,beiNichteinlösungder Lastschriftdem
+     Unternehmen oder TeleCashauf Anforderung meinenNamenundmeine Anschriftzur
+     Geltendmachung der Forderung mitzuteilen.
+    Unterschrift
+    DatenschutzrechtlicheInformation
+     MeineZahlungsdaten(meineBankverbindung,Kartenverfallsdatum, Kartenfolge-
+     nummer,Datum,Uhrzeit, Zahlungsbetrag,Terminalkennung) werden zur Karten-
+    prüfungund Zahlungsabwicklung anTeleCashübermittelt.
+     An TeleCashwirdferner übermittelt,wenneine Lastschrift nicht eingelöstodervon
+    mirwiderrufenwurde(Rücklastschrift-NäheressieheAushang), außer wennich im
+    ZusammenhangmitdemWiderruferklärtermaßen Rechteaus dem zugrunde liegen-
+    denGeschäftgeltend gemacht habe, z. B. wegen eines Sachmangels bei einem Kauf.
+     Zudem werden die Zahlungsdaten zur Verhinderung vonKartenmissbrauch
+    gemeinsammitdenRücklastschriftdaten zur Begrenzung des Risikos von Zah-
+    lungsausfällen gespeichert und genutzt. TeleCash erteilt insoweit auch an andere
+    Händler,dieanihrem System angeschlossensind,Empfehlungen,ob eineZahlung
+     mitGirokarteund Unterschriftakzeptiertwerdenkann.Dieo. g.Datenkönnenbei
+     Bedarf zurStörungsbehebung auch vonKonzernunternehmenvon TeleCash und ihren
+     AuftragnehmernaußerhalbderEUunterBeachtung der Datenschutzbestimmungen
+     verarbeitet werden.
+     Die  IKEA  Kreditkarte.
+     Eine  fürs  Leben.
+     Mit  der IKEA  Kreditkarte kannst du große und
+IISB2ynK.s0ttEV1eem.8Ars
+     kleine Einrichtungswünsche finanzieren, weltweit
+     einkaufen, Geld abheben und von vielen Zusatz-
+     leistungen profitieren. Überzeug dich  selbst
+     von  den Vorteilen auf
+     IKEA-Kreditkarte.de.
+     Dein  Vertragspartner ist die
+                                                                   IKEA
+     Ikano Bank AB (publ).
+                                             A00000000AL
+        365
+     Rückgaberecht
+     Solltest  du  wider Erwarten nach dem Kauf mal
+    nicht zufrieden sein oder deine  Meinung ändern,
+     hast du ab Kaufdatum 365 Tage Zeit, dein bei
+     IKEA gekauftes Produkt in neuem und unbenutz-
+    tem  Zustand  unter Vorlage des Originalkaufbelegs
+SIIB2ynsK.0ttEV1eemA.8rs (Kassenbon  oder  Rechnung)  in  dein IKEA Einrich-
+    tungshaus  zurück  zu bringen. Wir erstatten dir
+     dann den vollen Kaufpreis .*
+     *Gültig für alle Einkäufe ab dem 1.9.2018
+     Dieses Rückgaberecht gilt nicht für zugeschnittene
+     Ware (z. B. Stoffe, Küchenarbeitsplatten),
+     GrünpflanzenundFundgrubenartikel.
+     Dein gesetzlichesWiderrufsrechtsowie deine
+                                                                   IKEA
+     gesetzlichenMängelansprüchebleibenvon
+     diesem  Rückgaberechtunberührt.
+    SEPALastschriftmandat
+    Ichermächtigeoben/umseitiggenanntes Unternehmen, einmalig eineZahlung von
+    meinem  Kontomittels Lastschrifteinzuziehen.BeiNichteinlösungderLastschrifter-
+    mächtigeichdasUnternehmenoder dieTeleCashGmbh & Co. KG,Marienbader
+    Platz1,61348BadHomburg v.d.Höhe(Gläubiger-ID DE80RLS00000190298,
+    „TeleCash")zum neuerlichenEinzugdesZahlungsbetrageszzgl.Kosten (z. B.Rück-
+    lastschriftentgeltmeinesKreditinstituts). Zugleichweiseich mein Kreditinstitut an,
+    dieaufmeinKontogezogeneLastschrifteinzulösen.
+    Hiermitwilligeichein,dassim FalleeinerRücklastschriftmeineBankverbindungzur
+    Adressermittlung an die SCHUFAHoldingAGweitergegebenwird.NähereInformatio-
+    nenüber die SCHUFAerhaltenSieunter schufa.de/datenschutz.
+    Hinweis:Ichkann innerhalbvon achtWochen,beginnendmitdem Belastungsdatum,
+    dieErstattungdesbelastetenBetrages verlangen. Esgelten dabeidiemitmeinem
+    KreditinstitutvereinbartenBedingungen.Der Lastschrifteinzugerfolgtfrühestensam
+    nächstenBankarbeitstag.
+    Adressweitergabe
+    Ichweisemein Kreditinstitutunwiderruflichan,beiNichteinlösungder Lastschriftdem
+    UnternehmenoderTeleCashaufAnforderungmeinenNamenund meine Anschriftzur
+    Geltendmachung derForderungmitzuteilen.
+    Unterschrift
+    DatenschutzrechtlicheInformation
+    MeineZahlungsdaten(meineBankverbindung,Kartenverfallsdatum,Kartenfolge-
+    nummer,Datum,Uhrzeit,Zahlungsbetrag,Terminalkennung) werdenzurKarten-
+    prüfung und Zahlungsabwicklung an TeleCashübermittelt.
+    AnTeleCash wird ferner übermittelt, wenn eine Lastschrift nicht eingelöst odervon
+    mir widerrufenwurde(Rücklastschrift- Näheres siehe Aushang), außerwenn ichim
+    Zusammenhang mitdem  WiderruferklärtermaßenRechteausdem  zugrundeliegen-
