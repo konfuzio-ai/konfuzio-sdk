@@ -98,6 +98,51 @@ entity_results_data = [
     (19, ('Auszahlungsbetrag', 3777, 3785)),
 ]
 
+clf_classes = [
+    'Austellungsdatum',
+    'Auszahlungsbetrag',
+    'Bank inkl. IBAN',
+    'Betrag',
+    'Bezeichnung',
+    'Faktor',
+    'Gesamt-Brutto',
+    'Lohnart',
+    'Menge',
+    'NO_LABEL',
+    'Nachname',
+    'Netto-Verdienst',
+    'Personalausweis',
+    'Sozialversicherung',
+    'Steuer-Brutto',
+    'Steuerklasse',
+    'Steuerrechtliche Abzüge',
+    'Vorname',
+]
+
+separate_labels_clf_classes = [
+    'Brutto-Bezug__Betrag',
+    'Brutto-Bezug__Bezeichnung',
+    'Brutto-Bezug__Faktor',
+    'Brutto-Bezug__Lohnart',
+    'Brutto-Bezug__Menge',
+    'Lohnabrechnung__Austellungsdatum',
+    'Lohnabrechnung__Auszahlungsbetrag',
+    'Lohnabrechnung__Bank inkl. IBAN',
+    'Lohnabrechnung__Gesamt-Brutto',
+    'Lohnabrechnung__Nachname',
+    'Lohnabrechnung__Netto-Verdienst',
+    'Lohnabrechnung__Personalausweis',
+    'Lohnabrechnung__Steuerklasse',
+    'Lohnabrechnung__Vorname',
+    'NO_LABEL_SET__NO_LABEL',
+    'Netto-Bezug__Lohnart',
+    'Steuer__Sozialversicherung',
+    'Steuer__Steuerrechtliche Abzüge',
+    'Verdiensibescheinigung__Steuer-Brutto',
+]
+
+template_clf_classes = ['Brutto-Bezug', 'Lohnabrechnung', 'Netto-Bezug', 'No', 'Steuer', 'Verdiensibescheinigung']
+
 
 @parameterized.parameterized_class(
     ('use_separate_labels', 'evaluate_full_result'),
@@ -161,6 +206,15 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
     def test_3_fit(self) -> None:
         """Start to train the Model."""
         self.pipeline.fit()
+
+        if self.pipeline.use_separate_labels:
+            assert len(self.pipeline.clf.classes_) == 19
+            assert list(self.pipeline.clf.classes_) == separate_labels_clf_classes
+        else:
+            assert len(self.pipeline.clf.classes_) == 18
+            assert list(self.pipeline.clf.classes_) == clf_classes
+
+        assert list(self.pipeline.template_clf.classes_) == template_clf_classes
 
     def test_4_save_model(self):
         """Save the model."""
@@ -265,6 +319,15 @@ class TestRegexRFExtractionAI(unittest.TestCase):
     def test_3_fit(self) -> None:
         """Start to train the Model."""
         self.pipeline.fit()
+
+        if self.pipeline.use_separate_labels:
+            assert len(self.pipeline.clf.classes_) == 19
+            assert list(self.pipeline.clf.classes_) == separate_labels_clf_classes
+        else:
+            assert len(self.pipeline.clf.classes_) == 18
+            assert list(self.pipeline.clf.classes_) == clf_classes
+
+        assert list(self.pipeline.template_clf.classes_) == template_clf_classes
 
     def test_4_save_model(self):
         """Save the model."""
