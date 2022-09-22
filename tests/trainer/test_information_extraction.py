@@ -31,7 +31,6 @@ from konfuzio_sdk.trainer.information_extraction import (
     count_string_differences,
     year_month_day_count,
     add_extractions_as_annotations,
-    # extraction_result_to_document,
     RFExtractionAI,
 )
 from konfuzio_sdk.api import upload_ai_model
@@ -158,13 +157,13 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Set up the Data and Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-        cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_separate_labels)
+        tokenizer = WhitespaceTokenizer()
+        cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_separate_labels, tokenizer=tokenizer)
 
         cls.tests_annotations = list()
 
     def test_1_configure_pipeline(self):
         """Make sure the Data and Pipeline is configured."""
-        self.pipeline.tokenizer = WhitespaceTokenizer()
         self.pipeline.category = self.project.get_category_by_id(id_=63)
 
         if not TEST_WITH_FULL_DATASET:
@@ -252,6 +251,12 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         ann_tuple = (ann.label.name, ann.start_offset, ann.end_offset)
         assert ann_tuple == expected
 
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """Clear Project files."""
+        if os.path.isfile(cls.pipeline.pipeline_path):
+            os.remove(cls.pipeline.pipeline_path)  # cleanup
+
 
 @parameterized.parameterized_class(
     ('use_separate_labels', 'evaluate_full_result'),
@@ -277,7 +282,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         self.pipeline.category = self.project.get_category_by_id(id_=63)
 
         for label in self.pipeline.category.labels:
-            for regex in label.find_regex(category=self.pipeline.category):
+            for regex in label.regex(categories=[self.pipeline.category], update=True):
                 self.pipeline.tokenizer.tokenizers.append(RegexTokenizer(regex=regex))
 
         if not TEST_WITH_FULL_DATASET:
@@ -333,7 +338,6 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         """Save the model."""
         self.pipeline.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder)
         assert os.path.isfile(self.pipeline.pipeline_path)
-        # os.remove(self.pipeline.pipeline_path)  # cleanup
 
     def test_5_upload_ai_model(self):
         """Upload the model."""
@@ -365,13 +369,16 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         ann_tuple = (ann.label.name, ann.start_offset, ann.end_offset)
         assert ann_tuple == expected
 
-    # @classmethod
-    # def tearDownClass(cls) -> None:
-    #     """Clear regex folder."""
-    #     dir = os.path.join(OFFLINE_PROJECT, 'regex')
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """Clear Project files."""
+        dir = cls.project.regex_folder
 
-    #     for f in os.listdir(dir):
-    #         os.remove(os.path.join(dir, f))
+        for f in os.listdir(dir):
+            os.remove(os.path.join(dir, f))
+
+        if os.path.isfile(cls.pipeline.pipeline_path):
+            os.remove(cls.pipeline.pipeline_path)  # cleanup
 
 
 class TestInformationExtraction(unittest.TestCase):
