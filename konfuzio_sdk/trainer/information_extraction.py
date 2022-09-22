@@ -2713,7 +2713,11 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
                 span.annotation.label = doc_spans[s_i].annotation.label
 
     def feature_function(
-        self, documents: List[Document], no_label_limit=None, retokenize=True
+        self,
+        documents: List[Document],
+        no_label_limit=None,
+        retokenize=True,
+        require_revised_annotations=False,
     ) -> Tuple[List[pandas.DataFrame], list]:
         """Calculate features per Span of Annotations.
 
@@ -2751,10 +2755,17 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
                     ):
                         pass
                     else:
-                        raise ValueError(
-                            f"{span.annotation} is unrevised in this dataset and can't be used for training!"
-                            f"Please revise it manually by either confirming it, rejecting it, or modifying it."
-                        )
+                        if require_revised_annotations:
+                            raise ValueError(
+                                f"{span.annotation} is unrevised in this dataset and can't be used for training!"
+                                f"Please revise it manually by either confirming it, rejecting it, or modifying it."
+                            )
+                        else:
+                            logger.error(
+                                f"{span.annotation} is unrevised in this dataset and may impact model "
+                                f"performance! Please revise it manually by either confirming it, rejecting "
+                                f"it, or modifying it."
+                            )
 
             if retokenize:
                 virt_document = deepcopy(document)
