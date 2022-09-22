@@ -145,6 +145,21 @@ response = requests.get(url, headers=headers)
 print(response.json())
 ```
 
+#### Query based parameter token authentication
+
+For some endpoints we offer the ability to Authenticate with not just the token in the Header, but also by using the
+token in the request as a query parameter. This is particularly useful when needing to expose an endpoint to a third
+party service (e.g. Google sheets), without the option to specify the headers. In the below example, we have already
+generated the token through the steps above. The token is then used with the query parameter `token`
+
+```html
+http://app.konfuzio.com/api/v3/projects/3/export/human-annotated.csv?token=bf20d992c0960876157b53745cdd86fad95e6ff4
+```
+    
+This functionality currently is only offered for
+the [Google-Sheet export](https://help.konfuzio.com/integrations/google-sheet/index.html) of project Documents
+annotations
+
 ### Response codes
 
 All endpoints return an HTTP code that indicates the success of the request. Following the standard, codes starting
