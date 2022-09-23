@@ -13,7 +13,7 @@ from typing import Optional, List, Union, Tuple, Dict
 from warnings import warn
 
 import dateutil.parser
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 from tqdm import tqdm
 
 from konfuzio_sdk.api import (
@@ -97,12 +97,12 @@ class Page(Data):
         """Create a Page for a Document."""
         self.id_ = id_
         self.document = document
+        self.number = number
+        self.index = number - 1
         document.add_page(self)
         self.start_offset = start_offset
         self.end_offset = end_offset
         self.image = None
-        self.number = number
-        self.index = number - 1
         self._original_size = original_size
         self.width = self._original_size[0]
         self.height = self._original_size[1]
@@ -124,6 +124,10 @@ class Page(Data):
         """Define that one Page per Document is unique."""
         return (self.document, self.index)
 
+    def __eq__(self, other: 'Page') -> bool:
+        """Define how one Page is identical."""
+        return self.__hash__() == other.__hash__()
+
     def __repr__(self):
         """Return the name of the Document incl. the ID."""
         return f"Page {self.index} in {self.document}"
@@ -138,6 +142,33 @@ class Page(Data):
         elif is_file(self.image_path, raise_exception=False):
             self.image = Image.open(self.image_path)
         return self.image
+
+    def get_annotations_image(self, image: Image = None):
+        """Get Document Page as PNG with annotations shown."""
+        if image is None and self.document.id_ is not None:
+            image = self.get_image()
+        elif image is None and self.document.copy_of_id is not None:
+            original_doc = self.document.project.get_document_by_id(self.document.copy_of_id)
+            image = original_doc.get_page_by_index(self.index).get_image()
+        image = image.convert('RGB')
+        # bbox information are based on a downscaled image
+        scale_mult = image.size[1] / self.height
+
+        anns = self.annotations(use_correct=False)
+
+        for ann in anns:
+            pos = [
+                scale_mult * ann.spans[0].bbox().x0,
+                scale_mult * (self.height - ann.spans[0].bbox().y0),
+                scale_mult * ann.spans[0].bbox().x1,
+                scale_mult * (self.height - ann.spans[0].bbox().y1),
+            ]
+            draw = ImageDraw.Draw(image)
+            draw.rectangle(pos, outline='blue', width=2)
+
+            font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSerifBold.ttf", 24, encoding="unic")
+            draw.text((pos[0], pos[3] - 24), ann.label.name, fill='blue', font=font)
+        return image
 
     @property
     def text(self):
@@ -275,6 +306,11 @@ class Bbox:
 
         if self.x0 < 0:
             raise ValueError(f'{self} has negative x coordinate in {self.page}.')
+
+    @property
+    def area(self):
+        """Return area covered by the Bbox."""
+        return round(abs(self.x0 - self.x1) * abs(self.y0 - self.y1), 3)
 
 
 class AnnotationSet(Data):
@@ -835,10 +871,6 @@ class Span(Data):
         self.end_offset = end_offset
         self.top = None
         self.bottom = None
-        self.x0 = None
-        self.x1 = None
-        self.y0 = None
-        self.y1 = None
         self._line_index = None
         self._page: Union[Page, None] = None
         self._bbox: Union[Bbox, None] = None
@@ -935,7 +967,8 @@ class Span(Data):
             warn('WIP: Modifications before the next stable release expected.', FutureWarning, stacklevel=2)
             # todo: verify that one Span relates to Character in on line of text
             character_range = range(self.start_offset, self.end_offset)
-            characters = {key: self.annotation.document.bboxes.get(key) for key in character_range}
+            document = self.annotation.document
+            characters = {key: document.bboxes.get(key) for key in character_range if document.text[key] != ' '}
             if not all(characters.values()):
                 logger.error(f'{self} contains Chractacters that don\'t provide a Bounding Box.')
             self._bbox = Bbox(
@@ -963,7 +996,7 @@ class Span(Data):
     def eval_dict(self):
         """Return any information needed to evaluate the Span."""
         if self.start_offset == self.end_offset == 0:
-            eval = {
+            span_dict = {
                 "id_local": None,
                 "id_": None,
                 "confidence": None,
@@ -997,9 +1030,12 @@ class Span(Data):
                 "y0_relative": None,
                 "y1_relative": None,
                 "page_index_relative": None,
+                "area_quadrant_two": 0,
+                "area": 0,
+                "label_text": None,
             }
         else:
-            eval = {
+            span_dict = {
                 "id_local": self.annotation.id_local,
                 "id_": self.annotation.id_,
                 "confidence": self.annotation.confidence,
@@ -1024,22 +1060,34 @@ class Span(Data):
             }
 
             if self.bbox():
-                eval["x0"] = self.bbox().x0
-                eval["x1"] = self.bbox().x1
-                eval["y0"] = self.bbox().y0
-                eval["y1"] = self.bbox().y1
+                span_dict["x0"] = self.bbox().x0
+                span_dict["x1"] = self.bbox().x1
+                span_dict["y0"] = self.bbox().y0
+                span_dict["y1"] = self.bbox().y1
+
+                # https://www.cuemath.com/geometry/quadrant/
+                span_dict["area_quadrant_two"] = self.bbox().x0 * self.bbox().y0
+                span_dict["area"] = self.bbox().area
 
             if self.page:  # todo separate as eval_dict on Page level
-                eval["page_index"] = self.page.index
-                eval["page_width"] = self.page.width
-                eval["page_height"] = self.page.height
-                eval["x0_relative"] = self.bbox().x0 / self.page.width
-                eval["x1_relative"] = self.bbox().x1 / self.page.width
-                eval["y0_relative"] = self.bbox().y0 / self.page.height
-                eval["y1_relative"] = self.bbox().y1 / self.page.height
-                eval["page_index_relative"] = self.page.index / self.annotation.document.number_of_pages
+                span_dict["page_index"] = self.page.index
+                span_dict["page_width"] = self.page.width
+                span_dict["page_height"] = self.page.height
+                span_dict["x0_relative"] = self.bbox().x0 / self.page.width
+                span_dict["x1_relative"] = self.bbox().x1 / self.page.width
+                span_dict["y0_relative"] = self.bbox().y0 / self.page.height
+                span_dict["y1_relative"] = self.bbox().y1 / self.page.height
+                span_dict["page_index_relative"] = self.page.index / self.annotation.document.number_of_pages
 
-        return eval
+            document_id = (
+                self.annotation.document.id_
+                if self.annotation.document.id_ is not None
+                else self.annotation.document.copy_of_id
+            )
+            span_dict["document_id"] = document_id
+            span_dict["label_text"] = self.annotation.label.name if self.annotation.label else None
+
+        return span_dict
 
 
 class Annotation(Data):
@@ -1112,7 +1160,7 @@ class Annotation(Data):
 
         if isinstance(label, int):
             self.label: Label = self.document.project.get_label_by_id(label)
-        elif isinstance(label, Label):
+        elif sdk_isinstance(label, Label):
             self.label: Label = label
         else:
             raise ValueError(f'{self.__class__.__name__} {self.id_local} has no Label.')
@@ -1124,7 +1172,7 @@ class Annotation(Data):
         # handles association to an Annotation Set if the Annotation belongs to a Category
         if isinstance(label_set_id, int):
             self.label_set: LabelSet = self.document.project.get_label_set_by_id(label_set_id)
-        elif isinstance(label_set, LabelSet):
+        elif sdk_isinstance(label_set, LabelSet):
             self.label_set = label_set
         else:
             self.label_set = None
@@ -1521,9 +1569,11 @@ class Document(Data):
 
         # use hidden variables to store low volume information in instance
         self._text: str = text
+        self._text_hash = None
         self._characters: Dict[int, Bbox] = None
+        self._bbox_hash = None
         self._bbox_json = bbox
-        self.bboxes_available: bool = self.is_online or self._bbox_json
+        self.bboxes_available: bool = True if (self.is_online or self._bbox_json) else False
         self._strict_bbox_validation = strict_bbox_validation
         self._hocr = None
         self._pages: List[Page] = []
@@ -1619,16 +1669,29 @@ class Document(Data):
 
         return result
 
-    def check_bbox(self) -> bool:
-        """Please see get_bbox of the Document."""
-        warn('Deprecate: Modifications before the next stable release expected.', DeprecationWarning, stacklevel=2)
-        _ = self.bboxes
-        return True
+    def check_bbox(self) -> None:
+        """
+        Run validation checks on the document text and bboxes.
+
+        This is run when the document is initialized, and usually it's not needed to be run again because a document's
+        text and bboxes are not expected to change within the Konfuzio Server.
+
+        You can run this manually instead if your pipeline allows changing the text or the bbox during the lifetime of
+        a document. Will raise ValueError if the bboxes don't match with the text of the document, or if bboxes have
+        invalid coordinates (outside page borders) or invalid size (negative width or height).
+
+        This check is usually slow, and it can be made faster by calling document.set_text_bbox_hashes() right after
+        initializing the document, which will enable running a hash comparison during this check.
+        """
+        warn('WIP: Modifications before the next stable release expected.', FutureWarning, stacklevel=2)
+        if self._check_text_or_bbox_modified():
+            self._characters = None
+            _ = self.bboxes
 
     def __deepcopy__(self, memo) -> 'Document':
         """Create a new Document of the instance."""
         document = Document(
-            id=None,
+            id_=None,
             project=self.project,
             category=self.category,
             text=self.text,
@@ -1983,10 +2046,26 @@ class Document(Data):
         return bbox
 
     @property
+    def _hashable_characters(self) -> Optional[frozenset]:
+        """Convert bbox dict into a hashable type."""
+        return frozenset(self._characters) if self._characters is not None else None
+
+    def set_text_bbox_hashes(self) -> None:
+        """Update hashes of document text and bboxes. Can be used for checking later on if any changes happened."""
+        self._text_hash = hash(self._text)
+        self._bbox_hash = hash(self._hashable_characters)
+
+    def _check_text_or_bbox_modified(self) -> bool:
+        """Check if either the document text or its bboxes have been modified in memory."""
+        text_modified = self._text_hash != hash(self._text)
+        bbox_modified = self._bbox_hash != hash(self._hashable_characters)
+        return text_modified or bbox_modified
+
+    @property
     def bboxes(self) -> Dict[int, Bbox]:
         """Use the cached bbox version."""
         warn('WIP: Modifications before the next stable release expected.', FutureWarning, stacklevel=2)
-        if self.bboxes_available:
+        if self.bboxes_available and self._characters is None:
             bbox = self.get_bbox()
             boxes = {}
             for character_index, box in bbox.items():
@@ -2019,7 +2098,6 @@ class Document(Data):
         if is_file(self.txt_file_path, raise_exception=False):
             with open(self.txt_file_path, "r", encoding="utf-8") as f:
                 self._text = f.read()
-
         return self._text
 
     def add_page(self, page: Page):

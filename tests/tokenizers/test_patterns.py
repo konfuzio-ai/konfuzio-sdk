@@ -1796,13 +1796,13 @@ class TestAutomatedRegexTokenizer(TestTemplateRegexTokenizer):
 
     def test_1_tokenizers_added(self):
         """Test to find one additional tokenizer in addition to the WhitespaceTokenizer."""
-        assert len(self.tokenizer.tokenizers) == 3
+        assert len(self.tokenizer.tokenizers) == 4
 
     def test_2_find_what_default_tokenizer_misses(self):
         """Test if tokenizer can find what cannot be found by the WhitespaceTokenizer."""
         document = self.project.local_training_document
         result = self.tokenizer.evaluate(document)
-        assert result.is_found_by_tokenizer.sum() == 2
+        assert result.is_found_by_tokenizer.sum() == 3
         assert (
             result[result.is_found_by_tokenizer == 1].start_offset[0] == document.annotations()[0].spans[0].start_offset
         )

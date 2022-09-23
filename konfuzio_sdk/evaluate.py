@@ -3,6 +3,7 @@ from typing import Tuple, List, Optional
 
 import pandas
 from sklearn.utils.extmath import weighted_mode
+from konfuzio_sdk.utils import sdk_isinstance
 
 
 RELEVANT_FOR_EVALUATION = [
@@ -250,13 +251,13 @@ class Evaluation:
 
         if search is None:
             return self.data
-        elif isinstance(search, Label):
+        elif sdk_isinstance(search, Label):
             assert search.id_ is not None, f'{search} must have a ID'
             query = f'label_id == {search.id_} | (label_id_predicted == {search.id_})'
-        elif isinstance(search, Document):
+        elif sdk_isinstance(search, Document):
             assert search.id_ is not None, f'{search} must have a ID.'
             query = f'document_id == {search.id_} | (document_id_predicted == {search.id_})'
-        elif isinstance(search, LabelSet):
+        elif sdk_isinstance(search, LabelSet):
             assert search.id_ is not None, f'{search} must have a ID.'
             query = f'label_set_id == {search.id_} | (label_set_id_predicted == {search.id_})'
         else:
