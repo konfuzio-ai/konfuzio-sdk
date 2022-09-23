@@ -492,6 +492,44 @@ class TestInformationExtraction(unittest.TestCase):
             'NO_LABEL',
         ]
 
+    def test_separate_labels(self):
+        """Test separate_labels method for res_dict when using use_separate_labels extraction model."""
+        pipeline = RFExtractionAI(use_separate_labels=True)
+
+        res_test_dict = {
+            'Brutto-Bezug': [
+                {
+                    'Brutto-Bezug__Betrag': pd.DataFrame(),
+                    'Brutto-Bezug__Bezeichnung': pd.DataFrame(),
+                },
+                {
+                    'Brutto-Bezug__Betrag': pd.DataFrame(),
+                    'Brutto-Bezug__Bezeichnung': pd.DataFrame(),
+                    'Brutto-Bezug__Faktor': pd.DataFrame(),
+                },
+            ],
+            'Steuer': [
+                {'Steuer__Sozialversicherung': pd.DataFrame(), 'Steuer__Steuerrechtliche Abzüge': pd.DataFrame()}
+            ],
+            'Lohnabrechnung__Netto-Verdienst': pd.DataFrame(),
+            'Lohnabrechnung__Nachname': pd.DataFrame(),
+            'NO_LABEL_SET': {'NO_LABEL_SET__NO_LABEL': pd.DataFrame()},
+        }
+
+        res_test_reparate_dict = pipeline.separate_labels(res_test_dict)
+        list(res_test_reparate_dict.keys()) == ['Brutto-Bezug', 'Steuer', 'Lohnabrechnung', 'NO_LABEL_SET']
+
+        len(res_test_reparate_dict['Brutto-Bezug']) == 2
+        list(res_test_reparate_dict['Brutto-Bezug'][0].keys()) == ['Betrag', 'Bezeichnung']
+        list(res_test_reparate_dict['Brutto-Bezug'][1].keys()) == ['Betrag', 'Bezeichnung', 'Faktor']
+
+        len(res_test_reparate_dict['Steuer']) == 1
+        list(res_test_reparate_dict['Steuer'][0].keys()) == ['Sozialversicherung', 'Steuerrechtliche Abzüge']
+
+        list(res_test_reparate_dict['Lohnabrechnung'].keys()) == ['Netto-Verdienst', 'Nachname']
+
+        list(res_test_reparate_dict['NO_LABEL_SET'].keys()) == ['NO_LABEL']
+
 
 class TestAddExtractionAsAnnotation(unittest.TestCase):
     """Test add an Extraction result as Annotation to a Document."""
