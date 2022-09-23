@@ -610,44 +610,46 @@ class Label(Data):
             raise ValueError(f'In {self} the {label_set} is a duplicate and will not be added.')
 
     # todo move to regex.py so it runs on a list of Annotations, run on Annotations
-    # def find_tokens(self, category: Category) -> List:  # RC
-    #     """Calculate the regex token of a label, which matches all offset_strings of all correct Annotations."""
-    #     for annotation in self.annotations(categories=[category]):
-    #         if category.id_ in self._evaluations.keys():
-    #             self._evaluations[category.id_] += annotation.tokens()
-    #         else:
-    #             self._evaluations[category.id_] = annotation.tokens()
-    #     try:
-    #         tokens = get_best_regex(self._evaluations.get(category.id_, []), log_stats=True)
-    #     except ValueError:
-    #         logger.error(f'We cannot find tokens for {self} with a f_score > 0.')
-    #         tokens = []
-    #     return tokens
+    def find_tokens(self, category: Category) -> List:  # RC
+        """Calculate the regex token of a label, which matches all offset_strings of all correct Annotations."""
+        warn('Warning: find_tokens at Label level is deprecated and will be removed.', DeprecationWarning, stacklevel=2)
+        for annotation in self.annotations(categories=[category]):
+            if category.id_ in self._evaluations.keys():
+                self._evaluations[category.id_] += annotation.tokens()
+            else:
+                self._evaluations[category.id_] = annotation.tokens()
+        try:
+            tokens = get_best_regex(self._evaluations.get(category.id_, []), log_stats=True)
+        except ValueError:
+            logger.error(f'We cannot find tokens for {self} with a f_score > 0.')
+            tokens = []
+        return tokens
 
-    # def tokens(self, categories: List[Category], update=False) -> dict:
-    #     """Calculate tokens to be used in the regex of the Label."""
-    #     for category in categories:
-    #         tokens_file_path = os.path.join(
-    #             self.project.regex_folder, f'{category.name}_{self.name_clean}_tokens.json5'
-    #         )
+    def tokens(self, categories: List[Category], update=False) -> dict:  # RC
+        """Calculate tokens to be used in the regex of the Label."""
+        warn('Warning: tokens at Label level is deprecated and will be removed.', DeprecationWarning, stacklevel=2)
+        for category in categories:
+            tokens_file_path = os.path.join(
+                self.project.regex_folder, f'{category.name}_{self.name_clean}_tokens.json5'
+            )
 
-    #         if not is_file(tokens_file_path, raise_exception=False) or update:
-    #             # self._evaluations = []
-    #             category_tokens = self.find_tokens(category=category)
+            if not is_file(tokens_file_path, raise_exception=False) or update:
+                # self._evaluations = []
+                category_tokens = self.find_tokens(category=category)
 
-    #             if os.path.exists(self.project.regex_folder):
-    #                 with open(tokens_file_path, 'w') as f:
-    #                     json.dump(category_tokens, f, indent=2, sort_keys=True)
-    #         else:
-    #             logger.info(f'Load existing tokens for Label {self.name} in Category {category}.')
-    #             with open(tokens_file_path, 'r') as f:
-    #                 category_tokens = json.load(f)
+                if os.path.exists(self.project.regex_folder):
+                    with open(tokens_file_path, 'w') as f:
+                        json.dump(category_tokens, f, indent=2, sort_keys=True)
+            else:
+                logger.info(f'Load existing tokens for Label {self.name} in Category {category}.')
+                with open(tokens_file_path, 'r') as f:
+                    category_tokens = json.load(f)
 
-    #         self._tokens[category.id_] = category_tokens
+            self._tokens[category.id_] = category_tokens
 
-    #     categories_ids = [category.id_ for category in categories]
+        categories_ids = [category.id_ for category in categories]
 
-    #     return {k: v for k, v in self._tokens.items() if k in categories_ids}
+        return {k: v for k, v in self._tokens.items() if k in categories_ids}
 
     # def check_tokens(self, categories: List[Category]):
     #     """Check if a list of regex do find the Annotations. Log Annotations that we cannot find."""
@@ -799,7 +801,8 @@ class Label(Data):
                     new_regex = re.sub(regex_to_remove_groupnames, '', proposal)
                     if new_regex not in regex_found:
                         if max_findings_per_page:
-                            num_matches = len(re.findall(proposal, annotation.document.text))
+                            # num_matches = len(re.findall(proposal, annotation.document.text))
+                            num_matches = len(regex_matches(regex=proposal, doctext=annotation.document.text))
                             if num_matches / (annotation.document.number_of_pages) < max_findings_per_page:
                                 new_proposals.append(proposal)
                             else:
@@ -2229,44 +2232,45 @@ class Document(Data):
         self._annotations = None
         self._annotation_sets = None
 
-    # def regex(self, start_offset: int, end_offset: int, search=None, max_findings_per_page=100) -> List[str]:  # RC
-    #     """Suggest a list of regex which can be used to get the Span of a document."""
-    #     if search is None:
-    #         search = [1, 3, 5]  # [2, 5, 10]
-    #     if start_offset < 0:
-    #         raise IndexError(f'The start offset must be a positive number but is {start_offset}')
-    #     if end_offset > len(self.text):
-    #         raise IndexError(f'The end offset must not exceed the text length of the Document but is {end_offset}')
-    #     proposals = []
-    #     regex_to_remove_groupnames = re.compile('<.*?>')
-    #     annotations = self.annotations(start_offset=start_offset, end_offset=end_offset)  # RC get annotation directly?
-    #     assert len(annotations) == 1
-    #     for annotation in annotations:
-    #         # for token in annotation.tokens():
-    #         for spacer in search:  # todo fix this search, so that we take regex token from other spans into account
-    #             before_regex = suggest_regex_for_string(
-    #                 self.text[start_offset - spacer**2 : start_offset], replace_characters=True
-    #             )
-    #             after_regex = suggest_regex_for_string(
-    #                 self.text[end_offset : end_offset + spacer], replace_characters=True
-    #             )
-    #             # proposal = before_regex + token['regex'] + after_regex
-    #             proposal = before_regex + annotation.regex() + after_regex
+    def regex(self, start_offset: int, end_offset: int, search=None, max_findings_per_page=100) -> List[str]:  # RC
+        """Suggest a list of regex which can be used to get the Span of a document."""
+        warn('Warning: regex at Document level is deprecated and will be removed.', DeprecationWarning, stacklevel=2)
+        if search is None:
+            search = [1, 3, 5]  # [2, 5, 10]
+        if start_offset < 0:
+            raise IndexError(f'The start offset must be a positive number but is {start_offset}')
+        if end_offset > len(self.text):
+            raise IndexError(f'The end offset must not exceed the text length of the Document but is {end_offset}')
+        proposals = []
+        regex_to_remove_groupnames = re.compile('<.*?>')
+        annotations = self.annotations(start_offset=start_offset, end_offset=end_offset)  # RC get annotation directly?
+        assert len(annotations) == 1
+        for annotation in annotations:
+            # for token in annotation.tokens():
+            for spacer in search:  # todo fix this search, so that we take regex token from other spans into account
+                before_regex = suggest_regex_for_string(
+                    self.text[start_offset - spacer**2 : start_offset], replace_characters=True
+                )
+                after_regex = suggest_regex_for_string(
+                    self.text[end_offset : end_offset + spacer], replace_characters=True
+                )
+                # proposal = before_regex + token['regex'] + after_regex
+                proposal = before_regex + annotation.regex() + after_regex
 
-    #             # check for duplicates
-    #             regex_found = [re.sub(regex_to_remove_groupnames, '', reg) for reg in proposals]
-    #             new_regex = re.sub(regex_to_remove_groupnames, '', proposal)
-    #             if new_regex not in regex_found:
-    #                 if max_findings_per_page:
-    #                     num_matches = len(re.findall(proposal, self.text))
-    #                     if num_matches / (self.text.count('\f') + 1) < max_findings_per_page:
-    #                         proposals.append(proposal)
-    #                     else:
-    #                         logger.info(f'Skip to evaluate regex {repr(proposal)} as it finds {num_matches} in {self}.')
-    #                 else:
-    #                     proposals.append(proposal)
+                # check for duplicates
+                regex_found = [re.sub(regex_to_remove_groupnames, '', reg) for reg in proposals]
+                new_regex = re.sub(regex_to_remove_groupnames, '', proposal)
+                if new_regex not in regex_found:
+                    if max_findings_per_page:
+                        num_matches = len(re.findall(proposal, self.text))
+                        if num_matches / (self.text.count('\f') + 1) < max_findings_per_page:
+                            proposals.append(proposal)
+                        else:
+                            logger.info(f'Skip to evaluate regex {repr(proposal)} as it finds {num_matches} in {self}.')
+                    else:
+                        proposals.append(proposal)
 
-    #     return proposals
+        return proposals
 
     def evaluate_regex(self, regex, label: Label, annotations: List['Annotation'] = None, filtered_group=None):
         """Evaluate a regex based on the Document."""
@@ -2680,195 +2684,6 @@ class Project(Data):
             if category.id_ == id_:
                 return category
         raise IndexError(f'Category id {id_} was not found in {self}.')
-
-    # def get_default_template_documents(self, documents: List, selected_default_section_labels: List,
-    #                                    project_section_labels: list, merge_multi_default: bool) \
-    #         -> Tuple[Dict[int, List], Dict[int, List]]:
-    #     """
-    #     For each default section_label in a prj get a list of documents to be used for that default section_label.
-
-    #     For each default section_label we collect the labels that belong to that section_label.
-
-    #     Then, for each document, we verify the category template. If if matches the default section_label, we add the
-    #     document to the default section_label list of documents.
-
-    #     If merge_multi_default is False we discard any documents with a different default section_label.
-
-    #     If the category template of the document does not match, but we still want to use labels that are shared between
-    #     default section_labels (merge_multi_default=True), then we check for the labels in each section of the document
-    #     that mach labels in the default section_label that we are analysing.
-
-    #     We rename the labels that are not shared as "NO_LABEL".
-
-    #     Format of dict is: {default section_label.id: list of documents)
-    #     """
-    #     # default_section_documents_dict, _ = self.get_default_template_documents(
-    #     #     documents=self.documents + self.test_documents,
-    #     #     selected_default_section_labels=default_label_sets,
-    #     #     project_section_labels=self.get_label_sets(),
-    #     #     merge_multi_default=False
-    #     # )
-
-    #     # keys are default section_label ids, values are list of documents
-    #     default_template_documents = defaultdict(list)
-    #     # keys are default section_label names, values are list of label names that appear in that default section_label
-    #     default_labels = defaultdict(set)
-
-    #     # filter section_labels of the project that belong to the selected default templates
-    #     selected_ids = [x.id_ for x in selected_default_section_labels]
-    #     selected_section_labels = []
-    #     for section_label in project_section_labels:
-    #         if section_label.is_default and section_label.id in selected_ids:
-    #             selected_section_labels.append(section_label)
-    #             continue
-    #         if len(list(set([x.id_ for x in section_label.default_templates if x is not None]) & set(selected_ids))) > 0:
-    #             selected_section_labels.append(section_label)
-    #             continue
-
-    #     # get the labels which appear in each default template
-    #     for template in selected_section_labels:
-    #         if template.is_default:
-    #             # if the template is default, get the label directly
-    #             _default_templates = [template]
-    #         else:
-    #             # if not, it is a child template, get the default from its parent (default_template)
-    #             _default_templates = template.default_templates
-
-    #         # add the labels which appear in that default template and that contain annotations
-    #         template_labels = []
-    #         for label in template.labels:
-    #             if len(label.annotations) > 0:
-    #                 template_labels.append(label)
-
-    #         for _default_template in _default_templates:
-    #             default_labels[_default_template.id] |= set(template_labels)
-
-    #     # for each document template in the project
-    #     for default_section_label in [x for x in selected_default_section_labels if x.is_default]:
-    #         # copy documents so we only edit a new copy of them
-    #         _documents = deepcopy(documents) if merge_multi_default else documents
-    #         # for each document
-    #         for document in _documents:
-    #             # if the default template matches the category template, simply add to documents
-    #             # we can't simply check if default_template.id is in document_sections because document_sections
-    #             # can contain sections from multiple default templates
-    #             if len(document.annotations()) == 0:
-    #                 continue
-    #             if document.category_template == default_section_label:
-    #                 default_template_documents[default_section_label.id_].append(document)
-    #             # if not, then we need to edit it before adding
-    #             # but only if merge_multi_default is True
-    #             # if merge_multi_default is False we discard any documents with a different default template
-    #             elif merge_multi_default:
-    #                 # loop over the sections
-    #                 for i, section in enumerate(document.sections):
-    #                     # we need to check if the section belongs to the "wrong" default template
-    #                     # if it belongs to a default template, get the id from the default template as id = None
-    #                     # if not a default, get the template id
-    #                     if section.section_label.default_template:
-    #                         document_template_id = section.section_label.default_template.id_
-    #                     else:
-    #                         document_template_id = section.section_label.id_
-    #                     # if it does not match the current default template
-    #                     if document_template_id != default_section_label.id_:
-    #                         # get the labels that do not overlap with the current default template
-    #                         non_overlapping_labels = set(section.section_label.labels) - default_labels[default_section_label]  # NOQA
-    #                         # if the labels do not overlap with the current default template, change to NO_LABEL
-    #                         for label in non_overlapping_labels:
-    #                             label.name = 'NO_LABEL'
-    #                 # append document to the default_section_documents
-    #                 default_template_documents[default_section_label.id].append(document)
-    #     # return all default template documents
-    #     return default_template_documents, default_labels
-
-    # def separate_labels(self, default_label_sets: List = None):
-    #     """
-    #     Create separated labels for labels which are shared between SectionLabels.
-
-    #     This should be used only for the training purpose.
-
-    #     For all documents in the project (training + test) for each category, we check all annotations in sections that
-    #     do not belong to the category template.
-
-    #     For each label that we find, we rewrite the name of the label, adding the template name, followed by "__" and
-    #     the original name of the label.
-    #     E.g.: template: Shipper, Label: Name -> Label: Shipper__Name
-
-    #     Notes:
-    #     When using this method, the labels in the project are changed. This should be used in combination with the model
-    #     models_labels_multiclass.SeparateLabelsAnnotationMultiClassModel so that these changes are undone in the extract
-    #     and the output contains the correct labels names.
-
-    #     If the labels of the project should be used in the original format for other tasks, for example, for the
-    #     business evaluation, the project should be reloaded after the training.
-
-    #     """
-    #     if not default_label_sets:
-    #         default_label_sets = [x for x in self.get_label_sets() if x.is_default]
-    #     assert len(default_label_sets) == 1
-
-    #     # Group documents by default section_label and prepare for training.
-    #     # default_section_documents_dict, _ = self.get_default_template_documents(
-    #     #     documents=self.documents + self.test_documents,
-    #     #     selected_default_section_labels=default_label_sets,
-    #     #     project_section_labels=self.get_label_sets(),
-    #     #     merge_multi_default=False
-    #     # )
-    #     for default_label_set in default_label_sets:
-    #         try:
-    #             # Use patched documents to also use knowledge from other document types which share some labels.
-    #             _documents = self.documents + self.test_documents
-    #             # deepcopy(self.documents + self.test_documents)
-    #             # default_section_documents_dict[default_label_set.id]
-
-    #             _documents = [doc for doc in _documents if doc.category]
-    #             if len(_documents) == 0:
-    #                 logger.error(f'There are no documents for {default_label_set.name}.')
-    #                 continue
-
-    #             for document in _documents:
-    #                 # Should we move this to a separate function?
-    #                 if len(document.annotations()) == 0:
-    #                     continue
-    #                 document_default_sections = [
-    #                     x
-    #                     for x in document.annotation_sets()
-    #                     if x.label_set.is_default  # and x.label_set == document.category_template
-    #                 ]
-    #                 if len(document_default_sections) != 1:
-    #                     raise Exception(
-    #                         f'Exactly 1 default section is expected. '
-    #                         f'There is {len(document_default_sections)} in document {document.id_}'
-    #                     )
-    #                 for annotation_set in document.annotation_sets():
-    #                     label_set = annotation_set.label_set
-    #                     prj_section_label = self.get_label_set_by_id(label_set.id_)
-    #                     if label_set.is_default is False:
-    #                         for annotation in annotation_set.annotations:
-    #                             new_label_name = label_set.name + '__' + annotation.label.name
-    #                             new_label_name_clean = label_set.name_clean + '__' + annotation.label.name_clean
-    #                             if new_label_name in [x.name for x in self.labels]:
-    #                                 new_label = next(x for x in self.labels if new_label_name == x.name)
-    #                             else:
-    #                                 new_label = Label(
-    #                                     id_=random.randrange(1e7, 1e12),
-    #                                     text=new_label_name,
-    #                                     text_clean=new_label_name_clean,
-    #                                     get_data_type_display=annotation.label.data_type,
-    #                                     description=annotation.label.description,
-    #                                     project=annotation.label.project,
-    #                                     threshold=0.1,
-    #                                     has_multiple_top_candidates=annotation.label.has_multiple_top_candidates,
-    #                                 )
-    #                                 prj_section_label.add_label(new_label)
-    #                             annotation.label = new_label
-
-    #         except Exception as e:
-    #             logger.error(f'Separate labels for {default_label_set} failed because of >>{e}<<.')
-    #             raise
-    #             # return None
-
-    #     return self
 
     def delete(self):
         """Delete the Project folder."""
