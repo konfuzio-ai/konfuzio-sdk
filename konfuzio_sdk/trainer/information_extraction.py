@@ -43,7 +43,7 @@ from konfuzio_sdk.normalize import normalize_to_float, normalize_to_date, normal
 from konfuzio_sdk.regex import regex_matches
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 from konfuzio_sdk.utils import get_timestamp, get_bbox
-from konfuzio_sdk.evaluate import ExtractionEvaluation
+from konfuzio_sdk.evaluate import Evaluation
 
 logger = logging.getLogger(__name__)
 
@@ -2713,7 +2713,11 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
                 span.annotation.label = doc_spans[s_i].annotation.label
 
     def feature_function(
-        self, documents: List[Document], no_label_limit=None, retokenize=True
+        self,
+        documents: List[Document],
+        no_label_limit=None,
+        retokenize=True,
+        require_revised_annotations=False,
     ) -> Tuple[List[pandas.DataFrame], list]:
         """Calculate features per Span of Annotations.
 
@@ -2751,10 +2755,17 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
                     ):
                         pass
                     else:
-                        raise ValueError(
-                            f"{span.annotation} is unrevised in this dataset and can't be used for training!"
-                            f"Please revise it manually by either confirming it, rejecting it, or modifying it."
-                        )
+                        if require_revised_annotations:
+                            raise ValueError(
+                                f"{span.annotation} is unrevised in this dataset and can't be used for training!"
+                                f"Please revise it manually by either confirming it, rejecting it, or modifying it."
+                            )
+                        else:
+                            logger.error(
+                                f"{span.annotation} is unrevised in this dataset and may impact model "
+                                f"performance! Please revise it manually by either confirming it, rejecting "
+                                f"it, or modifying it."
+                            )
 
             if retokenize:
                 virt_document = deepcopy(document)
@@ -2951,7 +2962,7 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
 
         return self.clf
 
-    def evaluate_full(self, strict: bool = True) -> ExtractionEvaluation:
+    def evaluate_full(self, strict: bool = True) -> Evaluation:
         """Evaluate the full pipeline on the pipeline's Test Documents."""
         eval_list = []
         for document in self.test_documents:
@@ -2959,7 +2970,7 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
             predicted_doc = extraction_result_to_document(document, extraction_result)
             eval_list.append((document, predicted_doc))
 
-        self.evaluation = ExtractionEvaluation(eval_list, strict=strict)
+        self.evaluation = Evaluation(eval_list, strict=strict)
 
         return self.evaluation
 

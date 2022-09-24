@@ -78,7 +78,7 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
     :param strict: Evaluate on a Character exact level without any postprocessing, an amount Span "5,55 " will not be
      exact with "5,55"
     :raises ValueError: When the Category differs.
-    :return: ExtractionEvaluation DataFrame
+    :return: Evaluation DataFrame
     """
     df_a = pandas.DataFrame(doc_a.eval_dict(use_correct=only_use_correct))
     df_b = pandas.DataFrame(doc_b.eval_dict(use_correct=False))
@@ -213,7 +213,7 @@ class EvaluationCalculator:
         return None if (self.tp + self.fp + self.fn == 0) else self.tp / (self.tp + 0.5 * (self.fp + self.fn))
 
 
-class ExtractionEvaluation:
+class Evaluation:
     """Calculated accuracy measures by using the detailed comparison on Span Level."""
 
     from konfuzio_sdk.data import Document
@@ -233,7 +233,7 @@ class ExtractionEvaluation:
 
     def calculate(self):
         """Calculate and update the data stored within this Evolution."""
-        evaluations = []  # start anew, the configuration of the ExtractionEvaluation might have changed.
+        evaluations = []  # start anew, the configuration of the Evaluation might have changed.
         for ground_truth, predicted in self.documents:
             evaluation = compare(
                 doc_a=ground_truth, doc_b=predicted, only_use_correct=self.only_use_correct, strict=self.strict
@@ -321,60 +321,3 @@ class ExtractionEvaluation:
 
         """
         return EvaluationCalculator(tp=self.tp(search=search), fp=self.fp(search=search), fn=self.fn(search=search)).f1
-
-
-class CategoryEvaluation:
-    """Calculated accuracy measures by using the detailed comparison on Span Level."""
-
-    from konfuzio_sdk.data import Document
-
-    def __init__(self, documents: List[Tuple[Document, Document]]):
-        """
-        Relate to the two document instances.
-
-        :param documents: A list of tuple Documents that should be compared.
-        """
-        self.documents = documents
-        self.data = None
-        self.calculate()
-
-    def calculate(self):
-        """Calculate and update the data stored within this Evaluation."""
-        # todo implementation
-        pass
-
-    def tp(self) -> int:
-        """Return the True Positives of all Documents."""
-        # todo implementation
-        return 0
-
-    def fp(self) -> int:
-        """Return the False Positives of all Documents."""
-        # todo implementation
-        return 0
-
-    def fn(self) -> int:
-        """Return the False Negatives of all Documents."""
-        # todo implementation
-        return 0
-
-    def tn(self) -> int:
-        """Return the True Negatives of all Documents."""
-        # todo implementation
-        return 0
-
-    def get_evaluation_data(self, allow_zero: bool = True) -> EvaluationCalculator:
-        """Get precision, recall, f1, based on TP, FP, FN."""
-        return EvaluationCalculator(tp=self.tp(), fp=self.fp(), fn=self.fn(), tn=self.tn(), allow_zero=allow_zero)
-
-    def precision(self) -> Optional[float]:
-        """Calculate the Precision and see f1 to calculate imbalanced classes."""
-        return EvaluationCalculator(tp=self.tp(), fp=self.fp()).precision
-
-    def recall(self) -> Optional[float]:
-        """Calculate the Recall and see f1 to calculate imbalanced classes."""
-        return EvaluationCalculator(tp=self.tp(), fn=self.fn()).recall
-
-    def f1(self) -> Optional[float]:
-        """Calculate the F1 Score."""
-        return EvaluationCalculator(tp=self.tp(), fp=self.fp(), fn=self.fn()).f1

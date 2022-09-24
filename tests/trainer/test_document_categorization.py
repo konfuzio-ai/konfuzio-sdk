@@ -5,6 +5,7 @@ import logging
 import unittest
 
 # from requests import HTTPError
+from copy import deepcopy
 
 from konfuzio_sdk.data import Project, Document
 
@@ -16,7 +17,11 @@ from tests.variables import (
     TEST_CATEGORIZATION_DOCUMENT_ID,
     TEST_RECEIPTS_CATEGORY_ID,
 )
-from konfuzio_sdk.trainer.document_categorization import BaseCategorizationModel
+from konfuzio_sdk.trainer.document_categorization import (
+    FallbackCategorizationModel,
+    get_category_name_for_fallback_prediction,
+    build_list_of_relevant_categories,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -28,31 +33,32 @@ class TestBaseCategorizationModel(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Set up the Data and Categorization Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-        cls.categorization_pipeline = BaseCategorizationModel(cls.project)
+        cls.categorization_pipeline = FallbackCategorizationModel(cls.project)
+        cls.categorization_pipeline.categories = cls.project.categories
 
     def test_1_configure_pipeline(self) -> None:
-        """Make sure the Data and Pipeline is configured."""
-        self.categorization_pipeline.categories = self.project.categories
-        payslips_training_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).documents()
-        receipts_training_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).documents()
-        self.categorization_pipeline.documents = payslips_training_documents + receipts_training_documents
-        payslips_test_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).test_documents()
-        receipts_test_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).test_documents()
-        self.categorization_pipeline.test_documents = payslips_test_documents + receipts_test_documents
+        """No pipeline to configure for the fallback logic."""
+        assert self.categorization_pipeline.categories is not None
+        # payslips_training_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).documents()
+        # receipts_training_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).documents()
+        # self.categorization_pipeline.documents = payslips_training_documents + receipts_training_documents
+        # payslips_test_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).test_documents()
+        # receipts_test_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).test_documents()
+        # self.categorization_pipeline.test_documents = payslips_test_documents + receipts_test_documents
 
     def test_2_fit(self) -> None:
         """Start to train the Model."""
-        # since we are using the fallback logic, this should do nothing and print a logger warning
-        self.categorization_pipeline.fit()
+        # since we are using the fallback logic, this should not require training anything
+        with self.assertRaises(NotImplementedError):
+            self.categorization_pipeline.fit()
 
     def test_3_save_model(self):
         """Save the model."""
-        # since we are using the fallback logic, this should do nothing and print a logger warning
-        self.categorization_pipeline.pipeline_path = self.categorization_pipeline.save(
-            output_dir=self.project.model_folder
-        )
-        assert not os.path.isfile(self.categorization_pipeline.pipeline_path)
-        # os.remove(self.pipeline.pipeline_path)  # cleanup
+        # since we are using the fallback logic, this should not save any model to disk
+        with self.assertRaises(NotImplementedError):
+            self.categorization_pipeline.pipeline_path = self.categorization_pipeline.save(
+                output_dir=self.project.model_folder
+            )
 
     @unittest.skip(reason="To be defined how to upload a categorization model.")
     def test_4_upload_ai_model(self):
@@ -65,36 +71,94 @@ class TestBaseCategorizationModel(unittest.TestCase):
         # except HTTPError as e:
         #    assert '403' in str(e)
 
-    @unittest.skip(reason="Categorization Evaluation not implemented.")
     def test_5_evaluate(self):
-        """Evaluate BaseCategorizationModel."""
-        evaluation = self.categorization_pipeline.evaluate()
+        """Evaluate FallbackCategorizationModel."""
+        with self.assertRaises(NotImplementedError):
+            self.categorization_pipeline.evaluate()
 
-        assert evaluation.f1() == 1.0
-
-    def test_6_categorize_test_documents(self):
-        """Test extracted category by categorizing two randomly selected Test Documents."""
-        test_payslip_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-        test_payslip_document.category = None
-        result = self.categorization_pipeline.categorize(document=test_payslip_document)
-
-        assert isinstance(result, Document)
-        assert result.category is not None
-        assert result.category.id_ == TEST_PAYSLIPS_CATEGORY_ID
-
-        test_receipt_document = self.project.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID)
+    def test_6_categorize_test_document(self):
+        """Test extract category for a selected Test Document with the category name contained within its text."""
+        test_receipt_document = deepcopy(self.project.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID))
+        # reset the category attribute to test that it can be categorized successfully
         test_receipt_document.category = None
         result = self.categorization_pipeline.categorize(document=test_receipt_document)
-
         assert isinstance(result, Document)
         assert result.category is not None
         assert result.category.id_ == TEST_RECEIPTS_CATEGORY_ID
 
-    def test_7_cannot_categorize_test_document(self):
-        """Test cannot extract category for a specifically selected Test Document."""
+    def test_7_already_existing_categorization(self):
+        """Test that the existing category attribute for a Test Document will be reused as the fallback result."""
+        test_payslip_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        result = self.categorization_pipeline.categorize(document=test_payslip_document)
+        assert isinstance(result, Document)
+        assert result.category is not None
+        assert result.category.id_ == test_payslip_document.category.id_
+
+    def test_8_cannot_categorize_test_documents_with_category_name_not_contained_in_text(self):
+        """Test cannot extract category for two Test Document if their texts don't contain the category name."""
         test_receipt_document = self.project.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID).test_documents()[0]
+        # reset the category attribute to test that it can't be categorized successfully
         test_receipt_document.category = None
         result = self.categorization_pipeline.categorize(document=test_receipt_document)
-
         assert isinstance(result, Document)
         assert result.category is None
+
+        test_payslip_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        # reset the category attribute to test that it can't be categorized successfully
+        test_payslip_document.category = None
+        result = self.categorization_pipeline.categorize(document=test_payslip_document)
+        assert isinstance(result, Document)
+        assert result.category is None
+
+    def test_9_force_categorization(self):
+        """Test extract category for two selected Test Documents that already contain a category attribute."""
+        # this document can be recategorized successfully because its text contains the word "quittung" (receipt) in it
+        test_receipt_document = self.project.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID)
+        result = self.categorization_pipeline.categorize(document=test_receipt_document, recategorize=True)
+        assert isinstance(result, Document)
+        assert result.category is not None
+        assert result.category.id_ == test_receipt_document.category.id_
+
+        # this document cannot be recategorized successfully because its text does not contain
+        # the word "lohnabrechnung" (payslip) in it
+        test_payslip_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        result = self.categorization_pipeline.categorize(document=test_payslip_document, recategorize=True)
+        assert isinstance(result, Document)
+        assert result.category is None
+
+    def test_9a_categorize_in_place(self):
+        """Test extract category for two selected Test Documents that already contain a category attribute."""
+        # this document can be recategorized successfully because its text contains the word "quittung" (receipt) in it
+        test_receipt_document = self.project.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID)
+        test_receipt_document.category = None
+        self.categorization_pipeline.categorize(document=test_receipt_document, inplace=True)
+        assert test_receipt_document.category is not None
+        assert test_receipt_document.category.id_ == TEST_RECEIPTS_CATEGORY_ID
+
+    def test_9b_categorize_defaults_not_in_place(self):
+        """Test extract category for two selected Test Documents that already contain a category attribute."""
+        # this document can be recategorized successfully because its text contains the word "quittung" (receipt) in it
+        test_receipt_document = self.project.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID)
+        test_receipt_document.category = None
+        self.categorization_pipeline.categorize(document=test_receipt_document)
+        assert test_receipt_document.category is None
+
+
+def test_get_category_name_for_fallback_prediction():
+    """Test turn a category name to lowercase, remove parentheses along with their contents, and trim spaces."""
+    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+    payslips_category = project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID)
+    receipts_category = project.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID)
+    assert get_category_name_for_fallback_prediction(payslips_category) == "lohnabrechnung"
+    assert get_category_name_for_fallback_prediction(payslips_category.name) == "lohnabrechnung"
+    assert get_category_name_for_fallback_prediction(receipts_category) == "quittung"
+    assert get_category_name_for_fallback_prediction(receipts_category.name) == "quittung"
+    assert get_category_name_for_fallback_prediction("Test Category Name") == "test category name"
+    assert get_category_name_for_fallback_prediction("Test Category Name (content)") == "test category name"
+    assert get_category_name_for_fallback_prediction("Te(s)t Category Name (content content)") == "tet category name"
+
+
+def test_build_list_of_relevant_categories():
+    """Filter for category name variations which correspond to the given categories, starting from a predefined list."""
+    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+    assert set(build_list_of_relevant_categories(project.categories)) == {"lohnabrechnung", "quittung"}

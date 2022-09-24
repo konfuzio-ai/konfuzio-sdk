@@ -5,7 +5,11 @@
 
 # On-Premises Documentation
 
-The recommended way to operate a production-ready and scalabe Konfuzio installation is via Kubernetes. An alternative and more light-weight deployment option is the [Single VM setup](/web/on_premises.html#alternative-deployment-options). On-Premise Konfuzio installations allow to create Superuser accounts which can access all [Documents](https://help.konfuzio.com/modules/superuserdocuments/index.html), [Projects](https://help.konfuzio.com/modules/superuserprojects/index.html) and [AIs](https://help.konfuzio.com/modules/superuserais/index.html) via a dedicated view.
+On-premises, also known as self-hosted, is a setup that allows Konfuzio to be implemented 100% on your own infrastructure. In practice, it means that you know where your data is stored, how it's handled and who gets hold of it. This is because you keep the data on your own servers.
+
+A common way to operate a production-ready and scalabe Konfuzio installation is via Kubernetes. An alternative and more light-weight deployment option is the [Single VM setup via Docker](/web/on_premises.html#alternative-deployment-options). We recommend to use the option which is more familiar to you.
+
+On-Premise Konfuzio installations allow to create Superuser accounts which can access all [Documents](https://help.konfuzio.com/modules/superuserdocuments/index.html), [Projects](https://help.konfuzio.com/modules/superuserprojects/index.html) and [AIs](https://help.konfuzio.com/modules/superuserais/index.html) via a dedicated view as well as creating custom [Roles](https://help.konfuzio.com/modules/superuserroles/index.html)
 
 ## Kubernetes
 
@@ -154,11 +158,10 @@ settings in the command line options.
 
 The resource requests, and number of replicas for the Konfuzio components in this
 setup are set by default to be adequate for a small production deployment. This is
-intended to fit in a cluster with at least 16 vCPU with AVX2 support enabled, 32 GB of
-RAM and one Nvidia GPU which supports at least CUDA10.1 and CUDNN 7.0. If you are
+intended to fit in a cluster with at least 8 vCPU with AVX2 support enabled, 32 GB of
+RAM and one Nvidia GPU with minimum 4GB which supports at least CUDA10.1 and CUDNN 7.0. If you are
 trying to deploy a non-production instance, you can reduce the defaults in order to fit
-into a smaller cluster. Konfuzio can work withoutGPU, however runtime for extraction
-and training of medium to large dataset will be significantly slower.
+into a smaller cluster. Konfuzio can work without a GPU. The GPU is used to train and run Categorization AIs. We observe a 5x faster training and a 2x faster execution on GPU compared to CPU. Most Konfuzio Installations do not use GPUs.
 
 #### Deploy using Helm
 
@@ -233,8 +236,8 @@ Konfuzio can be configured to run on a single virtual machine, without relying o
 Kubernetes. In this scenario, all necessary containers are started manually or with a
 container orchestration tool of your choice.
 
-We recommend a virtual machine with a minimum of 12 vCPU (incl. AVX2 support) and
-64GB of RAM and an installed Docker runtime. A Nvidia GPU is recommended but not
+We recommend a virtual machine with a minimum of 8 vCPU (incl. AVX2 support) and
+32 GB of RAM and an installed Docker runtime. A Nvidia GPU is recommended but not
 required. In this setup Konfuzio is running in the context of the Docker executor,
 therefore there are no strict requirements for the VMs operating systems. However, we
 recommend a Linux VM with Debian, Ubuntu, CentOS,or Redhat Linux.
@@ -414,8 +417,61 @@ Click `SSO` on login page to log in to Konfuzio using keycloak
 
 - The Keycloak admin user cannot login into Konfuzio Server.
 
+## Migrate AIs and Projects
 
-## Environment Variables for Konfuzio Server
+### Migrate an Extraction or Categorization AI
+
+This feature is only available for on-prem customers.
+
+### Download extraction AI from source instance
+
+In a first step the extraction AI needs to be downloaded from the target Konfuzio instance. In order to download the extraction AI you need to be a superuser.
+The extraction AI can be downloaded from the superuser AI page.
+
+![select_AI.png](./migration-between-konfuzio-server-instances/select_AI.png)
+
+Click on the extraction AI you want to migrate.
+
+![download_AI.png](./migration-between-konfuzio-server-instances/download_AI.png)
+
+Download the AI file.
+
+### Upload Extraction or Category AI to target instance
+
+Upload the downloaded extraction AI via superuser AI page.
+
+![upload_AI.png](./migration-between-konfuzio-server-instances/upload_AI.png)
+
+### Note:
+
+In case of an Extraction AI, a target category needs to be chosen. A project relation is made by means of choosing a "project - category" relation in "Available Category". No project should be assigned in the shown "Available projects" select box.
+In comparison for a Categorization AI the targe project has to be chosen from "Available projects".
+
+
+![create_label_sets.png](./migration-between-konfuzio-server-instances/create_label_sets.png)
+
+If you upload the extraction AI to a new project without the labels and label set, you need to enable "Create labels and templates" on the respective project. 
+
+
+### Migrate a Project
+
+Export the project data from the source Konfuzio server system.  
+```
+pip install konfuzio_sdk  
+konfuzio_sdk init  
+konfuzio_sdk export_project <PROJECT_ID>
+```
+
+The export will be saved in a folder with the name data_<project_id>. This folder needs to be transferred to the target system
+The first argument is the path to the export folder, the second is the project name of the imported project on the target system.
+
+```
+python manage.py project_import "/konfuzio-target-system/data_123/" "NewProjectName"
+```
+
+## Environment Variables
+
+### Environment Variables for Konfuzio Server
 
 Konfuzio Server is fully configured via environment variables, these can be passed as dedicated environment variables or a single .env to the Konfuzio Server containers (registry.gitlab.com/konfuzio/text-annotation/master). A template for a .env file is provided here:
 
@@ -562,7 +618,7 @@ TRAIN_EXTRACTION_AI_AUTOMATICALLY_IF_QUEUE_IS_EMPTY=False
 ALWAYS_GENERATE_SANDWICH_PDF=True
 ```
 
-## Environment Variables for Read API Container
+### Environment Variables for Read API Container
 ```text
  # The Azure OCR API key (mandatory).
 AZURE_OCR_KEY=123456789
@@ -572,7 +628,7 @@ AZURE_OCR_BASE_URL=http://host:5000
 AZURE_OCR_VERSION=v3.2
 ```
 
-## Environment Variables for Detectron Container
+### Environment Variables for Detectron Container
 
 ```text
 # Connect Broker (mandatory).

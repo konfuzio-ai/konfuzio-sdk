@@ -15,23 +15,38 @@ Self-hosted Konfuzio Server can be upgraded according to the [documentation](htt
 
 You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server features our team is actively working on. This list covers a planning horizon of 12 weeks. 
 
-- Superusers can define custom Roles for Members: Inviting Users can select from those Roles when inviting new Members to a Project. ([Internal Documentation](https://gitlab.com/konfuzio/manual/-/merge_requests/21/diffs), [Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/7364)).
 - Add self-service customer center to manage contracts and invoices ([Internal Documentation](https://gitlab.com/konfuzio/manual/-/merge_requests/23/diffs), [Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/8235)).
+- API v3 endpoint to sort and split Pages into Documents with different categories containted in one file ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9452)).
 - Calculate and access Tokenizers via the web interface. The name Tokenizer might be revised. The SDK refers to this concept as Tokenizer. ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9271)).
 - Add a filter to the list of Documents to find Documents that need to be revised by humans. ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9242)).
 - Train custom Page-based Categorization AI via [SDK](https://github.com/konfuzio-ai/konfuzio-sdk/) ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9481)).
-- Sort Labels in Label-Sets to allow users to customize the UI per Category ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/8932)).
 - First stable release of Capture Vue in version [0.1.0](#).
 - Suggest page breaks if one file contains multiple Documents ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/7671)).
 - Redirect https://app.konfuzio.com/api/ to stable API Version 3 ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9692)).
 - Make all List Views sortable by click on column ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9470)).
 
 ## Next Release
-- Coming Soon
 
-## 2022-08-30_20-38-24
+### Added
+- Save feedback that there are no Annotations for a Label/Label-Set combination in a document ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9163)).
+- Superusers can define custom Roles for Members: Inviting Users can select from those Roles when inviting new Members to a Project. ([Internal Documentation](https://gitlab.com/konfuzio/manual/-/merge_requests/21/diffs), [Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/7364)).
+- Sort Labels in Label-Sets to allow users to customize the UI per Category ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/8932)).
+- Add the property `has_multiple_top_candidates` to the Label API V3 ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9687)).
+- Add the property `has_multiple_annotation_sets` to the Label Set API V3 ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9687)).
 
-This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Capture Vue in version [0.0.8](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/). Per sprint we aim to have one relase.
+### Fixed
+- The numbering of Annotation Sets in the SmartView does not consider deleted Annotation Sets anymore ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9604)).
+
+## 2022-09-21_12-00-31
+
+This version uses Konfuzio Trainer in version v.0.3.22, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Capture Vue in version [0.0.8](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
+
+### Fixed
+- Prevent an issue where a popup window could not be closed when using the SmartView ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9766)).
+
+## 2022-09-04_09-11-18
+
+This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Capture Vue in version [0.0.8](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
 
 ### Added
 - [Auto-rotation for documents for all angles (until now only 90 degree angles have been supported).](https://help.konfuzio.com/modules/projects/index.html#automatically-rotate-documents)
@@ -47,6 +62,7 @@ This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK 
 - Improve visibility of the left navigation bar.
 - [Create sandwich PDFs on demand (until now they have been created on document upload)](https://dev.konfuzio.com/web/on_premises.html#environment-variables-for-konfuzio-server).
 - Add content-type header ("Content-Type": "application/json") to the callback response.
+- [Update Power Query Excel Documentation](https://help.konfuzio.com/integrations/excel/index.html) with animated screencasts
 
 ### Fixed
 - Top annotation filter in the SmartView now considers unrevised annotations.

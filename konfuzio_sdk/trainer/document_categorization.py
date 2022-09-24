@@ -1,6 +1,6 @@
 """Implements a DocumentModel."""
 
-import os
+# import os
 import re
 
 # import sys
@@ -13,49 +13,40 @@ from warnings import warn
 
 # import cloudpickle
 
-from konfuzio_sdk.utils import get_timestamp
 from konfuzio_sdk.data import Project, Document, Category
-from konfuzio_sdk.evaluate import CategoryEvaluation
 
 logger = logging.getLogger(__name__)
 
 warn('This module is WIP: https://gitlab.com/konfuzio/objectives/-/issues/9481', FutureWarning, stacklevel=2)
 
-# Common category names translated in English and German in multiple variations.
-SUPPORTED_CATEGORY_NAMES = [
-    ['invoice', 'rechnung'],
-    ['certificate', 'zertifikat'],
-    ['receipt', 'quittung', 'kundenbeleg'],
-    ['energy certificate', 'energieausweis'],
-    ['delivery note', 'lieferschein'],
-    ['identity card', 'personalausweis'],
-    ['payslip', 'lohnabrechnung', 'bezüge'],
-    ['passport', 'reisepass'],
-]
 
-
-def get_category_name_for_fallback_prediction(category: Category) -> str:
-    """Turn a category name to lowercase, remove parentheses and brackets with their contents, and trim spaces."""
-    return re.sub(r'\([^)]*\)', '', category.name.lower()).strip()
+def get_category_name_for_fallback_prediction(category: Union[Category, str]) -> str:
+    """Turn a category name to lowercase, remove parentheses along with their contents, and trim spaces."""
+    if isinstance(category, Category):
+        category_name = category.name.lower()
+    elif isinstance(category, str):
+        category_name = category.lower()
+    else:
+        raise NotImplementedError
+    parentheses_removed = re.sub(r'\([^)]*\)', '', category_name).strip()
+    single_spaces = parentheses_removed.replace("  ", " ")
+    return single_spaces
 
 
 def build_list_of_relevant_categories(training_categories: List[Category]) -> List[List[str]]:
     """Filter for category name variations which correspond to the given categories, starting from a predefined list."""
-    relevant_categories = [
-        category
-        for category in SUPPORTED_CATEGORY_NAMES
-        if any([get_category_name_for_fallback_prediction(c) in category for c in training_categories])
-    ]
+    relevant_categories = []
     for training_category in training_categories:
-        relevant_categories.append([training_category.name.lower()])
+        category_name = get_category_name_for_fallback_prediction(training_category)
+        relevant_categories.append(category_name)
     return relevant_categories
 
 
-class BaseCategorizationModel:
+class FallbackCategorizationModel:
     """A model that predicts a category for a given document."""
 
     def __init__(self, project: Union[int, Project], *args, **kwargs):
-        """Initialize BaseCategorizationModel."""
+        """Initialize FallbackCategorizationModel."""
         # Go through keyword arguments, and either save their values to our
         # instance, or raise an error.
         if isinstance(project, int):
@@ -65,65 +56,52 @@ class BaseCategorizationModel:
         else:
             raise NotImplementedError
 
-        self.clf = None
         self.categories = None
-        self.documents = None
-        self.test_documents = None
-
         self.name = self.__class__.__name__
-
-        self.X_train = None
-        self.y_train = None
-        self.X_valid = None
-        self.y_valid = None
-        self.X_test = None
-        self.y_test = None
-
-        self.pipeline_path = None
-        self.evaluation = None
 
     def fit(self) -> None:
         """Use as placeholder Function."""
-        logger.warning(f'{self} uses a fallback logic for categorizing documents, and does not train a classifier.')
-        pass
+        raise NotImplementedError(
+            f'{self} uses a fallback logic for categorizing documents, and does not train a classifier.'
+        )
 
-    def save(self, output_dir: str, include_konfuzio=True) -> str:
+    def save(self, output_dir: str, include_konfuzio=True):
         """Use as placeholder Function."""
-        # todo implementation
-        # todo how to unify with Trainer.save() of information_extraction.py ?
-        logger.warning(f'{self} uses a fallback logic for categorizing documents, this will not save model to disk.')
-        pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_categorization_prj{self.project.id_}.pkl')
-        return pkl_file_path
+        raise NotImplementedError(
+            f'{self} uses a fallback logic for categorizing documents, this will not save model to disk.'
+        )
 
-    def evaluate(self) -> CategoryEvaluation:
-        """Evaluate the categorization pipeline on the pipeline's Test Documents."""
-        # todo implementation
-        logger.error(f'{self} not implemented.')
-        self.evaluation = CategoryEvaluation(documents=())
-        return self.evaluation
+    def evaluate(self):
+        """Use as placeholder Function."""
+        raise NotImplementedError(
+            f'{self} uses a fallback logic for categorizing documents, without using Training or Test documents for '
+            f'evaluation.'
+        )
 
-    def categorize(self, document: Document, recategorize: bool = True) -> Document:
+    def categorize(self, document: Document, recategorize: bool = False, inplace: bool = False) -> Document:
         """Run categorization."""
-        virtual_doc = deepcopy(document)
+        if inplace:
+            virtual_doc = document
+        else:
+            virtual_doc = deepcopy(document)
         if (document.category is not None) and (not recategorize):
             logger.info(
                 f'In {document}, the category was already specified as {document.category}, so it wasn\'t categorized '
                 f'again. Please use recategorize=True to force running the Categorization AI again on this document.'
             )
             return virtual_doc
+        elif recategorize:
+            virtual_doc.category = None
 
         relevant_categories = build_list_of_relevant_categories(self.categories)
-        found_compatible_category_names = None
+        found_category_name = None
         doc_text = virtual_doc.text.lower()
-        for alternative_names_for_category in relevant_categories:
-            if found_compatible_category_names is not None:
+        for candidate_category_name in relevant_categories:
+            if candidate_category_name in doc_text:
+                found_category_name = candidate_category_name
                 break
-            for candidate_category_name in alternative_names_for_category:
-                if candidate_category_name in doc_text:
-                    found_compatible_category_names = alternative_names_for_category
-                    break
 
-        if found_compatible_category_names is None:
+        if found_category_name is None:
             logger.warning(
                 f'{self} could not find the category of {document} by using the fallback logic '
                 f'with pre-defined common categories.'
@@ -132,7 +110,7 @@ class BaseCategorizationModel:
         found_category = [
             category
             for category in self.categories
-            if get_category_name_for_fallback_prediction(category) in found_compatible_category_names
+            if get_category_name_for_fallback_prediction(category) in found_category_name
         ][0]
         virtual_doc.category = found_category
         return virtual_doc
