@@ -835,7 +835,7 @@ class TestGetExtractionResults(unittest.TestCase):
 
     def test_get_extraction_results_with_virtual_doc(self):
         """Get back the extractions from our virtual doc."""
-        virtual_doc = extraction_result_to_document(self.document, self.result_dict)
+        virtual_doc = RFExtractionAI().extraction_result_to_document(self.document, self.result_dict)
         ann1, ann2 = virtual_doc.annotations(use_correct=False)
         assert ann1.bboxes[0] == {
             'bottom': 212.84699999999998,
