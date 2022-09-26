@@ -1757,6 +1757,55 @@ class Trainer:
         logger.warning(f'{self} does not extract.')
         pass
 
+    @staticmethod
+    def extraction_result_to_document(document: Document, extraction_result: dict) -> Document:
+        """Return a virtual Document annotated with AI Model output."""
+        virtual_doc = deepcopy(document)
+        virtual_annotation_set_id = 0  # counter for across mult. Annotation Set groups of a Label Set
+
+        # define Annotation Set for the Category Label Set: todo: this is unclear from API side
+        # default Annotation Set will be always added even if there are no predictions for it
+        category_label_set = document.category.project.get_label_set_by_id(document.category.id_)
+        virtual_default_annotation_set = AnnotationSet(
+            document=virtual_doc, label_set=category_label_set, id_=virtual_annotation_set_id
+        )
+
+        for label_or_label_set_name, information in extraction_result.items():
+            if isinstance(information, pandas.DataFrame) and not information.empty:
+                # annotations belong to the default Annotation Set
+                label = document.category.project.get_label_by_name(label_or_label_set_name)
+                add_extractions_as_annotations(
+                    document=virtual_doc,
+                    extractions=information,
+                    label=label,
+                    label_set=category_label_set,
+                    annotation_set=virtual_default_annotation_set,
+                )
+
+            elif isinstance(information, list) or isinstance(information, dict):
+                # process multi Annotation Sets that are not part of the category Label Set
+                label_set = document.category.project.get_label_set_by_name(label_or_label_set_name)
+
+                if not isinstance(information, list):
+                    information = [information]
+
+                for entry in information:  # represents one of pot. multiple annotation-sets belonging of one LabelSet
+                    virtual_annotation_set_id += 1
+                    virtual_annotation_set = AnnotationSet(
+                        document=virtual_doc, label_set=label_set, id_=virtual_annotation_set_id
+                    )
+
+                    for label_name, extractions in entry.items():
+                        label = document.category.project.get_label_by_name(label_name)
+                        add_extractions_as_annotations(
+                            document=virtual_doc,
+                            extractions=extractions,
+                            label=label,
+                            label_set=label_set,
+                            annotation_set=virtual_annotation_set,
+                        )
+        return virtual_doc
+
     # def clf_info(self, feature_pattern=None, contains=True) -> None:
     #     """
     #     Log info about feature importance after clf is fitted.
@@ -2692,54 +2741,6 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         """
         filtered = df[df['Accuracy'] >= df['label_threshold']]
         return filtered
-
-    def extraction_result_to_document(self, document: Document, extraction_result: dict) -> Document:
-        """Return a virtual Document annotated with AI Model output."""
-        virtual_doc = deepcopy(document)
-        virtual_annotation_set_id = 0  # counter for across mult. Annotation Set groups of a Label Set
-
-        # define Annotation Set for the Category Label Set: todo: this is unclear from API side
-        # default Annotation Set will be always added even if there are no predictions for it
-        category_label_set = document.category.project.get_label_set_by_id(document.category.id_)
-        virtual_default_annotation_set = AnnotationSet(
-            document=virtual_doc, label_set=category_label_set, id_=virtual_annotation_set_id
-        )
-
-        for label_or_label_set_name, information in extraction_result.items():
-            if isinstance(information, pandas.DataFrame) and not information.empty:
-                # annotations belong to the default Annotation Set
-                label = document.category.project.get_label_by_name(label_or_label_set_name)
-                add_extractions_as_annotations(
-                    document=virtual_doc,
-                    extractions=information,
-                    label=label,
-                    label_set=category_label_set,
-                    annotation_set=virtual_default_annotation_set,
-                )
-
-            elif isinstance(information, list) or isinstance(information, dict):
-                # process multi Annotation Sets that are not part of the category Label Set
-                label_set = document.category.project.get_label_set_by_name(label_or_label_set_name)
-
-                if not isinstance(information, list):
-                    information = [information]
-
-                for entry in information:  # represents one of pot. multiple annotation-sets belonging of one LabelSet
-                    virtual_annotation_set_id += 1
-                    virtual_annotation_set = AnnotationSet(
-                        document=virtual_doc, label_set=label_set, id_=virtual_annotation_set_id
-                    )
-
-                    for label_name, extractions in entry.items():
-                        label = document.category.project.get_label_by_name(label_name)
-                        add_extractions_as_annotations(
-                            document=virtual_doc,
-                            extractions=extractions,
-                            label=label,
-                            label_set=label_set,
-                            annotation_set=virtual_annotation_set,
-                        )
-        return virtual_doc
 
     def lose_weight(self):
         """Lose weight before pickling."""
