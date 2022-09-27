@@ -36,6 +36,7 @@ You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server
 
 ### Fixed
 - The numbering of Annotation Sets in the SmartView does not consider deleted Annotation Sets anymore ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9604)).
+- In some situations a Project could not be deleted via API ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9706)).
 
 ## 2022-09-21_12-00-31
 
