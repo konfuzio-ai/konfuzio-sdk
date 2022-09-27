@@ -916,6 +916,7 @@ class Span(Data):
         self._line_index = None
         self._page: Union[Page, None] = None
         self._bbox: Union[Bbox, None] = None
+        self.regex_matching = []
         annotation and annotation.add_span(self)  # only add if Span has access to an Annotation
         self._valid()
 

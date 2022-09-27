@@ -53,6 +53,7 @@ class RegexTokenizer(AbstractTokenizer):
         # do not keep the full regex match as we will see many matches whitespaces as pre or suffix
         for span_info in regex_matches(document.text, self.regex, keep_full_match=False):
             span = Span(start_offset=span_info['start_offset'], end_offset=span_info['end_offset'])
+            span.regex_matching.append(self)
             if span not in spans:  # do not use duplicated spans  # todo add test
                 spans.append(span)
 
@@ -86,6 +87,14 @@ class RegexTokenizer(AbstractTokenizer):
         self.processing_steps.append(ProcessingStep(self, document, time.monotonic() - t0))
 
         return document
+
+    def str_match(self, start_offset: int, end_offset: int, full_text: str):
+        """Check if offset is detected by Tokenizer."""
+        assert start_offset < end_offset
+        for span_info in regex_matches(full_text, self.regex, keep_full_match=False):
+            if (span_info['start_offset'], span_info['end_offset']) == (start_offset, end_offset):
+                return True
+        return False
 
 
 class WhitespaceTokenizer(RegexTokenizer):
