@@ -876,22 +876,22 @@ def test_load_model_no_file():
 
 def test_load_model_corrupt_file():
     """Test loading of corrupted model file."""
-    path = "corrupt.pkl"
+    path = "trainer/corrupt.pkl"
     with pytest.raises(OSError, match="data is invalid."):
         load_model(path)
 
 
 def test_load_model_wrong_pickle_data():
     """Test loading of wrong pickle data."""
-    path = "list_test.pkl"
-    with pytest.raises(TypeError, match="needs to be Trainer instance"):
+    path = "trainer/list_test.pkl"
+    with pytest.raises(TypeError, match="needs to be a Konfuzio Trainer instance"):
         load_model(path)
 
 
 def test_load_ai_model():
     """Test loading of trained model."""
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    path = "2022-09-26-23-05-12_lohnabrechnung.pkl"
+    path = "trainer/2022-09-26-23-05-12_lohnabrechnung.pkl"
     pipeline = load_model(path)
 
     test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
