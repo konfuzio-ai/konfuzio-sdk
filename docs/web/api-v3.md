@@ -50,9 +50,9 @@ format `Authorization: Basic <string>`, where `<string>` is a Base64-encoded str
 format `<username>:<password>` (this is usually done automatically by the HTTP client).
 
 .. warning::
-  While this approach doesn't require additional setup and is useful for testing in the Swagger page, it is
-  **discouraged** for serious/automated use, since it usually involves storing these credentials in plain text on the
-  client side.
+While this approach doesn't require additional setup and is useful for testing in the Swagger page, it is
+**discouraged** for serious/automated use, since it usually involves storing these credentials in plain text on the
+client side.
 
 #### Cookie authentication
 
@@ -79,8 +79,8 @@ This token doesn't currently expire, so you can use indefinitely, but you can de
 the [authentication DELETE endpoint](link).
 
 .. note::
-  This is the authentication method you **should** use if you're building an external service that consumes the Konfuzio
-  API.
+This is the authentication method you **should** use if you're building an external service that consumes the Konfuzio
+API.
 
 An example workflow would look like:
 
@@ -153,9 +153,9 @@ party service (e.g. Google sheets), without the option to specify the headers. I
 generated the token through the steps above. The token is then used with the query parameter `token`
 
 ```html
-http://app.konfuzio.com/api/v3/projects/3/export/human-annotated.csv?token=bf20d992c0960876157b53745cdd86fad95e6ff4
+http://app.konfuzio.com/api/v3/projects/3/export/all.csv?token=bf20d992c0960876157b53745cdd86fad95e6ff4
 ```
-    
+
 This functionality currently is only offered for
 the [Google-Sheet export](https://help.konfuzio.com/integrations/google-sheet/index.html) of project Documents
 annotations
@@ -169,8 +169,8 @@ indicate failure on our side and are usually temporary (if they aren't, please
 [contact us](https://konfuzio.com/support/)).
 
 .. seealso::
-  The `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`_ provides a more detailed breakdown of which response
-  codes are expected for each endpoint.
+The `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`_ provides a more detailed breakdown of which response
+codes are expected for each endpoint.
 
 ### Pagination
 
@@ -210,8 +210,8 @@ use `?created_at_before=2022-02-01&created_at_after=2021-12-01` to only return i
 December 1, 2021 and February 1, 2022 (specified dates excluded).
 
 .. seealso::
-  For more filtering options, refer to the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`_ for the endpoint
-  that you want to filter.
+For more filtering options, refer to the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`_ for the endpoint
+that you want to filter.
 
 ### Ordering
 
@@ -224,8 +224,8 @@ You can specify that you want the ordering to be reversed by prefixing the field
 example: `?ordering=-created_at`.
 
 .. seealso::
-  For a list of fields that can be used for ordering, refer to
-  the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`_ for the endpoint that you want to order.
+For a list of fields that can be used for ordering, refer to
+the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`_ for the endpoint that you want to order.
 
 ### Fields
 
@@ -235,9 +235,9 @@ returned. You can specify the `fields` `GET` parameter with the field names sepa
 For example, you can specify `?fields=id,created_at` to only return the `id` and `created_at` fields in the response.
 
 .. seealso::
-  Refer to the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`_ for a specific endpoint to see if it
-  supports using the `fields` parameter. When supported, any field in the response schema can be used in the `fields`
-  parameter.
+Refer to the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`_ for a specific endpoint to see if it
+supports using the `fields` parameter. When supported, any field in the response schema can be used in the `fields`
+parameter.
 
 ### Coordinates and bounding boxes
 
@@ -245,25 +245,67 @@ There are three concepts related to coordinates and bounding boxes that are used
 
 - **Bounding boxes** (or **bboxes**). A bbox is a rectangle representing a subset of a document page. It has the
   following properties:
-  - `x0`, `xy`, `y0`, `y1`: the four points representing the coordinates of the rectangle on the page.
-  - `page_index`: the page of the document the bbox refers too.
+    - `x0`, `xy`, `y0`, `y1`: the four points representing the coordinates of the rectangle on the page.
+    - `page_index`: the page of the document the bbox refers too.
 - **Spans**. A span, like the bbox, is a rectangle representing a subset of a document page; unlike the bbox, it also
   represents the _text data_ contained inside the rectangle. So it has the same properties as the bbox, but it adds
   more:
-  - `offset_string` (optional when user-provided): the text contained inside this span. This can be manually set by the
-    user if the text existing at the specified coordinates is wrong.
-  - `offset_string_original` (read-only): the text that was originally present at the specified coordinates. This is
-    usually the same as `offset_string` unless it has been changed manually.
-  - `start_offset`, `end_offset` (read-only): the start and end character of the text contained inside this span, in
-    relation to the document's text.
+    - `offset_string` (optional when user-provided): the text contained inside this span. This can be manually set by
+      the
+      user if the text existing at the specified coordinates is wrong.
+    - `offset_string_original` (read-only): the text that was originally present at the specified coordinates. This is
+      usually the same as `offset_string` unless it has been changed manually.
+    - `start_offset`, `end_offset` (read-only): the start and end character of the text contained inside this span, in
+      relation to the document's text.
 - **Character bounding boxes** (or **char bboxes**). A char bbox is a rectangle representing a single character on the
   page of a document. This is always returned by the Konfuzio server and cannot be set manually. It has the same
   properties as the bbox, but it adds more:
-  - `text` (read-only): the single character contained by this bbox.
-  - `line_index` (read-only): the line the character is in, related to all the lines in the document.
+    - `text` (read-only): the single character contained by this bbox.
+    - `line_index` (read-only): the line the character is in, related to all the lines in the document.
 
 If the endpoint you're working with uses a `span` or `bbox` field, refer to its Swagger schema and to the summary above
 to understand which fields it needs.
+
+### CSV & JSON export of annotated Document data
+
+Our V3 API offers the option to export CSV or JSON output of annotated data from your projects documents. This is useful
+for using the data in other applications or for further analysis. It's rather easy to call this endpoint and generate
+the data on the fly for any project.
+
+---
+
+The full list of all query parameters which can be used for annotated data.
+
+
+| Key             | Value                                 | Description                                                                                                        |
+|-----------------|---------------------------------------|--------------------------------------------------------------------------------------------------------------------|
+| sep             | one character value (e.g. `,` or `;`) | CSV separator/delimeter                                                                                            |
+| fields          | word                                  | Any column present in the annotation data set, case-sensitive.                                                     |
+| token           | authentication token                  | API generated authentication token. If specified, header does not neat an AUTH token                               |
+| include_revised | `bool`                                | By default already `True` if included when `False`, human annotated data is not included in the CSV or JSON result |
+
+
+For CSV generation of a projects annotated data:
+
+- `https://app.konfuzio.com/api/v3/projects/{id}/export/all.csv?"`
+
+For CSV generation of projects annotated data, excluding human-annotated data.
+
+- `https://app.konfuzio.com/api/v3/projects/{id}/export/all.csv?include_revised=False"`
+
+It's further possible to adjust seperator or the fields which are returned:
+
+- `https://app.konfuzio.com/api/v3/projects/{id}/export/all.csv?include_revised=False"?fields=field-1, field-2, field-3&sep=,`
+
+If a JSON export is necessary, all which needs to be done is a change of the file extension:
+
+from: `https://app.konfuzio.com/api/v3/projects/{id}/export/all.csv`
+to: `https://app.konfuzio.com/api/v3/projects/{id}/export/json.csv`
+
+Additionally, for third party extraction, it's also possible to authenticate with the token in the query parameters.
+More on this [here](https://dev.konfuzio.com/web/api-v3.html#token-authentication).
+
+
 
 
 ## Supported OCR languages
@@ -298,7 +340,7 @@ on-premise installation).
 
 Konfuzio supports the following Document types.
 
-For information about file size and page limits, refer to the Content Limits, if you are using Konfuzio SaaS.
+For information about file size and page limits, refer to the Content Limits, if you are using Konfuzio SaaS.
 
 | Name                                    | File Extension(s) | [MIME Type](https://www.iana.org/assignments/media-types/media-types.xhtml) |
 | --------------------------------------- | ----------------- | --------------------------------------------------------------------------- |
@@ -310,8 +352,8 @@ For information about file size and page limits, refer to the Content Limits, i
 | PowerPoint                              | `.ppt`, `.pptx`   |  several, see details below                                                 |
 | Word                                    | `.doc`, `.docx`   |  several, see details below                                                 |
 
-
-Note that some of these image formats are "lossy" (for example, JPEG). Reducing file sizes for lossy formats may result in a degradation of image quality and accuracy of results from Konfuzio.
+Note that some of these image formats are "lossy" (for example, JPEG). Reducing file sizes for lossy formats may result
+in a degradation of image quality and accuracy of results from Konfuzio.
 
 #### PDFs
 
@@ -348,12 +390,14 @@ The following content limits apply to Konfuzio SaaS.
 | Number of pages in active processing                         | not limited                     |
 | Review document requests per minute                          | not limited                     |
 
-
-If you would like to increase your content limits, submit request for your project as a [Support Ticket](https://konfuzio.com/en/support/).
+If you would like to increase your content limits, submit request for your project as
+a [Support Ticket](https://konfuzio.com/en/support/).
 
 ### Document scan resolution
 
-For most accurate OCR results from Konfuzio, document scans should be a minimum of 200 dpi [(dots per inch)](https://en.wikipedia.org/wiki/Dots_per_inch). 300 dpi and higher will generally produce the best results.
+For most accurate OCR results from Konfuzio, document scans should be a minimum of 200
+dpi [(dots per inch)](https://en.wikipedia.org/wiki/Dots_per_inch). 300 dpi and higher will generally produce the best
+results.
 
 ## OCR Processing
 
@@ -396,7 +440,6 @@ During file upload, after the Project settings have been evaluated, we look at t
 8. We create thumbnails per page.
 9. We create images per page.
 
-
 ### OCR Text extraction
 
 During evaluation of both project settings and file, we also process OCR extraction
@@ -405,7 +448,7 @@ During evaluation of both project settings and file, we also process OCR extract
     1. If "Embedding and OCR" is chosen, internally we check which processing type is the most suitable, and use either
        Embedding or OCR
     2. Depending on chosen processing type, some pre-processing may be done:
-        1. Convert non-PDF Documents to a [PDF](https://dev.konfuzio.com/web/api.html#pdfs) 
+        1. Convert non-PDF Documents to a [PDF](https://dev.konfuzio.com/web/api.html#pdfs)
            that is being used here
         2. Convert PDF to text (in case of embeddings)
     3. If some sort of PDF corruption is detected, within our ability we attempt to repair the PDF
@@ -541,8 +584,8 @@ After your initial project setup, you can start uploading documents. To upload a
 our [document creation endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_create).
 
 .. note::
-  Unlike most other endpoints, the document creation endpoint only supports `multipart/form-data` requests (to support
-  file uploading), so you won't have to JSON-encode your request this time.
+Unlike most other endpoints, the document creation endpoint only supports `multipart/form-data` requests (to support
+file uploading), so you won't have to JSON-encode your request this time.
 
 ```
 curl --request POST \
