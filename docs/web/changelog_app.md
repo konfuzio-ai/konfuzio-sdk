@@ -44,6 +44,7 @@ This version uses Konfuzio Trainer in version v.0.3.22, the Konfuzio Python SDK 
 
 ### Fixed
 - Prevent an issue where a popup window could not be closed when using the SmartView ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9766)).
+- Filtering for "feedback required" on Document overview ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9696)).
 
 ## 2022-09-04_09-11-18
 
