@@ -25,6 +25,7 @@ import shutil
 import sys
 import time
 import unicodedata
+import dill
 from copy import deepcopy
 from heapq import nsmallest
 from typing import Tuple, Optional, List, Union, Callable, Dict
@@ -49,6 +50,28 @@ logger = logging.getLogger(__name__)
 CANDIDATES_CACHE_SIZE = 100
 
 warn('This module is WIP: https://gitlab.com/konfuzio/objectives/-/issues/9311', FutureWarning, stacklevel=2)
+
+
+def load_model(pickle_path: str):
+    """
+    Load a pkl file.
+
+    :param pickle_path:
+    :return:
+    """
+    if not os.path.isfile(pickle_path):
+        raise FileNotFoundError("Invalid pickle file path:", pickle_path)
+
+    try:
+        with bz2.open(pickle_path, 'rb') as f:
+            model = dill.load(f)
+    except OSError:
+        raise OSError(f"Pickle file {pickle_path} data is invalid.")
+
+    if not issubclass(type(model), Trainer):
+        raise TypeError("Saved model file needs to be Trainer instance.")
+
+    return model
 
 
 def get_offsets_per_page(doc_text: str) -> Dict:
