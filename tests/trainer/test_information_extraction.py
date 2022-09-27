@@ -891,7 +891,7 @@ def test_load_model_wrong_pickle_data():
 def test_load_ai_model():
     """Test loading of trained model."""
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    path = "trainer/2022-09-26-23-05-12_lohnabrechnung.pkl"
+    path = "trainer/2022-09-27-18-45-41_lohnabrechnung.pkl"
     pipeline = load_model(path)
 
     test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
