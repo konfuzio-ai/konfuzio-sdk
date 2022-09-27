@@ -85,7 +85,7 @@ class TestOnlineProject(unittest.TestCase):
         # existing annotation
         # https://app.konfuzio.com/admin/server/sequenceannotation/?document_id=44823&project=46
         # we are no longer filtering out the rejected annotations so it's 21
-        self.assertEqual(21, len(doc.annotations(use_correct=False)))
+        self.assertEqual(22, len(doc.annotations(use_correct=False)))
         # a multiline Annotation in the top right corner, see https://app.konfuzio.com/a/4419937
         self.assertEqual(66, doc.annotations()[0]._spans[0].start_offset)
         self.assertEqual(78, doc.annotations()[0]._spans[0].end_offset)
@@ -128,14 +128,32 @@ class TestOnlineProject(unittest.TestCase):
 
         assert Span(start_offset=1590, end_offset=1602) in doc.spans()
 
-    def test_delete_annotation(self):
-        """Test to delete an Annotation from the document."""
+    def test_delete_annotation_online(self):
+        """Test to delete an Annotation from the document online."""
         doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         annot = [x for x in doc.get_annotations() if x.start_offset == 1590 and x.end_offset == 1602]
         annot[0].delete()
-        delete_document_annotation(TEST_DOCUMENT_ID, annot[0].id_, TEST_PROJECT_ID)
 
         assert annot[0] not in doc.get_annotations()
+
+    def test_delete_annotation_offline(self):
+        """Test to delete an Annotation from the document offline."""
+        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        label = self.project.labels[8]
+        annotation = Annotation(
+            document=doc,
+            spans=[Span(start_offset=1603,
+                        end_offset=1605)],
+            label=label,
+            label_set=label.label_sets[0],
+            accuracy=1.0,
+            is_correct=True
+        )
+        annotation.save()
+        annotation.delete(delete_online=False)
+        annotation.delete()
+
+        assert annotation not in doc.get_annotations()
 
 
 class TestOfflineExampleData(unittest.TestCase):
