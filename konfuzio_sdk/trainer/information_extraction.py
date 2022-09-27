@@ -68,8 +68,8 @@ def load_model(pickle_path: str):
     except OSError:
         raise OSError(f"Pickle file {pickle_path} data is invalid.")
 
-    if not issubclass(type(model), Trainer):
-        raise TypeError("Saved model file needs to be Trainer instance.")
+    if not hasattr(model, "name") or model.name not in {"RFExtractionAI", "Trainer"}:
+        raise TypeError("Saved model file needs to be a Konfuzio Trainer instance.")
 
     return model
 

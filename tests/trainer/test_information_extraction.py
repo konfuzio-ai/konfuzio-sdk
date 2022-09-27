@@ -251,15 +251,6 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         ann_tuple = (ann.label.name, ann.start_offset, ann.end_offset)
         assert ann_tuple == expected
 
-    # def test_9_load_ai_model(self):
-    #     """Test loading of trained model."""
-    #     path = self.pipeline.pipeline_path
-    #     self.pipeline = load_model(path)
-
-    #     test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-    #     res_doc = self.pipeline.extract(document=test_document)
-    #     assert len(res_doc) == 20
-
     @classmethod
     def tearDownClass(cls) -> None:
         """Clear Project files."""
@@ -895,6 +886,17 @@ def test_load_model_wrong_pickle_data():
     path = "list_test.pkl"
     with pytest.raises(TypeError, match="needs to be Trainer instance"):
         load_model(path)
+
+
+def test_load_ai_model():
+    """Test loading of trained model."""
+    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+    path = "2022-09-26-23-05-12_lohnabrechnung.pkl"
+    pipeline = load_model(path)
+
+    test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
+    res_doc = pipeline.extract(document=test_document)
+    assert len(res_doc.annotations(use_correct=False)) == 20
 
 
 def test_feat_num_count():
