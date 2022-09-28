@@ -4,11 +4,12 @@ import abc
 import logging
 from typing import List
 from warnings import warn
+from copy import deepcopy
 
 import pandas as pd
 
 from konfuzio_sdk.data import Document, Category, Project, AnnotationSet, Span, Annotation
-from konfuzio_sdk.evaluate import compare
+from konfuzio_sdk.evaluate import compare, Evaluation
 from konfuzio_sdk.utils import sdk_isinstance
 
 logger = logging.getLogger(__name__)
@@ -64,20 +65,12 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
         Compare a Document with its tokenized version.
 
         :param document: Document to evaluate
-        :return: Evaluation DataFrame and Processing time DataFrame.
+        :return: Evaluation DataFrame
         """
         assert sdk_isinstance(document, Document)
         document.annotations()  # Load Annotations before doing tokenization
 
-        virtual_doc = Document(
-            project=document.project,
-            text=document.text,
-            bbox=document.get_bbox(),
-            category=document.category,
-            copy_of_id=document.id_,
-            pages=document.pages,
-        )
-
+        virtual_doc = deepcopy(document)
         self.tokenize(virtual_doc)
         evaluation = compare(document, virtual_doc)
         logger.warning(
@@ -85,6 +78,22 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
             f' Spans are found by Tokenizer'
         )
         return evaluation
+
+    def evaluate_dataset(self, dataset_documents: List[Document]) -> Evaluation:
+        """
+        Evaluate the tokenizer on a dataset of documents.
+
+        :param dataset_documents: Documents to evaluate
+        :return: Evaluation instance
+        """
+        eval_list = []
+        for document in dataset_documents:
+            assert sdk_isinstance(document, Document), f"Invalid document type: {type(document)}. Should be Document."
+            document.annotations()  # Load Annotations before doing tokenization
+            virtual_doc = deepcopy(document)
+            self.tokenize(virtual_doc)
+            eval_list.append((document, virtual_doc))
+        return Evaluation(eval_list)
 
     def missing_spans(self, document: Document) -> Document:
         """
@@ -177,7 +186,7 @@ class ListTokenizer(AbstractTokenizer):
 
     def fit(self, category: Category):
         """Call fit on all tokenizers."""
-        assert isinstance(category, Category)
+        assert sdk_isinstance(category, Category)
 
         for tokenizer in self.tokenizers:
             tokenizer.fit(category)
