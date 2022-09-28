@@ -124,7 +124,7 @@ class TestOnlineProject(unittest.TestCase):
             is_correct=True,
         )
         annotation.save()
-
+        doc.update()
         assert Span(start_offset=1590, end_offset=1602) in doc.spans()
 
     def test_delete_annotation_online(self):
@@ -132,7 +132,7 @@ class TestOnlineProject(unittest.TestCase):
         doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         annot = [x for x in doc.get_annotations() if x.start_offset == 1590 and x.end_offset == 1602]
         annot[0].delete()
-
+        doc.update()
         assert annot[0] not in doc.get_annotations()
 
     def test_delete_annotation_offline(self):
@@ -147,10 +147,8 @@ class TestOnlineProject(unittest.TestCase):
             accuracy=1.0,
             is_correct=True,
         )
-        annotation.save()
         annotation.delete(delete_online=False)
-        annotation.delete()
-
+        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         assert annotation not in doc.get_annotations()
 
 

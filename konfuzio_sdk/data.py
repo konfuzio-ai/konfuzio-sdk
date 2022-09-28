@@ -1494,6 +1494,11 @@ class Annotation(Data):
                         for bbox in el['bboxes']:
                             if bbox['start_offset'] == self.start_offset and bbox['end_offset'] == self.end_offset:
                                 el['bboxes'].remove(bbox)
+                    with open(
+                        'data_{}/documents/{}/annotations.json5'.format(self.document.project.id_, self.document.id_),
+                        'w',
+                    ) as f:
+                        json.dump(annots, f)
                     del self.document._annotations[index]
         else:
             for index, annotation in enumerate(self.document._annotations):
@@ -1507,6 +1512,12 @@ class Annotation(Data):
                         for bbox in el['bboxes']:
                             if bbox['start_offset'] == self.start_offset and bbox['end_offset'] == self.end_offset:
                                 el['bboxes'].remove(bbox)
+                    with open(
+                        'data_{}/documents/{}/annotations.json5'.format(self.document.project.id_, self.document.id_),
+                        'w',
+                    ) as f:
+                        json.dump(annots, f)
+                    del self.document._annotations[index]
 
     @property
     def spans(self) -> List[Span]:
