@@ -19,6 +19,7 @@ from konfuzio_sdk.data import (
     download_training_and_test_data,
     Category,
     Page,
+    Bbox,
 )
 from konfuzio_sdk.utils import is_file
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID, TEST_PROJECT_ID
@@ -84,7 +85,7 @@ class TestOnlineProject(unittest.TestCase):
         # existing annotation
         # https://app.konfuzio.com/admin/server/sequenceannotation/?document_id=44823&project=46
         # we are no longer filtering out the rejected annotations so it's 21
-        self.assertEqual(22, len(doc.annotations(use_correct=False)))
+        self.assertEqual(21, len(doc.annotations(use_correct=False)))
         # a multiline Annotation in the top right corner, see https://app.konfuzio.com/a/4419937
         self.assertEqual(66, doc.annotations()[0]._spans[0].start_offset)
         self.assertEqual(78, doc.annotations()[0]._spans[0].end_offset)
@@ -123,7 +124,7 @@ class TestOnlineProject(unittest.TestCase):
             is_correct=True,
         )
         annotation.save()
-        doc.update()
+
         assert Span(start_offset=1590, end_offset=1602) in doc.spans()
 
     def test_delete_annotation_online(self):
@@ -131,7 +132,7 @@ class TestOnlineProject(unittest.TestCase):
         doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         annot = [x for x in doc.get_annotations() if x.start_offset == 1590 and x.end_offset == 1602]
         annot[0].delete()
-        doc.update()
+
         assert annot[0] not in doc.get_annotations()
 
     def test_delete_annotation_offline(self):
@@ -146,8 +147,10 @@ class TestOnlineProject(unittest.TestCase):
             accuracy=1.0,
             is_correct=True,
         )
+        annotation.save()
         annotation.delete(delete_online=False)
-        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        annotation.delete()
+
         assert annotation not in doc.get_annotations()
 
 
@@ -391,7 +394,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 43
+        assert len(cls.project.virtual_documents) == 47
 
     # def test_document_only_needs_project(self):
     #     """Test that a Document can be created without category"""
@@ -521,7 +524,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         span = Span(start_offset=1, end_offset=2)
         annotation = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
         assert annotation.spans[0].annotation is not None
-        assert annotation.spans[0].x0 is None  # Span bboxes must be explicitly loaded using span.bbox
+        assert annotation.spans[0].bbox() is None  # Span bboxes must be explicitly loaded using span.bbox
         # Here this would be failing even when calling span.bbox as the test document does not have a bbox.
 
     def test_get_span_bbox_with_characters_without_height_allowed(self):
@@ -699,6 +702,54 @@ class TestOfflineDataSetup(unittest.TestCase):
         _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
         with pytest.raises(ValueError, match='has no width'):
             document.bboxes
+
+    def test_docs_with_same_bbox_hash(self):
+        """Test that bbox insertion order doesn't change the hash of the bboxes in a document."""
+        document1_bbox = {
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'},
+            '1': {'x0': 1, 'x1': 2, 'y0': 1, 'y1': 3, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'e'},
+        }
+        document1 = Document(project=self.project, category=self.category, text='hello', bbox=document1_bbox)
+        _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document1, start_offset=0, end_offset=1)
+        document1.set_text_bbox_hashes()
+        document2_bbox = {
+            '1': {'x0': 1, 'x1': 2, 'y0': 1, 'y1': 3, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'e'},
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'},
+        }
+        document2 = Document(project=self.project, category=self.category, text='hello', bbox=document2_bbox)
+        _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document2, start_offset=0, end_offset=1)
+        document2.set_text_bbox_hashes()
+        assert document1._bbox_hash == document2._bbox_hash
+
+    def test_document_text_modified(self):
+        """Test that we can detect changes in the text of a document."""
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
+        }
+        document = Document(
+            project=self.project, category=self.category, text='hello', bbox=document_bbox, strict_bbox_validation=True
+        )
+        _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
+        self.assertTrue(document.text)
+        document.set_text_bbox_hashes()
+        self.assertFalse(document._check_text_or_bbox_modified())
+        document._text = "123" + document.text
+        self.assertTrue(document._check_text_or_bbox_modified())
+
+    def test_document_bbox_modified(self):
+        """Test that we can detect changes in the bboxes of a document."""
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
+        }
+        document = Document(
+            project=self.project, category=self.category, text='hello', bbox=document_bbox, strict_bbox_validation=True
+        )
+        page = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
+        self.assertTrue(document.bboxes)
+        document.set_text_bbox_hashes()
+        self.assertFalse(document._check_text_or_bbox_modified())
+        document._characters[1] = Bbox(x0=1, x1=2, y0=1, y1=3, page=page, strict_validation=True)
+        self.assertTrue(document._check_text_or_bbox_modified())
 
     def test_document_spans(self):
         """Test getting spans from a Document."""
@@ -1487,6 +1538,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.assertEqual(span.bbox().x1, 442.8)
         self.assertEqual(span.bbox().y0, 808.831)
         self.assertEqual(span.bbox().y1, 817.831)
+        self.assertEqual(span.bbox().area, 151.2)
 
     def test_size_of_project(self):
         """Test size of Project and compare it to the size after Documents have been loaded."""
@@ -1523,6 +1575,14 @@ class TestKonfuzioDataSetup(unittest.TestCase):
             document.text
         after = _getsize(prj)
         assert 1.7 < after / before < 1.8
+
+        # strings in prj take slightly less space than in a list
+        assert _getsize([doc.text for doc in prj.documents]) + before < after + 500
+
+        # the text of the document is the only thing causing the size difference
+        for document in prj.documents:
+            document._text = None
+        assert _getsize(prj) == before
 
     def test_create_new_doc_via_text_and_bbox(self):
         """Test to create a new Document which by a text and a bbox."""
@@ -1744,9 +1804,31 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
         virtual_doc = deepcopy(doc)
         self.assertTrue(virtual_doc.bboxes)
+        virtual_doc.set_text_bbox_hashes()
         virtual_doc._text = '123' + doc.text  # Change text to bring bbox out of sync.
         with pytest.raises(ValueError, match='Bbox provides Character "n" document text refers to "l"'):
+            virtual_doc.check_bbox()
+
+    def test_hashing_bboxes_faster_than_recalculation(self):
+        """Test that it's 100x faster to compare hashes of text and bboxes rathar than force recalculation of bboxes."""
+        import time
+
+        doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
+        virtual_doc = deepcopy(doc)
+        virtual_doc.bboxes
+
+        t0 = time.monotonic()
+        for _ in range(100):
+            virtual_doc._check_text_or_bbox_modified()
             virtual_doc.bboxes
+        t_hash = time.monotonic() - t0
+
+        t0 = time.monotonic()
+        for _ in range(100):
+            virtual_doc.check_bbox()
+        t_recalculate = time.monotonic() - t0
+
+        assert t_hash / t_recalculate < 1 / 100
 
     @unittest.skip(reason='Waiting for API to support to add to default Annotation Set')
     def test_document_add_new_annotation(self):
