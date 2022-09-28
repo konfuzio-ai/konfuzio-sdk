@@ -162,3 +162,133 @@ def test_build_list_of_relevant_categories():
     """Filter for category name variations which correspond to the given categories, starting from a predefined list."""
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
     assert set(build_list_of_relevant_categories(project.categories)) == {"lohnabrechnung", "quittung"}
+
+
+# class TestDocumentCategorizationModel(unittest.TestCase):
+#
+#     def test_documents_categorization_documentmodel(self):
+#         """Test categorization of specific documents with a DocumentModel.pt model."""
+#         # confidence for each document with model 2020-11-30-16-17-57_DocumentModel.pt
+#         # Current model is failing for doc 2!!
+#         # doc_folders = {'1': ('Versicherungspolicen Erweitert (Multipolicen, KFZ, Haftpflicht, ..)', 0.9830012),
+#         # '2': ('KONFUZIO_PAYSLIP_TESTS', 0.3158103),
+#         # '3': ('KONFUZIO_PAYSLIP_TESTS', 0.9176251),
+#         # '4': ('Kontoauszug', 0.74001426)}
+#
+#         doc_folders = {'1': '23',
+#                        '2': '39',
+#                        '3': '46',
+#                        '4': '34',
+#                        '5': '39',
+#                        }
+#
+#         model = load_pickle(get_latest_document_model('*DocumentModel.pt'))
+#         confidence_threshold = 0.375
+#
+#         for doc_folder in doc_folders.keys():
+#             # # Code to create files (when new)
+#             # import konfuzio
+#             # from konfuzio.image import get_png_list
+#             # from konfuzio.ocr import FileScanner
+#             #
+#             # path_file = glob.glob(os.path.join(data_root, doc_folder + '/*.pdf'))[0]
+#             #
+#             # scanner_ocr = FileScanner(file_path=path_file)
+#             # scanner_ocr.ocr()
+#             #
+#             # with open(os.path.join(data_root, doc_folder + '/document.txt'), 'w') as f:
+#             #     f.write(scanner_ocr.text)
+#             #
+#             # with open(path_file, 'rb') as f:
+#             #     pngs_files = get_png_list(file=f)
+#             #
+#             # for i, png_file in enumerate(pngs_files):
+#             #     png_file.save(filename=os.path.join(data_root, doc_folder + '/page_' + str(i) + '.png'))
+#
+#             # load data
+#             paths_doc_images = glob.glob(os.path.join(data_root, doc_folder + '/*.png'))
+#
+#             # get document text
+#             with open(data_root + '/' + doc_folder + '/document.txt', 'r') as f:
+#                 content = f.read()
+#
+#             docs_text = str(content)
+#
+#             # get images of the document in BytesIO format
+#             docs_data_images = []
+#
+#             for img in paths_doc_images:
+#                 img_data = pil_image.open(img)
+#                 buf = BytesIO()
+#                 img_data.save(buf, format='PNG')
+#                 docs_data_images.append(buf)
+#
+#             # extract from pt file
+#             (predicted_category, predicted_confidence), _ = model.extract(
+#             page_images=docs_data_images, text=docs_text)
+#
+#             # assert category
+#             assert predicted_category == doc_folders[doc_folder]
+#
+#             # assert confidence
+#             assert predicted_confidence >= confidence_threshold
+#
+#     def test_documents_categorization_metaclf(self):
+#         """Test categorization of specific documents with a metaclf.pt model."""
+#         # confidence for each document with model 2020-11-21-14-16-59_metaclf.pt
+#         # doc_folders = {'1': ('23', 0.948), '2': ('39', 0.999), '3': ('46', 1.0), '4': ('34', 0.63)}
+#
+#         # doc_folders = {'1': '23', '2': '39', '3': '46', '4': '34'}
+#         doc_folders = {'1': '23', '2': '39', '3': '46'}
+#
+#         model = load_pickle(get_latest_document_model('*metaclf.pt'))
+#         model.batch_size = 1
+#         confidence_threshold = 0.1
+#
+#         for doc_folder in doc_folders.keys():
+#             # # Code to create files (when new)
+#             # import konfuzio
+#             # from konfuzio.image import get_png_list
+#             # from konfuzio.ocr import FileScanner
+#             #
+#             # path_file = glob.glob(os.path.join(data_root, doc_folder + '/*.pdf'))[0]
+#             #
+#             # scanner_ocr = FileScanner(file_path=path_file)
+#             # scanner_ocr.ocr()
+#             #
+#             # with open(os.path.join(data_root, doc_folder + '/document.txt'), 'w') as f:
+#             #     f.write(scanner_ocr.text)
+#             #
+#             # with open(path_file, 'rb') as f:
+#             #     pngs_files = get_png_list(file=f)
+#             #
+#             # for i, png_file in enumerate(pngs_files):
+#             #     png_file.save(filename=os.path.join(data_root, doc_folder + '/page_' + str(i) + '.png'))
+#
+#             # load data
+#             paths_doc_images = glob.glob(os.path.join(data_root, doc_folder + '/*.png'))
+#
+#             # get document text
+#             with open(data_root + '/' + doc_folder + '/document.txt', 'r') as f:
+#                 content = f.read()
+#
+#             docs_text = str(content)
+#
+#             # get images of the document in BytesIO format
+#             docs_data_images = []
+#
+#             for img in paths_doc_images:
+#                 img_data = pil_image.open(img)
+#                 buf = BytesIO()
+#                 img_data.save(buf, format='PNG')
+#                 docs_data_images.append(buf)
+#
+#             # extract from pt file
+#             (predicted_category, predicted_confidence), _ = model.extract(
+#             page_images=docs_data_images, text=docs_text)
+#
+#             # assert category
+#             assert predicted_category == doc_folders[doc_folder]
+#
+#             # assert confidence
+#             assert predicted_confidence >= confidence_threshold

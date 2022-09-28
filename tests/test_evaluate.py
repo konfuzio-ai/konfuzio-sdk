@@ -6,7 +6,7 @@ import pytest
 from pandas import DataFrame
 
 from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span, LabelSet, Label, Category
-from konfuzio_sdk.evaluate import compare, grouped, Evaluation, EvaluationCalculator
+from konfuzio_sdk.evaluate import compare, grouped, Evaluation, CategoryEvaluation, EvaluationCalculator
 
 from konfuzio_sdk.samples import LocalTextProject
 from tests.variables import TEST_DOCUMENT_ID
@@ -1210,3 +1210,252 @@ class TestEvaluationCalculator(unittest.TestCase):
         assert no_f1.precision is None
         assert no_f1.recall is None
         assert no_f1.f1 is None
+
+
+class TestCategoryEvaluation(unittest.TestCase):
+    """Test the calculation two Documents with overlapping Spans and multiple Labels."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Test evaluation when changing filtered Label and Documents."""
+        cls.project = LocalTextProject()
+        cls.cat1_doca = cls.project.categories[0].documents()[0]
+        cls.cat1_docb = cls.project.categories[0].test_documents()[0]
+        cls.cat2_doca = cls.project.categories[1].documents()[0]
+        cls.cat2_docb = cls.project.categories[1].test_documents()[0]
+        cls.cat_eval = CategoryEvaluation(
+            cls.project,
+            documents=[
+                (cls.cat1_doca, cls.cat1_docb),
+                (cls.cat2_doca, cls.cat2_docb),
+                (cls.cat1_doca, cls.cat2_docb),
+                (cls.cat1_doca, cls.cat2_docb),
+            ],
+        )
+
+    def test_get_tp_tn_fp_fn_per_label(self):
+        """Test get results per label for categorization problem."""
+        results_per_label = self.cat_eval._get_tp_tn_fp_fn_per_label()
+        assert results_per_label[1] == {'tp': 1, 'fp': 0, 'fn': 2, 'tn': 1}
+        assert results_per_label[2] == {'tp': 1, 'fp': 2, 'fn': 0, 'tn': 1}
+
+    def test_get_metrics_per_label(self):
+        """Test get metrics per label for categorization problem."""
+        results_labels = self.cat_eval.get_metrics_per_label()
+
+        assert len(results_labels) == len(self.cat_eval.labels_names)
+
+        for ind, result in enumerate(results_labels):
+            tp = result['tp']
+            fp = result['fp']
+            tn = result['tn']
+            fn = result['fn']
+
+            accuracy = (tp + tn) / (tp + tn + fp + fn)
+            precision = tp / (tp + fp + 1e-10)
+            recall = tp / (tp + fn + 1e-10)
+            specificity = tn / (tn + fp + 1e-10)
+            balanced_accuracy = (recall + specificity) / 2
+            f1_score = (2 * recall * precision) / (recall + precision + 1e-10)
+
+            assert result['accuracy'] == accuracy
+            assert round(result['balanced accuracy'], 6) == round(balanced_accuracy, 6)
+            assert round(result['f1-score'], 6) == round(f1_score, 6)
+            assert round(result['precision'], 6) == round(precision, 6)
+            assert round(result['recall'], 6) == round(recall, 6)
+
+    def test_get_general_metrics(self):
+        """Test get general metrics for a categorization problem."""
+        results_labels = self.cat_eval.get_metrics_per_label()
+
+        results = self.cat_eval.get_general_metrics()
+
+        df = DataFrame(data=results_labels)
+
+        # weighted metrics
+        precision = 0
+        recall = 0
+        f1_score = 0
+        for _, row in df.iterrows():
+            precision += row['precision'] * row['support']
+            recall += row['recall'] * row['support']
+            f1_score += row['f1-score'] * row['support']
+
+        precision = precision / len(self.cat_eval.actual_classes)
+        recall = recall / len(self.cat_eval.actual_classes)
+        f1_score = f1_score / len(self.cat_eval.actual_classes)
+
+        assert results['tp'] == 2
+        assert results['fp'] == 2
+        assert results['accuracy'] == 0.5
+        assert round(results['f1-score'], 6) == round(f1_score, 6)
+        assert round(results['precision'], 6) == round(precision, 6)
+        assert round(results['recall'], 6) == round(recall, 6)
+        assert results['support'] == len(self.cat_eval.actual_classes)
+
+    # def test_get_general_metrics_no_labels(self):
+    #     """Test get general metrics for a categorization problem."""
+    #
+    #     actual_classes = [26, 26, 27, 27]
+    #     predicted_classes = [26, 26, 26, 27]
+    #     labels_names = ['A', 'B']
+    #     classes_indexes = None
+    #
+    #     results_labels = get_metrics_per_label(predicted_classes,
+    #                                            actual_classes,
+    #                                            labels_names=labels_names,
+    #                                            classes_indexes=classes_indexes)
+    #
+    #     results = get_general_metrics(predicted_classes=predicted_classes,
+    #                                   actual_classes=actual_classes,
+    #                                   labels_names=None,
+    #                                   classes_indexes=classes_indexes)
+    #
+    #     df = pd.DataFrame(data=results_labels)
+    #
+    #     # weighted metrics
+    #     precision = 0
+    #     recall = 0
+    #     f1_score = 0
+    #     for _, row in df.iterrows():
+    #         precision += row['precision'] * row['support']
+    #         recall += row['recall'] * row['support']
+    #         f1_score += row['f1-score'] * row['support']
+    #
+    #     precision = precision / len(actual_classes)
+    #     recall = recall / len(actual_classes)
+    #     f1_score = f1_score / len(actual_classes)
+    #
+    #     # balanced accuracy is the average of the tp / number of samples per class
+    #     cm = confusion_matrix(actual_classes, predicted_classes, labels=classes_indexes)
+    #     balanced_accuracy = np.mean(np.diag(cm) / cm.sum(axis=1))
+    #
+    #     assert results['tp'] == 3
+    #     assert results['fp'] == len(actual_classes) - 3
+    #     assert results['accuracy'] == 3 / len(actual_classes)
+    #     assert results['balanced accuracy'] == balanced_accuracy
+    #     assert round(results['f1-score'], 6) == round(f1_score, 6)
+    #     assert round(results['precision'], 6) == round(precision, 6)
+    #     assert round(results['recall'], 6) == round(recall, 6)
+    #     assert results['support'] == len(actual_classes)
+    #
+    # def test_get_general_metrics_none_prediction_correctable(actual_classes, predicted_classes, classes_vocab):
+    #     """Test get general metrics for a categorization problem with a NoneType prediction."""
+    #     labels_names = list(classes_vocab.keys())
+    #     classes_indexes = list(classes_vocab.values())
+    #
+    #     results_labels = get_metrics_per_label(
+    #         predicted_classes, actual_classes, labels_names=labels_names, classes_indexes=classes_indexes
+    #     )
+    #
+    #     results = get_general_metrics(
+    #         predicted_classes=predicted_classes,
+    #         actual_classes=actual_classes,
+    #         labels_names=labels_names,
+    #         classes_indexes=classes_indexes,
+    #     )
+    #
+    #     df = pd.DataFrame(data=results_labels)
+    #
+    #     # weighted metrics
+    #     precision = 0
+    #     recall = 0
+    #     f1_score = 0
+    #     for _, row in df.iterrows():
+    #         precision += row['precision'] * row['support']
+    #         recall += row['recall'] * row['support']
+    #         f1_score += row['f1-score'] * row['support']
+    #
+    #     precision = precision / len(actual_classes)
+    #     recall = recall / len(actual_classes)
+    #     f1_score = f1_score / len(actual_classes)
+    #
+    #     # balanced accuracy is the average of the tp / number of samples per class
+    #     predicted_classes = [i if i is not None else 0 for i in predicted_classes]
+    #     cm = confusion_matrix(actual_classes, predicted_classes, labels=
+    #     list(set(classes_indexes + predicted_classes)))
+    #     cm_sum = cm.sum(axis=1)
+    #     ind = [i for i, value in enumerate(cm_sum) if value > 0]
+    #     sum = [cm_sum[i] for i in ind]
+    #     diag = [np.diag(cm)[i] for i in ind]
+    #     balanced_accuracy = np.mean(np.array(diag) / np.array(sum))
+    #
+    #     assert results['tp'] == 3
+    #     assert results['fp'] == len(actual_classes) - 3
+    #     assert results['accuracy'] == 3 / len(actual_classes)
+    #     assert results['balanced accuracy'] == balanced_accuracy
+    #     assert round(results['f1-score'], 6) == round(f1_score, 6)
+    #     assert round(results['precision'], 6) == round(precision, 6)
+    #     assert round(results['recall'], 6) == round(recall, 6)
+    #     assert results['support'] == len(actual_classes)
+    #
+    #
+    # def test_get_general_metrics_none_prediction_non_correctable():
+    #     """Test get general metrics for a categorization problem with a NoneType
+    #     prediction and already a template id 0."""
+    #     actual_classes = [26, 26, 27, 27]
+    #     predicted_classes = [26, 26, None, 27]
+    #     classes_vocab = {'A': 27, 'B': 26, 'C': 0}
+    #
+    #     labels_names = list(classes_vocab.keys())
+    #     classes_indexes = list(classes_vocab.values())
+    #
+    #     results_labels = get_metrics_per_label(
+    #         predicted_classes, actual_classes, labels_names=labels_names, classes_indexes=classes_indexes
+    #     )
+    #
+    #     results = get_general_metrics(
+    #         predicted_classes=predicted_classes,
+    #         actual_classes=actual_classes,
+    #         labels_names=labels_names,
+    #         classes_indexes=classes_indexes,
+    #     )
+    #
+    #     assert results_labels is None
+    #     assert results is None
+    #
+    #
+    # @pytest.mark.parametrize("actual_classes, predicted_classes, classes_vocab", test_general_metrics_none)
+    # def test_get_general_metrics_none_prediction_correctable_non_optional(
+    # actual_classes, predicted_classes, classes_vocab):
+    #     """Test get general metrics for a categorization problem with a NoneType prediction without optional args."""
+    #     labels_names = list(classes_vocab.keys())
+    #     classes_indexes = list(classes_vocab.values())
+    #
+    #     results_labels = get_metrics_per_label(predicted_classes, actual_classes, labels_names=labels_names)
+    #
+    #     results = get_general_metrics(predicted_classes=predicted_classes, actual_classes=actual_classes)
+    #
+    #     df = pd.DataFrame(data=results_labels)
+    #
+    #     # weighted metrics
+    #     precision = 0
+    #     recall = 0
+    #     f1_score = 0
+    #     for _, row in df.iterrows():
+    #         precision += row['precision'] * row['support']
+    #         recall += row['recall'] * row['support']
+    #         f1_score += row['f1-score'] * row['support']
+    #
+    #     precision = precision / len(actual_classes)
+    #     recall = recall / len(actual_classes)
+    #     f1_score = f1_score / len(actual_classes)
+    #
+    #     # balanced accuracy is the average of the tp / number of samples per class
+    #     predicted_classes = [i if i is not None else 0 for i in predicted_classes]
+    #     cm = confusion_matrix(actual_classes, predicted_classes, labels=
+    #     list(set(classes_indexes + predicted_classes)))
+    #     cm_sum = cm.sum(axis=1)
+    #     ind = [i for i, value in enumerate(cm_sum) if value > 0]
+    #     sum = [cm_sum[i] for i in ind]
+    #     diag = [np.diag(cm)[i] for i in ind]
+    #     balanced_accuracy = np.mean(np.array(diag) / np.array(sum))
+    #
+    #     assert results['tp'] == 3
+    #     assert results['fp'] == len(actual_classes) - 3
+    #     assert results['accuracy'] == 3 / len(actual_classes)
+    #     assert results['balanced accuracy'] == balanced_accuracy
+    #     assert round(results['f1-score'], 6) == round(f1_score, 6)
+    #     assert round(results['precision'], 6) == round(precision, 6)
+    #     assert round(results['recall'], 6) == round(recall, 6)
+    #     assert results['support'] == len(actual_classes)
