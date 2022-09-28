@@ -19,6 +19,7 @@ You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server
 - API v3 endpoint to sort and split Pages into Documents with different categories containted in one file ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9452)).
 - Calculate and access Tokenizers via the web interface. The name Tokenizer might be revised. The SDK refers to this concept as Tokenizer. ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9271)).
 - Add a filter to the list of Documents to find Documents that need to be revised by humans. ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9242)).
+- Improved training time of Extraction AIs when using character detection mode (reduced up to 40%) ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9720)).
 - Train custom Page-based Categorization AI via [SDK](https://github.com/konfuzio-ai/konfuzio-sdk/) ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9481)).
 - First stable release of Capture Vue in version [0.1.0](#).
 - Suggest page breaks if one file contains multiple Documents ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/7671)).
@@ -26,6 +27,12 @@ You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server
 - Make all List Views sortable by click on column ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9470)).
 - Sort Labels in Label-Sets to allow users to customize the UI per Category ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/8932)).
 - Save feedback that there are no Annotations for a Label/Label-Set combination in a document ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9163)).
+
+<!---
+### Fixed
+- A bug when training with character detection mode, which was tokenizing some labels incorrectly, causing them to be skipped during extraction ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9666))
+- A bug during the extraction post-processing steps, which was causing the first line items of each page to be skipped ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9561))
+-->
 
 ## Next Release
 
