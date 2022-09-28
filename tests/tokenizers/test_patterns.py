@@ -152,6 +152,24 @@ class TestRegexTokenizer(unittest.TestCase):
         assert result.start_offset[0] == self.span.start_offset
         assert result.end_offset[0] == self.span.end_offset
 
+    def test_str_match(self):
+        """Test str_match method to check if offset found by Regex Tokenizer."""
+        assert self.tokenizer.str_match(self.document.text, 0, 4)
+        assert not self.tokenizer.str_match(self.document.text, 0, 5)
+        assert not self.tokenizer.str_match(self.document.text, 3, 6)
+        assert not self.tokenizer.str_match(self.document.text, 3)
+        assert self.tokenizer.str_match("Good")
+        assert not self.tokenizer.str_match("Good ")
+
+        with pytest.raises(ValueError, match='Start offset is negative'):
+            self.tokenizer.str_match(self.document.text, -1, 4)
+
+        with pytest.raises(ValueError, match='Start offset is greater than or equal to end offset'):
+            self.tokenizer.str_match(self.document.text, 5, 4)
+
+        with pytest.raises(ValueError, match='End offset is greated than text length'):
+            self.tokenizer.str_match(self.document.text, 3, 40)
+
 
 class TestTemplateRegexTokenizer(unittest.TestCase):
     """Template for the testings of the tokenizers based on RegexTokenizer."""
@@ -313,6 +331,8 @@ class TestWhitespaceTokenizer(TestTemplateRegexTokenizer):
         assert document.annotations()[0].offset_string == ["+12 234 234 132"]
         result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 0
+        assert not self.tokenizer.str_match(document.text, 8, 23)
+        assert self.tokenizer.str_match(document.text, 8, 11)
 
     def test_case_18_word_with_spatial_characters(self):
         """Test if tokenizer can find a word with a special character."""
@@ -320,10 +340,13 @@ class TestWhitespaceTokenizer(TestTemplateRegexTokenizer):
         assert document.annotations()[0].offset_string == ["person_name@company.com"]
         result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 1
-        assert (
-            result[result.is_found_by_tokenizer == 1].start_offset[0] == document.annotations()[0].spans[0].start_offset
-        )
-        assert result[result.is_found_by_tokenizer == 1].end_offset[0] == document.annotations()[0].spans[0].end_offset
+
+        start_offset = document.annotations()[0].spans[0].start_offset
+        end_offset = document.annotations()[0].spans[0].end_offset
+
+        assert self.tokenizer.str_match(document.text, start_offset, end_offset)
+        assert result[result.is_found_by_tokenizer == 1].start_offset[0] == start_offset
+        assert result[result.is_found_by_tokenizer == 1].end_offset[0] == end_offset
 
     def test_case_19_word_preceded_by_colon(self):
         """Test if tokenizer can find a word preceded by colon."""
@@ -356,10 +379,13 @@ class TestWhitespaceTokenizer(TestTemplateRegexTokenizer):
         assert document.annotations()[0].offset_string == ["1242022"]
         result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 1
-        assert (
-            result[result.is_found_by_tokenizer == 1].start_offset[0] == document.annotations()[0].spans[0].start_offset
-        )
-        assert result[result.is_found_by_tokenizer == 1].end_offset[0] == document.annotations()[0].spans[0].end_offset
+
+        start_offset = document.annotations()[0].spans[0].start_offset
+        end_offset = document.annotations()[0].spans[0].end_offset
+
+        assert self.tokenizer.str_match(document.text, start_offset, end_offset)
+        assert result[result.is_found_by_tokenizer == 1].start_offset[0] == start_offset
+        assert result[result.is_found_by_tokenizer == 1].end_offset[0] == end_offset
 
     def test_case_23_word_preceded_by_colon(self):
         """Test if tokenizer can find a word preceded by colon."""
@@ -1001,10 +1027,13 @@ class TestCapitalizedTextTokenizer(TestTemplateRegexTokenizer):
         assert document.annotations()[0].offset_string == ["Company A&B GmbH"]
         result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 1
-        assert (
-            result[result.is_found_by_tokenizer == 1].start_offset[0] == document.annotations()[0].spans[0].start_offset
-        )
-        assert result[result.is_found_by_tokenizer == 1].end_offset[0] == document.annotations()[0].spans[0].end_offset
+
+        start_offset = document.annotations()[0].spans[0].start_offset
+        end_offset = document.annotations()[0].spans[0].end_offset
+
+        assert self.tokenizer.str_match(document.text, start_offset, end_offset)
+        assert result[result.is_found_by_tokenizer == 1].start_offset[0] == start_offset
+        assert result[result.is_found_by_tokenizer == 1].end_offset[0] == end_offset
 
     def test_case_2_group_capitalized_words_in_the_middle_of_text(self):
         """Test if tokenizer can find a group of words starting with a capitalized character in the middle of text."""
@@ -1012,10 +1041,13 @@ class TestCapitalizedTextTokenizer(TestTemplateRegexTokenizer):
         assert document.annotations()[0].offset_string == ["Company A&B GmbH"]
         result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 1
-        assert (
-            result[result.is_found_by_tokenizer == 1].start_offset[0] == document.annotations()[0].spans[0].start_offset
-        )
-        assert result[result.is_found_by_tokenizer == 1].end_offset[0] == document.annotations()[0].spans[0].end_offset
+
+        start_offset = document.annotations()[0].spans[0].start_offset
+        end_offset = document.annotations()[0].spans[0].end_offset
+
+        assert self.tokenizer.str_match(document.text, start_offset, end_offset)
+        assert result[result.is_found_by_tokenizer == 1].start_offset[0] == start_offset
+        assert result[result.is_found_by_tokenizer == 1].end_offset[0] == end_offset
 
     def test_case_3_group_capitalized_words_in_the_middle_of_text_without_period(self):
         """Test output for the evaluate method with a Document with 1 Span."""
@@ -1023,10 +1055,13 @@ class TestCapitalizedTextTokenizer(TestTemplateRegexTokenizer):
         assert document.annotations()[0].offset_string == ["Company A&B GmbH"]
         result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 1
-        assert (
-            result[result.is_found_by_tokenizer == 1].start_offset[0] == document.annotations()[0].spans[0].start_offset
-        )
-        assert result[result.is_found_by_tokenizer == 1].end_offset[0] == document.annotations()[0].spans[0].end_offset
+
+        start_offset = document.annotations()[0].spans[0].start_offset
+        end_offset = document.annotations()[0].spans[0].end_offset
+
+        assert self.tokenizer.str_match(document.text, start_offset, end_offset)
+        assert result[result.is_found_by_tokenizer == 1].start_offset[0] == start_offset
+        assert result[result.is_found_by_tokenizer == 1].end_offset[0] == end_offset
 
     # Tokenizer cannot find
     def test_case_4_group_specific_capitalized_words(self):
@@ -1034,6 +1069,11 @@ class TestCapitalizedTextTokenizer(TestTemplateRegexTokenizer):
         document = self._create_artificial_document(text="Company Company A&B GmbH", offsets=[(8, 24)])
         assert document.annotations()[0].offset_string == ["Company A&B GmbH"]
         result = self.tokenizer.evaluate(document)
+
+        start_offset = document.annotations()[0].spans[0].start_offset
+        end_offset = document.annotations()[0].spans[0].end_offset
+
+        assert not self.tokenizer.str_match(document.text, start_offset, end_offset)
         assert result.is_found_by_tokenizer.sum() == 0
 
     def test_case_5_group_words_excluding_non_word_characters(self):
@@ -1048,6 +1088,11 @@ class TestCapitalizedTextTokenizer(TestTemplateRegexTokenizer):
         document = self._create_artificial_document(text="To local C-1234 City Name", offsets=[(9, 15)])
         assert document.annotations()[0].offset_string == ["C-1234"]
         result = self.tokenizer.evaluate(document)
+
+        start_offset = document.annotations()[0].spans[0].start_offset
+        end_offset = document.annotations()[0].spans[0].end_offset
+
+        assert not self.tokenizer.str_match(document.text, start_offset, end_offset)
         assert result.is_found_by_tokenizer.sum() == 0
 
     def test_case_7_non_words_excluding_comma_at_end(self):
@@ -1408,6 +1453,11 @@ class TestNumbersTokenizer(TestTemplateRegexTokenizer):
         document = self._create_artificial_document(text="Company A&B GmbH  ", offsets=[(0, 16)])
         assert document.annotations()[0].offset_string == ["Company A&B GmbH"]
         result = self.tokenizer.evaluate(document)
+
+        start_offset = document.annotations()[0].spans[0].start_offset
+        end_offset = document.annotations()[0].spans[0].end_offset
+
+        assert not self.tokenizer.str_match(document.text, start_offset, end_offset)
         assert result.is_found_by_tokenizer.sum() == 0
 
     # Tokenizer cannot find

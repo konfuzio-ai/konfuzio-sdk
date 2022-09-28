@@ -88,12 +88,29 @@ class RegexTokenizer(AbstractTokenizer):
 
         return document
 
-    def str_match(self, start_offset: int, end_offset: int, full_text: str):
+    def str_match(self, full_text: str, start_offset: int = 0, end_offset: int = None):
         """Check if offset is detected by Tokenizer."""
-        assert start_offset < end_offset
-        for span_info in regex_matches(full_text, self.regex, keep_full_match=False):
-            if (span_info['start_offset'], span_info['end_offset']) == (start_offset, end_offset):
+        if end_offset is None:
+            end_offset = len(full_text)
+
+        if start_offset >= end_offset:
+            raise ValueError(f'Start offset is greater than or equal to end offset: {start_offset}>{end_offset}')
+        elif start_offset < 0:
+            raise ValueError(f'Start offset is negative: {start_offset}')
+        elif end_offset > len(full_text):
+            raise ValueError(f'End offset is greated than text length: {start_offset}')
+
+        slice_start = max(0, start_offset - 25)
+        slice_end = min(end_offset + 5, len(full_text))
+        relevant_text_slice = full_text[slice_start:slice_end]
+
+        for span_info in regex_matches(relevant_text_slice, self.regex, keep_full_match=False):
+            if (slice_start + span_info['start_offset'], slice_start + span_info['end_offset']) == (
+                start_offset,
+                end_offset,
+            ):
                 return True
+
         return False
 
 
