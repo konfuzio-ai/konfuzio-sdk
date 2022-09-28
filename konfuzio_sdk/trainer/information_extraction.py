@@ -140,7 +140,7 @@ def flush_buffer(buffer: List[pandas.Series], doc_text: str, merge_vertical=Fals
     res_dict['Candidate'] = text
     res_dict['Translated_Candidate'] = res_dict['Candidate']
     res_dict['Translation'] = None
-    res_dict['Accuracy'] = numpy.mean([b['Accuracy'] for b in buffer])
+    res_dict['confidence'] = numpy.mean([b['confidence'] for b in buffer])
     res_dict['x0'] = min([b['x0'] for b in buffer])
     res_dict['x1'] = max([b['x1'] for b in buffer])
     res_dict['y0'] = min([b['y0'] for b in buffer])
@@ -189,7 +189,7 @@ def is_valid_merge(
     # if threshold is None:
     #     threshold = 0.1
 
-    if row['Accuracy'] < row['label_threshold']:
+    if row['confidence'] < row['label_threshold']:
         return False
     # only merge if all are the same data type
     if len(set(label_types)) > 1:
@@ -361,7 +361,7 @@ def merge_df(
 
     for _, row in df.iterrows():  # iterate over the rows in the DataFrame
         # skip extractions bellow threshold
-        if row['Accuracy'] < row['label_threshold']:
+        if row['confidence'] < row['label_threshold']:
             continue
         # if they are valid merges then add to buffer
         if end and is_valid_merge(
@@ -471,15 +471,8 @@ def merge_annotations(
         assert doc_bbox is not None
         assert multiline_labels_names is not None
 
-    # if labels_threshold is None:
-    #     labels_threshold = {label_name: 0.0 for label_name, _ in label_type_dict.items()}
-
     merged_res_dict = dict()  # stores final results
     for section_label, items in res_dict.items():
-        # try:
-        #     _fix_label_threshold = labels_threshold[section_label]
-        # except KeyError:
-        #     _fix_label_threshold = 0.1
 
         if isinstance(items, pandas.DataFrame):  # perform merge on DataFrames within res_dict
             if merge_vertical:
@@ -525,56 +518,6 @@ def merge_annotations(
     return merged_res_dict
 
 
-# def split_multiline_annotations(annotations: List['Annotation'], multiline_labels: list) -> List['Annotation']:
-#     """
-#     Verify if there are annotations which involve multiple lines and split them into individual ones.
-
-#     For example, if an annotation includes 3 lines, 3 new annotations are created.
-#     This is necessary to have the correct offset strings.
-#     The offset string of an annotation is built considering only the start and end offset.
-#     In the multiline case, the start offset would be in the first line and the end offset in the last line.
-#     Everything that is in the middle would be included.
-
-#     :param annotations: Annotations to be verified.
-#     :return: Splitted annotations.
-#     """
-#     new_annotations = []
-
-#     for annotation in annotations:
-#         if annotation.is_multiline:
-#             # Keep track of which labels have this type of annotations. Important to limit the cases where vertical
-#             # merge of entities should be applied.
-#             if annotation.label not in multiline_labels:
-#                 multiline_labels.append(annotation.label)
-
-#             for line_annotation in annotation.bboxes:
-#                 bbox = {
-#                     'top': line_annotation['top'],
-#                     'bottom': line_annotation['bottom'],
-#                     'x0': line_annotation['x0'],
-#                     'x1': line_annotation['x1'],
-#                     'y0': line_annotation['y0'],
-#                     'y1': line_annotation['y1'],
-#                 }
-
-#                 # Document is necessary as input to have the offset string.
-#                 # Other parameters are necessary because are not included in line_annotation.
-#                 annot = Annotation(
-#                     document=annotation.document,
-#                     label=annotation.label,
-#                     is_correct=annotation.is_correct,
-#                     revised=annotation.revised,
-#                     annotation_set=annotation.annotation_set,
-#                     bbox=bbox,
-#                     **line_annotation,
-#                 )
-#                 new_annotations.append(annot)
-#         else:
-#             new_annotations.append(annotation)
-
-#     return new_annotations
-
-
 def substring_count(list: list, substring: str) -> list:
     """Given a list of strings returns the occurrence of a certain substring and returns the results as a list."""
     r_list = [0] * len(list)
@@ -595,7 +538,6 @@ def dict_to_dataframe(res_dict):
     return df
 
 
-#
 # # existent model classes
 # MODEL_CLASSES = {'LabelSectionModel': LabelSectionModel,
 #                  'DocumentModel': DocumentModel,
@@ -1598,14 +1540,14 @@ def add_extractions_as_annotations(
         raise TypeError(f'Provided extraction object should be a Dataframe, got a {type(extractions)} instead')
     if not extractions.empty:
         # TODO: define required fields
-        required_fields = ['Start', 'End', 'Accuracy']
+        required_fields = ['Start', 'End', 'confidence']
         if not set(required_fields).issubset(extractions.columns):
             raise ValueError(
                 f'Extraction do not contain all required fields: {required_fields}.'
                 f' Extraction columns: {extractions.columns.to_list()}'
             )
 
-        extracted_spans = extractions[required_fields].sort_values(by='Accuracy', ascending=False)
+        extracted_spans = extractions[required_fields].sort_values(by='confidence', ascending=False)
 
         for span in extracted_spans.to_dict('records'):  # todo: are Start and End always ints?
             if document.bboxes is not None:
@@ -1631,7 +1573,7 @@ def add_extractions_as_annotations(
                 annotation = Annotation(
                     document=document,
                     label=label,
-                    confidence=span['Accuracy'],
+                    confidence=span['confidence'],
                     label_set=label_set,
                     annotation_set=annotation_set,
                     bboxes=[ann_bbox],
@@ -1640,7 +1582,7 @@ def add_extractions_as_annotations(
                 annotation = Annotation(
                     document=document,
                     label=label,
-                    confidence=span['Accuracy'],
+                    confidence=span['confidence'],
                     label_set=label_set,
                     annotation_set=annotation_set,
                     spans=[Span(start_offset=span['Start'], end_offset=span['End'])],
@@ -2159,7 +2101,7 @@ class GroupAnnotationSets:
 
         # Store most likely prediction and its accuracy in separated columns
         feature_df_label['result_name'] = results.idxmax(axis=1)
-        feature_df_label['Accuracy'] = results.max(axis=1)
+        feature_df_label['confidence'] = results.max(axis=1)
 
         # Do column renaming to be compatible with text-annotation
         feature_df_label.rename(
@@ -2256,7 +2198,7 @@ class GroupAnnotationSets:
         # Using OptimalThreshold is a bad idea as it might defer between training (actual treshold from the label)
         # and runtime (default treshold.
 
-        df = df[df['Accuracy'] >= 0.1]  # df['OptimalThreshold']]
+        df = df[df['confidence'] >= 0.1]  # df['OptimalThreshold']]
         for i, line in enumerate(text.replace('\f', '\n').split('\n')):
             new_char_count = char_count + len(line)
             assert line == text[char_count:new_char_count]
@@ -2266,7 +2208,7 @@ class GroupAnnotationSets:
             counter_dict = {}  # why?
             # annotations_accuracy_dict = defaultdict(lambda: 0)
             # for annotation in annotations:
-            # annotations_accuracy_dict[f'{annotation["label"]}_accuracy'] += annotation['Accuracy']
+            # annotations_accuracy_dict[f'{annotation["label"]}_accuracy'] += annotation['confidence']
             # try:
 
             #     label = next(x for x in self.category.project.labels if x.name == annotation['result_name'])
@@ -2532,7 +2474,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             results = results.drop(['NO_LABEL_SET__NO_LABEL'], axis=1)
 
         df['result_name'] = results.idxmax(axis=1)
-        df['Accuracy'] = results.max(axis=1)
+        df['confidence'] = results.max(axis=1)
         # 5. Translation
         df['Translated_Candidate'] = df['offset_string']  # todo: make translation explicit: It's a cool Feature
         # Main Logic -------------------------
@@ -2567,7 +2509,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             logger.info('Filtering res_dict')
             for result_name, value in res_dict.items():
                 if isinstance(value, pandas.DataFrame):
-                    res_dict[result_name] = value[value['Accuracy'] > self.extract_threshold]
+                    res_dict[result_name] = value[value['confidence'] > self.extract_threshold]
 
         res_dict = self.remove_empty_dataframes_from_extraction(res_dict)
         res_dict = self.filter_low_confidence_extractions(res_dict)
@@ -2732,14 +2674,14 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         return result
 
     def filter_dataframe(self, df: pandas.DataFrame) -> pandas.DataFrame:
-        """Filter dataframe rows accordingly with the Accuracy value.
+        """Filter dataframe rows accordingly with the confidence value.
 
         Rows (extractions) where the accuracy value is below the threshold defined for the label are removed.
 
         :param df: Dataframe with extraction results
         :returns: Filtered dataframe
         """
-        filtered = df[df['Accuracy'] >= df['label_threshold']]
+        filtered = df[df['confidence'] >= df['label_threshold']]
         return filtered
 
     def lose_weight(self):
@@ -2976,7 +2918,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
     #     df.insert(loc=0, column='predicted_label_text', value=predicted_label_list)
 
     #     # add a column for prediction probability (not actually accuracy)
-    #     df.insert(loc=0, column='Accuracy', value=accuracy_list)
+    #     df.insert(loc=0, column='confidence', value=accuracy_list)
 
     #     # get and sort the importance of each feature
     #     feature_importances = self.clf.feature_importances_
@@ -3043,7 +2985,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
     #     prob_dict = self._get_probability_distribution(df, start_from=0.2)
     #     prob_list = [(k, v) for k, v in prob_dict.items()]
     #     prob_list.sort(key=lambda tup: tup[0])
-    #     df_prob = pandas.DataFrame(prob_list, columns=['Range of predicted Accuracy', 'Real Accuracy in this range'])
+    #     df_prob = pandas.DataFrame(prob_list, columns=['Range of predicted confidence', 'Real confidence in this range'])
 
     #     # log results and feature importance and probability distribution as tables
     #     logger.info(
@@ -3082,7 +3024,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
     #         if index + 1 < len(step_list):
     #             lower_bound = round(step, 2)
     #             upper_bound = round(step_list[index + 1], 2)
-    #             df_range = df[df['Accuracy'].between(lower_bound, upper_bound)]
+    #             df_range = df[df['confidence'].between(lower_bound, upper_bound)]
     #             df_range_acc = accuracy_score(df_range['label_name'], df_range['predicted_label_text'])
     #             df_dict[str(lower_bound) + '-' + str(upper_bound)] = df_range_acc
 

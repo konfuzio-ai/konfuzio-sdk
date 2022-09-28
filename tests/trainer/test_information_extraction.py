@@ -533,7 +533,7 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
         cls.extraction = {
             'Start': 15,
             'End': 20,
-            'Accuracy': 0.2,
+            'confidence': 0.2,
             'page_index': 0,
             'x0': 10,
             'x1': 20,
@@ -661,7 +661,7 @@ class TestExtractionToDocument(unittest.TestCase):
         cls.extraction_1 = {
             'Start': 5,
             'End': 10,
-            'Accuracy': 0.2,
+            'confidence': 0.2,
             'page_index': 0,
             'x0': 10,
             'x1': 20,
@@ -675,7 +675,7 @@ class TestExtractionToDocument(unittest.TestCase):
         cls.extraction_2 = {
             'Start': 15,
             'End': 20,
-            'Accuracy': 0.2,
+            'confidence': 0.2,
             'page_index': 0,
             'x0': 20,
             'x1': 30,
@@ -816,7 +816,7 @@ class TestGetExtractionResults(unittest.TestCase):
                     data={
                         'Candidate': ['Simon-Muster'],
                         'Translated_Candidate': ['Simon-Muster'],
-                        'Accuracy': [0.94],
+                        'confidence': [0.94],
                         'Start': [1273],
                         'End': [1285],
                     }
@@ -825,7 +825,7 @@ class TestGetExtractionResults(unittest.TestCase):
                     data={
                         'Candidate': ['Merlot'],
                         'Translated_Candidate': ['Merlot'],
-                        'Accuracy': [0.67],
+                        'confidence': [0.67],
                         'Start': [1287],
                         'End': [1293],
                     }
