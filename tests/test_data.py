@@ -117,12 +117,11 @@ class TestOnlineProject(unittest.TestCase):
         label = self.project.labels[8]
         annotation = Annotation(
             document=doc,
-            spans=[Span(start_offset=1590,
-                        end_offset=1602)],
+            spans=[Span(start_offset=1590, end_offset=1602)],
             label=label,
             label_set=label.label_sets[0],
             accuracy=1.0,
-            is_correct=True
+            is_correct=True,
         )
         annotation.save()
 

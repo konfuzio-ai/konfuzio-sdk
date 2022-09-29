@@ -214,6 +214,7 @@ def convert_to_bio_scheme(document) -> List[Tuple[str, str]]:
     :return: list of tuples with each word in the text an the respective Label
     """
     import nltk
+
     nltk.download('punkt')
 
     spans_in_doc = []
