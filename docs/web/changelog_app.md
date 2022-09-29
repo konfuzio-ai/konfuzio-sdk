@@ -47,7 +47,7 @@ You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server
 - The numbering of Annotation Sets in the SmartView does not consider deleted Annotation Sets anymore ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9604)).
 - In some situations a Project could not be deleted via API ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9706)).
 
-## 2022-09-21_12-00-31
+## released-2022-09-21_12-00-31
 
 This version uses Konfuzio Trainer in version v.0.3.22, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Capture Vue in version [0.0.8](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
 
@@ -55,7 +55,7 @@ This version uses Konfuzio Trainer in version v.0.3.22, the Konfuzio Python SDK 
 - Prevent an issue where a popup window could not be closed when using the SmartView ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9766)).
 - Filtering for "feedback required" on Document overview ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9696)).
 
-## 2022-09-04_09-11-18
+## released-2022-09-04_09-11-18
 
 This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Capture Vue in version [0.0.8](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
 
