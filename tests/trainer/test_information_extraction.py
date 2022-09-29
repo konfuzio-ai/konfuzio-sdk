@@ -218,7 +218,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
     def test_4_save_model(self):
         """Save the model."""
-        self.pipeline.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder)
+        self.pipeline.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder, include_konfuzio=False)
         assert os.path.isfile(self.pipeline.pipeline_path)
 
     def test_5_upload_ai_model(self):
@@ -250,6 +250,13 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         ann = self.tests_annotations[i]
         ann_tuple = (ann.label.name, ann.start_offset, ann.end_offset)
         assert ann_tuple == expected
+
+    def test_9_load_ai_model(self):
+        """Test loading of trained model."""
+        self.pipeline = load_model(self.pipeline.pipeline_path)
+        test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        res_doc = self.pipeline.extract(document=test_document)
+        assert len(res_doc.annotations(use_correct=False)) == 20
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -303,7 +310,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         """Make sure the Data and Pipeline is configured."""
         # We have intentional unrevised annotations in the Training set which will block feature calculation,
         # unless we set require_revised_annotations=False (which is default), which we are doing here, so we ignore them
-        # See TestDocumentEntityMultiClassModel::test_2_make_features for the case with require_revised_annotations=True
+        # See TestWhitespaceRFExtractionAI::test_2_make_features for the case with require_revised_annotations=True
         self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
             documents=self.pipeline.documents, retokenize=False, require_revised_annotations=False
         )
@@ -323,7 +330,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
     def test_4_save_model(self):
         """Save the model."""
-        self.pipeline.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder)
+        self.pipeline.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder, include_konfuzio=False)
         assert os.path.isfile(self.pipeline.pipeline_path)
 
     def test_5_upload_ai_model(self):
@@ -355,6 +362,13 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         ann = self.tests_annotations[i]
         ann_tuple = (ann.label.name, ann.start_offset, ann.end_offset)
         assert ann_tuple == expected
+
+    def test_9_load_ai_model(self):
+        """Test loading of trained model."""
+        self.pipeline = load_model(self.pipeline.pipeline_path)
+        test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        res_doc = self.pipeline.extract(document=test_document)
+        assert len(res_doc.annotations(use_correct=False)) == 20
 
     @classmethod
     def tearDownClass(cls) -> None:
