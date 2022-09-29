@@ -83,6 +83,7 @@ class RegexTokenizer(AbstractTokenizer):
                     #   logger.error(f'Typeerror Bbox of {span} "{span.offset_string}": {repr(e)} - {span.eval_dict()}')
                     #   # annotation.delete()  # todo we should skip Annotations that have no valide bbox
             else:
+                self.span_match(document_spans[span_key])  # add tokenizer to Span.regex_matches
                 logger.warning(f'{document} contains {span} already. It will not be added by the Tokenizer.')
         after_none = len(document.annotations(use_correct=False, label=document.project.no_label))
         logger.info(f'{after_none - before_none} new Annotations in {document} by {repr(self)}.')
