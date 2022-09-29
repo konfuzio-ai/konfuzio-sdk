@@ -152,23 +152,38 @@ class TestRegexTokenizer(unittest.TestCase):
         assert result.start_offset[0] == self.span.start_offset
         assert result.end_offset[0] == self.span.end_offset
 
-    def test_str_match(self):
-        """Test str_match method to check if offset found by Regex Tokenizer."""
-        assert self.tokenizer.str_match(self.document.text, 0, 4)
-        assert not self.tokenizer.str_match(self.document.text, 0, 5)
-        assert not self.tokenizer.str_match(self.document.text, 3, 6)
-        assert not self.tokenizer.str_match(self.document.text, 3)
-        assert self.tokenizer.str_match("Good")
-        assert not self.tokenizer.str_match("Good ")
+    def test_span_match(self):
+        """Test span_match method to check if offset found by Regex Tokenizer."""
+        document = Document(project=self.project, category=self.category, text="Good morning. Good afternoon.")
 
-        with pytest.raises(ValueError, match='Start offset is negative'):
-            self.tokenizer.str_match(self.document.text, -1, 4)
+        annotation_set = AnnotationSet(id_=2, document=document, label_set=self.label_set)
+        morning_span = Span(start_offset=5, end_offset=12)
+        _ = Annotation(
+            id_=2,
+            document=document,
+            is_correct=True,
+            annotation_set=annotation_set,
+            label=self.label,
+            label_set=self.label_set,
+            spans=[morning_span],
+        )
 
-        with pytest.raises(ValueError, match='Start offset is greater than or equal to end offset'):
-            self.tokenizer.str_match(self.document.text, 5, 4)
+        self.tokenizer.tokenize(document)
+        no_label_annotations = document.annotations(use_correct=False, label=self.project.no_label)
+        assert len(no_label_annotations) == 2
+        assert len(document.annotations()) == 1
+        assert len(document.annotations(use_correct=False)) == 3
 
-        with pytest.raises(ValueError, match='End offset is greated than text length'):
-            self.tokenizer.str_match(self.document.text, 3, 40)
+        for span in document.spans(use_correct=False, label=self.project.no_label):
+            assert self.tokenizer in span.regex_matching
+            assert self.tokenizer.span_match(span)
+
+        assert not self.tokenizer.span_match(morning_span)
+
+        whitespace_tokenizer = WhitespaceTokenizer()
+
+        assert whitespace_tokenizer.span_match(document.spans(use_correct=False)[0])
+        assert not whitespace_tokenizer.span_match(morning_span)
 
 
 class TestTemplateRegexTokenizer(unittest.TestCase):
@@ -331,8 +346,7 @@ class TestWhitespaceTokenizer(TestTemplateRegexTokenizer):
         assert document.annotations()[0].offset_string == ["+12 234 234 132"]
         result = self.tokenizer.evaluate(document)
         assert result.is_found_by_tokenizer.sum() == 0
-        assert not self.tokenizer.str_match(document.text, 8, 23)
-        assert self.tokenizer.str_match(document.text, 8, 11)
+        assert not self.tokenizer.span_match(document.annotations()[0].spans[0])
 
     def test_case_18_word_with_spatial_characters(self):
         """Test if tokenizer can find a word with a special character."""
@@ -344,7 +358,7 @@ class TestWhitespaceTokenizer(TestTemplateRegexTokenizer):
         start_offset = document.annotations()[0].spans[0].start_offset
         end_offset = document.annotations()[0].spans[0].end_offset
 
-        assert self.tokenizer.str_match(document.text, start_offset, end_offset)
+        assert self.tokenizer.span_match(document.annotations()[0].spans[0])
         assert result[result.is_found_by_tokenizer == 1].start_offset[0] == start_offset
         assert result[result.is_found_by_tokenizer == 1].end_offset[0] == end_offset
 
@@ -383,7 +397,7 @@ class TestWhitespaceTokenizer(TestTemplateRegexTokenizer):
         start_offset = document.annotations()[0].spans[0].start_offset
         end_offset = document.annotations()[0].spans[0].end_offset
 
-        assert self.tokenizer.str_match(document.text, start_offset, end_offset)
+        assert self.tokenizer.span_match(document.annotations()[0].spans[0])
         assert result[result.is_found_by_tokenizer == 1].start_offset[0] == start_offset
         assert result[result.is_found_by_tokenizer == 1].end_offset[0] == end_offset
 
@@ -1031,7 +1045,7 @@ class TestCapitalizedTextTokenizer(TestTemplateRegexTokenizer):
         start_offset = document.annotations()[0].spans[0].start_offset
         end_offset = document.annotations()[0].spans[0].end_offset
 
-        assert self.tokenizer.str_match(document.text, start_offset, end_offset)
+        assert self.tokenizer.span_match(document.annotations()[0].spans[0])
         assert result[result.is_found_by_tokenizer == 1].start_offset[0] == start_offset
         assert result[result.is_found_by_tokenizer == 1].end_offset[0] == end_offset
 
@@ -1045,7 +1059,7 @@ class TestCapitalizedTextTokenizer(TestTemplateRegexTokenizer):
         start_offset = document.annotations()[0].spans[0].start_offset
         end_offset = document.annotations()[0].spans[0].end_offset
 
-        assert self.tokenizer.str_match(document.text, start_offset, end_offset)
+        assert self.tokenizer.span_match(document.annotations()[0].spans[0])
         assert result[result.is_found_by_tokenizer == 1].start_offset[0] == start_offset
         assert result[result.is_found_by_tokenizer == 1].end_offset[0] == end_offset
 
@@ -1059,7 +1073,7 @@ class TestCapitalizedTextTokenizer(TestTemplateRegexTokenizer):
         start_offset = document.annotations()[0].spans[0].start_offset
         end_offset = document.annotations()[0].spans[0].end_offset
 
-        assert self.tokenizer.str_match(document.text, start_offset, end_offset)
+        assert self.tokenizer.span_match(document.annotations()[0].spans[0])
         assert result[result.is_found_by_tokenizer == 1].start_offset[0] == start_offset
         assert result[result.is_found_by_tokenizer == 1].end_offset[0] == end_offset
 
@@ -1070,10 +1084,7 @@ class TestCapitalizedTextTokenizer(TestTemplateRegexTokenizer):
         assert document.annotations()[0].offset_string == ["Company A&B GmbH"]
         result = self.tokenizer.evaluate(document)
 
-        start_offset = document.annotations()[0].spans[0].start_offset
-        end_offset = document.annotations()[0].spans[0].end_offset
-
-        assert not self.tokenizer.str_match(document.text, start_offset, end_offset)
+        assert not self.tokenizer.span_match(document.annotations()[0].spans[0])
         assert result.is_found_by_tokenizer.sum() == 0
 
     def test_case_5_group_words_excluding_non_word_characters(self):
@@ -1089,10 +1100,7 @@ class TestCapitalizedTextTokenizer(TestTemplateRegexTokenizer):
         assert document.annotations()[0].offset_string == ["C-1234"]
         result = self.tokenizer.evaluate(document)
 
-        start_offset = document.annotations()[0].spans[0].start_offset
-        end_offset = document.annotations()[0].spans[0].end_offset
-
-        assert not self.tokenizer.str_match(document.text, start_offset, end_offset)
+        assert not self.tokenizer.span_match(document.annotations()[0].spans[0])
         assert result.is_found_by_tokenizer.sum() == 0
 
     def test_case_7_non_words_excluding_comma_at_end(self):
@@ -1454,10 +1462,7 @@ class TestNumbersTokenizer(TestTemplateRegexTokenizer):
         assert document.annotations()[0].offset_string == ["Company A&B GmbH"]
         result = self.tokenizer.evaluate(document)
 
-        start_offset = document.annotations()[0].spans[0].start_offset
-        end_offset = document.annotations()[0].spans[0].end_offset
-
-        assert not self.tokenizer.str_match(document.text, start_offset, end_offset)
+        assert not self.tokenizer.span_match(document.annotations()[0].spans[0])
         assert result.is_found_by_tokenizer.sum() == 0
 
     # Tokenizer cannot find

@@ -58,8 +58,11 @@ class RegexTokenizer(AbstractTokenizer):
                 spans.append(span)
 
         # Create a revised = False and is_correct = False (defaults) Annotation
+        document_spans = {(span.start_offset, span.end_offset): span for span in document.spans()}
         for span in spans:
-            if span not in document.spans():  # (use_correct=False):
+            span_key = (span.start_offset, span.end_offset)
+            if span_key not in document_spans:  # (use_correct=False):
+                document_spans[span_key] = span
                 # todo this hides the fact, that Tokenizers of different quality can create the same Span
                 # todo we create an overlapping Annotation in case the Tokenizer finds a correct match
                 annotation = Annotation(
@@ -88,28 +91,22 @@ class RegexTokenizer(AbstractTokenizer):
 
         return document
 
-    def str_match(self, full_text: str, start_offset: int = 0, end_offset: int = None):
+    def span_match(self, span: 'Span'):
         """Check if offset is detected by Tokenizer."""
-        if end_offset is None:
-            end_offset = len(full_text)
+        if self in span.regex_matching:
+            return True
+        else:
+            slice_start = max(0, span.start_offset - 25)
+            slice_end = min(span.end_offset + 5, len(span.annotation.document.text))
+            relevant_text_slice = span.annotation.document.text[slice_start:slice_end]
 
-        if start_offset >= end_offset:
-            raise ValueError(f'Start offset is greater than or equal to end offset: {start_offset}>{end_offset}')
-        elif start_offset < 0:
-            raise ValueError(f'Start offset is negative: {start_offset}')
-        elif end_offset > len(full_text):
-            raise ValueError(f'End offset is greated than text length: {start_offset}')
-
-        slice_start = max(0, start_offset - 25)
-        slice_end = min(end_offset + 5, len(full_text))
-        relevant_text_slice = full_text[slice_start:slice_end]
-
-        for span_info in regex_matches(relevant_text_slice, self.regex, keep_full_match=False):
-            if (slice_start + span_info['start_offset'], slice_start + span_info['end_offset']) == (
-                start_offset,
-                end_offset,
-            ):
-                return True
+            for span_info in regex_matches(relevant_text_slice, self.regex, keep_full_match=False):
+                if (slice_start + span_info['start_offset'], slice_start + span_info['end_offset']) == (
+                    span.start_offset,
+                    span.end_offset,
+                ):
+                    span.regex_matching.append(self)
+                    return True
 
         return False
 
