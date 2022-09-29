@@ -26,7 +26,6 @@ You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server
 - Redirect https://app.konfuzio.com/api/ to stable API Version 3 ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9692)).
 - Make all List Views sortable by click on column ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9470)).
 - Sort Labels in Label-Sets to allow users to customize the UI per Category ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/8932)).
-- Save feedback that there are no Annotations for a Label/Label-Set combination in a document ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9163)).
 - Delta Training, Partial Fit an exisiting classifier, so that training documents used previously can be deleted ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9251))
 
 <!---
@@ -37,11 +36,14 @@ You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server
 
 ## Next Release
 
+This version uses Konfuzio Trainer in version v.0.3.22, the Konfuzio Python SDK in version v.0.1.15 and Konfuzio Capture Vue in version [0.0.8](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
+
 ### Added
 - [Allow to invite Members with different Roles to Projects. Available Roles are "Reviewer" and "Manager". All existing Members keep their current Permissions and will become Managers.](https://help.konfuzio.com/modules/members/index.html)
 - [Superusers can define custom Roles for Members: Inviting Users can select from those Roles when inviting new Members to a Project](https://help.konfuzio.com/modules/superuserroles/index.html). ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/7364)).
 - [Add the property 'has_multiple_top_candidates' to the Label API V3](https://app.konfuzio.com/v3/swagger/#/labels) ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9687)).
 - [Add the property 'has_multiple_annotation_sets' to the Label Set API V3](https://app.konfuzio.com/v3/swagger/#/labels) ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9687)).
+- [Save feedback that there are no Annotations for a Label/Label-Set combination in a document](http://localhost:8000/v3/swagger/#/documents/documents_missing_annotations_list) ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9163)).
 
 ### Fixed
 - The numbering of Annotation Sets in the SmartView does not consider deleted Annotation Sets anymore ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9604)).
