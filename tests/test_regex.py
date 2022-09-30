@@ -248,6 +248,7 @@ class TestTokens(unittest.TestCase):
             (['23.04.2055'], ['I was born at the ', '.'], [(18, 28)]), my_function('I was born at the 23.04.2055.')
         )
 
+    @unittest.skip(reason='Legacy test.')
     def test_label_keyword_token(self):
         """Extract value for Steuerklasse."""
         label = next(x for x in self.prj.labels if x.name == 'Steuerklasse')
@@ -256,6 +257,7 @@ class TestTokens(unittest.TestCase):
         assert len(sorted(tokens[category.id_])) == 1
         assert is_file(os.path.join(self.prj.regex_folder, f'{category.name}_{label.name_clean}_tokens.json5'))
 
+    @unittest.skip(reason='Legacy test.')
     def test_label_plz_token(self):
         """Extract all tax gross amounts of all payslips."""
         label = self.prj.get_label_by_name('Steuer-Brutto')
@@ -280,6 +282,7 @@ class TestTokens(unittest.TestCase):
         assert '>\\d\\.\\d\\d\\d\\,\\d\\d)' in tokens[0] + tokens[1] + tokens[2]
         assert '>\\d\\d\\,[ ]+\\d\\d[-])' in tokens[0] + tokens[1] + tokens[2]
 
+    @unittest.skip(reason='Legacy test.')
     def test_label_empty_annotations(self):
         """Empty Annotations should not create regex."""
         category = self.prj.get_category_by_id(63)
@@ -356,12 +359,14 @@ class TestTokensMultipleCategories(unittest.TestCase):
             spans=[cls.span_2],
         )
 
+    @unittest.skip(reason='Legacy test.')
     def test_tokens_single_category(self):
         """Test tokens created for a single Category."""
         tokens = self.label.tokens(categories=[self.category])
         assert len(tokens) == 1
         assert tokens[self.category.id_] == ['(?P<Label_3_W_5_3>all)']
 
+    @unittest.skip(reason='Legacy test.')
     def test_find_tokens(self):
         """Test to find tokens a Category."""
         tokens = self.label.find_tokens(category=self.category)
@@ -396,6 +401,7 @@ class TestTokensMultipleCategories(unittest.TestCase):
         tokens_after = self.annotation_2.tokens()
         assert tokens_before == tokens_after
 
+    @unittest.skip(reason='Legacy test.')
     def test_tokens_multiple_categories(self):
         """Test tokens created based on multiple Categories."""
         tokens = self.label.tokens(categories=[self.category, self.category_2])
@@ -403,6 +409,7 @@ class TestTokensMultipleCategories(unittest.TestCase):
         assert tokens[self.category.id_] == ['(?P<Label_3_W_5_3>all)']
         assert tokens[self.category_2.id_] == ['(?P<Label_3_F_11_0>[A-ZÄÖÜ][a-zäöüß]+)']
 
+    @unittest.skip(reason='Legacy test.')
     def test_tokens_one_category_after_another(self):
         """
         Test tokens created for one Category after having created tokens for another Category.
@@ -416,11 +423,13 @@ class TestTokensMultipleCategories(unittest.TestCase):
         assert tokens_1[self.category.id_] == ['(?P<Label_3_W_5_3>all)']
         assert tokens_2[self.category_2.id_] == ['(?P<Label_3_F_11_0>[A-ZÄÖÜ][a-zäöüß]+)']
 
+    @unittest.skip(reason='Legacy test.')
     def test_tokens_evaluations_single_category(self):
         """Test if the number of evaluations is the expected after getting the tokens for a single Category."""
         _ = self.label.tokens(categories=[self.category])
         assert len(self.label._evaluations) == 2
 
+    @unittest.skip(reason='Legacy test.')
     def test_tokens_evaluations_multiple_categories(self):
         """Test if the number of evaluations is the expected after getting the tokens for a single Category."""
         _ = self.label.tokens(categories=[self.category, self.category_2])
@@ -485,6 +494,7 @@ class TestRegexGenerator(unittest.TestCase):
         # in this Document region we will use 2 times the regex tokens for Ort, each uses two tokens
         assert regex.count('(?P<Personalausweis_') == 1
 
+    @unittest.skip(reason='Legacy test.')
     def test_offset_start_to_early(self):
         """Test to calculate a regex."""
         project = Project(id_=None)
@@ -494,6 +504,7 @@ class TestRegexGenerator(unittest.TestCase):
             document.regex(start_offset=-1, end_offset=1500)
             assert 'The offset must be a positive number' in context.exception
 
+    @unittest.skip(reason='Legacy test.')
     def test_two_annotations_out_of_text_scope(self):
         """Test to calculate a regex."""
         project = Project(id_=None)
