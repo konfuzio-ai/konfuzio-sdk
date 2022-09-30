@@ -2403,8 +2403,14 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         self.clf = None
 
+        self.no_label_set_name = None
+        self.no_label_name = None
+
     def features(self, document: Document):
         """Calculate features using the best working default values that can be overwritten with self values."""
+        if self.no_label_name is None or self.no_label_set_name is None:
+            self.no_label_name = document.project.no_label.name_clean
+            self.no_label_set_name = document.project.no_label_set.name_clean
         df, _feature_list, _temp_df_raw_errors = process_document_data(
             document=document,
             spans=document.spans(use_correct=False),
@@ -2464,14 +2470,15 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         results = pandas.DataFrame(data=self.clf.predict_proba(X=independent_variables), columns=self.clf.classes_)
 
         # Remove no_label predictions
-        if 'NO_LABEL' in results.columns:
-            results = results.drop(['NO_LABEL'], axis=1)
+        if self.no_label_name in results.columns:
+            results = results.drop([self.no_label_name], axis=1)
 
-        if 'NO_LABEL_SET' in results.columns:
-            results = results.drop(['NO_LABEL_SET'], axis=1)
+        if self.no_label_set_name in results.columns:
+            results = results.drop([self.no_label_set_name], axis=1)
 
-        if 'NO_LABEL_SET__NO_LABEL' in results.columns:
-            results = results.drop(['NO_LABEL_SET__NO_LABEL'], axis=1)
+        separate_no_label_target = self.no_label_set_name + '__' + self.no_label_name
+        if separate_no_label_target in results.columns:
+            results = results.drop([separate_no_label_target], axis=1)
 
         df['result_name'] = results.idxmax(axis=1)
         df['confidence'] = results.max(axis=1)
