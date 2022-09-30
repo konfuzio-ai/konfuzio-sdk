@@ -39,12 +39,16 @@ class TestBaseCategorizationModel(unittest.TestCase):
     def test_1_configure_pipeline(self) -> None:
         """No pipeline to configure for the fallback logic."""
         assert self.categorization_pipeline.categories is not None
-        # payslips_training_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).documents()
-        # receipts_training_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).documents()
-        # self.categorization_pipeline.documents = payslips_training_documents + receipts_training_documents
-        # payslips_test_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).test_documents()
-        # receipts_test_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).test_documents()
-        # self.categorization_pipeline.test_documents = payslips_test_documents + receipts_test_documents
+
+        payslips_training_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).documents()
+        receipts_training_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).documents()
+        self.categorization_pipeline.documents = payslips_training_documents + receipts_training_documents
+        assert all(doc.category is not None for doc in self.categorization_pipeline.documents)
+
+        payslips_test_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).test_documents()
+        receipts_test_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).test_documents()
+        self.categorization_pipeline.test_documents = payslips_test_documents + receipts_test_documents
+        assert all(doc.category is not None for doc in self.categorization_pipeline.test_documents)
 
     def test_2_fit(self) -> None:
         """Start to train the Model."""
@@ -73,8 +77,9 @@ class TestBaseCategorizationModel(unittest.TestCase):
 
     def test_5_evaluate(self):
         """Evaluate FallbackCategorizationModel."""
-        with self.assertRaises(NotImplementedError):
-            self.categorization_pipeline.evaluate()
+        # with self.assertRaises(NotImplementedError):
+        eval = self.categorization_pipeline.evaluate()
+        assert eval.f1(None) < 1.0
 
     def test_6_categorize_test_document(self):
         """Test extract category for a selected Test Document with the category name contained within its text."""

@@ -14,6 +14,7 @@ from warnings import warn
 # import cloudpickle
 
 from konfuzio_sdk.data import Project, Document, Category
+from konfuzio_sdk.evaluate import CategorizationEvaluation
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +85,8 @@ class FallbackCategorizationModel:
         self.categories = None
         self.name = self.__class__.__name__
 
+        self.evaluation = None
+
     def fit(self) -> None:
         """Use as placeholder Function."""
         raise NotImplementedError(
@@ -96,12 +99,20 @@ class FallbackCategorizationModel:
             f'{self} uses a fallback logic for categorizing documents, this will not save model to disk.'
         )
 
-    def evaluate(self):
-        """Use as placeholder Function."""
-        raise NotImplementedError(
-            f'{self} uses a fallback logic for categorizing documents, without using Training or Test documents for '
-            f'evaluation.'
-        )
+    def evaluate(self) -> CategorizationEvaluation:
+        """Evaluate the full Categorization pipeline on the pipeline's Test Documents."""
+        eval_list = []
+        for document in self.test_documents:
+            predicted_doc = self.categorize(document=document, recategorize=True)
+            eval_list.append((document, predicted_doc))
+
+        self.evaluation = CategorizationEvaluation(self.project, eval_list)
+
+        return self.evaluation
+        # raise NotImplementedError(
+        #     f'{self} uses a fallback logic for categorizing documents, without using Training or Test documents for '
+        #     f'evaluation.'
+        # )
 
     def categorize(self, document: Document, recategorize: bool = False, inplace: bool = False) -> Document:
         """Run categorization."""

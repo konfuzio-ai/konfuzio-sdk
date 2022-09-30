@@ -13,7 +13,7 @@ from sklearn.metrics import (
 from sklearn.utils.extmath import weighted_mode
 
 from konfuzio_sdk.utils import sdk_isinstance
-from konfuzio_sdk.data import Project, Category
+from konfuzio_sdk.data import Project, Category, Document
 
 
 RELEVANT_FOR_EVALUATION = [
@@ -223,10 +223,8 @@ class EvaluationCalculator:
         return None if (self.tp + self.fp + self.fn == 0) else self.tp / (self.tp + 0.5 * (self.fp + self.fn))
 
 
-class Evaluation:
+class ExtractionEvaluation:
     """Calculated accuracy measures by using the detailed comparison on Span Level."""
-
-    from konfuzio_sdk.data import Document
 
     def __init__(self, documents: List[Tuple[Document, Document]], strict: bool = True):
         """
@@ -243,7 +241,7 @@ class Evaluation:
 
     def calculate(self):
         """Calculate and update the data stored within this Evolution."""
-        evaluations = []  # start anew, the configuration of the Evaluation might have changed.
+        evaluations = []  # start anew, the configuration of the ExtractionEvaluation might have changed.
         for ground_truth, predicted in self.documents:
             evaluation = compare(
                 doc_a=ground_truth, doc_b=predicted, only_use_correct=self.only_use_correct, strict=self.strict
@@ -333,10 +331,8 @@ class Evaluation:
         return EvaluationCalculator(tp=self.tp(search=search), fp=self.fp(search=search), fn=self.fn(search=search)).f1
 
 
-class CategoryEvaluation:
-    """Calculated accuracy measures by using the detailed comparison on Span Level."""
-
-    from konfuzio_sdk.data import Document
+class CategorizationEvaluation:
+    """Calculated evaluation measures for the classification task of Document categorization."""
 
     def __init__(self, project: Project, documents: List[Tuple[Document, Document]]):
         """
@@ -344,7 +340,6 @@ class CategoryEvaluation:
 
         :param project: The project containing the Documents and Categories to be evaluated.
         :param documents: A list of tuple Documents that should be compared.
-        :param strict: A boolean passed to the `compare` function.
         """
         self.project = project
         self.documents = documents

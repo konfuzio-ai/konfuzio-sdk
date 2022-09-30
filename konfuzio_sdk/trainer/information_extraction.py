@@ -43,7 +43,7 @@ from konfuzio_sdk.normalize import normalize_to_float, normalize_to_date, normal
 from konfuzio_sdk.regex import regex_matches
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 from konfuzio_sdk.utils import get_timestamp, get_bbox
-from konfuzio_sdk.evaluate import Evaluation
+from konfuzio_sdk.evaluate import ExtractionEvaluation
 
 logger = logging.getLogger(__name__)
 
@@ -2962,15 +2962,15 @@ class DocumentAnnotationMultiClassModel(Trainer, GroupAnnotationSets):
 
         return self.clf
 
-    def evaluate_full(self, strict: bool = True) -> Evaluation:
-        """Evaluate the full pipeline on the pipeline's Test Documents."""
+    def evaluate_full(self, strict: bool = True) -> ExtractionEvaluation:
+        """Evaluate the full Extraction pipeline on the pipeline's Test Documents."""
         eval_list = []
         for document in self.test_documents:
             extraction_result = self.extract(document=document)
             predicted_doc = extraction_result_to_document(document, extraction_result)
             eval_list.append((document, predicted_doc))
 
-        self.evaluation = Evaluation(eval_list, strict=strict)
+        self.evaluation = ExtractionEvaluation(eval_list, strict=strict)
 
         return self.evaluation
 

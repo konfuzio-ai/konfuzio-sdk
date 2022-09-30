@@ -6,7 +6,7 @@ import pytest
 from pandas import DataFrame
 
 from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span, LabelSet, Label, Category
-from konfuzio_sdk.evaluate import compare, grouped, Evaluation, CategoryEvaluation, EvaluationCalculator
+from konfuzio_sdk.evaluate import compare, grouped, ExtractionEvaluation, CategorizationEvaluation, EvaluationCalculator
 
 from konfuzio_sdk.samples import LocalTextProject
 from tests.variables import TEST_DOCUMENT_ID
@@ -895,13 +895,13 @@ class TestEvaluation(unittest.TestCase):
     def test_not_strict(self):
         """Test that evaluation can be initialized with strict mode disabled."""
         project = LocalTextProject()
-        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)), strict=False)
+        evaluation = ExtractionEvaluation(documents=list(zip(project.documents, project.documents)), strict=False)
         assert evaluation.strict is False
 
     def test_true_positive(self):
         """Count two Spans from two Training Documents."""
         project = LocalTextProject()
-        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
+        evaluation = ExtractionEvaluation(documents=list(zip(project.documents, project.documents)))
         assert evaluation.tp() == sum([len(doc.spans()) for doc in project.documents])
 
     def test_false_positive(self):
@@ -909,19 +909,19 @@ class TestEvaluation(unittest.TestCase):
         project = LocalTextProject()
         true_document = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
         predicted_document = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
-        evaluation = Evaluation(documents=list(zip([true_document], [predicted_document])))
+        evaluation = ExtractionEvaluation(documents=list(zip([true_document], [predicted_document])))
         assert evaluation.fp() == 3  # A4, A5, A6
 
     def test_true_negatives(self):
         """Count zero false negatives from two Training Documents (correctly, nothing is predicted under threshold)."""
         project = LocalTextProject()
-        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
+        evaluation = ExtractionEvaluation(documents=list(zip(project.documents, project.documents)))
         assert evaluation.tn() == 0
 
     def test_f1(self):
         """Test to calculate F1 Score."""
         project = LocalTextProject()
-        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
+        evaluation = ExtractionEvaluation(documents=list(zip(project.documents, project.documents)))
         scores = []
         for label in project.labels:
             if label != project.no_label:
@@ -934,7 +934,7 @@ class TestEvaluation(unittest.TestCase):
     def test_precision(self):
         """Test to calculate Precision."""
         project = LocalTextProject()
-        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
+        evaluation = ExtractionEvaluation(documents=list(zip(project.documents, project.documents)))
         scores = []
         for label in project.labels:
             if label != project.no_label:
@@ -947,7 +947,7 @@ class TestEvaluation(unittest.TestCase):
     def test_recall(self):
         """Test to calculate Recall."""
         project = LocalTextProject()
-        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
+        evaluation = ExtractionEvaluation(documents=list(zip(project.documents, project.documents)))
         scores = []
         for label in project.labels:
             if label != project.no_label:
@@ -962,7 +962,7 @@ class TestEvaluation(unittest.TestCase):
         project = LocalTextProject()
         predicted_document = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
         true_document = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
-        evaluation = Evaluation(documents=list(zip([true_document], [predicted_document])))
+        evaluation = ExtractionEvaluation(documents=list(zip([true_document], [predicted_document])))
         assert evaluation.tp() == 0  # nothing correctly predicted
         assert evaluation.fp() == 3  # A1, A2, A3
         assert evaluation.fn() == 2  # A4, A6
@@ -971,7 +971,7 @@ class TestEvaluation(unittest.TestCase):
     def test_true_positive_label(self):
         """Count two Annotations from two Training Documents and filter by one Label."""
         project = LocalTextProject()
-        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
+        evaluation = ExtractionEvaluation(documents=list(zip(project.documents, project.documents)))
         # there is only one Label that is not the NONE_LABEL or from a default LabelSet
         label = project.get_label_by_id(id_=4)
         assert evaluation.tp() == sum([len(doc.spans()) for doc in project.documents])
@@ -983,7 +983,7 @@ class TestEvaluation(unittest.TestCase):
     def test_true_positive_document(self):
         """Count zero Annotations from one Training Document that has no ID."""
         project = LocalTextProject()
-        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
+        evaluation = ExtractionEvaluation(documents=list(zip(project.documents, project.documents)))
         with pytest.raises(AssertionError) as e:
             evaluation.tp(search=project.documents[0])
             assert 'Document None (None) must have a ID.' in e
@@ -991,7 +991,7 @@ class TestEvaluation(unittest.TestCase):
     def test_true_positive_label_set(self):
         """Count 3 true positives within a specific label set."""
         project = LocalTextProject()
-        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
+        evaluation = ExtractionEvaluation(documents=list(zip(project.documents, project.documents)))
         label_set = project.get_label_set_by_id(id_=3)
         assert evaluation.tp(search=label_set) == 3
 
@@ -1004,7 +1004,7 @@ class TestEvaluationTwoLabels(unittest.TestCase):
         project = LocalTextProject()
         document_a = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
         document_b = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
-        self.evaluation = Evaluation(documents=list(zip([document_b], [document_a])))
+        self.evaluation = ExtractionEvaluation(documents=list(zip([document_b], [document_a])))
 
     def test_true_positives(self):
         """Evaluate that all is wrong."""
@@ -1031,7 +1031,7 @@ class TestEvaluationFirstLabelDocumentADocumentB(unittest.TestCase):
         project = LocalTextProject()
         document_a = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
         document_b = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
-        self.evaluation = Evaluation(documents=list(zip([document_b], [document_a])))
+        self.evaluation = ExtractionEvaluation(documents=list(zip([document_b], [document_a])))
         self.label = project.get_label_by_id(id_=4)
 
     def test_true_positives(self):
@@ -1073,7 +1073,7 @@ class TestEvaluationFirstLabelDocumentBDocumentA(unittest.TestCase):
         project = LocalTextProject()
         document_a = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
         document_b = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
-        self.evaluation = Evaluation(documents=list(zip([document_a], [document_b])))
+        self.evaluation = ExtractionEvaluation(documents=list(zip([document_a], [document_b])))
         self.label = project.get_label_by_id(id_=4)
 
     def test_true_positives(self):
@@ -1101,7 +1101,7 @@ class TestEvaluationSecondLabelDocumentADocumentB(unittest.TestCase):
         project = LocalTextProject()
         document_a = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
         document_b = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
-        self.evaluation = Evaluation(documents=list(zip([document_b], [document_a])))
+        self.evaluation = ExtractionEvaluation(documents=list(zip([document_b], [document_a])))
         self.label = project.get_label_by_id(id_=4)
 
     def test_true_positives(self):
@@ -1129,7 +1129,7 @@ class TestEvaluationSecondLabelDocumentBDocumentA(unittest.TestCase):
         project = LocalTextProject()
         document_a = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
         document_b = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
-        self.evaluation = Evaluation(documents=list(zip([document_a], [document_b])))
+        self.evaluation = ExtractionEvaluation(documents=list(zip([document_a], [document_b])))
         self.label = project.get_label_by_id(id_=5)
 
     def test_true_positives(self):
@@ -1223,7 +1223,7 @@ class TestCategoryEvaluation(unittest.TestCase):
         cls.cat1_docb = cls.project.categories[0].test_documents()[0]
         cls.cat2_doca = cls.project.categories[1].documents()[0]
         cls.cat2_docb = cls.project.categories[1].test_documents()[0]
-        cls.cat_eval = CategoryEvaluation(
+        cls.cat_eval = CategorizationEvaluation(
             cls.project,
             documents=[
                 (cls.cat1_doca, cls.cat1_docb),
@@ -1292,6 +1292,37 @@ class TestCategoryEvaluation(unittest.TestCase):
         assert round(results['precision'], 6) == round(precision, 6)
         assert round(results['recall'], 6) == round(recall, 6)
         assert results['support'] == len(self.cat_eval.actual_classes)
+
+    def test_global_metrics(self):
+        """Test metrics for a categorization problem."""
+        assert self.cat_eval.tp(None) == 2
+        assert self.cat_eval.fp(None) == 2
+        assert self.cat_eval.fn(None) == 2
+        assert self.cat_eval.tn(None) == 2
+
+        assert self.cat_eval.precision(None) == 5 / 6
+        assert self.cat_eval.recall(None) == 0.5
+        assert self.cat_eval.f1(None) == 0.5
+
+    def test_filtered_metrics(self):
+        """Test metrics for a categorization problem while filtering for categories."""
+        assert self.cat_eval.tp(category=self.project.categories[0]) == 1
+        assert self.cat_eval.fp(category=self.project.categories[0]) == 0
+        assert self.cat_eval.fn(category=self.project.categories[0]) == 2
+        assert self.cat_eval.tn(category=self.project.categories[0]) == 1
+
+        assert self.cat_eval.precision(category=self.project.categories[0]) == 1.0
+        assert self.cat_eval.recall(category=self.project.categories[0]) == 1 / 3
+        assert self.cat_eval.f1(category=self.project.categories[0]) == 0.5
+
+        assert self.cat_eval.tp(category=self.project.categories[1]) == 1
+        assert self.cat_eval.fp(category=self.project.categories[1]) == 2
+        assert self.cat_eval.fn(category=self.project.categories[1]) == 0
+        assert self.cat_eval.tn(category=self.project.categories[1]) == 1
+
+        assert self.cat_eval.precision(category=self.project.categories[1]) == 1 / 3
+        assert self.cat_eval.recall(category=self.project.categories[1]) == 1.0
+        assert self.cat_eval.f1(category=self.project.categories[1]) == 0.5
 
     # def test_get_general_metrics_no_labels(self):
     #     """Test get general metrics for a categorization problem."""
