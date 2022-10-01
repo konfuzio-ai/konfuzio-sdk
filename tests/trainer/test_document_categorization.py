@@ -26,7 +26,7 @@ from konfuzio_sdk.trainer.document_categorization import (
 logger = logging.getLogger(__name__)
 
 
-class TestBaseCategorizationModel(unittest.TestCase):
+class TestFallbackCategorizationModel(unittest.TestCase):
     """Test New SDK fallback logic for Categorization."""
 
     @classmethod
@@ -41,12 +41,12 @@ class TestBaseCategorizationModel(unittest.TestCase):
         assert self.categorization_pipeline.categories is not None
 
         payslips_training_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).documents()
-        receipts_training_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).documents()
+        receipts_training_documents = self.project.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID).documents()
         self.categorization_pipeline.documents = payslips_training_documents + receipts_training_documents
         assert all(doc.category is not None for doc in self.categorization_pipeline.documents)
 
         payslips_test_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).test_documents()
-        receipts_test_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).test_documents()
+        receipts_test_documents = self.project.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID).test_documents()
         self.categorization_pipeline.test_documents = payslips_test_documents + receipts_test_documents
         assert all(doc.category is not None for doc in self.categorization_pipeline.test_documents)
 
@@ -77,9 +77,14 @@ class TestBaseCategorizationModel(unittest.TestCase):
 
     def test_5_evaluate(self):
         """Evaluate FallbackCategorizationModel."""
-        # with self.assertRaises(NotImplementedError):
-        eval = self.categorization_pipeline.evaluate()
-        assert eval.f1(None) < 1.0
+        categorization_evaluation = self.categorization_pipeline.evaluate()
+        # can't categorize any of the 3 payslips docs since they don't contain the word "lohnabrechnung"
+        assert categorization_evaluation.f1(self.categorization_pipeline.categories[0]) == 0.0
+        # can categorize 1 out of 2 receipts docs since one contains the word "quittung"
+        # therefore recall == 1/2 and precision == 1.0, implying f1 == 2/3
+        assert categorization_evaluation.f1(self.categorization_pipeline.categories[1]) == 2 / 3
+        # global f1 score
+        assert categorization_evaluation.f1(None) == 0.26666666666666666
 
     def test_6_categorize_test_document(self):
         """Test extract category for a selected Test Document with the category name contained within its text."""

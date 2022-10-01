@@ -365,11 +365,14 @@ class CategorizationEvaluation:
     @property
     def predicted_classes(self) -> List[int]:
         """List of predicted category ids."""
-        return [predicted.category.id_ for ground_truth, predicted in self.documents]
+        return [
+            predicted.category.id_ if predicted.category is not None else -1
+            for ground_truth, predicted in self.documents
+        ]
 
     def confusion_matrix(self) -> pandas.DataFrame:
         """Confusion matrix."""
-        return confusion_matrix(self.actual_classes, self.predicted_classes, labels=self.labels)
+        return confusion_matrix(self.actual_classes, self.predicted_classes, labels=self.labels + [-1])
 
     def _get_tp_tn_fp_fn_per_label(self) -> Dict:
         """
