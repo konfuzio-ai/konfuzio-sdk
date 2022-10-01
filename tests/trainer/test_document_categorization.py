@@ -6,8 +6,13 @@ import unittest
 
 # from requests import HTTPError
 from copy import deepcopy
+from io import BytesIO
+
+import torch
+from PIL import Image as pil_image
 
 from konfuzio_sdk.data import Project, Document
+from konfuzio_sdk.trainer.document_categorization import build_category_document_model
 
 # from konfuzio_sdk.api import upload_ai_model
 from tests.variables import (
@@ -174,131 +179,83 @@ def test_build_list_of_relevant_categories():
     assert set(build_list_of_relevant_categories(project.categories)) == {"lohnabrechnung", "quittung"}
 
 
-# class TestDocumentCategorizationModel(unittest.TestCase):
+# document_classifier_config = {'image_module': {'name': 'efficientnet_b0',
+#                                                'pretrained': True,
+#                                                'freeze': True
+#                                                },
+#                               'text_module': {'name': 'nbowselfattention',
+#                                               'emb_dim': 104
+#                                               },
+#                               'multimodal_module': {'name': 'concatenate',
+#                                                     'hid_dim': 250
+#                                                     },
+#                               }
 #
-#     def test_documents_categorization_documentmodel(self):
-#         """Test categorization of specific documents with a DocumentModel.pt model."""
-#         # confidence for each document with model 2020-11-30-16-17-57_DocumentModel.pt
-#         # Current model is failing for doc 2!!
-#         # doc_folders = {'1': ('Versicherungspolicen Erweitert (Multipolicen, KFZ, Haftpflicht, ..)', 0.9830012),
-#         # '2': ('KONFUZIO_PAYSLIP_TESTS', 0.3158103),
-#         # '3': ('KONFUZIO_PAYSLIP_TESTS', 0.9176251),
-#         # '4': ('Kontoauszug', 0.74001426)}
+# document_training_config = {'valid_ratio': 0.2,
+#                             'batch_size': 6,
+#                             'max_len': None,
+#                             'n_epochs': 100,
+#                             'patience': 3,
+#                             'optimizer': {'name': 'Adam'},
+#                             }
 #
-#         doc_folders = {'1': '23',
-#                        '2': '39',
-#                        '3': '46',
-#                        '4': '34',
-#                        '5': '39',
-#                        }
-#
-#         model = load_pickle(get_latest_document_model('*DocumentModel.pt'))
-#         confidence_threshold = 0.375
-#
-#         for doc_folder in doc_folders.keys():
-#             # # Code to create files (when new)
-#             # import konfuzio
-#             # from konfuzio.image import get_png_list
-#             # from konfuzio.ocr import FileScanner
-#             #
-#             # path_file = glob.glob(os.path.join(data_root, doc_folder + '/*.pdf'))[0]
-#             #
-#             # scanner_ocr = FileScanner(file_path=path_file)
-#             # scanner_ocr.ocr()
-#             #
-#             # with open(os.path.join(data_root, doc_folder + '/document.txt'), 'w') as f:
-#             #     f.write(scanner_ocr.text)
-#             #
-#             # with open(path_file, 'rb') as f:
-#             #     pngs_files = get_png_list(file=f)
-#             #
-#             # for i, png_file in enumerate(pngs_files):
-#             #     png_file.save(filename=os.path.join(data_root, doc_folder + '/page_' + str(i) + '.png'))
-#
-#             # load data
-#             paths_doc_images = glob.glob(os.path.join(data_root, doc_folder + '/*.png'))
-#
-#             # get document text
-#             with open(data_root + '/' + doc_folder + '/document.txt', 'r') as f:
-#                 content = f.read()
-#
-#             docs_text = str(content)
-#
-#             # get images of the document in BytesIO format
-#             docs_data_images = []
-#
-#             for img in paths_doc_images:
-#                 img_data = pil_image.open(img)
-#                 buf = BytesIO()
-#                 img_data.save(buf, format='PNG')
-#                 docs_data_images.append(buf)
-#
-#             # extract from pt file
-#             (predicted_category, predicted_confidence), _ = model.extract(
-#             page_images=docs_data_images, text=docs_text)
-#
-#             # assert category
-#             assert predicted_category == doc_folders[doc_folder]
-#
-#             # assert confidence
-#             assert predicted_confidence >= confidence_threshold
-#
-#     def test_documents_categorization_metaclf(self):
-#         """Test categorization of specific documents with a metaclf.pt model."""
-#         # confidence for each document with model 2020-11-21-14-16-59_metaclf.pt
-#         # doc_folders = {'1': ('23', 0.948), '2': ('39', 0.999), '3': ('46', 1.0), '4': ('34', 0.63)}
-#
-#         # doc_folders = {'1': '23', '2': '39', '3': '46', '4': '34'}
-#         doc_folders = {'1': '23', '2': '39', '3': '46'}
-#
-#         model = load_pickle(get_latest_document_model('*metaclf.pt'))
-#         model.batch_size = 1
-#         confidence_threshold = 0.1
-#
-#         for doc_folder in doc_folders.keys():
-#             # # Code to create files (when new)
-#             # import konfuzio
-#             # from konfuzio.image import get_png_list
-#             # from konfuzio.ocr import FileScanner
-#             #
-#             # path_file = glob.glob(os.path.join(data_root, doc_folder + '/*.pdf'))[0]
-#             #
-#             # scanner_ocr = FileScanner(file_path=path_file)
-#             # scanner_ocr.ocr()
-#             #
-#             # with open(os.path.join(data_root, doc_folder + '/document.txt'), 'w') as f:
-#             #     f.write(scanner_ocr.text)
-#             #
-#             # with open(path_file, 'rb') as f:
-#             #     pngs_files = get_png_list(file=f)
-#             #
-#             # for i, png_file in enumerate(pngs_files):
-#             #     png_file.save(filename=os.path.join(data_root, doc_folder + '/page_' + str(i) + '.png'))
-#
-#             # load data
-#             paths_doc_images = glob.glob(os.path.join(data_root, doc_folder + '/*.png'))
-#
-#             # get document text
-#             with open(data_root + '/' + doc_folder + '/document.txt', 'r') as f:
-#                 content = f.read()
-#
-#             docs_text = str(content)
-#
-#             # get images of the document in BytesIO format
-#             docs_data_images = []
-#
-#             for img in paths_doc_images:
-#                 img_data = pil_image.open(img)
-#                 buf = BytesIO()
-#                 img_data.save(buf, format='PNG')
-#                 docs_data_images.append(buf)
-#
-#             # extract from pt file
-#             (predicted_category, predicted_confidence), _ = model.extract(
-#             page_images=docs_data_images, text=docs_text)
-#
-#             # assert category
-#             assert predicted_category == doc_folders[doc_folder]
-#
-#             # assert confidence
-#             assert predicted_confidence >= confidence_threshold
+# img_args = {'invert': False,
+#             'target_size': (1000, 1000),
+#             'grayscale': True,
+#             'rotate': 5
+#             }
+
+# None should by default be equal to the above (see data.py build_category_document_model)
+category_ai_model_parameters = {
+    "document_training_config": {
+        'valid_ratio': 0.2,
+        'batch_size': 2,
+        'max_len': None,
+        'n_epochs': 5,
+        'patience': 1,
+        'optimizer': {'name': 'Adam'},
+    },
+    "document_classifier_config": None,
+    "img_args": None,
+}
+
+
+def test_categorization_model_build():
+    """Test trainable DocumentModel."""
+    project_id = 1680
+    training_prj = Project(id_=project_id)
+    for document in training_prj.documents:
+        document.get_images()
+
+    document_classifier_config = category_ai_model_parameters['document_classifier_config']
+    document_training_config = category_ai_model_parameters['document_training_config']
+    img_args = category_ai_model_parameters['img_args']
+
+    torch.cuda.empty_cache()
+    model_path, doc_model = build_category_document_model(
+        project=training_prj,
+        document_classifier_config=document_classifier_config,
+        document_training_config=document_training_config,
+        img_args=img_args,
+        output_dir=os.path.join(training_prj.project_folder, "models"),
+        return_model=True,
+    )
+
+    test_doc = training_prj.test_documents[-1]
+    page_path = test_doc.pages()[0].image_path
+
+    img_data = pil_image.open(page_path)
+    buf = BytesIO()
+    img_data.save(buf, format='PNG')
+    docs_data_images = [buf]
+
+    docs_text = test_doc.text
+
+    # extract from pt file
+    (predicted_category, predicted_confidence), _ = doc_model.extract(page_images=docs_data_images, text=docs_text)
+
+    # assert category
+    assert predicted_category == 5350
+
+    # assert confidence
+    assert predicted_confidence >= 0.5
