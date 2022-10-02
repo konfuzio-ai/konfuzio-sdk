@@ -27,6 +27,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install --upgrade --upgrade-strategy eager -e .[dev]
+        python -m spacy download de_core_news_sm
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
