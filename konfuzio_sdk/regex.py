@@ -131,7 +131,7 @@ def get_best_regex(evaluations: List, log_stats: bool = True) -> List:
 
     # iterate over sorted df, mark any row if it adds no matching value compared to regex above, we used max windowsize
     # matched_document = df.filter(regex=r'document_\d+').rolling(min_periods=1, window=100000000).max()
-    # any regex witch matches more Documents that the regex before, is a good regex
+    # any regex which matches more Documents that the regex before, is a good regex
     # relevant_regex = matched_document.sum(axis=1).diff()
     # df['matched_annotations_total'] = matched_document.sum(axis=1)
     # df['matched_annotations_additional'] = relevant_regex
