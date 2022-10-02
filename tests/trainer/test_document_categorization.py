@@ -3,12 +3,8 @@
 import os
 import logging
 import unittest
-
-# from requests import HTTPError
+import pytest
 from copy import deepcopy
-from io import BytesIO
-
-from PIL import Image as pil_image
 
 from konfuzio_sdk.data import Project, Document
 from konfuzio_sdk.trainer.tokenization import get_tokenizer
@@ -188,7 +184,7 @@ class TestDocumentModel(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the Data and Categorization Pipeline."""
-        cls.training_prj = Project(id_=1680)
+        cls.training_prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
         for document in cls.training_prj.documents + cls.training_prj.test_documents:
             document.get_images()
 
@@ -217,19 +213,19 @@ class TestDocumentModel(unittest.TestCase):
         """Test configure categories, with training and test docs for the Document Model."""
         assert self.categorization_pipeline.categories is not None
 
-        payslips_training_documents = self.training_prj.get_category_by_id(5349).documents()[:4]
-        receipts_training_documents = self.training_prj.get_category_by_id(5350).documents()[:4]
+        payslips_training_documents = self.training_prj.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).documents()[:4]
+        receipts_training_documents = self.training_prj.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID).documents()[:4]
         self.categorization_pipeline.documents = payslips_training_documents + receipts_training_documents
         assert all(doc.category is not None for doc in self.categorization_pipeline.documents)
 
-        payslips_test_documents = self.training_prj.get_category_by_id(5349).test_documents()[:1]
-        receipts_test_documents = self.training_prj.get_category_by_id(5350).test_documents()[:1]
+        payslips_test_documents = self.training_prj.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).test_documents()[:1]
+        receipts_test_documents = self.training_prj.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID).test_documents()[:1]
         self.categorization_pipeline.test_documents = payslips_test_documents + receipts_test_documents
         assert all(doc.category is not None for doc in self.categorization_pipeline.test_documents)
 
     def test_2_fit(self) -> None:
         """Start to train the Model."""
-        self.categorization_pipeline.build(
+        self.categorization_pipeline.fit(
             document_training_config={
                 'valid_ratio': 0.2,
                 'batch_size': 2,
@@ -242,45 +238,31 @@ class TestDocumentModel(unittest.TestCase):
 
     def test_3_save_model(self) -> None:
         """Test save .pt file to disk."""
-        model_type = 'DocumentModel'
-        output_dir = os.path.join(self.training_prj.project_folder, "models")
-        path = os.path.join(output_dir, f'{get_timestamp()}_{model_type}.pt')
-        model_path = self.categorization_pipeline.save(path=path)
-        assert path == model_path
-        assert os.path.isfile(model_path)
+        model_type = 'TestDocumentModel'
+        path = os.path.join(self.training_prj.project_folder, 'models', f'{get_timestamp()}_{model_type}.pt')
+        self.categorization_pipeline.save(path=path)
+        assert os.path.isfile(path)
 
-    @unittest.skip(reason="To be defined how to upload a categorization model.")
+    @pytest.mark.skip(reason="To be defined how to upload a categorization model.")
     def test_4_upload_ai_model(self) -> None:
         """Upload the model."""
-        pass
+        raise NotImplementedError
 
-    @unittest.skip(reason="Todo implementation.")
+    @pytest.mark.xfail(reason="100% score on test categorization project to be achieved.")
     def test_5_evaluate(self) -> None:
         """Evaluate DocumentModel."""
-        pass
-        # categorization_evaluation = self.categorization_pipeline.evaluate()
-        # # can't categorize any of the 3 payslips docs since they don't contain the word "lohnabrechnung"
-        # assert categorization_evaluation.f1(self.categorization_pipeline.categories[0]) == 0.0
-        # # can categorize 1 out of 2 receipts docs since one contains the word "quittung"
-        # # therefore recall == 1/2 and precision == 1.0, implying f1 == 2/3
-        # assert categorization_evaluation.f1(self.categorization_pipeline.categories[1]) == 2 / 3
-        # # global f1 score
-        # assert categorization_evaluation.f1(None) == 0.26666666666666666
+        categorization_evaluation = self.categorization_pipeline.evaluate()
+        assert categorization_evaluation.f1(self.categorization_pipeline.categories[0]) == 1.0
+        assert categorization_evaluation.f1(self.categorization_pipeline.categories[1]) == 1.0
+        # global f1 score
+        assert categorization_evaluation.f1(None) == 1.0
 
     def test_6_categorize_test_document(self) -> None:
         """Test categorize a test document."""
-        test_doc = self.training_prj.test_documents[-1]
-        page_path = test_doc.pages()[0].image_path
-
-        img_data = pil_image.open(page_path)
-        buf = BytesIO()
-        img_data.save(buf, format='PNG')
-        docs_data_images = [buf]
-
-        docs_text = test_doc.text
-
-        (predicted_category, predicted_confidence), _ = self.categorization_pipeline.extract(
-            page_images=docs_data_images, text=docs_text
-        )
-        assert predicted_category == 5350
-        assert predicted_confidence >= 0.5
+        test_receipt_document = self.training_prj.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID)
+        # reset the category attribute to test that it can be categorized successfully
+        test_receipt_document.category = None
+        result = self.categorization_pipeline.categorize(document=test_receipt_document)
+        assert isinstance(result, Document)
+        assert result.category is not None
+        assert result.category.id_ == TEST_RECEIPTS_CATEGORY_ID

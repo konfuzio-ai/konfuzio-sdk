@@ -315,6 +315,8 @@ class PhraseMatcherTokenizer(SpacyTokenizer):
 
         for project in projects:
             for document in project.documents:
+                if document.category is None:
+                    continue
                 annotations = document.annotations()
                 for annotation in annotations:
                     for span in annotation.spans:

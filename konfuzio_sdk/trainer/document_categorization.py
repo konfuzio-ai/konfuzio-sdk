@@ -16,10 +16,9 @@ import uuid
 from copy import deepcopy
 from typing import Union, List, Dict, Tuple
 from warnings import warn
+from io import BytesIO
 
-# import pathlib
-
-# import cloudpickle
+from PIL import Image as pil_image
 import timm
 import torchvision
 import PIL.ImageOps
@@ -1196,7 +1195,7 @@ class DocumentModel(FallbackCategorizationModel):
         accuracy = correct.float() / batch_size
         return accuracy
 
-    def train(
+    def _train(
         self, examples: DataLoader, classifier: Classifier, loss_fn: torch.nn.Module, optimizer: torch.optim.Optimizer
     ) -> Tuple[List[float], List[float]]:
         """Perform one epoch of training."""
@@ -1215,7 +1214,7 @@ class DocumentModel(FallbackCategorizationModel):
         return losses, accs
 
     @torch.no_grad()
-    def evaluate(
+    def _evaluate(
         self, examples: DataLoader, classifier: Classifier, loss_fn: torch.nn.Module
     ) -> Tuple[List[float], List[float]]:
         """Evaluate the model, i.e. get loss and accuracy but do not update the model parameters."""
@@ -1260,8 +1259,8 @@ class DocumentModel(FallbackCategorizationModel):
         logger.info('begin fitting')
         best_valid_loss = float('inf')
         for epoch in range(n_epochs):
-            train_loss, train_acc = self.train(train_examples, classifier, loss_fn, optimizer)  # train epoch
-            valid_loss, valid_acc = self.evaluate(valid_examples, classifier, loss_fn)  # validation epoch
+            train_loss, train_acc = self._train(train_examples, classifier, loss_fn, optimizer)  # train epoch
+            valid_loss, valid_acc = self._evaluate(valid_examples, classifier, loss_fn)  # validation epoch
             train_losses.extend(train_loss)  # keep track of all the losses/accs
             train_accs.extend(train_acc)
             valid_losses.extend(valid_loss)
@@ -1291,7 +1290,7 @@ class DocumentModel(FallbackCategorizationModel):
         classifier.load_state_dict(torch.load(temp_filename))
         os.remove(temp_filename)
         # evaluate model over the test data
-        test_losses, test_accs = self.evaluate(test_examples, classifier, loss_fn)
+        test_losses, test_accs = self._evaluate(test_examples, classifier, loss_fn)
         logger.info(f'test_loss: {np.mean(test_losses):.3f}, test_acc: {np.nanmean(test_accs):.3f}')
 
         # bundle all the metrics together
@@ -1415,6 +1414,19 @@ class DocumentModel(FallbackCategorizationModel):
         self.classifier = self.classifier.to('cpu')
 
         return metrics
+
+    def fit(self, document_training_config: dict = {}, **kwargs) -> None:
+        """Fit the DocumentModel classifier."""
+        self.build(
+            document_training_config={
+                'valid_ratio': 0.2,
+                'batch_size': 2,
+                'max_len': None,
+                'n_epochs': 5,
+                'patience': 1,
+                'optimizer': {'name': 'Adam'},
+            }
+        )
 
     @torch.no_grad()
     def extract(self, page_images, text, batch_size=2, *args, **kwargs) -> Tuple[Tuple[str, float], pd.DataFrame]:
@@ -1560,6 +1572,37 @@ class DocumentModel(FallbackCategorizationModel):
         predicted_confidence = mean_prediction[predicted_class]
 
         return (predicted_label, predicted_confidence), predictions_df
+
+    def categorize(self, document: Document, recategorize: bool = False, inplace: bool = False) -> Document:
+        """Run categorization."""
+        if inplace:
+            virtual_doc = document
+        else:
+            virtual_doc = deepcopy(document)
+        if (document.category is not None) and (not recategorize):
+            logger.info(
+                f'In {document}, the category was already specified as {document.category}, so it wasn\'t categorized '
+                f'again. Please use recategorize=True to force running the Categorization AI again on this document.'
+            )
+            return virtual_doc
+        elif recategorize:
+            virtual_doc.category = None
+
+        page_path = document.pages()[0].image_path
+        img_data = pil_image.open(page_path)
+        buf = BytesIO()
+        img_data.save(buf, format='PNG')
+        docs_data_images = [buf]
+
+        docs_text = document.text
+
+        (predicted_category, predicted_confidence), _ = self.extract(page_images=docs_data_images, text=docs_text)
+
+        if predicted_category == -1:
+            raise ValueError(f'{self} could not find the category of {document} by using the trained DocumentModel.')
+
+        virtual_doc.category = self.project.get_category_by_id(predicted_category)
+        return virtual_doc
 
 
 def get_document_classifier_examples(
