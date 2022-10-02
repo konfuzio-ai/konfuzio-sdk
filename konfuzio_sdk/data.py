@@ -570,7 +570,7 @@ class Label(Data):
         # Regex features
         self._tokens = {}
         self.tokens_file_path = None
-        self._regex: List[str] = []
+        self._regex = {}  # : List[str] = []
         # self._combined_tokens = None
         self.regex_file_path = os.path.join(self.project.regex_folder, f'{self.name_clean}.json5')
         self._correct_annotations = []
@@ -823,14 +823,13 @@ class Label(Data):
         if not self._regex or update:
             # if not is_file(self.regex_file_path, raise_exception=False) or update:
             logger.info(f'Build regexes for Label {self.name}.')
-            regex = []
+            regex = {}
             for category in categories:
                 regex_category_file_path = os.path.join(
                     self.project.regex_folder, f'{category.name}_{self.name_clean}_tokens.json5'
                 )
                 if not is_file(regex_category_file_path, raise_exception=False) or update:
                     category_regex = self.find_regex(category=category)
-                    regex.extend(category_regex)
                     if os.path.exists(self.project.regex_folder):
                         with open(regex_category_file_path, 'w') as f:
                             json.dump(category_regex, f, indent=2, sort_keys=True)
@@ -838,19 +837,14 @@ class Label(Data):
                     logger.info(f'Start loading existing regexes for Label {self.name}.')
                     with open(regex_category_file_path, 'r') as f:
                         category_regex = json.load(f)
+                regex[category.id_] = category_regex
+
             self._regex = regex
-            # save the results on disk for later use
-            # with open(self.regex_file_path, 'w') as f:
-            #     json.dump(self._regex, f, indent=2, sort_keys=True)
-            # is_file(self.regex_file_path)
-            # else:
-            #     logger.warning(
-            #         f'Regexes loaded from file for {self} which might have been calculated for other category.'
-            #     )
-            #     with open(self.regex_file_path, 'r') as f:
-            #         self._regex = json.load(f)
+
         logger.info(f'Regexes are ready for Label {self.name}.')
-        return self._regex
+
+        categories_ids = [category.id_ for category in categories]
+        return {k: v for k, v in self._regex.items() if k in categories_ids}
 
     # def save(self) -> bool:
     #     """
@@ -1501,11 +1495,6 @@ class Annotation(Data):
                 regex_f = f'(?P<Label_{self.label.id_}_F_{self.id_}_{span.start_offset}>{full_replacement})'
                 self.token_append(new_regex=regex_f, regex_quality=2)
         return self._tokens
-
-    # todo can we circumvent the combined tokens
-    # def regex(self):
-    #     """Return regex of this annotation."""
-    #     return self.label.combined_tokens(categories=[self.document.category])
 
     def delete(self) -> None:
         """Delete Annotation online."""
