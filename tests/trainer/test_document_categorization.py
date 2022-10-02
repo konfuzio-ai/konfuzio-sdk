@@ -185,8 +185,6 @@ class TestDocumentModel(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Set up the Data and Categorization Pipeline."""
         cls.training_prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
-        for document in cls.training_prj.documents + cls.training_prj.test_documents:
-            document.get_images()
 
         cls.categorization_pipeline = CustomDocumentModel(
             cls.training_prj,
