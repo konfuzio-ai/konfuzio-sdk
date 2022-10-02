@@ -959,7 +959,8 @@ def build_document_classifier_iterator(
 
 
 def build_document_classifier_iterators(
-    projects: List[Project],
+    train_documents: List[Document],
+    test_documents: List[Document],
     tokenizer: Tokenizer,
     eval_transforms: torchvision.transforms,
     train_transforms: torchvision.transforms,
@@ -977,14 +978,6 @@ def build_document_classifier_iterators(
     assert use_image or use_text, 'One of either `use_image` or `use_text` needs to be `True`!'
 
     logger.info('building document classifier iterators')
-
-    # get list documents per project
-    train_documents = [project.documents for project in projects]
-    test_documents = [project.test_documents for project in projects]
-
-    # flatten
-    train_documents = [doc for doc_list in train_documents for doc in doc_list]
-    test_documents = [doc for doc_list in test_documents for doc in doc_list]
 
     # get data (list of examples) from Documents
     train_data, valid_data = get_document_classifier_data(
@@ -1047,7 +1040,7 @@ class DocumentModel(FallbackCategorizationModel):
 
     def __init__(
         self,
-        projects: Union[List[Project], None],
+        project: Union[int, Project],
         tokenizer: Union[Tokenizer, str] = BPETokenizer(),
         image_preprocessing: Union[None, dict] = {'target_size': (1000, 1000), 'grayscale': True},
         image_augmentation: Union[None, dict] = {'rotate': 5},
@@ -1061,15 +1054,18 @@ class DocumentModel(FallbackCategorizationModel):
         use_cuda: bool = True,
     ):
         """Initialize a DocumentModel."""
-        # projects should be a list of at least 2 Projects or None
-        # where None indicates no training will be done
-        assert projects is None or (isinstance(projects, List) and all([isinstance(p, Project) for p in projects]))
+        if isinstance(project, int):
+            self.project = Project(id_=project)
+        elif isinstance(project, Project):
+            self.project = project
+        else:
+            raise NotImplementedError
 
-        if projects is not None and len(projects) == 1:
-            logger.info('You are only using 1 project for the document classification.')
-
-        self.projects = projects
+        self.projects = [self.project]
         self.tokenizer = tokenizer
+
+        self.documents = None
+        self.test_documents = None
 
         # if we are using an image module in our classifier then we need to set-up the
         # pre-processing and data augmentation for the images
@@ -1152,7 +1148,7 @@ class DocumentModel(FallbackCategorizationModel):
 
         self.device = torch.device('cuda' if (torch.cuda.is_available() and use_cuda) else 'cpu')
 
-    def save(self, path: Union[None, str] = None, model_type: str = 'DocumentModel') -> None:
+    def save(self, path: Union[None, str] = None, model_type: str = 'DocumentModel') -> str:
         """
         Save only the necessary parts of the model for extraction/inference.
 
@@ -1383,9 +1379,12 @@ class DocumentModel(FallbackCategorizationModel):
         if hasattr(self.classifier, 'text_module') and isinstance(self.classifier.text_module, BERT):
             document_training_config['max_len'] = self.classifier.text_module.get_max_length()
 
+        assert self.documents is not None, "Training documents need to be specified"
+        assert self.test_documents is not None, "Test documents need to be specified"
         # get document classifier example iterators
         examples = build_document_classifier_iterators(
-            self.projects,
+            self.documents,
+            self.test_documents,
             self.tokenizer,
             self.eval_transforms,
             self.train_transforms,
@@ -1678,7 +1677,8 @@ def get_document_template_classifier_data(
 
 
 def build_document_template_classifier_iterators(
-    projects: List[Project],
+    train_documents: List[Document],
+    test_documents: List[Document],
     tokenizer: Tokenizer,
     eval_transforms: torchvision.transforms,
     train_transforms: torchvision.transforms,
@@ -1696,14 +1696,6 @@ def build_document_template_classifier_iterators(
     assert use_image or use_text, 'One of either `use_image` or `use_text` needs to be `True`!'
 
     logger.info('building document classifier iterators')
-
-    # get list documents per project
-    train_documents = [project.documents for project in projects]
-    test_documents = [project.test_documents for project in projects]
-
-    # flatten
-    train_documents = [doc for doc_list in train_documents for doc in doc_list]
-    test_documents = [doc for doc_list in test_documents for doc in doc_list]
 
     # get data (list of examples) from Documents
     train_data, valid_data = get_document_template_classifier_data(
@@ -1776,9 +1768,12 @@ class CustomDocumentModel(DocumentModel):
         if hasattr(self.classifier, 'text_module') and isinstance(self.classifier.text_module, BERT):
             document_training_config['max_len'] = self.classifier.text_module.get_max_length()
 
+        assert self.documents is not None, "Training documents need to be specified"
+        assert self.test_documents is not None, "Test documents need to be specified"
         # get document classifier example iterators
         examples = build_document_template_classifier_iterators(
-            self.projects,
+            self.documents,
+            self.test_documents,
             self.tokenizer,
             self.eval_transforms,
             self.train_transforms,
@@ -1854,9 +1849,11 @@ def build_template_category_vocab(projects: List[Project]) -> Vocab:
     return template_vocab
 
 
-def create_transformations_dict(possible_transforms, args):
+def create_transformations_dict(possible_transforms, args=None):
     """Create a dictionary with the transformations accordingly with input args."""
     input_dict = {}
+    if args is None:
+        args = {'invert': False, 'target_size': (1000, 1000), 'grayscale': True, 'rotate': 5}
 
     if isinstance(args, dict):
         for transform in possible_transforms:
@@ -1888,6 +1885,8 @@ def get_timestamp(format='%Y-%m-%d-%H-%M-%S') -> str:
 
 def build_category_document_model(
     project,
+    train_docs,
+    test_docs,
     category_model=None,
     document_classifier_config: Union[None, dict] = None,
     document_training_config: Union[None, dict] = None,
@@ -1945,6 +1944,8 @@ def build_category_document_model(
         *args,
         **kwargs,
     )
+    model.documents = train_docs
+    model.test_documents = test_docs
 
     if document_training_config is None:
         document_training_config = {
