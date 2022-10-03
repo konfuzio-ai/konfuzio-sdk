@@ -161,7 +161,59 @@ class ClassificationModule(nn.Module):
             raise ValueError(f'input to from_pretrained should be None, str or dict, got {type(load)}')
 
 
-class NBOW(ClassificationModule):
+class TextClassificationModule(ClassificationModule):
+    """Define general functionality to work with nn.Module classes used for text classification."""
+
+    def __init__(
+        self,
+        input_dim: int,
+        load: Union[None, str, dict] = None,
+        **kwargs,
+    ):
+        """Init and set parameters."""
+        super().__init__()
+
+        self.input_dim = input_dim
+
+        for argk, argv in kwargs.items():
+            setattr(self, argk, argv)
+
+        self._valid()
+        self._load_architecture()
+        self._define_features()
+
+        self.from_pretrained(load)
+
+    def _valid(self) -> None:
+        """Validate architecture sizes."""
+        raise NotImplementedError
+
+    def _load_architecture(self) -> None:
+        """Load NN architecture."""
+        raise NotImplementedError
+
+    def _define_features(self) -> None:
+        """Define number of features as self.n_features: int."""
+        raise NotImplementedError
+
+    def _output(self, text: torch.Tensor, *args) -> List[torch.FloatTensor]:
+        """Collect output of NN architecture."""
+        raise NotImplementedError
+
+    def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
+        """Define the computation performed at every call."""
+        text = input['text']
+        # text = [batch, seq len]
+        outs = self._output(text)
+        if len(outs) not in [1, 2]:
+            raise TypeError(f"NN architecture of {self} returned {len(outs)} outputs, 1 or 2 expected.")
+        output = {'features': outs[0]}
+        if len(outs) == 2:
+            output['attention'] = outs[1]
+        return output
+
+
+class NBOW(TextClassificationModule):
     """NBOW classification model."""
 
     def __init__(
@@ -173,30 +225,28 @@ class NBOW(ClassificationModule):
         **kwargs,
     ):
         """Init and set parameters."""
-        super().__init__()
+        super().__init__(input_dim=input_dim, emb_dim=emb_dim, dropout_rate=dropout_rate, load=load)
 
-        self.input_dim = input_dim
-        self.emb_dim = emb_dim
-        self.dropout_rate = dropout_rate
+    def _valid(self) -> None:
+        """Validate nothing as this NBOW implementation doesn't have constraints on input_dim or emb_dim."""
+        pass
 
-        self.embedding = nn.Embedding(input_dim, emb_dim)
-        self.dropout = nn.Dropout(dropout_rate)
+    def _load_architecture(self) -> None:
+        """Load NN architecture."""
+        self.embedding = nn.Embedding(self.input_dim, self.emb_dim)
+        self.dropout = nn.Dropout(self.dropout_rate)
 
-        self.n_features = emb_dim
+    def _define_features(self) -> None:
+        """Define the number of features as the embedding size."""
+        self.n_features = self.emb_dim
 
-        self.from_pretrained(load)
-
-    def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
-        """Define the computation performed at every call."""
-        text = input['text']
-        # text = [batch, seq len]
+    def _output(self, text: torch.Tensor, *args) -> List[torch.FloatTensor]:
+        """Collect output of the concatenation embedding -> dropout."""
         text_features = self.dropout(self.embedding(text))
-        # text_features = [batch, seq len, emb dim]
-        output = {'features': text_features}
-        return output
+        return [text_features]
 
 
-class NBOWSelfAttention(ClassificationModule):
+class NBOWSelfAttention(TextClassificationModule):
     """NBOW classification model with multi-headed self attention."""
 
     def __init__(
@@ -209,39 +259,35 @@ class NBOWSelfAttention(ClassificationModule):
         **kwargs,
     ):
         """Init and set parameters."""
-        super().__init__()
+        super().__init__(input_dim=input_dim, emb_dim=emb_dim, n_heads=n_heads, dropout_rate=dropout_rate, load=load)
 
-        assert emb_dim % n_heads == 0, f'emb_dim ({emb_dim}) must be a multiple of n_heads ({n_heads})'
+    def _valid(self) -> None:
+        """Check that the embedding size is a multiple of the number of heads."""
+        assert (
+            self.emb_dim % self.n_heads == 0
+        ), f'emb_dim ({self.emb_dim}) must be a multiple of n_heads ({self.n_heads})'
 
-        self.input_dim = input_dim
-        self.emb_dim = emb_dim
-        self.n_heads = n_heads
-        self.dropout_rate = dropout_rate
+    def _load_architecture(self) -> None:
+        """Load NN architecture."""
+        self.embedding = nn.Embedding(self.input_dim, self.emb_dim)
+        self.multihead_attention = nn.MultiheadAttention(self.emb_dim, self.n_heads)
+        self.dropout = nn.Dropout(self.dropout_rate)
 
-        self.embedding = nn.Embedding(input_dim, emb_dim)
-        self.multihead_attention = nn.MultiheadAttention(emb_dim, n_heads)
-        self.dropout = nn.Dropout(dropout_rate)
+    def _define_features(self) -> None:
+        """Define the number of features as the embedding size."""
+        self.n_features = self.emb_dim
 
-        self.n_features = emb_dim
-
-        self.from_pretrained(load)
-
-    def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
-        """Define the computation performed at every call."""
-        text = input['text']
-        # text = [batch, seq len]
+    def _output(self, text: torch.Tensor, *args) -> List[torch.FloatTensor]:
+        """Collect output of the multiple attention heads."""
         embeddings = self.dropout(self.embedding(text))
         # embeddings = [batch, seq len, emb dim]
         embeddings = embeddings.permute(1, 0, 2)
         text_features, attention = self.multihead_attention(embeddings, embeddings, embeddings)
         text_features = text_features.permute(1, 0, 2)
-        # text_features = [batch, seq len, emb dim]
-        # attention = [batch, seq len, seq len]
-        output = {'features': text_features, 'attention': attention}
-        return output
+        return [text_features, attention]
 
 
-class LSTM(ClassificationModule):
+class LSTM(TextClassificationModule):
     """A long short-term memory (LSTM) model."""
 
     def __init__(
@@ -256,27 +302,34 @@ class LSTM(ClassificationModule):
         **kwargs,
     ):
         """Initialize LSTM model."""
-        super().__init__()
+        super().__init__(
+            input_dim=input_dim,
+            emb_dim=emb_dim,
+            hid_dim=hid_dim,
+            n_layers=n_layers,
+            bidirectional=bidirectional,
+            dropout_rate=dropout_rate,
+            load=load,
+        )
 
-        self.input_dim = input_dim
-        self.emb_dim = emb_dim
-        self.hid_dim = hid_dim
-        self.n_layers = n_layers
-        self.bidirectional = bidirectional
-        self.dropout_rate = dropout_rate
+    def _valid(self) -> None:
+        """Validate nothing as this LSTM implementation doesn't constrain input_dim, emb_dim, hid_dim or n_layers."""
+        pass
 
-        self.embedding = nn.Embedding(input_dim, emb_dim)
-        self.lstm = nn.LSTM(emb_dim, hid_dim, n_layers, dropout=dropout_rate, bidirectional=bidirectional)
-        self.dropout = nn.Dropout(dropout_rate)
+    def _load_architecture(self) -> None:
+        """Load NN architecture."""
+        self.embedding = nn.Embedding(self.input_dim, self.emb_dim)
+        self.lstm = nn.LSTM(
+            self.emb_dim, self.hid_dim, self.n_layers, dropout=self.dropout_rate, bidirectional=self.bidirectional
+        )
+        self.dropout = nn.Dropout(self.dropout_rate)
 
-        self.n_features = hid_dim * 2 if bidirectional else hid_dim
+    def _define_features(self) -> None:
+        """If the architecture is bidirectional, the feature size is twice as large as the hidden layer size."""
+        self.n_features = self.hid_dim * 2 if self.bidirectional else self.hid_dim
 
-        self.from_pretrained(load)
-
-    def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
-        """Forward pass."""
-        text = input['text']
-        # text = [batch size, seq len]
+    def _output(self, text: torch.Tensor, *args) -> List[torch.FloatTensor]:
+        """Collect output of the LSTM model."""
         embeddings = self.dropout(self.embedding(text))
         # embeddings = [batch size, seq len, emb dim]
         embeddings = embeddings.permute(1, 0, 2)
@@ -284,12 +337,10 @@ class LSTM(ClassificationModule):
         text_features, _ = self.lstm(embeddings)
         # text_features = [seq len, batch size, hid dim * n directions]
         text_features = text_features.permute(1, 0, 2)
-        # text_features = [batch size, seq len, hid dim * n directions]
-        output = {'features': text_features}
-        return output
+        return [text_features]
 
 
-class BERT(ClassificationModule):
+class BERT(TextClassificationModule):
     """Wraps around pre-trained BERT-type models from the HuggingFace library."""
 
     def __init__(
@@ -301,48 +352,49 @@ class BERT(ClassificationModule):
         **kwargs,
     ):
         """Initialize BERT model from the HuggingFace library."""
-        super().__init__()
+        super().__init__(input_dim=input_dim, name=name, freeze=freeze, load=load)
 
-        self.input_dim = input_dim
-        self.name = name
-        self.freeze = freeze
+    def _valid(self) -> None:
+        """Check that the specified HuggingFace model has a hidden_size key or a dim key in its configuration dict."""
+        bert_config = self.bert.config.to_dict()
+        if 'hidden_size' in bert_config:
+            self._feature_size = 'hidden_size'
+        if 'dim' in bert_config:
+            self._feature_size = 'dim'
+        else:
+            raise ValueError(f'Cannot find feature dim for model: {self.name}')
 
-        self.bert = transformers.AutoModel.from_pretrained(name)
-
-        if freeze:
+    def _load_architecture(self) -> None:
+        """Load NN architecture."""
+        self.bert = transformers.AutoModel.from_pretrained(self.name)
+        if self.freeze:
             for parameter in self.bert.parameters():
                 parameter.requires_grad = False
 
-        if 'hidden_size' in self.bert.config.to_dict():
-            self.n_features = self.bert.config.to_dict()['hidden_size']
-        elif 'dim' in self.bert.config.to_dict():
-            self.n_features = self.bert.config.to_dict()['dim']
-        else:
-            raise ValueError(f'Cannot find feature dim for model: {name}')
-
-        self.from_pretrained(load)
+    def _define_features(self) -> None:
+        """Define the feature size as the hidden layer size."""
+        self.n_features = self.bert.config.to_dict()[self._feature_size]
 
     def get_max_length(self):
         """Get the maximum length of a sequence that can be passed to the BERT module."""
         return self.bert.config.max_position_embeddings
 
-    def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
-        """Forward pass."""
-        text = input['text']
-        # text = [batch, seq len]
+    def _output(self, text: torch.Tensor, *args) -> List[torch.FloatTensor]:
+        """Collect output of the HuggingFace BERT model."""
         bert_output = self.bert(text, output_attentions=True, return_dict=False)
         if len(bert_output) == 2:  # distill-bert models only output features and attention
             text_features, attentions = bert_output
         elif len(bert_output) == 3:  # standard bert models also output pooling layers, which we don't want
             text_features, _, attentions = bert_output
         else:
-            raise ValueError('bert module returned incorrect output size!')
+            raise ValueError(
+                f'Unsupported output size for BERT module: returned {len(bert_output)} outputs, expected 2 or 3.'
+            )
         # text_features = [batch size, seq len, hid dim]
         # attentions = a [batch size, n heads, seq len, seq len] sized tensor per layer in the bert model
         attention = attentions[-1].mean(dim=1)  # get the attention from the final layer and average across the heads
         # attention = [batch size, seq len, seq len]
-        output = {'features': text_features, 'attention': attention}
-        return output
+        return [text_features, attention]
 
 
 class DocumentClassifier(nn.Module):
@@ -354,11 +406,11 @@ class DocumentClassifier(nn.Module):
 class DocumentTextClassifier(DocumentClassifier):
     """Classifies a document based on the text on each page only."""
 
-    def __init__(self, text_module: nn.Module, output_dim: int, dropout_rate: float = 0.0, **kwargs):
+    def __init__(self, text_module: TextClassificationModule, output_dim: int, dropout_rate: float = 0.0, **kwargs):
         """Initialize the classifier."""
         super().__init__()
 
-        assert isinstance(text_module, ClassificationModule)
+        assert isinstance(text_module, TextClassificationModule)
 
         self.text_module = text_module
         self.output_dim = output_dim
@@ -404,12 +456,12 @@ def get_text_module(config: dict) -> DocumentTextClassifier:
     return text_module
 
 
-class VGG(ClassificationModule):
-    """VGG classifier."""
+class ImageClassificationModule(ClassificationModule):
+    """Define general functionality to work with nn.Module classes used for image classification."""
 
     def __init__(
         self,
-        name: str = 'vgg11',
+        name: str,
         pretrained: bool = True,
         freeze: bool = True,
         load: Union[None, str, dict] = None,
@@ -421,83 +473,140 @@ class VGG(ClassificationModule):
         self.name = name
         self.pretrained = pretrained
         self.freeze = freeze
-        self.vgg = getattr(torchvision.models, name)(pretrained=pretrained)
-        del self.vgg.classifier  # remove classifier as not needed
 
+        self._valid()
+        self._load_architecture()
         if freeze:
-            for parameter in self.vgg.parameters():
-                parameter.requires_grad = False
+            self._freeze()
 
-        self.n_features = 512 * 7 * 7
+        self._define_features()
 
         self.from_pretrained(load)
+
+    def _valid(self) -> None:
+        """Validate architecture sizes."""
+        raise NotImplementedError
+
+    def _load_architecture(self) -> None:
+        """Load NN architecture."""
+        raise NotImplementedError
+
+    def _freeze(self) -> None:
+        """Define how model weights are frozen."""
+        raise NotImplementedError
+
+    def _define_features(self) -> None:
+        """Define number of features as self.n_features: int."""
+        raise NotImplementedError
+
+    def _output(self, image: torch.Tensor) -> torch.FloatTensor:
+        """Collect output of NN architecture."""
+        raise NotImplementedError
 
     def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
         """Define the computation performed at every call."""
         image = input['image']
         # image = [batch, channels, height, width]
-        image_features = self.vgg.features(image)
-        image_features = self.vgg.avgpool(image_features)
-        image_features = image_features.view(-1, self.n_features)
-        # image_features = [batch, 512*7*7 = 25088]
+        image_features = self._output(image)
+        # image_features = [batch, n_features]
         output = {'features': image_features}
         return output
 
 
-class EfficientNet(ClassificationModule):
+class VGG(ImageClassificationModule):
+    """VGG classifier."""
+
+    def __init__(
+        self,
+        name: str = 'vgg11',
+        pretrained: bool = True,
+        freeze: bool = True,
+        load: Union[None, str, dict] = None,
+        **kwargs,
+    ):
+        """Init and set parameters."""
+        super().__init__(name, pretrained, freeze, load)
+
+    def _valid(self) -> None:
+        """No validations needed for this VGG implementation."""
+        pass
+
+    def _load_architecture(self) -> None:
+        """Load NN architecture."""
+        self.vgg = getattr(torchvision.models, self.name)(pretrained=self.pretrained)
+        del self.vgg.classifier  # remove classifier as not needed
+
+    def _freeze(self) -> None:
+        """Define how model weights are frozen."""
+        for parameter in self.vgg.parameters():
+            parameter.requires_grad = False
+
+    def _define_features(self) -> None:
+        """VGG11 uses a 7x7x512 max pooling layer."""
+        self.n_features = 512 * 7 * 7
+
+    def _output(self, image: torch.Tensor) -> torch.FloatTensor:
+        """Collect output of NN architecture."""
+        image_features = self.vgg.features(image)
+        image_features = self.vgg.avgpool(image_features)
+        image_features = image_features.view(-1, self.n_features)
+        return image_features
+
+
+class EfficientNet(ImageClassificationModule):
     """EfficientNet classifier."""
 
     def __init__(
         self,
         name: str = 'efficientnet_b0',
-        pretrained: str = True,
-        freeze: str = True,
+        pretrained: bool = True,
+        freeze: bool = True,
         load: Union[None, str, dict] = None,
         **kwargs,
     ):
         """Initialize the model."""
-        super().__init__()
+        super().__init__(name, pretrained, freeze, load)
 
-        self.name = name
-        self.pretrained = pretrained
-        self.freeze = freeze
+    def _valid(self) -> None:
+        """No validations needed for this EfficientNet implementation."""
+        pass
+
+    def _load_architecture(self) -> None:
+        """Load NN architecture."""
         self.efficientnet = timm.create_model(
-            name, pretrained=pretrained, num_classes=0
-        )  # don't want classifier at end of model
+            self.name, pretrained=self.pretrained, num_classes=0
+        )  # 0 classes as we don't want classifier at end of model
 
-        if freeze:
-            for parameter in self.efficientnet.parameters():
-                parameter.requires_grad = False
+    def _freeze(self) -> None:
+        """Define how model weights are frozen."""
+        for parameter in self.efficientnet.parameters():
+            parameter.requires_grad = False
 
-        self.n_features = self.get_n_features()
-
-        self.from_pretrained(load)
-
-    def get_n_features(self):
+    def get_n_features(self) -> int:
         """Calculate number of output features based on given model."""
         x = torch.randn(1, 3, 100, 100)
         with torch.no_grad():
             y = self.efficientnet(x)
         return y.shape[-1]
 
-    def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
-        """Forward pass."""
-        image = input['image']
-        # images = [batch, channels, height, width]
+    def _define_features(self) -> None:
+        """Depends on given EfficientNet model."""
+        self.n_features = self.get_n_features()
+
+    def _output(self, image: torch.Tensor) -> torch.FloatTensor:
+        """Collect output of NN architecture."""
         image_features = self.efficientnet(image)
-        # image_features = [batch, n_features]
-        output = {'features': image_features}
-        return output
+        return image_features
 
 
 class DocumentImageClassifier(DocumentClassifier):
     """Classifies a document based on the image of the pages only."""
 
-    def __init__(self, image_module: nn.Module, output_dim: int, dropout_rate: float = 0.0, **kwargs):
+    def __init__(self, image_module: ImageClassificationModule, output_dim: int, dropout_rate: float = 0.0, **kwargs):
         """Initialize the classifier."""
         super().__init__()
 
-        assert isinstance(image_module, ClassificationModule)
+        assert isinstance(image_module, ImageClassificationModule)
 
         self.image_module = image_module
         self.output_dim = output_dim
@@ -530,7 +639,13 @@ def get_image_module(config: dict) -> DocumentImageClassifier:
     return image_module
 
 
-class MultimodalConcatenate(ClassificationModule):
+class MultimodalModule(ClassificationModule):
+    """Define general functionality to work with nn.Module classes used for image and text classification."""
+
+    pass
+
+
+class MultimodalConcatenate(MultimodalModule):
     """Defines how the image and text features are combined."""
 
     def __init__(
@@ -591,9 +706,9 @@ class DocumentMultimodalClassifier(DocumentClassifier):
 
     def __init__(
         self,
-        image_module: nn.Module,
-        text_module: nn.Module,
-        multimodal_module: nn.Module,
+        image_module: ImageClassificationModule,
+        text_module: TextClassificationModule,
+        multimodal_module: MultimodalModule,
         output_dim: int,
         dropout_rate: float = 0.0,
         **kwargs,
@@ -601,9 +716,9 @@ class DocumentMultimodalClassifier(DocumentClassifier):
         """Init and set parameters."""
         super().__init__()
 
-        assert isinstance(text_module, ClassificationModule)
-        assert isinstance(image_module, ClassificationModule)
-        assert isinstance(multimodal_module, ClassificationModule)
+        assert isinstance(text_module, TextClassificationModule)
+        assert isinstance(image_module, ImageClassificationModule)
+        assert isinstance(multimodal_module, MultimodalModule)
 
         self.image_module = image_module  # input: images, output: image features
         self.text_module = text_module  # input: text, output: text features
