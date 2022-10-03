@@ -114,7 +114,7 @@ class TestOnlineProject(unittest.TestCase):
     def test_create_annotation(self):
         """Test to add an Annotation to the document."""
         doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-        label = self.project.labels[8]
+        label = self.project.get_label_by_name('Lohnart')
         annotation = Annotation(
             document=doc,
             spans=[Span(start_offset=1590, end_offset=1602)],
@@ -138,7 +138,7 @@ class TestOnlineProject(unittest.TestCase):
     def test_delete_annotation_offline(self):
         """Test to delete an Annotation from the document offline."""
         doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-        label = self.project.labels[8]
+        label = self.project.get_label_by_name('Lohnart')
         annotation = Annotation(
             document=doc,
             spans=[Span(start_offset=1603, end_offset=1605)],
@@ -147,9 +147,12 @@ class TestOnlineProject(unittest.TestCase):
             accuracy=1.0,
             is_correct=True,
         )
+        annotation.save()  # for the check on line 155
         annotation.delete(delete_online=False)
-        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         assert annotation not in doc.get_annotations()
+        doc.update()
+        assert annotation in doc.get_annotations()
+        annotation.delete()
 
 
 class TestOfflineExampleData(unittest.TestCase):

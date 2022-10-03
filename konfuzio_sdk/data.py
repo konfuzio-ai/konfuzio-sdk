@@ -1481,28 +1481,17 @@ class Annotation(Data):
 
     def delete(self, delete_online=True) -> None:
         """Delete Annotation."""
-        index = [x for x, y in enumerate(self.document._annotations) if y == self][0]
+        with open(self.document.annotation_file_path, 'r') as f:
+            annots = json.load(f)
+        for annot in annots:
+            for bbox in annot['bboxes']:
+                if bbox['start_offset'] == self.start_offset and bbox['end_offset'] == self.end_offset:
+                    annot['bboxes'].remove(bbox)
+        with open(self.document.annotation_file_path, 'w') as f:
+            json.dump(annots, f)
         if self.document.is_online and delete_online:
             delete_document_annotation(self.document.id_, self.id_, self.document.project.id_)
-            with open(self.document.annotation_file_path, 'r') as f:
-                annots = json.load(f)
-            for annot in annots:
-                for bbox in annot['bboxes']:
-                    if bbox['start_offset'] == self.start_offset and bbox['end_offset'] == self.end_offset:
-                        annot['bboxes'].remove(bbox)
-            with open(self.document.annotation_file_path, 'w') as f:
-                json.dump(annots, f)
-            del self.document._annotations[index]
-        else:
-            with open(self.document.annotation_file_path, 'r') as f:
-                annots = json.load(f)
-            for annot in annots:
-                for bbox in annot['bboxes']:
-                    if bbox['start_offset'] == self.start_offset and bbox['end_offset'] == self.end_offset:
-                        annot['bboxes'].remove(bbox)
-            with open(self.document.annotation_file_path, 'w') as f:
-                json.dump(annots, f)
-            del self.document._annotations[index]
+        self.document._annotations.remove(self)
 
     @property
     def spans(self) -> List[Span]:
