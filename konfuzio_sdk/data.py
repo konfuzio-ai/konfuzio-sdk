@@ -2285,7 +2285,7 @@ class Project(Data):
         self._label_sets: List[LabelSet] = []
         self._labels: List[Label] = []
         self._documents: List[Document] = []
-        self.meta_data = []
+        self._meta_data = []
 
         # paths
         self.meta_file_path = os.path.join(self.project_folder, "documents_meta.json5")
@@ -2392,7 +2392,7 @@ class Project(Data):
 
         if self.id_ and (not is_file(self.meta_file_path, raise_exception=False) or update):
             self.write_project_files()
-        self.get_meta()
+        self.get_meta(reload=True)
         self.get_labels(reload=True)
         self.get_label_sets(reload=True)
         self.get_categories()
@@ -2439,15 +2439,23 @@ class Project(Data):
         else:
             raise ValueError(f'In {self} the {document} is a duplicate and will not be added.')
 
-    def get_meta(self):
+    def get_meta(self, reload=False):
         """
         Get the list of all Documents in the Project and their information.
 
         :return: Information of the Documents in the Project.
         """
-        with open(self.meta_file_path, "r") as f:
-            self.meta_data = json.load(f)
-        return self.meta_data
+        if not self._meta_data or reload:
+            with open(self.meta_file_path, "r") as f:
+                self._meta_data = json.load(f)
+        return self._meta_data
+
+    @property
+    def meta_data(self):
+        """Return Project meta data."""
+        if not self._meta_data:
+            self.get_meta()
+        return self._meta_data
 
     def get_categories(self):
         """Load Categories for all Label Sets in the Project."""
