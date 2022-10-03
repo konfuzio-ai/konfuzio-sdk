@@ -1,6 +1,5 @@
 """Implements a DocumentModel."""
 
-# import os
 import collections
 import datetime
 import functools
@@ -8,8 +7,6 @@ import os
 import random
 import re
 import math
-
-# import sys
 import logging
 import tempfile
 import uuid
@@ -21,7 +18,6 @@ from io import BytesIO
 from PIL import Image as pil_image
 import timm
 import torchvision
-import PIL.ImageOps
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -35,35 +31,11 @@ from torch.utils.data import DataLoader
 from konfuzio_sdk.data import Project, Document, Category
 from konfuzio_sdk.evaluate import CategorizationEvaluation
 from konfuzio_sdk.trainer.tokenization import Vocab, Tokenizer, BPETokenizer, get_tokenizer
+from konfuzio_sdk.trainer.image import ImagePreProcessing, ImageDataAugmentation
 
 logger = logging.getLogger(__name__)
 
 warn('This module is WIP: https://gitlab.com/konfuzio/objectives/-/issues/9481', FutureWarning, stacklevel=2)
-
-# ensure backwards compatibility of models saved with project name instead of id.
-# Can be deleted when old models are adapted or not needed anymore
-NAMES_CONVERSION = {
-    'Versicherungspolicen Erweitert (Multipolicen, KFZ, Haftpflicht, ..)': 23,
-    'Münchener Verein - Demo': 24,
-    'Kontoauszug': 34,
-    'Rechnung (German)': 39,
-    'BU-Versicherung': 43,
-    'RV-Verträge - Demo': 44,
-    'KONFUZIO_PAYSLIP_TESTS': 46,
-    'ZIMDB-ZIAS: Grundbuchauszug': 50,
-    'Arztrechnung': 58,
-    'Darlehensvertrag - IDS': 60,
-    'Syncier - Financial Statement': 61,
-    'ID Cards (from dataset) - Demo': 76,
-    'Grundbuchauszug': 145,
-    'Kaufvertrag': 169,
-    'Expose': 170,
-    'Flurkarte': 171,
-    'Grundriss': 172,
-    'Mietvertrag': 173,
-    'Teilungserklaerung': 174,
-    'WohnNutzflaechBerech': 175,
-}
 
 
 def get_category_name_for_fallback_prediction(category: Union[Category, str]) -> str:
@@ -172,80 +144,8 @@ class FallbackCategorizationModel:
         return virtual_doc
 
 
-class InvertImage:
-    """Invert (negate) images."""
-
-    def __call__(self, sample):
-        """Apply image invertion."""
-        image = PIL.ImageOps.invert(sample)
-        return image
-
-
-class ImagePreProcessing:
-    """Define the images pre processing transformations."""
-
-    def __init__(self, transforms: dict = {'target_size': (1000, 1000)}):
-        """Collect the transformations to be applied to the images."""
-        self.pre_processing_operations = []
-        transforms_keys = transforms.keys()
-
-        if 'invert' in transforms_keys and transforms['invert']:
-            self.pre_processing_operations.append(InvertImage())
-
-        if 'target_size' in transforms_keys:
-            self.pre_processing_operations.append(torchvision.transforms.Resize(transforms['target_size']))
-
-        if 'grayscale' in transforms_keys and transforms['grayscale']:
-            # num_output_channels = 3 because pre-trained models use 3 channels
-            self.pre_processing_operations.append(torchvision.transforms.Grayscale(num_output_channels=3))
-
-        self.pre_processing_operations.append(torchvision.transforms.ToTensor())
-
-    def get_transforms(self):
-        """Get the transformations to be applied to the images."""
-        transforms = torchvision.transforms.Compose(self.pre_processing_operations)
-        return transforms
-
-
-class ImageDataAugmentation:
-    """Defines the images data augmentation transformations."""
-
-    def __init__(self, transforms: dict = {'rotate': 5}, pre_processing_operations=None):
-        """
-        Collect the transformations to be applied to the images.
-
-        Order of operations is pre defined here.
-        """
-        self.pre_processing_operations = pre_processing_operations
-        if pre_processing_operations is None:
-            self.pre_processing_operations = []
-
-        # Removing to_tensor transformation coming from pre processing. It must be done at the end.
-        self.pre_processing_operations = [
-            p for p in self.pre_processing_operations if not isinstance(p, torchvision.transforms.transforms.ToTensor)
-        ]
-
-        if 'rotate' in transforms.keys():
-            self.pre_processing_operations.append(torchvision.transforms.RandomRotation(transforms['rotate']))
-
-        self.pre_processing_operations.append(torchvision.transforms.ToTensor())
-
-    def get_transforms(self):
-        """Get the transformations to be applied to the images."""
-        transforms = torchvision.transforms.Compose(self.pre_processing_operations)
-        return transforms
-
-
-class Module:
-    """The base module class."""
-
-    def __init__(self):
-        """Initialize module."""
-        raise NotImplementedError
-
-    def forward(self):
-        """Forward pass."""
-        raise NotImplementedError
+class ClassificationModule(nn.Module):
+    """Define general functionality to work with nn.Module classes used for classification."""
 
     def from_pretrained(self, load: Union[None, str, Dict] = None):
         """Load a module from a pre-trained state."""
@@ -261,127 +161,7 @@ class Module:
             raise ValueError(f'input to from_pretrained should be None, str or dict, got {type(load)}')
 
 
-class Classifier:
-    """The base Classifier that all classifiers inheret from."""
-
-    def __init__(self):
-        """Initialize."""
-        raise NotImplementedError
-
-    def forward(self):
-        """Forward pass."""
-        raise NotImplementedError
-
-
-class DocumentTextClassifier(nn.Module, Classifier):
-    """Classifies a document based on the text on each page only."""
-
-    def __init__(self, text_module: nn.Module, output_dim: int, dropout_rate: float = 0.0, **kwargs):
-        """Initialize the classifier."""
-        super().__init__()
-
-        assert isinstance(text_module, Module)
-
-        self.text_module = text_module
-        self.output_dim = output_dim
-        self.dropout_rate = dropout_rate
-
-        self.fc_out = nn.Linear(text_module.n_features, output_dim)
-        self.dropout = nn.Dropout(dropout_rate)
-
-    def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
-        """Forward pass."""
-        encoded_text = self.text_module(input)
-        text_features = encoded_text['features']
-        # text_features = [batch, seq len, n text features]
-        pooled_text_features = text_features.mean(dim=1)  # mean pool across sequence length
-        # pooled_text_features = [batch, n text features]
-        prediction = self.fc_out(self.dropout(pooled_text_features))
-        # prediction = [batch, output dim]
-        output = {'prediction': prediction}
-        if 'attention' in encoded_text:
-            output['attention'] = encoded_text['attention']
-        return output
-
-
-class DocumentImageClassifier(nn.Module, Classifier):
-    """Classifies a document based on the image of the pages only."""
-
-    def __init__(self, image_module: nn.Module, output_dim: int, dropout_rate: float = 0.0, **kwargs):
-        """Initialize the classifier."""
-        super().__init__()
-
-        assert isinstance(image_module, Module)
-
-        self.image_module = image_module
-        self.output_dim = output_dim
-        self.dropout_rate = dropout_rate
-
-        self.fc_out = nn.Linear(image_module.n_features, output_dim)
-        self.dropout = nn.Dropout(dropout_rate)
-
-    def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
-        """Forward pass."""
-        encoded_image = self.image_module(input)
-        image_features = encoded_image['features']
-        # image_features = [batch, n image features]
-        prediction = self.fc_out(self.dropout(image_features))
-        # prediction = [batch, output dim]
-        output = {'prediction': prediction}
-        return output
-
-
-class DocumentMultimodalClassifier(nn.Module, Classifier):
-    """
-    Model to classify document pages.
-
-    It can take in consideration the combination of the document visual and text features.
-    """
-
-    def __init__(
-        self,
-        image_module: nn.Module,
-        text_module: nn.Module,
-        multimodal_module: nn.Module,
-        output_dim: int,
-        dropout_rate: float = 0.0,
-        **kwargs,
-    ):
-        """Init and set parameters."""
-        super().__init__()
-
-        assert isinstance(text_module, Module)
-        assert isinstance(image_module, Module)
-        assert isinstance(multimodal_module, Module)
-
-        self.image_module = image_module  # input: images, output: image features
-        self.text_module = text_module  # input: text, output: text features
-        self.multimodal_module = multimodal_module  # input: (image feats, text feats), output: multimodal feats
-        self.output_dim = output_dim
-
-        self.fc_out = nn.Linear(multimodal_module.n_features, output_dim)
-        self.dropout = nn.Dropout(dropout_rate)
-
-    def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
-        """Define the computation performed at every call."""
-        encoded_image = self.image_module(input)
-        image_features = encoded_image['features']
-        # image_features = [batch, n image features]
-        encoded_text = self.text_module(input)
-        text_features = encoded_text['features']
-        # text_features = [batch, seq length, n text features]
-        pooled_text_features = text_features.mean(dim=1)  # mean pool across sequence length
-        # text_features = [batch, n text features]
-        multimodal_features = self.multimodal_module(image_features, pooled_text_features)['features']
-        # prediction = [batch, n multimodal features]
-        prediction = self.fc_out(self.dropout(multimodal_features))
-        output = {'prediction': prediction}
-        if 'attention' in encoded_text:
-            output['attention'] = encoded_text['attention']
-        return output
-
-
-class NBOW(nn.Module, Module):
+class NBOW(ClassificationModule):
     """NBOW classification model."""
 
     def __init__(
@@ -416,7 +196,7 @@ class NBOW(nn.Module, Module):
         return output
 
 
-class NBOWSelfAttention(nn.Module, Module):
+class NBOWSelfAttention(ClassificationModule):
     """NBOW classification model with multi-headed self attention."""
 
     def __init__(
@@ -461,7 +241,7 @@ class NBOWSelfAttention(nn.Module, Module):
         return output
 
 
-class LSTM(nn.Module, Module):
+class LSTM(ClassificationModule):
     """A long short-term memory (LSTM) model."""
 
     def __init__(
@@ -509,7 +289,7 @@ class LSTM(nn.Module, Module):
         return output
 
 
-class BERT(nn.Module, Module):
+class BERT(ClassificationModule):
     """Wraps around pre-trained BERT-type models from the HuggingFace library."""
 
     def __init__(
@@ -565,7 +345,44 @@ class BERT(nn.Module, Module):
         return output
 
 
-def get_text_module(config: dict) -> torch.nn.Module:
+class DocumentClassifier(nn.Module):
+    """Container for document classifiers."""
+
+    pass
+
+
+class DocumentTextClassifier(DocumentClassifier):
+    """Classifies a document based on the text on each page only."""
+
+    def __init__(self, text_module: nn.Module, output_dim: int, dropout_rate: float = 0.0, **kwargs):
+        """Initialize the classifier."""
+        super().__init__()
+
+        assert isinstance(text_module, ClassificationModule)
+
+        self.text_module = text_module
+        self.output_dim = output_dim
+        self.dropout_rate = dropout_rate
+
+        self.fc_out = nn.Linear(text_module.n_features, output_dim)
+        self.dropout = nn.Dropout(dropout_rate)
+
+    def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
+        """Forward pass."""
+        encoded_text = self.text_module(input)
+        text_features = encoded_text['features']
+        # text_features = [batch, seq len, n text features]
+        pooled_text_features = text_features.mean(dim=1)  # mean pool across sequence length
+        # pooled_text_features = [batch, n text features]
+        prediction = self.fc_out(self.dropout(pooled_text_features))
+        # prediction = [batch, output dim]
+        output = {'prediction': prediction}
+        if 'attention' in encoded_text:
+            output['attention'] = encoded_text['attention']
+        return output
+
+
+def get_text_module(config: dict) -> DocumentTextClassifier:
     """Get the text module accordingly with the specifications."""
     assert 'name' in config, 'text_module config needs a `name`'
     assert 'input_dim' in config, 'text_module config needs an `input_dim`'
@@ -587,7 +404,7 @@ def get_text_module(config: dict) -> torch.nn.Module:
     return text_module
 
 
-class VGG(nn.Module, Module):
+class VGG(ClassificationModule):
     """VGG classifier."""
 
     def __init__(
@@ -627,7 +444,7 @@ class VGG(nn.Module, Module):
         return output
 
 
-class EfficientNet(nn.Module, Module):
+class EfficientNet(ClassificationModule):
     """EfficientNet classifier."""
 
     def __init__(
@@ -673,7 +490,34 @@ class EfficientNet(nn.Module, Module):
         return output
 
 
-def get_image_module(config: dict) -> torch.nn.Module:
+class DocumentImageClassifier(DocumentClassifier):
+    """Classifies a document based on the image of the pages only."""
+
+    def __init__(self, image_module: nn.Module, output_dim: int, dropout_rate: float = 0.0, **kwargs):
+        """Initialize the classifier."""
+        super().__init__()
+
+        assert isinstance(image_module, ClassificationModule)
+
+        self.image_module = image_module
+        self.output_dim = output_dim
+        self.dropout_rate = dropout_rate
+
+        self.fc_out = nn.Linear(image_module.n_features, output_dim)
+        self.dropout = nn.Dropout(dropout_rate)
+
+    def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
+        """Forward pass."""
+        encoded_image = self.image_module(input)
+        image_features = encoded_image['features']
+        # image_features = [batch, n image features]
+        prediction = self.fc_out(self.dropout(image_features))
+        # prediction = [batch, output dim]
+        output = {'prediction': prediction}
+        return output
+
+
+def get_image_module(config: dict) -> DocumentImageClassifier:
     """Get the image module accordingly with the specifications."""
     module_name = config['name']
     if module_name.startswith('vgg'):
@@ -686,7 +530,7 @@ def get_image_module(config: dict) -> torch.nn.Module:
     return image_module
 
 
-class MultimodalConcatenate(nn.Module, Module):
+class MultimodalConcatenate(ClassificationModule):
     """Defines how the image and text features are combined."""
 
     def __init__(
@@ -739,7 +583,56 @@ class MultimodalConcatenate(nn.Module, Module):
         return output
 
 
-def get_multimodal_module(config: dict) -> torch.nn.Module:
+class DocumentMultimodalClassifier(DocumentClassifier):
+    """Model to classify document pages.
+
+    It can take in consideration the combination of the document visual and text features.
+    """
+
+    def __init__(
+        self,
+        image_module: nn.Module,
+        text_module: nn.Module,
+        multimodal_module: nn.Module,
+        output_dim: int,
+        dropout_rate: float = 0.0,
+        **kwargs,
+    ):
+        """Init and set parameters."""
+        super().__init__()
+
+        assert isinstance(text_module, ClassificationModule)
+        assert isinstance(image_module, ClassificationModule)
+        assert isinstance(multimodal_module, ClassificationModule)
+
+        self.image_module = image_module  # input: images, output: image features
+        self.text_module = text_module  # input: text, output: text features
+        self.multimodal_module = multimodal_module  # input: (image feats, text feats), output: multimodal feats
+        self.output_dim = output_dim
+
+        self.fc_out = nn.Linear(multimodal_module.n_features, output_dim)
+        self.dropout = nn.Dropout(dropout_rate)
+
+    def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
+        """Define the computation performed at every call."""
+        encoded_image = self.image_module(input)
+        image_features = encoded_image['features']
+        # image_features = [batch, n image features]
+        encoded_text = self.text_module(input)
+        text_features = encoded_text['features']
+        # text_features = [batch, seq length, n text features]
+        pooled_text_features = text_features.mean(dim=1)  # mean pool across sequence length
+        # text_features = [batch, n text features]
+        multimodal_features = self.multimodal_module(image_features, pooled_text_features)['features']
+        # prediction = [batch, n multimodal features]
+        prediction = self.fc_out(self.dropout(multimodal_features))
+        output = {'prediction': prediction}
+        if 'attention' in encoded_text:
+            output['attention'] = encoded_text['attention']
+        return output
+
+
+def get_multimodal_module(config: dict) -> DocumentMultimodalClassifier:
     """Get the multimodal module accordingly with the specifications."""
     module_name = config['name']
     if module_name == 'concatenate':
@@ -842,7 +735,7 @@ def get_document_classifier(
     return document_classifier
 
 
-def get_optimizer(classifier: Classifier, config: dict) -> torch.optim.Optimizer:
+def get_optimizer(classifier: DocumentClassifier, config: dict) -> torch.optim.Optimizer:
     """Get an optimizer for a given `classifier` given a config."""
     logger.info('getting optimizer')
 
@@ -1196,7 +1089,11 @@ class DocumentModel(FallbackCategorizationModel):
         return accuracy
 
     def _train(
-        self, examples: DataLoader, classifier: Classifier, loss_fn: torch.nn.Module, optimizer: torch.optim.Optimizer
+        self,
+        examples: DataLoader,
+        classifier: DocumentClassifier,
+        loss_fn: torch.nn.Module,
+        optimizer: torch.optim.Optimizer,
     ) -> Tuple[List[float], List[float]]:
         """Perform one epoch of training."""
         classifier.train()
@@ -1215,7 +1112,7 @@ class DocumentModel(FallbackCategorizationModel):
 
     @torch.no_grad()
     def _evaluate(
-        self, examples: DataLoader, classifier: Classifier, loss_fn: torch.nn.Module
+        self, examples: DataLoader, classifier: DocumentClassifier, loss_fn: torch.nn.Module
     ) -> Tuple[List[float], List[float]]:
         """Evaluate the model, i.e. get loss and accuracy but do not update the model parameters."""
         classifier.eval()
@@ -1234,7 +1131,7 @@ class DocumentModel(FallbackCategorizationModel):
         train_examples: DataLoader,
         valid_examples: DataLoader,
         test_examples: DataLoader,
-        classifier: Classifier,
+        classifier: DocumentClassifier,
         n_epochs: int = 25,
         patience: int = 3,
         optimizer: dict = {'name': 'Adam'},
@@ -1306,7 +1203,7 @@ class DocumentModel(FallbackCategorizationModel):
         return classifier, metrics
 
     @torch.no_grad()
-    def predict(self, examples: DataLoader, classifier: Classifier) -> Tuple[List[float], List[float]]:
+    def predict(self, examples: DataLoader, classifier: DocumentClassifier) -> Tuple[List[float], List[float]]:
         """Get predictions and true values of the input examples."""
         classifier.eval()
         predicted_classes = []
@@ -1323,7 +1220,9 @@ class DocumentModel(FallbackCategorizationModel):
         predicted_classes, actual_classes = self.predict(test_examples, classifier)
 
     @torch.no_grad()
-    def predict_documents(self, examples: DataLoader, classifier: Classifier) -> Tuple[List[float], List[float]]:
+    def predict_documents(
+        self, examples: DataLoader, classifier: DocumentClassifier
+    ) -> Tuple[List[float], List[float]]:
         """Get predictions and true values of the input examples."""
         classifier.eval()
         actual_classes = []
@@ -1337,7 +1236,9 @@ class DocumentModel(FallbackCategorizationModel):
             doc_ids.extend(batch['doc_id'].cpu().numpy())
         return raw_predictions, actual_classes, doc_ids
 
-    def evaluate_classifier_per_document(self, test_examples: List, classifier: Classifier, prediction_vocab: Vocab):
+    def evaluate_classifier_per_document(
+        self, test_examples: List, classifier: DocumentClassifier, prediction_vocab: Vocab
+    ):
         """Get the predicted and actual classes over the test set."""
         predictions, actual_classes, doc_ids = self.predict_documents(test_examples, classifier)
 
@@ -1468,18 +1369,11 @@ class DocumentModel(FallbackCategorizationModel):
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.classifier = self.classifier.to(device)
 
-        # ensure backwards compatibility of models saved with project name instead of id.
-        # Can be deleted when old models are adapted or not needed anymore
-        try:
-            # category_vocab saved with project id
-            temp_categories = self.category_vocab.get_tokens()
-            if 'NO_LABEL' in temp_categories:
-                temp_categories.remove('NO_LABEL')
-            _ = int(temp_categories[0])
-            categories = self.category_vocab.get_tokens()
-        except ValueError:
-            # category_vocab saved with project name. Conversion is necessary for app compatibility
-            categories = [str(NAMES_CONVERSION[name]) for name in self.category_vocab.get_tokens()]
+        temp_categories = self.category_vocab.get_tokens()
+        if 'NO_LABEL' in temp_categories:
+            temp_categories.remove('NO_LABEL')
+        _ = int(temp_categories[0])
+        categories = self.category_vocab.get_tokens()
 
         # split text into pages
         page_text = text.split('\f')
