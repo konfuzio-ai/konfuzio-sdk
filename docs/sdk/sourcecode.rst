@@ -19,6 +19,13 @@ Span
    :noindex:
 
 
+Bbox
+=====================
+
+.. autoclass:: Bbox
+   :members:
+   :noindex:
+
 Annotation
 =====================
 .. autoclass:: Annotation
@@ -40,11 +47,13 @@ Label
    :members:
    :noindex:
 
+
 Label Set
 =====================
 .. autoclass:: LabelSet
    :members:
    :noindex:
+
 
 Category
 =====================
@@ -52,11 +61,20 @@ Category
    :members:
    :noindex:
 
+
 Document
 =====================
 .. autoclass:: Document
    :members:
    :noindex:
+
+
+Page
+=====================
+.. autoclass:: Page
+   :members:
+   :noindex:
+
 
 Project
 =====================
