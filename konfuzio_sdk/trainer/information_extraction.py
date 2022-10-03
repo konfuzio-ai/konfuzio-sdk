@@ -67,6 +67,10 @@ def load_model(pickle_path: str):
             model = dill.load(f)
     except OSError:
         raise OSError(f"Pickle file {pickle_path} data is invalid.")
+    except AttributeError as err:
+        if "__forward_module__" in str(err) and '3.9' in sys.version:
+            raise AttributeError("Pickle saved with incompatible Python version.")
+        raise
 
     if not hasattr(model, "name") or model.name not in {"RFExtractionAI", "Trainer"}:
         raise TypeError("Saved model file needs to be a Konfuzio Trainer instance.")
