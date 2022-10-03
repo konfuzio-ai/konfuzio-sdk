@@ -2282,8 +2282,8 @@ class Project(Data):
         self.id_ = id_  # A Project with None ID is not retrieved from the HOST
         self._project_folder = project_folder
         self.categories: List[Category] = []
-        self.label_sets: List[LabelSet] = []
-        self.labels: List[Label] = []
+        self._label_sets: List[LabelSet] = []
+        self._labels: List[Label] = []
         self._documents: List[Document] = []
         self.meta_data = []
 
@@ -2393,7 +2393,7 @@ class Project(Data):
         if self.id_ and (not is_file(self.meta_file_path, raise_exception=False) or update):
             self.write_project_files()
         self.get_meta()
-        self.get_labels()
+        self.get_labels(reload=True)
         self.get_label_sets(reload=True)
         self.get_categories()
         self.init_or_update_document()
@@ -2405,8 +2405,8 @@ class Project(Data):
 
         :param label_set: Label Set to add in the Project
         """
-        if label_set not in self.label_sets:
-            self.label_sets.append(label_set)
+        if label_set not in self._label_sets:
+            self._label_sets.append(label_set)
         else:
             raise ValueError(f'In {self} the {label_set} is a duplicate and will not be added.')
 
@@ -2427,8 +2427,8 @@ class Project(Data):
 
         :param label: Label to add in the Project
         """
-        if label not in self.labels:
-            self.labels.append(label)
+        if label not in self._labels:
+            self._labels.append(label)
         else:
             raise ValueError(f'In {self} the {label} is a duplicate and will not be added.')
 
@@ -2464,11 +2464,11 @@ class Project(Data):
 
     def get_label_sets(self, reload=False):
         """Get LabelSets in the Project."""
-        if self.label_sets == [] or reload:
+        if not self._label_sets or reload:
             with open(self.label_sets_file_path, "r") as f:
                 label_sets_data = json.load(f)
 
-            self.label_sets = []  # clean up Label Sets to not create duplicates
+            self._label_sets = []  # clean up Label Sets to not create duplicates
             self.categories = []  # clean up Labels to not create duplicates
             for label_set_data in label_sets_data:
                 label_set = LabelSet(project=self, id_=label_set_data['id'], **label_set_data)
@@ -2478,19 +2478,34 @@ class Project(Data):
                     label_set.categories.append(category)  # Konfuzio Server mixes the concepts, we use two instances
                     # self.add_category(category)
 
-        return self.label_sets
+        return self._label_sets
 
-    def get_labels(self) -> Label:
+    @property
+    def label_sets(self):
+        """Return Project LabelSets."""
+        if not self._label_sets:
+            self.get_label_sets()
+        return self._label_sets
+
+    def get_labels(self, reload=False) -> Label:
         """Get ID and name of any Label in the Project."""
-        with open(self.labels_file_path, "r") as f:
-            labels_data = json.load(f)
-        self.labels = []  # clean up Labels to not create duplicates
-        for label_data in labels_data:
-            # Remove the project from label_data
-            label_data.pop("project", None)
-            Label(project=self, id_=label_data['id'], **label_data)
+        if not self._labels or reload:
+            with open(self.labels_file_path, "r") as f:
+                labels_data = json.load(f)
+            self._labels = []  # clean up Labels to not create duplicates
+            for label_data in labels_data:
+                # Remove the project from label_data
+                label_data.pop("project", None)
+                Label(project=self, id_=label_data['id'], **label_data)
 
-        return self.labels
+        return self._labels
+
+    @property
+    def labels(self):
+        """Return Project Labels."""
+        if not self._labels:
+            self.get_labels()
+        return self._labels
 
     def init_or_update_document(self):
         """Initialize Document to then decide about full, incremental or no update."""
