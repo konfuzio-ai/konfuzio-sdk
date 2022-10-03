@@ -332,24 +332,22 @@ class TestTokensMultipleCategories(unittest.TestCase):
             spans=[cls.span_2],
         )
 
-    @unittest.skip(reason='Legacy test.')
     def test_tokens_single_category(self):
         """Test tokens created for a single Category."""
-        tokens = self.label.tokens(categories=[self.category])
-        assert len(tokens) == 1
-        assert tokens[self.category.id_] == ['(?P<Label_3_W_5_3>all)']
+        regexes = self.label.regex(categories=[self.category])
+        assert len(regexes) == 1
+        assert '(?P<Label_3_W_5_3>all)' in regexes[self.category.id_][0]
 
-    @unittest.skip(reason='Legacy test.')
     def test_find_tokens(self):
         """Test to find tokens a Category."""
-        tokens = self.label.find_tokens(category=self.category)
+        regexes = self.label.find_regex(category=self.category)
         # clean evaluations for other tests (this test creates 16 evaluations)
         self.label._evaluations = {}
-        assert tokens == ['(?P<Label_3_W_5_3>all)']
+        assert '(?P<Label_3_W_5_3>all)' in regexes[0]
 
     def test_find_regex(self):
         """Test to find regex for a Category."""
-        regexes = self.label.find_regex(category=self.category)
+        regexes = self.label.regex(categories=[self.category])[self.category.id_]
         self.annotation._tokens = []  # reset after test
         # clean evaluations for other tests (this test creates 16 evaluations)
         self.label._evaluations = {}
@@ -374,33 +372,42 @@ class TestTokensMultipleCategories(unittest.TestCase):
         tokens_after = self.annotation_2.tokens()
         assert tokens_before == tokens_after
 
-    @unittest.skip(reason='Legacy test.')
+    @unittest.skip(reason='Category 2 assertion fails.')
     def test_tokens_multiple_categories(self):
         """Test tokens created based on multiple Categories."""
-        tokens = self.label.regex(categories=[self.category, self.category_2])
-        assert len(tokens) == 2
-        assert tokens[self.category.id_] == ['(?P<Label_3_W_5_3>all)']
-        assert tokens[self.category_2.id_] == ['(?P<Label_3_F_11_0>[A-ZÄÖÜ][a-zäöüß]+)']
+        regexes = self.label.regex(categories=[self.category, self.category_2])
+        assert len(regexes) == 2
+        assert '(?P<Label_3_W_5_3>all)' in regexes[self.category.id_][0]
+        assert '(?P<Label_3_F_11_0>[A-ZÄÖÜ][a-zäöüß]+)' in regexes[self.category_2.id_][0]  # ?
+        # regexes[self.category_2.id_][0] == '[ ]+(?:(?P<Label_3_W_5_3>all))\\,'
 
-    @unittest.skip(reason='Legacy test.')
+    @unittest.skip(reason='Category 2 assertion fails.')
     def test_tokens_one_category_after_another(self):
         """
         Test tokens created for one Category after having created tokens for another Category.
 
         This could be the situation when running in a loop for multiple Categories in a Project.
         """
-        tokens_1 = self.label.tokens(categories=[self.category])
-        tokens_2 = self.label.tokens(categories=[self.category_2])
+        tokens_1 = self.label.regex(categories=[self.category])
+        tokens_2 = self.label.regex(categories=[self.category_2])
         assert len(tokens_1) == 1
         assert len(tokens_2) == 1
-        assert tokens_1[self.category.id_] == ['(?P<Label_3_W_5_3>all)']
-        assert tokens_2[self.category_2.id_] == ['(?P<Label_3_F_11_0>[A-ZÄÖÜ][a-zäöüß]+)']
+        assert '(?P<Label_3_W_5_3>all)' in tokens_1[self.category.id_][0]
+        assert '(?P<Label_3_F_11_0>[A-ZÄÖÜ][a-zäöüß]+)' in tokens_2[self.category_2.id_][0]
 
-    @unittest.skip(reason='Legacy test.')
     def test_tokens_evaluations_single_category(self):
         """Test if the number of evaluations is the expected after getting the tokens for a single Category."""
-        _ = self.label.tokens(categories=[self.category])
-        assert len(self.label._evaluations) == 2
+        all_annotations = self.label.annotations(categories=[self.category])
+
+        proposals = []
+        for annotation in all_annotations:
+            annotation_proposals = annotation.tokens()
+            proposals += annotation_proposals
+
+        assert len(proposals) == 2
+        assert 'regex' in proposals[0]
+        assert 'annotation_recall' in proposals[0]
+        assert 'annotation_precision' in proposals[0]
 
     @unittest.skip(reason='Legacy test.')
     def test_tokens_evaluations_multiple_categories(self):
@@ -521,42 +528,6 @@ class TestRegexGenerator(unittest.TestCase):
         ]  # ?
 
         assert expected == regex
-
-    # @unittest.skip(reason='Optimization does not work accurately at the moment. See "expected" result.')
-    # def test_offset_to_regex(self):
-    #     """Test to calculate a regex."""
-    #     project = Project(id_=None)
-    #     category = Category(project=project)
-    #     label_set = LabelSet(id_=33, project=project, categories=[category])
-    #     label = Label(
-    #         id_=22, text='Label Name', text_clean='LabeName', project=project, label_sets=[label_set], threshold=0.5
-    #     )
-    #     document = Document(project=project, category=category, text="From 14.12.2021 to 1.1.2022 .", dataset_status=2)
-    #     span_1 = Span(start_offset=5, end_offset=15)
-    #     annotation_set_1 = AnnotationSet(id_=1, document=document, label_set=label_set)
-    #     _ = Annotation(
-    #         document=document,
-    #         is_correct=True,
-    #         annotation_set=annotation_set_1,
-    #         label=label,
-    #         label_set=label_set,
-    #         spans=[span_1],
-    #     )
-
-    #     # second Annotation Set
-    #     span_2 = Span(start_offset=19, end_offset=27)
-    #     annotation_set_2 = AnnotationSet(id_=2, document=document, label_set=label_set)
-    #     _ = Annotation(
-    #         document=document,
-    #         is_correct=True,
-    #         annotation_set=annotation_set_2,
-    #         label=label,
-    #         label_set=label_set,
-    #         spans=[span_2],
-    #     )
-    #     regex = document.regex(start_offset=4, end_offset=28, categories=[category], search=[1])
-    #     expected = [r'[ ]+(?:(?P<LabeName_N_None_5>\d\d\.\d\d\.\d\d\d\d)|(?P<LabeName_N_None_19>\d\.\d\.\d\d\d\d))[ ]+']
-    #     self.assertEqual(expected, regex)
 
     @unittest.skip('We do not support multiple Annotations in one offset for now')
     def test_regex_first_annotation_in_row(self):

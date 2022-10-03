@@ -609,48 +609,6 @@ class Label(Data):
         else:
             raise ValueError(f'In {self} the {label_set} is a duplicate and will not be added.')
 
-    # todo move to regex.py so it runs on a list of Annotations, run on Annotations
-    # def find_tokens(self, category: Category) -> List:  # RC
-    #     """Calculate the regex token of a label, which matches all offset_strings of all correct Annotations."""
-    #     warn('Warning: find_tokens at Label level is deprecated and will be removed.', DeprecationWarning, stacklevel=2)
-    #     for annotation in self.annotations(categories=[category]):
-    #         if category.id_ in self._evaluations.keys():
-    #             self._evaluations[category.id_] += annotation.tokens()
-    #         else:
-    #             self._evaluations[category.id_] = annotation.tokens()
-    #     try:
-    #         tokens = get_best_regex(self._evaluations.get(category.id_, []), log_stats=True)
-    #     except ValueError:
-    #         logger.error(f'We cannot find tokens for {self} with a f_score > 0.')
-    #         tokens = []
-    #     return tokens
-
-    # def tokens(self, categories: List[Category], update=False) -> dict:  # RC
-    #     """Calculate tokens to be used in the regex of the Label."""
-    #     warn('Warning: tokens at Label level is deprecated and will be removed.', DeprecationWarning, stacklevel=2)
-    #     for category in categories:
-    #         tokens_file_path = os.path.join(
-    #             self.project.regex_folder, f'{category.name}_{self.name_clean}_tokens.json5'
-    #         )
-
-    #         if not is_file(tokens_file_path, raise_exception=False) or update:
-    #             # self._evaluations = []
-    #             category_tokens = self.find_tokens(category=category)
-
-    #             if os.path.exists(self.project.regex_folder):
-    #                 with open(tokens_file_path, 'w') as f:
-    #                     json.dump(category_tokens, f, indent=2, sort_keys=True)
-    #         else:
-    #             logger.info(f'Load existing tokens for Label {self.name} in Category {category}.')
-    #             with open(tokens_file_path, 'r') as f:
-    #                 category_tokens = json.load(f)
-
-    #         self._tokens[category.id_] = category_tokens
-
-    #     categories_ids = [category.id_ for category in categories]
-
-    #     return {k: v for k, v in self._tokens.items() if k in categories_ids}
-
     def evaluate_regex(
         self, regex, category: Category, annotations: List['Annotation'] = None, filtered_group=None, regex_quality=0
     ):
@@ -747,10 +705,13 @@ class Label(Data):
         proposals = []
         for annotation in all_annotations:
             annotation_proposals = annotation.tokens()
-            proposals += annotation_proposals  # annotation.tokens()
-        # logger.error(proposals)
-        proposals = get_best_regex(proposals)
-        # logger.error(proposals)
+            proposals += annotation_proposals
+
+        try:
+            proposals = get_best_regex(proposals)
+        except ValueError:
+            logger.error(f'We cannot find regexes for {self} with a f_score > 0.')
+            proposals = []
 
         proposals = merge_regex(proposals)
 
@@ -820,11 +781,11 @@ class Label(Data):
 
     def regex(self, categories: List[Category], update=False) -> List:
         """Calculate regex to be used in the LabelExtractionModel."""
-        if not self._regex or update:
-            # if not is_file(self.regex_file_path, raise_exception=False) or update:
-            logger.info(f'Build regexes for Label {self.name}.')
-            regex = {}
-            for category in categories:
+        # if not is_file(self.regex_file_path, raise_exception=False) or update:
+        logger.info(f'Build regexes for Label {self.name}.')
+        regex = {}
+        for category in categories:
+            if category.id_ not in self._regex or update:
                 regex_category_file_path = os.path.join(
                     self.project.regex_folder, f'{category.name}_{self.name_clean}_tokens.json5'
                 )
@@ -838,8 +799,10 @@ class Label(Data):
                     with open(regex_category_file_path, 'r') as f:
                         category_regex = json.load(f)
                 regex[category.id_] = category_regex
+            else:
+                regex[category.id_] = self._regex[category.id_]
 
-            self._regex = regex
+        self._regex = regex
 
         logger.info(f'Regexes are ready for Label {self.name}.')
 
@@ -2203,44 +2166,6 @@ class Document(Data):
         pathlib.Path(self.document_folder).mkdir(parents=True, exist_ok=True)
         self._annotations = None
         self._annotation_sets = None
-
-    # def regex(self, start_offset: int, end_offset: int, search=None, max_findings_per_page=100) -> List[str]:  # RC
-    #     """Suggest a list of regex which can be used to get the Span of a document."""
-    #     warn('Warning: regex at Document level is deprecated and will be removed.', DeprecationWarning, stacklevel=2)
-    #     if search is None:
-    #         search = [1, 3, 5]  # [2, 5, 10]
-    #     if start_offset < 0:
-    #         raise IndexError(f'The start offset must be a positive number but is {start_offset}')
-    #     if end_offset > len(self.text):
-    #         raise IndexError(f'The end offset must not exceed the text length of the Document but is {end_offset}')
-    #     proposals = []
-    #     regex_to_remove_groupnames = re.compile('<.*?>')
-    #     annotations = self.annotations(start_offset=start_offset, end_offset=end_offset)  # RC get annotation directly?
-    #     assert len(annotations) == 1
-    #     for annotation in annotations:
-    #         for spacer in search:  # todo fix this search, so that we take regex token from other spans into account
-    #             before_regex = suggest_regex_for_string(
-    #                 self.text[start_offset - spacer**2 : start_offset], replace_characters=True
-    #             )
-    #             after_regex = suggest_regex_for_string(
-    #                 self.text[end_offset : end_offset + spacer], replace_characters=True
-    #             )
-    #             proposal = before_regex + annotation.regex() + after_regex
-
-    #             # check for duplicates
-    #             regex_found = [re.sub(regex_to_remove_groupnames, '', reg) for reg in proposals]
-    #             new_regex = re.sub(regex_to_remove_groupnames, '', proposal)
-    #             if new_regex not in regex_found:
-    #                 if max_findings_per_page:
-    #                     num_matches = len(re.findall(proposal, self.text))
-    #                     if num_matches / (self.text.count('\f') + 1) < max_findings_per_page:
-    #                         proposals.append(proposal)
-    #                     else:
-    #                         logger.info(f'Skip to evaluate regex {repr(proposal)} as it finds {num_matches} in {self}.')
-    #                 else:
-    #                     proposals.append(proposal)
-
-    #     return proposals
 
     def evaluate_regex(self, regex, label: Label, annotations: List['Annotation'] = None, filtered_group=None):
         """Evaluate a regex based on the Document."""
