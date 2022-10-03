@@ -733,7 +733,6 @@ class Label(Data):
                     proposal = before_regex + proposals + after_regex
 
                     # check for duplicates
-                    # regex_found = [re.sub(regex_to_remove_groupnames, '', reg) for reg in new_proposals]
                     new_regex = re.sub(regex_to_remove_groupnames, '', proposal)
                     if new_regex not in regex_found:
                         if max_findings_per_page:
