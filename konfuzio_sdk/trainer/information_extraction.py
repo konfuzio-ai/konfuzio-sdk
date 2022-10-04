@@ -2880,6 +2880,10 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         return self.evaluation
 
+    def evaluate_tokenizer(self) -> Evaluation:
+        """Evaluate the tokenizer."""
+        pass
+
     def data_quality(self, strict: bool = True) -> Evaluation:
         """Evaluate the full pipeline on the pipeline's Training Documents."""
         eval_list = []
