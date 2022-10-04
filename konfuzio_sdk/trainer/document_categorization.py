@@ -1,21 +1,16 @@
-"""Implements a DocumentModel."""
+"""Implements a CategorizationModel."""
 
-import collections
-import datetime
-import functools
 import os
-import random
 import re
 import math
 import logging
 import tempfile
 import uuid
 from copy import deepcopy
-from typing import Union, List, Dict, Tuple
+from typing import Union, List, Dict, Tuple, Optional
 from warnings import warn
 from io import BytesIO
 
-from PIL import Image as pil_image
 import timm
 import torchvision
 import torch
@@ -30,8 +25,20 @@ from torch.utils.data import DataLoader
 
 from konfuzio_sdk.data import Project, Document, Category
 from konfuzio_sdk.evaluate import CategorizationEvaluation
-from konfuzio_sdk.trainer.tokenization import Vocab, Tokenizer, BPETokenizer, get_tokenizer
+from konfuzio_sdk.trainer.data_loader import (
+    build_document_classifier_iterators,
+    build_document_template_classifier_iterators,
+)
+from konfuzio_sdk.trainer.tokenization import (
+    Vocab,
+    Tokenizer,
+    BPETokenizer,
+    get_tokenizer,
+    build_text_vocab,
+    build_category_vocab,
+)
 from konfuzio_sdk.trainer.image import ImagePreProcessing, ImageDataAugmentation
+from konfuzio_sdk.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +58,7 @@ def get_category_name_for_fallback_prediction(category: Union[Category, str]) ->
     return single_spaces
 
 
-def build_list_of_relevant_categories(training_categories: List[Category]) -> List[List[str]]:
+def build_list_of_relevant_categories(training_categories: List[Category]) -> List[str]:
     """Filter for category name variations which correspond to the given categories, starting from a predefined list."""
     relevant_categories = []
     for training_category in training_categories:
@@ -61,7 +68,7 @@ def build_list_of_relevant_categories(training_categories: List[Category]) -> Li
 
 
 class FallbackCategorizationModel:
-    """A model that predicts a category for a given document."""
+    """A non-trainable model that predicts a category for a given document based on predefined rules."""
 
     def __init__(self, project: Union[int, Project], *args, **kwargs):
         """Initialize FallbackCategorizationModel."""
@@ -147,6 +154,18 @@ class FallbackCategorizationModel:
 class ClassificationModule(nn.Module):
     """Define general functionality to work with nn.Module classes used for classification."""
 
+    def _valid(self) -> None:
+        """Validate architecture sizes."""
+        raise NotImplementedError
+
+    def _load_architecture(self) -> None:
+        """Load NN architecture."""
+        raise NotImplementedError
+
+    def _define_features(self) -> None:
+        """Define number of features as self.n_features: int."""
+        raise NotImplementedError
+
     def from_pretrained(self, load: Union[None, str, Dict] = None):
         """Load a module from a pre-trained state."""
         if load is None:
@@ -183,18 +202,6 @@ class TextClassificationModule(ClassificationModule):
         self._define_features()
 
         self.from_pretrained(load)
-
-    def _valid(self) -> None:
-        """Validate architecture sizes."""
-        raise NotImplementedError
-
-    def _load_architecture(self) -> None:
-        """Load NN architecture."""
-        raise NotImplementedError
-
-    def _define_features(self) -> None:
-        """Define number of features as self.n_features: int."""
-        raise NotImplementedError
 
     def _output(self, text: torch.Tensor, *args) -> List[torch.FloatTensor]:
         """Collect output of NN architecture."""
@@ -434,7 +441,7 @@ class DocumentTextClassifier(DocumentClassifier):
         return output
 
 
-def get_text_module(config: dict) -> DocumentTextClassifier:
+def get_text_module(config: dict) -> TextClassificationModule:
     """Get the text module accordingly with the specifications."""
     assert 'name' in config, 'text_module config needs a `name`'
     assert 'input_dim' in config, 'text_module config needs an `input_dim`'
@@ -626,7 +633,7 @@ class DocumentImageClassifier(DocumentClassifier):
         return output
 
 
-def get_image_module(config: dict) -> DocumentImageClassifier:
+def get_image_module(config: dict) -> ImageClassificationModule:
     """Get the image module accordingly with the specifications."""
     module_name = config['name']
     if module_name.startswith('vgg'):
@@ -639,20 +646,15 @@ def get_image_module(config: dict) -> DocumentImageClassifier:
     return image_module
 
 
-class MultimodalModule(ClassificationModule):
+class MultimodalClassificationModule(ClassificationModule):
     """Define general functionality to work with nn.Module classes used for image and text classification."""
-
-    pass
-
-
-class MultimodalConcatenate(MultimodalModule):
-    """Defines how the image and text features are combined."""
 
     def __init__(
         self,
         n_image_features: int,
         n_text_features: int,
         hid_dim: int = 256,
+        output_dim: Optional[int] = None,
         load: Union[None, str, dict] = None,
         **kwargs,
     ):
@@ -662,26 +664,78 @@ class MultimodalConcatenate(MultimodalModule):
         self.n_image_features = n_image_features
         self.n_text_features = n_text_features
         self.hid_dim = hid_dim
+        self.output_dim = output_dim
 
-        self.fc1 = nn.Linear(n_image_features + n_text_features, hid_dim)
-        self.fc2 = nn.Linear(hid_dim, hid_dim)
+        self._valid()
+        self._load_architecture()
+        self._define_features()
+
+        self.from_pretrained(load)
+
+    def _valid(self) -> None:
+        """Validate architecture sizes."""
+        raise NotImplementedError
+
+    def _load_architecture(self) -> None:
+        """Load NN architecture."""
+        raise NotImplementedError
+
+    def _define_features(self) -> None:
+        """Define number of features as self.n_features: int."""
+        raise NotImplementedError
+
+    def _output(self, image_features: torch.Tensor, text_features: torch.Tensor) -> torch.FloatTensor:
+        """Collect output of NN architecture."""
+        raise NotImplementedError
+
+    def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
+        """Define the computation performed at every call."""
+        image_features = input['image_features']
+        # image_features = [batch, n_image_features]
+        text_features = input['text_features']
+        # text_features = [batch, n_text_features]
+        x = self._output(image_features, text_features)
+        # x = [batch size, hid dim]
+        output = {'features': x}
+        return output
+
+
+class MultimodalConcatenate(MultimodalClassificationModule):
+    """Defines how the image and text features are combined."""
+
+    def __init__(
+        self,
+        n_image_features: int,
+        n_text_features: int,
+        hid_dim: int = 256,
+        output_dim: Optional[int] = None,
+        load: Union[None, str, dict] = None,
+        **kwargs,
+    ):
+        """Init and set parameters."""
+        super().__init__(n_image_features, n_text_features, hid_dim, output_dim, load)
+
+    def _valid(self) -> None:
+        """Validate nothing as this combination of text module and image module has no restrictions."""
+        pass
+
+    def _load_architecture(self) -> None:
+        """Load NN architecture."""
+        self.fc1 = nn.Linear(self.n_image_features + self.n_text_features, self.hid_dim)
+        self.fc2 = nn.Linear(self.hid_dim, self.hid_dim)
         # TODO: remove the below `if` check after the following are phased out:
         # classifier_modules.py
         # models_multimodal.py
         # multimodal_modules.py
-        if 'output_dim' in kwargs:
-            self.fc3 = nn.Linear(hid_dim, kwargs['output_dim'])
+        if self.output_dim is not None:
+            self.fc3 = nn.Linear(self.hid_dim, self.output_dim)
 
-        self.n_features = hid_dim
+    def _define_features(self) -> None:
+        """Define number of features as self.n_features: int."""
+        self.n_features = self.hid_dim
 
-        self.from_pretrained(load)
-
-    def forward(
-        self, image_features: torch.FloatTensor, text_features: torch.FloatTensor
-    ) -> Dict[str, torch.FloatTensor]:
-        """Define the computation performed at every call."""
-        # image_features = [batch, n_image_features]
-        # text_features = [batch, n_text_features]
+    def _output(self, image_features: torch.Tensor, text_features: torch.Tensor) -> torch.Tensor:
+        """Collect output of NN architecture."""
         concat_features = torch.cat((image_features, text_features), dim=1)
         # concat_features = [batch, n_image_features + n_text_features]
         x = F.relu(self.fc1(concat_features))
@@ -694,8 +748,7 @@ class MultimodalConcatenate(MultimodalModule):
         # multimodal_modules.py
         if hasattr(self, 'fc3'):
             x = F.relu(self.fc3(x))
-        output = {'features': x}
-        return output
+        return x
 
 
 class DocumentMultimodalClassifier(DocumentClassifier):
@@ -708,7 +761,7 @@ class DocumentMultimodalClassifier(DocumentClassifier):
         self,
         image_module: ImageClassificationModule,
         text_module: TextClassificationModule,
-        multimodal_module: MultimodalModule,
+        multimodal_module: MultimodalClassificationModule,
         output_dim: int,
         dropout_rate: float = 0.0,
         **kwargs,
@@ -718,7 +771,7 @@ class DocumentMultimodalClassifier(DocumentClassifier):
 
         assert isinstance(text_module, TextClassificationModule)
         assert isinstance(image_module, ImageClassificationModule)
-        assert isinstance(multimodal_module, MultimodalModule)
+        assert isinstance(multimodal_module, MultimodalClassificationModule)
 
         self.image_module = image_module  # input: images, output: image features
         self.text_module = text_module  # input: text, output: text features
@@ -738,7 +791,8 @@ class DocumentMultimodalClassifier(DocumentClassifier):
         # text_features = [batch, seq length, n text features]
         pooled_text_features = text_features.mean(dim=1)  # mean pool across sequence length
         # text_features = [batch, n text features]
-        multimodal_features = self.multimodal_module(image_features, pooled_text_features)['features']
+        input = {'image_features': image_features, 'text_features': pooled_text_features}
+        multimodal_features = self.multimodal_module(input)['features']
         # prediction = [batch, n multimodal features]
         prediction = self.fc_out(self.dropout(multimodal_features))
         output = {'prediction': prediction}
@@ -747,7 +801,7 @@ class DocumentMultimodalClassifier(DocumentClassifier):
         return output
 
 
-def get_multimodal_module(config: dict) -> DocumentMultimodalClassifier:
+def get_multimodal_module(config: dict) -> MultimodalClassificationModule:
     """Get the multimodal module accordingly with the specifications."""
     module_name = config['name']
     if module_name == 'concatenate':
@@ -758,29 +812,9 @@ def get_multimodal_module(config: dict) -> DocumentMultimodalClassifier:
     return multimodal_module
 
 
-def build_text_vocab(projects: List[Project], tokenizer: Tokenizer, min_freq: int = 1, max_size: int = None) -> Vocab:
-    """Build a vocabulary over the document text."""
-    logger.info('building text vocab')
-
-    counter = collections.Counter()
-
-    # loop over projects and documents updating counter using the tokens in each document
-    for project in projects:
-        for document in project.documents:
-            tokens = tokenizer.get_tokens(document.text)
-            counter.update(tokens)
-
-    assert len(counter) > 0, 'Did not find any tokens when building the text vocab!'
-
-    # create the vocab
-    text_vocab = Vocab(counter, min_freq, max_size)
-
-    return text_vocab
-
-
 def get_document_classifier(
     config: dict,
-) -> Union[DocumentTextClassifier, DocumentImageClassifier, DocumentMultimodalClassifier]:
+) -> DocumentClassifier:
     """
     Get a DocumentClassifier (and encapsulated module(s)) from a config dict.
 
@@ -842,7 +876,7 @@ def get_document_classifier(
         assert text_module is None
         document_classifier = DocumentImageClassifier(image_module, **config)
     else:
-        raise ValueError("You did not pass an image or text module to your DocumentModel's config!")
+        raise ValueError("You did not pass an image or text module to your CategorizationModel's config!")
 
     # need to ensure classifier starts in evaluation mode
     document_classifier.eval()
@@ -871,179 +905,8 @@ def get_optimizer(classifier: DocumentClassifier, config: dict) -> torch.optim.O
         return optimizer
 
 
-def get_document_classifier_data(
-    documents: List[Document],
-    tokenizer: Tokenizer,
-    text_vocab: Vocab,
-    category_vocab: Vocab,
-    use_image: bool,
-    use_text: bool,
-    shuffle: bool,
-    split_ratio: float,
-    max_len: int,
-):
-    """
-    Prepare the data necessary for the document classifier.
-
-    For each document we split into pages and from each page we take:
-      - the path to an image of the page
-      - the tokenized and numericalized text on the page
-      - the label (category) of the page
-      - the id of the document
-      - the page number
-    """
-    assert use_image or use_text, 'One of either `use_image` or `use_text` needs to be `True`!'
-
-    data = []
-
-    for document in documents:
-        project_id = str(document.project.id)
-        doc_info = get_document_classifier_examples(
-            document, project_id, tokenizer, text_vocab, category_vocab, max_len, use_image, use_text
-        )
-        data.extend(zip(*doc_info))
-
-    # shuffles the data
-    if shuffle:
-        random.shuffle(data)
-
-    # creates a split if necessary
-    n_split_examples = int(len(data) * split_ratio)
-    # if we wanted at least some examples in the split, ensure we always have at least 1
-    if split_ratio > 0.0:
-        n_split_examples = max(1, n_split_examples)
-    split_data = data[:n_split_examples]
-    _data = data[n_split_examples:]
-
-    return _data, split_data
-
-
-def build_document_classifier_iterator(
-    data: List,
-    transforms: torchvision.transforms,
-    text_vocab: Vocab,
-    use_image: bool,
-    use_text: bool,
-    shuffle: bool,
-    batch_size: int,
-    device: torch.device = 'cpu',
-) -> Tuple[DataLoader, DataLoader, DataLoader]:
-    """Build the iterators for the data list."""
-    logger.debug("build_document_classifier_iterator")
-
-    def collate(batch, transforms) -> Dict[str, torch.LongTensor]:
-        image_path, text, label, doc_id, page_num = zip(*batch)
-        if use_image:
-            # if we are using images, open as PIL images, apply transforms and place on GPU
-            image = [Image.open(path) for path in image_path]
-            image = torch.stack([transforms(img) for img in image], dim=0).to(device)
-            image = image.to(device)
-        else:
-            # if not using images then just set to None
-            image = None
-        if use_text:
-            # if we are using text, batch and pad the already tokenized and numericalized text and place on GPU
-            text = torch.nn.utils.rnn.pad_sequence(text, batch_first=True, padding_value=text_vocab.pad_idx)
-            text = text.to(device)
-        else:
-            text = None
-        # also place label on GPU
-        # doc_id and page_num do not need to be placed on GPU
-        label = torch.cat(label).to(device)
-        doc_id = torch.cat(doc_id)
-        page_num = torch.cat(page_num)
-        # pack everything up in a batch dictionary
-        batch = {'image': image, 'text': text, 'label': label, 'doc_id': doc_id, 'page_num': page_num}
-        return batch
-
-    # get the collate functions with the appropriate transforms
-    data_collate = functools.partial(collate, transforms=transforms)
-
-    # build the iterators
-    iterator = DataLoader(data, batch_size=batch_size, shuffle=shuffle, collate_fn=data_collate)
-
-    return iterator
-
-
-def build_document_classifier_iterators(
-    train_documents: List[Document],
-    test_documents: List[Document],
-    tokenizer: Tokenizer,
-    eval_transforms: torchvision.transforms,
-    train_transforms: torchvision.transforms,
-    text_vocab: Vocab,
-    category_vocab: Vocab,
-    use_image: bool,
-    use_text: bool,
-    valid_ratio: float = 0.2,
-    batch_size: int = 16,
-    max_len: int = 50,
-    device: torch.device = 'cpu',
-    **kwargs,
-) -> Tuple[DataLoader, DataLoader, DataLoader]:
-    """Build the iterators for the document classifier."""
-    assert use_image or use_text, 'One of either `use_image` or `use_text` needs to be `True`!'
-
-    logger.info('building document classifier iterators')
-
-    # get data (list of examples) from Documents
-    train_data, valid_data = get_document_classifier_data(
-        train_documents,
-        tokenizer,
-        text_vocab,
-        category_vocab,
-        use_image,
-        use_text,
-        shuffle=True,
-        split_ratio=valid_ratio,
-        max_len=max_len,
-    )
-
-    test_data, _ = get_document_classifier_data(
-        test_documents,
-        tokenizer,
-        text_vocab,
-        category_vocab,
-        use_image,
-        use_text,
-        shuffle=False,
-        split_ratio=0,
-        max_len=max_len,
-    )
-
-    logger.info(f'{len(train_data)} training examples')
-    logger.info(f'{len(valid_data)} validation examples')
-    logger.info(f'{len(test_data)} testing examples')
-
-    train_iterator = build_document_classifier_iterator(
-        train_data,
-        train_transforms,
-        text_vocab,
-        use_image,
-        use_text,
-        shuffle=True,
-        batch_size=batch_size,
-        device=device,
-    )
-    valid_iterator = build_document_classifier_iterator(
-        valid_data,
-        eval_transforms,
-        text_vocab,
-        use_image,
-        use_text,
-        shuffle=False,
-        batch_size=batch_size,
-        device=device,
-    )
-    test_iterator = build_document_classifier_iterator(
-        test_data, eval_transforms, text_vocab, use_image, use_text, shuffle=False, batch_size=batch_size, device=device
-    )
-
-    return train_iterator, valid_iterator, test_iterator
-
-
-class DocumentModel(FallbackCategorizationModel):
-    """A model that predicts a category for a given document."""
+class CategorizationModel(FallbackCategorizationModel):
+    """A trainable model that predicts a category for a given document."""
 
     def __init__(
         self,
@@ -1060,7 +923,7 @@ class DocumentModel(FallbackCategorizationModel):
         category_vocab: Union[None, Vocab] = None,
         use_cuda: bool = True,
     ):
-        """Initialize a DocumentModel."""
+        """Initialize a CategorizationModel."""
         if isinstance(project, int):
             self.project = Project(id_=project)
         elif isinstance(project, Project):
@@ -1155,7 +1018,7 @@ class DocumentModel(FallbackCategorizationModel):
 
         self.device = torch.device('cuda' if (torch.cuda.is_available() and use_cuda) else 'cpu')
 
-    def save(self, path: Union[None, str] = None, model_type: str = 'DocumentModel') -> str:
+    def save(self, path: Union[None, str] = None, model_type: str = 'CategorizationModel') -> str:
         """
         Save only the necessary parts of the model for extraction/inference.
 
@@ -1432,7 +1295,7 @@ class DocumentModel(FallbackCategorizationModel):
         return metrics
 
     def fit(self, document_training_config: dict = {}, **kwargs) -> None:
-        """Fit the DocumentModel classifier."""
+        """Fit the CategorizationModel classifier."""
         self.build(
             document_training_config={
                 'valid_ratio': 0.2,
@@ -1598,7 +1461,7 @@ class DocumentModel(FallbackCategorizationModel):
             virtual_doc.category = None
 
         page_path = document.pages()[0].image_path
-        img_data = pil_image.open(page_path)
+        img_data = Image.open(page_path)
         buf = BytesIO()
         img_data.save(buf, format='PNG')
         docs_data_images = [buf]
@@ -1608,204 +1471,15 @@ class DocumentModel(FallbackCategorizationModel):
         (predicted_category, predicted_confidence), _ = self.extract(page_images=docs_data_images, text=docs_text)
 
         if predicted_category == -1:
-            raise ValueError(f'{self} could not find the category of {document} by using the trained DocumentModel.')
+            raise ValueError(
+                f'{self} could not find the category of {document} by using the trained CategorizationModel.'
+            )
 
         virtual_doc.category = self.project.get_category_by_id(predicted_category)
         return virtual_doc
 
 
-def get_document_classifier_examples(
-    document: Document,
-    project_id: str,
-    tokenizer: Tokenizer,
-    text_vocab: Vocab,
-    category_vocab: Vocab,
-    max_len: int,
-    use_image: bool,
-    use_text: bool,
-):
-    """Get the per document examples for the document classifier."""
-    document_image_paths = []
-    document_tokens = []
-    document_labels = []
-    document_ids = []
-    document_page_numbers = []
-
-    # validate the data for the document
-    if use_image:
-        document.get_images()  # gets the images if they do not exist
-        image_paths = [page.image_path for page in document.pages()]  # gets the paths to the images
-        assert len(image_paths) > 0, f'No images found for document {document.id}'
-    if use_text:
-        page_texts = document.text.split('\f')
-        assert len(page_texts) > 0, f'No text found for document {document.id}'
-
-    # if only using image OR text then make the one not used a list of None
-    if use_image and not use_text:
-        page_texts = [None] * len(image_paths)
-    elif use_text and not use_image:
-        image_paths = [None] * len(page_texts)
-
-    # check we have the same number of images and text pages
-    # only useful when we have both an image and a text module
-    assert len(image_paths) == len(
-        page_texts
-    ), f'No. of images ({len(image_paths)}) != No. of pages {len(page_texts)} for document {document.id}'
-
-    for page_number, (image_path, page_text) in enumerate(zip(image_paths, page_texts)):
-        if use_image:
-            # if using an image module, store the path to the image
-            document_image_paths.append(image_path)
-        else:
-            # if not using image module then don't need the image paths
-            # so we just have a list of None to keep the lists the same length
-            document_image_paths.append(None)
-        if use_text:
-            # if using a text module, tokenize the page, trim to max length and then numericalize
-            page_tokens = tokenizer.get_tokens(page_text)[:max_len]
-            document_tokens.append(torch.LongTensor([text_vocab.stoi(t) for t in page_tokens]))
-        else:
-            # if not using text module then don't need the tokens
-            # so we just have a list of None to keep the lists the same length
-            document_tokens.append(None)
-        # append the label (category), the document's id number and the page number of each page
-        document_labels.append(torch.LongTensor([category_vocab.stoi(project_id)]))
-        document_ids.append(torch.LongTensor([document.id_]))
-        document_page_numbers.append(torch.LongTensor([page_number]))
-
-    return document_image_paths, document_tokens, document_labels, document_ids, document_page_numbers
-
-
-def get_document_template_classifier_data(
-    documents: List[Document],
-    tokenizer: Tokenizer,
-    text_vocab: Vocab,
-    category_vocab: Vocab,
-    use_image: bool,
-    use_text: bool,
-    shuffle: bool,
-    split_ratio: float,
-    max_len: int,
-):
-    """
-    Prepare the data necessary for the document classifier.
-
-    For each document we split into pages and from each page we take:
-      - the path to an image of the page
-      - the tokenized and numericalized text on the page
-      - the label (category) of the page
-      - the id of the document
-      - the page number
-    """
-    assert use_image or use_text, 'One of either `use_image` or `use_text` needs to be `True`!'
-
-    data = []
-
-    for document in documents:
-        # get document classification (defined by the category template)
-        meta_data = document.project.meta_data
-        template_id = [m['category_template'] for m in meta_data if m['id'] == document.id_]
-        assert len(template_id) == 1
-        template_id = str(template_id[0]) if template_id[0] else 'NO_LABEL'
-
-        doc_info = get_document_classifier_examples(
-            document, template_id, tokenizer, text_vocab, category_vocab, max_len, use_image, use_text
-        )
-        data.extend(zip(*doc_info))
-
-    # shuffles the data
-    if shuffle:
-        random.shuffle(data)
-
-    # creates a split if necessary
-    n_split_examples = int(len(data) * split_ratio)
-    # if we wanted at least some examples in the split, ensure we always have at least 1
-    if split_ratio > 0.0:
-        n_split_examples = max(1, n_split_examples)
-    split_data = data[:n_split_examples]
-    _data = data[n_split_examples:]
-
-    return _data, split_data
-
-
-def build_document_template_classifier_iterators(
-    train_documents: List[Document],
-    test_documents: List[Document],
-    tokenizer: Tokenizer,
-    eval_transforms: torchvision.transforms,
-    train_transforms: torchvision.transforms,
-    text_vocab: Vocab,
-    category_vocab: Vocab,
-    use_image: bool,
-    use_text: bool,
-    valid_ratio: float = 0.2,
-    batch_size: int = 16,
-    max_len: int = 50,
-    device: torch.device = 'cpu',
-    **kwargs,
-) -> Tuple[DataLoader, DataLoader, DataLoader]:
-    """Build the iterators for the document classifier."""
-    assert use_image or use_text, 'One of either `use_image` or `use_text` needs to be `True`!'
-
-    logger.info('building document classifier iterators')
-
-    # get data (list of examples) from Documents
-    train_data, valid_data = get_document_template_classifier_data(
-        train_documents,
-        tokenizer,
-        text_vocab,
-        category_vocab,
-        use_image,
-        use_text,
-        shuffle=True,
-        split_ratio=valid_ratio,
-        max_len=max_len,
-    )
-
-    test_data, _ = get_document_template_classifier_data(
-        test_documents,
-        tokenizer,
-        text_vocab,
-        category_vocab,
-        use_image,
-        use_text,
-        shuffle=False,
-        split_ratio=0,
-        max_len=max_len,
-    )
-
-    logger.info(f'{len(train_data)} training examples')
-    logger.info(f'{len(valid_data)} validation examples')
-    logger.info(f'{len(test_data)} testing examples')
-
-    train_iterator = build_document_classifier_iterator(
-        train_data,
-        train_transforms,
-        text_vocab,
-        use_image,
-        use_text,
-        shuffle=True,
-        batch_size=batch_size,
-        device=device,
-    )
-    valid_iterator = build_document_classifier_iterator(
-        valid_data,
-        eval_transforms,
-        text_vocab,
-        use_image,
-        use_text,
-        shuffle=False,
-        batch_size=batch_size,
-        device=device,
-    )
-    test_iterator = build_document_classifier_iterator(
-        test_data, eval_transforms, text_vocab, use_image, use_text, shuffle=False, batch_size=batch_size, device=device
-    )
-
-    return train_iterator, valid_iterator, test_iterator
-
-
-class CustomDocumentModel(DocumentModel):
+class CustomCategorizationModel(CategorizationModel):
     """A model that predicts a category for a given document trained with the category template."""
 
     def build(self, document_training_config: dict = {}) -> Dict[str, List[float]]:
@@ -1858,162 +1532,87 @@ class CustomDocumentModel(DocumentModel):
         return metrics
 
 
-def build_category_vocab(projects: List[Project]) -> Vocab:
-    """Build a vocabulary over the categories of each document."""
-    logger.info('building category vocab')
-
-    counter = collections.Counter()
-
-    # loop over projects, getting the id and name for each one
-    counter.update([str(project.id) for project in projects])
-
-    assert len(counter) > 0, 'Did not find any categories when building the category vocab!'
-
-    # create the vocab
-    category_vocab = Vocab(counter, min_freq=1, max_size=None, unk_token=None, pad_token=None)
-
-    return category_vocab
-
-
-def build_template_category_vocab(projects: List[Project]) -> Vocab:
-    """Build a vocabulary over the categories of each annotation."""
-    logger.info('building category vocab')
-
-    counter = collections.Counter()
-
-    # loop over projects, getting the id and name for each one
-    for project in projects:
-        prj_meta = project.meta_data
-        temp = [
-            str(met['category_template']) if met['category_template'] is not None else 'NO_LABEL' for met in prj_meta
-        ]
-        counter.update(temp)
-
-    template_vocab = Vocab(
-        counter, min_freq=1, max_size=None, unk_token=None, pad_token=None, special_tokens=['NO_LABEL']
-    )
-
-    assert len(template_vocab) > 0, 'Did not find any categories when building the category vocab!'
-
-    # NO_LABEL should be label zero so we can avoid calculating accuracy over it later
-    assert template_vocab.stoi('NO_LABEL') == 0
-
-    return template_vocab
-
-
-def create_transformations_dict(possible_transforms, args=None):
-    """Create a dictionary with the transformations accordingly with input args."""
-    input_dict = {}
-    if args is None:
-        args = {'invert': False, 'target_size': (1000, 1000), 'grayscale': True, 'rotate': 5}
-
-    if isinstance(args, dict):
-        for transform in possible_transforms:
-            if args[transform] is not None:
-                input_dict[transform] = args[transform]
-
-    else:
-        for transform in possible_transforms:
-            if args.__dict__[transform] is not None:
-                input_dict[transform] = args.__dict__[transform]
-
-    if len(input_dict.keys()) == 0:
-        return None
-
-    return input_dict
-
-
-def get_timestamp(format='%Y-%m-%d-%H-%M-%S') -> str:
-    """
-    Return formatted timestamp.
-
-    :param format: Format of the timestamp (e.g. year-month-day-hour-min-sec)
-    :return: Timestamp
-    """
-    now = datetime.datetime.now()
-    timestamp = now.strftime(format)
-    return timestamp
-
-
-def build_category_document_model(
-    project,
-    train_docs,
-    test_docs,
-    category_model=None,
-    document_classifier_config: Union[None, dict] = None,
-    document_training_config: Union[None, dict] = None,
-    img_args: Union[None, dict] = None,
-    tokenizer_name: Union[None, str] = 'phrasematcher',
-    output_dir=None,
-    return_model=False,
-    *args,
-    **kwargs,
-):
-    """Build the document category classification model."""
-    from konfuzio_sdk.trainer.tokenization import get_tokenizer
-
-    projects = [project]
-    category_model = category_model if category_model else CustomDocumentModel
-
-    # Image transformations available
-    possible_transformations_pre_processing = ['invert', 'target_size', 'grayscale']
-    possible_transformations_data_augmentation = ['rotate']
-
-    if document_classifier_config is None:
-        # default model combines image and text features
-        document_classifier_config = {
-            'image_module': {'name': 'efficientnet_b0', 'pretrained': True, 'freeze': True},
-            'text_module': {'name': 'nbowselfattention', 'emb_dim': 104},
-            'multimodal_module': {'name': 'concatenate', 'hid_dim': 250},
-        }
-
-    pre_processing_transforms = None
-    data_augmentation_transforms = None
-
-    if 'image_module' in document_classifier_config.keys():
-        # we only need the args for the image transformations if we are using image features
-        if img_args is None:
-            img_args = {'invert': False, 'target_size': (1000, 1000), 'grayscale': True, 'rotate': 5}
-
-        pre_processing_transforms = create_transformations_dict(possible_transformations_pre_processing, img_args)
-        data_augmentation_transforms = create_transformations_dict(possible_transformations_data_augmentation, img_args)
-
-    tokenizer = None
-
-    if 'text_module' in document_classifier_config.keys():
-        # we only need the tokenizer if we are using text features
-        tokenizer = get_tokenizer(tokenizer_name, project=project)
-
-    category_vocab = build_template_category_vocab(projects)
-
-    model = category_model(
-        projects,
-        tokenizer=tokenizer,
-        image_preprocessing=pre_processing_transforms,
-        image_augmentation=data_augmentation_transforms,
-        document_classifier_config=document_classifier_config,
-        category_vocab=category_vocab,
-        *args,
-        **kwargs,
-    )
-    model.documents = train_docs
-    model.test_documents = test_docs
-
-    if document_training_config is None:
-        document_training_config = {
-            'valid_ratio': 0.2,
-            'batch_size': 6,
-            'max_len': None,
-            'n_epochs': 100,
-            'patience': 3,
-            'optimizer': {'name': 'Adam'},
-        }
-
-    model.build(document_training_config=document_training_config)
-
-    model_type = 'DocumentModel'
-    path = os.path.join(output_dir, f'{get_timestamp()}_{model_type}.pt')
-    model_path = model.save(path=path)
-    if return_model:
-        return model_path, model
-    return model_path
+#
+# def build_category_document_model(
+#     project,
+#     train_docs,
+#     test_docs,
+#     category_model=None,
+#     document_classifier_config: Union[None, dict] = None,
+#     document_training_config: Union[None, dict] = None,
+#     img_args: Union[None, dict] = None,
+#     tokenizer_name: Union[None, str] = 'phrasematcher',
+#     output_dir=None,
+#     return_model=False,
+#     *args,
+#     **kwargs,
+# ):
+#     """Build the document category classification model."""
+#     from konfuzio_sdk.trainer.tokenization import get_tokenizer
+#
+#     projects = [project]
+#     category_model = category_model if category_model else CustomCategorizationModel
+#
+#     # Image transformations available
+#     possible_transformations_pre_processing = ['invert', 'target_size', 'grayscale']
+#     possible_transformations_data_augmentation = ['rotate']
+#
+#     if document_classifier_config is None:
+#         # default model combines image and text features
+#         document_classifier_config = {
+#             'image_module': {'name': 'efficientnet_b0', 'pretrained': True, 'freeze': True},
+#             'text_module': {'name': 'nbowselfattention', 'emb_dim': 104},
+#             'multimodal_module': {'name': 'concatenate', 'hid_dim': 250},
+#         }
+#
+#     pre_processing_transforms = None
+#     data_augmentation_transforms = None
+#
+#     if 'image_module' in document_classifier_config.keys():
+#         # we only need the args for the image transformations if we are using image features
+#         if img_args is None:
+#             img_args = {'invert': False, 'target_size': (1000, 1000), 'grayscale': True, 'rotate': 5}
+#
+#         pre_processing_transforms = create_transformations_dict(possible_transformations_pre_processing, img_args)
+#         data_augmentation_transforms = create_transformations_dict(
+#         possible_transformations_data_augmentation, img_args)
+#
+#     tokenizer = None
+#
+#     if 'text_module' in document_classifier_config.keys():
+#         # we only need the tokenizer if we are using text features
+#         tokenizer = get_tokenizer(tokenizer_name, project=project)
+#
+#     category_vocab = build_template_category_vocab(projects)
+#
+#     model = category_model(
+#         projects,
+#         tokenizer=tokenizer,
+#         image_preprocessing=pre_processing_transforms,
+#         image_augmentation=data_augmentation_transforms,
+#         document_classifier_config=document_classifier_config,
+#         category_vocab=category_vocab,
+#         *args,
+#         **kwargs,
+#     )
+#     model.documents = train_docs
+#     model.test_documents = test_docs
+#
+#     if document_training_config is None:
+#         document_training_config = {
+#             'valid_ratio': 0.2,
+#             'batch_size': 6,
+#             'max_len': None,
+#             'n_epochs': 100,
+#             'patience': 3,
+#             'optimizer': {'name': 'Adam'},
+#         }
+#
+#     model.build(document_training_config=document_training_config)
+#
+#     model_type = 'CategorizationModel'
+#     path = os.path.join(output_dir, f'{get_timestamp()}_{model_type}.pt')
+#     model_path = model.save(path=path)
+#     if return_model:
+#         return model_path, model
+#     return model_path

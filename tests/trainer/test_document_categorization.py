@@ -7,24 +7,23 @@ import pytest
 from copy import deepcopy
 
 from konfuzio_sdk.data import Project, Document
-from konfuzio_sdk.trainer.tokenization import get_tokenizer
+from konfuzio_sdk.trainer.image import create_transformations_dict
+from konfuzio_sdk.trainer.tokenization import get_tokenizer, build_template_category_vocab
 
-# from konfuzio_sdk.api import upload_ai_model
+from konfuzio_sdk.trainer.document_categorization import (
+    FallbackCategorizationModel,
+    get_category_name_for_fallback_prediction,
+    build_list_of_relevant_categories,
+    CustomCategorizationModel,
+    get_timestamp,
+)
+
 from tests.variables import (
     OFFLINE_PROJECT,
     TEST_DOCUMENT_ID,
     TEST_PAYSLIPS_CATEGORY_ID,
     TEST_CATEGORIZATION_DOCUMENT_ID,
     TEST_RECEIPTS_CATEGORY_ID,
-)
-from konfuzio_sdk.trainer.document_categorization import (
-    FallbackCategorizationModel,
-    get_category_name_for_fallback_prediction,
-    build_list_of_relevant_categories,
-    CustomDocumentModel,
-    create_transformations_dict,
-    build_template_category_vocab,
-    get_timestamp,
 )
 
 logger = logging.getLogger(__name__)
@@ -179,14 +178,14 @@ def test_build_list_of_relevant_categories():
 
 
 class TestDocumentModel(unittest.TestCase):
-    """Test trainable DocumentModel."""
+    """Test trainable CategorizationModel."""
 
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the Data and Categorization Pipeline."""
         cls.training_prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
 
-        cls.categorization_pipeline = CustomDocumentModel(
+        cls.categorization_pipeline = CustomCategorizationModel(
             cls.training_prj,
             tokenizer=get_tokenizer('phrasematcher', project=cls.training_prj),
             image_preprocessing=create_transformations_dict(
@@ -248,7 +247,7 @@ class TestDocumentModel(unittest.TestCase):
 
     @pytest.mark.xfail(reason="100% score on test categorization project to be achieved.")
     def test_5_evaluate(self) -> None:
-        """Evaluate DocumentModel."""
+        """Evaluate CategorizationModel."""
         categorization_evaluation = self.categorization_pipeline.evaluate()
         assert categorization_evaluation.f1(self.categorization_pipeline.categories[0]) == 1.0
         assert categorization_evaluation.f1(self.categorization_pipeline.categories[1]) == 1.0

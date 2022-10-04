@@ -65,3 +65,25 @@ class ImageDataAugmentation:
         """Get the transformations to be applied to the images."""
         transforms = torchvision.transforms.Compose(self.pre_processing_operations)
         return transforms
+
+
+def create_transformations_dict(possible_transforms, args=None):
+    """Create a dictionary with the image transformations accordingly with input args."""
+    input_dict = {}
+    if args is None:
+        args = {'invert': False, 'target_size': (1000, 1000), 'grayscale': True, 'rotate': 5}
+
+    if isinstance(args, dict):
+        for transform in possible_transforms:
+            if args[transform] is not None:
+                input_dict[transform] = args[transform]
+
+    else:
+        for transform in possible_transforms:
+            if args.__dict__[transform] is not None:
+                input_dict[transform] = args.__dict__[transform]
+
+    if len(input_dict.keys()) == 0:
+        return None
+
+    return input_dict

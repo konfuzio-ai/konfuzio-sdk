@@ -199,6 +199,69 @@ def build_vocab_from_iterator(iterator: List[Union[List[str], str]], tokenizer: 
     return vocab
 
 
+def build_text_vocab(projects: List[Project], tokenizer: Tokenizer, min_freq: int = 1, max_size: int = None) -> Vocab:
+    """Build a vocabulary over the document text."""
+    logger.info('building text vocab')
+
+    counter = collections.Counter()
+
+    # loop over projects and documents updating counter using the tokens in each document
+    for project in projects:
+        for document in project.documents:
+            tokens = tokenizer.get_tokens(document.text)
+            counter.update(tokens)
+
+    assert len(counter) > 0, 'Did not find any tokens when building the text vocab!'
+
+    # create the vocab
+    text_vocab = Vocab(counter, min_freq, max_size)
+
+    return text_vocab
+
+
+def build_category_vocab(projects: List[Project]) -> Vocab:
+    """Build a vocabulary over the categories of each document."""
+    logger.info('building category vocab')
+
+    counter = collections.Counter()
+
+    # loop over projects, getting the id and name for each one
+    counter.update([str(project.id) for project in projects])
+
+    assert len(counter) > 0, 'Did not find any categories when building the category vocab!'
+
+    # create the vocab
+    category_vocab = Vocab(counter, min_freq=1, max_size=None, unk_token=None, pad_token=None)
+
+    return category_vocab
+
+
+def build_template_category_vocab(projects: List[Project]) -> Vocab:
+    """Build a vocabulary over the categories of each annotation."""
+    logger.info('building category vocab')
+
+    counter = collections.Counter()
+
+    # loop over projects, getting the id and name for each one
+    for project in projects:
+        prj_meta = project.meta_data
+        temp = [
+            str(met['category_template']) if met['category_template'] is not None else 'NO_LABEL' for met in prj_meta
+        ]
+        counter.update(temp)
+
+    template_vocab = Vocab(
+        counter, min_freq=1, max_size=None, unk_token=None, pad_token=None, special_tokens=['NO_LABEL']
+    )
+
+    assert len(template_vocab) > 0, 'Did not find any categories when building the category vocab!'
+
+    # NO_LABEL should be label zero so we can avoid calculating accuracy over it later
+    assert template_vocab.stoi('NO_LABEL') == 0
+
+    return template_vocab
+
+
 class BPETokenizer(Tokenizer):
     """Tokenizes text using byte-pair encoding models from the hugginface/transformers library."""
 
