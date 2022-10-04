@@ -2259,11 +2259,7 @@ class GroupAnnotationSets:
                     for line_number, section_name in detected_sections.iterrows():
                         section_dict = {}
                         # we try to find the labels that match that section
-                        for label in label_set.labels:  # tf
-                            target_label_name = (
-                                label.name if not self.use_separate_labels else label_set.name + '__' + label.name
-                            )
-
+                        for target_label_name in label_set.get_target_names(self.use_separate_labels):
                             if target_label_name in res_dict.keys():
 
                                 label_df = res_dict[target_label_name]
@@ -2295,11 +2291,7 @@ class GroupAnnotationSets:
             # Add Extraction from SectionLabels with single section (as dict).
             else:
                 _dict = {}
-                for label in label_set.labels:
-                    target_label_name = (
-                        label.name if not self.use_separate_labels else label_set.name + '__' + label.name
-                    )
-
+                for target_label_name in label_set.get_target_names(self.use_separate_labels):
                     if target_label_name in res_dict.keys():
                         _dict[target_label_name] = res_dict[target_label_name]
                         del res_dict[target_label_name]  # ?
@@ -2309,8 +2301,7 @@ class GroupAnnotationSets:
 
         # Finally add remaining extractions to default section (if they are allowed to be there).
         for label_set in [x for x in self.label_sets if x.is_default]:
-            for label in label_set.labels:
-                target_label_name = label.name if not self.use_separate_labels else label_set.name + '__' + label.name
+            for target_label_name in label_set.get_target_names(self.use_separate_labels):
                 if target_label_name in res_dict.keys():
                     new_res_dict[target_label_name] = res_dict[target_label_name]
                     del res_dict[target_label_name]  # ?
