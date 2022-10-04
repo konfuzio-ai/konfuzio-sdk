@@ -48,6 +48,7 @@ This version uses Konfuzio Trainer in version v.0.3.22, the Konfuzio Python SDK 
 ### Fixed
 - The numbering of Annotation Sets in the SmartView does not consider deleted Annotation Sets anymore ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9604)).
 - In some situations a Project could not be deleted via API ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9706)).
+- In specific scenarios, the deletion of the last remaining Annotation in a Document was not possible [Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9736).
 
 ## released-2022-09-21_12-00-31
 
