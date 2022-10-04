@@ -44,6 +44,7 @@ This version uses Konfuzio Trainer in version v.0.3.22, the Konfuzio Python SDK 
 - [Add the property 'has_multiple_top_candidates' to the Label API V3](https://app.konfuzio.com/v3/swagger/#/labels) ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9687)).
 - [Add the property 'has_multiple_annotation_sets' to the Label Set API V3](https://app.konfuzio.com/v3/swagger/#/labels) ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9687)).
 - [Save feedback that there are no Annotations for a Label/Label-Set combination in a document](http://localhost:8000/v3/swagger/#/documents/documents_missing_annotations_list) ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9163)).
+- [Add the property 'number' to the Page V3](https://app.konfuzio.com/v3/swagger/#/documents) ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9619)).
 
 ### Fixed
 - The numbering of Annotation Sets in the SmartView does not consider deleted Annotation Sets anymore ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9604)).
