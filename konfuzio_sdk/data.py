@@ -25,6 +25,7 @@ from konfuzio_sdk.api import (
     get_document_details,
     update_document_konfuzio_api,
     get_page_image,
+    delete_document_annotation,
 )
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
@@ -1430,11 +1431,19 @@ class Annotation(Data):
         """Return regex of this annotation."""
         return self.label.combined_tokens(categories=[self.document.category])
 
-    def delete(self) -> None:
-        """Delete Annotation online."""
-        for index, annotation in enumerate(self.document._annotations):
-            if annotation == self:
-                del self.document._annotations[index]
+    def delete(self, delete_online=True) -> None:
+        """Delete Annotation."""
+        with open(self.document.annotation_file_path, 'r') as f:
+            annots = json.load(f)
+        for annot in annots:
+            for bbox in annot['bboxes']:
+                if bbox['start_offset'] == self.start_offset and bbox['end_offset'] == self.end_offset:
+                    annot['bboxes'].remove(bbox)
+        with open(self.document.annotation_file_path, 'w') as f:
+            json.dump(annots, f)
+        if self.document.is_online and delete_online:
+            delete_document_annotation(self.document.id_, self.id_, self.document.project.id_)
+        self.document._annotations.remove(self)
 
     @property
     def spans(self) -> List[Span]:
