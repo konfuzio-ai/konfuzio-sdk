@@ -203,7 +203,7 @@ class TextClassificationModule(ClassificationModule):
 
         self.from_pretrained(load)
 
-    def _output(self, text: torch.Tensor, *args) -> List[torch.FloatTensor]:
+    def _output(self, text: torch.Tensor) -> List[torch.FloatTensor]:
         """Collect output of NN architecture."""
         raise NotImplementedError
 
@@ -247,7 +247,7 @@ class NBOW(TextClassificationModule):
         """Define the number of features as the embedding size."""
         self.n_features = self.emb_dim
 
-    def _output(self, text: torch.Tensor, *args) -> List[torch.FloatTensor]:
+    def _output(self, text: torch.Tensor) -> List[torch.FloatTensor]:
         """Collect output of the concatenation embedding -> dropout."""
         text_features = self.dropout(self.embedding(text))
         return [text_features]
@@ -284,7 +284,7 @@ class NBOWSelfAttention(TextClassificationModule):
         """Define the number of features as the embedding size."""
         self.n_features = self.emb_dim
 
-    def _output(self, text: torch.Tensor, *args) -> List[torch.FloatTensor]:
+    def _output(self, text: torch.Tensor) -> List[torch.FloatTensor]:
         """Collect output of the multiple attention heads."""
         embeddings = self.dropout(self.embedding(text))
         # embeddings = [batch, seq len, emb dim]
@@ -335,7 +335,7 @@ class LSTM(TextClassificationModule):
         """If the architecture is bidirectional, the feature size is twice as large as the hidden layer size."""
         self.n_features = self.hid_dim * 2 if self.bidirectional else self.hid_dim
 
-    def _output(self, text: torch.Tensor, *args) -> List[torch.FloatTensor]:
+    def _output(self, text: torch.Tensor) -> List[torch.FloatTensor]:
         """Collect output of the LSTM model."""
         embeddings = self.dropout(self.embedding(text))
         # embeddings = [batch size, seq len, emb dim]
@@ -386,7 +386,7 @@ class BERT(TextClassificationModule):
         """Get the maximum length of a sequence that can be passed to the BERT module."""
         return self.bert.config.max_position_embeddings
 
-    def _output(self, text: torch.Tensor, *args) -> List[torch.FloatTensor]:
+    def _output(self, text: torch.Tensor) -> List[torch.FloatTensor]:
         """Collect output of the HuggingFace BERT model."""
         bert_output = self.bert(text, output_attentions=True, return_dict=False)
         if len(bert_output) == 2:  # distill-bert models only output features and attention
@@ -404,10 +404,34 @@ class BERT(TextClassificationModule):
         return [text_features, attention]
 
 
+def get_text_module(config: dict) -> TextClassificationModule:
+    """Get the text module accordingly with the specifications."""
+    assert 'name' in config, 'text_module config needs a `name`'
+    assert 'input_dim' in config, 'text_module config needs an `input_dim`'
+    module_name = config['name']
+    if module_name == 'nbow':
+        text_module = NBOW(**config)
+    elif module_name == 'nbowselfattention':
+        text_module = NBOWSelfAttention(**config)
+    elif module_name == 'lstm':
+        text_module = LSTM(**config)
+    else:
+        try:  # try and get a BERT-type model from the Transformers library
+            if 'finbert' in module_name:  # ability to use `finbert` as an alias for `ProsusAI/finbert`
+                config['name'] = 'ProsusAI/finbert'
+            text_module = BERT(**config)
+        except OSError:
+            raise ValueError(f'{module_name} is not a valid text module!')
+
+    return text_module
+
+
 class DocumentClassifier(nn.Module):
     """Container for document classifiers."""
 
-    pass
+    def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
+        """Forward pass."""
+        raise NotImplementedError
 
 
 class DocumentTextClassifier(DocumentClassifier):
@@ -441,28 +465,6 @@ class DocumentTextClassifier(DocumentClassifier):
         return output
 
 
-def get_text_module(config: dict) -> TextClassificationModule:
-    """Get the text module accordingly with the specifications."""
-    assert 'name' in config, 'text_module config needs a `name`'
-    assert 'input_dim' in config, 'text_module config needs an `input_dim`'
-    module_name = config['name']
-    if module_name == 'nbow':
-        text_module = NBOW(**config)
-    elif module_name == 'nbowselfattention':
-        text_module = NBOWSelfAttention(**config)
-    elif module_name == 'lstm':
-        text_module = LSTM(**config)
-    else:
-        try:  # try and get a BERT-type model from the Transformers library
-            if 'finbert' in module_name:  # ability to use `finbert` as an alias for `ProsusAI/finbert`
-                config['name'] = 'ProsusAI/finbert'
-            text_module = BERT(**config)
-        except OSError:
-            raise ValueError(f'{module_name} is not a valid text module!')
-
-    return text_module
-
-
 class ImageClassificationModule(ClassificationModule):
     """Define general functionality to work with nn.Module classes used for image classification."""
 
@@ -490,23 +492,11 @@ class ImageClassificationModule(ClassificationModule):
 
         self.from_pretrained(load)
 
-    def _valid(self) -> None:
-        """Validate architecture sizes."""
-        raise NotImplementedError
-
-    def _load_architecture(self) -> None:
-        """Load NN architecture."""
-        raise NotImplementedError
-
     def _freeze(self) -> None:
         """Define how model weights are frozen."""
         raise NotImplementedError
 
-    def _define_features(self) -> None:
-        """Define number of features as self.n_features: int."""
-        raise NotImplementedError
-
-    def _output(self, image: torch.Tensor) -> torch.FloatTensor:
+    def _output(self, image: torch.Tensor) -> List[torch.FloatTensor]:
         """Collect output of NN architecture."""
         raise NotImplementedError
 
@@ -606,6 +596,19 @@ class EfficientNet(ImageClassificationModule):
         return image_features
 
 
+def get_image_module(config: dict) -> ImageClassificationModule:
+    """Get the image module accordingly with the specifications."""
+    module_name = config['name']
+    if module_name.startswith('vgg'):
+        image_module = VGG(**config)
+    elif module_name.startswith('efficientnet'):
+        image_module = EfficientNet(**config)
+    else:
+        raise ValueError(f'{module_name} not a valid image module!')
+
+    return image_module
+
+
 class DocumentImageClassifier(DocumentClassifier):
     """Classifies a document based on the image of the pages only."""
 
@@ -633,19 +636,6 @@ class DocumentImageClassifier(DocumentClassifier):
         return output
 
 
-def get_image_module(config: dict) -> ImageClassificationModule:
-    """Get the image module accordingly with the specifications."""
-    module_name = config['name']
-    if module_name.startswith('vgg'):
-        image_module = VGG(**config)
-    elif module_name.startswith('efficientnet'):
-        image_module = EfficientNet(**config)
-    else:
-        raise ValueError(f'{module_name} not a valid image module!')
-
-    return image_module
-
-
 class MultimodalClassificationModule(ClassificationModule):
     """Define general functionality to work with nn.Module classes used for image and text classification."""
 
@@ -671,18 +661,6 @@ class MultimodalClassificationModule(ClassificationModule):
         self._define_features()
 
         self.from_pretrained(load)
-
-    def _valid(self) -> None:
-        """Validate architecture sizes."""
-        raise NotImplementedError
-
-    def _load_architecture(self) -> None:
-        """Load NN architecture."""
-        raise NotImplementedError
-
-    def _define_features(self) -> None:
-        """Define number of features as self.n_features: int."""
-        raise NotImplementedError
 
     def _output(self, image_features: torch.Tensor, text_features: torch.Tensor) -> torch.FloatTensor:
         """Collect output of NN architecture."""
