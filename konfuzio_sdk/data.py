@@ -468,6 +468,16 @@ class LabelSet(Data):
             raise ValueError(f'In {self} the {label} is a duplicate and will not be added.')
         return self
 
+    def get_target_names(self, use_separate_labels: bool):
+        """Get target string name for Annotation Label classification."""
+        targets = []
+        for label in self.labels:
+            if use_separate_labels:
+                targets.append(self.name + '__' + label.name)
+            else:
+                targets.append(label.name)
+        return targets
+
 
 class Category(Data):
     """Group Documents in a Project."""
