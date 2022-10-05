@@ -36,7 +36,7 @@ You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server
 
 ## Next Release
 
-This version uses Konfuzio Trainer in version v.0.3.22, the Konfuzio Python SDK in version v.0.1.15 and Konfuzio Capture Vue in version [0.0.8](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
+This version uses Konfuzio Trainer in version v.0.3.22, the Konfuzio Python SDK in version v.0.1.15 and Konfuzio Capture Vue in version [0.0.9](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
 
 ### Added
 - [Allow to invite Members with different Roles to Projects. Available Roles are "Reviewer" and "Manager". All existing Members keep their current Permissions and will become Managers.](https://help.konfuzio.com/modules/members/index.html)
