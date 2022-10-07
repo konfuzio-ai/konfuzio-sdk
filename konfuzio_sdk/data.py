@@ -1480,7 +1480,10 @@ class Annotation(Data):
         return self.label.combined_tokens(categories=[self.document.category])
 
     def delete(self, delete_online=True) -> None:
-        """Delete Annotation."""
+        """Delete Annotation.
+
+        :param delete_online: Whether the Annotation is deleted online or only locally (bool)
+        """
         with open(self.document.annotation_file_path, 'r') as f:
             annots = json.load(f)
         for annot in annots:
