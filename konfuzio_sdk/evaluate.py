@@ -92,8 +92,11 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
         spans["end_offset_predicted"] = spans['end_offset']  # start and end offset are identical
 
         spans["above_predicted_threshold"] = spans["confidence_predicted"] >= spans["label_threshold_predicted"]
+        # spans["is_correct_label"] = spans["label_id"].fillna(0) == spans["label_id_predicted"].fillna(0)
+        # spans["is_correct_label_set"] = spans["label_set_id"].fillna(0) == spans["label_set_id_predicted"].fillna(0)
         spans["is_correct_label"] = spans["label_id"] == spans["label_id_predicted"]
         spans["is_correct_label_set"] = spans["label_set_id"] == spans["label_set_id_predicted"]
+
         # add check to evaluate multiline Annotations
         spans = spans.groupby("id_local", dropna=False).apply(lambda group: grouped(group, "id_"))
         # add check to evaluate Annotation Sets
@@ -158,6 +161,16 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
         & (spans["document_id_local_predicted"].notna())
     )
 
+    spans["tokenizer_true_positive"] = (
+        (spans["is_correct"]) & (spans["is_matched"]) & (spans["document_id_local_predicted"].notna())
+    )
+
+    spans["tokenizer_false_negative"] = (
+        (spans["is_correct"]) & (spans["is_matched"]) & (spans["document_id_local_predicted"].isna())
+    )
+
+    spans["tokenizer_false_positive"] = (~spans["tokenizer_false_negative"]) & (~spans["tokenizer_true_positive"])
+
     # one Span must not be defined as TP or FP or FN more than once
     quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) <= 1).all()
     assert quality
@@ -210,7 +223,7 @@ class EvaluationCalculator:
     @property
     def f1(self) -> Optional[float]:
         """Apply F1-score formula. Returns None if precision and recall are both None."""
-        return None if (self.tp + self.fp + self.fn == 0) else self.tp / (self.tp + 0.5 * (self.fp + self.fn))
+        return None if (self.tp + 0.5 * (self.fp + self.fn) == 0) else self.tp / (self.tp + 0.5 * (self.fp + self.fn))
 
 
 class Evaluation:
@@ -282,6 +295,18 @@ class Evaluation:
             len(self._query(search=search)) - self.tp(search=search) - self.fn(search=search) - self.fp(search=search)
         )
 
+    def tokenizer_tp(self, search=None) -> int:
+        """Return the True Positives of all Spans."""
+        return self._query(search=search)["tokenizer_true_positive"].sum()
+
+    def tokenizer_fp(self, search=None) -> int:
+        """Return the True Positives of all Spans."""
+        return self._query(search=search)["tokenizer_false_positive"].sum()
+
+    def tokenizer_fn(self, search=None) -> int:
+        """Return the True Positives of all Spans."""
+        return self._query(search=search)["tokenizer_false_negative"].sum()
+
     def tokenizer(self, search=None) -> int:
         """Return the of all Spans that are found by the Tokenizer."""
         return self._query(search=search)["is_found_by_tokenizer"].sum()
@@ -321,3 +346,11 @@ class Evaluation:
 
         """
         return EvaluationCalculator(tp=self.tp(search=search), fp=self.fp(search=search), fn=self.fn(search=search)).f1
+
+    def tokenizer_f1(self, search) -> Optional[float]:
+        """Calculate the F1 Score of one the tokenizer."""
+        return EvaluationCalculator(
+            tp=self.tokenizer_tp(search=search),
+            fp=self.tokenizer_fp(search=search),
+            fn=self.tokenizer_fn(search=search),
+        ).f1

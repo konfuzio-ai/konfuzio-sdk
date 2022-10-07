@@ -162,7 +162,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
         cls.tests_annotations = list()
 
-    def test_1_configure_pipeline(self):
+    def test_01_configure_pipeline(self):
         """Make sure the Data and Pipeline is configured."""
         self.pipeline.category = self.project.get_category_by_id(id_=63)
 
@@ -180,7 +180,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
         # todo have a separate test case for calculating features of offline documents
 
-    def test_2_make_features(self):
+    def test_02_make_features(self):
         """Make sure the Data and Pipeline is configured."""
         # we have intentional unrevised annotations in the Training set which will block feature calculation
         with pytest.raises(ValueError, match="is unrevised in this dataset and can't be used for training"):
@@ -202,7 +202,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
             documents=self.pipeline.documents, require_revised_annotations=True
         )
 
-    def test_3_fit(self) -> None:
+    def test_03_fit(self) -> None:
         """Start to train the Model."""
         self.pipeline.fit()
 
@@ -215,13 +215,13 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
         assert list(self.pipeline.template_clf.classes_) == template_clf_classes
 
-    def test_4_save_model(self):
+    def test_04_save_model(self):
         """Save the model."""
         self.pipeline.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder)
         assert os.path.isfile(self.pipeline.pipeline_path)
         # os.remove(self.pipeline.pipeline_path)  # cleanup
 
-    def test_5_upload_ai_model(self):
+    def test_05_upload_ai_model(self):
         """Upload the model."""
         assert os.path.isfile(self.pipeline.pipeline_path)
 
@@ -230,18 +230,26 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         except HTTPError as e:
             assert '403' in str(e)
 
-    def test_6_evaluate_full(self):
+    def test_06_evaluate_full(self):
         """Evaluate Whitespace RFExtractionAI Model."""
         evaluation = self.pipeline.evaluate_full()
 
         assert evaluation.f1(None) == self.evaluate_full_result
 
-    def test_7_data_quality(self):
+    def test_07_data_quality(self):
         """Evaluate on training documents."""
         evaluation = self.pipeline.data_quality()
         assert evaluation.f1(None) >= 0.97
 
-    def test_8_extract_test_document(self):
+    def test_08_tokenizer_quality(self):
+        """Evaluate the tokenizer quality."""
+        evaluation = self.pipeline.evaluate_tokenizer()
+        assert evaluation.tokenizer_f1(None) == 0.1694915254237288
+        assert evaluation.tokenizer_tp() == 30
+        assert evaluation.tokenizer_fp() == 289
+        assert evaluation.tokenizer_fn() == 5
+
+    def test_09_extract_test_document(self):
         """Extract a randomly selected Test Document."""
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
@@ -250,7 +258,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         assert len(self.tests_annotations) == 20
 
     @parameterized.parameterized.expand(entity_results_data)
-    def test_9_test_annotations(self, i, expected):
+    def test_10_test_annotations(self, i, expected):
         """Test extracted annotations."""
         ann = self.tests_annotations[i]
         ann_tuple = (ann.label.name, ann.start_offset, ann.end_offset)
@@ -281,7 +289,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
         cls.tests_annotations = list()
 
-    def test_1_configure_pipeline(self):
+    def test_01_configure_pipeline(self):
         """Make sure the Data and Pipeline is configured."""
         self.pipeline.tokenizer = ListTokenizer(tokenizers=[])
         self.pipeline.category = self.project.get_category_by_id(id_=63)
@@ -304,7 +312,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
         # todo have a separate test case for calculating features of offline documents
 
-    def test_2_make_features(self):
+    def test_02_make_features(self):
         """Make sure the Data and Pipeline is configured."""
         # We have intentional unrevised annotations in the Training set which will block feature calculation,
         # unless we set require_revised_annotations=False (which is default), which we are doing here, so we ignore them
@@ -313,7 +321,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
             documents=self.pipeline.documents, retokenize=False, require_revised_annotations=False
         )
 
-    def test_3_fit(self) -> None:
+    def test_03_fit(self) -> None:
         """Start to train the Model."""
         self.pipeline.fit()
 
@@ -326,12 +334,12 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
         assert list(self.pipeline.template_clf.classes_) == template_clf_classes
 
-    def test_4_save_model(self):
+    def test_04_save_model(self):
         """Save the model."""
         self.pipeline.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder)
         assert os.path.isfile(self.pipeline.pipeline_path)
 
-    def test_5_upload_ai_model(self):
+    def test_05_upload_ai_model(self):
         """Upload the model."""
         assert os.path.isfile(self.pipeline.pipeline_path)
 
@@ -340,18 +348,26 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         except HTTPError as e:
             assert '403' in str(e)
 
-    def test_6_evaluate_full(self):
+    def test_06_evaluate_full(self):
         """Evaluate DocumentEntityMultiClassModel."""
         evaluation = self.pipeline.evaluate_full()
 
         assert evaluation.f1(None) == self.evaluate_full_result
 
-    def test_7_data_quality(self):
+    def test_07_data_quality(self):
         """Evaluate on training documents."""
         evaluation = self.pipeline.data_quality()
         assert evaluation.f1(None) >= 0.94
 
-    def test_8_extract_test_document(self):
+    def test_08_tokenizer_quality(self):
+        """Evaluate the tokenizer quality."""
+        evaluation = self.pipeline.evaluate_tokenizer()
+        assert evaluation.tokenizer_f1(None) == 0.5811965811965812
+        assert evaluation.tokenizer_tp() == 34
+        assert evaluation.tokenizer_fp() == 48
+        assert evaluation.tokenizer_fn() == 1
+
+    def test_09_extract_test_document(self):
         """Extract a randomly selected Test Document."""
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
@@ -360,7 +376,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         assert len(self.tests_annotations) == 20
 
     @parameterized.parameterized.expand(entity_results_data)
-    def test_9_test_annotations(self, i, expected):
+    def test_10_test_annotations(self, i, expected):
         """Test extracted annotations."""
         ann = self.tests_annotations[i]
         ann_tuple = (ann.label.name, ann.start_offset, ann.end_offset)

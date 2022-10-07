@@ -2867,13 +2867,23 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             predicted_doc = self.extract(document=document)
             eval_list.append((document, predicted_doc))
 
-        self.evaluation = Evaluation(eval_list, strict=strict)
+        self.full_evaluation = Evaluation(eval_list, strict=strict)
 
-        return self.evaluation
+        return self.full_evaluation
 
     def evaluate_tokenizer(self) -> Evaluation:
         """Evaluate the tokenizer."""
-        pass
+        eval_list = []
+
+        for document in self.test_documents:
+
+            tokenized_document = deepcopy(document)
+            self.tokenizer.tokenize(tokenized_document)
+            eval_list.append((document, tokenized_document))
+
+        evaluation = Evaluation(eval_list)
+
+        return evaluation
 
     def data_quality(self, strict: bool = True) -> Evaluation:
         """Evaluate the full pipeline on the pipeline's Training Documents."""
@@ -2882,9 +2892,9 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             predicted_doc = self.extract(document=document)
             eval_list.append((document, predicted_doc))
 
-        self.evaluation = Evaluation(eval_list, strict=strict)
+        evaluation = Evaluation(eval_list, strict=strict)
 
-        return self.evaluation
+        return evaluation
 
     # def evaluate(self):
     #     """
