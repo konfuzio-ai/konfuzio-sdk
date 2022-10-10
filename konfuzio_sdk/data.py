@@ -1484,17 +1484,11 @@ class Annotation(Data):
 
         :param delete_online: Whether the Annotation is deleted online or only locally (bool)
         """
-        with open(self.document.annotation_file_path, 'r') as f:
-            annots = json.load(f)
-        for annot in annots:
-            for bbox in annot['bboxes']:
-                if bbox['start_offset'] == self.start_offset and bbox['end_offset'] == self.end_offset:
-                    annot['bboxes'].remove(bbox)
-        with open(self.document.annotation_file_path, 'w') as f:
-            json.dump(annots, f)
         if self.document.is_online and delete_online:
             delete_document_annotation(self.document.id_, self.id_, self.document.project.id_)
-        self.document._annotations.remove(self)
+            self.document.update()
+        else:
+            self.document._annotations.remove(self)
 
     @property
     def spans(self) -> List[Span]:
