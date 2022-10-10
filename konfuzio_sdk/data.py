@@ -1964,6 +1964,24 @@ class Document(Data):
 
         return self
 
+    def get_annotation_by_id(self, annotation_id: int) -> Annotation:
+        """
+        Return an Annotation by ID, searching within the document.
+
+        :param id_: ID of the Annotation to get.
+        """
+        result = None
+        if self._annotations is None:
+            self.annotations()
+        for annotation in self._annotations:
+            if annotation.id_ == annotation_id:
+                result = annotation
+                break
+        if result:
+            return result
+        else:
+            raise IndexError(f"Annotation {annotation_id} is not part of {self}.")
+
     def add_annotation_set(self, annotation_set: AnnotationSet):
         """Add the Annotation Sets to the document."""
         if annotation_set.document and annotation_set.document != self:
@@ -1978,9 +1996,9 @@ class Document(Data):
 
     def get_annotation_set_by_id(self, id_: int) -> AnnotationSet:
         """
-        Return a Label Set by ID.
+        Return an Annotation Set by ID.
 
-        :param id_: ID of the Label Set to get.
+        :param id_: ID of the Annotation Set to get.
         """
         result = None
         if self._annotation_sets is None:
