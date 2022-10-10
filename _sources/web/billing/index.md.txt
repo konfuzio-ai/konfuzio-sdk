@@ -16,7 +16,7 @@ After that we continue with the setup of Fakturia
 
 Please set `WEBHOOK_RANDOM_SECRET` environment variable to a random string.
 
-After login into Fakturia [Sandbox](https://backoffice.sandbox.fakturia.de/public/login.html) or ([Production](https://backoffice.fakturia.de/public/login.html)) dashboard you need to open the [webhooks](https://backoffice.sandbox.fakturia.de/secure/tenant/Webhook/Webhook.html) page.
+After login into Fakturia [Sandbox](https://backoffice.sandbox.fakturia.de/public/login.html) or [Production](https://backoffice.fakturia.de/public/login.html) dashboard you need to open the [webhooks](https://backoffice.sandbox.fakturia.de/secure/tenant/Webhook/Webhook.html) page.
 
 Then you need to create new webhook instance clicking `Neuen Webhook anlegen` button
 
