@@ -6,11 +6,10 @@ The pricing of Konfuzio is based on the number of pages a user processes. This p
 
 ## Set up
 
-### To activate the limit on the count of uploaded pages, you need:
+### To activate the billing, you need:
 1. Set `IS_BILLING_ACTIVATED` environment variable to `True`
-2. Set `ALLOWED_UPLOAD_COUNT` environment variable to the default count of allowed pages
-3. Run migrations
-4. If this is set up on localhost, port forwarding to receive webhooks is needed (Ngrok can be used for this).
+2. Run migrations
+3. If this is set up on localhost, port forwarding to receive webhooks is needed (Ngrok can be used for this).
 
 After that we continue with the setup of Fakturia
 
@@ -50,3 +49,25 @@ Also on Projecte edit page add your IP address to `Neuen API-Key generieren` lis
 Now everything is ready to be used. You can create customers and subscriptions for them on Fakturia side and 
 it will appear on your server. 
 
+## Overview of Environment Variables
+
+```
+# Turn billing on/off (optional).
+IS_BILLING_ACTIVATED=True
+# Randomize the webhook URL (optional).
+BILLLING_WEBHOOK_RANDOM_SECRET=secret
+# The Billing API Key (mandatory, if billing is enabled).
+BILLLING_API_KEY=7088127e-bb32-457d-836d-edbccd71bf0d
+# The Billing Server (mandatory, if billing is enabled).
+BILLLING_API_URL=https://api.sandbox.fakturia.de/api/v1/ or https://app.konfuzio.com
+# The default contract to which all new Users are added automatically (mandatory, if billing is enabled).
+BILLLING_DEFAULT_CONTRACT_ID = 100
+# The default value for new Contracts for included Pages (optional).
+BILLLING_ALLOWED_UPLOAD_COUNT=1
+# The default value for the article number of additional Pages in new Contracts (optional).
+BILLING_OVERLIMIT_ARTICLE_NUMBER_NEW_CONTRACTS = 'Overlimited_page'
+# The default value for the article number of included Pages in new Contracts (optional).
+BILLING_SUBSCRIPTION_ARTICLE_NUMBER_CONTRACTS = '00001'
+
+# For on-premise Installations only FAKTURIA_API_URL and FAKTURIA_API_KEY are required.
+```
