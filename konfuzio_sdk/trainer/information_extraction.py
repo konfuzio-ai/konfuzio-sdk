@@ -156,7 +156,6 @@ def is_valid_merge(
     doc_bbox: Union[None, Dict] = None,
     offsets_per_page: Union[None, Dict] = None,
     merge_vertical: bool = False,
-    threshold: float = 0.1,
     max_offset_distance: int = 5,
 ) -> bool:
     """
@@ -372,7 +371,6 @@ def merge_df(
             doc_bbox,
             offsets_per_page,
             merge_vertical,
-            row['label_threshold'],  # threshold
         ):
             buffer.append(row)
             end = row['End']
@@ -2096,8 +2094,11 @@ class GroupAnnotationSets:
         )
 
         # Remove no_label predictions
-        if 'NO_LABEL' in results.columns:
-            results = results.drop(['NO_LABEL'], axis=1)
+        # if 'NO_LABEL' in results.columns:
+        #     results = results.drop(['NO_LABEL'], axis=1)
+
+        # if self.no_label_name in results.columns:
+        #     results = results.drop([self.no_label_name], axis=1)
 
         # Store most likely prediction and its accuracy in separated columns
         feature_df_label['result_name'] = results.idxmax(axis=1)
@@ -2198,7 +2199,7 @@ class GroupAnnotationSets:
         # Using OptimalThreshold is a bad idea as it might defer between training (actual treshold from the label)
         # and runtime (default treshold.
 
-        df = df[df['confidence'] >= 0.1]  # df['OptimalThreshold']]
+        # df = df[df['confidence'] >= 0.1]  # df['OptimalThreshold']]
         for i, line in enumerate(text.replace('\f', '\n').split('\n')):
             new_char_count = char_count + len(line)
             assert line == text[char_count:new_char_count]
@@ -2503,14 +2504,14 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         # Filter results that are bellow the extract threshold
         # (helpful to reduce the size in case of many predictions/ big documents)
 
-        if hasattr(self, 'extract_threshold') and self.extract_threshold is not None:
-            logger.info('Filtering res_dict')
-            for result_name, value in res_dict.items():
-                if isinstance(value, pandas.DataFrame):
-                    res_dict[result_name] = value[value['confidence'] > self.extract_threshold]
+        # if hasattr(self, 'extract_threshold') and self.extract_threshold is not None:
+        #     logger.info('Filtering res_dict')
+        #     for result_name, value in res_dict.items():
+        #         if isinstance(value, pandas.DataFrame):
+        #             res_dict[result_name] = value[value['confidence'] > self.extract_threshold]
 
         res_dict = self.remove_empty_dataframes_from_extraction(res_dict)
-        res_dict = self.filter_low_confidence_extractions(res_dict)
+        # res_dict = self.filter_low_confidence_extractions(res_dict)
 
         res_dict = self.merge_dict(res_dict, inference_document)
 

@@ -125,6 +125,16 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
 
     assert not spans.empty  # this function must be able to evaluate any two docs even without annotations
 
+    spans["tokenizer_true_positive"] = (
+        (spans["is_correct"]) & (spans["is_matched"]) & (spans["document_id_local_predicted"].notna())
+    )
+
+    spans["tokenizer_false_negative"] = (
+        (spans["is_correct"]) & (spans["is_matched"]) & (spans["document_id_local_predicted"].isna())
+    )
+
+    spans["tokenizer_false_positive"] = (~spans["tokenizer_false_negative"]) & (~spans["tokenizer_true_positive"])
+
     # Evaluate which **spans** are TN, TP, FP and keep RELEVANT_FOR_MAPPING to allow grouping of confidence measures
     spans["true_positive"] = 1 * (
         (spans["is_matched"])
@@ -139,7 +149,8 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
     )
 
     spans["false_negative"] = 1 * (
-        (spans["is_correct"]) & ((~spans["is_matched"]) | (~spans["above_predicted_threshold"]))
+        (spans["is_correct"])
+        & ((~spans["is_matched"]) | (~spans["above_predicted_threshold"]) | (spans["label_id_predicted"].isna()))
     )
 
     spans["false_positive"] = 1 * (  # commented out on purpose (spans["is_correct"]) &
@@ -154,22 +165,12 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
         )
     )
 
-    spans["is_found_by_tokenizer"] = 1 * (
-        (spans["start_offset"] == spans["start_offset_predicted"])
-        & (spans["end_offset"] == spans["end_offset_predicted"])
-        & (spans["is_correct"])
-        & (spans["document_id_local_predicted"].notna())
-    )
-
-    spans["tokenizer_true_positive"] = (
-        (spans["is_correct"]) & (spans["is_matched"]) & (spans["document_id_local_predicted"].notna())
-    )
-
-    spans["tokenizer_false_negative"] = (
-        (spans["is_correct"]) & (spans["is_matched"]) & (spans["document_id_local_predicted"].isna())
-    )
-
-    spans["tokenizer_false_positive"] = (~spans["tokenizer_false_negative"]) & (~spans["tokenizer_true_positive"])
+    # spans["is_found_by_tokenizer"] = 1 * (
+    #     (spans["start_offset"] == spans["start_offset_predicted"])
+    #     & (spans["end_offset"] == spans["end_offset_predicted"])
+    #     & (spans["is_correct"])
+    #     & (spans["document_id_local_predicted"].notna())
+    # )
 
     # one Span must not be defined as TP or FP or FN more than once
     quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) <= 1).all()
