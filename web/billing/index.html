@@ -88,11 +88,10 @@
 <p>The pricing of Konfuzio is based on the number of pages a user processes. This pricing is enforced using <a class="reference external" href="https://www.fakturia.de/">Fakturia</a>.</p>
 <section id="set-up">
 <h2>Set up<a class="headerlink" href="#set-up" title="Permalink to this headline">¶</a></h2>
-<section id="to-activate-the-limit-on-the-count-of-uploaded-pages-you-need">
-<h3>To activate the limit on the count of uploaded pages, you need:<a class="headerlink" href="#to-activate-the-limit-on-the-count-of-uploaded-pages-you-need" title="Permalink to this headline">¶</a></h3>
+<section id="to-activate-the-billing-you-need">
+<h3>To activate the billing, you need:<a class="headerlink" href="#to-activate-the-billing-you-need" title="Permalink to this headline">¶</a></h3>
 <ol class="arabic simple">
 <li><p>Set <code class="docutils literal notranslate"><span class="pre">IS_BILLING_ACTIVATED</span></code> environment variable to <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
-<li><p>Set <code class="docutils literal notranslate"><span class="pre">ALLOWED_UPLOAD_COUNT</span></code> environment variable to the default count of allowed pages</p></li>
 <li><p>Run migrations</p></li>
 <li><p>If this is set up on localhost, port forwarding to receive webhooks is needed (Ngrok can be used for this).</p></li>
 </ol>
@@ -124,6 +123,29 @@ Also on Projecte edit page add your IP address to <code class="docutils literal 
 <p>Now everything is ready to be used. You can create customers and subscriptions for them on Fakturia side and
 it will appear on your server.</p>
 </section>
+</section>
+<section id="overview-of-environment-variables">
+<h2>Overview of Environment Variables<a class="headerlink" href="#overview-of-environment-variables" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Turn billing on/off (optional).</span>
+<span class="n">IS_BILLING_ACTIVATED</span><span class="o">=</span><span class="kc">True</span>
+<span class="c1"># Randomize the webhook URL (optional).</span>
+<span class="n">BILLLING_WEBHOOK_RANDOM_SECRET</span><span class="o">=</span><span class="n">secret</span>
+<span class="c1"># The Billing API Key (mandatory, if billing is enabled).</span>
+<span class="n">BILLLING_API_KEY</span><span class="o">=</span><span class="mi">7088127</span><span class="n">e</span><span class="o">-</span><span class="n">bb32</span><span class="o">-</span><span class="mi">457</span><span class="n">d</span><span class="o">-</span><span class="mi">836</span><span class="n">d</span><span class="o">-</span><span class="n">edbccd71bf0d</span>
+<span class="c1"># The Billing Server (mandatory, if billing is enabled).</span>
+<span class="n">BILLLING_API_URL</span><span class="o">=</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">sandbox</span><span class="o">.</span><span class="n">fakturia</span><span class="o">.</span><span class="n">de</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v1</span><span class="o">/</span> <span class="ow">or</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">app</span><span class="o">.</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">com</span>
+<span class="c1"># The default contract to which all new Users are added automatically (mandatory, if billing is enabled).</span>
+<span class="n">BILLLING_DEFAULT_CONTRACT_ID</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="c1"># The default value for new Contracts for included Pages (optional).</span>
+<span class="n">BILLLING_ALLOWED_UPLOAD_COUNT</span><span class="o">=</span><span class="mi">1</span>
+<span class="c1"># The default value for the article number of additional Pages in new Contracts (optional).</span>
+<span class="n">BILLING_OVERLIMIT_ARTICLE_NUMBER_NEW_CONTRACTS</span> <span class="o">=</span> <span class="s1">&#39;Overlimited_page&#39;</span>
+<span class="c1"># The default value for the article number of included Pages in new Contracts (optional).</span>
+<span class="n">BILLING_SUBSCRIPTION_ARTICLE_NUMBER_CONTRACTS</span> <span class="o">=</span> <span class="s1">&#39;00001&#39;</span>
+
+<span class="c1"># For on-premise Installations only FAKTURIA_API_URL and FAKTURIA_API_KEY are required.</span>
+</pre></div>
+</div>
 </section>
 </section>
 
