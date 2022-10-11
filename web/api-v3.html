@@ -802,6 +802,7 @@ file uploading), so you won’t have to JSON-encode your request this time.</p>
   <span class="o">--</span><span class="n">form</span> <span class="n">project</span><span class="o">=</span><span class="n">PROJECT_ID</span> \
   <span class="o">--</span><span class="n">form</span> <span class="n">category</span><span class="o">=</span><span class="n">CATEGORY_ID</span> \
   <span class="o">--</span><span class="n">form</span> <span class="n">sync</span><span class="o">=</span><span class="n">true</span> \
+  <span class="o">--</span><span class="n">form</span> <span class="n">callback_url</span><span class="o">=</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">callback</span><span class="o">.</span><span class="n">example</span><span class="o">.</span><span class="n">org</span> \
   <span class="o">--</span><span class="n">form</span> <span class="n">assignee</span><span class="o">=</span><span class="n">example</span><span class="nd">@example</span><span class="o">.</span><span class="n">org</span> \
   <span class="o">--</span><span class="n">form</span> <span class="n">data_file</span><span class="o">=</span><span class="s1">&#39;@LOCAL_FILE_NAME&#39;</span><span class="p">;</span><span class="nb">type</span><span class="o">=</span><span class="n">application</span><span class="o">/</span><span class="n">pdf</span>
 </pre></div>
@@ -815,6 +816,7 @@ is not set, the app will try to automatically detect the document category basae
 the upload, confirming that the document was received and is now queuing for extraction. If set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, the server
 will wait for the document processing to be done before returning a response with the extracted data. This might take
 a long time with big documents, so it is recommended to use <code class="docutils literal notranslate"><span class="pre">sync=false</span></code> or set a high timeout for your request.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">callback_url</span></code> parameter is optional. If provided, the document details are sent to the specified URL via a POST request after the processing of the document has been completed. Future edits on the Document do not trigger any additional callbacks.</p></li>
 <li><p>The <code class="docutils literal notranslate"><span class="pre">assignee</span></code> parameter is optional. If provided, it is the email of the user assigned to work on this document,
 which must be a member of the project you’re uploading the document to.</p></li>
 <li><p>Finally, <code class="docutils literal notranslate"><span class="pre">data_file</span></code> is the document you’re going to upload. Replace <code class="docutils literal notranslate"><span class="pre">LOCAL_FILE_NAME</span></code> with the path to the existing
