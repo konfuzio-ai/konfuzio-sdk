@@ -107,3 +107,18 @@ Evaluation
    :members:
    :noindex:
 
+
+=====================
+Categorization
+=====================
+
+`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/trainer/document_categorization.py>`__
+
+.. automodule:: konfuzio_sdk.trainer.document_categorization
+
+
+FallbackCategorizationModel
+=====================
+.. autoclass:: FallbackCategorizationModel
+   :members:
+   :noindex:
