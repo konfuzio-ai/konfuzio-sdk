@@ -239,7 +239,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
     def test_07_data_quality(self):
         """Evaluate on training documents."""
         evaluation = self.pipeline.data_quality()
-        assert evaluation.f1(None) >= 0.97
+        assert evaluation.f1(None) == 0.9523809523809523
 
     def test_08_tokenizer_quality(self):
         """Evaluate the tokenizer quality."""
@@ -254,7 +254,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
 
-        self.tests_annotations += res_doc.annotations(use_correct=False)
+        self.tests_annotations += res_doc.view_annotations()  # (use_correct=False)
         assert len(self.tests_annotations) == 20
 
     @parameterized.parameterized.expand(entity_results_data)
@@ -372,7 +372,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
 
-        self.tests_annotations += res_doc.annotations(use_correct=False)
+        self.tests_annotations += res_doc.view_annotations()  # annotations(use_correct=False)
         assert len(self.tests_annotations) == 20
 
     @parameterized.parameterized.expand(entity_results_data)

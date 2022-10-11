@@ -140,7 +140,7 @@ def flush_buffer(buffer: List[pandas.Series], doc_text: str, merge_vertical=Fals
     res_dict['Candidate'] = text
     res_dict['Translated_Candidate'] = res_dict['Candidate']
     res_dict['Translation'] = None
-    res_dict['confidence'] = numpy.mean([b['confidence'] for b in buffer])
+    res_dict['confidence'] = numpy.mean([b['confidence'] for b in buffer])  # if b['confidence'] > 0.1])
     res_dict['x0'] = min([b['x0'] for b in buffer])
     res_dict['x1'] = max([b['x1'] for b in buffer])
     res_dict['y0'] = min([b['y0'] for b in buffer])
@@ -361,6 +361,7 @@ def merge_df(
     for _, row in df.iterrows():  # iterate over the rows in the DataFrame
         # skip extractions bellow threshold
         if row['confidence'] < row['label_threshold']:
+            res_dicts.append(flush_buffer([row], doc_text, merge_vertical=merge_vertical))
             continue
         # if they are valid merges then add to buffer
         if end and is_valid_merge(
@@ -371,7 +372,7 @@ def merge_df(
             doc_bbox,
             offsets_per_page,
             merge_vertical,
-        ):
+        ):  # and row['confidence'] >= row['label_threshold']:
             buffer.append(row)
             end = row['End']
         else:  # else, flush the buffer by creating a res_dict
@@ -385,6 +386,7 @@ def merge_df(
         res_dict = flush_buffer(buffer, doc_text, merge_vertical=merge_vertical)
         res_dicts.append(res_dict)
     df = pandas.DataFrame(res_dicts)  # convert the list of res_dicts created by `flush_buffer` into a DataFrame
+    # df = df[df['confidence'] > 0.1]
     return df
 
 
@@ -2474,6 +2476,9 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         df['result_name'] = results.idxmax(axis=1)
         df['confidence'] = results.max(axis=1)
+
+        # if row['confidence'] < row['label_threshold']:
+        #     continue
         # 5. Translation
         df['Translated_Candidate'] = df['offset_string']  # todo: make translation explicit: It's a cool Feature
         # Main Logic -------------------------

@@ -74,7 +74,7 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
         self.tokenize(virtual_doc)
         evaluation = compare(document, virtual_doc)
         logger.warning(
-            f'{evaluation["is_found_by_tokenizer"].sum()} of {evaluation["is_correct"].sum()} corrects'
+            f'{evaluation["tokenizer_true_positive"].sum()} of {evaluation["is_correct"].sum()} corrects'
             f' Spans are found by Tokenizer'
         )
         return evaluation
@@ -120,7 +120,7 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
 
         compared = self.evaluate(document=document)  # todo summarize evaluation, as we are calculating it
         # return all Spans that were not found
-        missing_spans = compared[(compared['is_correct']) & (compared['is_found_by_tokenizer'] == 0)]
+        missing_spans = compared[(compared['is_correct']) & (compared['tokenizer_true_positive'] == 0)]
         remaining_span_doc = Document(
             bbox=document.get_bbox(),
             pages=document.pages,

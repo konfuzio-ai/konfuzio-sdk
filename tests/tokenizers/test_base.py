@@ -136,7 +136,7 @@ class TestAbstractTokenizer(unittest.TestCase):
         result = self.tokenizer.evaluate(document)
         assert result.shape[0] == 1
         assert result.is_correct[0] is None
-        assert result.is_found_by_tokenizer.sum() == 0
+        assert result.tokenizer_true_positive.sum() == 0
 
     def test_processing_runtime_with_empty_document(self):
         """Test the information of the processing runtime with a Document without text."""
@@ -154,7 +154,7 @@ class TestAbstractTokenizer(unittest.TestCase):
         result = self.tokenizer.evaluate(self.document)
         assert result.shape[0] == 2
         assert result.is_correct.sum() == 1
-        assert result.is_found_by_tokenizer.sum() == 0
+        assert result.tokenizer_true_positive.sum() == 0
 
     def test_processing_runtime_with_document(self):
         """Test the information of the processing runtime with a Document with text."""
@@ -326,19 +326,19 @@ class TestListTokenizer(unittest.TestCase):
         """Test that tokenizer_1 has only 1 match."""
         result = self.tokenizer_1.evaluate(self.document)
         assert result.is_correct.sum() == 2
-        assert result.is_found_by_tokenizer.sum() == 1
+        assert result.tokenizer_true_positive.sum() == 1
 
     def test_tokenizer_2(self):
         """Test that tokenizer_2 has only 1 match."""
         result = self.tokenizer_2.evaluate(self.document)
         assert result.is_correct.sum() == 2
-        assert result.is_found_by_tokenizer.sum() == 1
+        assert result.tokenizer_true_positive.sum() == 1
 
     def test_evaluate_list_tokenizer(self):
         """Test that with the combination of the tokenizers is possible to find both correct Spans."""
         result = self.tokenizer.evaluate(self.document)
         assert result.is_correct.sum() == 2
-        assert result.is_found_by_tokenizer.sum() == 2
+        assert result.tokenizer_true_positive.sum() == 2
 
     def test_evaluate_list_tokenizer_offsets(self):
         """Test offsets of the result of the tokenizer."""
