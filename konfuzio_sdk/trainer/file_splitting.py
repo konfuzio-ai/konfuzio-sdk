@@ -1,3 +1,5 @@
+"""Split a multi-Document file into a list of shorter documents based on model's prediction."""
+
 import pickle
 
 from nltk import word_tokenize
