@@ -86,30 +86,7 @@ Rule Based Tokenizer
 
 
 =====================
-Evaluation
-=====================
-
-`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/evaluate.py>`__
-
-.. automodule:: konfuzio_sdk.evaluate
-
-
-EvaluationCalculator
-=====================
-.. autoclass:: EvaluationCalculator
-   :members:
-   :noindex:
-
-Evaluation
-=====================
-
-.. autoclass:: Evaluation
-   :members:
-   :noindex:
-
-
-=====================
-Categorization
+Document Categorization
 =====================
 
 `[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/trainer/document_categorization.py>`__
@@ -117,8 +94,25 @@ Categorization
 .. automodule:: konfuzio_sdk.trainer.document_categorization
 
 
-FallbackCategorizationModel
+Fallback Categorization Model
 =====================
 .. autoclass:: FallbackCategorizationModel
+   :members:
+   :noindex:
+
+
+=====================
+AI Evaluation
+=====================
+
+`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/evaluate.py>`__
+
+.. automodule:: konfuzio_sdk.evaluate
+
+
+Evaluation
+=====================
+
+.. autoclass:: Evaluation
    :members:
    :noindex:

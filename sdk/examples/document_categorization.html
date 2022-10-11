@@ -44,8 +44,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../configuration_reference.html">Install SDK</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sourcecode.html">Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sourcecode.html#tokenizer">Tokenizer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html#evaluation">Evaluation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html#categorization">Categorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html#document-categorization">Document Categorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html#ai-evaluation">AI Evaluation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Code Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../contribution.html">Contribution Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../coordinates_system.html">Coordinates System</a></li>
@@ -88,7 +88,8 @@
 <section id="categorization-fallback-logic">
 <h2>Categorization Fallback Logic<a class="headerlink" href="#categorization-fallback-logic" title="Permalink to this headline">¶</a></h2>
 <p>Use the name of the category as an effective fallback logic to categorize documents when no categorization AI is available:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">FallbackCategorizationModel</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">FallbackCategorizationModel</span>
 
 <span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 <span class="n">categorization_model</span> <span class="o">=</span> <span class="n">FallbackCategorizationModel</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>

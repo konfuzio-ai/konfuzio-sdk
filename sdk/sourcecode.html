@@ -61,13 +61,12 @@
 <li class="toctree-l2"><a class="reference internal" href="#module-konfuzio_sdk.tokenizer.regex">Rule Based Tokenizer</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="#evaluation">Evaluation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#evaluationcalculator">EvaluationCalculator</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id1">Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#document-categorization">Document Categorization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#fallback-categorization-model">Fallback Categorization Model</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="#categorization">Categorization</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#fallbackcategorizationmodel">FallbackCategorizationModel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#ai-evaluation">AI Evaluation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#evaluation">Evaluation</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="examples/examples.html">Code Examples</a></li>
@@ -244,7 +243,7 @@
 <dd><p>Save Annotation online.</p>
 <p>If there is already an Annotation in the same place as the current one, we will not be able to save the current
 annotation.</p>
-<p>In that case, we get the <a href="#id2"><span class="problematic" id="id3">id_</span></a> of the original one to be able to track it.
+<p>In that case, we get the <a href="#id1"><span class="problematic" id="id2">id_</span></a> of the original one to be able to track it.
 The verification of the duplicates is done by checking if the offsets and Label match with any Annotations
 online.
 To be sure that we are comparing with the information online, we need to have the Document updated.
@@ -1227,39 +1226,62 @@ anymore because _annotation_sets will no longer be None.</p>
 
 </section>
 </section>
-<section id="evaluation">
-<h1>Evaluation<a class="headerlink" href="#evaluation" title="Permalink to this headline">¶</a></h1>
-<p><a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/evaluate.py">[source]</a></p>
-<span class="target" id="module-konfuzio_sdk.evaluate"></span><p>Calculate the accuracy on any level in a  Document.</p>
-<section id="evaluationcalculator">
-<h2>EvaluationCalculator<a class="headerlink" href="#evaluationcalculator" title="Permalink to this headline">¶</a></h2>
+<section id="document-categorization">
+<h1>Document Categorization<a class="headerlink" href="#document-categorization" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/trainer/document_categorization.py">[source]</a></p>
+<span class="target" id="module-konfuzio_sdk.trainer.document_categorization"></span><p>Implements a Categorization Model.</p>
+<section id="fallback-categorization-model">
+<h2>Fallback Categorization Model<a class="headerlink" href="#fallback-categorization-model" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.evaluate.</span></span><span class="sig-name descname"><span class="pre">EvaluationCalculator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_zero</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Calculate precision, recall, f1, based on TP, FP, FN.</p>
-<dl class="py property">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.trainer.document_categorization.</span></span><span class="sig-name descname"><span class="pre">FallbackCategorizationModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">konfuzio_sdk.data.Project</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>A non-trainable model that predicts a category for a given document based on predefined rules.</p>
+<p>This can be an effective fallback logic to categorize documents when no categorization AI is available.</p>
+<dl class="py method">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">f1</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em></dt>
-<dd><p>Apply F1-score formula. Returns None if precision and recall are both None.</p>
+<span class="sig-name descname"><span class="pre">categorize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.Document</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recategorize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.data.Document</span></span></span></dt>
+<dd><p>Run categorization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>document</strong> – Input document</p></li>
+<li><p><strong>recategorize</strong> – If the input document is already categorized, the already present category is used</p></li>
+</ul>
+</dd>
+</dl>
+<p>unless this flag is True
+:param inplace: Option to categorize the provided document in place, which would assign the category attribute
+:returns: Copy of the input document with added categorization information</p>
 </dd></dl>
 
-<dl class="py property">
+<dl class="py method">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">precision</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em></dt>
-<dd><p>Apply precision formula. Returns None if TP+FP=0.</p>
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Use as placeholder Function.</p>
 </dd></dl>
 
-<dl class="py property">
+<dl class="py method">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">recall</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em></dt>
-<dd><p>Apply recall formula. Returns None if TP+FN=0.</p>
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></dt>
+<dd><p>Use as placeholder Function.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_konfuzio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Use as placeholder Function.</p>
 </dd></dl>
 
 </dd></dl>
 
 </section>
-<section id="id1">
-<h2>Evaluation<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="ai-evaluation">
+<h1>AI Evaluation<a class="headerlink" href="#ai-evaluation" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/evaluate.py">[source]</a></p>
+<span class="target" id="module-konfuzio_sdk.evaluate"></span><p>Calculate the accuracy on any level in a  Document.</p>
+<section id="evaluation">
+<h2>Evaluation<a class="headerlink" href="#evaluation" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.evaluate.</span></span><span class="sig-name descname"><span class="pre">Evaluation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">documents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Document</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">konfuzio_sdk.data.Document</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span></dt>
@@ -1341,44 +1363,6 @@ https://arxiv.org/pdf/1911.03347.pdf</p>
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">tp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span></dt>
 <dd><p>Return the True Positives of all Spans.</p>
-</dd></dl>
-
-</dd></dl>
-
-</section>
-</section>
-<section id="categorization">
-<h1>Categorization<a class="headerlink" href="#categorization" title="Permalink to this headline">¶</a></h1>
-<p><a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/trainer/document_categorization.py">[source]</a></p>
-<span class="target" id="module-konfuzio_sdk.trainer.document_categorization"></span><p>Implements a Categorization Model.</p>
-<section id="fallbackcategorizationmodel">
-<h2>FallbackCategorizationModel<a class="headerlink" href="#fallbackcategorizationmodel" title="Permalink to this headline">¶</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.trainer.document_categorization.</span></span><span class="sig-name descname"><span class="pre">FallbackCategorizationModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">konfuzio_sdk.data.Project</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>A non-trainable model that predicts a category for a given document based on predefined rules.</p>
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">categorize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.Document</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recategorize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.data.Document</span></span></span></dt>
-<dd><p>Run categorization.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Use as placeholder Function.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></dt>
-<dd><p>Use as placeholder Function.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_konfuzio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Use as placeholder Function.</p>
 </dd></dl>
 
 </dd></dl>
