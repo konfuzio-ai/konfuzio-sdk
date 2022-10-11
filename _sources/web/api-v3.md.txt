@@ -551,7 +551,7 @@ In this request:
   the upload, confirming that the document was received and is now queuing for extraction. If set to `true`, the server
   will wait for the document processing to be done before returning a response with the extracted data. This might take
   a long time with big documents, so it is recommended to use `sync=false` or set a high timeout for your request.
-- The `callback_url` parameter is optional. If provided, the document details are sent to the specified URL via a POST request after the processing of the document has been completed. Future edits on the Document do not trigger any additional callbacks.
+- The `callback_url` parameter is optional. If provided, the document details are sent to the specified URL via a POST request after the processing of the document has been completed. Future Document changes via web interface or [API](https://app.konfuzio.com/v3/swagger/#/documents/documents_update) do not trigger any additional callbacks.
 - The `assignee` parameter is optional. If provided, it is the email of the user assigned to work on this document,
   which must be a member of the project you're uploading the document to.
 - Finally, `data_file` is the document you're going to upload. Replace `LOCAL_FILE_NAME` with the path to the existing
