@@ -1479,10 +1479,10 @@ class Annotation(Data):
         """Return regex of this annotation."""
         return self.label.combined_tokens(categories=[self.document.category])
 
-    def delete(self, delete_online=True) -> None:
+    def delete(self, delete_online: bool = True) -> None:
         """Delete Annotation.
 
-        :param delete_online: Whether the Annotation is deleted online or only locally (bool)
+        :param delete_online: Whether the Annotation is deleted online or only locally.
         """
         if self.document.is_online and delete_online:
             delete_document_annotation(self.document.id_, self.id_, self.document.project.id_)
