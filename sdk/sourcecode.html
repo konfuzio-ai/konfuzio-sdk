@@ -1245,13 +1245,19 @@ anymore because _annotation_sets will no longer be None.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>document</strong> – Input document</p></li>
-<li><p><strong>recategorize</strong> – If the input document is already categorized, the already present category is used</p></li>
+<li><p><strong>recategorize</strong> – If the input document is already categorized, the already present category is used unless</p></li>
 </ul>
 </dd>
 </dl>
-<p>unless this flag is True
-:param inplace: Option to categorize the provided document in place, which would assign the category attribute
-:returns: Copy of the input document with added categorization information</p>
+<p>this flag is True</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>inplace</strong> – Option to categorize the provided document in place, which would assign the category attribute</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Copy of the input document with added categorization information</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
