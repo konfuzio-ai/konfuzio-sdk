@@ -83,3 +83,27 @@ Rule Based Tokenizer
 
 .. automodule:: konfuzio_sdk.tokenizer.regex
     :members:
+
+
+=====================
+Evaluation
+=====================
+
+`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/evaluate.py>`__
+
+.. automodule:: konfuzio_sdk.evaluate
+
+
+EvaluationCalculator
+=====================
+.. autoclass:: EvaluationCalculator
+   :members:
+   :noindex:
+
+Evaluation
+=====================
+
+.. autoclass:: Evaluation
+   :members:
+   :noindex:
+
