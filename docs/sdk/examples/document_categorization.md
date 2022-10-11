@@ -5,6 +5,7 @@
 Use the name of the category as an effective fallback logic to categorize documents when no categorization AI is available:
 
 ```python
+from konfuzio_sdk.data import Project
 from konfuzio_sdk.trainer.document_categorization import FallbackCategorizationModel
 
 project = Project(id_=YOUR_PROJECT_ID)

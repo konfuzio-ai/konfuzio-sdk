@@ -13,7 +13,10 @@ warn('This module is WIP: https://gitlab.com/konfuzio/objectives/-/issues/9481',
 
 
 class FallbackCategorizationModel:
-    """A non-trainable model that predicts a category for a given document based on predefined rules."""
+    """A non-trainable model that predicts a category for a given document based on predefined rules.
+
+    This can be an effective fallback logic to categorize documents when no categorization AI is available.
+    """
 
     def __init__(self, project: Union[int, Project], *args, **kwargs):
         """Initialize FallbackCategorizationModel."""
@@ -49,7 +52,14 @@ class FallbackCategorizationModel:
         )
 
     def categorize(self, document: Document, recategorize: bool = False, inplace: bool = False) -> Document:
-        """Run categorization."""
+        """Run categorization.
+
+        :param document: Input document
+        :param recategorize: If the input document is already categorized, the already present category is used
+        unless this flag is True
+        :param inplace: Option to categorize the provided document in place, which would assign the category attribute
+        :returns: Copy of the input document with added categorization information
+        """
         if inplace:
             virtual_doc = document
         else:
