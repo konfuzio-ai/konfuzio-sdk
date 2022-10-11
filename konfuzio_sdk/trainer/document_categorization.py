@@ -1,49 +1,19 @@
-"""Implements a DocumentModel."""
+"""Implements a Categorization Model."""
 
-# import os
-import re
-
-# import sys
 import logging
 from copy import deepcopy
-from typing import Union, List
+from typing import Union
 from warnings import warn
 
-# import pathlib
-
-# import cloudpickle
-
-from konfuzio_sdk.data import Project, Document, Category
+from konfuzio_sdk.data import Project, Document
 
 logger = logging.getLogger(__name__)
 
 warn('This module is WIP: https://gitlab.com/konfuzio/objectives/-/issues/9481', FutureWarning, stacklevel=2)
 
 
-def get_category_name_for_fallback_prediction(category: Union[Category, str]) -> str:
-    """Turn a category name to lowercase, remove parentheses along with their contents, and trim spaces."""
-    if isinstance(category, Category):
-        category_name = category.name.lower()
-    elif isinstance(category, str):
-        category_name = category.lower()
-    else:
-        raise NotImplementedError
-    parentheses_removed = re.sub(r'\([^)]*\)', '', category_name).strip()
-    single_spaces = parentheses_removed.replace("  ", " ")
-    return single_spaces
-
-
-def build_list_of_relevant_categories(training_categories: List[Category]) -> List[List[str]]:
-    """Filter for category name variations which correspond to the given categories, starting from a predefined list."""
-    relevant_categories = []
-    for training_category in training_categories:
-        category_name = get_category_name_for_fallback_prediction(training_category)
-        relevant_categories.append(category_name)
-    return relevant_categories
-
-
 class FallbackCategorizationModel:
-    """A model that predicts a category for a given document."""
+    """A non-trainable model that predicts a category for a given document based on predefined rules."""
 
     def __init__(self, project: Union[int, Project], *args, **kwargs):
         """Initialize FallbackCategorizationModel."""
@@ -93,7 +63,7 @@ class FallbackCategorizationModel:
         elif recategorize:
             virtual_doc.category = None
 
-        relevant_categories = build_list_of_relevant_categories(self.categories)
+        relevant_categories = [training_category.fallback_name for training_category in self.categories]
         found_category_name = None
         doc_text = virtual_doc.text.lower()
         for candidate_category_name in relevant_categories:
@@ -107,10 +77,6 @@ class FallbackCategorizationModel:
                 f'with pre-defined common categories.'
             )
             return virtual_doc
-        found_category = [
-            category
-            for category in self.categories
-            if get_category_name_for_fallback_prediction(category) in found_category_name
-        ][0]
+        found_category = [category for category in self.categories if category.fallback_name in found_category_name][0]
         virtual_doc.category = found_category
         return virtual_doc

@@ -3,31 +3,25 @@
 import os
 import logging
 import unittest
-
-# from requests import HTTPError
 from copy import deepcopy
 
 from konfuzio_sdk.data import Project, Document
 
-# from konfuzio_sdk.api import upload_ai_model
 from tests.variables import (
     OFFLINE_PROJECT,
     TEST_DOCUMENT_ID,
-    TEST_PAYSLIPS_CATEGORY_ID,
     TEST_CATEGORIZATION_DOCUMENT_ID,
     TEST_RECEIPTS_CATEGORY_ID,
 )
 from konfuzio_sdk.trainer.document_categorization import (
     FallbackCategorizationModel,
-    get_category_name_for_fallback_prediction,
-    build_list_of_relevant_categories,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class TestBaseCategorizationModel(unittest.TestCase):
-    """Test New SDK fallback logic for Categorization."""
+class TestFallbackCategorizationModel(unittest.TestCase):
+    """Test fallback logic for Categorization."""
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -39,12 +33,6 @@ class TestBaseCategorizationModel(unittest.TestCase):
     def test_1_configure_pipeline(self) -> None:
         """No pipeline to configure for the fallback logic."""
         assert self.categorization_pipeline.categories is not None
-        # payslips_training_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).documents()
-        # receipts_training_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).documents()
-        # self.categorization_pipeline.documents = payslips_training_documents + receipts_training_documents
-        # payslips_test_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).test_documents()
-        # receipts_test_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).test_documents()
-        # self.categorization_pipeline.test_documents = payslips_test_documents + receipts_test_documents
 
     def test_2_fit(self) -> None:
         """Start to train the Model."""
@@ -64,12 +52,6 @@ class TestBaseCategorizationModel(unittest.TestCase):
     def test_4_upload_ai_model(self):
         """Upload the model."""
         assert os.path.isfile(self.categorization_pipeline.pipeline_path)
-
-        # try:
-        #    upload_ai_model(ai_model_path=self.categorization_pipeline.pipeline_path,
-        #    category_ids=[self.categorization_pipeline.category.id_])
-        # except HTTPError as e:
-        #    assert '403' in str(e)
 
     def test_5_evaluate(self):
         """Evaluate FallbackCategorizationModel."""
@@ -142,23 +124,3 @@ class TestBaseCategorizationModel(unittest.TestCase):
         test_receipt_document.category = None
         self.categorization_pipeline.categorize(document=test_receipt_document)
         assert test_receipt_document.category is None
-
-
-def test_get_category_name_for_fallback_prediction():
-    """Test turn a category name to lowercase, remove parentheses along with their contents, and trim spaces."""
-    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    payslips_category = project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID)
-    receipts_category = project.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID)
-    assert get_category_name_for_fallback_prediction(payslips_category) == "lohnabrechnung"
-    assert get_category_name_for_fallback_prediction(payslips_category.name) == "lohnabrechnung"
-    assert get_category_name_for_fallback_prediction(receipts_category) == "quittung"
-    assert get_category_name_for_fallback_prediction(receipts_category.name) == "quittung"
-    assert get_category_name_for_fallback_prediction("Test Category Name") == "test category name"
-    assert get_category_name_for_fallback_prediction("Test Category Name (content)") == "test category name"
-    assert get_category_name_for_fallback_prediction("Te(s)t Category Name (content content)") == "tet category name"
-
-
-def test_build_list_of_relevant_categories():
-    """Filter for category name variations which correspond to the given categories, starting from a predefined list."""
-    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    assert set(build_list_of_relevant_categories(project.categories)) == {"lohnabrechnung", "quittung"}

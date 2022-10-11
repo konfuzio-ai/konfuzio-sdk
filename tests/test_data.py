@@ -186,6 +186,13 @@ class TestOfflineExampleData(unittest.TestCase):
         assert box.y0 == 532.592
         assert box.y1 == 540.592
 
+    def test_get_category_name_for_fallback_prediction(self):
+        """Test turn a category name to lowercase, remove parentheses along with their contents, and trim spaces."""
+        assert self.payslips_category.fallback_name == "lohnabrechnung"
+        assert self.receipts_category.fallback_name == "quittung"
+        test_category = Category(project=self.project, id_=1, name="Te(s)t Category Name (content content)")
+        assert test_category.fallback_name == "tet category name"
+
 
 class TestEqualityAnnotation(unittest.TestCase):
     """Test the equality of Annotations."""
