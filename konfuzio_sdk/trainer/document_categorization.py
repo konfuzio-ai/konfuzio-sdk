@@ -55,8 +55,9 @@ class FallbackCategorizationModel:
         """Run categorization.
 
         :param document: Input document
-        :param recategorize: If the input document is already categorized, the already present category is used
-        unless this flag is True
+        :param recategorize: If the input document is already categorized, the already present category is used unless
+        this flag is True
+
         :param inplace: Option to categorize the provided document in place, which would assign the category attribute
         :returns: Copy of the input document with added categorization information
         """
