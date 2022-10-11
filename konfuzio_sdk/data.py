@@ -496,6 +496,13 @@ class Category(Data):
 
         return list(set(labels))
 
+    @property
+    def fallback_name(self) -> str:
+        """Turn the category name to lowercase, remove parentheses along with their contents, and trim spaces."""
+        parentheses_removed = re.sub(r'\([^)]*\)', '', self.name.lower()).strip()
+        single_spaces = parentheses_removed.replace("  ", " ")
+        return single_spaces
+
     def documents(self):
         """Filter for Documents of this Category."""
         return [x for x in self.project.documents if x.category == self]

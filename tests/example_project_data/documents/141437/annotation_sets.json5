@@ -1,0 +1,38 @@
+[
+  {
+    "id": 396904,
+    "parent": null,
+    "position": 1,
+    "section_label": 735
+  },
+  {
+    "id": 397064,
+    "parent": 396904,
+    "position": 1,
+    "section_label": 916
+  },
+  {
+    "id": 396920,
+    "parent": 396904,
+    "position": 1,
+    "section_label": 929
+  },
+  {
+    "id": 397062,
+    "parent": 396904,
+    "position": 1,
+    "section_label": 931
+  },
+  {
+    "id": 396922,
+    "parent": 396904,
+    "position": 1,
+    "section_label": 930
+  },
+  {
+    "id": 397063,
+    "parent": 396904,
+    "position": 1,
+    "section_label": 926
+  }
+]

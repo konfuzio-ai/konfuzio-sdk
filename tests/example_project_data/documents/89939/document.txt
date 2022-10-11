@@ -1,0 +1,55 @@
+
+
+
+
+            toom
+
+             toom Baumarkt GmbH
+               Gießerstr. 37
+           04229 Leipzig-Plagwitz
+             Tel. 0341-4873360
+   4035300765614 Excenter-Ventil-           V
+       2. 000 STK a     4.99         9.98 16
+   MwSt. - Rabatt                   -0.25 16
+   SUMME    EUR                    9.73 *
+   GEGEBEN  Mastercard             9.73
+             * * Kundenbeleg  * *
+   Datum:                       01.07.2020
+   Uhrzeit :                   17:45:22 Uhr
+   Beleg-Nr.                          0301
+   Trace-Nr.                        282756
+                  Bezahlung
+                  Kontaktlos
+               Debit MasterCard
+   Nr.               ############2825 0002
+   VU-Nr.                      4556352109
+   Terminal-ID                    56014290
+   Pos-Info                      00 073 00
+   AS-Zeit 01.07.                 17:45 Uhr
+   AS-Proc-Code = 00 075 00
+   Capt. - Ref. = 0000
+   00 GENEHMIGT
+   Betrag EUR                         9, 73
+               Zahlung erfolgt
+   MWST-CODE     NETTO-Entgelt    MWST-Betrag
+   16.00 %               8. 39           1.34
+   Steuer. Nr. : 215/5940/2539
+   UID Nr. :   DE812720447
+
+   Datum      Zeit BonNr BedNr KasNr FilNr
+   01.07.2020 17:46 7054 353535 3    3670
+
+
+    2074001356367020070117467054030009730022
+   V=vergünstigt
+       VIELEN DANK FÜR IHREN EINKAUF
+      IHR VERKAUFSTEAM FREUT SICH AUF
+           IHREN NÄCHSTEN BESUCH
+         MO - SA 7:00 bis 20:00 Uhr
+        FREITAGS 7:00 bis 22:00 Uhr
+          THR TOOM BAUMARKT - TEAM
+
+         Die Leistungserklärung   #
+        # für Bauprodukte erhalten #
+         # Sie an der Information.  #
+
