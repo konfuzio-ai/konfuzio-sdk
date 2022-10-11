@@ -1841,7 +1841,7 @@ class Document(Data):
 
         no_label_duplicates = set()  # for top annotation filter
         for annotation in priority_annotations:
-            if annotation.confidence and annotation.label.threshold > annotation.confidence:
+            if annotation.confidence is not None and annotation.label.threshold > annotation.confidence:
                 continue
             if not annotation.is_correct and annotation.revised:  # if marked as incorrect by user
                 continue
@@ -1852,7 +1852,11 @@ class Document(Data):
             if spans_num & filled:
                 # if there's overlap
                 continue
-            if not annotation.label.has_multiple_top_candidates and annotation.label.id_ in no_label_duplicates:
+            if (
+                annotation.is_correct is False
+                and annotation.label.has_multiple_top_candidates is False
+                and annotation.label.id_ in no_label_duplicates
+            ):
                 continue
             annotations.append(annotation)
             filled |= spans_num
