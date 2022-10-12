@@ -31,7 +31,7 @@ class Tokenizer:
 
 class Vocab:
     """
-    Class to handle a vocabulary, a mapping between strings and a their corresponding integer values.
+    Class to handle a vocabulary, a mapping between strings and their corresponding integer values.
 
     Vocabulary must be created with a counter where each key is a token and each value is the number
     of times that tokens appears in the training dataset.
@@ -217,23 +217,6 @@ def build_text_vocab(projects: List[Project], tokenizer: Tokenizer, min_freq: in
     text_vocab = Vocab(counter, min_freq, max_size)
 
     return text_vocab
-
-
-def build_category_vocab(projects: List[Project]) -> Vocab:
-    """Build a vocabulary over the categories of each document."""
-    logger.info('building category vocab')
-
-    counter = collections.Counter()
-
-    # loop over projects, getting the id and name for each one
-    counter.update([str(project.id) for project in projects])
-
-    assert len(counter) > 0, 'Did not find any categories when building the category vocab!'
-
-    # create the vocab
-    category_vocab = Vocab(counter, min_freq=1, max_size=None, unk_token=None, pad_token=None)
-
-    return category_vocab
 
 
 def build_template_category_vocab(projects: List[Project]) -> Vocab:

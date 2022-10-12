@@ -7,13 +7,16 @@ import pytest
 from copy import deepcopy
 
 from konfuzio_sdk.data import Project, Document
-from konfuzio_sdk.trainer.image import create_transformations_dict
-from konfuzio_sdk.trainer.tokenization import get_tokenizer, build_template_category_vocab
+from konfuzio_sdk.trainer.tokenization import get_tokenizer, build_template_category_vocab, build_text_vocab
 
 from konfuzio_sdk.trainer.document_categorization import (
     FallbackCategorizationModel,
     CustomCategorizationModel,
     get_timestamp,
+    MultimodalConcatenate,
+    DocumentMultimodalClassifier,
+    EfficientNet,
+    NBOWSelfAttention,
 )
 
 from tests.variables import (
@@ -165,28 +168,36 @@ class TestDocumentModel(unittest.TestCase):
 
         cls.categorization_pipeline = CustomCategorizationModel(
             cls.training_prj,
-            tokenizer=get_tokenizer('phrasematcher', project=cls.training_prj),
-            image_preprocessing=create_transformations_dict(
-                possible_transforms=['invert', 'target_size', 'grayscale'],
-                args=None,
-            ),
-            image_augmentation=create_transformations_dict(
-                possible_transforms=['rotate'],
-                args=None,
-            ),
-            document_classifier_config={
-                'image_module': {'name': 'efficientnet_b0'},
-                'text_module': {'name': 'nbowselfattention'},
-                'multimodal_module': {'name': 'concatenate'},
-            },
-            category_vocab=build_template_category_vocab([cls.training_prj]),
-            use_cuda=False,
+            image_preprocessing={'invert': False, 'target_size': (1000, 1000), 'grayscale': True},
+            image_augmentation={'rotate': 5},
         )
-        cls.categorization_pipeline.categories = cls.training_prj.categories
 
     def test_1_configure_pipeline(self) -> None:
         """Test configure categories, with training and test docs for the Document Model."""
-        assert self.categorization_pipeline.categories is not None
+        tokenizer = get_tokenizer('phrasematcher', project=self.training_prj)
+        self.categorization_pipeline.tokenizer = tokenizer
+        self.categorization_pipeline.text_vocab = build_text_vocab([self.training_prj], tokenizer)
+
+        self.categorization_pipeline.category_vocab = build_template_category_vocab([self.training_prj])
+        self.categorization_pipeline.categories = self.training_prj.categories
+
+        image_module = EfficientNet()
+        text_module = NBOWSelfAttention(
+            input_dim=len(self.categorization_pipeline.text_vocab),
+        )
+        multimodal_module = MultimodalConcatenate(
+            n_image_features=image_module.n_features,
+            n_text_features=text_module.n_features,
+        )
+
+        self.categorization_pipeline.classifier = DocumentMultimodalClassifier(
+            image_module=image_module,
+            text_module=text_module,
+            multimodal_module=multimodal_module,
+            output_dim=len(self.categorization_pipeline.category_vocab),
+        )
+        # need to ensure classifier starts in evaluation mode
+        self.categorization_pipeline.classifier.eval()  # todo why?
 
         payslips_training_documents = self.training_prj.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).documents()[:4]
         receipts_training_documents = self.training_prj.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID).documents()[:4]

@@ -30,11 +30,6 @@ from konfuzio_sdk.trainer.data_loader import (
 )
 from konfuzio_sdk.trainer.tokenization import (
     Vocab,
-    Tokenizer,
-    BPETokenizer,
-    get_tokenizer,
-    build_text_vocab,
-    build_category_vocab,
 )
 from konfuzio_sdk.trainer.image import ImagePreProcessing, ImageDataAugmentation
 from konfuzio_sdk.utils import get_timestamp
@@ -867,17 +862,9 @@ class CategorizationModel(FallbackCategorizationModel):
     def __init__(
         self,
         project: Union[int, Project],
-        tokenizer: Union[Tokenizer, str] = BPETokenizer(),
         image_preprocessing: Union[None, dict] = {'target_size': (1000, 1000), 'grayscale': True},
         image_augmentation: Union[None, dict] = {'rotate': 5},
-        document_classifier_config: dict = {
-            'image_module': {'name': 'efficientnet_b0'},
-            'text_module': {'name': 'nbowselfattention'},
-            'multimodal_module': {'name': 'concatenate'},
-        },
-        text_vocab: Union[None, Vocab] = None,
-        category_vocab: Union[None, Vocab] = None,
-        use_cuda: bool = True,
+        use_cuda: bool = False,
     ):
         """Initialize a CategorizationModel."""
         if isinstance(project, int):
@@ -888,11 +875,16 @@ class CategorizationModel(FallbackCategorizationModel):
             raise NotImplementedError
 
         self.projects = [self.project]
-        self.tokenizer = tokenizer
+        self.tokenizer = None
 
         self.documents = None
         self.test_documents = None
 
+        document_classifier_config: dict = {
+            'image_module': {'name': 'efficientnet_b0'},
+            'text_module': {'name': 'nbowselfattention'},
+            'multimodal_module': {'name': 'concatenate'},
+        }
         # if we are using an image module in our classifier then we need to set-up the
         # pre-processing and data augmentation for the images
         if 'image_module' in document_classifier_config:
@@ -920,57 +912,57 @@ class CategorizationModel(FallbackCategorizationModel):
             self.eval_transforms = None
             self.train_transforms = None
 
-        logger.info('setting up vocabs')
+        # logger.info('setting up vocabs')
 
-        # only build a text vocabulary if the classifier has a text module
-        if 'text_module' in document_classifier_config:
-            # ensure we have a tokenizer
-            assert self.tokenizer is not None, 'If using a text module you must pass a Tokenizer!'
-
-            if isinstance(self.tokenizer, str):
-                self.tokenizer = get_tokenizer(tokenizer_name=self.tokenizer, projects=self.projects)
-
-            if hasattr(tokenizer, 'vocab'):
-                # some tokenizers already have a vocab so if they do we use that instead of building one
-                self.text_vocab = tokenizer.vocab
-                logger.info('Using tokenizer\'s vocab')
-            elif text_vocab is None:
-                # if our classifier has a text module we have a tokenizer that doesn't have a vocab
-                # then we have to build a vocab from our projects using our tokenizer
-                self.text_vocab = build_text_vocab(self.projects, self.tokenizer)
-            else:
-                self.text_vocab = text_vocab
-                logger.info('Using provided text vocab')
-            logger.info(f'Text vocab length: {len(self.text_vocab)}')
-        else:
-            # if the classifier doesn't have a text module then we shouldn't have a tokenizer
-            # and the text vocab should be None
-            assert tokenizer is None, 'If not using a text module then you should not pass a Tokenizer!'
-            self.text_vocab = None
+        # # only build a text vocabulary if the classifier has a text module
+        # if 'text_module' in document_classifier_config:
+        #     # ensure we have a tokenizer
+        #     assert self.tokenizer is not None, 'If using a text module you must pass a Tokenizer!'
+        #
+        #     if isinstance(self.tokenizer, str):
+        #         self.tokenizer = get_tokenizer(tokenizer_name=self.tokenizer, projects=self.projects)
+        #
+        #     if hasattr(tokenizer, 'vocab'):
+        #         # some tokenizers already have a vocab so if they do we use that instead of building one
+        #         self.text_vocab = tokenizer.vocab
+        #         logger.info('Using tokenizer\'s vocab')
+        #     elif text_vocab is None:
+        #         # if our classifier has a text module we have a tokenizer that doesn't have a vocab
+        #         # then we have to build a vocab from our projects using our tokenizer
+        #         self.text_vocab = build_text_vocab(self.projects, self.tokenizer)
+        #     else:
+        #         self.text_vocab = text_vocab
+        #         logger.info('Using provided text vocab')
+        #     logger.info(f'Text vocab length: {len(self.text_vocab)}')
+        # else:
+        #     # if the classifier doesn't have a text module then we shouldn't have a tokenizer
+        #     # and the text vocab should be None
+        #     assert tokenizer is None, 'If not using a text module then you should not pass a Tokenizer!'
+        #     self.text_vocab = None
 
         # if we do not pass a category vocab then build one
-        if category_vocab is None:
-            self.category_vocab = build_category_vocab(self.projects)
-        else:
-            self.category_vocab = category_vocab
-            logger.info('Using provided vocab')
+        # if category_vocab is None:
+        #     self.category_vocab = build_category_vocab(self.projects)
+        # else:
+        #     self.category_vocab = category_vocab
+        #     logger.info('Using provided vocab')
 
-        logger.info(f'Category vocab length: {len(self.category_vocab)}')
-        logger.info(f'Category vocab counts: {self.category_vocab.counter}')
-
-        logger.info('setting up document classifier')
+        # logger.info(f'Category vocab length: {len(self.category_vocab)}')
+        # logger.info(f'Category vocab counts: {self.category_vocab.counter}')
+        #
+        # logger.info('setting up document classifier')
 
         # set-up the document classifier
         # need to explicitly add input_dim and output_dim as they are calculated from the data
-        if 'text_module' in document_classifier_config:
-            document_classifier_config['text_module']['input_dim'] = len(self.text_vocab)
-        document_classifier_config['output_dim'] = len(self.category_vocab)
+        # if 'text_module' in document_classifier_config:
+        #     document_classifier_config['text_module']['input_dim'] = len(self.text_vocab)
+        # document_classifier_config['output_dim'] = len(self.category_vocab)
 
         # store the classifier config file
         self.document_classifier_config = document_classifier_config
 
         # create document classifier from config
-        self.classifier = get_document_classifier(document_classifier_config)
+        # self.classifier = get_document_classifier(document_classifier_config)
 
         self.device = torch.device('cuda' if (torch.cuda.is_available() and use_cuda) else 'cpu')
 
@@ -1252,16 +1244,7 @@ class CategorizationModel(FallbackCategorizationModel):
 
     def fit(self, document_training_config: dict = {}, **kwargs) -> None:
         """Fit the CategorizationModel classifier."""
-        self.build(
-            document_training_config={
-                'valid_ratio': 0.2,
-                'batch_size': 2,
-                'max_len': None,
-                'n_epochs': 5,
-                'patience': 1,
-                'optimizer': {'name': 'Adam'},
-            }
-        )
+        self.build(document_training_config=document_training_config)
 
     @torch.no_grad()
     def extract(self, page_images, text, batch_size=2, *args, **kwargs) -> Tuple[Tuple[str, float], pd.DataFrame]:
