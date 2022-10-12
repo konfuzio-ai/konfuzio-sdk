@@ -12,8 +12,6 @@ from konfuzio_sdk.trainer.tokenization import get_tokenizer, build_template_cate
 
 from konfuzio_sdk.trainer.document_categorization import (
     FallbackCategorizationModel,
-    get_category_name_for_fallback_prediction,
-    build_list_of_relevant_categories,
     CustomCategorizationModel,
     get_timestamp,
 )
@@ -155,26 +153,6 @@ class TestFallbackCategorizationModel(unittest.TestCase):
         test_receipt_document.category = None
         self.categorization_pipeline.categorize(document=test_receipt_document)
         assert test_receipt_document.category is None
-
-
-def test_get_category_name_for_fallback_prediction():
-    """Test turn a category name to lowercase, remove parentheses along with their contents, and trim spaces."""
-    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    payslips_category = project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID)
-    receipts_category = project.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID)
-    assert get_category_name_for_fallback_prediction(payslips_category) == "lohnabrechnung"
-    assert get_category_name_for_fallback_prediction(payslips_category.name) == "lohnabrechnung"
-    assert get_category_name_for_fallback_prediction(receipts_category) == "quittung"
-    assert get_category_name_for_fallback_prediction(receipts_category.name) == "quittung"
-    assert get_category_name_for_fallback_prediction("Test Category Name") == "test category name"
-    assert get_category_name_for_fallback_prediction("Test Category Name (content)") == "test category name"
-    assert get_category_name_for_fallback_prediction("Te(s)t Category Name (content content)") == "tet category name"
-
-
-def test_build_list_of_relevant_categories():
-    """Filter for category name variations which correspond to the given categories, starting from a predefined list."""
-    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    assert set(build_list_of_relevant_categories(project.categories)) == {"lohnabrechnung", "quittung"}
 
 
 class TestDocumentModel(unittest.TestCase):

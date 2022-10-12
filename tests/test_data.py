@@ -117,6 +117,69 @@ class TestOnlineProject(unittest.TestCase):
             image = page.get_image()
             assert type(image) is PngImageFile
 
+    def test_get_annotation_by_id(self):
+        """Test to find an online annotation by its ID."""
+        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        annotation = doc.get_annotation_by_id(4420057)
+        assert annotation.start_offset == 1507
+        assert annotation.end_offset == 1518
+        assert annotation.offset_string == ['Erna-Muster']
+
+    def test_get_nonexistent_annotation_by_id(self):
+        """Test to find an online annotation that does not exist by its ID, should raise an IndexError."""
+        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        with pytest.raises(IndexError, match="is not part of"):
+            _ = doc.get_annotation_by_id(999999)
+
+    def test_create_annotation_offline(self):
+        """Test to add an Annotation to the document offline, and that it does not persist after updating the doc."""
+        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        assert Span(start_offset=1590, end_offset=1602) not in doc.spans()
+        label = self.project.get_label_by_name('Lohnart')
+        annotation = Annotation(
+            document=doc,
+            spans=[Span(start_offset=1590, end_offset=1602)],
+            label=label,
+            label_set=label.label_sets[0],
+            accuracy=1.0,
+            is_correct=True,
+        )
+        assert annotation in doc.annotations()
+        doc.update()  # redownload document information to check that the annotation was not added online
+        assert annotation not in doc.annotations()
+
+    def test_create_annotation_then_delete_annotation(self):
+        """Test to add an Annotation to the document online, then to delete it offline and online as well."""
+        # We do 3 tests in 1 here since unit tests should be independent,
+        # we don't want to refer to an Annotation created by a previous test
+
+        # Test1: add an Annotation to the document online
+        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        assert Span(start_offset=1590, end_offset=1602) not in doc.spans()
+        label = self.project.get_label_by_name('Lohnart')
+        annotation = Annotation(
+            document=doc,
+            spans=[Span(start_offset=1590, end_offset=1602)],
+            label=label,
+            label_set=label.label_sets[0],
+            accuracy=1.0,
+            is_correct=True,
+        )
+        annotation.save()
+        assert annotation in doc.annotations()
+        doc.update()  # redownload document information to check that the annotation was saved online
+        assert annotation in doc.annotations()
+
+        # Test2: delete the Annotation from the document offline
+        annotation.delete(delete_online=False)
+        assert annotation not in doc.get_annotations()
+        doc.update()  # redownload document information to check that the annotation was not deleted online
+        assert annotation in doc.get_annotations()
+
+        # Test3: delete the Annotation from the document online.
+        annotation.delete()  # doc.update() performed internally when delete_online=True, which is default
+        assert annotation not in doc.get_annotations()
+
 
 class TestOfflineExampleData(unittest.TestCase):
     """Test data features without real data."""
@@ -185,6 +248,13 @@ class TestOfflineExampleData(unittest.TestCase):
         assert box.x0 == 84.28
         assert box.y0 == 532.592
         assert box.y1 == 540.592
+
+    def test_get_category_name_for_fallback_prediction(self):
+        """Test turn a category name to lowercase, remove parentheses along with their contents, and trim spaces."""
+        assert self.payslips_category.fallback_name == "lohnabrechnung"
+        assert self.receipts_category.fallback_name == "quittung"
+        test_category = Category(project=self.project, id_=1, name="Te(s)t Category Name (content content)")
+        assert test_category.fallback_name == "tet category name"
 
 
 class TestEqualityAnnotation(unittest.TestCase):

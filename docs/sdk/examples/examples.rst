@@ -8,6 +8,8 @@ Code Examples
 
 .. mdinclude:: helloworld.md
 
+.. mdinclude:: document_categorization.md
+
 Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations
 ---------------------------------------------------------------
 
