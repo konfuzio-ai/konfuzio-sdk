@@ -606,6 +606,9 @@ class Label(Data):
                 for annotation in document.annotations(label=self, use_correct=use_correct):
                     annotations.append(annotation)
 
+        if not annotations:
+            logger.warning(f'{self} has no correct annotations.')
+
         return annotations
 
     def add_label_set(self, label_set: "LabelSet"):
@@ -702,60 +705,106 @@ class Label(Data):
         else:
             return {}
 
-    def find_regex(self, category: 'Category', max_findings_per_page=100) -> List[str]:
+    def base_regex(self, category: 'Category', annotations: List['Annotation'] = None) -> str:
         """Find the best combination of regex in the list of all regex proposed by Annotations."""
-        all_annotations = self.annotations(categories=[category])  # default is use_correct = True
+        if category.id_ in self._tokens:
+            return self._tokens[category.id_]
 
-        if not all_annotations:
-            logger.warning(f'{self} has no correct annotations.')
-            return []
-        search = [1, 3, 5]
-        regex_to_remove_groupnames = re.compile('<.*?>')
+        logger.info(f"Beginning base regex search for Label {self.name}.")
 
-        proposals = []
+        if annotations is None:
+            all_annotations = self.annotations(categories=[category])  # default is use_correct = True
+        else:
+            all_annotations = annotations
+
+        evaluated_proposals = []
         for annotation in all_annotations:
             annotation_proposals = annotation.tokens()
-            proposals += annotation_proposals
+            evaluated_proposals += annotation_proposals
+
+        self._evaluations[category.id_] = evaluated_proposals
 
         try:
-            proposals = get_best_regex(proposals)
+            best_proposals = get_best_regex(evaluated_proposals)
         except ValueError:
             logger.error(f'We cannot find regexes for {self} with a f_score > 0.')
-            proposals = []
+            best_proposals = []
 
-        proposals = merge_regex(proposals)
+        label_regex_token = merge_regex(best_proposals)
+
+        self._tokens[category.id_] = label_regex_token
+
+        return label_regex_token
+
+    def find_regex(self, category: 'Category', max_findings_per_page=100) -> List[str]:
+        """Find the best combination of regex for Label with before and after context."""
+        all_annotations = self.annotations(categories=[category])  # default is use_correct = True
+
+        label_regex_token = self.base_regex(category=category, annotations=all_annotations)
+
+        search = [1, 3, 5]
+        regex_to_remove_groupnames = re.compile('<.*?>')
 
         regex_made = []
         regex_found = set()
 
         for annotation in all_annotations:
             new_proposals = []
+            annotation.document.spans(fill=True)
             for span in annotation.spans:
-
+                before_reg_dict = {}
+                after_reg_dict = {}
                 for spacer in search:  # todo fix this search, so that we take regex token from other spans into account
-                    before_regex = suggest_regex_for_string(
-                        annotation.document.text[span.start_offset - spacer**2 : span.start_offset],
-                        replace_characters=True,
-                    )
-                    after_regex = suggest_regex_for_string(
-                        annotation.document.text[span.end_offset : span.end_offset + spacer], replace_characters=True
-                    )
-                    proposal = before_regex + proposals + after_regex
+                    before_regex = ''
+                    bef_spacer = spacer * 3 if spacer > 1 else spacer
+                    before_start_offset = span.start_offset - bef_spacer  # spacer**2
+                    for before_span in annotation.document.spans(
+                        fill=True, start_offset=before_start_offset, end_offset=span.start_offset
+                    ):
+                        if before_span.annotation.label is self.project.no_label:
+                            to_rep_offset_string = before_span.annotation.document.text[
+                                max(before_start_offset, before_span.start_offset) : before_span.end_offset
+                            ]
+                            before_regex += suggest_regex_for_string(to_rep_offset_string, replace_characters=True)
+                        else:
+                            before_regex += before_span.annotation.label.base_regex(category)
+                    before_reg_dict[spacer] = before_regex
+
+                    after_regex = ''
+                    after_end_offset = span.end_offset + spacer
+                    for after_span in annotation.document.spans(
+                        fill=True, start_offset=span.end_offset, end_offset=after_end_offset
+                    ):
+                        if after_span.annotation.label is self.project.no_label:
+                            to_rep_offset_string = after_span.annotation.document.text[
+                                after_span.start_offset : min(after_end_offset, after_span.end_offset)
+                            ]
+                            after_regex += suggest_regex_for_string(to_rep_offset_string, replace_characters=True)
+                        else:
+                            after_regex += after_span.annotation.label.base_regex(category)
+                    after_reg_dict[spacer] = after_regex
+
+                    spacer_proposals = [
+                        before_regex + label_regex_token + after_regex,
+                        before_reg_dict[search[0]] + label_regex_token + after_regex,
+                        before_regex + label_regex_token + after_reg_dict[search[0]],
+                    ]
 
                     # check for duplicates
-                    new_regex = re.sub(regex_to_remove_groupnames, '', proposal)
-                    if new_regex not in regex_found:
-                        if max_findings_per_page:
-                            num_matches = len(regex_matches(regex=proposal, doctext=annotation.document.text))
-                            if num_matches / (annotation.document.number_of_pages) < max_findings_per_page:
-                                new_proposals.append(proposal)
+                    for proposal in spacer_proposals:
+                        new_regex = re.sub(regex_to_remove_groupnames, '', proposal)
+                        if new_regex not in regex_found:
+                            if max_findings_per_page:
+                                num_matches = len(regex_matches(regex=proposal, doctext=annotation.document.text))
+                                if num_matches / (annotation.document.number_of_pages) < max_findings_per_page:
+                                    new_proposals.append(proposal)
+                                else:
+                                    logger.info(
+                                        f'Skip to evaluate regex {repr(proposal)} as it finds {num_matches} in\
+                                            {annotation.document}.'
+                                    )
                             else:
-                                logger.info(
-                                    f'Skip to evaluate regex {repr(proposal)} as it finds {num_matches} in\
-                                         {annotation.document}.'
-                                )
-                        else:
-                            new_proposals.append(proposal)
+                                new_proposals.append(proposal)
             for proposal in new_proposals:
                 new_regex = re.sub(regex_to_remove_groupnames, '', proposal)
                 if new_regex not in regex_found:
@@ -1766,6 +1815,9 @@ class Document(Data):
         :return: Annotations in the document.
         """
         self.get_annotations()
+        start_offset = max(start_offset, 0)
+        if end_offset:
+            end_offset = min(end_offset, len(self.text))
         annotations: List[Annotation] = []
         add = False
         for annotation in self._annotations:
@@ -1804,7 +1856,11 @@ class Document(Data):
                 offset_text = self.text[missing.start : missing.stop]
                 # we split Spans which span multiple lines, so that one Span comprises one line
                 offset_of_offset = 0
-                line_breaks = [offset_line for offset_line in re.split(r'(\n|\f)', offset_text) if offset_line != '']
+                line_breaks = [
+                    offset_line for offset_line in re.split(r'(\n|\f)', offset_text) if offset_line != ''
+                ]  # , '\n', '\f'}]
+                if not line_breaks:
+                    continue
                 for offset in line_breaks:
                     start = missing.start + offset_of_offset
                     offset_of_offset += len(offset)
@@ -1812,6 +1868,7 @@ class Document(Data):
                     new_span = Span(start_offset=start, end_offset=end)
                     new_spans.append(new_span)
 
+                # try:
                 new_annotation = Annotation(
                     document=self,
                     annotation_set=self.no_label_annotation_set,
@@ -1819,6 +1876,9 @@ class Document(Data):
                     label_set=self.project.no_label_set,
                     spans=new_spans,
                 )
+                # except ValueError as e:
+                #     logger.error(str(e))
+                #     raise e
 
                 annotations.append(new_annotation)
 

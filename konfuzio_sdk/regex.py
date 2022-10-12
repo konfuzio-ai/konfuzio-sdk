@@ -17,7 +17,8 @@ def merge_regex(regex_tokens: List[str]):
 
 def harmonize_whitespaces(text):
     """Convert multiple whitespaces to one."""
-    single_whitespace_replaced = re.sub(r'(?<! ) (?! )', r'[ ]+', text)
+    # single_whitespace_replaced = re.sub(r'(?<! ) (?! )', r'[ ]+', text)
+    single_whitespace_replaced = re.sub(r'(?<! ) (?! )', r'[ ]{1,2}', text)
     suggestion = re.sub(r' {2,}', r'[ ]{2,}', single_whitespace_replaced)
     return suggestion
 
