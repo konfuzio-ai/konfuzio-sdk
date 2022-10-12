@@ -257,7 +257,7 @@ class NBOWSelfAttention(TextClassificationModule):
     def _load_architecture(self) -> None:
         """Load NN architecture."""
         self.embedding = nn.Embedding(self.input_dim, self.emb_dim)
-        self.multihead_attention = nn.MultiheadAttention(self.emb_dim, self.n_heads)
+        self.multihead_attention = nn.MultiheadAttention(self.emb_dim, self.n_heads, batch_first=True)
         self.dropout = nn.Dropout(self.dropout_rate)
 
     def _define_features(self) -> None:
@@ -268,9 +268,7 @@ class NBOWSelfAttention(TextClassificationModule):
         """Collect output of the multiple attention heads."""
         embeddings = self.dropout(self.embedding(text))
         # embeddings = [batch, seq len, emb dim]
-        embeddings = embeddings.permute(1, 0, 2)
         text_features, attention = self.multihead_attention(embeddings, embeddings, embeddings)
-        text_features = text_features.permute(1, 0, 2)
         return [text_features, attention]
 
 
