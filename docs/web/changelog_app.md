@@ -45,6 +45,7 @@ This version uses Konfuzio Trainer in version v.0.3.22, the Konfuzio Python SDK 
 - [Add the property 'has_multiple_annotation_sets' to the Label Set API V3](https://app.konfuzio.com/v3/swagger/#/labels) ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9687)).
 - [Save feedback that there are no Annotations for a Label/Label-Set combination in a document](http://localhost:8000/v3/swagger/#/documents/documents_missing_annotations_list) ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9163)).
 - [Add the property 'number' to the Page API V3](https://app.konfuzio.com/v3/swagger/#/documents) ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9619)).
+- [Include the Label Set name in the API V3 even when no Label Set is present](https://app.konfuzio.com/v3/swagger/#/documents) ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9399)).
 
 ### Changed
 - [When a user creates a new Project, this user will become the default assignee for new Documents](https://help.konfuzio.com/modules/projects/index.html#default-assignee) [Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9705)
