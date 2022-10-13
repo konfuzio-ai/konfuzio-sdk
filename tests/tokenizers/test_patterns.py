@@ -1796,7 +1796,7 @@ class TestAutomatedRegexTokenizer(TestTemplateRegexTokenizer):
 
     def test_1_tokenizers_added(self):
         """Test to find one additional tokenizer in addition to the WhitespaceTokenizer."""
-        assert len(self.tokenizer.tokenizers) == 1 + len(self.category.labels)
+        assert len(self.tokenizer.tokenizers) == 4
 
     def test_2_find_what_default_tokenizer_misses(self):
         """Test if tokenizer can find what cannot be found by the WhitespaceTokenizer."""
