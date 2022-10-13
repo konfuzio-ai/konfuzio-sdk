@@ -1789,14 +1789,14 @@ class TestAutomatedRegexTokenizer(TestTemplateRegexTokenizer):
     def setUp(self) -> None:
         """Build a ListTokenizer and rely on label.find_regex."""
         self.tokenizer = ListTokenizer(tokenizers=[WhitespaceTokenizer()])
-        category = self.project.get_category_by_id(id_=1)
-        for label in category.labels:
-            for regex in label.find_regex(category=category):
+        self.category = self.project.get_category_by_id(id_=1)
+        for label in self.category.labels:
+            for regex in label.find_regex(category=self.category):
                 self.tokenizer.tokenizers.append(RegexTokenizer(regex=regex))
 
     def test_1_tokenizers_added(self):
         """Test to find one additional tokenizer in addition to the WhitespaceTokenizer."""
-        assert len(self.tokenizer.tokenizers) == 4
+        assert len(self.tokenizer.tokenizers) == 1 + len(self.category.labels)
 
     def test_2_find_what_default_tokenizer_misses(self):
         """Test if tokenizer can find what cannot be found by the WhitespaceTokenizer."""

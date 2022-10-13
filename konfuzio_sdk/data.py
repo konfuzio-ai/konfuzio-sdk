@@ -739,12 +739,16 @@ class Label(Data):
     def find_regex(self, category: 'Category', max_findings_per_page=100) -> List[str]:
         """Find the best combination of regex for Label with before and after context."""
         all_annotations = self.annotations(categories=[category])  # default is use_correct = True
+        if all_annotations == []:
+            logger.error(f"We cannot find annotations for Label {self} and Category {category}.")
+            return []
 
         label_regex_token = self.base_regex(category=category, annotations=all_annotations)
 
         search = [1, 3, 5]
         regex_to_remove_groupnames = re.compile('<.*?>')
 
+        naive_proposal = label_regex_token
         regex_made = []
         regex_found = set()
 
@@ -834,6 +838,9 @@ class Label(Data):
         except ValueError:
             logger.exception(f'We cannot find regex for {self} with a f_score > 0.')
             best_regex = []
+
+        if best_regex == []:
+            best_regex = [naive_proposal]
 
         return best_regex
 
@@ -1868,7 +1875,6 @@ class Document(Data):
                     new_span = Span(start_offset=start, end_offset=end)
                     new_spans.append(new_span)
 
-                # try:
                 new_annotation = Annotation(
                     document=self,
                     annotation_set=self.no_label_annotation_set,
@@ -1876,9 +1882,6 @@ class Document(Data):
                     label_set=self.project.no_label_set,
                     spans=new_spans,
                 )
-                # except ValueError as e:
-                #     logger.error(str(e))
-                #     raise e
 
                 annotations.append(new_annotation)
 

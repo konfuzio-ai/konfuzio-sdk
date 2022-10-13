@@ -26,11 +26,15 @@ from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 logger = logging.getLogger(__name__)
 
 suggest_regex_for_string_data = [
-    ({'string': ' '}, r'[ ]+', does_not_raise()),
-    ({'string': 'VAG GmbH', 'replace_characters': True}, r'[A-ZÄÖÜ]+[ ]+[A-ZÄÖÜ][a-zäöüß]+[A-ZÄÖÜ]', does_not_raise()),
+    ({'string': ' '}, r'[ ]{1,2}', does_not_raise()),
+    (
+        {'string': 'VAG GmbH', 'replace_characters': True},
+        r'[A-ZÄÖÜ]+[ ]{1,2}[A-ZÄÖÜ][a-zäöüß]+[A-ZÄÖÜ]',
+        does_not_raise(),
+    ),
     (
         {'string': 'a2bau GmbH', 'replace_characters': True},
-        r'[a-zäöüß]\d[a-zäöüß]+[ ]+[A-ZÄÖÜ][a-zäöüß]+[A-ZÄÖÜ]',
+        r'[a-zäöüß]\d[a-zäöüß]+[ ]{1,2}[A-ZÄÖÜ][a-zäöüß]+[A-ZÄÖÜ]',
         does_not_raise(),
     ),
     (
@@ -40,12 +44,16 @@ suggest_regex_for_string_data = [
     ),
     ({'string': 'Bau-Wohn-Gesellschaft', 'replace_characters': False}, 'Bau[-]Wohn[-]Gesellschaft', does_not_raise()),
     ({'string': '  '}, '[ ]{2,}', does_not_raise()),
-    ({'string': ' $ hello @ ! ? # [ ]'}, r'[ ]+\$[ ]+hello[ ]+\@[ ]+\![ ]+\?[ ]+\#[ ]+\[[ ]+\]', does_not_raise()),
+    (
+        {'string': ' $ hello @ ! ? # [ ]'},
+        r'[ ]{1,2}\$[ ]{1,2}hello[ ]{1,2}\@[ ]{1,2}\![ ]{1,2}\?[ ]{1,2}\#[ ]{1,2}\[[ ]{1,2}\]',
+        does_not_raise(),
+    ),
     ({'string': '(hello)+'}, '\\(hello\\)[\\+]', does_not_raise()),
-    ({'string': '(hello) +'}, '\\(hello\\)[ ]+[\\+]', does_not_raise()),
+    ({'string': '(hello) +'}, '\\(hello\\)[ ]{1,2}[\\+]', does_not_raise()),
     (
         {'string': 'Große Bäume, haben Äpfel.', 'replace_characters': True},
-        r'[A-ZÄÖÜ][a-zäöüß]+[ ]+[A-ZÄÖÜ][a-zäöüß]+\,[ ]+[a-zäöüß]+[ ]+[A-ZÄÖÜ][a-zäöüß]+\.',
+        r'[A-ZÄÖÜ][a-zäöüß]+[ ]{1,2}[A-ZÄÖÜ][a-zäöüß]+\,[ ]{1,2}[a-zäöüß]+[ ]{1,2}[A-ZÄÖÜ][a-zäöüß]+\.',
         does_not_raise(),
     ),
     # check äöüß
@@ -53,27 +61,27 @@ suggest_regex_for_string_data = [
     ({'string': 'Hello\n\nWorld'}, 'Hello\n\nWorld', does_not_raise()),
     (
         {'string': '  GRUPPE\n\n   Industrie-Police  \\\n  Nachtrag Nr. '},
-        '[ ]{2,}GRUPPE\n\n[ ]{2,}Industrie[-]Police[ ]{2,}\\\\\n[ ]{2,}Nachtrag[ ]+Nr\\.[ ]+',
+        '[ ]{2,}GRUPPE\n\n[ ]{2,}Industrie[-]Police[ ]{2,}\\\\\n[ ]{2,}Nachtrag[ ]{1,2}Nr\\.[ ]{1,2}',
         does_not_raise(),
     ),
     ({'string': 'Hello\nWorld'}, 'Hello\nWorld', does_not_raise()),
-    ({'string': 'Am 22.05.2020'}, r'Am[ ]+\d\d\.\d\d\.\d\d\d\d', does_not_raise()),
-    ({'string': 'Am 22.05.2020'}, r'Am[ ]+\d\d\.\d\d\.\d\d\d\d', does_not_raise()),
+    ({'string': 'Am 22.05.2020'}, r'Am[ ]{1,2}\d\d\.\d\d\.\d\d\d\d', does_not_raise()),
+    ({'string': 'Am 22.05.2020'}, r'Am[ ]{1,2}\d\d\.\d\d\.\d\d\d\d', does_not_raise()),
     ({'string': '[mailto:ch@helm-nagel.com]'}, '\\[mailto:ch\\@helm[-]nagel\\.com\\]', does_not_raise()),
     ({'string': '              \\       ifr'}, '[ ]{2,}\\\\[ ]{2,}ifr', does_not_raise()),
     (
         {'string': '22. Januar 2020', 'replace_characters': True},
-        r'\d\d\.[ ]+[A-ZÄÖÜ][a-zäöüß]+[ ]+\d\d\d\d',
+        r'\d\d\.[ ]{1,2}[A-ZÄÖÜ][a-zäöüß]+[ ]{1,2}\d\d\d\d',
         does_not_raise(),
     ),
     (
         {'string': '22. \nJanuar 2020', 'replace_characters': True},
-        '\\d\\d\\.[ ]+\n[A-ZÄÖÜ][a-zäöüß]+[ ]+\\d\\d\\d\\d',
+        '\\d\\d\\.[ ]{1,2}\n[A-ZÄÖÜ][a-zäöüß]+[ ]{1,2}\\d\\d\\d\\d',
         does_not_raise(),
     ),
     (
         {'string': '22. \n\nJanuar 2020', 'replace_characters': True},
-        '\\d\\d\\.[ ]+\n\n[A-ZÄÖÜ][a-zäöüß]+[ ]+\\d\\d\\d\\d',
+        '\\d\\d\\.[ ]{1,2}\n\n[A-ZÄÖÜ][a-zäöüß]+[ ]{1,2}\\d\\d\\d\\d',
         does_not_raise(),
     ),
     # ('input', 'output', pytest.raises(ValueError)),
@@ -83,15 +91,15 @@ suggest_regex_for_string_data = [
     # The following three examples, show the main functionality of the suggest_regex_for_string function.
     (
         {'string': 'Achtung       Kontrolle 911    ', 'replace_numbers': False},
-        'Achtung[ ]{2,}Kontrolle[ ]+911[ ]{2,}',
+        'Achtung[ ]{2,}Kontrolle[ ]{1,2}911[ ]{2,}',
         does_not_raise(),
     ),
-    ({'string': 'Achtung       Kontrolle 911    '}, r'Achtung[ ]{2,}Kontrolle[ ]+\d\d\d[ ]{2,}', does_not_raise()),
+    ({'string': 'Achtung       Kontrolle 911    '}, r'Achtung[ ]{2,}Kontrolle[ ]{1,2}\d\d\d[ ]{2,}', does_not_raise()),
     # see issue https://gitlab.com/konfuzio/objectives/-/issues/1373
     # ({'string': 'Garage/n'}, r'Garage\/n', does_not_raise()),
     (
         {'string': 'Achtung       Kontrolle 911    ', 'replace_characters': True},
-        r'[A-ZÄÖÜ][a-zäöüß]+[ ]{2,}[A-ZÄÖÜ][a-zäöüß]+[ ]+\d\d\d[ ]{2,}',
+        r'[A-ZÄÖÜ][a-zäöüß]+[ ]{2,}[A-ZÄÖÜ][a-zäöüß]+[ ]{1,2}\d\d\d[ ]{2,}',
         does_not_raise(),
     ),
     (
@@ -239,7 +247,7 @@ class TestTokens(unittest.TestCase):
         assert '_W_' in regex
         assert '_F_' not in regex
         assert '_N_' not in regex
-        assert regex == '(?P<Betrag_W_None_fallback>Dezember[ ]+2018)'
+        assert regex == '(?P<Betrag_W_None_fallback>Dezember[ ]{1,2}2018)'
 
     def test_generic_candidate_function(self):
         """Test to create a function which applies a RegEx."""
@@ -277,7 +285,6 @@ class TestTokens(unittest.TestCase):
         assert '(?P<Label_858_' in regexes[0].split('|')[2]
         assert '>\\d\\d\\d\\,\\d\\d)' in regexes[0]
         assert '>\\d\\.\\d\\d\\d\\,\\d\\d)' in regexes[0]
-        # assert '>\\d\\d\\,[ ]+\\d\\d[-])' in regexes[0]
 
     def test_label_empty_annotations(self):
         """Empty Annotations should not create regex."""
@@ -343,6 +350,8 @@ class TestTokensMultipleCategories(unittest.TestCase):
         regexes = self.label.find_regex(category=self.category)
         # clean evaluations for other tests (this test creates 16 evaluations)
         self.label._evaluations = {}
+        self.label._tokens = {}
+
         assert '(?P<Label_3_W_5_3>all)' in regexes[0]
 
     def test_find_regex(self):
@@ -351,11 +360,10 @@ class TestTokensMultipleCategories(unittest.TestCase):
         self.annotation._tokens = []  # reset after test
         # clean evaluations for other tests (this test creates 16 evaluations)
         self.label._evaluations = {}
+        self.label._tokens = {}
         # we can have a different regex selected if the regexes are very similar because of slightly variations in
         # runtime
-        assert regexes == ['[ ]+(?:(?P<Label_3_W_5_3>all))\\,']
-        # regexes == ['(?:(?P<Label_3_W_5_3>all))\\,'] or\
-        # regexes == ['[A-ZÄÖÜ][a-zäöüß][ ]+(?:(?P<Label_3_W_5_3>all))\\,'] or\
+        assert regexes == ['[ ]{1,2}(?:(?P<Label_3_W_5_3>all))\\,']
 
     def test_annotation_tokens(self):
         """Test tokens created for an Annotation."""
@@ -378,7 +386,7 @@ class TestTokensMultipleCategories(unittest.TestCase):
         assert len(regexes) == 2
         assert '(?P<Label_3_W_5_3>all)' in regexes[self.category.id_][0]
         assert '(?P<Label_3_F_11_0>[A-ZÄÖÜ][a-zäöüß]+)' in regexes[self.category_2.id_][0]
-        # regexes[self.category_2.id_][0] == '[ ]+(?:(?P<Label_3_W_5_3>all))\\,'
+        # regexes[self.category_2.id_][0] == '[ ]{1,2}(?:(?P<Label_3_W_5_3>all))\\,'
 
     def test_tokens_one_category_after_another(self):
         """
@@ -478,7 +486,7 @@ class TestRegexGenerator(unittest.TestCase):
             spans=[span_1],
         )
         regex = label.find_regex(category=category)
-        self.assertEqual([r'[ ]+(?:(?P<Label_22_N_None_5>\d\d\.\d\d\.\d\d\d\d))[ ]+'], regex)
+        self.assertEqual([r'[ ]{1,2}(?:(?P<Label_22_N_None_5>\d\d\.\d\d\.\d\d\d\d))[ ]{1,2}'], regex)
 
     # @unittest.skip(reason='Optimization does not work accurately at the moment. See "expected" result.')
     def test_two_annotation_of_one_label_to_regex(self):
@@ -489,7 +497,7 @@ class TestRegexGenerator(unittest.TestCase):
         label = Label(
             id_=22, text='Label Name', text_clean='LabelName', project=project, label_sets=[label_set], threshold=0.5
         )
-        long_text = "From 14.12.2021 to 1.1.2022. " + "From data to information by Konfuzio" * 1000
+        long_text = "From 14.12.2021 to 1.1.2022 " + "From data to information by Konfuzio" * 1000
         document = Document(project=project, category=category, text=long_text, dataset_status=2)
         span_1 = Span(start_offset=5, end_offset=15)
         annotation_set_1 = AnnotationSet(id_=1, document=document, label_set=label_set)
@@ -520,11 +528,11 @@ class TestRegexGenerator(unittest.TestCase):
         self.assertEqual(2, len(annotation_2.tokens()))
 
         regex = label.find_regex(category=category)
-        expected = [
-            r'[ ]+(?:(?P<Label_22_N_None_5>\d\d\.\d\d\.\d\d\d\d)|(?P<Label_22_N_None_19>\d\.\d\.\d\d\d\d))[ ]+'
-        ]  # ?
+        expected = (
+            r'[ ]{1,2}(?:(?P<Label_22_N_None_5>\d\d\.\d\d\.\d\d\d\d)|(?P<Label_22_N_None_19>\d\.\d\.\d\d\d\d))[ ]{1,2}'
+        )
 
-        assert expected == regex
+        assert expected in regex[0]
 
     # @unittest.skip('We do not support multiple Annotations in one offset for now')
     def test_regex_first_annotation_in_row(self):
@@ -535,25 +543,19 @@ class TestRegexGenerator(unittest.TestCase):
         assert len(first_names.annotations(categories=[category])) == 25
         assert len(first_names.regex(categories=[category])) == 1
 
-        # token_three_names = '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)'  # ??
-        # assert (token_three_names in s for s in first_names.regex(categories=[category]))
-
-        # token_two_names = '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)'
-        # assert (token_two_names in s for s in first_names.regex(categories=[self.category]))
-
         proposals = first_names.find_regex(category=category)
         # assert len(proposals) == 2 + 3  # The default entity regexes
 
-        male_first_name = proposals[0]
+        first_name_proposal = proposals[0]
 
-        assert '(?P<Label_865_' in male_first_name
+        assert '(?P<Label_865_' in first_name_proposal
         # assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in male_first_name
-        assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in male_first_name
-        assert '(?P<Label_866_' in male_first_name  # Nachname label
-        assert '>[A-ZÄÖÜ][a-zäöüß]+)' in male_first_name
+        assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in first_name_proposal
+        assert '(?P<Label_866_' in first_name_proposal  # Nachname label
+        assert '>[A-ZÄÖÜ][a-zäöüß]+)' in first_name_proposal
         textcorpus = ''.join([doc.text for doc in self.prj.documents])
-        results_male = regex_matches(textcorpus, male_first_name, filtered_group='Label_865')
-        assert [result['value'] for result in results_male] == [
+        results = regex_matches(textcorpus, first_name_proposal, filtered_group='Label_865')
+        assert [result['value'] for result in results] == [
             'Erna-Muster',
             'Daniel-Muster',
             'Inge-Muster',
@@ -583,36 +585,6 @@ class TestRegexGenerator(unittest.TestCase):
             'Rita-Muster',
             'Marie-Muster',
         ]
-
-        # [
-        #     'Oskar-Muster',
-        #     'Tillmannl-Muster',
-        #     'Heinz-Muster',
-        #     'Samuel-Muster',
-        #     'Marco-Paul-Muster',
-        #     'Walter-Muster',
-        #     'Lukas-Muster',
-        #     'Hugo-Muster',
-        # ]
-
-        # female_first_name = proposals[1]
-        # assert 'Frau' in female_first_name
-        # assert '(?P<Vorname_' in female_first_name
-        # assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in female_first_name
-        # assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in female_first_name
-        # assert '(?P<Nachname_' in female_first_name
-        # assert '>[A-ZÄÖÜ][a-zäöüß]+)' in female_first_name
-        # textcorpus = ''.join([doc.text for doc in self.prj.documents])
-        # results_female = regex_matches(textcorpus, female_first_name, filtered_group=first_names.name)
-        # assert [result['value'] for result in results_female] == [
-        #     'Heike-Muster',
-        #     'Cordula-Muster',
-        #     'Valerie-Muster',
-        #     'Franziska-Muster',
-        #     'Dorothee-Muster',
-        #     'Cedrica-Muster',
-        #     'Sara-Muster',
-        # ]
 
     def test_wage_regex(self):
         """Return the regex for the tax class regex."""
