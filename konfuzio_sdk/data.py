@@ -28,7 +28,7 @@ from konfuzio_sdk.api import (
 )
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
-from konfuzio_sdk.urls import get_annotation_view_url
+from konfuzio_sdk.urls import get_annotation_view_url, get_document_smartview_url
 from konfuzio_sdk.utils import get_missing_offsets
 from konfuzio_sdk.utils import is_file, convert_to_bio_scheme, amend_file_name, sdk_isinstance
 
@@ -1642,6 +1642,11 @@ class Document(Data):
     def __repr__(self):
         """Return the name of the Document incl. the ID."""
         return f"Document {self.name} ({self.id_})"
+
+    @property
+    def link(self):
+        """Get link to the document in the Smart View."""
+        return get_document_smartview_url(self.id_, self.project.id_)
 
     @property
     def file_path(self):

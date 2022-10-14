@@ -191,6 +191,18 @@ def get_document_annotations_url(document_id: int, project_id: int, host: str = 
     return f'{host}/api/projects/{project_id}/docs/{document_id}/annotations/'
 
 
+def get_document_smartview_url(document_id: int, project_id: int, host: str = KONFUZIO_HOST) -> str:
+    """
+    Access Annotations of a document in the Smart View.
+
+    :param document_id: ID of the Document as integer
+    :param project_id: ID of the project
+    :param host: Konfuzio host
+    :return: URL to access the Annotations of a document
+    """
+    return f'{host}/api/projects/{project_id}/docs/{document_id}/bbox-annotations/'
+
+
 def get_annotation_url(document_id: int, annotation_id: int, project_id: int, host: str = KONFUZIO_HOST) -> str:
     """
     Generate URL to access an annotation.
