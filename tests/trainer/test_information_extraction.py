@@ -144,10 +144,14 @@ template_clf_classes = ['Brutto-Bezug', 'Lohnabrechnung', 'Netto-Bezug', 'No', '
 
 
 @parameterized.parameterized_class(
-    ('use_separate_labels', 'evaluate_full_result'),
+    ('use_separate_labels', 'evaluate_full_result', 'data_quality_result'),
     [
-        (False, 0.7945205479452054),  # w/ full dataset: 0.9237668161434978
-        (True, 0.7945205479452054),  # w/ full dataset: 0.9783549783549783
+        (
+            False,
+            0.7945205479452054,  # w/ full dataset: 0.9237668161434978
+            0.9745762711864406,
+        ),
+        (True, 0.7945205479452054, 0.9704641350210971),  # w/ full dataset: 0.9783549783549783
     ],
 )
 class TestWhitespaceRFExtractionAI(unittest.TestCase):
@@ -239,7 +243,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
     def test_07_data_quality(self):
         """Evaluate on training documents."""
         evaluation = self.pipeline.data_quality()
-        assert evaluation.f1(None) == 0.9523809523809523
+        assert evaluation.f1(None) == self.data_quality_result
 
     def test_08_tokenizer_quality(self):
         """Evaluate the tokenizer quality."""

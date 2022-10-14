@@ -135,7 +135,6 @@ def flush_buffer(buffer: List[pandas.Series], doc_text: str, merge_vertical=Fals
     res_dict = dict()
     res_dict['Start'] = starts
     res_dict['End'] = ends
-    # res_dict['label'] = label
     res_dict['label_name'] = label
     res_dict['Candidate'] = text
     res_dict['Translated_Candidate'] = res_dict['Candidate']
@@ -360,9 +359,9 @@ def merge_df(
 
     for _, row in df.iterrows():  # iterate over the rows in the DataFrame
         # skip extractions bellow threshold
-        if row['confidence'] < row['label_threshold']:
-            res_dicts.append(flush_buffer([row], doc_text, merge_vertical=merge_vertical))
-            continue
+        # if row['confidence'] < row['label_threshold']:
+        #     res_dicts.append(flush_buffer([row], doc_text, merge_vertical=merge_vertical))
+        #     continue
         # if they are valid merges then add to buffer
         if end and is_valid_merge(
             row,
@@ -2502,9 +2501,17 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         # Convert DataFrame to Dict with labels as keys and label dataframes as value.
         res_dict = {}
         for result_name in set(df['result_name']):
-            result_df = df[df['result_name'] == result_name].copy()
+            result_df = df[(df['result_name'] == result_name) & (df['confidence'] >= df['label_threshold'])].copy()
+
             if not result_df.empty:
                 res_dict[result_name] = result_df
+
+        no_label_res_dict = {}
+        for result_name in set(df['result_name']):
+            result_df = df[(df['result_name'] == result_name) & (df['confidence'] < df['label_threshold'])].copy()
+
+            if not result_df.empty:
+                no_label_res_dict[result_name] = result_df
 
         # Filter results that are bellow the extract threshold
         # (helpful to reduce the size in case of many predictions/ big documents)
@@ -2516,6 +2523,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         #             res_dict[result_name] = value[value['confidence'] > self.extract_threshold]
 
         res_dict = self.remove_empty_dataframes_from_extraction(res_dict)
+        no_label_res_dict = self.remove_empty_dataframes_from_extraction(no_label_res_dict)
+
         # res_dict = self.filter_low_confidence_extractions(res_dict)
 
         res_dict = self.merge_dict(res_dict, inference_document)
@@ -2523,6 +2532,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         # Try to calculate sections based on template classifier.
         if self.template_clf is not None:  # todo smarter handling of multiple clf
             res_dict = self.extract_template_with_clf(inference_document.text, res_dict)
+
+        res_dict[self.no_label_set_name] = no_label_res_dict
 
         if self.use_separate_labels:
             res_dict = self.separate_labels(res_dict)
