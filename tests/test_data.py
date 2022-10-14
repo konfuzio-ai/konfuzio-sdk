@@ -2043,8 +2043,8 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
         project = LocalTextProject()
         document = project.test_documents[-1]
         annotations = document.view_annotations()
-        assert len(annotations) == 4
-        assert sorted([ann.id_ for ann in annotations]) == [16, 18, 19, 24]
+        assert len(annotations) == 5  # 4 if top_annotations filter is used
+        assert sorted([ann.id_ for ann in annotations]) == [16, 17, 18, 19, 24]  # [16, 18, 19, 24]
 
 
 class TestFillOperation(unittest.TestCase):
