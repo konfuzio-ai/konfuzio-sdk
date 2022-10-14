@@ -366,9 +366,9 @@ class TestRegexRFExtractionAI(unittest.TestCase):
     def test_08_tokenizer_quality(self):
         """Evaluate the tokenizer quality."""
         evaluation = self.pipeline.evaluate_tokenizer()
-        assert evaluation.tokenizer_f1(None) == 0.5811965811965812
+        assert evaluation.tokenizer_f1(None) == 0.7157894736842105
         assert evaluation.tokenizer_tp() == 34
-        assert evaluation.tokenizer_fp() == 48
+        assert evaluation.tokenizer_fp() == 26
         assert evaluation.tokenizer_fn() == 1
 
     def test_09_extract_test_document(self):
