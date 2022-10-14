@@ -26,11 +26,15 @@ from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 logger = logging.getLogger(__name__)
 
 suggest_regex_for_string_data = [
-    ({'string': ' '}, r'[ ]+', does_not_raise()),
-    ({'string': 'VAG GmbH', 'replace_characters': True}, r'[A-ZÄÖÜ]+[ ]+[A-ZÄÖÜ][a-zäöüß]+[A-ZÄÖÜ]', does_not_raise()),
+    ({'string': ' '}, r'[ ]{1,2}', does_not_raise()),
+    (
+        {'string': 'VAG GmbH', 'replace_characters': True},
+        r'[A-ZÄÖÜ]+[ ]{1,2}[A-ZÄÖÜ][a-zäöüß]+[A-ZÄÖÜ]',
+        does_not_raise(),
+    ),
     (
         {'string': 'a2bau GmbH', 'replace_characters': True},
-        r'[a-zäöüß]\d[a-zäöüß]+[ ]+[A-ZÄÖÜ][a-zäöüß]+[A-ZÄÖÜ]',
+        r'[a-zäöüß]\d[a-zäöüß]+[ ]{1,2}[A-ZÄÖÜ][a-zäöüß]+[A-ZÄÖÜ]',
         does_not_raise(),
     ),
     (
@@ -40,12 +44,16 @@ suggest_regex_for_string_data = [
     ),
     ({'string': 'Bau-Wohn-Gesellschaft', 'replace_characters': False}, 'Bau[-]Wohn[-]Gesellschaft', does_not_raise()),
     ({'string': '  '}, '[ ]{2,}', does_not_raise()),
-    ({'string': ' $ hello @ ! ? # [ ]'}, r'[ ]+\$[ ]+hello[ ]+\@[ ]+\![ ]+\?[ ]+\#[ ]+\[[ ]+\]', does_not_raise()),
+    (
+        {'string': ' $ hello @ ! ? # [ ]'},
+        r'[ ]{1,2}\$[ ]{1,2}hello[ ]{1,2}\@[ ]{1,2}\![ ]{1,2}\?[ ]{1,2}\#[ ]{1,2}\[[ ]{1,2}\]',
+        does_not_raise(),
+    ),
     ({'string': '(hello)+'}, '\\(hello\\)[\\+]', does_not_raise()),
-    ({'string': '(hello) +'}, '\\(hello\\)[ ]+[\\+]', does_not_raise()),
+    ({'string': '(hello) +'}, '\\(hello\\)[ ]{1,2}[\\+]', does_not_raise()),
     (
         {'string': 'Große Bäume, haben Äpfel.', 'replace_characters': True},
-        r'[A-ZÄÖÜ][a-zäöüß]+[ ]+[A-ZÄÖÜ][a-zäöüß]+\,[ ]+[a-zäöüß]+[ ]+[A-ZÄÖÜ][a-zäöüß]+\.',
+        r'[A-ZÄÖÜ][a-zäöüß]+[ ]{1,2}[A-ZÄÖÜ][a-zäöüß]+\,[ ]{1,2}[a-zäöüß]+[ ]{1,2}[A-ZÄÖÜ][a-zäöüß]+\.',
         does_not_raise(),
     ),
     # check äöüß
@@ -53,27 +61,27 @@ suggest_regex_for_string_data = [
     ({'string': 'Hello\n\nWorld'}, 'Hello\n\nWorld', does_not_raise()),
     (
         {'string': '  GRUPPE\n\n   Industrie-Police  \\\n  Nachtrag Nr. '},
-        '[ ]{2,}GRUPPE\n\n[ ]{2,}Industrie[-]Police[ ]{2,}\\\\\n[ ]{2,}Nachtrag[ ]+Nr\\.[ ]+',
+        '[ ]{2,}GRUPPE\n\n[ ]{2,}Industrie[-]Police[ ]{2,}\\\\\n[ ]{2,}Nachtrag[ ]{1,2}Nr\\.[ ]{1,2}',
         does_not_raise(),
     ),
     ({'string': 'Hello\nWorld'}, 'Hello\nWorld', does_not_raise()),
-    ({'string': 'Am 22.05.2020'}, r'Am[ ]+\d\d\.\d\d\.\d\d\d\d', does_not_raise()),
-    ({'string': 'Am 22.05.2020'}, r'Am[ ]+\d\d\.\d\d\.\d\d\d\d', does_not_raise()),
+    ({'string': 'Am 22.05.2020'}, r'Am[ ]{1,2}\d\d\.\d\d\.\d\d\d\d', does_not_raise()),
+    ({'string': 'Am 22.05.2020'}, r'Am[ ]{1,2}\d\d\.\d\d\.\d\d\d\d', does_not_raise()),
     ({'string': '[mailto:ch@helm-nagel.com]'}, '\\[mailto:ch\\@helm[-]nagel\\.com\\]', does_not_raise()),
     ({'string': '              \\       ifr'}, '[ ]{2,}\\\\[ ]{2,}ifr', does_not_raise()),
     (
         {'string': '22. Januar 2020', 'replace_characters': True},
-        r'\d\d\.[ ]+[A-ZÄÖÜ][a-zäöüß]+[ ]+\d\d\d\d',
+        r'\d\d\.[ ]{1,2}[A-ZÄÖÜ][a-zäöüß]+[ ]{1,2}\d\d\d\d',
         does_not_raise(),
     ),
     (
         {'string': '22. \nJanuar 2020', 'replace_characters': True},
-        '\\d\\d\\.[ ]+\n[A-ZÄÖÜ][a-zäöüß]+[ ]+\\d\\d\\d\\d',
+        '\\d\\d\\.[ ]{1,2}\n[A-ZÄÖÜ][a-zäöüß]+[ ]{1,2}\\d\\d\\d\\d',
         does_not_raise(),
     ),
     (
         {'string': '22. \n\nJanuar 2020', 'replace_characters': True},
-        '\\d\\d\\.[ ]+\n\n[A-ZÄÖÜ][a-zäöüß]+[ ]+\\d\\d\\d\\d',
+        '\\d\\d\\.[ ]{1,2}\n\n[A-ZÄÖÜ][a-zäöüß]+[ ]{1,2}\\d\\d\\d\\d',
         does_not_raise(),
     ),
     # ('input', 'output', pytest.raises(ValueError)),
@@ -83,15 +91,15 @@ suggest_regex_for_string_data = [
     # The following three examples, show the main functionality of the suggest_regex_for_string function.
     (
         {'string': 'Achtung       Kontrolle 911    ', 'replace_numbers': False},
-        'Achtung[ ]{2,}Kontrolle[ ]+911[ ]{2,}',
+        'Achtung[ ]{2,}Kontrolle[ ]{1,2}911[ ]{2,}',
         does_not_raise(),
     ),
-    ({'string': 'Achtung       Kontrolle 911    '}, r'Achtung[ ]{2,}Kontrolle[ ]+\d\d\d[ ]{2,}', does_not_raise()),
+    ({'string': 'Achtung       Kontrolle 911    '}, r'Achtung[ ]{2,}Kontrolle[ ]{1,2}\d\d\d[ ]{2,}', does_not_raise()),
     # see issue https://gitlab.com/konfuzio/objectives/-/issues/1373
     # ({'string': 'Garage/n'}, r'Garage\/n', does_not_raise()),
     (
         {'string': 'Achtung       Kontrolle 911    ', 'replace_characters': True},
-        r'[A-ZÄÖÜ][a-zäöüß]+[ ]{2,}[A-ZÄÖÜ][a-zäöüß]+[ ]+\d\d\d[ ]{2,}',
+        r'[A-ZÄÖÜ][a-zäöüß]+[ ]{2,}[A-ZÄÖÜ][a-zäöüß]+[ ]{1,2}\d\d\d[ ]{2,}',
         does_not_raise(),
     ),
     (
@@ -168,7 +176,7 @@ def test_regex_spans_filtered_group():
     assert expected_result == result
 
 
-def test_get_best_regex():
+def test_empty_get_best_regex():
     """Test to evaluate an empty list."""
     assert get_best_regex([]) == []
 
@@ -239,7 +247,7 @@ class TestTokens(unittest.TestCase):
         assert '_W_' in regex
         assert '_F_' not in regex
         assert '_N_' not in regex
-        assert regex == '(?P<Betrag_W_None_fallback>Dezember[ ]+2018)'
+        assert regex == '(?P<Betrag_W_None_fallback>Dezember[ ]{1,2}2018)'
 
     def test_generic_candidate_function(self):
         """Test to create a function which applies a RegEx."""
@@ -277,7 +285,6 @@ class TestTokens(unittest.TestCase):
         assert '(?P<Label_858_' in regexes[0].split('|')[2]
         assert '>\\d\\d\\d\\,\\d\\d)' in regexes[0]
         assert '>\\d\\.\\d\\d\\d\\,\\d\\d)' in regexes[0]
-        # assert '>\\d\\d\\,[ ]+\\d\\d[-])' in regexes[0]
 
     def test_label_empty_annotations(self):
         """Empty Annotations should not create regex."""
@@ -334,7 +341,7 @@ class TestTokensMultipleCategories(unittest.TestCase):
 
     def test_tokens_single_category(self):
         """Test tokens created for a single Category."""
-        regexes = self.label.regex(categories=[self.category])
+        regexes = self.label.regex(categories=[self.category], update=True)
         assert len(regexes) == 1
         assert '(?P<Label_3_W_5_3>all)' in regexes[self.category.id_][0]
 
@@ -343,19 +350,20 @@ class TestTokensMultipleCategories(unittest.TestCase):
         regexes = self.label.find_regex(category=self.category)
         # clean evaluations for other tests (this test creates 16 evaluations)
         self.label._evaluations = {}
+        self.label._tokens = {}
+
         assert '(?P<Label_3_W_5_3>all)' in regexes[0]
 
     def test_find_regex(self):
         """Test to find regex for a Category."""
-        regexes = self.label.regex(categories=[self.category])[self.category.id_]
+        regexes = self.label.regex(categories=[self.category], update=True)[self.category.id_]
         self.annotation._tokens = []  # reset after test
         # clean evaluations for other tests (this test creates 16 evaluations)
         self.label._evaluations = {}
+        self.label._tokens = {}
         # we can have a different regex selected if the regexes are very similar because of slightly variations in
         # runtime
-        assert regexes == ['[ ]+(?:(?P<Label_3_W_5_3>all))\\,']
-        # regexes == ['(?:(?P<Label_3_W_5_3>all))\\,'] or\
-        # regexes == ['[A-ZÄÖÜ][a-zäöüß][ ]+(?:(?P<Label_3_W_5_3>all))\\,'] or\
+        assert regexes == ['[ ]{1,2}(?:(?P<Label_3_W_5_3>all))\\,']
 
     def test_annotation_tokens(self):
         """Test tokens created for an Annotation."""
@@ -372,24 +380,22 @@ class TestTokensMultipleCategories(unittest.TestCase):
         tokens_after = self.annotation_2.tokens()
         assert tokens_before == tokens_after
 
-    @unittest.skip(reason='Category 2 assertion fails.')
     def test_tokens_multiple_categories(self):
         """Test tokens created based on multiple Categories."""
-        regexes = self.label.regex(categories=[self.category, self.category_2])
+        regexes = self.label.regex(categories=[self.category, self.category_2], update=True)
         assert len(regexes) == 2
         assert '(?P<Label_3_W_5_3>all)' in regexes[self.category.id_][0]
-        assert '(?P<Label_3_F_11_0>[A-ZÄÖÜ][a-zäöüß]+)' in regexes[self.category_2.id_][0]  # ?
-        # regexes[self.category_2.id_][0] == '[ ]+(?:(?P<Label_3_W_5_3>all))\\,'
+        assert '(?P<Label_3_F_11_0>[A-ZÄÖÜ][a-zäöüß]+)' in regexes[self.category_2.id_][0]
+        # regexes[self.category_2.id_][0] == '[ ]{1,2}(?:(?P<Label_3_W_5_3>all))\\,'
 
-    @unittest.skip(reason='Category 2 assertion fails.')
     def test_tokens_one_category_after_another(self):
         """
         Test tokens created for one Category after having created tokens for another Category.
 
         This could be the situation when running in a loop for multiple Categories in a Project.
         """
-        tokens_1 = self.label.regex(categories=[self.category])
-        tokens_2 = self.label.regex(categories=[self.category_2])
+        tokens_1 = self.label.regex(categories=[self.category], update=True)
+        tokens_2 = self.label.regex(categories=[self.category_2], update=True)
         assert len(tokens_1) == 1
         assert len(tokens_2) == 1
         assert '(?P<Label_3_W_5_3>all)' in tokens_1[self.category.id_][0]
@@ -409,10 +415,9 @@ class TestTokensMultipleCategories(unittest.TestCase):
         assert 'annotation_recall' in proposals[0]
         assert 'annotation_precision' in proposals[0]
 
-    @unittest.skip(reason='Legacy test.')
     def test_tokens_evaluations_multiple_categories(self):
         """Test if the number of evaluations is the expected after getting the tokens for a single Category."""
-        _ = self.label.tokens(categories=[self.category, self.category_2])
+        _ = self.label.regex(categories=[self.category, self.category_2], update=True)
         print(len(self.label._evaluations[self.category.id_]))
         print(len(self.label._evaluations[self.category_2.id_]))
         assert len(self.label._evaluations[self.category.id_]) == 2
@@ -481,9 +486,9 @@ class TestRegexGenerator(unittest.TestCase):
             spans=[span_1],
         )
         regex = label.find_regex(category=category)
-        self.assertEqual([r'[ ]+(?:(?P<Label_22_N_None_5>\d\d\.\d\d\.\d\d\d\d))[ ]+'], regex)
+        self.assertEqual([r'[ ]{1,2}(?:(?P<Label_22_N_None_5>\d\d\.\d\d\.\d\d\d\d))[ ]{1,2}'], regex)
 
-    @unittest.skip(reason='Optimization does not work accurately at the moment. See "expected" result.')
+    # @unittest.skip(reason='Optimization does not work accurately at the moment. See "expected" result.')
     def test_two_annotation_of_one_label_to_regex(self):
         """Test to calculate a regex."""
         project = Project(id_=None)
@@ -492,7 +497,7 @@ class TestRegexGenerator(unittest.TestCase):
         label = Label(
             id_=22, text='Label Name', text_clean='LabelName', project=project, label_sets=[label_set], threshold=0.5
         )
-        long_text = "From 14.12.2021 to 1.1.2022. " + "From data to information by Konfuzio" * 1000
+        long_text = "From 14.12.2021 to 1.1.2022 " + "From data to information by Konfuzio" * 1000
         document = Document(project=project, category=category, text=long_text, dataset_status=2)
         span_1 = Span(start_offset=5, end_offset=15)
         annotation_set_1 = AnnotationSet(id_=1, document=document, label_set=label_set)
@@ -522,67 +527,63 @@ class TestRegexGenerator(unittest.TestCase):
         self.assertEqual(2, len(annotation_1.tokens()))
         self.assertEqual(2, len(annotation_2.tokens()))
 
-        regex = label.regex(categories=[category])
-        expected = [
-            r'[ ]+(?:(?P<Label_22_N_None_5>\d\d\.\d\d\.\d\d\d\d)|(?P<Label_22_N_None_19>\d\.\d\.\d\d\d\d))[ ]+'
-        ]  # ?
+        regex = label.find_regex(category=category)
+        expected = (
+            r'[ ]{1,2}(?:(?P<Label_22_N_None_5>\d\d\.\d\d\.\d\d\d\d)|(?P<Label_22_N_None_19>\d\.\d\.\d\d\d\d))[ ]{1,2}'
+        )
 
-        assert expected == regex
+        assert expected in regex[0]
 
-    @unittest.skip('We do not support multiple Annotations in one offset for now')
+    # @unittest.skip('We do not support multiple Annotations in one offset for now')
     def test_regex_first_annotation_in_row(self):
         """Add a test if two annotated offsets are connected to each other "please pay <GrossAmount><Currency>."""
         # first name and last name are in one line in the document:
         first_names = self.prj.get_label_by_name('Vorname')
-        category = self.prj.get_category_by_id(63)
+        category = self.category
         assert len(first_names.annotations(categories=[category])) == 25
         assert len(first_names.regex(categories=[category])) == 1
-        token_three_names = '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)'
-        assert (token_three_names in s for s in first_names.regex(categories=[category]))
-        token_two_names = '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)'
 
-        assert (token_two_names in s for s in first_names.regex(categories=[self.category]))
-
-        proposals = first_names.regex(categories=[category])
+        proposals = first_names.find_regex(category=category)
         # assert len(proposals) == 2 + 3  # The default entity regexes
 
-        male_first_name = proposals[0]
-        assert 'Herrn' in male_first_name
-        assert '(?P<Vorname_' in male_first_name
-        assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in male_first_name
-        assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in male_first_name
-        assert '(?P<Nachname_' in male_first_name
-        assert '>[A-ZÄÖÜ][a-zäöüß]+)' in male_first_name
-        textcorpus = ''.join([doc.text for doc in self.prj.documents])
-        results_male = regex_matches(textcorpus, male_first_name, filtered_group=first_names.name)
-        assert [result['value'] for result in results_male] == [
-            'Oskar-Muster',
-            'Tillmannl-Muster',
-            'Heinz-Muster',
-            'Samuel-Muster',
-            'Marco-Paul-Muster',
-            'Walter-Muster',
-            'Lukas-Muster',
-            'Hugo-Muster',
-        ]
+        first_name_proposal = proposals[0]
 
-        female_first_name = proposals[1]
-        assert 'Frau' in female_first_name
-        assert '(?P<Vorname_' in female_first_name
-        assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in female_first_name
-        assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in female_first_name
-        assert '(?P<Nachname_' in female_first_name
-        assert '>[A-ZÄÖÜ][a-zäöüß]+)' in female_first_name
+        assert '(?P<Label_865_' in first_name_proposal
+        # assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in male_first_name
+        assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in first_name_proposal
+        assert '(?P<Label_866_' in first_name_proposal  # Nachname label
+        assert '>[A-ZÄÖÜ][a-zäöüß]+)' in first_name_proposal
         textcorpus = ''.join([doc.text for doc in self.prj.documents])
-        results_female = regex_matches(textcorpus, female_first_name, filtered_group=first_names.name)
-        assert [result['value'] for result in results_female] == [
+        results = regex_matches(textcorpus, first_name_proposal, filtered_group='Label_865')
+        assert [result['value'] for result in results] == [
+            'Erna-Muster',
+            'Daniel-Muster',
+            'Inge-Muster',
+            'Max-Muster',
+            'Birgit-Muster',
+            'Inge-Muster',
+            'Max-Muster',
+            'Xaver-Muster',
+            'Ernst-Muster',
+            'Heinz-Muster',
+            'Max-Muster',
+            'Ella-Muster',
+            'Leo-Muster',
+            'Thomas-Muster',
+            'Hugo-Muster',
             'Heike-Muster',
-            'Cordula-Muster',
-            'Valerie-Muster',
-            'Franziska-Muster',
-            'Dorothee-Muster',
-            'Cedrica-Muster',
-            'Sara-Muster',
+            'Frank-Muster',
+            'Berta-Muster',
+            'Sparda-Bank',
+            'Bruno-Muster',
+            'Sparda-Bank',
+            'Inge-Muster',
+            'Hugo-Muster',
+            'Leo-Muster',
+            'Lydia-Muster',
+            'Karl-Muster',
+            'Rita-Muster',
+            'Marie-Muster',
         ]
 
     def test_wage_regex(self):
@@ -592,36 +593,49 @@ class TestRegexGenerator(unittest.TestCase):
         regex = tax.find_regex(category=category)[0]
         assert '(?P<Label_860_N_' in regex
 
-    @unittest.skip('We do not support multiple Annotations in one offset for now')
+    # @unittest.skip('We do not support multiple Annotations in one offset for now')
     def test_regex_second_annotation_in_row(self):
         """Delete the last character of the regex solution as only for some runs it will contain a line break."""
         last_names = self.prj.get_label_by_name('Vorname')
         category = self.prj.get_category_by_id(63)
-        assert len(last_names.find_regex(categories=[category])) == 1
-        last_name_regex = last_names.find_regex(categories=[category])[0]
-        assert '(?P<Vorname_' in last_name_regex
+        assert len(last_names.find_regex(category=category)) == 1
+        last_name_regex = last_names.find_regex(category=category)[0]
+        assert '(?P<Label_865_' in last_name_regex
         # assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in last_name_regex
         assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in last_name_regex
-        assert '(?P<Nachname_' in last_name_regex
+        assert '(?P<Label_866_' in last_name_regex
         assert '>[A-ZÄÖÜ][a-zäöüß]+)' in last_name_regex
         textcorpus = ''.join([doc.text for doc in self.prj.documents])
-        results = regex_matches(textcorpus, last_name_regex, filtered_group=last_names.name)
+        results = regex_matches(textcorpus, last_name_regex, filtered_group='Label_866')
         assert [result['value'] for result in results] == [
-            'Förster',
-            'Wissen',
-            'Kork',
-            'Morgen',
-            'Brand',
-            'Dekano',
-            'Abend',
-            'Tilly',
-            'Rimmel',
-            'Wallenstein',
-            'Lichter',
+            'Eiermann',
+            'Droschkenmann',
+            'Schmidt',
+            'Schlosser',
+            'Meier',
+            'Schmidt',
+            'Schlosser',
+            'Xoxmann',
+            'Egelmann',
+            'Wichtig',
+            'Schlosser',
+            'Sorglos',
+            'Leichtsinn',
+            'Lau',
             'Huber',
-            'Garten',
-            'Trimmer',
-            'Mustermann',
+            'Förster',
+            'Lämmer',
+            'Bauch',
+            'Nürnberg',
+            'Bauch',
+            'Nürnberg',
+            'Meier',
+            'Baltus',
+            'Winzig',
+            'Waldmeister',
+            'Sinner',
+            'Sinnvoll',
+            'Wald',
         ]
 
 

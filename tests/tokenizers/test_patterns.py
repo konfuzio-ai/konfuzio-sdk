@@ -1870,9 +1870,9 @@ class TestAutomatedRegexTokenizer(TestTemplateRegexTokenizer):
     def setUp(self) -> None:
         """Build a ListTokenizer and rely on label.find_regex."""
         self.tokenizer = ListTokenizer(tokenizers=[WhitespaceTokenizer()])
-        category = self.project.get_category_by_id(id_=1)
-        for label in category.labels:
-            for regex in label.find_regex(category=category):
+        self.category = self.project.get_category_by_id(id_=1)
+        for label in self.category.labels:
+            for regex in label.find_regex(category=self.category):
                 self.tokenizer.tokenizers.append(RegexTokenizer(regex=regex))
 
     def test_1_tokenizers_added(self):
