@@ -2420,13 +2420,12 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             df['target'] = df['label_name']
         return df, _feature_list, _temp_df_raw_errors
 
-    def extract(self, document: Document) -> 'Dict':
+    def extract(self, document: Document) -> Document:
         """
         Infer information from a given Document.
 
-        :param text: HTML or raw text of document
-        :param bbox: Bbox of the document
-        :return: dictionary of labels and top candidates
+        :param document: Document object
+        :return: Document with predicted labels
 
         :raises:
          AttributeError: When missing a Tokenizer
@@ -2452,12 +2451,18 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         if not inference_document.spans():
             logger.error(f'{self.tokenizer} does not provide Spans for {document}')
             raise NotImplementedError('No error handling when Spans are missing.')
+
         # 3. preprocessing
         df, _feature_names, _raw_errors = self.features(inference_document)
+
+        return self.extract_from_df(df, inference_document)
+
+    def extract_from_df(self, df: pandas.DataFrame, inference_document: Document) -> Document:
+        """Predict Labels from features."""
         try:
             independent_variables = df[self.label_feature_list]
         except KeyError:
-            raise KeyError(f'Features of {document} do not match the features of the pipeline.')
+            raise KeyError(f'Features of {inference_document} do not match the features of the pipeline.')
             # todo calculate features of Document as defined in pipeline and do not check afterwards
         # 4. prediction and store most likely prediction and its accuracy in separated columns
         results = pandas.DataFrame(data=self.clf.predict_proba(X=independent_variables), columns=self.clf.classes_)
@@ -2538,7 +2543,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         if self.use_separate_labels:
             res_dict = self.separate_labels(res_dict)
 
-        virtual_doc = self.extraction_result_to_document(document, res_dict)
+        virtual_doc = self.extraction_result_to_document(inference_document, res_dict)
 
         return virtual_doc
 
@@ -2890,17 +2895,38 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
     def evaluate_tokenizer(self) -> Evaluation:
         """Evaluate the tokenizer."""
-        eval_list = []
-
-        for document in self.test_documents:
-
-            tokenized_document = deepcopy(document)
-            self.tokenizer.tokenize(tokenized_document)
-            eval_list.append((document, tokenized_document))
-
-        evaluation = Evaluation(eval_list)
+        evaluation = self.tokenizer.evaluate_dataset(self.test_documents)
 
         return evaluation
+
+    def evaluate_clf(self) -> Evaluation:
+        """Evaluate the Label classifier."""
+        eval_list = []
+        for document in self.test_documents:
+            virtual_doc = deepcopy(document)
+
+            for ann in document.annotations():
+                new_spans = []
+                for span in ann.spans:
+                    new_span = Span(start_offset=span.start_offset, end_offset=span.end_offset)
+                    new_spans.append(new_span)
+
+                _ = Annotation(
+                    document=virtual_doc,
+                    annotation_set=virtual_doc.no_label_annotation_set,
+                    label=ann.no_label,
+                    label_set=virtual_doc.project.no_label_set,
+                    category=virtual_doc.category,
+                    spans=new_spans,
+                )
+
+            feats_df, _, _ = self.features(virtual_doc)
+            predicted_doc = self.extract_from_df(feats_df, virtual_doc)
+            eval_list.append((document, predicted_doc))
+
+        clf_evaluation = Evaluation(eval_list)
+
+        return clf_evaluation
 
     def data_quality(self, strict: bool = True) -> Evaluation:
         """Evaluate the full pipeline on the pipeline's Training Documents."""
