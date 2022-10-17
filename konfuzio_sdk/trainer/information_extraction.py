@@ -2914,7 +2914,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
                 _ = Annotation(
                     document=virtual_doc,
                     annotation_set=virtual_doc.no_label_annotation_set,
-                    label=ann.no_label,
+                    label=virtual_doc.project.no_label,
                     label_set=virtual_doc.project.no_label_set,
                     category=virtual_doc.category,
                     spans=new_spans,

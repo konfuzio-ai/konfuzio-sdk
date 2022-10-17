@@ -135,6 +135,30 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
 
     spans["tokenizer_false_positive"] = (~spans["tokenizer_false_negative"]) & (~spans["tokenizer_true_positive"])
 
+    spans["clf_true_positive"] = (
+        (spans["is_correct"])
+        & (spans["is_matched"])
+        & (spans["document_id_local_predicted"].notna())
+        & (spans["above_predicted_threshold"])
+        & (spans["is_correct_label"])
+    )
+
+    spans["clf_false_negative"] = (
+        (spans["is_correct"])
+        & (spans["is_matched"])
+        & (spans["document_id_local_predicted"].notna())
+        & (~spans["above_predicted_threshold"])
+        & (spans["is_correct_label"])
+    )
+
+    spans["clf_false_positive"] = (
+        (spans["is_correct"])
+        & (spans["is_matched"])
+        & (spans["document_id_local_predicted"].notna())
+        & (spans["above_predicted_threshold"])
+        & (~spans["is_correct_label"])
+    )
+
     # Evaluate which **spans** are TN, TP, FP and keep RELEVANT_FOR_MAPPING to allow grouping of confidence measures
     spans["true_positive"] = 1 * (
         (spans["is_matched"])
@@ -308,6 +332,18 @@ class Evaluation:
         """Return the True Positives of all Spans."""
         return self._query(search=search)["tokenizer_false_negative"].sum()
 
+    def clf_tp(self, search=None) -> int:
+        """Return the True Positives of all Spans."""
+        return self._query(search=search)["clf_true_positive"].sum()
+
+    def clf_fp(self, search=None) -> int:
+        """Return the True Positives of all Spans."""
+        return self._query(search=search)["clf_false_positive"].sum()
+
+    def clf_fn(self, search=None) -> int:
+        """Return the True Positives of all Spans."""
+        return self._query(search=search)["clf_false_negative"].sum()
+
     def tokenizer(self, search=None) -> int:
         """Return the of all Spans that are found by the Tokenizer."""
         return self._query(search=search)["is_found_by_tokenizer"].sum()
@@ -354,4 +390,12 @@ class Evaluation:
             tp=self.tokenizer_tp(search=search),
             fp=self.tokenizer_fp(search=search),
             fn=self.tokenizer_fn(search=search),
+        ).f1
+
+    def clf_f1(self, search) -> Optional[float]:
+        """Calculate the F1 Score of one the Label classifier."""
+        return EvaluationCalculator(
+            tp=self.clf_tp(search=search),
+            fp=self.clf_fp(search=search),
+            fn=self.clf_fn(search=search),
         ).f1

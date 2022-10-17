@@ -253,7 +253,15 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         assert evaluation.tokenizer_fp() == 289
         assert evaluation.tokenizer_fn() == 5
 
-    def test_09_extract_test_document(self):
+    def test_09_clf_quality(self):
+        """Evaluate the Label classifier quality."""
+        evaluation = self.pipeline.evaluate_clf()
+        assert evaluation.clf_f1(None) == 1.0
+        assert evaluation.clf_tp() == 33
+        assert evaluation.clf_fp() == 0
+        assert evaluation.clf_fn() == 0
+
+    def test_10_extract_test_document(self):
         """Extract a randomly selected Test Document."""
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
@@ -262,7 +270,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         assert len(self.tests_annotations) == 20
 
     @parameterized.parameterized.expand(entity_results_data)
-    def test_10_test_annotations(self, i, expected):
+    def test_11_test_annotations(self, i, expected):
         """Test extracted annotations."""
         ann = self.tests_annotations[i]
         ann_tuple = (ann.label.name, ann.start_offset, ann.end_offset)
