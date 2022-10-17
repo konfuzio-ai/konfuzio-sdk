@@ -49,12 +49,13 @@ This version uses Konfuzio Trainer in version v.0.3.22, the Konfuzio Python SDK 
 - [Include the Label Set name in the API V3 even when no Label Set is present](https://app.konfuzio.com/v3/swagger/#/documents) ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9399)).
 
 ### Changed
-- [When a user creates a new Project, this user will become the default assignee for new Documents](https://help.konfuzio.com/modules/projects/index.html#default-assignee) [Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9705)
+- [When a user creates a new Project, this user will become the default assignee for new Documents](https://help.konfuzio.com/modules/projects/index.html#default-assignee) ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9705))
 
 ### Fixed
 - The numbering of Annotation Sets in the SmartView does not consider deleted Annotation Sets anymore ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9604)).
 - In some situations a Project could not be deleted via API ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9706)).
-- In specific scenarios, the deletion of the last remaining Annotation in a Document was not possible [Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9736).
+- In specific scenarios, the deletion of the last remaining Annotation in a Document was not possible ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9736)).
+- The SmartView did not use rotated pages due to a caching problem ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9830)).
 
 ## released-2022-09-21_12-00-31
 
