@@ -122,23 +122,23 @@ def flush_buffer(buffer: List[pandas.Series], doc_text: str, merge_vertical=Fals
         text = ""
         n_buf = len(buffer)
         for ind, buf in enumerate(buffer):
-            starts.append(buf['Start'])
-            ends.append(buf['End'])
-            text += doc_text[buf['Start'] : buf['End']]
+            starts.append(buf['start_offset'])
+            ends.append(buf['end_offset'])
+            text += doc_text[buf['start_offset'] : buf['end_offset']]
             if ind < n_buf - 1:
                 text += '\n'
     else:
-        starts = buffer[0]['Start']
-        ends = buffer[-1]['End']
+        starts = buffer[0]['start_offset']
+        ends = buffer[-1]['end_offset']
         text = doc_text[starts:ends]
 
     res_dict = dict()
-    res_dict['Start'] = starts
-    res_dict['End'] = ends
+    res_dict['start_offset'] = starts
+    res_dict['end_offset'] = ends
     res_dict['label_name'] = label
-    res_dict['Candidate'] = text
-    res_dict['Translated_Candidate'] = res_dict['Candidate']
-    res_dict['Translation'] = None
+    res_dict['offset_string'] = text
+    # res_dict['Translated_Candidate'] = res_dict['Candidate']
+    # res_dict['Translation'] = None
     res_dict['confidence'] = numpy.mean([b['confidence'] for b in buffer])  # if b['confidence'] > 0.1])
     res_dict['x0'] = min([b['x0'] for b in buffer])
     res_dict['x1'] = max([b['x1'] for b in buffer])
@@ -197,7 +197,7 @@ def is_valid_merge(
         # only merge if there are no characters in between (or only maximum of 5 whitespaces)
         char_bboxes = [
             doc_bbox[str(char_bbox_id)]
-            for char_bbox_id in range(buffer[-1]['End'], row['Start'])
+            for char_bbox_id in range(buffer[-1]['end_offset'], row['start_offset'])
             if str(char_bbox_id) in doc_bbox
         ]
 
@@ -211,12 +211,17 @@ def is_valid_merge(
             return False
 
     # Do not merge if the difference in the offsets is bigger than the maximum offset distance
-    if row['Start'] - buffer[-1]['End'] > max_offset_distance:
+    if row['start_offset'] - buffer[-1]['end_offset'] > max_offset_distance:
         return False
 
     # only merge if text is on same line
     # row can include entity that is already part of the buffer (buffer: Ankerkette Meterware, row: Ankerkette)
-    if '\n' in doc_text[min(buffer[0]['Start'], row['Start']) : max(buffer[-1]['End'], row['End'])]:
+    if (
+        '\n'
+        in doc_text[
+            min(buffer[0]['start_offset'], row['start_offset']) : max(buffer[-1]['end_offset'], row['end_offset'])
+        ]
+    ):
         return False
     # always merge if not one of these data types
     # never merge numbers or positive numbers
@@ -224,12 +229,12 @@ def is_valid_merge(
         return True
     # only merge percentages if the result of the merge is still a percentage
     if label_types[0] == 'Percentage':
-        text = doc_text[buffer[0]['Start'] : row['End']]
+        text = doc_text[buffer[0]['start_offset'] : row['end_offset']]
         merge = normalize_to_percentage(text)
         return merge is not None
     # only merge date if the result of the merge is still a date
     if label_types[0] == 'Date':
-        text = doc_text[buffer[0]['Start'] : row['End']]
+        text = doc_text[buffer[0]['start_offset'] : row['end_offset']]
         merge = normalize_to_date(text)
         return merge is not None
     # should only get here if we have a single data type that is either Number or Positive Number,
@@ -291,7 +296,7 @@ def is_valid_merge_vertical(
     # get page index (necessary to select the bboxes of the characters)
     for buf in temp_buffer:
         for page_index, offsets in offsets_per_page.items():
-            if buf['Start'] >= offsets[0] and buf['End'] <= offsets[1]:
+            if buf['start_offset'] >= offsets[0] and buf['end_offset'] <= offsets[1]:
                 break
 
         buf['page_index'] = page_index
@@ -305,7 +310,7 @@ def is_valid_merge_vertical(
     for buf in temp_buffer:
         char_bboxes = [
             doc_bbox[str(char_bbox_id)]
-            for char_bbox_id in range(buf['Start'], buf['End'] + 1)
+            for char_bbox_id in range(buf['start_offset'], buf['end_offset'] + 1)
             if str(char_bbox_id) in doc_bbox
         ]
         bboxes_by_offset.extend(char_bboxes)
@@ -373,14 +378,14 @@ def merge_df(
             merge_vertical,
         ):  # and row['confidence'] >= row['label_threshold']:
             buffer.append(row)
-            end = row['End']
+            end = row['end_offset']
         else:  # else, flush the buffer by creating a res_dict
             if buffer:
                 res_dict = flush_buffer(buffer, doc_text, merge_vertical=merge_vertical)
                 res_dicts.append(res_dict)
             buffer = []
             buffer.append(row)
-            end = row['End']
+            end = row['end_offset']
     if buffer:  # flush buffer at the very end to clear anything left over
         res_dict = flush_buffer(buffer, doc_text, merge_vertical=merge_vertical)
         res_dicts.append(res_dict)
@@ -1539,7 +1544,7 @@ def add_extractions_as_annotations(
         raise TypeError(f'Provided extraction object should be a Dataframe, got a {type(extractions)} instead')
     if not extractions.empty:
         # TODO: define required fields
-        required_fields = ['Start', 'End', 'confidence']
+        required_fields = ['start_offset', 'end_offset', 'confidence']
         if not set(required_fields).issubset(extractions.columns):
             raise ValueError(
                 f'Extraction do not contain all required fields: {required_fields}.'
@@ -1548,10 +1553,10 @@ def add_extractions_as_annotations(
 
         extracted_spans = extractions[required_fields].sort_values(by='confidence', ascending=False)
 
-        for span in extracted_spans.to_dict('records'):  # todo: are Start and End always ints?
+        for span in extracted_spans.to_dict('records'):  # todo: are start_offset and end_offset always ints?
             if document.bboxes is not None:
-                start = span['Start']
-                end = span['End']
+                start = span['start_offset']
+                end = span['end_offset']
                 offset_string = document.text[start:end]
                 bbox0 = document.bboxes[start]
                 bbox1 = document.bboxes[end - 1]
@@ -1584,7 +1589,7 @@ def add_extractions_as_annotations(
                     confidence=span['confidence'],
                     label_set=label_set,
                     annotation_set=annotation_set,
-                    spans=[Span(start_offset=span['Start'], end_offset=span['End'])],
+                    spans=[Span(start_offset=span['start_offset'], end_offset=span['end_offset'])],
                 )
             if annotation.spans[0].offset_string is None:
                 raise NotImplementedError(
@@ -2105,21 +2110,6 @@ class GroupAnnotationSets:
         feature_df_label['result_name'] = results.idxmax(axis=1)
         feature_df_label['confidence'] = results.max(axis=1)
 
-        # Do column renaming to be compatible with text-annotation
-        feature_df_label.rename(
-            columns={
-                'start_offset': 'Start',
-                'end_offset': 'End',
-                'offset_string': 'Candidate',
-                'regex': 'Regex',
-                'threshold': 'OptimalThreshold',
-            },
-            inplace=True,
-        )
-        feature_df_label['Translated_Candidate'] = feature_df_label['Candidate']
-
-        # feature_df_label['target'] = feature_df_label['result_name']
-
         # convert the transformed df to the new template features
         feature_df_template = self.build_document_template_feature_X(document_text, feature_df_label).filter(
             self.template_feature_list, axis=1
@@ -2204,9 +2194,9 @@ class GroupAnnotationSets:
         for i, line in enumerate(text.replace('\f', '\n').split('\n')):
             new_char_count = char_count + len(line)
             assert line == text[char_count:new_char_count]
-            line_df = df[(char_count <= df['Start']) & (df['End'] <= new_char_count)]
-            annotations = [row for index, row in line_df.iterrows()]
-            annotations_dict = dict((x['result_name'], True) for x in annotations)
+            line_df = df[(char_count <= df['start_offset']) & (df['end_offset'] <= new_char_count)]
+            spans = [row for index, row in line_df.iterrows()]
+            spans_dict = dict((x['result_name'], True) for x in spans)
             counter_dict = {}  # why?
             # annotations_accuracy_dict = defaultdict(lambda: 0)
             # for annotation in annotations:
@@ -2222,7 +2212,7 @@ class GroupAnnotationSets:
             #             counter_dict[label_set.name] += 1
             #         else:
             #             counter_dict[label_set.name] = 1
-            tmp_df = pandas.DataFrame([{**annotations_dict, **counter_dict}])
+            tmp_df = pandas.DataFrame([{**spans_dict, **counter_dict}])
             global_df = pandas.concat([global_df, tmp_df], ignore_index=True)
             char_count = new_char_count + 1
         global_df['text'] = text.replace('\f', '\n').split('\n')
@@ -2270,7 +2260,7 @@ class GroupAnnotationSets:
                                 # todo: the next line is memory heavy
                                 #  https://gitlab.com/konfuzio/objectives/-/issues/9342
                                 label_df['line'] = (
-                                    label_df['Start'].apply(lambda x: text_replaced[: int(x)]).str.count('\n')
+                                    label_df['start_offset'].apply(lambda x: text_replaced[: int(x)]).str.count('\n')
                                 )
                                 try:
                                     next_section_start: int = detected_sections.index[i + 1]  # line_list[i + 1][0]
@@ -2481,27 +2471,14 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         df['result_name'] = results.idxmax(axis=1)
         df['confidence'] = results.max(axis=1)
 
-        # if row['confidence'] < row['label_threshold']:
-        #     continue
         # 5. Translation
-        df['Translated_Candidate'] = df['offset_string']  # todo: make translation explicit: It's a cool Feature
+        # df['Translated_Candidate'] = df['offset_string']  # todo: make translation explicit: It's a cool Feature
         # Main Logic -------------------------
 
         # Do column renaming to be compatible with text-annotation
         # todo: how can multilines be created via SDK
         # todo: why do we need to adjust the woring for Server?
         # todo: which other attributes could be send in the extraction method?
-        df.rename(
-            columns={
-                'start_offset': 'Start',
-                'end_offset': 'End',
-                'page_index': 'page_index',
-                'offset_string': 'Candidate',
-                'regex': 'Regex',
-                'threshold': 'OptimalThreshold',
-            },
-            inplace=True,
-        )
 
         # Convert DataFrame to Dict with labels as keys and label dataframes as value.
         res_dict = {}
@@ -2537,13 +2514,14 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         # Try to calculate sections based on template classifier.
         if self.template_clf is not None:  # todo smarter handling of multiple clf
             res_dict = self.extract_template_with_clf(inference_document.text, res_dict)
-
-        res_dict[self.no_label_set_name] = no_label_res_dict
+            res_dict[self.no_label_set_name] = no_label_res_dict
 
         if self.use_separate_labels:
             res_dict = self.separate_labels(res_dict)
 
         virtual_doc = self.extraction_result_to_document(inference_document, res_dict)
+
+        # join document Spans into multi-line Annotation
 
         return virtual_doc
 
@@ -2927,6 +2905,40 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         clf_evaluation = Evaluation(eval_list)
 
         return clf_evaluation
+
+    def evaluate_template_clf(self):
+        """Evaluate the LabelSet classifier."""
+        if self.template_clf is None:
+            raise AttributeError(f'{self} does not provide a LabelSet Classifier.')
+        else:
+            check_is_fitted(self.template_clf)
+
+        eval_list = []
+        for document in self.test_documents:
+            df, _feature_names, _raw_errors = self.features(document)
+
+            df['result_name'] = df['target']
+
+            # Convert DataFrame to Dict with labels as keys and label dataframes as value.
+            res_dict = {}
+            for result_name in set(df['result_name']):
+                result_df = df[(df['result_name'] == result_name)].copy()
+
+                if not result_df.empty:
+                    res_dict[result_name] = result_df
+
+            res_dict = self.extract_template_with_clf(document.text, res_dict)
+
+            if self.use_separate_labels:
+                res_dict = self.separate_labels(res_dict)
+
+            predicted_doc = self.extraction_result_to_document(document, res_dict)
+
+            eval_list.append((document, predicted_doc))
+
+        template_clf_evaluation = Evaluation(eval_list)
+
+        return template_clf_evaluation
 
     def data_quality(self, strict: bool = True) -> Evaluation:
         """Evaluate the full pipeline on the pipeline's Training Documents."""

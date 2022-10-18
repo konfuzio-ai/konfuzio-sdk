@@ -144,14 +144,15 @@ template_clf_classes = ['Brutto-Bezug', 'Lohnabrechnung', 'Netto-Bezug', 'No', '
 
 
 @parameterized.parameterized_class(
-    ('use_separate_labels', 'evaluate_full_result', 'data_quality_result'),
+    ('use_separate_labels', 'evaluate_full_result', 'data_quality_result', 'clf_quality_result'),
     [
         (
             False,
             0.7945205479452054,  # w/ full dataset: 0.9237668161434978
             0.9745762711864406,
+            0.9705882352941176,
         ),
-        (True, 0.7945205479452054, 0.9704641350210971),  # w/ full dataset: 0.9783549783549783
+        (True, 0.7945205479452054, 0.9704641350210971, 0.967741935483871),  # w/ full dataset: 0.9783549783549783
     ],
 )
 class TestWhitespaceRFExtractionAI(unittest.TestCase):
@@ -256,12 +257,14 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
     def test_09_clf_quality(self):
         """Evaluate the Label classifier quality."""
         evaluation = self.pipeline.evaluate_clf()
-        assert evaluation.clf_f1(None) == 1.0
-        assert evaluation.clf_tp() == 33
-        assert evaluation.clf_fp() == 0
-        assert evaluation.clf_fn() == 0
+        assert evaluation.clf_f1(None) == self.clf_quality_result
 
-    def test_10_extract_test_document(self):
+    def test_10_template_clf_quality(self):
+        """Evaluate the LabelSet classifier quality."""
+        evaluation = self.pipeline.evaluate_template_clf()
+        assert evaluation.f1(None) == 1.0
+
+    def test_11_extract_test_document(self):
         """Extract a randomly selected Test Document."""
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
@@ -270,7 +273,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         assert len(self.tests_annotations) == 20
 
     @parameterized.parameterized.expand(entity_results_data)
-    def test_11_test_annotations(self, i, expected):
+    def test_12_test_annotations(self, i, expected):
         """Test extracted annotations."""
         ann = self.tests_annotations[i]
         ann_tuple = (ann.label.name, ann.start_offset, ann.end_offset)
@@ -379,7 +382,17 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         assert evaluation.tokenizer_fp() == 26
         assert evaluation.tokenizer_fn() == 1
 
-    def test_09_extract_test_document(self):
+    def test_09_clf_quality(self):
+        """Evaluate the Label classifier quality."""
+        evaluation = self.pipeline.evaluate_clf()
+        assert evaluation.clf_f1(None) == 1.0
+
+    def test_10_template_clf_quality(self):
+        """Evaluate the LabelSet classifier quality."""
+        evaluation = self.pipeline.evaluate_template_clf()
+        assert evaluation.f1(None) == 0.9552238805970149
+
+    def test_11_extract_test_document(self):
         """Extract a randomly selected Test Document."""
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
@@ -388,7 +401,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         assert len(self.tests_annotations) == 20
 
     @parameterized.parameterized.expand(entity_results_data)
-    def test_10_test_annotations(self, i, expected):
+    def test_12_test_annotations(self, i, expected):
         """Test extracted annotations."""
         ann = self.tests_annotations[i]
         ann_tuple = (ann.label.name, ann.start_offset, ann.end_offset)

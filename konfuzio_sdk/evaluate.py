@@ -155,7 +155,6 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
         (spans["is_correct"])
         & (spans["is_matched"])
         & (spans["document_id_local_predicted"].notna())
-        & (spans["above_predicted_threshold"])
         & (~spans["is_correct_label"])
     )
 
@@ -188,13 +187,6 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
             | (~spans["is_correct_id_"])
         )
     )
-
-    # spans["is_found_by_tokenizer"] = 1 * (
-    #     (spans["start_offset"] == spans["start_offset_predicted"])
-    #     & (spans["end_offset"] == spans["end_offset_predicted"])
-    #     & (spans["is_correct"])
-    #     & (spans["document_id_local_predicted"].notna())
-    # )
 
     # one Span must not be defined as TP or FP or FN more than once
     quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) <= 1).all()
