@@ -27,6 +27,7 @@ You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server
 - Make all List Views sortable by click on column ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9470)).
 - Sort Labels in Label-Sets to allow users to customize the UI per Category ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/8932)).
 - Delta Training, Partial Fit an exisiting classifier, so that training documents used previously can be deleted ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9251))
+- Allow administrators of Konfuzio on-premise installations to run a speedtest ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9870))
 - Start automatic AI retraining after user confirms that he has finished a annotation review ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9166))
 
 <!---
