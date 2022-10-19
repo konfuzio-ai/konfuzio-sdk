@@ -40,8 +40,8 @@ and try it by yourself.
 Train a Konfuzio SDK Model to Extract Information From Payslip Documents
 -----------------------------------------------------------
 
-The tutorial *RFExtractionAI Demo* aims to show you how to use the Konfuzio SDK package to use a simple Whitespace 
-tokenizer and to train a "RFExtractionAI" model to find and extract relevant information like Name, Date and Recipient
+The tutorial *RFExtractionAI Demo* aims to show you how to use the Konfuzio SDK package to use a simple [Whitespace 
+tokenizer](https://dev.konfuzio.com/sdk/sourcecode.html#konfuzio_sdk.tokenizer.regex.WhitespaceTokenizer) and to train a "RFExtractionAI" model to find and extract relevant information like Name, Date and Recipient
 from payslip documents.
 
 .. |OpenInColab3| image:: https://colab.research.google.com/assets/colab-badge.svg
