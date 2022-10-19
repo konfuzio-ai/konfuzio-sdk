@@ -913,6 +913,14 @@ def test_load_ai_model():
     assert len(res_doc.annotations(use_correct=False)) == 20
 
 
+def test_load_old_ai_model():
+    """Test loading of an old trained model."""
+    path = "trainer/2022-03-10-15-14-51_lohnabrechnung_old_model.pkl"
+    pipeline = load_model(path)
+
+    assert pipeline.name == 'DocumentAnnotationMultiClassModel'
+
+
 def test_feat_num_count():
     """Test string conversion."""
     # Debug code for df: df[df[self.label_feature_list].isin([np.nan, np.inf, -np.inf]).any(1)]

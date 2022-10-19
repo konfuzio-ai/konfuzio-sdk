@@ -72,8 +72,17 @@ def load_model(pickle_path: str):
             raise AttributeError("Pickle saved with incompatible Python version.")
         raise
 
-    if not hasattr(model, "name") or model.name not in {"RFExtractionAI", "Trainer"}:
+    if not hasattr(model, "name"):
         raise TypeError("Saved model file needs to be a Konfuzio Trainer instance.")
+    elif model.name in {
+        "DocumentAnnotationMultiClassModel",
+        "DocumentEntityMulticlassModel",
+        "SeparateLabelsAnnotationMultiClassModel",
+        "SeparateLabelsEntityMultiClassModel",
+    }:
+        logger.warning(f"Loading legacy {model.name} AI model.")
+    else:
+        logger.info(f"Loading {model.name} AI model.")
 
     return model
 
