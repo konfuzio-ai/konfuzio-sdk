@@ -869,6 +869,16 @@ class Label(Data):
         logger.info(f'Regexes are ready for Label {self.name}.')
         return self._regex
 
+    def spans_not_found_by_tokenizer(self, tokenizer, categories: List[Category]) -> List['Span']:
+        """Find Label Spans that are not found by a tokenizer."""
+        spans_not_found = []
+        label_annotations = self.annotations(categories=categories)
+        for annotation in label_annotations:
+            for span in annotation.spans:
+                if not tokenizer.span_match(span):
+                    spans_not_found.append(span)
+        return spans_not_found
+
     # def save(self) -> bool:
     #     """
     #     Save Label online.

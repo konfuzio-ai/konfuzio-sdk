@@ -204,6 +204,13 @@ class ListTokenizer(AbstractTokenizer):
 
         return document
 
+    def found_spans(self, document: Document) -> List[Span]:
+        """Run found_spans in the given order on a Document."""
+        found_spans_list = []
+        for tokenizer in self.tokenizers:
+            found_spans_list += tokenizer.found_spans(document)
+        return found_spans_list
+
     def lose_weight(self):
         """Delete processing steps."""
         self.processing_steps = []
