@@ -92,8 +92,7 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
         spans["end_offset_predicted"] = spans['end_offset']  # start and end offset are identical
 
         spans["above_predicted_threshold"] = spans["confidence_predicted"] >= spans["label_threshold_predicted"]
-        # spans["is_correct_label"] = spans["label_id"].fillna(0) == spans["label_id_predicted"].fillna(0)
-        # spans["is_correct_label_set"] = spans["label_set_id"].fillna(0) == spans["label_set_id_predicted"].fillna(0)
+
         spans["is_correct_label"] = spans["label_id"] == spans["label_id_predicted"]
         spans["is_correct_label_set"] = spans["label_set_id"] == spans["label_set_id_predicted"]
 
@@ -133,7 +132,12 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
         (spans["is_correct"]) & (spans["is_matched"]) & (spans["document_id_local_predicted"].isna())
     )
 
-    spans["tokenizer_false_positive"] = (~spans["tokenizer_false_negative"]) & (~spans["tokenizer_true_positive"])
+    spans["tokenizer_false_positive"] = (
+        (~spans["tokenizer_false_negative"])
+        & (~spans["tokenizer_true_positive"])
+        & (spans["document_id_local_predicted"].notna())
+        & (spans["end_offset"] != 0)  # ignore placeholder
+    )
 
     spans["clf_true_positive"] = (
         (spans["is_correct"])

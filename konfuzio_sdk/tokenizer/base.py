@@ -120,7 +120,7 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
 
         compared = self.evaluate(document=document)  # todo summarize evaluation, as we are calculating it
         # return all Spans that were not found
-        missing_spans = compared[(compared['is_correct']) & (compared['tokenizer_true_positive'] == 0)]
+        missing_spans = compared[(compared['tokenizer_false_negative'])]
         remaining_span_doc = Document(
             bbox=document.get_bbox(),
             pages=document.pages,

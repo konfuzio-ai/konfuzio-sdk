@@ -262,7 +262,8 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
     def test_10_template_clf_quality(self):
         """Evaluate the LabelSet classifier quality."""
         evaluation = self.pipeline.evaluate_template_clf()
-        assert evaluation.f1(None) == 1.0
+
+        assert evaluation.f1(None) == 0.9552238805970149
 
     def test_11_extract_test_document(self):
         """Extract a randomly selected Test Document."""
@@ -582,8 +583,8 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
         cls.sample_document = cls.project.local_none_document
         # example of an extraction
         cls.extraction = {
-            'Start': 15,
-            'End': 20,
+            'start_offset': 15,
+            'end_offset': 20,
             'confidence': 0.2,
             'page_index': 0,
             'x0': 10,
@@ -623,8 +624,8 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
     def test_4_span_attributes_of_annotation_created(self):
         """Test attributes of the span in the annotation created in the sample document."""
         annotation = self.sample_document.annotations(use_correct=False)[0]
-        assert annotation.spans[0].start_offset == self.extraction_df.loc[0, 'Start']
-        assert annotation.spans[0].end_offset == self.extraction_df.loc[0, 'End']
+        assert annotation.spans[0].start_offset == self.extraction_df.loc[0, 'start_offset']
+        assert annotation.spans[0].end_offset == self.extraction_df.loc[0, 'end_offset']
         # The document used does not have bounding boxes, so we cannot have the coordinates
         assert annotation.spans[0].offset_string == 'pizza'
         assert annotation.spans[0].bbox() is None
@@ -710,8 +711,8 @@ class TestExtractionToDocument(unittest.TestCase):
 
         # example 1 of an extraction
         cls.extraction_1 = {
-            'Start': 5,
-            'End': 10,
+            'start_offset': 5,
+            'end_offset': 10,
             'confidence': 0.2,
             'page_index': 0,
             'x0': 10,
@@ -724,8 +725,8 @@ class TestExtractionToDocument(unittest.TestCase):
 
         # example 2 of an extraction
         cls.extraction_2 = {
-            'Start': 15,
-            'End': 20,
+            'start_offset': 15,
+            'end_offset': 20,
             'confidence': 0.2,
             'page_index': 0,
             'x0': 20,
@@ -847,7 +848,7 @@ class TestExtractionToDocument(unittest.TestCase):
     def test_extraction_result_with_invalid_dataframe(self):
         """Test conversion of an AI output with extractions invalid Dataframe columns."""
         invalid_df = pd.DataFrame(data=[self.extraction_2])
-        invalid_df = invalid_df.drop(columns=["Start"])
+        invalid_df = invalid_df.drop(columns=["start_offset"])
         extraction_result = {'LabelSetName': [{'LabelName': invalid_df}]}
         with pytest.raises(ValueError, match='Extraction do not contain all required fields'):
             RFExtractionAI().extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
@@ -868,8 +869,8 @@ class TestGetExtractionResults(unittest.TestCase):
                         'Candidate': ['Simon-Muster'],
                         'Translated_Candidate': ['Simon-Muster'],
                         'confidence': [0.94],
-                        'Start': [1273],
-                        'End': [1285],
+                        'start_offset': [1273],
+                        'end_offset': [1285],
                     }
                 ),
                 'Nachname': pd.DataFrame(
@@ -877,8 +878,8 @@ class TestGetExtractionResults(unittest.TestCase):
                         'Candidate': ['Merlot'],
                         'Translated_Candidate': ['Merlot'],
                         'confidence': [0.67],
-                        'Start': [1287],
-                        'End': [1293],
+                        'start_offset': [1287],
+                        'end_offset': [1293],
                     }
                 ),
             }
