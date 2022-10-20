@@ -649,3 +649,17 @@ TASK_TRACK_STARTED=
 TASK_ACKS_ON_FAILURE_OR_TIMEOUT=
 TASK_ACKS_LATE=
 ```
+
+
+### Environment Variables for Background task time limits
+
+.. Note::
+    All of these are optional with defaults set, these defaults can be viewed [here](https://dev.konfuzio.com/web/on_premises.html#background-processes).
+
+EXTRACTION_TIME_LIMIT = 
+CATEGORIZATION_TIME_LIMIT = 
+EVALUATION_TIME_LIMIT = 
+TRAINING_EXTRACTION_TIME_LIMIT = 
+TRAINING_CATEGORIZATION_TIME_LIMIT = 
+SANDWICH_PDF_TIME_LIMIT = 
+DOCUMENT_TEXT_AND_BBOXES_TIME_LIMIT = 
