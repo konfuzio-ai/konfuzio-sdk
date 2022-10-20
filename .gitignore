@@ -11,3 +11,5 @@ settings.py
 *.tar.gz
 *data_*
 .ipynb_checkpoints
+notebooks/otsu_vgg16/*
+notebooks/testing_class/*
