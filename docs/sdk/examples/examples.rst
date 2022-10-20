@@ -8,6 +8,13 @@ Code Examples
 
 .. mdinclude:: helloworld.md
 
+Train a Konfuzio SDK Model to Extract Information From Payslip Documents
+-----------------------------------------------------------
+
+The tutorial *RFExtractionAI Demo* aims to show you how to use the Konfuzio SDK package to use a simple `Whitespace 
+tokenizer <https://dev.konfuzio.com/sdk/sourcecode.html#konfuzio_sdk.tokenizer.regex.WhitespaceTokenizer>`_ and to train a "RFExtractionAI" model to find and extract relevant information like Name, Date and Recipient
+from payslip documents.
+
 Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations
 ---------------------------------------------------------------
 
@@ -36,13 +43,3 @@ and try it by yourself.
 
 .. |OpenInColab2| image:: https://colab.research.google.com/assets/colab-badge.svg
 .. _OpenInColab2: https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/word_count.ipynb
-
-Train a Konfuzio SDK Model to Extract Information From Payslip Documents
------------------------------------------------------------
-
-The tutorial *RFExtractionAI Demo* aims to show you how to use the Konfuzio SDK package to use a simple [Whitespace 
-tokenizer](https://dev.konfuzio.com/sdk/sourcecode.html#konfuzio_sdk.tokenizer.regex.WhitespaceTokenizer) and to train a "RFExtractionAI" model to find and extract relevant information like Name, Date and Recipient
-from payslip documents.
-
-.. |OpenInColab3| image:: https://colab.research.google.com/assets/colab-badge.svg
-.. _OpenInColab3: https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/RFExtractionAI%20Demo.ipynb
