@@ -5,24 +5,26 @@ import pickle
 from nltk import word_tokenize
 from typing import List
 
-# from konfuzio.default_models import DocumentModel
-from konfuzio_sdk.data import Document, Page
+from konfuzio_sdk.data import Document, Page, Project
 
-# a non-tested draft mostly for demonstrational purposes at this stage
+
+class FusionModel:
+    """Train a fusion model for correct splitting of multi-file documents."""
+
+    def __init__(self, project_id: int, split_point: float = 0.5):
+        """Initialize project, training and testing data, and a split point for training dataset."""
+        self.project = Project(id_=project_id)
+        self.train_data = self.project.documents
+        self.test_data = self.project.test_documents
+        split_point = int(split_point * len(self.train_data))
 
 
 class PageSplitting:
     """Split a given document and return a list of resulting shorter documents."""
 
-    def __init__(
-        self,
-        model_path: str,
-        categorization_pipeline
-        #: DocumentModel not available for imports?
-    ):
+    def __init__(self, model_path: str):
         """Load model, tokenizer, vocabulary and categorization_pipeline."""
         self.load(model_path)
-        self.categorization_pipeline = categorization_pipeline
 
     def save(self) -> None:
         """Save model, tokenizer, and vocabulary used for document splitting."""
@@ -44,7 +46,7 @@ class PageSplitting:
         pages_text = original_doc.text[start_page.start_offset : end_page.end_offset]
         new_doc = Document(id_=None, text=pages_text)
         for page in original_doc.pages():
-            if page.number >= start_page.number and page.number <= end_page.number:
+            if page.number in range(start_page.number, end_page.number):
                 _ = Page(
                     document=new_doc,
                     start_offset=page.start_offset,
@@ -80,6 +82,4 @@ class PageSplitting:
         :param document: An input Document to be split.
         """
         split_docs = self._suggest_page_split(document)
-        for doc in split_docs:
-            self.categorization_pipeline(doc, recategorize=True, inplace=True)
         return split_docs
