@@ -127,12 +127,24 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
     ln = len(offset_string)
 
     # check for 1.234,56
-    if '.' in offset_string and offset_string.count(',') == 1 and offset_string.index('.') < offset_string.index(','):
+    if (
+        '.' in offset_string
+        and offset_string.count(',') == 1
+        and offset_string.index('.') < offset_string.index(',')
+        and len(offset_string.split('.')[0]) <= 3
+        and all([len(x) == 3 for x in offset_string.split(',')[0].split('.')[1:]])
+    ):
         offset_string = offset_string.replace('.', '').replace(',', '.')  # => 1234.56
         if all(x.isdecimal() for x in offset_string.split('.')):
             _float = float(offset_string)
     # check for 1,234.56
-    elif '.' in offset_string and ',' in offset_string and offset_string.index(',') < offset_string.index('.'):
+    elif (
+        ',' in offset_string
+        and offset_string.count('.') == 1
+        and offset_string.index(',') < offset_string.index('.')
+        and len(offset_string.split(',')[0]) <= 3
+        and all([len(x) == 3 for x in offset_string.split('.')[0].split(',')[1:]])
+    ):
         offset_string = offset_string.replace(',', '')  # => 1234.56
         if all(x.isdecimal() for x in offset_string.split('.')):
             _float = float(offset_string)
@@ -176,7 +188,7 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
             _float = float(offset_string)
     # check for 12,34 (comma is third last char).
     elif (
-        ',' in offset_string
+        offset_string.count(',') == 1
         and (len(offset_string) - offset_string.index(',')) == 3
         and offset_string.replace(',', '').isdecimal()
     ):
@@ -201,7 +213,7 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
     # check for 500,000 (comma is forth last char).
     elif (
         ln > 0
-        and ',' in offset_string
+        and offset_string.count(',') == 1
         and (len(offset_string) - offset_string.index(',')) == 4
         and offset_string.replace(',', '').isdecimal()
         and not offset_string[0] == ','
@@ -642,7 +654,7 @@ def roman_to_float(offset_string: str) -> Optional[float]:
     return float(roman_sum)
 
 
-def normalize(offset_string, data_type):
+def normalize(offset_string, data_type, raise_exception=False):
     """Wrap all normalize functionality."""
     try:
         if data_type in ['Positive Number', 'float_positive']:
@@ -657,9 +669,13 @@ def normalize(offset_string, data_type):
             result = normalize_to_percentage(offset_string)
         elif data_type in ['Text', 'str']:
             result = offset_string
+        elif data_type in ['unhandled']:  # only used for testing that unhandled cases raise a ValueError
+            raise ValueError
         else:
             result = None
     except Exception as e:  # NOQA
+        if raise_exception:
+            raise e
         logger.debug('Text >>' + offset_string + f'<< with data type {data_type} cannot be converted')
         result = None
         pass

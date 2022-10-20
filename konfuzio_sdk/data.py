@@ -1030,7 +1030,7 @@ class Span(Data):
     @property
     def normalized(self):
         """Normalize the offset string."""
-        return normalize(self.offset_string, self.annotation.label.data_type)
+        return normalize(self.offset_string, self.annotation.label.data_type, raise_exception=True)
 
     @property
     def offset_string(self) -> Union[str, None]:
@@ -1986,6 +1986,9 @@ class Document(Data):
         :param annotation: Annotation to add in the document
         :return: Input annotation.
         """
+        # Validate that the Annotation is normalizable, or that it fails gracefully if not normalizable (returns None).
+        # If normalization is not handled for this Annotation, it will raise a ValueError
+        _ = [span.normalized for span in annotation.spans]
         if self._annotations is None:
             self.annotations()
         if annotation not in self._annotations:

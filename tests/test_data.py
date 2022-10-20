@@ -352,7 +352,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 47
+        assert len(cls.project.virtual_documents) == 49
 
     # def test_document_only_needs_project(self):
     #     """Test that a Document can be created without category"""
@@ -1038,6 +1038,22 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert span_1 == span_2
         with self.assertRaises(ValueError):
             _ = Annotation(id_=2, document=document, spans=[span_2], label=self.label, label_set=self.label_set)
+
+    def test_to_add_non_normalizable_annotation_that_fails_gracefully(self):
+        """Test to add Annotation with an offset string that is not machine readable."""
+        float_label = Label(project=self.project, get_data_type_display='float')
+        document = Document(project=self.project, category=self.category, text="The price is €10,,50.")
+        span = Span(start_offset=14, end_offset=20)
+        annotation = Annotation(id_=1, document=document, spans=[span], label=float_label, label_set=self.label_set)
+        assert all([span.normalized is None for span in annotation.spans])
+
+    def test_to_add_non_normalizable_annotation_that_fails_in_a_unhandled_way(self):
+        """Test to add Annotation with an offset string that is not machine readable."""
+        float_label = Label(project=self.project, get_data_type_display='unhandled')
+        document = Document(project=self.project, category=self.category, text="The price is €,12.")
+        span = Span(start_offset=14, end_offset=17)
+        with self.assertRaises(ValueError):
+            _ = Annotation(id_=1, document=document, spans=[span], label=float_label, label_set=self.label_set)
 
     def test_to_add_annotation_with_same_span_offsets_but_different_label_to_a_document(self):
         """

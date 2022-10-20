@@ -1,5 +1,7 @@
 """Test for string normalization."""
 import logging
+import unittest
+
 import pytest
 
 from konfuzio_sdk.normalize import (
@@ -149,7 +151,7 @@ test_data_positive_numbers = [
     ('none', 0, None),
     ('NoNe', 0, None),
     ('StringThatIncludesnone', None, None),
-    ('54³', None, None)
+    ('54³', None, None),
 ]
 
 
@@ -178,7 +180,14 @@ test_data_numbers = [
     ('3³1.500', None, 0),
     ('3.000.000', 3000000, 0),
     ('56,430,681', 56430681, 0),
+    ('1,,234.56', None, 0),
+    ('9,876,543.21', 9876543.21, 0),
+    ('1.234.452,56', 1234452.56, 0),
+    ('99999999,876,543.21', None, 0),
+    ('11111111.234.452,56', None, 0),
     ('43.34.34', None, 0),
+    ('829..98', None, 0),
+    ('143,,34', None, 0),
     ('(51.901,99)', -51901.99, 0),
     ('2.662| ', 2662, 0),
     ('-,-', 0, 0),
@@ -197,11 +206,11 @@ test_data_numbers = [
     ('III', 3, None),
     (' XIV  ', 14, None),
     ('12³', None, 0),
-    (' XL IV  ', 44, None)
-    # ('Woch.Arb.Zt.', None, 0), TODO this raises uncaught ValuError
-    # ('12.', 12.0, 0), undefined test cases:
+    (' XL IV  ', 44, None),
+    ('.', None, 0),
+    ('Woch.Arb.Zt.', None, 0),
+    # ('12.', 12.0, 0),  # todo undefined test cases (these return None, should these be supported?)
     # ('1.', 1.0, 0),
-    # ('.', None, 0),
     # ('.1', 0.1, 0),
     # ('.123', 0.123, 0),
 ]
@@ -285,3 +294,13 @@ test_data_bool = [
 def test_bool(test_input, expected, document_id):
     """Test to normalize boolean."""
     assert normalize_to_bool(test_input) == expected
+
+
+class TestUnhandledNormalization(unittest.TestCase):
+    """Test the normalize method can raise an exception if the provided string is not caught by any of our checks."""
+
+    def test_unhandled(self):
+        """Test the unhandled normalization type."""
+        assert normalize("hello", "unhandled") is None
+        with self.assertRaises(ValueError):
+            _ = normalize("hello", "unhandled", raise_exception=True)
