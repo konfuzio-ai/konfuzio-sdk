@@ -29,6 +29,7 @@ def sdk_isinstance(instance, klass):
     "types" module. For this case the builtin method "isinstance" will return False because it tries to compare
     "types.Document" with "konfuzio_sdk.data.Document".
     """
+    # TODO: Update test cases to use sdk_isinstance
     result = type(instance).__name__ == klass.__name__
     return result
 

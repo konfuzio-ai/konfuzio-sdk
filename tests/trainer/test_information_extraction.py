@@ -1,16 +1,21 @@
 # -*- coding: utf-8 -*-
 """Test to train an Extraction AI."""
+from copy import deepcopy
 import linecache
 import logging
 import math
 import tracemalloc
 import unittest
+import parameterized
+import os
+from requests import HTTPError
 
 import pytest
+import pandas as pd
 from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
 
-from konfuzio_sdk.data import Project
+from konfuzio_sdk.data import Project, Document, AnnotationSet
 from konfuzio_sdk.trainer.information_extraction import (
     DocumentAnnotationMultiClassModel,
     num_count,
@@ -26,13 +31,16 @@ from konfuzio_sdk.trainer.information_extraction import (
     strip_accents,
     count_string_differences,
     year_month_day_count,
+    add_extractions_as_annotations,
+    extraction_result_to_document,
     SeparateLabelsEntityMultiClassModel,
     DocumentEntityMulticlassModel,
-    SeparateLabelsAnnotationMultiClassModel,
+    # SeparateLabelsAnnotationMultiClassModel,
 )
 from konfuzio_sdk.api import upload_ai_model
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
+from konfuzio_sdk.samples import LocalTextProject
 
 logger = logging.getLogger(__name__)
 
@@ -67,139 +75,72 @@ def display_top(snapshot, key_type='lineno', limit=30):
     logger.info("Total allocated size: %.1f KiB" % (total / 1024))
 
 
-class TestSequenceInformationExtraction(unittest.TestCase):
-    """Test to train an extraction Model for Documents."""
-
-    @classmethod
-    def setUpClass(cls) -> None:
-        """Set up the Data and Pipeline."""
-        tracemalloc.start()
-        cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-        cls.pipeline = DocumentAnnotationMultiClassModel()
-        display_top(tracemalloc.take_snapshot())
-
-    def tearDown(self) -> None:
-        """Print a Snapshot after running a test."""
-        display_top(tracemalloc.take_snapshot())
-
-    def test_1_configure_pipeline(self):
-        """Make sure the Data and Pipeline is configured."""
-        self.pipeline.tokenizer = WhitespaceTokenizer()
-        self.pipeline.category = self.project.get_category_by_id(id_=63)
-        self.pipeline.documents = self.pipeline.category.documents()[:5]
-        self.pipeline.test_documents = self.pipeline.category.test_documents()[:1]
-
-    def test_2_make_features(self):
-        """Make sure the Data and Pipeline is configured."""
-        self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
-            documents=self.pipeline.documents
-        )
-        self.pipeline.df_test, self.pipeline.test_label_feature_list = self.pipeline.feature_function(
-            documents=self.pipeline.test_documents
-        )
-
-    def test_3_fit(self) -> None:
-        """Start to train the Model."""
-        self.pipeline.fit()
-
-    def test_4_save_model(self):
-        """Evaluate the model."""
-        self.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder)
-
-    def test_5_evaluate_model(self):
-        """Evaluate the model."""
-        self.pipeline.evaluate()
-
-    def test_6_extract_test_document(self):
-        """Extract a randomly selected Test Document."""
-        test_document = self.project.get_document_by_id(44823)
-        result = self.pipeline.extract(document=test_document)
-        assert len(result['Brutto-Bezug']) > 0  # todo add more test for inference on data level
-
-    @unittest.skip(reason='Test run offline.')
-    def test_7_upload_ai_model(self):
-        """Upload the model."""
-        upload_ai_model(ai_model_path=self.pipeline_path, category_ids=[self.pipeline.category.id_])
+entity_results_data = [
+    (0, ('Austellungsdatum', 159, 169)),
+    (1, ('Personalausweis', 352, 357)),
+    (2, ('Steuerklasse', 365, 366)),
+    (3, ('Personalausweis', 1194, 1199)),
+    (4, ('Gesamt-Brutto', 1498, 1504)),
+    (5, ('Vorname', 1507, 1518)),
+    (6, ('Nachname', 1519, 1527)),
+    (7, ('Gesamt-Brutto', 1582, 1587)),
+    (8, ('Lohnart', 1758, 1762)),
+    (9, ('Bezeichnung', 1763, 1769)),
+    (10, ('Betrag', 1831, 1839)),
+    (11, ('Gesamt-Brutto', 2111, 2119)),
+    (12, ('Sozialversicherung', 2255, 2262)),
+    (13, ('Sozialversicherung', 2269, 2274)),
+    (14, ('Sozialversicherung', 2281, 2285)),
+    (15, ('Sozialversicherung', 2292, 2296)),
+    (16, ('Steuerrechtliche Abzüge', 2324, 2330)),
+    (17, ('Netto-Verdienst', 3004, 3012)),
+    (18, ('Steuer-Brutto', 3141, 3149)),
+    (19, ('Auszahlungsbetrag', 3777, 3785)),
+]
 
 
-class TestSequenceInformationSeparateLabelsExtraction(unittest.TestCase):
-    """Test to train an extraction Model for Documents."""
-
-    @classmethod
-    def setUpClass(cls) -> None:
-        """Set up the Data and Pipeline."""
-        cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-        cls.pipeline = SeparateLabelsEntityMultiClassModel()
-
-    def test_1_configure_pipeline(self):
-        """Make sure the Data and Pipeline is configured."""
-        self.pipeline.tokenizer = WhitespaceTokenizer()
-        self.pipeline.category = self.project.get_category_by_id(id_=63)
-        self.pipeline.documents = self.pipeline.category.documents()[:5]
-        self.pipeline.test_documents = self.pipeline.category.test_documents()[:1]
-        # todo have a separate test case for calculating features of offline documents
-        for doc in self.pipeline.documents + self.pipeline.test_documents:
-            doc.set_offline()
-
-    def test_2_make_features(self):
-        """Make sure the Data and Pipeline is configured."""
-        self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
-            documents=self.pipeline.documents
-        )
-        self.pipeline.df_test, self.pipeline.test_label_feature_list = self.pipeline.feature_function(
-            documents=self.pipeline.test_documents
-        )
-
-    def test_3_fit(self) -> None:
-        """Start to train the Model."""
-        self.pipeline.fit()
-
-    def test_4_save_model(self):
-        """Evaluate the model."""
-        self.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder)
-
-    def test_5_evaluate_model(self):
-        """Evaluate the model."""
-        self.pipeline.evaluate()
-
-    def test_6_extract_test_document(self):
-        """Extract a randomly selected Test Document."""
-        test_document = self.project.get_document_by_id(44823)
-        result = self.pipeline.extract(document=test_document)
-        assert len(result['Brutto-Bezug']) > 0  # todo add more test for inference on data level
-
-    @unittest.skip(reason='Test run offline.')
-    def test_7_upload_ai_model(self):
-        """Upload the model."""
-        upload_ai_model(ai_model_path=self.pipeline_path, category_ids=[self.pipeline.category.id_])
-
-
-class TestSequenceDocumentEntityMulticlassModelExtraction(unittest.TestCase):
-    """Test to train an extraction Model for Documents."""
+class TestDocumentEntityMultiClassModel(unittest.TestCase):
+    """Test New SDK Information Extraction."""
 
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the Data and Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
         cls.pipeline = DocumentEntityMulticlassModel()
+        cls.tests_annotations = list()
 
     def test_1_configure_pipeline(self):
         """Make sure the Data and Pipeline is configured."""
         self.pipeline.tokenizer = WhitespaceTokenizer()
         self.pipeline.category = self.project.get_category_by_id(id_=63)
-        self.pipeline.documents = self.pipeline.category.documents()[:5]
-        self.pipeline.test_documents = self.pipeline.category.test_documents()[:1]
+
+        train_doc_ids = [44823, 44834, 44839, 44840, 44841]
+        self.pipeline.documents = [self.project.get_document_by_id(doc_id) for doc_id in train_doc_ids]
+
+        test_doc_ids = [44865]
+        self.pipeline.test_documents = [self.project.get_document_by_id(doc_id) for doc_id in test_doc_ids]
         # todo have a separate test case for calculating features of offline documents
-        for doc in self.pipeline.documents + self.pipeline.test_documents:
-            doc.set_offline()
 
     def test_2_make_features(self):
         """Make sure the Data and Pipeline is configured."""
+        # we have intentional unrevised annotations in the Training set which will block feature calculation
+        with pytest.raises(ValueError, match="is unrevised in this dataset and can't be used for training"):
+            self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
+                documents=self.pipeline.documents, require_revised_annotations=True
+            )
+        # if we set them as revised and rejected, the features can be calculated again
+        doc_with_unrevised_anns = self.project.get_document_by_id(44823)
+        unrevised_annotations = [
+            a
+            for a in doc_with_unrevised_anns.annotations(use_correct=False)
+            if not a.revised and not a.is_correct and a.confidence > 0.1
+        ]
+        expected_unrevised_ids = [9760937, 9647432]
+        for i, a in enumerate(unrevised_annotations):
+            assert a.id_ == expected_unrevised_ids[i]
+            a.revised = True
         self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
-            documents=self.pipeline.documents
-        )
-        self.pipeline.df_test, self.pipeline.test_label_feature_list = self.pipeline.feature_function(
-            documents=self.pipeline.test_documents
+            documents=self.pipeline.documents, require_revised_annotations=True
         )
 
     def test_3_fit(self) -> None:
@@ -207,48 +148,74 @@ class TestSequenceDocumentEntityMulticlassModelExtraction(unittest.TestCase):
         self.pipeline.fit()
 
     def test_4_save_model(self):
-        """Evaluate the model."""
-        self.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder)
+        """Save the model."""
+        self.pipeline.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder)
+        assert os.path.isfile(self.pipeline.pipeline_path)
+        # os.remove(self.pipeline.pipeline_path)  # cleanup
 
-    def test_5_evaluate_model(self):
-        """Evaluate the model."""
-        self.pipeline.evaluate()
-
-    def test_6_extract_test_document(self):
-        """Extract a randomly selected Test Document."""
-        test_document = self.project.get_document_by_id(44823)
-        result = self.pipeline.extract(document=test_document)
-        assert len(result['Brutto-Bezug']) > 0  # todo add more test for inference on data level
-
-    @unittest.skip(reason='Test run offline.')
-    def test_7_upload_ai_model(self):
+    def test_5_upload_ai_model(self):
         """Upload the model."""
-        upload_ai_model(ai_model_path=self.pipeline_path, category_ids=[self.pipeline.category.id_])
+        assert os.path.isfile(self.pipeline.pipeline_path)
+
+        try:
+            upload_ai_model(ai_model_path=self.pipeline.pipeline_path, category_ids=[self.pipeline.category.id_])
+        except HTTPError as e:
+            assert '403' in str(e)
+
+    def test_6_evaluate_full(self):
+        """Evaluate DocumentEntityMultiClassModel."""
+        evaluation = self.pipeline.evaluate_full()
+
+        assert evaluation.f1(None) == 0.8108108108108109
+
+    def test_7_extract_test_document(self):
+        """Extract a randomly selected Test Document."""
+        test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        result = self.pipeline.extract(document=test_document)
+
+        assert type(result) is dict
+
+        res_doc = extraction_result_to_document(test_document, result)
+        self.tests_annotations += res_doc.annotations(use_correct=False)
+        assert len(self.tests_annotations) == 20
+
+    @parameterized.parameterized.expand(entity_results_data)
+    def test_8_test_annotations(self, i, expected):
+        """Test extracted annotations."""
+        ann = self.tests_annotations[i]
+        ann_tuple = (ann.label.name, ann.start_offset, ann.end_offset)
+        assert ann_tuple == expected
 
 
-class TestSequenceSeparateLabelsAnnotationMultiClassModelExtraction(unittest.TestCase):
-    """Test to train an extraction Model for Documents."""
+class TestSeparateLabelsEntityMultiClassModel(unittest.TestCase):
+    """Test New SDK Information Extraction."""
 
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the Data and Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-        cls.pipeline = SeparateLabelsAnnotationMultiClassModel()
+        cls.pipeline = SeparateLabelsEntityMultiClassModel()
+        cls.tests_annotations = list()
 
     def test_1_configure_pipeline(self):
         """Make sure the Data and Pipeline is configured."""
         self.pipeline.tokenizer = WhitespaceTokenizer()
         self.pipeline.category = self.project.get_category_by_id(id_=63)
-        self.pipeline.documents = self.pipeline.category.documents()[:5]
-        self.pipeline.test_documents = self.pipeline.category.test_documents()[:1]
+
+        train_doc_ids = [44823, 44834, 44839, 44840, 44841]
+        self.pipeline.documents = [self.project.get_document_by_id(doc_id) for doc_id in train_doc_ids]
+
+        test_doc_ids = [44865]
+        self.pipeline.test_documents = [self.project.get_document_by_id(doc_id) for doc_id in test_doc_ids]
+        # todo have a separate test case for calculating features of offline documents
 
     def test_2_make_features(self):
         """Make sure the Data and Pipeline is configured."""
+        # We have intentional unrevised annotations in the Training set which will block feature calculation,
+        # unless we set require_revised_annotations=False (which is default), which we are doing here, so we ignore them
+        # See TestDocumentEntityMultiClassModel::test_2_make_features for the case with require_revised_annotations=True
         self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
-            documents=self.pipeline.documents
-        )
-        self.pipeline.df_test, self.pipeline.test_label_feature_list = self.pipeline.feature_function(
-            documents=self.pipeline.test_documents
+            documents=self.pipeline.documents, require_revised_annotations=False
         )
 
     def test_3_fit(self) -> None:
@@ -256,24 +223,43 @@ class TestSequenceSeparateLabelsAnnotationMultiClassModelExtraction(unittest.Tes
         self.pipeline.fit()
 
     def test_4_save_model(self):
-        """Evaluate the model."""
-        self.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder)
+        """Save the model."""
+        self.pipeline.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder)
+        assert os.path.isfile(self.pipeline.pipeline_path)
+        # os.remove(self.pipeline.pipeline_path)  # cleanup
 
-    def test_5_evaluate_model(self):
-        """Evaluate the model."""
-        self.pipeline.evaluate()
-
-    def test_6_extract_test_document(self):
-        """Extract a randomly selected Test Document."""
-        test_document = self.project.get_document_by_id(44823)
-        result = self.pipeline.extract(document=test_document)
-        # todo: this extract method should use a Document
-        assert len(result['Brutto-Bezug']) > 0  # todo add more test for inference on data level
-
-    @unittest.skip(reason='Test run offline.')
-    def test_7_upload_ai_model(self):
+    def test_5_upload_ai_model(self):
         """Upload the model."""
-        upload_ai_model(ai_model_path=self.pipeline_path, category_ids=[self.pipeline.category.id_])
+        assert os.path.isfile(self.pipeline.pipeline_path)
+
+        try:
+            upload_ai_model(ai_model_path=self.pipeline.pipeline_path, category_ids=[self.pipeline.category.id_])
+        except HTTPError as e:
+            assert '403' in str(e)
+
+    def test_6_evaluate_full(self):
+        """Evaluate DocumentEntityMultiClassModel."""
+        evaluation = self.pipeline.evaluate_full()
+
+        assert evaluation.f1(None) == 0.8108108108108109
+
+    def test_7_extract_test_document(self):
+        """Extract a randomly selected Test Document."""
+        test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        result = self.pipeline.extract(document=test_document)
+
+        assert type(result) is dict
+
+        res_doc = extraction_result_to_document(test_document, result)
+        self.tests_annotations += res_doc.annotations(use_correct=False)
+        assert len(self.tests_annotations) == 20
+
+    @parameterized.parameterized.expand(entity_results_data)
+    def test_8_test_annotations(self, i, expected):
+        """Test extracted annotations."""
+        ann = self.tests_annotations[i]
+        ann_tuple = (ann.label.name, ann.start_offset, ann.end_offset)
+        assert ann_tuple == expected
 
 
 class TestInformationExtraction(unittest.TestCase):
@@ -286,7 +272,7 @@ class TestInformationExtraction(unittest.TestCase):
 
     def test_extraction_without_tokenizer(self):
         """Test extraction on a Document."""
-        pipeline = DocumentAnnotationMultiClassModel()
+        pipeline = DocumentEntityMulticlassModel()
         document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         with pytest.raises(AttributeError) as einfo:
             pipeline.extract(document)
@@ -295,7 +281,7 @@ class TestInformationExtraction(unittest.TestCase):
     def test_extraction_without_clf(self):
         """Test extraction without classifier."""
         document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-        pipeline = DocumentAnnotationMultiClassModel()
+        pipeline = DocumentEntityMulticlassModel()
         pipeline.tokenizer = WhitespaceTokenizer()
         with pytest.raises(AttributeError) as einfo:
             pipeline.extract(document)
@@ -304,15 +290,18 @@ class TestInformationExtraction(unittest.TestCase):
     def test_feature_function(self):
         """Test to generate features."""
         document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-        pipeline = DocumentAnnotationMultiClassModel()
+        pipeline = DocumentEntityMulticlassModel()
         pipeline.tokenizer = WhitespaceTokenizer()
         features, feature_names, errors = pipeline.features(document)
         assert len(feature_names) == 270  # todo investigate if all features are calculated correctly, see #9289
+        # feature order should stay the same to get predictable results
+        assert feature_names[-1] == 'first_word_y1'
+        assert feature_names[42] == 'feat_substring_count_h'
 
     def test_extract_with_unfitted_clf(self):
         """Test to extract a Document."""
         document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-        pipeline = DocumentAnnotationMultiClassModel()
+        pipeline = DocumentEntityMulticlassModel()
         pipeline.tokenizer = WhitespaceTokenizer()
         pipeline.clf = RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1)
         with pytest.raises(AttributeError) as einfo:
@@ -322,7 +311,7 @@ class TestInformationExtraction(unittest.TestCase):
     def test_extract_with_fitted_clf(self):
         """Test to extract a Document."""
         document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-        pipeline = DocumentAnnotationMultiClassModel()
+        pipeline = DocumentEntityMulticlassModel()
         pipeline.tokenizer = WhitespaceTokenizer()
         pipeline.clf = RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1)
         X, y = make_classification(
@@ -346,18 +335,383 @@ class TestInformationExtraction(unittest.TestCase):
         pipeline.label_feature_list = ['start_offset', 'end_offset']
         pipeline.category = document.category
         pipeline.extract(document)
+        # todo
+        # virtual_doc = extraction_result_to_document(document, extraction_result)
+        # assert len(virtual_doc.annotations(use_correct=False)) > 0
+        # assert len(virtual_doc.annotation_sets()) > 0
 
     def test_feature_function_with_label_limit(self):
         """Test to generate features with many spatial features.."""
         document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-        pipeline = DocumentAnnotationMultiClassModel()
+        pipeline = DocumentEntityMulticlassModel()
         pipeline.no_label_limit = 0.5
         pipeline.tokenizer = WhitespaceTokenizer()
         pipeline.n_nearest = 10
         features, feature_names, errors = pipeline.features(document)
         assert len(feature_names) == 1102  # todo investigate if all features are calculated correctly, see #9289
-        assert features['is_correct'].sum() == 19
+        assert features['is_correct'].sum() == 21
         assert features['revised'].sum() == 2
+
+    def test_label_train_document(self):
+        """Test label_train_document method for feature extraction."""
+        project = LocalTextProject()
+        pipeline = DocumentEntityMulticlassModel()
+        pipeline.tokenizer = WhitespaceTokenizer()
+
+        document = project.local_training_document
+
+        virtual_doc = deepcopy(document)
+        virtual_doc = pipeline.tokenizer.tokenize(virtual_doc)
+        pipeline.label_train_document(virtual_doc, document)
+
+        annotations = virtual_doc.annotations(use_correct=False)
+
+        assert len(annotations) == 5
+        assert " ".join(ann.offset_string[0] for ann in annotations) == "Hi all, I like fish."
+        assert [ann.label.name for ann in annotations] == [
+            'DefaultLabelName',
+            'NO_LABEL',
+            'LabelName 2',
+            'NO_LABEL',
+            'NO_LABEL',
+        ]
+
+
+class TestAddExtractionAsAnnotation(unittest.TestCase):
+    """Test add an Extraction result as Annotation to a Document."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set LocalTextProject with example prediction."""
+        cls.project = LocalTextProject()
+        cls.category = cls.project.get_category_by_id(1)
+        cls.label_set = cls.project.get_label_set_by_id(3)
+        cls.label = cls.project.get_label_by_id(4)
+        cls.sample_document = cls.project.local_none_document
+        # example of an extraction
+        cls.extraction = {
+            'Start': 15,
+            'End': 20,
+            'Accuracy': 0.2,
+            'page_index': 0,
+            'x0': 10,
+            'x1': 20,
+            'y0': 10,
+            'y1': 20,
+            'top': 200,
+            'bottom': 210,
+        }
+        cls.extraction_df = pd.DataFrame(data=[cls.extraction])
+
+    def test_1_add_extraction_to_sample_document(self):
+        """Test add extraction to the sample document."""
+        annotation_set = AnnotationSet(id_=99, document=self.sample_document, label_set=self.label_set)
+
+        add_extractions_as_annotations(
+            extractions=self.extraction_df,
+            document=self.sample_document,
+            label=self.label,
+            label_set=self.label_set,
+            annotation_set=annotation_set,
+        )
+
+        assert len(self.sample_document.annotations(use_correct=False)) == 1
+
+    def test_2_status_of_annotation_created(self):
+        """Test status of te annotation created in the sample document."""
+        annotation = self.sample_document.annotations(use_correct=False)[0]
+        assert not annotation.is_correct
+        assert not annotation.revised
+
+    def test_3_number_of_spans_of_annotation_created(self):
+        """Test number of Spans in the annotation created in the sample document."""
+        annotation = self.sample_document.annotations(use_correct=False)[0]
+        assert len(annotation.spans) == 1
+
+    def test_4_span_attributes_of_annotation_created(self):
+        """Test attributes of the span in the annotation created in the sample document."""
+        annotation = self.sample_document.annotations(use_correct=False)[0]
+        assert annotation.spans[0].start_offset == self.extraction_df.loc[0, 'Start']
+        assert annotation.spans[0].end_offset == self.extraction_df.loc[0, 'End']
+        # The document used does not have bounding boxes, so we cannot have the coordinates
+        assert annotation.spans[0].offset_string == 'pizza'
+        assert annotation.spans[0].bbox() is None
+
+    def test_add_empty_extraction_to_empty_document(self):
+        """Test add empty extraction to an empty document - no text."""
+        document = Document(text='', project=self.project, category=self.category)
+        annotation_set_1 = AnnotationSet(id_=97, document=document, label_set=self.label_set)
+        extraction_df = pd.DataFrame()
+
+        add_extractions_as_annotations(
+            extractions=extraction_df,
+            document=document,
+            label=self.label,
+            label_set=self.label_set,
+            annotation_set=annotation_set_1,
+        )
+        assert document.annotations(use_correct=False) == []
+
+    def test_add_empty_extraction_to_document(self):
+        """Test add empty extraction to a document."""
+        document = Document(text='Hello', project=self.project, category=self.category)
+        annotation_set_1 = AnnotationSet(id_=98, document=document, label_set=self.label_set)
+        extraction_df = pd.DataFrame()
+
+        add_extractions_as_annotations(
+            extractions=extraction_df,
+            document=document,
+            label=self.label,
+            label_set=self.label_set,
+            annotation_set=annotation_set_1,
+        )
+        assert document.annotations(use_correct=False) == []
+
+    def test_add_extraction_to_empty_document(self):
+        """Test add extraction to an empty document - no text."""
+        document = Document(text='', project=self.project, category=self.category)
+        annotation_set_1 = AnnotationSet(id_=1, document=document, label_set=self.label_set)
+
+        # The document used is an empty document, therefore it does not have text or bounding boxes,
+        # so we cannot have the offset string or the coordinates and it shouldn't have been extracted at all
+        with pytest.raises(NotImplementedError, match='does not have a correspondence in the text of Document'):
+            add_extractions_as_annotations(
+                extractions=self.extraction_df,
+                document=document,
+                label=self.label,
+                label_set=self.label_set,
+                annotation_set=annotation_set_1,
+            )
+
+    def test_add_invalid_extraction(self):
+        """Test add an invalid extraction - missing fields."""
+        document = Document(project=self.project, category=self.category, text='From 14.12.2021 to 1.1.2022.')
+        annotation_set_1 = AnnotationSet(id_=1, document=document, label_set=self.label_set)
+        extraction = {'start_offset': 5, 'end_offset': 10}
+
+        extraction_df = pd.DataFrame(data=[extraction])
+
+        with pytest.raises(ValueError, match='Extraction do not contain all required fields'):
+            add_extractions_as_annotations(
+                extractions=extraction_df,
+                document=document,
+                label=self.label,
+                label_set=self.label_set,
+                annotation_set=annotation_set_1,
+            )
+
+
+class TestExtractionToDocument(unittest.TestCase):
+    """Test the conversion of the Extraction results from the AI to a Document."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set LocalTextProject with example predictions."""
+        cls.project = LocalTextProject()
+        cls.category = cls.project.get_category_by_id(1)
+        cls.label_set_0 = cls.project.get_label_set_by_id(2)
+        # cls.label_set_1 = cls.project.get_label_set_by_id(3)
+        cls.label_0 = cls.project.get_label_by_id(4)
+        cls.label_1 = cls.project.get_label_by_id(5)
+        cls.sample_document = cls.project.local_none_document
+        # label_set_1 = LabelSet(id_=10, name='label set name', project=project, categories=[category])
+
+        # example 1 of an extraction
+        cls.extraction_1 = {
+            'Start': 5,
+            'End': 10,
+            'Accuracy': 0.2,
+            'page_index': 0,
+            'x0': 10,
+            'x1': 20,
+            'y0': 10,
+            'y1': 20,
+            'top': 200,
+            'bottom': 210,
+        }
+
+        # example 2 of an extraction
+        cls.extraction_2 = {
+            'Start': 15,
+            'End': 20,
+            'Accuracy': 0.2,
+            'page_index': 0,
+            'x0': 20,
+            'x1': 30,
+            'y0': 20,
+            'y1': 30,
+            'top': 200,
+            'bottom': 210,
+        }
+
+    def test_empty_extraction_result_to_document(self):
+        """Test conversion of an empty AI output to a Document."""
+        virtual_doc = extraction_result_to_document(self.sample_document, extraction_result={})
+        assert virtual_doc.annotations(use_correct=False) == []
+
+    def test_empty_extraction_result_to_empty_document(self):
+        """Test conversion of an empty AI output to an empty Document."""
+        document = Document(text='', project=self.project, category=self.category)
+        virtual_doc = extraction_result_to_document(document, extraction_result={})
+        assert virtual_doc.annotations(use_correct=False) == []
+
+    def test_extraction_result_with_empty_dataframe_to_document(self):
+        """Test conversion of an AI output with an empty dataframe to a Document."""
+        document = Document(project=self.project, category=self.category, text='From 14.12.2021 to 1.1.2022.')
+        virtual_doc = extraction_result_to_document(
+            document, extraction_result={'label in category label set': pd.DataFrame()}
+        )
+        assert virtual_doc.annotations(use_correct=False) == []
+
+    def test_extraction_result_with_empty_dictionary_to_document(self):
+        """Test conversion of an AI output with an empty dictionary to a Document."""
+        virtual_doc = extraction_result_to_document(self.sample_document, extraction_result={'LabelSetName': {}})
+        assert virtual_doc.annotations(use_correct=False) == []
+
+    def test_extraction_result_with_empty_list_to_document(self):
+        """Test conversion of an AI output with an empty list to a Document."""
+        virtual_doc = extraction_result_to_document(self.sample_document, extraction_result={'LabelSetName': []})
+        assert virtual_doc.annotations(use_correct=False) == []
+
+    def test_extraction_result_with_empty_list_to_empty_document(self):
+        """Test conversion of an AI output with an empty list to an empty Document."""
+        virtual_doc = extraction_result_to_document(self.sample_document, extraction_result={'LabelSetName': []})
+        assert virtual_doc.annotations(use_correct=False) == []
+
+    def test_extraction_result_for_category_label_set(self):
+        """Test conversion of an AI output with an extraction for a label in the Category Label Set."""
+        extraction_result = {'DefaultLabelName': pd.DataFrame(data=[self.extraction_1])}
+        virtual_doc = extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
+        assert len(virtual_doc.annotations(use_correct=False)) == 1
+        annotation = virtual_doc.annotations(use_correct=False)[0]
+        assert annotation.label.name == 'DefaultLabelName'
+        assert annotation.label_set == self.project.get_label_set_by_name('CategoryName')
+
+    def test_extraction_result_for_label_set_with_single_annotation_set(self):
+        """Test conversion of an AI output with multiple extractions for a label in a Label Set - 1 Annotation Set."""
+        extraction_result = {'LabelSetName': {'LabelName': pd.DataFrame(data=[self.extraction_1, self.extraction_2])}}
+        virtual_doc = extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
+        assert len(virtual_doc.annotations(use_correct=False)) == 2
+        annotation_1 = virtual_doc.annotations(use_correct=False)[0]
+        annotation_2 = virtual_doc.annotations(use_correct=False)[1]
+        assert annotation_1.label.name == annotation_2.label.name == 'LabelName'
+        assert annotation_1.label_set == annotation_2.label_set == self.project.get_label_set_by_name('LabelSetName')
+        assert annotation_1.annotation_set.id_ == annotation_2.annotation_set.id_
+
+    def test_extraction_result_for_label_set_with_multiple_annotation_sets(self):
+        """Test conversion of an AI output with extractions for a label in a Label Set for different Annotation Sets."""
+        extraction_result = {
+            'LabelSetName': [
+                {'LabelName': pd.DataFrame(data=[self.extraction_1])},
+                {'LabelName': pd.DataFrame(data=[self.extraction_2])},
+            ]
+        }
+        virtual_doc = extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
+        assert len(virtual_doc.annotations(use_correct=False)) == 2
+        annotation_1 = virtual_doc.annotations(use_correct=False)[0]
+        annotation_2 = virtual_doc.annotations(use_correct=False)[1]
+        assert annotation_1.label.name == annotation_2.label.name == 'LabelName'
+        assert annotation_1.label_set == annotation_2.label_set == self.project.get_label_set_by_name('LabelSetName')
+        assert annotation_1.annotation_set.id_ != annotation_2.annotation_set.id_
+
+    def test_extraction_result_for_non_existing_label(self):
+        """Test conversion of an AI output with extractions for a label that does not exist in the doc's category."""
+        extraction_result = {
+            'LabelSetName': [
+                {'LabelName': pd.DataFrame(data=[self.extraction_1])},
+                {'NonExistingLabelName': pd.DataFrame(data=[self.extraction_2])},
+            ]
+        }
+        with pytest.raises(IndexError):
+            extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
+
+    def test_extraction_result_for_non_existing_label_set(self):
+        """Test conversion of an AI output with extractions for a labelset that does not exist in the doc's category."""
+        extraction_result = {
+            'LabelSetName': [{'LabelName': pd.DataFrame(data=[self.extraction_1])}],
+            'NonExistingLabelSet': [{'LabelName': pd.DataFrame(data=[self.extraction_2])}],
+        }
+        with pytest.raises(IndexError):
+            extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
+
+    def test_extraction_result_with_non_dataframe_object(self):
+        """Test conversion of an AI output with extractions containing objects that are not Dataframes."""
+        extraction_result = {'LabelSetName': [{'LabelName': self.extraction_1}]}
+        with pytest.raises(TypeError, match='Provided extraction object should be a Dataframe, got a'):
+            extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
+
+    def test_extraction_result_with_invalid_dataframe(self):
+        """Test conversion of an AI output with extractions invalid Dataframe columns."""
+        invalid_df = pd.DataFrame(data=[self.extraction_2])
+        invalid_df = invalid_df.drop(columns=["Start"])
+        extraction_result = {'LabelSetName': [{'LabelName': invalid_df}]}
+        with pytest.raises(ValueError, match='Extraction do not contain all required fields'):
+            extraction_result_to_document(self.sample_document, extraction_result=extraction_result)
+
+
+class TestGetExtractionResults(unittest.TestCase):
+    """Test the conversion of the Extraction results from the AI to a Document."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set LocalTextProject with example predictions."""
+        cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+        cls.document = cls.project.get_document_by_id(44867)
+        cls.result_dict = {
+            'Lohnabrechnung': {
+                'Vorname': pd.DataFrame(
+                    data={
+                        'Candidate': ['Simon-Muster'],
+                        'Translated_Candidate': ['Simon-Muster'],
+                        'Accuracy': [0.94],
+                        'Start': [1273],
+                        'End': [1285],
+                    }
+                ),
+                'Nachname': pd.DataFrame(
+                    data={
+                        'Candidate': ['Merlot'],
+                        'Translated_Candidate': ['Merlot'],
+                        'Accuracy': [0.67],
+                        'Start': [1287],
+                        'End': [1293],
+                    }
+                ),
+            }
+        }
+
+    def test_get_extraction_results_with_virtual_doc(self):
+        """Get back the extractions from our virtual doc."""
+        virtual_doc = extraction_result_to_document(self.document, self.result_dict)
+        ann1, ann2 = virtual_doc.annotations(use_correct=False)
+        assert ann1.bboxes[0] == {
+            'bottom': 212.84699999999998,
+            'end_offset': 1285,
+            'line_number': 22,
+            'offset_string': 'Simon-Muster',
+            'offset_string_original': 'Simon-Muster',
+            'page_index': 0,
+            'start_offset': 1273,
+            'top': 204.84699999999998,
+            'x0': 66.0,
+            'x1': 137.04,
+            'y0': 628.833,
+            'y1': 636.833,
+        }
+        assert ann2.bboxes[0] == {
+            'bottom': 212.84699999999998,
+            'end_offset': 1293,
+            'line_number': 22,
+            'offset_string': 'Merlot',
+            'offset_string_original': 'Merlot',
+            'page_index': 0,
+            'start_offset': 1287,
+            'top': 204.84699999999998,
+            'x0': 143.28,
+            'x1': 178.56,
+            'y0': 628.833,
+            'y1': 636.833,
+        }
 
 
 def test_feat_num_count():
