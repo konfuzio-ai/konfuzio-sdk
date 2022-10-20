@@ -19,9 +19,16 @@ from konfuzio_sdk.data import (
     download_training_and_test_data,
     Category,
     Page,
+    Bbox,
 )
 from konfuzio_sdk.utils import is_file
-from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID, TEST_PROJECT_ID
+from tests.variables import (
+    OFFLINE_PROJECT,
+    TEST_DOCUMENT_ID,
+    TEST_PROJECT_ID,
+    TEST_PAYSLIPS_CATEGORY_ID,
+    TEST_RECEIPTS_CATEGORY_ID,
+)
 
 from konfuzio_sdk.samples import LocalTextProject
 
@@ -110,9 +117,45 @@ class TestOnlineProject(unittest.TestCase):
             image = page.get_image()
             assert type(image) is PngImageFile
 
-    def test_create_annotation(self):
-        """Test to add an Annotation to the document."""
+    def test_get_annotation_by_id(self):
+        """Test to find an online annotation by its ID."""
         doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        annotation = doc.get_annotation_by_id(4420057)
+        assert annotation.start_offset == 1507
+        assert annotation.end_offset == 1518
+        assert annotation.offset_string == ['Erna-Muster']
+
+    def test_get_nonexistent_annotation_by_id(self):
+        """Test to find an online annotation that does not exist by its ID, should raise an IndexError."""
+        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        with pytest.raises(IndexError, match="is not part of"):
+            _ = doc.get_annotation_by_id(999999)
+
+    def test_create_annotation_offline(self):
+        """Test to add an Annotation to the document offline, and that it does not persist after updating the doc."""
+        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        assert Span(start_offset=1590, end_offset=1602) not in doc.spans()
+        label = self.project.get_label_by_name('Lohnart')
+        annotation = Annotation(
+            document=doc,
+            spans=[Span(start_offset=1590, end_offset=1602)],
+            label=label,
+            label_set=label.label_sets[0],
+            accuracy=1.0,
+            is_correct=True,
+        )
+        assert annotation in doc.annotations()
+        doc.update()  # redownload document information to check that the annotation was not added online
+        assert annotation not in doc.annotations()
+
+    def test_create_annotation_then_delete_annotation(self):
+        """Test to add an Annotation to the document online, then to delete it offline and online as well."""
+        # We do 3 tests in 1 here since unit tests should be independent,
+        # we don't want to refer to an Annotation created by a previous test
+
+        # Test1: add an Annotation to the document online
+        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        assert Span(start_offset=1590, end_offset=1602) not in doc.spans()
         label = self.project.get_label_by_name('Lohnart')
         annotation = Annotation(
             document=doc,
@@ -123,35 +166,19 @@ class TestOnlineProject(unittest.TestCase):
             is_correct=True,
         )
         annotation.save()
-        doc.update()
-        assert Span(start_offset=1590, end_offset=1602) in doc.spans()
+        assert annotation in doc.annotations()
+        doc.update()  # redownload document information to check that the annotation was saved online
+        assert annotation in doc.annotations()
 
-    def test_delete_annotation_online(self):
-        """Test to delete an Annotation from the document online."""
-        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-        annot = [x for x in doc.get_annotations() if x.start_offset == 1590 and x.end_offset == 1602]
-        annot[0].delete()
-        doc.update()
-        assert annot[0] not in doc.get_annotations()
-
-    def test_delete_annotation_offline(self):
-        """Test to delete an Annotation from the document offline."""
-        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-        label = self.project.get_label_by_name('Lohnart')
-        annotation = Annotation(
-            document=doc,
-            spans=[Span(start_offset=1603, end_offset=1605)],
-            label=label,
-            label_set=label.label_sets[0],
-            accuracy=1.0,
-            is_correct=True,
-        )
-        annotation.save()  # for the check on line 155
+        # Test2: delete the Annotation from the document offline
         annotation.delete(delete_online=False)
         assert annotation not in doc.get_annotations()
-        doc.update()
+        doc.update()  # redownload document information to check that the annotation was not deleted online
         assert annotation in doc.get_annotations()
-        annotation.delete()
+
+        # Test3: delete the Annotation from the document online.
+        annotation.delete()  # doc.update() performed internally when delete_online=True, which is default
+        assert annotation not in doc.get_annotations()
 
 
 class TestOfflineExampleData(unittest.TestCase):
@@ -161,11 +188,16 @@ class TestOfflineExampleData(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Initialize the test Project."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+        cls.payslips_category = cls.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID)
+        cls.receipts_category = cls.project.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID)
 
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.documents) == 26
+        assert len(cls.payslips_category.documents()) == 25
+        assert len(cls.receipts_category.documents()) == 25
+        assert cls.project.get_document_by_id(44864).category is None
+        assert len(cls.project.documents) == 51
 
     def test_copy(self):
         """Test that copy is not allowed as it needs to be implemented for every SDK concept."""
@@ -189,7 +221,9 @@ class TestOfflineExampleData(unittest.TestCase):
 
     def test_project_num_label(self):
         """Test that no_label exists in the Labels of the Project and has the expected name."""
-        self.assertEqual(len(self.project.labels), 19)
+        self.assertEqual(19, len(self.payslips_category.labels))
+        self.assertEqual(30, len(self.receipts_category.labels))
+        self.assertEqual(19 + 30 - 1, len(self.project.labels))  # subtract one to avoid double counting the NO_LABEL
 
     def test_no_label(self):
         """Test if NO_LABEL is available."""
@@ -214,6 +248,13 @@ class TestOfflineExampleData(unittest.TestCase):
         assert box.x0 == 84.28
         assert box.y0 == 532.592
         assert box.y1 == 540.592
+
+    def test_get_category_name_for_fallback_prediction(self):
+        """Test turn a category name to lowercase, remove parentheses along with their contents, and trim spaces."""
+        assert self.payslips_category.fallback_name == "lohnabrechnung"
+        assert self.receipts_category.fallback_name == "quittung"
+        test_category = Category(project=self.project, id_=1, name="Te(s)t Category Name (content content)")
+        assert test_category.fallback_name == "tet category name"
 
 
 class TestEqualityAnnotation(unittest.TestCase):
@@ -394,7 +435,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 43
+        assert len(cls.project.virtual_documents) == 47
 
     # def test_document_only_needs_project(self):
     #     """Test that a Document can be created without category"""
@@ -524,7 +565,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         span = Span(start_offset=1, end_offset=2)
         annotation = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
         assert annotation.spans[0].annotation is not None
-        assert annotation.spans[0].x0 is None  # Span bboxes must be explicitly loaded using span.bbox
+        assert annotation.spans[0].bbox() is None  # Span bboxes must be explicitly loaded using span.bbox
         # Here this would be failing even when calling span.bbox as the test document does not have a bbox.
 
     def test_get_span_bbox_with_characters_without_height_allowed(self):
@@ -702,6 +743,54 @@ class TestOfflineDataSetup(unittest.TestCase):
         _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
         with pytest.raises(ValueError, match='has no width'):
             document.bboxes
+
+    def test_docs_with_same_bbox_hash(self):
+        """Test that bbox insertion order doesn't change the hash of the bboxes in a document."""
+        document1_bbox = {
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'},
+            '1': {'x0': 1, 'x1': 2, 'y0': 1, 'y1': 3, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'e'},
+        }
+        document1 = Document(project=self.project, category=self.category, text='hello', bbox=document1_bbox)
+        _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document1, start_offset=0, end_offset=1)
+        document1.set_text_bbox_hashes()
+        document2_bbox = {
+            '1': {'x0': 1, 'x1': 2, 'y0': 1, 'y1': 3, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'e'},
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'},
+        }
+        document2 = Document(project=self.project, category=self.category, text='hello', bbox=document2_bbox)
+        _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document2, start_offset=0, end_offset=1)
+        document2.set_text_bbox_hashes()
+        assert document1._bbox_hash == document2._bbox_hash
+
+    def test_document_text_modified(self):
+        """Test that we can detect changes in the text of a document."""
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
+        }
+        document = Document(
+            project=self.project, category=self.category, text='hello', bbox=document_bbox, strict_bbox_validation=True
+        )
+        _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
+        self.assertTrue(document.text)
+        document.set_text_bbox_hashes()
+        self.assertFalse(document._check_text_or_bbox_modified())
+        document._text = "123" + document.text
+        self.assertTrue(document._check_text_or_bbox_modified())
+
+    def test_document_bbox_modified(self):
+        """Test that we can detect changes in the bboxes of a document."""
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
+        }
+        document = Document(
+            project=self.project, category=self.category, text='hello', bbox=document_bbox, strict_bbox_validation=True
+        )
+        page = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
+        self.assertTrue(document.bboxes)
+        document.set_text_bbox_hashes()
+        self.assertFalse(document._check_text_or_bbox_modified())
+        document._characters[1] = Bbox(x0=1, x1=2, y0=1, y1=3, page=page, strict_validation=True)
+        self.assertTrue(document._check_text_or_bbox_modified())
 
     def test_document_spans(self):
         """Test getting spans from a Document."""
@@ -1186,7 +1275,7 @@ class TestKonfuzioDataCustomPath(unittest.TestCase):
         prj.delete()
 
 
-class TestKonfuzioOneVirtualOneRealCategory(unittest.TestCase):
+class TestKonfuzioOneVirtualTwoRealCategories(unittest.TestCase):
     """Test handle data."""
 
     @classmethod
@@ -1199,19 +1288,21 @@ class TestKonfuzioOneVirtualOneRealCategory(unittest.TestCase):
 
     def test_get_labels_of_virtual_category(self):
         """Return only related Labels as Information Extraction can be trained per Category."""
-        assert len(self.project.categories[1].labels) == 1  # virtual created Categories have no NO_LABEL
+        assert len(self.project.categories[-1].labels) == 1  # virtual created Categories have no NO_LABEL
 
     def test_get_labels_of_category(self):
         """Return only related Labels as Information Extraction can be trained per Category."""
-        real_category = self.project.get_category_by_id(63)
-        assert len(real_category.labels) == len(self.project.labels) - 1
+        real_category1 = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID)
+        real_category2 = self.project.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID)
+        # we calculate the set to avoid double counting the NO_LABEL
+        assert len(set(real_category1.labels + real_category2.labels)) == len(self.project.labels) - 1
 
 
 class TestKonfuzioDataSetup(unittest.TestCase):
     """Test handle data."""
 
-    document_count = 26
-    test_document_count = 3
+    document_count = 51
+    test_document_count = 4
     annotations_correct = 24
     # 24 created by human
     # https://app.konfuzio.com/admin/server/sequenceannotation/?
@@ -1231,7 +1322,8 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_get_labels_of_category(self):
         """Return only related Labels as Information Extraction can be trained per Category."""
-        assert len(self.prj.categories[0].labels) == len(self.prj.labels)
+        # we calculate the set to avoid double counting the NO_LABEL
+        assert len(set(self.prj.categories[0].labels + self.prj.categories[1].labels)) == len(self.prj.labels)
 
     def test_document_with_no_category_must_have_no_annotations(self):
         """Test if we skip Annotations in no Category Documents."""
@@ -1283,7 +1375,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_number_of_label_sets(self):
         """Test Label Sets numbers."""
         # Online Label Sets + added during tests +  no_label_set
-        assert len(self.prj.label_sets) == 7
+        assert len(self.prj.label_sets) == 13
 
     # def test_check_tokens(self):
     #     """Test to find not matched Annotations."""
@@ -1312,7 +1404,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_category(self):
         """Test if Category of main Label Set is initialized correctly."""
-        assert len(self.prj.categories) == 1
+        assert len(self.prj.categories) == 2
         assert self.prj.categories[0].id_ == 63
         assert self.prj.label_sets[0].categories[0].id_ == 63
 
@@ -1385,9 +1477,22 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_categories(self):
         """Test get Labels in the Project."""
-        assert self.prj.categories.__len__() == 1
-        assert self.prj.categories[0].name == 'Lohnabrechnung'
+        assert self.prj.categories.__len__() == 2
+        payslips_category = self.prj.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID)
+        assert payslips_category.name == 'Lohnabrechnung'
         # We have 5 Label Sets, Lohnabrechnung is Category and a Label Set as it hold labels, however a Category
+        # cannot hold labels
+        assert sorted([label_set.name for label_set in self.prj.categories[0].label_sets]) == [
+            'Brutto-Bezug',
+            'Lohnabrechnung',
+            'NO_LABEL_SET',
+            'Netto-Bezug',
+            'Steuer',
+            'Verdiensibescheinigung',
+        ]
+        receipts_category = self.prj.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID)
+        assert receipts_category.name == 'Quittung (GERMAN)'
+        # We have 5 Label Sets, Quittung is Category and a Label Set as it hold labels, however a Category
         # cannot hold labels
         assert sorted([label_set.name for label_set in self.prj.categories[0].label_sets]) == [
             'Brutto-Bezug',
@@ -1490,6 +1595,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.assertEqual(span.bbox().x1, 442.8)
         self.assertEqual(span.bbox().y0, 808.831)
         self.assertEqual(span.bbox().y1, 817.831)
+        self.assertEqual(span.bbox().area, 151.2)
 
     def test_size_of_project(self):
         """Test size of Project and compare it to the size after Documents have been loaded."""
@@ -1527,6 +1633,14 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         after = _getsize(prj)
         assert 1.7 < after / before < 1.8
 
+        # strings in prj take slightly less space than in a list
+        assert _getsize([doc.text for doc in prj.documents]) + before < after + 500
+
+        # the text of the document is the only thing causing the size difference
+        for document in prj.documents:
+            document._text = None
+        assert _getsize(prj) == before
+
     def test_create_new_doc_via_text_and_bbox(self):
         """Test to create a new Document which by a text and a bbox."""
         doc = Project(id_=None, project_folder=OFFLINE_PROJECT).get_document_by_id(TEST_DOCUMENT_ID)
@@ -1553,7 +1667,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_labels(self):
         """Test get Labels in the Project."""
-        assert [label.name for label in sorted(self.prj.labels)] == [
+        assert [label.name for label in sorted(self.prj.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).labels)] == [
             'Austellungsdatum',
             'Auszahlungsbetrag',
             'Bank inkl. IBAN',
@@ -1573,6 +1687,38 @@ class TestKonfuzioDataSetup(unittest.TestCase):
             'Steuerklasse',
             'Steuerrechtliche Abzüge',
             'Vorname',
+        ]
+        assert [label.name for label in sorted(self.prj.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID).labels)] == [
+            'Ansprechpartner',
+            'Anzahl / Menge',
+            'Artikelbezeichnung',
+            'Artikelnummer',
+            'Ausstelldatum',
+            'Bedienung Nr',
+            'BonNr',
+            'Brutto (Ergebnis der MwSt. Berechnung)',
+            'Einheit',
+            'Einzelpreis (Brutto)',
+            'Filial-/Markt-Nummer',
+            'Firmenname',
+            'Gesamtpreis (Brutto)',
+            'Hausnummer',
+            'Kassennummer',
+            'Mehrwertsteuerbetrag',
+            'Mehrwertsteuersatz',
+            'NO_LABEL',
+            'Netto (Basis der MwSt. Berechnung)',
+            'Ort',
+            'Postleitzahl',
+            'Rechnungsnummer',
+            'Referenz auf MwSt',
+            'Steuernummer',
+            'Straße',
+            'Telefonnummer',
+            'Uhrzeit',
+            'Umsatzsteuer-Identifikationsnummer',
+            'Währung',
+            'Zahlungsmethode',
         ]
 
     def test_project(self):
@@ -1747,9 +1893,31 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
         virtual_doc = deepcopy(doc)
         self.assertTrue(virtual_doc.bboxes)
+        virtual_doc.set_text_bbox_hashes()
         virtual_doc._text = '123' + doc.text  # Change text to bring bbox out of sync.
         with pytest.raises(ValueError, match='Bbox provides Character "n" document text refers to "l"'):
+            virtual_doc.check_bbox()
+
+    def test_hashing_bboxes_faster_than_recalculation(self):
+        """Test that it's 100x faster to compare hashes of text and bboxes rathar than force recalculation of bboxes."""
+        import time
+
+        doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
+        virtual_doc = deepcopy(doc)
+        virtual_doc.bboxes
+
+        t0 = time.monotonic()
+        for _ in range(100):
+            virtual_doc._check_text_or_bbox_modified()
             virtual_doc.bboxes
+        t_hash = time.monotonic() - t0
+
+        t0 = time.monotonic()
+        for _ in range(100):
+            virtual_doc.check_bbox()
+        t_recalculate = time.monotonic() - t0
+
+        assert t_hash / t_recalculate < 1 / 100
 
     @unittest.skip(reason='Waiting for API to support to add to default Annotation Set')
     def test_document_add_new_annotation(self):
@@ -1860,7 +2028,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_number_of_all_documents(self):
         """Count the number of all available documents online."""
         project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-        assert len(project._documents) == 44
+        assert len(project._documents) == 57
 
     def test_create_empty_annotation(self):
         """
