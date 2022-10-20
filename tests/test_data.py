@@ -1926,7 +1926,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         """Check regex build for empty Labels."""
         category = self.prj.get_category_by_id(63)
         label = next(x for x in self.prj.labels if len(x.annotations(categories=[category])) == 0)
-        automated_regex_for_label = label.regex(categories=[category])
+        automated_regex_for_label = label.regex(categories=[category])[category.id_]
         # There is no regex available.
         assert len(automated_regex_for_label) == 0
 

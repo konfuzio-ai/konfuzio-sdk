@@ -19,6 +19,13 @@ Span
    :noindex:
 
 
+Bbox
+=====================
+
+.. autoclass:: Bbox
+   :members:
+   :noindex:
+
 Annotation
 =====================
 .. autoclass:: Annotation
@@ -40,11 +47,13 @@ Label
    :members:
    :noindex:
 
+
 Label Set
 =====================
 .. autoclass:: LabelSet
    :members:
    :noindex:
+
 
 Category
 =====================
@@ -52,11 +61,20 @@ Category
    :members:
    :noindex:
 
+
 Document
 =====================
 .. autoclass:: Document
    :members:
    :noindex:
+
+
+Page
+=====================
+.. autoclass:: Page
+   :members:
+   :noindex:
+
 
 Project
 =====================
@@ -66,17 +84,24 @@ Project
 
 
 =====================
-Tokenizer
+Tokenizers
 =====================
 
-`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/utils.py>`__
+`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/tokenizer>`__
 
+.. automodule:: konfuzio_sdk.tokenizer.base
 
 Abstract Tokenizer
 =====================
+.. autoclass:: AbstractTokenizer
+   :members:
+   :noindex:
 
-.. automodule:: konfuzio_sdk.tokenizer.base
-    :members:
+List Tokenizer
+=====================
+.. autoclass:: ListTokenizer
+   :members:
+   :noindex:
 
 Rule Based Tokenizer
 =====================
