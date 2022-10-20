@@ -79,8 +79,6 @@ This token doesn't currently expire, so you can use indefinitely, but you can de
 the [authentication DELETE endpoint](link).
 
 .. note::
-  This is the authentication method you **should** use if you're building an external service that consumes the Konfuzio
-  API.
 
 An example workflow would look like:
 
