@@ -347,6 +347,8 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         res_doc = self.pipeline.extract(document=test_document)
 
         self.tests_annotations += res_doc.annotations(use_correct=False)
+        for span in res_doc.spans():
+            assert len(span.regex_matching) > 0
         assert len(self.tests_annotations) == 20
 
     @parameterized.parameterized.expand(entity_results_data)
