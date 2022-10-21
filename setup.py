@@ -86,6 +86,8 @@ setuptools.setup(
         'requests',  # todo add ==2.24.0 ?
         'regex==2020.6.8',  # re module but better
         'tabulate==0.8.7',  # Used to pretty print DataFrames
+        'torch==1.12.1',
+        'transformers==4.21.2',
         'tqdm',
         'opencv-python==4.6.0.66',
         'pathos==0.2.6',
