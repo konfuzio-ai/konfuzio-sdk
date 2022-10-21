@@ -630,7 +630,8 @@ TRAIN_EXTRACTION_AI_AUTOMATICALLY_IF_QUEUE_IS_EMPTY=False
 # Turn on/off the immediate generation of sandwich pdf in full document workflow (optional).
 ALWAYS_GENERATE_SANDWICH_PDF=True
 
-# Adjust default time limits for background tasks (optional).
+# Default time limits for background tasks (optional).
+# These defaults can be viewed here: https://dev.konfuzio.com/web/on_premises.html#background-processes.
 
 EXTRACTION_TIME_LIMIT = 
 CATEGORIZATION_TIME_LIMIT = 
@@ -639,7 +640,6 @@ TRAINING_EXTRACTION_TIME_LIMIT =
 TRAINING_CATEGORIZATION_TIME_LIMIT = 
 SANDWICH_PDF_TIME_LIMIT = 
 DOCUMENT_TEXT_AND_BBOXES_TIME_LIMIT = 
-
 ```
 
 ### Environment Variables for Read API Container
