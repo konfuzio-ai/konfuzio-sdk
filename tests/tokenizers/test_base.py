@@ -55,6 +55,9 @@ class TestAbstractTokenizer(unittest.TestCase):
                 self.processing_steps.append(ProcessingStep(self.__repr__(), document, time.monotonic() - t0))
                 pass
 
+            def found_spans(self, document: Document):
+                pass
+
             def __eq__(self, other):
                 pass
 
@@ -414,9 +417,9 @@ class TestTokenize(unittest.TestCase):
     def test_find_missing_spans(self):
         """Find all missing Spans in a Project."""
         tokenizer = RegexTokenizer(regex=r'\d')
-        document = tokenizer.missing_spans(self.document)
+        missing_spans = tokenizer.missing_spans(self.document)
         # Span 365 to 366 (Tax ID) can be found be Tokenizer
         # three Spans are not correct and don't need to be found
         # (1 revised and 2 unrevised)
         assert sum([not span.annotation.is_correct for span in self.document.spans()]) == 3
-        self.assertEqual(len(document.spans()), 20)
+        self.assertEqual(len(missing_spans), 20)

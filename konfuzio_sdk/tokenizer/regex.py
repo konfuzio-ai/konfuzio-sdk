@@ -85,7 +85,8 @@ class RegexTokenizer(AbstractTokenizer):
                     #   logger.error(f'Typeerror Bbox of {span} "{span.offset_string}": {repr(e)} - {span.eval_dict()}')
                     #   # annotation.delete()  # todo we should skip Annotations that have no valide bbox
             else:
-                assert self.span_match(document_spans[span_key])  # add tokenizer to Span.regex_matches
+                if self not in document_spans[span_key].regex_matching:
+                    document_spans[span_key].regex_matching.append(self)  # add tokenizer to Span.regex_matches:
                 logger.warning(f'{document} contains {span} already. It will not be added by the Tokenizer.')
         after_none = len(document.annotations(use_correct=False, label=document.project.no_label))
         logger.info(f'{after_none - before_none} new Annotations in {document} by {repr(self)}.')
@@ -99,18 +100,12 @@ class RegexTokenizer(AbstractTokenizer):
         if self in span.regex_matching:
             return True
         else:
-            slice_start = max(0, span.start_offset - 40)
-            slice_end = min(span.end_offset + 5, len(span.annotation.document.text))
-            relevant_text_slice = span.annotation.document.text[slice_start:slice_end]
-
+            relevant_text_slice = span.annotation.document.text
             for span_info in regex_matches(relevant_text_slice, self.regex, keep_full_match=False):
-                if (slice_start + span_info['start_offset'], slice_start + span_info['end_offset']) == (
-                    span.start_offset,
-                    span.end_offset,
-                ):
+                span_info_offsets = (span_info['start_offset'], span_info['end_offset'])
+                if span_info_offsets == (span.start_offset, span.end_offset):
                     span.regex_matching.append(self)
                     return True
-
         return False
 
     def found_spans(self, document: Document) -> List[Span]:
