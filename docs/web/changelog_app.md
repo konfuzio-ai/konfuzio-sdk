@@ -57,6 +57,7 @@ This version uses Konfuzio Trainer in version v.0.3.22, the Konfuzio Python SDK 
 - In some situations a Project could not be deleted via API ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9706)).
 - In specific scenarios, the deletion of the last remaining Annotation in a Document was not possible ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9736)).
 - The SmartView did not use rotated pages due to a caching problem ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9830)).
+- The arrow in the Project- and language selector was not clickable ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9714)).
 
 ## released-2022-09-21_12-00-31
 
