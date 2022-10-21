@@ -61,7 +61,7 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def found_spans(self, document: Document) -> List[Span]:
-        """Get all Spans found by the Tokenizer."""
+        """Find all Spans in a Document that can be found by a Tokenizer."""
 
     def evaluate(self, document: Document) -> pd.DataFrame:
         """
@@ -100,7 +100,7 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
 
     def missing_spans(self, document: Document) -> List[Span]:
         """
-        Apply a Tokenizer on a Document and find all Spans that can be found.
+        Apply a Tokenizer on a Document and find all Spans that cannot be found.
 
         Use this approach to sequentially work on remaining Spans after a Tokenizer ran on a List of Documents.
 
