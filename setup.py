@@ -87,6 +87,7 @@ setuptools.setup(
         'regex==2020.6.8',  # re module but better
         'tabulate==0.8.7',  # Used to pretty print DataFrames
         'tqdm',
+        'opencv-python==4.6.0.66',
         'pathos==0.2.6',
         'pympler==0.9',  # Use to get pickle file size.
         'scikit-learn==0.23.1',
