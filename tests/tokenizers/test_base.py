@@ -313,17 +313,20 @@ class TestListTokenizer(unittest.TestCase):
 
         self.tokenizer.tokenize(document)
         no_label_annotations = document.annotations(use_correct=False, label=self.project.no_label)
+
         assert len(no_label_annotations) == 2
         assert no_label_annotations[0].spans[0] != span_1
         assert no_label_annotations[1].spans[0] != span_2
+        assert span_1.regex_matching == []
+        assert span_2.regex_matching == []
+        assert self.tokenizer.missing_spans(document) == document.spans(use_correct=True)
 
     def test_tokenize_with_empty_document(self):
         """Test tokenize a Document without text."""
         document = Document(project=self.project, category=self.category_1)
-        with pytest.raises(NotImplementedError) as e:
-            self.tokenizer.tokenize(document)
 
-        assert 'be tokenized when text is None' in str(e.value)
+        with pytest.raises(NotImplementedError, match='be tokenized when text is None'):
+            self.tokenizer.tokenize(document)
 
     def test_tokenizer_1(self):
         """Test that tokenizer_1 has only 1 match."""

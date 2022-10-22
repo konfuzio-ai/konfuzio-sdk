@@ -86,7 +86,6 @@ class TestRegexTokenizer(unittest.TestCase):
         with self.assertRaises(AssertionError):
             self.tokenizer.tokenize(self.category)
 
-    @unittest.skip("Creation of duplicated Annotations needs to be handled.")
     def test_tokenize_document_with_matching_span(self):
         """
         Test tokenize a Document with Annotation that can be found by the tokenizer.
@@ -109,6 +108,8 @@ class TestRegexTokenizer(unittest.TestCase):
         self.tokenizer.tokenize(document)
         no_label_annotations = document.annotations(use_correct=False, label=self.project.no_label)
         assert len(no_label_annotations) == 0
+        assert span.regex_matching == [self.tokenizer]
+        assert self.tokenizer.span_match(span) is True
 
     def test_tokenize_document_no_matching_span(self):
         """Test tokenize a Document with Annotation that cannot be found by the tokenizer."""
@@ -134,10 +135,8 @@ class TestRegexTokenizer(unittest.TestCase):
     def test_tokenize_with_empty_document(self):
         """Test tokenize a Document without text."""
         document = Document(project=self.project, category=self.category)
-        with pytest.raises(NotImplementedError) as e:
+        with pytest.raises(NotImplementedError, match='be tokenized when text is None'):
             self.tokenizer.tokenize(document)
-
-        assert 'be tokenized when text is None' in str(e.value)
 
     def test_evaluate_output_with_document(self):
         """Test output for the evaluate method with a Document with 1 Span."""
