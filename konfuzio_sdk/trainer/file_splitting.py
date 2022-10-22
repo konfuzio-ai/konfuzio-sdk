@@ -7,7 +7,7 @@ import numpy as np
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras.layers import Dense, Conv2D, MaxPool2D, Flatten
 from keras.losses import categorical_crossentropy
-from keras.models import Sequential
+from keras.models import Sequential, load_model
 from pathlib import Path
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img
@@ -116,27 +116,33 @@ class FusionModel:
         model.compile(optimizer=opt, loss=categorical_crossentropy, metrics=['accuracy'])
         return model
 
-    def _train_vgg(self, model, image_data_generator):
-        checkpoint = ModelCheckpoint(
-            "vgg16.h5",
-            monitor='val_accuracy',
-            verbose=1,
-            save_best_only=True,
-            save_weights_only=False,
-            mode='auto',
-            period=1,
-        )
-        early = EarlyStopping(monitor='val_accuracy', min_delta=0, patience=20, verbose=1, mode='auto')
-        model.fit_generator(
-            steps_per_epoch=100,
-            generator=image_data_generator,
-            validation_steps=10,
-            epochs=100,
-            callbacks=[checkpoint, early],
-        )
+    def train_vgg(self, model=None, image_data_generator=None):
+        """Training or loading trained VGG16 model."""
+        if Path('vgg16.h5').exists():
+            model = load_model('vgg16.hs')
+        else:
+            checkpoint = ModelCheckpoint(
+                "vgg16.h5",
+                monitor='val_accuracy',
+                verbose=1,
+                save_best_only=True,
+                save_weights_only=False,
+                mode='auto',
+                period=1,
+            )
+            early = EarlyStopping(monitor='val_accuracy', min_delta=0, patience=20, verbose=1, mode='auto')
+            model.fit_generator(
+                steps_per_epoch=100,
+                generator=image_data_generator,
+                validation_steps=10,
+                epochs=100,
+                callbacks=[checkpoint, early],
+            )
+            model.save('vgg16.h5')
         return model
 
-    def _init_bert(self):
+    def init_bert(self):
+        """Initialize BERT model and tokenizer."""
         configuration = AutoConfig.from_pretrained('nlpaueb/legal-bert-base-uncased')
         configuration.num_labels = 2
         model = AutoModelForSequenceClassification.from_pretrained(
@@ -147,7 +153,8 @@ class FusionModel:
         )
         return model, tokenizer
 
-    def _get_logits_vgg16(self, pages: List[str], model):
+    def get_logits_vgg16(self, pages: List[str], model):
+        """Transform input images into logits for MLP input."""
         logits = []
         for path in pages:
             img = load_img(path, target_size=(224, 224))
@@ -157,7 +164,8 @@ class FusionModel:
             logits.append(output)
         return logits
 
-    def _get_logits_bert(self, texts, tokenizer, model):
+    def get_logits_bert(self, texts, tokenizer, model):
+        """Transform input texts into logits for MLP input."""
         logits = []
         for text in texts:
             inputs = tokenizer(text, truncation=True, return_tensors='pt')
@@ -167,7 +175,8 @@ class FusionModel:
             logits.append(pred)
         return logits
 
-    def _squash_logits(self, vgg_logits, bert_logits):
+    def squash_logits(self, vgg_logits, bert_logits):
+        """Squash image and text logits together for MLP input."""
         logits = []
         for logit_1, logit_2 in zip(vgg_logits, bert_logits):
             logits.append([logit_1[0][0], logit_1[0][1], logit_2, logit_2])
@@ -195,14 +204,14 @@ class FusionModel:
             train_data_generator,
         ) = self._prepare_visual_textual_data(self.train_data, self.test_data, self.split_point)
         model_vgg = self._init_vgg16()
-        model_vgg = self._train_vgg(model_vgg, train_data_generator)
-        bert, tokenizer = self._init_bert()
-        vgg16_train_logits = self._get_logits_vgg16(train_pages_2, model_vgg)
-        vgg16_test_logits = self._get_logits_vgg16(test_pages, model_vgg)
-        bert_train_logits = self._get_logits_bert(train_texts_2, tokenizer, bert)
-        bert_test_logits = self._get_logits_bert(test_texts, tokenizer, bert)
-        train_logits = self._squash_logits(vgg16_train_logits, bert_train_logits)
-        test_logits = self._squash_logits(vgg16_test_logits, bert_test_logits)
+        model_vgg = self.train_vgg(model_vgg, train_data_generator)
+        bert, tokenizer = self.init_bert()
+        vgg16_train_logits = self.get_logits_vgg16(train_pages_2, model_vgg)
+        vgg16_test_logits = self.get_logits_vgg16(test_pages, model_vgg)
+        bert_train_logits = self.get_logits_bert(train_texts_2, tokenizer, bert)
+        bert_test_logits = self.get_logits_bert(test_texts, tokenizer, bert)
+        train_logits = self.squash_logits(vgg16_train_logits, bert_train_logits)
+        test_logits = self.squash_logits(vgg16_test_logits, bert_test_logits)
         Xtrain, Xtest, ytrain, ytest, input_shape = self._preprocess_mlp_inputs(
             train_logits, test_logits, train_labels_2, test_labels
         )
@@ -223,10 +232,12 @@ class PageSplitting:
     def __init__(self, model_path: str, project_id=None):
         """Load model, tokenizer, vocabulary and categorization_pipeline."""
         if Path(model_path).exists():
-            self.model = self.load(model_path)
+            self.model = load_model(model_path)
         else:
-            file_splitter = FusionModel(project_id=project_id, split_point=0.5)
-            self.model = file_splitter.train()
+            self.file_splitter = FusionModel(project_id=project_id, split_point=0.5)
+            self.model = self.file_splitter.train()
+        self.bert_model, self.tokenizer = self.file_splitter.init_bert()
+        self.vgg16 = self.file_splitter.train_vgg()
 
     # def save(self) -> None:
     #     """Save model, tokenizer, and vocabulary used for document splitting."""
@@ -237,10 +248,13 @@ class PageSplitting:
     #     self.model, self.tokenizer, self.vocab = pickle.load(open(path))
 
     def _preprocess_inputs(self, text: str, image):
-        pass
+        text_logits = self.file_splitter.get_logits_bert([text], self.bert_model, self.tokenizer)
+        img_logits = self.file_splitter.get_logits_vgg16([image], self.vgg16)
+        logits = np.array(self.file_splitter.squash_logits(img_logits, text_logits))
+        return logits
 
-    def _predict(inputs, model):
-        prediction = model.predict(inputs, verbose=0)
+    def _predict(self, text_input, img_input, model):
+        prediction = model.predict(text_input, img_input, verbose=0)
         return round(prediction[0, 0])
 
     def _create_doc_from_page_interval(self, original_doc: Document, start_page: Page, end_page: Page) -> Document:
@@ -260,7 +274,7 @@ class PageSplitting:
         suggested_splits = []
         document.get_images()
         for page_i, page in enumerate(document.pages()):
-            is_first_page = self._predict(page.text)
+            is_first_page = self._predict(page.text, page.image_path)
             if is_first_page:
                 suggested_splits.append(page_i)
 
