@@ -1,6 +1,5 @@
 """Split a multi-Document file into a list of shorter documents based on model's prediction."""
 import cv2
-import pickle
 import torch
 
 import numpy as np
@@ -9,7 +8,6 @@ from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras.layers import Dense, Conv2D, MaxPool2D, Flatten
 from keras.losses import categorical_crossentropy
 from keras.models import Sequential
-from nltk import word_tokenize
 from pathlib import Path
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img
@@ -215,31 +213,35 @@ class FusionModel:
         model.add(Dense(1, activation='sigmoid'))
         model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
         model.fit(Xtrain, ytrain, epochs=100, verbose=2)
+        model.save('fusion.h5')
         return model
 
 
 class PageSplitting:
     """Split a given document and return a list of resulting shorter documents."""
 
-    def __init__(self, model_path: str):
+    def __init__(self, model_path: str, project_id=None):
         """Load model, tokenizer, vocabulary and categorization_pipeline."""
-        self.load(model_path)
+        if Path(model_path).exists():
+            self.model = self.load(model_path)
+        else:
+            file_splitter = FusionModel(project_id=project_id, split_point=0.5)
+            self.model = file_splitter.train()
 
-    def save(self) -> None:
-        """Save model, tokenizer, and vocabulary used for document splitting."""
-        pickle.dump((self.model, self.tokenizer, self.vocab))
+    # def save(self) -> None:
+    #     """Save model, tokenizer, and vocabulary used for document splitting."""
+    #     pickle.dump((self.model, self.tokenizer, self.vocab))
+    #
+    # def load(self, path: str):
+    #     """Load model, tokenizer, and vocabulary from a previously pickled file."""
+    #     self.model, self.tokenizer, self.vocab = pickle.load(open(path))
 
-    def load(self, path: str):
-        """Load model, tokenizer, and vocabulary from a previously pickled file."""
-        self.model, self.tokenizer, self.vocab = pickle.load(open(path))
+    def _preprocess_inputs(self, text: str, image):
+        pass
 
-    def _predict(self, page_text: str) -> bool:
-        tokens = word_tokenize(page_text)
-        tokens = [t for t in tokens if t in self.vocab]
-        doc_text = ' '.join(tokens)
-        encoded = self.tokenizer.texts_to_matrix([doc_text], mode='freq')
-        predicted = self.model.predict(encoded, verbose=0)
-        return bool(round(predicted[0, 0]))
+    def _predict(inputs, model):
+        prediction = model.predict(inputs, verbose=0)
+        return round(prediction[0, 0])
 
     def _create_doc_from_page_interval(self, original_doc: Document, start_page: Page, end_page: Page) -> Document:
         pages_text = original_doc.text[start_page.start_offset : end_page.end_offset]
@@ -256,6 +258,7 @@ class PageSplitting:
 
     def _suggest_page_split(self, document: Document) -> List[Document]:
         suggested_splits = []
+        document.get_images()
         for page_i, page in enumerate(document.pages()):
             is_first_page = self._predict(page.text)
             if is_first_page:
