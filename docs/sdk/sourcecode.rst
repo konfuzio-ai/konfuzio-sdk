@@ -84,17 +84,24 @@ Project
 
 
 =====================
-Tokenizer
+Tokenizers
 =====================
 
-`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/utils.py>`__
+`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/tokenizer>`__
 
+.. automodule:: konfuzio_sdk.tokenizer.base
 
 Abstract Tokenizer
 =====================
+.. autoclass:: AbstractTokenizer
+   :members:
+   :noindex:
 
-.. automodule:: konfuzio_sdk.tokenizer.base
-    :members:
+List Tokenizer
+=====================
+.. autoclass:: ListTokenizer
+   :members:
+   :noindex:
 
 Rule Based Tokenizer
 =====================
