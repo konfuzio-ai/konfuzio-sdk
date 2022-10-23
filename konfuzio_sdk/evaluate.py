@@ -39,6 +39,8 @@ RELEVANT_FOR_EVALUATION = [
     "is_correct_label_set",
     "is_correct_annotation_set_id",
     "is_correct_id_",
+    "duplicated",
+    "duplicated_predicted",
 ]
 
 
@@ -95,6 +97,8 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
 
         spans["is_correct_label"] = spans["label_id"] == spans["label_id_predicted"]
         spans["is_correct_label_set"] = spans["label_set_id"] == spans["label_set_id_predicted"]
+        spans['duplicated'] = False
+        spans['duplicated_predicted'] = False
 
         # add check to evaluate multiline Annotations
         spans = spans.groupby("id_local", dropna=False).apply(lambda group: grouped(group, "id_"))
@@ -114,6 +118,11 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
         spans["is_correct_label_set"] = True
         spans["label_id_predicted"] = spans["label_id"]
         spans["label_set_id_predicted"] = spans["label_set_id"]
+
+        spans = spans.sort_values(by='is_matched', ascending=False)
+        spans['duplicated'] = spans.duplicated(subset=['id_local'], keep='first')
+        spans['duplicated_predicted'] = spans.duplicated(subset=['id_local_predicted'], keep='first')
+        spans = spans.drop(spans[(spans['duplicated']) & (spans['duplicated_predicted'])].index)
         # add check to evaluate multiline Annotations
         spans = spans.groupby("id_local", dropna=False).apply(lambda group: grouped(group, "id_"))
         # add check to evaluate Annotation Sets
@@ -125,7 +134,11 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
     assert not spans.empty  # this function must be able to evaluate any two docs even without annotations
 
     spans["tokenizer_true_positive"] = (
-        (spans["is_correct"]) & (spans["is_matched"]) & (spans["document_id_local_predicted"].notna())
+        (spans["is_correct"])
+        & (spans["is_matched"])
+        & (spans["start_offset_predicted"] == spans['start_offset'])
+        & (spans["end_offset_predicted"] == spans['end_offset'])
+        & (spans["document_id_local_predicted"].notna())
     )
 
     spans["tokenizer_false_negative"] = (
@@ -167,6 +180,7 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
         (spans["is_matched"])
         & (spans["is_correct"])
         & (spans["above_predicted_threshold"])
+        & (~spans["duplicated"])
         & (  # Everything is correct
             (spans["is_correct_label"])
             & (spans["is_correct_label_set"])
@@ -177,6 +191,7 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
 
     spans["false_negative"] = 1 * (
         (spans["is_correct"])
+        & (~spans["duplicated"])
         & ((~spans["is_matched"]) | (~spans["above_predicted_threshold"]) | (spans["label_id_predicted"].isna()))
     )
 
@@ -184,11 +199,13 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
         (spans["above_predicted_threshold"])
         & (~spans["false_negative"])
         & (~spans["true_positive"])
+        & (~spans["duplicated_predicted"])
         & (  # Something is wrong
             (~spans["is_correct_label"])
             | (~spans["is_correct_label_set"])
             | (~spans["is_correct_annotation_set_id"])
             | (~spans["is_correct_id_"])
+            | (~spans["is_matched"])
         )
     )
 

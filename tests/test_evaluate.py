@@ -346,8 +346,8 @@ class TestCompare(unittest.TestCase):
             spans=[span_1],
         )
         # second Annotation Set
-        span_2 = Span(start_offset=3, end_offset=5)
         annotation_set_a_2 = AnnotationSet(id_=2, document=document_a, label_set=label_set)
+        span_2 = Span(start_offset=3, end_offset=5)
         _ = Annotation(
             id_=2,
             document=document_a,
@@ -358,35 +358,47 @@ class TestCompare(unittest.TestCase):
             spans=[span_2],
         )
         # create a Document B
-        span_3 = Span(start_offset=4, end_offset=5)
+
         document_b = Document(project=project, category=category)
         # with only one Annotation Set, so to say the first one, which then contains the correct Annotation which is in
         # second Annotation Set. This test includes to test if we did not find the first Annotation Set.
-        annotation_set_b = AnnotationSet(id_=3, document=document_b, label_set=label_set)
+        annotation_set_b_1 = AnnotationSet(id_=3, document=document_b, label_set=label_set)
+        span_3 = Span(start_offset=4, end_offset=5)
         _ = Annotation(
             id_=3,
             document=document_b,
             confidence=0.5,
             # is_correct=True, we don't know this from the prediction
-            annotation_set=annotation_set_b,
+            annotation_set=annotation_set_b_1,
             label=label,
             label_set=label_set,
             spans=[span_3],
         )
+        annotation_set_b_2 = AnnotationSet(id_=4, document=document_b, label_set=label_set)
+        span_4 = Span(start_offset=7, end_offset=8)
+        _ = Annotation(
+            id_=4,
+            document=document_b,
+            confidence=0.5,
+            annotation_set=annotation_set_b_2,
+            label=label,
+            label_set=label_set,
+            spans=[span_4],
+        )
 
         evaluation_strict = compare(document_a, document_b)
-        assert len(evaluation_strict) == 3
+        assert len(evaluation_strict) == 4
         assert evaluation_strict["true_positive"].sum() == 0
-        assert evaluation_strict["false_positive"].sum() == 1
+        assert evaluation_strict["false_positive"].sum() == 2
         assert evaluation_strict["false_negative"].sum() == 2
         assert evaluation_strict["tokenizer_true_positive"].sum() == 0
 
         evaluation = compare(document_a, document_b, strict=False)
-        assert len(evaluation) == 2
+        assert len(evaluation) == 3
         assert evaluation["true_positive"].sum() == 1
-        assert evaluation["false_positive"].sum() == 0
+        assert evaluation["false_positive"].sum() == 1
         assert evaluation["false_negative"].sum() == 1
-        # assert evaluation["tokenizer_true_positive"].sum() == 0  # we don't find it with the tokenizer but only parts
+        assert evaluation["tokenizer_true_positive"].sum() == 0  # we don't find it with the tokenizer but only parts
 
     def test_non_strict_is_better_than_strict(self):
         """Test if we detect an Annotation of a missing Annotation Set."""
@@ -437,7 +449,7 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 1
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 0
-        assert evaluation["tokenizer_true_positive"].sum() == 1
+        assert evaluation["tokenizer_true_positive"].sum() == 0
 
     def test_strict_documents_with_different_category(self):
         """Test to not compare two Documents with different Categories."""
