@@ -180,6 +180,32 @@ class TestOnlineProject(unittest.TestCase):
         annotation.delete()  # doc.update() performed internally when delete_online=True, which is default
         assert annotation not in doc.get_annotations()
 
+    def test_merge_documents(self):
+        """Merge documents into a new document."""
+        test_documents = self.project.test_documents
+        all_pages = [page for doc in test_documents for page in doc.pages()]
+        pages_text = '\f'.join([doc.text for doc in test_documents])
+        new_doc = Document(project=self.project, id_=None, text=pages_text)
+        i = 1
+        running_start_offset = 0
+        running_end_offset = 0
+        for page in all_pages:
+            running_end_offset += page.end_offset
+            _ = Page(
+                id_=i,
+                original_size=(1500, 2400),
+                document=new_doc,
+                start_offset=running_start_offset,
+                end_offset=running_end_offset,
+                number=i,
+            )
+            i += 1
+            running_start_offset += page.end_offset + 1
+            running_end_offset += 1
+
+        for i, page in enumerate(all_pages):
+            assert page.text == new_doc.pages()[i].text
+
 
 class TestOfflineExampleData(unittest.TestCase):
     """Test data features without real data."""

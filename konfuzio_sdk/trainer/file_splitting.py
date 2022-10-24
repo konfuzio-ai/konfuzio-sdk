@@ -116,11 +116,12 @@ class FusionModel:
         model.compile(optimizer=opt, loss=categorical_crossentropy, metrics=['accuracy'])
         return model
 
-    def train_vgg(self, model=None, image_data_generator=None):
+    def train_vgg(self, image_data_generator=None):
         """Training or loading trained VGG16 model."""
         if Path('vgg16.h5').exists():
-            model = load_model('vgg16.hs')
+            model = load_model('vgg16.h5')
         else:
+            model = self._init_vgg16()
             checkpoint = ModelCheckpoint(
                 "vgg16.h5",
                 monitor='val_accuracy',
@@ -203,8 +204,7 @@ class FusionModel:
             test_labels,
             train_data_generator,
         ) = self._prepare_visual_textual_data(self.train_data, self.test_data, self.split_point)
-        model_vgg = self._init_vgg16()
-        model_vgg = self.train_vgg(model_vgg, train_data_generator)
+        model_vgg = self.train_vgg(image_data_generator=train_data_generator)
         bert, tokenizer = self.init_bert()
         vgg16_train_logits = self.get_logits_vgg16(train_pages_2, model_vgg)
         vgg16_test_logits = self.get_logits_vgg16(test_pages, model_vgg)
@@ -231,10 +231,10 @@ class PageSplitting:
 
     def __init__(self, model_path: str, project_id=None):
         """Load model, tokenizer, vocabulary and categorization_pipeline."""
+        self.file_splitter = FusionModel(project_id=project_id, split_point=0.5)
         if Path(model_path).exists():
             self.model = load_model(model_path)
         else:
-            self.file_splitter = FusionModel(project_id=project_id, split_point=0.5)
             self.model = self.file_splitter.train()
         self.bert_model, self.tokenizer = self.file_splitter.init_bert()
         self.vgg16 = self.file_splitter.train_vgg()
@@ -248,13 +248,14 @@ class PageSplitting:
     #     self.model, self.tokenizer, self.vocab = pickle.load(open(path))
 
     def _preprocess_inputs(self, text: str, image):
-        text_logits = self.file_splitter.get_logits_bert([text], self.bert_model, self.tokenizer)
+        text_logits = self.file_splitter.get_logits_bert([text], self.tokenizer, self.bert_model)
         img_logits = self.file_splitter.get_logits_vgg16([image], self.vgg16)
         logits = np.array(self.file_splitter.squash_logits(img_logits, text_logits))
         return logits
 
     def _predict(self, text_input, img_input, model):
-        prediction = model.predict(text_input, img_input, verbose=0)
+        preprocessed = self._preprocess_inputs(text_input, img_input)
+        prediction = model.predict(preprocessed, verbose=0)
         return round(prediction[0, 0])
 
     def _create_doc_from_page_interval(self, original_doc: Document, start_page: Page, end_page: Page) -> Document:
@@ -274,7 +275,7 @@ class PageSplitting:
         suggested_splits = []
         document.get_images()
         for page_i, page in enumerate(document.pages()):
-            is_first_page = self._predict(page.text, page.image_path)
+            is_first_page = self._predict(page.text, page.image_path, self.model)
             if is_first_page:
                 suggested_splits.append(page_i)
 
