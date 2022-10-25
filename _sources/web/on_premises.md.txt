@@ -251,12 +251,12 @@ The internet connection can be turned off once the download is complete. In case
 no internet connection available during setup, the container must be transferred with an
 alternative method as a file to the virtual machine.
 
-Registry URL: registry.gitlab.com  
+Registry URL: {PROVIDED_BY_KONFUZIO}  
 Username: {PROVIDED_BY_KONFUZIO}  
 Password: {PROVIDED_BY_KONFUZIO}  
 
-`> docker login registry.gitlab.com`  
-`> docker pull registry.gitlab.com/konfuzio/text-annotation/master:latest`  
+`> docker login REGISTRY_URL  
+`> docker pull REGISTRY_URL/konfuzio/text-annotation/master:latest`  
 
 The Tag "latest" should be replaced with an actual version. A list of available tags can be found here: https://dev.konfuzio.com/web/changelog_app.html.
 

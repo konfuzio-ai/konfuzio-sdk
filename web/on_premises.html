@@ -366,11 +366,10 @@ with the credentials. This action requires an internet connection.</p>
 <p>The internet connection can be turned off once the download is complete. In case there is
 no internet connection available during setup, the container must be transferred with an
 alternative method as a file to the virtual machine.</p>
-<p>Registry URL: registry.gitlab.com<span class="raw-html-m2r"><br></span>
+<p>Registry URL: {PROVIDED_BY_KONFUZIO}<span class="raw-html-m2r"><br></span>
 Username: {PROVIDED_BY_KONFUZIO}<span class="raw-html-m2r"><br></span>
 Password: {PROVIDED_BY_KONFUZIO}</p>
-<p><code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">docker</span> <span class="pre">login</span> <span class="pre">registry.gitlab.com</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">docker</span> <span class="pre">pull</span> <span class="pre">registry.gitlab.com/konfuzio/text-annotation/master:latest</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">docker</span> <span class="pre">login</span> <span class="pre">REGISTRY_URL</span></code>&gt; docker pull REGISTRY_URL/konfuzio/text-annotation/master:latest`</p>
 <p>The Tag “latest” should be replaced with an actual version. A list of available tags can be found here: <a class="reference external" href="https://dev.konfuzio.com/web/changelog_app.html">https://dev.konfuzio.com/web/changelog_app.html</a>.</p>
 </section>
 <section id="setup-postgresql-redis-blobstorage-filesystemstorage">
