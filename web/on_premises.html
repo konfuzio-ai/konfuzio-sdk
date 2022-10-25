@@ -71,6 +71,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#deploy-using-helm">Deploy using Helm</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#monitoring-the-deployment">Monitoring the Deployment</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#initial-login">Initial login</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id2">Initial login</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#upgrade">Upgrade</a></li>
@@ -110,7 +111,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#migrate-a-project">Migrate a Project</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id2">Environment Variables</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id3">Environment Variables</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-konfuzio-server">Environment Variables for Konfuzio Server</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-read-api-container">Environment Variables for Read API Container</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-detectron-container">Environment Variables for Detectron Container</a></li>
@@ -274,16 +275,17 @@ be configured to use it as shown below.</p>
 <h5>Persistent Volume<a class="headerlink" href="#persistent-volume" title="Permalink to this headline">¶</a></h5>
 <p>Konfuzio relies on object storage for highly-available persistent data in Kubernetes. By default, Konfuzio uses a
 <a class="reference external" href="https://kubernetes.io/docs/concepts/storage/persistent-volumes/">persistent volume</a> within the cluster.</p>
-</section>
-<section id="outgoing-email">
-<h5>Outgoing email<a class="headerlink" href="#outgoing-email" title="Permalink to this headline">¶</a></h5>
-<p>By default outgoing email is disabled. To enable it,provide details for your SMTP server
-using the <code class="docutils literal notranslate"><span class="pre">global.smtp</span></code> and <code class="docutils literal notranslate"><span class="pre">global.email</span></code> settings. You can find details for these
-settings in the command line options.</p>
-<p><code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">global.smtp.address=smtp.example.com:587</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">global.smtp.AuthUser=username-here</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">global.smtp.AuthPass=password-here</span></code></p>
-</section>
+<!--
+##### Outgoing email
+
+By default outgoing email is disabled. To enable it,provide details for your SMTP server
+using the `global.smtp` and `global.email` settings. You can find details for these
+settings in the command line options.
+
+`--set global.smtp.address=smtp.example.com:587`
+`--set global.smtp.AuthUser=username-here`
+`--set global.smtp.AuthPass=password-here`
+--></section>
 <section id="cpu-gpu-and-ram-resource-requirements">
 <h5>CPU, GPU and RAM Resource Requirements<a class="headerlink" href="#cpu-gpu-and-ram-resource-requirements" title="Permalink to this headline">¶</a></h5>
 <p>The resource requests, and number of replicas for the Konfuzio components in this
@@ -298,9 +300,9 @@ into a smaller cluster. Konfuzio can work without a GPU. The GPU is used to trai
 <h4>Deploy using Helm<a class="headerlink" href="#deploy-using-helm" title="Permalink to this headline">¶</a></h4>
 <p>Once you have all of your configuration options collected, we can get any dependencies
 and run Helm. In this example, we’ve named our Helm release <code class="docutils literal notranslate"><span class="pre">konfuzio</span></code>.</p>
-<p><code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">repo</span> <span class="pre">add</span> <span class="pre">konfuzio</span></code><span class="raw-html-m2r"><br></span>
+<p><code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">repo</span> <span class="pre">add</span> <span class="pre">konfuzio-repo</span> <span class="pre">https://git.konfuzio.com/api/v4/projects/106/packages/helm/stable</span></code><span class="raw-html-m2r"><br></span>
 <code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">repo</span> <span class="pre">update</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">upgrade</span> <span class="pre">--install</span> <span class="pre">konfuzio</span> <span class="pre">konfuzio/server</span> <span class="pre">--values</span> <span class="pre">my_values.yaml</span></code></p>
+<code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">upgrade</span> <span class="pre">--install</span> <span class="pre">konfuzio</span> <span class="pre">konfuzio-repo/konfuzio-chart</span> <span class="pre">--values</span> <span class="pre">my_values.yaml</span></code></p>
 <p>Please create a my_values.yaml file for your Konfuzio configuration. Useful default values can be found in the values.yaml in the chart repository. See Helm docs for information on how your values file will override the defaults. Alternativ you can specify you configuration using <code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">option.name=value</span></code>.</p>
 </section>
 <section id="monitoring-the-deployment">
@@ -312,12 +314,22 @@ another terminal.</p>
 <section id="initial-login">
 <h4>Initial login<a class="headerlink" href="#initial-login" title="Permalink to this headline">¶</a></h4>
 <p>You can access the Konfuzio instance by visiting the domain specified during
+installation. In order to create an initial superuser, please to connect to a running pod.</p>
+<p><code class="docutils literal notranslate"><span class="pre">kubectl</span> <span class="pre">get</span> <span class="pre">pod</span></code>
+<code class="docutils literal notranslate"><span class="pre">kubectl</span> <span class="pre">exec</span> <span class="pre">--stdin</span> <span class="pre">--tty</span> <span class="pre">my-konfuzio-*</span> <span class="pre">--</span>&#160; <span class="pre">bash</span></code>
+<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">createsuperuser</span></code></p>
+<p>&lt;–!</p>
+</section>
+<section id="id2">
+<h4>Initial login<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<p>You can access the Konfuzio instance by visiting the domain specified during
 installation. If you manually created the secret for initial root password, you can use that
 to sign in as <code class="docutils literal notranslate"><span class="pre">root</span></code> user. If not, Konfuzio would’ve automatically created a random
 password for <code class="docutils literal notranslate"><span class="pre">root</span></code> user. This can be extracted by the following command (replace
 <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;</span></code> by name of the release - which is <code class="docutils literal notranslate"><span class="pre">konfuzio</span></code> if you used the command above).</p>
 <p><code class="docutils literal notranslate"><span class="pre">kubectl</span> <span class="pre">get</span> <span class="pre">secret</span> <span class="pre">&lt;name&gt;-konfuzio-initial-root-password</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">-ojsonpath='{.data.password}'</span> <span class="pre">|</span> <span class="pre">base64</span> <span class="pre">--decode</span> <span class="pre">;</span> <span class="pre">echo</span></code></p>
+<code class="docutils literal notranslate"><span class="pre">-ojsonpath='{.data.password}'</span> <span class="pre">|</span> <span class="pre">base64</span> <span class="pre">--decode</span> <span class="pre">;</span> <span class="pre">echo</span></code><span class="raw-html-m2r"><br></span>
+–&gt;</p>
 </section>
 </section>
 <section id="upgrade">
@@ -564,15 +576,15 @@ In comparison for a Categorization AI the targe project has to be chosen from �
 <span class="n">konfuzio_sdk</span> <span class="n">export_project</span> <span class="o">&lt;</span><span class="n">PROJECT_ID</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<p>The export will be saved in a folder with the name <a href="#id3"><span class="problematic" id="id4">data_</span></a><span class="raw-html-m2r"><project_id></span>. This folder needs to be transferred to the target system
+<p>The export will be saved in a folder with the name <a href="#id4"><span class="problematic" id="id5">data_</span></a><span class="raw-html-m2r"><project_id></span>. This folder needs to be transferred to the target system
 The first argument is the path to the export folder, the second is the project name of the imported project on the target system.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">project_import</span> <span class="s2">&quot;/konfuzio-target-system/data_123/&quot;</span> <span class="s2">&quot;NewProjectName&quot;</span>
 </pre></div>
 </div>
 </section>
 </section>
-<section id="id2">
-<h2>Environment Variables<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<section id="id3">
+<h2>Environment Variables<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
 <section id="environment-variables-for-konfuzio-server">
 <h3>Environment Variables for Konfuzio Server<a class="headerlink" href="#environment-variables-for-konfuzio-server" title="Permalink to this headline">¶</a></h3>
 <p>Konfuzio Server is fully configured via environment variables, these can be passed as dedicated environment variables or a single .env to the Konfuzio Server containers (registry.gitlab.com/konfuzio/text-annotation/master). A template for a .env file is provided here:</p>

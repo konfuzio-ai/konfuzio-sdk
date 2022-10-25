@@ -150,6 +150,7 @@ All the Redis configuration settings are configured automatically.
 Konfuzio relies on object storage for highly-available persistent data in Kubernetes. By default, Konfuzio uses a 
 [persistent volume](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) within the cluster.
 
+<!--
 ##### Outgoing email
 
 By default outgoing email is disabled. To enable it,provide details for your SMTP server
@@ -159,6 +160,7 @@ settings in the command line options.
 `--set global.smtp.address=smtp.example.com:587`  
 `--set global.smtp.AuthUser=username-here`  
 `--set global.smtp.AuthPass=password-here`  
+-->
 
 ##### CPU, GPU and RAM Resource Requirements
 
@@ -174,9 +176,9 @@ into a smaller cluster. Konfuzio can work without a GPU. The GPU is used to trai
 Once you have all of your configuration options collected, we can get any dependencies
 and run Helm. In this example, we've named our Helm release `konfuzio`.
 
-`helm repo add konfuzio`  
+`helm repo add konfuzio-repo https://git.konfuzio.com/api/v4/projects/106/packages/helm/stable`  
 `helm repo update`  
-`helm upgrade --install konfuzio konfuzio/server --values my_values.yaml`  
+`helm upgrade --install konfuzio konfuzio-repo/konfuzio-chart --values my_values.yaml`  
 
 Please create a my_values.yaml file for your Konfuzio configuration. Useful default values can be found in the values.yaml in the chart repository. See Helm docs for information on how your values file will override the defaults. Alternativ you can specify you configuration using `--set option.name=value`. 
 
@@ -189,6 +191,16 @@ another terminal.
 #### Initial login
 
 You can access the Konfuzio instance by visiting the domain specified during
+installation. In order to create an initial superuser, please to connect to a running pod.
+
+`kubectl get pod`
+`kubectl exec --stdin --tty my-konfuzio-* --  bash`
+`python manage.py createsuperuser`
+
+<--!
+#### Initial login
+
+You can access the Konfuzio instance by visiting the domain specified during
 installation. If you manually created the secret for initial root password, you can use that
 to sign in as `root` user. If not, Konfuzio would've automatically created a random
 password for `root` user. This can be extracted by the following command (replace
@@ -196,6 +208,7 @@ password for `root` user. This can be extracted by the following command (replac
 
 `kubectl get secret <name>-konfuzio-initial-root-password`  
 `-ojsonpath='{.data.password}' | base64 --decode ; echo`  
+-->
 
 ### Upgrade
 
