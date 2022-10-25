@@ -72,10 +72,6 @@ class FusionModel:
         self._otsu_binarization(train_pages_1, train_labels_1, 'train_1')
         self._otsu_binarization(train_pages_2, train_labels_2, 'train_2')
         self._otsu_binarization(test_pages, test_labels, 'test')
-        image_data_generator = ImageDataGenerator()
-        train_data_generator = image_data_generator.flow_from_directory(
-            directory="otsu_vgg16/train_1", target_size=(224, 224)
-        )
         return (
             train_texts_1,
             train_texts_2,
@@ -85,10 +81,17 @@ class FusionModel:
             test_pages,
             train_labels_2,
             test_labels,
-            train_data_generator,
         )
 
+    def _prepare_image_data_generator(self):
+        image_data_generator = ImageDataGenerator()
+        train_data_generator = image_data_generator.flow_from_directory(
+            directory="otsu_vgg16/train_1", target_size=(224, 224)
+        )
+        return train_data_generator
+
     def _init_vgg16(self):
+
         model = Sequential()
         model.add(Conv2D(input_shape=(224, 224, 3), filters=64, kernel_size=(3, 3), padding="same", activation="relu"))
         model.add(Conv2D(filters=64, kernel_size=(3, 3), padding="same", activation="relu"))
@@ -202,8 +205,8 @@ class FusionModel:
             test_pages,
             train_labels_2,
             test_labels,
-            train_data_generator,
         ) = self._prepare_visual_textual_data(self.train_data, self.test_data, self.split_point)
+        train_data_generator = self._prepare_image_data_generator()
         model_vgg = self.train_vgg(image_data_generator=train_data_generator)
         bert, tokenizer = self.init_bert()
         vgg16_train_logits = self.get_logits_vgg16(train_pages_2, model_vgg)
@@ -237,7 +240,8 @@ class PageSplitting:
         else:
             self.model = self.file_splitter.train()
         self.bert_model, self.tokenizer = self.file_splitter.init_bert()
-        self.vgg16 = self.file_splitter.train_vgg()
+        train_data_generator = self.file_splitter._prepare_image_data_generator()
+        self.vgg16 = self.file_splitter.train_vgg(train_data_generator)
 
     # def save(self) -> None:
     #     """Save model, tokenizer, and vocabulary used for document splitting."""

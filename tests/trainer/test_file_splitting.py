@@ -23,6 +23,7 @@ class TestFileSplittingModel(unittest.TestCase):
         cls.split_point = int(0.5 * len(cls.train_data))
         cls.bert_model, cls.bert_tokenizer = cls.fusion_model.init_bert()
         cls.file_splitter = file_splitting.PageSplitting('fusion.h5', project_id=TEST_PROJECT_ID)
+        cls.image_data_generator = cls.fusion_model._prepare_image_data_generator
 
     def test_model_training(self):
         """Check that the trainer runs and saves trained model."""
@@ -31,20 +32,10 @@ class TestFileSplittingModel(unittest.TestCase):
 
     def test_vgg16_training(self):
         """Test that VGG16 training pipeline is functional."""
-        assert Path('vgg16.h5').exists() is False
-        (
-            train_texts_1,
-            train_texts_2,
-            test_texts,
-            train_pages_1,
-            train_pages_2,
-            test_pages,
-            train_labels_2,
-            test_labels,
-            train_data_generator,
-        ) = self.fusion_model._prepare_visual_textual_data(self.train_data, self.test_data, self.split_point)
-        self.fusion_model.train_vgg(train_data_generator)
+        self.fusion_model.train_vgg(self.image_data_generator)
         assert Path('vgg16.h5').exists()
+        Path('vgg16.h5').unlink()
+        assert Path('vgg16.h5').exists() is False
 
     def test_vgg16_loading(self):
         """Test VGG16 loading when a trained model is available."""
@@ -62,7 +53,7 @@ class TestFileSplittingModel(unittest.TestCase):
     def test_get_logits_vgg16(self):
         """Test that VGG16 inputs are transformed into logits."""
         pages = [page.image_path for doc in self.train_data for page in doc.pages()]
-        model = self.fusion_model.train_vgg()
+        model = self.fusion_model.train_vgg(self.image_data_generator)
         logits = self.fusion_model.get_logits_vgg16(pages, model)
         assert len(pages) == len(logits)
         for logit in logits:
@@ -106,5 +97,3 @@ class TestFileSplittingModel(unittest.TestCase):
         #     running_end_offset += 1
         # pred = self.file_splitter.propose_mappings(new_doc)
         # print(pred)
-        Path('vgg16.h5').unlink()
-        assert Path('vgg16.h5').exists() is False
