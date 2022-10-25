@@ -130,6 +130,7 @@ class TestRegexTokenizer(unittest.TestCase):
         no_label_annotations = document.annotations(use_correct=False, label=self.project.no_label)
         assert len(no_label_annotations) == len(document.annotations()) == 1
         assert no_label_annotations[0].spans[0] != span
+        assert span.regex_matching == []
         # assert annotations[0].spans[0].created_by == self.__repr__()
 
     def test_tokenize_with_empty_document(self):
