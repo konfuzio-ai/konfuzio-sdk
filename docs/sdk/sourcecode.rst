@@ -107,4 +107,12 @@ Rule Based Tokenizer
 =====================
 
 .. automodule:: konfuzio_sdk.tokenizer.regex
-    :members:
+
+Regex Tokenizer
+=====================
+.. autoclass:: RegexTokenizer
+   :members:
+   :noindex:
+
+.. automodule:: konfuzio_sdk.tokenizer.regex
+   :members:
