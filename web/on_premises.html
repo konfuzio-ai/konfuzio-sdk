@@ -213,7 +213,7 @@ generated automatically.</p>
 expose Konfuzio services using name-based virtual servers configured with <code class="docutils literal notranslate"><span class="pre">Ingress</span></code>
 objects. You’ll need to specify a domain which will contain records to resolve the
 domain to the appropriate IP.</p>
-<p><code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">ingress.enabled=True</span></code>
+<p><code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">ingress.enabled=True</span></code><span class="raw-html-m2r"><br></span>
 <code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">ingress.HOST_NAME=konfuzio.example.com</span></code></p>
 <!--
 ###### IPs
@@ -315,8 +315,8 @@ another terminal.</p>
 <h4>Initial login<a class="headerlink" href="#initial-login" title="Permalink to this headline">¶</a></h4>
 <p>You can access the Konfuzio instance by visiting the domain specified during
 installation. In order to create an initial superuser, please to connect to a running pod.</p>
-<p><code class="docutils literal notranslate"><span class="pre">kubectl</span> <span class="pre">get</span> <span class="pre">pod</span></code>
-<code class="docutils literal notranslate"><span class="pre">kubectl</span> <span class="pre">exec</span> <span class="pre">--stdin</span> <span class="pre">--tty</span> <span class="pre">my-konfuzio-*</span> <span class="pre">--</span>&#160; <span class="pre">bash</span></code>
+<p><code class="docutils literal notranslate"><span class="pre">kubectl</span> <span class="pre">get</span> <span class="pre">pod</span></code><span class="raw-html-m2r"><br></span>
+<code class="docutils literal notranslate"><span class="pre">kubectl</span> <span class="pre">exec</span> <span class="pre">--stdin</span> <span class="pre">--tty</span> <span class="pre">my-konfuzio-*</span> <span class="pre">--</span>&#160; <span class="pre">bash</span></code><span class="raw-html-m2r"><br></span>
 <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">createsuperuser</span></code></p>
 <p>&lt;–!</p>
 </section>
