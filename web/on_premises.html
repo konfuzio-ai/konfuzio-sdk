@@ -71,7 +71,6 @@
 <li class="toctree-l4"><a class="reference internal" href="#deploy-using-helm">Deploy using Helm</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#monitoring-the-deployment">Monitoring the Deployment</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#initial-login">Initial login</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id2">Initial login</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#upgrade">Upgrade</a></li>
@@ -111,7 +110,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#migrate-a-project">Migrate a Project</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id3">Environment Variables</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id2">Environment Variables</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-konfuzio-server">Environment Variables for Konfuzio Server</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-read-api-container">Environment Variables for Read API Container</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-detectron-container">Environment Variables for Detectron Container</a></li>
@@ -318,19 +317,18 @@ installation. In order to create an initial superuser, please to connect to a ru
 <p><code class="docutils literal notranslate"><span class="pre">kubectl</span> <span class="pre">get</span> <span class="pre">pod</span></code><span class="raw-html-m2r"><br></span>
 <code class="docutils literal notranslate"><span class="pre">kubectl</span> <span class="pre">exec</span> <span class="pre">--stdin</span> <span class="pre">--tty</span> <span class="pre">my-konfuzio-*</span> <span class="pre">--</span>&#160; <span class="pre">bash</span></code><span class="raw-html-m2r"><br></span>
 <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">createsuperuser</span></code></p>
-<p>&lt;–!</p>
-</section>
-<section id="id2">
-<h4>Initial login<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
-<p>You can access the Konfuzio instance by visiting the domain specified during
+<!--
+#### Initial login
+
+You can access the Konfuzio instance by visiting the domain specified during
 installation. If you manually created the secret for initial root password, you can use that
-to sign in as <code class="docutils literal notranslate"><span class="pre">root</span></code> user. If not, Konfuzio would’ve automatically created a random
-password for <code class="docutils literal notranslate"><span class="pre">root</span></code> user. This can be extracted by the following command (replace
-<code class="docutils literal notranslate"><span class="pre">&lt;name&gt;</span></code> by name of the release - which is <code class="docutils literal notranslate"><span class="pre">konfuzio</span></code> if you used the command above).</p>
-<p><code class="docutils literal notranslate"><span class="pre">kubectl</span> <span class="pre">get</span> <span class="pre">secret</span> <span class="pre">&lt;name&gt;-konfuzio-initial-root-password</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">-ojsonpath='{.data.password}'</span> <span class="pre">|</span> <span class="pre">base64</span> <span class="pre">--decode</span> <span class="pre">;</span> <span class="pre">echo</span></code><span class="raw-html-m2r"><br></span>
-–&gt;</p>
-</section>
+to sign in as `root` user. If not, Konfuzio would've automatically created a random
+password for `root` user. This can be extracted by the following command (replace
+`<name>` by name of the release - which is `konfuzio` if you used the command above).
+
+`kubectl get secret <name>-konfuzio-initial-root-password`
+`-ojsonpath='{.data.password}' | base64 --decode ; echo`
+--></section>
 </section>
 <section id="upgrade">
 <h3>Upgrade<a class="headerlink" href="#upgrade" title="Permalink to this headline">¶</a></h3>
@@ -576,15 +574,15 @@ In comparison for a Categorization AI the targe project has to be chosen from �
 <span class="n">konfuzio_sdk</span> <span class="n">export_project</span> <span class="o">&lt;</span><span class="n">PROJECT_ID</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<p>The export will be saved in a folder with the name <a href="#id4"><span class="problematic" id="id5">data_</span></a><span class="raw-html-m2r"><project_id></span>. This folder needs to be transferred to the target system
+<p>The export will be saved in a folder with the name <a href="#id3"><span class="problematic" id="id4">data_</span></a><span class="raw-html-m2r"><project_id></span>. This folder needs to be transferred to the target system
 The first argument is the path to the export folder, the second is the project name of the imported project on the target system.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">project_import</span> <span class="s2">&quot;/konfuzio-target-system/data_123/&quot;</span> <span class="s2">&quot;NewProjectName&quot;</span>
 </pre></div>
 </div>
 </section>
 </section>
-<section id="id3">
-<h2>Environment Variables<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<section id="id2">
+<h2>Environment Variables<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
 <section id="environment-variables-for-konfuzio-server">
 <h3>Environment Variables for Konfuzio Server<a class="headerlink" href="#environment-variables-for-konfuzio-server" title="Permalink to this headline">¶</a></h3>
 <p>Konfuzio Server is fully configured via environment variables, these can be passed as dedicated environment variables or a single .env to the Konfuzio Server containers (registry.gitlab.com/konfuzio/text-annotation/master). A template for a .env file is provided here:</p>
