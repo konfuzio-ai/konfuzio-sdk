@@ -193,9 +193,11 @@ cluster.</p>
 <section id="deployment">
 <h3>Deployment<a class="headerlink" href="#deployment" title="Permalink to this headline">¶</a></h3>
 <p>Before running <code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">install</span></code>, you need to make some decisions about how you will run
-Konfuzio. Options can be specified using Helm’s <code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">option.name=value</span></code> command
+Konfuzio. Options can be specified using Helm’s <code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">option.name=value</span></code> or <code class="docutils literal notranslate"><span class="pre">--values=my_values.yaml</span></code> command
 line option. A complete list of command line options can be found <a class="reference external" href="https://helm.sh/docs/helm/">here</a>. This guide will
 cover required values and common options.</p>
+<p>Create a values.yaml file for your Konfuzio configuration. See Helm docs for information on how your values file will override the defaults.
+Useful default values can be found in the values.yaml in the chart repository.</p>
 <section id="selecting-configuration-options">
 <h4>Selecting configuration options<a class="headerlink" href="#selecting-configuration-options" title="Permalink to this headline">¶</a></h4>
 <p>In each section collect the options that will be combined to use with <code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">install</span></code>.</p>
@@ -294,14 +296,8 @@ into a smaller cluster. Konfuzio can work without a GPU. The GPU is used to trai
 and run Helm. In this example, we’ve named our Helm release <code class="docutils literal notranslate"><span class="pre">konfuzio</span></code>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">repo</span> <span class="pre">add</span> <span class="pre">konfuzio</span></code><span class="raw-html-m2r"><br></span>
 <code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">repo</span> <span class="pre">update</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">upgrade</span> <span class="pre">--install</span> <span class="pre">konfuzio</span> <span class="pre">konfuzio/server</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">--timeout</span> <span class="pre">600s</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">global.hosts.domain=example.com</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">global.hosts.externalIP=10.10.10.10</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">certmanager-issuer.email=me&#64;example.com</span></code></p>
-<p>You can also use <code class="docutils literal notranslate"><span class="pre">--version</span> <span class="pre">&lt;installation</span> <span class="pre">version&gt;</span></code> option if you would like to install
-a specific version of Konfuzio. This will output the list of resources installed once the
-deployment finishes which may take 5-10 minutes.</p>
+<code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">upgrade</span> <span class="pre">--install</span> <span class="pre">konfuzio</span> <span class="pre">konfuzio/server</span> <span class="pre">--values</span> <span class="pre">my_values.yaml</span></code></p>
+<p>Please create a my_values.yaml file for your Konfuzio configuration. Useful default values can be found in the values.yaml in the chart repository. See Helm docs for information on how your values file will override the defaults. Alternativ you can specify you configuration using <code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">option.name=value</span></code>.</p>
 </section>
 <section id="monitoring-the-deployment">
 <h4>Monitoring the Deployment<a class="headerlink" href="#monitoring-the-deployment" title="Permalink to this headline">¶</a></h4>

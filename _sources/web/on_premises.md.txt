@@ -56,9 +56,12 @@ cluster.
 ### Deployment
 
 Before running `helm install`, you need to make some decisions about how you will run
-Konfuzio. Options can be specified using Helm's `--set option.name=value` command
+Konfuzio. Options can be specified using Helm's `--set option.name=value` or `--values=my_values.yaml` command
 line option. A complete list of command line options can be found [here](https://helm.sh/docs/helm/). This guide will
 cover required values and common options.
+
+Create a values.yaml file for your Konfuzio configuration. See Helm docs for information on how your values file will override the defaults.
+Useful default values can be found in the values.yaml in the chart repository.
 
 #### Selecting configuration options
 
@@ -170,15 +173,9 @@ and run Helm. In this example, we've named our Helm release `konfuzio`.
 
 `helm repo add konfuzio`  
 `helm repo update`  
-`helm upgrade --install konfuzio konfuzio/server \`  
-`--timeout 600s \`  
-`--set global.hosts.domain=example.com \`  
-`--set global.hosts.externalIP=10.10.10.10 \`  
-`--set certmanager-issuer.email=me@example.com`  
+`helm upgrade --install konfuzio konfuzio/server --values my_values.yaml`  
 
-You can also use `--version <installation version>` option if you would like to install
-a specific version of Konfuzio. This will output the list of resources installed once the
-deployment finishes which may take 5-10 minutes.
+Please create a my_values.yaml file for your Konfuzio configuration. Useful default values can be found in the values.yaml in the chart repository. See Helm docs for information on how your values file will override the defaults. Alternativ you can specify you configuration using `--set option.name=value`. 
 
 #### Monitoring the Deployment
 
