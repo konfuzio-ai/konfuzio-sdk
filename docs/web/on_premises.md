@@ -61,7 +61,7 @@ line option. A complete list of command line options can be found [here](https:/
 cover required values and common options.
 
 Create a values.yaml file for your Konfuzio configuration. See Helm docs for information on how your values file will override the defaults.
-Useful default values can be found in the values.yaml in the chart repository.
+Useful default values can be found in the [values.yaml](https://git.konfuzio.com/shared/charts/-/blob/master/values.yaml) in the chart [repository](https://git.konfuzio.com/shared/charts).
 
 #### Selecting configuration options
 
@@ -79,8 +79,10 @@ expose Konfuzio services using name-based virtual servers configured with `Ingre
 objects. You'll need to specify a domain which will contain records to resolve the
 domain to the appropriate IP.
 
-`--set global.hosts.domain=example.com`
+`--set ingress.enabled=True`
+`--set ingress.HOST_NAME=konfuzio.example.com`
 
+<!-- 
 ###### IPs
 
 If you plan to use an automatic DNS registration service,you won't need any additional
@@ -94,6 +96,7 @@ For example if you choose `example.com` and you have a static IP of `10.10.10.10
 _Include these options in your Helm install command:_
 
 `--set global.hosts.externalIP=10.10.10.`
+-->
 
 ##### Persistence
 
