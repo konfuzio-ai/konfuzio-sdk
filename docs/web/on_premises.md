@@ -255,7 +255,7 @@ Registry URL: {PROVIDED_BY_KONFUZIO}
 Username: {PROVIDED_BY_KONFUZIO}  
 Password: {PROVIDED_BY_KONFUZIO}  
 
-`> docker login REGISTRY_URL  
+`> docker login REGISTRY_URL`  
 `> docker pull REGISTRY_URL/konfuzio/text-annotation/master:latest`  
 
 The Tag "latest" should be replaced with an actual version. A list of available tags can be found here: https://dev.konfuzio.com/web/changelog_app.html.
