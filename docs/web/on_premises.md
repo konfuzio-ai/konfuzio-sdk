@@ -197,7 +197,7 @@ installation. In order to create an initial superuser, please to connect to a ru
 `kubectl exec --stdin --tty my-konfuzio-* --  bash`  
 `python manage.py createsuperuser`  
 
-<--!
+<!--
 #### Initial login
 
 You can access the Konfuzio instance by visiting the domain specified during
