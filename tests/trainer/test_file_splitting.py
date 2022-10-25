@@ -30,18 +30,6 @@ class TestFileSplittingModel(unittest.TestCase):
         self.fusion_model.train()
         assert Path('fusion.h5').exists()
 
-    def test_vgg16_training(self):
-        """Test that VGG16 training pipeline is functional."""
-        self.fusion_model.train_vgg(self.image_data_generator)
-        assert Path('vgg16.h5').exists()
-        Path('vgg16.h5').unlink()
-        assert Path('vgg16.h5').exists() is False
-
-    def test_vgg16_loading(self):
-        """Test VGG16 loading when a trained model is available."""
-        vgg_16 = self.fusion_model.train_vgg()
-        assert vgg_16 is not None
-
     def test_get_logits_bert(self):
         """Test that BERT inputs are transformed into logits."""
         texts = [page.text for doc in self.train_data for page in doc.pages()]
