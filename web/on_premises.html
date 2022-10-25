@@ -197,7 +197,7 @@ Konfuzio. Options can be specified using Helm’s <code class="docutils literal 
 line option. A complete list of command line options can be found <a class="reference external" href="https://helm.sh/docs/helm/">here</a>. This guide will
 cover required values and common options.</p>
 <p>Create a values.yaml file for your Konfuzio configuration. See Helm docs for information on how your values file will override the defaults.
-Useful default values can be found in the values.yaml in the chart repository.</p>
+Useful default values can be found in the <a class="reference external" href="https://git.konfuzio.com/shared/charts/-/blob/master/values.yaml">values.yaml</a> in the chart <a class="reference external" href="https://git.konfuzio.com/shared/charts">repository</a>.</p>
 <section id="selecting-configuration-options">
 <h4>Selecting configuration options<a class="headerlink" href="#selecting-configuration-options" title="Permalink to this headline">¶</a></h4>
 <p>In each section collect the options that will be combined to use with <code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">install</span></code>.</p>
@@ -212,19 +212,23 @@ generated automatically.</p>
 expose Konfuzio services using name-based virtual servers configured with <code class="docutils literal notranslate"><span class="pre">Ingress</span></code>
 objects. You’ll need to specify a domain which will contain records to resolve the
 domain to the appropriate IP.</p>
-<p><code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">global.hosts.domain=example.com</span></code></p>
-<section id="ips">
-<h6>IPs<a class="headerlink" href="#ips" title="Permalink to this headline">¶</a></h6>
-<p>If you plan to use an automatic DNS registration service,you won’t need any additional
-configuration for Konfuzio, but you will need to deploy it to your cluster.</p>
-<p>If you plan to manually configure your DNS records they should all point to a static IP.
-For example if you choose <code class="docutils literal notranslate"><span class="pre">example.com</span></code> and you have a static IP of <code class="docutils literal notranslate"><span class="pre">10.10.10.10</span></code>, then
-<code class="docutils literal notranslate"><span class="pre">konfuzio.example.com</span></code>, <code class="docutils literal notranslate"><span class="pre">registry.example.com</span></code> and <code class="docutils literal notranslate"><span class="pre">minio.example.com</span></code> (if using MinIO) should all resolve to
-<code class="docutils literal notranslate"><span class="pre">10.10.10.10</span></code>.</p>
-<p><em>Include these options in your Helm install command:</em></p>
-<p><code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">global.hosts.externalIP=10.10.10.</span></code></p>
-</section>
-</section>
+<p><code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">ingress.enabled=True</span></code>
+<code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">ingress.HOST_NAME=konfuzio.example.com</span></code></p>
+<!--
+###### IPs
+
+If you plan to use an automatic DNS registration service,you won't need any additional
+configuration for Konfuzio, but you will need to deploy it to your cluster.
+
+If you plan to manually configure your DNS records they should all point to a static IP.
+For example if you choose `example.com` and you have a static IP of `10.10.10.10`, then
+`konfuzio.example.com`, `registry.example.com` and `minio.example.com` (if using MinIO) should all resolve to
+`10.10.10.10`.
+
+_Include these options in your Helm install command:_
+
+`--set global.hosts.externalIP=10.10.10.`
+--></section>
 <section id="persistence">
 <h5>Persistence<a class="headerlink" href="#persistence" title="Permalink to this headline">¶</a></h5>
 <p>By default the setup will create Volume Claims with the expectation that a dynamic
