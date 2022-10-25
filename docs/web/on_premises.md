@@ -79,8 +79,8 @@ expose Konfuzio services using name-based virtual servers configured with `Ingre
 objects. You'll need to specify a domain which will contain records to resolve the
 domain to the appropriate IP.
 
-`--set ingress.enabled=True`
-`--set ingress.HOST_NAME=konfuzio.example.com`
+`--set ingress.enabled=True`  
+`--set ingress.HOST_NAME=konfuzio.example.com`  
 
 <!-- 
 ###### IPs
@@ -193,9 +193,9 @@ another terminal.
 You can access the Konfuzio instance by visiting the domain specified during
 installation. In order to create an initial superuser, please to connect to a running pod.
 
-`kubectl get pod`
-`kubectl exec --stdin --tty my-konfuzio-* --  bash`
-`python manage.py createsuperuser`
+`kubectl get pod`  
+`kubectl exec --stdin --tty my-konfuzio-* --  bash`  
+`python manage.py createsuperuser`  
 
 <--!
 #### Initial login
