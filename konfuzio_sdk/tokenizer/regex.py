@@ -95,8 +95,8 @@ class RegexTokenizer(AbstractTokenizer):
 
         return document
 
-    def span_match(self, span: 'Span'):
-        """Check if offset is detected by Tokenizer."""
+    def span_match(self, span: 'Span') -> bool:
+        """Check if Span is detected by Tokenizer."""
         if self in span.regex_matching:
             return True
         else:
