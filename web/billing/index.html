@@ -102,25 +102,26 @@ subgraph Fakturia
 b(Contract) --&gt; c(Contract)
 e(Contract) --&gt; f(Contract)
 end
-        </div><section id="set-up">
-<h2>Set up<a class="headerlink" href="#set-up" title="Permalink to this headline">¶</a></h2>
+        </div><section id="set-up-konfuzio-server-as-billing-station-e-g-https-app-konfuzio-com">
+<h2>Set up Konfuzio Server as billing station (e.g. <a class="reference external" href="https://app.konfuzio.com">https://app.konfuzio.com</a>)<a class="headerlink" href="#set-up-konfuzio-server-as-billing-station-e-g-https-app-konfuzio-com" title="Permalink to this headline">¶</a></h2>
 <section id="to-activate-the-billing-you-need">
 <h3>To activate the billing, you need:<a class="headerlink" href="#to-activate-the-billing-you-need" title="Permalink to this headline">¶</a></h3>
 <ol class="arabic simple">
 <li><p>Set <code class="docutils literal notranslate"><span class="pre">IS_BILLING_ACTIVATED</span></code> environment variable to <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
 <li><p>Run migrations</p></li>
-<li><p>If this is set up on localhost, port forwarding to receive webhooks is needed (Ngrok can be used for this).</p></li>
+<li><p>If this is set up on localhost, port forwarding to receive webhooks is needed (<a class="reference external" href="https://ngrok.com/">Ngrok</a> can be used for this).</p></li>
+<li><p>Please set <code class="docutils literal notranslate"><span class="pre">WEBHOOK_RANDOM_SECRET</span></code> environment variable to a random string.</p></li>
 </ol>
-<p>After that we continue with the setup of Fakturia</p>
-<p>Please set <code class="docutils literal notranslate"><span class="pre">WEBHOOK_RANDOM_SECRET</span></code> environment variable to a random string.</p>
-<p>After login into Fakturia <a class="reference external" href="https://backoffice.sandbox.fakturia.de/public/login.html">Sandbox</a> or <a class="reference external" href="https://backoffice.fakturia.de/public/login.html">Production</a> dashboard you need to open the <a class="reference external" href="https://backoffice.sandbox.fakturia.de/secure/tenant/Webhook/Webhook.html">webhooks</a> page.</p>
-<p>Then you need to create new webhook instance clicking <code class="docutils literal notranslate"><span class="pre">Neuen</span> <span class="pre">Webhook</span> <span class="pre">anlegen</span></code> button</p>
-<p>You will need to fill form</p>
-<a class="reference external image-reference" href="webhook.png"><img alt="webhook.png" src="../../_images/webhook.png" /></a>
-<p>Where</p>
-<p>Url: {your_text_annotation_server_address}/webhook/fakturia/{WEBHOOK_RANDOM_SECRET}/
-And from Verfügbare Events select next:</p>
+<p>After that we continue with the setup of Fakturia.</p>
+<ol class="arabic simple">
+<li><p>Login into Fakturia <a class="reference external" href="https://backoffice.sandbox.fakturia.de/public/login.html">Sandbox</a> or <a class="reference external" href="https://backoffice.fakturia.de/public/login.html">Production</a> dashboard and access the <a class="reference external" href="https://backoffice.sandbox.fakturia.de/secure/tenant/Webhook/Webhook.html">webhooks</a> page.</p></li>
+<li><p>Then you need to create new webhook instance clicking <code class="docutils literal notranslate"><span class="pre">Neuen</span> <span class="pre">Webhook</span> <span class="pre">anlegen</span></code> button</p></li>
+<li><p>You will need to fill with the following values:</p></li>
+</ol>
 <ul class="simple">
+<li><p>URL: <code class="docutils literal notranslate"><span class="pre">{your_text_annotation_server_address}/webhook/fakturia/{WEBHOOK_RANDOM_SECRET}/</span></code></p></li>
+<li><p>From <code class="docutils literal notranslate"><span class="pre">Verfügbare</span> <span class="pre">Events</span></code> select next:</p>
+<ul>
 <li><p>Kunde angelegt</p></li>
 <li><p>Kunde geändert</p></li>
 <li><p>Kunde gelöscht</p></li>
@@ -131,11 +132,16 @@ And from Verfügbare Events select next:</p>
 <li><p>Vertrag gekündigt</p></li>
 <li><p>Vertrag beendet (Vertragsende erreicht)</p></li>
 </ul>
+</li>
+</ul>
+<a class="reference external image-reference" href="webhook.png"><img alt="webhook.png" src="../../_images/webhook.png" /></a>
 <p>Click <code class="docutils literal notranslate"><span class="pre">Webhook</span> <span class="pre">speichern</span></code> button</p>
-<p>Then open <code class="docutils literal notranslate"><span class="pre">Project</span></code> page. Click on edit button for any existing project. Go to <code class="docutils literal notranslate"><span class="pre">Schnittstelle</span></code> tab.</p>
-<p>You will need a copy a <code class="docutils literal notranslate"><span class="pre">Api-Key</span></code> value from this page and set the <code class="docutils literal notranslate"><span class="pre">FAKTURIA_API_KEY</span></code> environment variable to it.
+<ol class="arabic simple">
+<li><p>Then open <code class="docutils literal notranslate"><span class="pre">Project</span></code> page. Click on edit button for any existing project. Go to the <code class="docutils literal notranslate"><span class="pre">Schnittstelle</span></code> tab.</p></li>
+<li><p>You will need a copy a <code class="docutils literal notranslate"><span class="pre">Api-Key</span></code> value from this page and set the <code class="docutils literal notranslate"><span class="pre">FAKTURIA_API_KEY</span></code> environment variable to it.
 Also set <code class="docutils literal notranslate"><span class="pre">https://api.sandbox.fakturia.de/api/v1/</span></code> (for test environment) to <code class="docutils literal notranslate"><span class="pre">FAKTURIA_API_URL</span></code> environment variable.
-Also on Projecte edit page add your IP address to <code class="docutils literal notranslate"><span class="pre">Neuen</span> <span class="pre">API-Key</span> <span class="pre">generieren</span></code> list and click <code class="docutils literal notranslate"><span class="pre">Projekt</span> <span class="pre">speichern</span></code>.</p>
+Also on Project edit page add your IP address to <code class="docutils literal notranslate"><span class="pre">Neuen</span> <span class="pre">API-Key</span> <span class="pre">generieren</span></code> list and click <code class="docutils literal notranslate"><span class="pre">Projekt</span> <span class="pre">speichern</span></code>.</p></li>
+</ol>
 <p>Now everything is ready to be used. You can create customers and subscriptions for them on Fakturia side and
 it will appear on your server.</p>
 </section>
@@ -147,10 +153,10 @@ it will appear on your server.</p>
 <span class="c1"># Randomize the webhook URL (optional).</span>
 <span class="n">BILLLING_WEBHOOK_RANDOM_SECRET</span><span class="o">=</span><span class="n">secret</span>
 <span class="c1"># The Billing API Key (mandatory, if billing is enabled).</span>
-<span class="n">BILLLING_API_KEY</span><span class="o">=</span><span class="mi">7088127</span><span class="n">e</span><span class="o">-</span><span class="n">bb32</span><span class="o">-</span><span class="mi">457</span><span class="n">d</span><span class="o">-</span><span class="mi">836</span><span class="n">d</span><span class="o">-</span><span class="n">edbccd71bf0d</span>
+<span class="n">BILLLING_API_KEY</span><span class="o">=</span><span class="n">xxxxxxx</span><span class="o">-</span><span class="n">yyyyy</span><span class="o">-</span><span class="n">zzzzzzzz</span>
 <span class="c1"># The Billing Server (mandatory, if billing is enabled).</span>
-<span class="n">BILLLING_API_URL</span><span class="o">=</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">sandbox</span><span class="o">.</span><span class="n">fakturia</span><span class="o">.</span><span class="n">de</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v1</span><span class="o">/</span> <span class="ow">or</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">app</span><span class="o">.</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">com</span>
-<span class="c1"># The default contract to which all new Users are added automatically (mandatory, if billing is enabled).</span>
+<span class="n">BILLLING_API_URL</span><span class="o">=</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">sandbox</span><span class="o">.</span><span class="n">fakturia</span><span class="o">.</span><span class="n">de</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v1</span><span class="o">/</span> <span class="ow">or</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">fakturia</span><span class="o">.</span><span class="n">de</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v1</span><span class="o">/</span>
+<span class="c1"># The default contract to which all new Users are added automatically.</span>
 <span class="n">BILLLING_DEFAULT_CONTRACT_ID</span> <span class="o">=</span> <span class="mi">100</span>
 <span class="c1"># The default value for new Contracts for included Pages (optional).</span>
 <span class="n">BILLLING_ALLOWED_UPLOAD_COUNT</span><span class="o">=</span><span class="mi">1</span>
@@ -158,10 +164,16 @@ it will appear on your server.</p>
 <span class="n">BILLING_OVERLIMIT_ARTICLE_NUMBER_NEW_CONTRACTS</span> <span class="o">=</span> <span class="s1">&#39;Overlimited_page&#39;</span>
 <span class="c1"># The default value for the article number of included Pages in new Contracts (optional).</span>
 <span class="n">BILLING_SUBSCRIPTION_ARTICLE_NUMBER_CONTRACTS</span> <span class="o">=</span> <span class="s1">&#39;00001&#39;</span>
-
-<span class="c1"># For on-premise Installations only FAKTURIA_API_URL and FAKTURIA_API_KEY are required.</span>
 </pre></div>
 </div>
+</section>
+<section id="on-premise-setup">
+<h2>On-Premise Setup<a class="headerlink" href="#on-premise-setup" title="Permalink to this headline">¶</a></h2>
+<p>For on-premise installations, only FAKTURIA_API_URL and FAKTURIA_API_KEY are required. Additional information will added to <a class="reference external" href="https://dev.konfuzio.com/web/on_premises.html">On-Premises Documentation</a>.</p>
+</section>
+<section id="management-on-app-konfuzio-com">
+<h2>Management on app.konfuzio.com<a class="headerlink" href="#management-on-app-konfuzio-com" title="Permalink to this headline">¶</a></h2>
+<p>Konfuzio Server will display a Billing Module to manage Contracts and Customers if is configured as Billing Center. On-premise installations will not see the Billing Module. Konfuzio Server is running as Billing Center if the HOST_NAME is part of ‘<em>.konfuzio.com and if the BILLING_API_URL is set to ‘</em>.fakturia.de’.</p>
 </section>
 </section>
 
