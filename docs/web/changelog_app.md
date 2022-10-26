@@ -62,6 +62,11 @@ This version uses Konfuzio Trainer in version v.0.3.22, the Konfuzio Python SDK 
 - The arrow in the Project- and language selector was not clickable ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9714)).
 - On the Annotation list Page the Category filter was not showing all Annotations ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9732)).
 
+## released-tbd
+
+### Fixed
+- Accepting an Annotation was overwritting already existing custom offset string ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9830)).
+
 ## released-2022-09-21_12-00-31
 
 This version uses Konfuzio Trainer in version v.0.3.22, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Capture Vue in version [0.0.8](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
