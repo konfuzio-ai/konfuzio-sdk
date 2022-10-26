@@ -62,10 +62,13 @@ This version uses Konfuzio Trainer in version v.0.3.22, the Konfuzio Python SDK 
 - The arrow in the Project- and language selector was not clickable ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9714)).
 - On the Annotation list Page the Category filter was not showing all Annotations ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9732)).
 
-## released-tbd
+## released-2022-10-26_10-49-59
+
+### Added
+- [Allow on-premise users to customize timeouts of backgroud tasks](https://dev.konfuzio.com/web/on_premises.html#environment-variables-for-konfuzio-server) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9812)).
 
 ### Fixed
-- Accepting an Annotation was overwritting already existing custom offset string ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9830)).
+- Accepting an Annotation was overwritting already existing custom offset strings ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9830)).
 
 ## released-2022-09-21_12-00-31
 
