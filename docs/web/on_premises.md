@@ -352,8 +352,8 @@ Username: {PROVIDED_BY_KONFUZIO}
 Password: {PROVIDED_BY_KONFUZIO}  
 
 `> docker login REGISTRY_URL`  
-`> docker pull REGISTRY_URL/konfuzio/detectron2:2021-10-07_13-45-34`  
-`> docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/detectron2:2021-10-07_13-45-34 bash -c "export LC_ALL=C.UTF-8; export LANG=C.UTF-8; ./run_celery.sh"`
+`> docker pull REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28`  
+`> docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28 bash -c "export LC_ALL=C.UTF-8; export LANG=C.UTF-8; ./run_celery.sh"`
 
 The segmentation container needs to be started with the following environment variables which you can enter into your .env file
 ```
