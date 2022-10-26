@@ -1,8 +1,23 @@
 **Internal Documentation. This does not apply to on-premise Konfuzio Server installations.**
 
-# Fakturia 
+# Overview
 
 The pricing of Konfuzio is based on the number of pages a user processes. This pricing is enforced using [Fakturia](https://www.fakturia.de/).
+
+```mermaid
+graph LR
+subgraph On-Premise
+a(License Key)
+end
+subgraph app.konfuzio.com
+a("License Key") --> e(Contract)
+b(Contract)
+end
+subgraph Fakturia 
+b(Contract) --> c(Contract)
+e(Contract) --> f(Contract)
+end  						
+```
 
 ## Set up
 

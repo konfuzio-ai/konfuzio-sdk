@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fakturia &mdash; Konfuzio  documentation</title>
+  <title>Overview &mdash; Konfuzio  documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
@@ -73,7 +73,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Fakturia</li>
+      <li>Overview</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../../_sources/web/billing/index.md.txt" rel="nofollow"> View page source</a>
       </li>
@@ -84,9 +84,23 @@
            <div itemprop="articleBody">
              
   <p><strong>Internal Documentation. This does not apply to on-premise Konfuzio Server installations.</strong></p>
-<section id="fakturia">
-<h1>Fakturia<a class="headerlink" href="#fakturia" title="Permalink to this headline">¶</a></h1>
+<section id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
 <p>The pricing of Konfuzio is based on the number of pages a user processes. This pricing is enforced using <a class="reference external" href="https://www.fakturia.de/">Fakturia</a>.</p>
+<div class="highlight-mermaid notranslate"><div class="highlight"><pre><span></span>graph LR
+subgraph On-Premise
+a(License Key)
+end
+subgraph app.konfuzio.com
+a(&quot;License Key&quot;) --&gt; e(Contract)
+b(Contract)
+end
+subgraph Fakturia
+b(Contract) --&gt; c(Contract)
+e(Contract) --&gt; f(Contract)
+end
+</pre></div>
+</div>
 <section id="set-up">
 <h2>Set up<a class="headerlink" href="#set-up" title="Permalink to this headline">¶</a></h2>
 <section id="to-activate-the-billing-you-need">
