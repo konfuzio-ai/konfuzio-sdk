@@ -69,6 +69,7 @@ This version uses Konfuzio Trainer in version v.0.3.22, the Konfuzio Python SDK 
 
 ### Fixed
 - Accepting an Annotation was overwritting already existing custom offset strings ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9830)).
+- In some cases an Extraction AI training was failing when detecton mode 'Character' was selected ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9935)).
 
 ## released-2022-09-21_12-00-31
 
