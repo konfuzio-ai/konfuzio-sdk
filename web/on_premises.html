@@ -396,7 +396,7 @@ Password: {PROVIDED_BY_KONFUZIO}</p>
 <h4>4. Init the database, create first superuser via cli and prefill e-mail templates<a class="headerlink" href="#init-the-database-create-first-superuser-via-cli-and-prefill-e-mail-templates" title="Permalink to this headline">¶</a></h4>
 <p>In this example we store the files on the host VM and mount the directory “/konfuzio-vm/text-annotation/data” into the container. In the first step we create a container with a shell to then start the initialization scripts within the container.
 The container needs to be able to access IP addresses and hostnames used in the .env. This can be ensured using –add.host. In the example we make the host IP 10.0.0.1 available.</p>
-<p>docker run -it –add-host=10.0.0.1 –env-file /konfuzio-vm/text-annotation.env –mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data registry.gitlab.com/konfuzio/text-annotation/master:latest bash</p>
+<p>docker run -it –add-host=10.0.0.1 –env-file /konfuzio-vm/text-annotation.env –mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data REGISTRY_URL/konfuzio/text-annotation/master:latest bash</p>
 <p><code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">migrate</span></code><span class="raw-html-m2r"><br></span>
 <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">createsuperuser</span></code><span class="raw-html-m2r"><br></span>
 <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">init_email_templates</span></code><span class="raw-html-m2r"><br></span>
@@ -410,17 +410,17 @@ The container needs to be able to access IP addresses and hostnames used in the 
 <p><code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">run</span> <span class="pre">-p</span> <span class="pre">80:8000</span> <span class="pre">--name</span> <span class="pre">web</span> <span class="pre">-d</span> <span class="pre">--add-host=host:10.0.0.1</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
 <code class="docutils literal notranslate"><span class="pre">--env-file</span> <span class="pre">/konfuzio-vm/text-annotation.env</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
 <code class="docutils literal notranslate"><span class="pre">--mount</span> <span class="pre">type=bind,source=/konfuzio-vm/text-annotation/data,target=/data</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">registry.gitlab.com/konfuzio/text-annotation/master:latest</span></code></p>
+<code class="docutils literal notranslate"><span class="pre">REGISTRY_URL/konfuzio/text-annotation/master:latest</span></code></p>
 <p><code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">run</span> <span class="pre">--name</span> <span class="pre">worker1</span> <span class="pre">-d</span> <span class="pre">--add-host=host:10.0.0.1</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
 <code class="docutils literal notranslate"><span class="pre">--env-file</span> <span class="pre">/konfuzio-vm/text-annotation.env</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
 <code class="docutils literal notranslate"><span class="pre">--mount</span> <span class="pre">type=bind,source=/konfuzio-vm/text-annotation/data,target=/data</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">registry.gitlab.com/konfuzio/text-annotation/master:latest</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
+<code class="docutils literal notranslate"><span class="pre">REGISTRY_URL/konfuzio/text-annotation/master:latest</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
 <code class="docutils literal notranslate"><span class="pre">celery</span> <span class="pre">-A</span> <span class="pre">app</span> <span class="pre">worker</span> <span class="pre">-l</span> <span class="pre">INFO</span> <span class="pre">--concurrency</span> <span class="pre">1</span> <span class="pre">-Q</span> <span class="pre">celery,priority_ocr,ocr,\</span></code><span class="raw-html-m2r"><br></span>
 <code class="docutils literal notranslate"><span class="pre">priority_extract,extract,processing,priority_local_ocr,local_ocr,training,finalize,training_heavy,categorize</span></code></p>
 <p><code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">run</span> <span class="pre">--name</span> <span class="pre">worker2</span> <span class="pre">-d</span> <span class="pre">--add-host=host:10.0.0.1</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
 <code class="docutils literal notranslate"><span class="pre">--env-file</span> <span class="pre">/konfuzio-vm/text-annotation.env</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
 <code class="docutils literal notranslate"><span class="pre">--mount</span> <span class="pre">type=bind,source=/konfuzio-vm/text-annotation/data,target=/data</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">registry.gitlab.com/konfuzio/text-annotation/master:latest</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
+<code class="docutils literal notranslate"><span class="pre">REGISTRY_URL/konfuzio/text-annotation/master:latest</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
 <code class="docutils literal notranslate"><span class="pre">celery</span> <span class="pre">-A</span> <span class="pre">app</span> <span class="pre">worker</span> <span class="pre">-l</span> <span class="pre">INFO</span> <span class="pre">--concurrency</span> <span class="pre">1</span> <span class="pre">-Q</span> <span class="pre">celery,priority_ocr,ocr,\</span></code><span class="raw-html-m2r"><br></span>
 <code class="docutils literal notranslate"><span class="pre">priority_extract,extract,processing,priority_local_ocr,local_ocr,training,finalize,training_heavy,categorize</span></code></p>
 </section>
@@ -430,7 +430,7 @@ The container needs to be able to access IP addresses and hostnames used in the 
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>`docker run --name flower -d --add-host=host:10.0.0.1 \`
 `--env-file /konfuzio-vm/text-annotation.env \`
 `--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \`
-`registry.gitlab.com/konfuzio/text-annotation/master:latest \`
+`REGISTRY_URL/konfuzio/text-annotation/master:latest \`
 `celery -A app flower --url_prefix=flower --address=0.0.0.0 --port=5555`
 </pre></div>
 </div>
@@ -448,12 +448,12 @@ The container needs to be able to access IP addresses and hostnames used in the 
 <section id="optional-8-install-document-segmentation-container">
 <h4>[Optional] 8. Install document segmentation container<a class="headerlink" href="#optional-8-install-document-segmentation-container" title="Permalink to this headline">¶</a></h4>
 <p>Download the container with the credentials provided by Konfuzio</p>
-<p>Registry URL: registry.gitlab.com<span class="raw-html-m2r"><br></span>
+<p>Registry URL: {PROVIDED_BY_KONFUZIO}<span class="raw-html-m2r"><br></span>
 Username: {PROVIDED_BY_KONFUZIO}<span class="raw-html-m2r"><br></span>
 Password: {PROVIDED_BY_KONFUZIO}</p>
-<p><code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">docker</span> <span class="pre">login</span> <span class="pre">registry.gitlab.com</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">docker</span> <span class="pre">pull</span> <span class="pre">registry.gitlab.com/konfuzio/detectron2:2021-10-07_13-45-34</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">docker</span> <span class="pre">run</span> <span class="pre">--env-file</span> <span class="pre">/path_to_env_file.env</span> <span class="pre">registry.gitlab.com/konfuzio/detectron2:2021-10-07_13-45-34</span> <span class="pre">bash</span> <span class="pre">-c</span> <span class="pre">&quot;export</span> <span class="pre">LC_ALL=C.UTF-8;</span> <span class="pre">export</span> <span class="pre">LANG=C.UTF-8;</span> <span class="pre">./run_celery.sh&quot;</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">docker</span> <span class="pre">login</span> <span class="pre">REGISTRY_URL</span></code><span class="raw-html-m2r"><br></span>
+<code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">docker</span> <span class="pre">pull</span> <span class="pre">REGISTRY_URL/konfuzio/detectron2:2021-10-07_13-45-34</span></code><span class="raw-html-m2r"><br></span>
+<code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">docker</span> <span class="pre">run</span> <span class="pre">--env-file</span> <span class="pre">/path_to_env_file.env</span> <span class="pre">REGISTRY_URL/konfuzio/detectron2:2021-10-07_13-45-34</span> <span class="pre">bash</span> <span class="pre">-c</span> <span class="pre">&quot;export</span> <span class="pre">LC_ALL=C.UTF-8;</span> <span class="pre">export</span> <span class="pre">LANG=C.UTF-8;</span> <span class="pre">./run_celery.sh&quot;</span></code></p>
 <p>The segmentation container needs to be started with the following environment variables which you can enter into your .env file</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GPU</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># If GPU is present</span>
 <span class="n">C_FORCE_ROOT</span><span class="o">=</span><span class="kc">True</span>
@@ -585,7 +585,7 @@ The first argument is the path to the export folder, the second is the project n
 <h2>Environment Variables<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
 <section id="environment-variables-for-konfuzio-server">
 <h3>Environment Variables for Konfuzio Server<a class="headerlink" href="#environment-variables-for-konfuzio-server" title="Permalink to this headline">¶</a></h3>
-<p>Konfuzio Server is fully configured via environment variables, these can be passed as dedicated environment variables or a single .env to the Konfuzio Server containers (registry.gitlab.com/konfuzio/text-annotation/master). A template for a .env file is provided here:</p>
+<p>Konfuzio Server is fully configured via environment variables, these can be passed as dedicated environment variables or a single .env to the Konfuzio Server containers (REGISTRY_URL/konfuzio/text-annotation/master). A template for a .env file is provided here:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span># False for production, True for local development (mandatory).
 # See https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-DEBUG
 DEBUG=
@@ -728,8 +728,6 @@ TRAIN_EXTRACTION_AI_AUTOMATICALLY_IF_QUEUE_IS_EMPTY=False
 ALWAYS_GENERATE_SANDWICH_PDF=True
 
 # Default time limits for background tasks (optional).
-# These defaults can be viewed here: https://dev.konfuzio.com/web/on_premises.html#background-processes.
-
 EXTRACTION_TIME_LIMIT =
 CATEGORIZATION_TIME_LIMIT =
 EVALUATION_TIME_LIMIT =
