@@ -285,7 +285,7 @@ Copy the /code/.env.example file from the container and adapt it to your setting
 In this example we store the files on the host VM and mount the directory "/konfuzio-vm/text-annotation/data" into the container. In the first step we create a container with a shell to then start the initialization scripts within the container.
 The container needs to be able to access IP addresses and hostnames used in the .env. This can be ensured using --add.host. In the example we make the host IP 10.0.0.1 available.
 
-docker run -it --add-host=10.0.0.1 --env-file /konfuzio-vm/text-annotation.env --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data registry.gitlab.com/konfuzio/text-annotation/master:latest bash
+docker run -it --add-host=10.0.0.1 --env-file /konfuzio-vm/text-annotation.env --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data REGISTRY_URL/konfuzio/text-annotation/master:latest bash
 
 `python manage.py migrate`  
 `python manage.py createsuperuser`  
@@ -302,19 +302,19 @@ In this example we start three containers, the first one to serve the Konfuzio w
 `docker run -p 80:8000 --name web -d --add-host=host:10.0.0.1 \`  
 `--env-file /konfuzio-vm/text-annotation.env \`  
 `--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \`  
-`registry.gitlab.com/konfuzio/text-annotation/master:latest`
+`REGISTRY_URL/konfuzio/text-annotation/master:latest`
 
 `docker run --name worker1 -d --add-host=host:10.0.0.1 \`  
 `--env-file /konfuzio-vm/text-annotation.env \`  
 `--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \`  
-`registry.gitlab.com/konfuzio/text-annotation/master:latest \`  
+`REGISTRY_URL/konfuzio/text-annotation/master:latest \`  
 `celery -A app worker -l INFO --concurrency 1 -Q celery,priority_ocr,ocr,\`  
 `priority_extract,extract,processing,priority_local_ocr,local_ocr,training,finalize,training_heavy,categorize`
 
 `docker run --name worker2 -d --add-host=host:10.0.0.1 \`  
 `--env-file /konfuzio-vm/text-annotation.env \`  
 `--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \`  
-`registry.gitlab.com/konfuzio/text-annotation/master:latest \`  
+`REGISTRY_URL/konfuzio/text-annotation/master:latest \`  
 `celery -A app worker -l INFO --concurrency 1 -Q celery,priority_ocr,ocr,\`  
 `priority_extract,extract,processing,priority_local_ocr,local_ocr,training,finalize,training_heavy,categorize`
 
@@ -326,7 +326,7 @@ In this example we start three containers, the first one to serve the Konfuzio w
 `docker run --name flower -d --add-host=host:10.0.0.1 \`  
 `--env-file /konfuzio-vm/text-annotation.env \`  
 `--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \`  
-`registry.gitlab.com/konfuzio/text-annotation/master:latest \`  
+`REGISTRY_URL/konfuzio/text-annotation/master:latest \`  
 `celery -A app flower --url_prefix=flower --address=0.0.0.0 --port=5555` 
 ```
 
@@ -347,13 +347,13 @@ Once the Azure Read API container is running you need to set the following varia
 
 Download the container with the credentials provided by Konfuzio
 
-Registry URL: registry.gitlab.com  
+Registry URL: {PROVIDED_BY_KONFUZIO}  
 Username: {PROVIDED_BY_KONFUZIO}  
 Password: {PROVIDED_BY_KONFUZIO}  
 
-`> docker login registry.gitlab.com`  
-`> docker pull registry.gitlab.com/konfuzio/detectron2:2021-10-07_13-45-34`  
-`> docker run --env-file /path_to_env_file.env registry.gitlab.com/konfuzio/detectron2:2021-10-07_13-45-34 bash -c "export LC_ALL=C.UTF-8; export LANG=C.UTF-8; ./run_celery.sh"`
+`> docker login REGISTRY_URL`  
+`> docker pull REGISTRY_URL/konfuzio/detectron2:2021-10-07_13-45-34`  
+`> docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/detectron2:2021-10-07_13-45-34 bash -c "export LC_ALL=C.UTF-8; export LANG=C.UTF-8; ./run_celery.sh"`
 
 The segmentation container needs to be started with the following environment variables which you can enter into your .env file
 ```
@@ -486,7 +486,7 @@ python manage.py project_import "/konfuzio-target-system/data_123/" "NewProjectN
 
 ### Environment Variables for Konfuzio Server
 
-Konfuzio Server is fully configured via environment variables, these can be passed as dedicated environment variables or a single .env to the Konfuzio Server containers (registry.gitlab.com/konfuzio/text-annotation/master). A template for a .env file is provided here:
+Konfuzio Server is fully configured via environment variables, these can be passed as dedicated environment variables or a single .env to the Konfuzio Server containers (REGISTRY_URL/konfuzio/text-annotation/master). A template for a .env file is provided here:
 
 ```text
 # False for production, True for local development (mandatory).
@@ -631,8 +631,6 @@ TRAIN_EXTRACTION_AI_AUTOMATICALLY_IF_QUEUE_IS_EMPTY=False
 ALWAYS_GENERATE_SANDWICH_PDF=True
 
 # Default time limits for background tasks (optional).
-# These defaults can be viewed here: https://dev.konfuzio.com/web/on_premises.html#background-processes.
-
 EXTRACTION_TIME_LIMIT = 
 CATEGORIZATION_TIME_LIMIT = 
 EVALUATION_TIME_LIMIT = 
