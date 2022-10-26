@@ -18,6 +18,8 @@
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
+        <script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+        <script>mermaid.initialize({startOnLoad:true});</script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -87,7 +89,8 @@
 <section id="overview">
 <h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
 <p>The pricing of Konfuzio is based on the number of pages a user processes. This pricing is enforced using <a class="reference external" href="https://www.fakturia.de/">Fakturia</a>.</p>
-<div class="highlight-mermaid notranslate"><div class="highlight"><pre><span></span>graph LR
+<div class="mermaid">
+            graph LR
 subgraph On-Premise
 a(License Key)
 end
@@ -99,9 +102,7 @@ subgraph Fakturia
 b(Contract) --&gt; c(Contract)
 e(Contract) --&gt; f(Contract)
 end
-</pre></div>
-</div>
-<section id="set-up">
+        </div><section id="set-up">
 <h2>Set up<a class="headerlink" href="#set-up" title="Permalink to this headline">¶</a></h2>
 <section id="to-activate-the-billing-you-need">
 <h3>To activate the billing, you need:<a class="headerlink" href="#to-activate-the-billing-you-need" title="Permalink to this headline">¶</a></h3>
