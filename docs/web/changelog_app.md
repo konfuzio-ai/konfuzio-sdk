@@ -16,7 +16,6 @@ Self-hosted Konfuzio Server can be upgraded according to the [documentation](htt
 You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server features our team is actively working on. This list covers a planning horizon of 12 weeks. 
 
 - Add self-service customer center to manage contracts and invoices ([Internal Documentation](https://git.konfuzio.com/konfuzio/manual/-/merge_requests/23/diffs), [Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/8235)).
-- API v3 endpoint to sort and split Pages into Documents with different categories contained in one file ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9452)).
 - Calculate and access Tokenizers via the web interface. The name Tokenizer might be revised. The SDK refers to this concept as Tokenizer. ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9271)).
 - Add a filter to the list of Documents to find Documents that need to be revised by humans. ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9242)).
 - Improved training time of Extraction AIs when using character detection mode (reduced up to 40%) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9720)).
@@ -49,6 +48,7 @@ This version uses Konfuzio Trainer in version v.0.3.22, the Konfuzio Python SDK 
 - [Save feedback that there are no Annotations for a Label/Label-Set combination in a document](http://localhost:8000/v3/swagger/#/documents/documents_missing_annotations_list) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9163)).
 - [Add the property 'number' to the Page API V3](https://app.konfuzio.com/v3/swagger/#/documents) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9619)).
 - [Include the Label Set name in the API V3 even when no Label Set is present](https://app.konfuzio.com/v3/swagger/#/documents) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9399)).
+- [API v3 endpoint to sort and split Pages into Documents with different categories contained in one file](https://testing.konfuzio.com/v3/swagger/#/documents/documents_postprocess_create) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9452)).
 
 ### Changed
 - [When a user creates a new Project, this user will become the default assignee for new Documents](https://help.konfuzio.com/modules/projects/index.html#default-assignee) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9705))
