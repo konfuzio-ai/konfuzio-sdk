@@ -274,7 +274,7 @@ Password: {PROVIDED_BY_KONFUZIO}
 The Tag "latest" should be replaced with an actual version. A list of available tags can be found here: https://dev.konfuzio.com/web/changelog_app.html.
 
 #### 2. Setup PostgreSQL, Redis, BlobStorage/FileSystemStorage
-The database credentials are needed in the next step. You may want to use psql and redis-cli to check if database credentials are working.
+The database credentials are needed in this step. Please ensure your selected [databases](/web/on_premises.html#database-and-storage) are setup at this point. You may want to use psql and redis-cli to check if database credentials are working.
 
 In case you use FileSystemStorage and Docker volume mounts, you need to make sure the volume can be accessed by the konfuzio docker user (uid=999). You might want to run "chown 999:999 -R /konfuzio-vm/text-annotation/data" on the host VM.
 
@@ -490,7 +490,7 @@ To run Konfuzio Server, three types of storages are required. First, a PostgreSQ
 | --- | --- | --- | --- |
 | [Postgres](https://www.postgresql.org/) | Latest Stable | PostgreSQL 11 and higher| Managed (Cloud) Service, VM Installation, Docker, In-Cluster* |
 | [Redis](https://redis.io/) | Latest Stable | Redis 5 and higher | Managed (Cloud) Service, VM Installation, Docker, In-Cluster* |
-| Blob Storage | Latest Stable | All with activ support | Filesystem, S3-compatible Storage (e.g. [Amazon S3(https://aws.amazon.com/s3/), [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/) |
+| Blob Storage | Latest Stable | All with activ support | Filesystem, S3-compatible Storage (e.g. [Amazon S3](https://aws.amazon.com/s3/), [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/) |
 
 \*If you use [Kubernetes Deployment](/web/on_premises.html#kubernetes) you can choose the 'in-Cluster' option for Postgres and Redis.
 
