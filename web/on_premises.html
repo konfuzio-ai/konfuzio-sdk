@@ -586,7 +586,7 @@ The first argument is the path to the export folder, the second is the project n
 </section>
 <section id="database-and-storage">
 <h2>Database and Storage<a class="headerlink" href="#database-and-storage" title="Permalink to this headline">¶</a></h2>
-<p>In order to run Konfuzio Server three types of storages are required. First a PostgreSQL database is needed to store structured application data. Secondly, a storage for Blobs need to be present. Thirdly, a Redis database in order manage the background Task of Konfuzio Server is needed. You can choose you prefered deployment option for each storage type and connect Konfuzio via environment variables to the respective storages. We recommend to plan your storage choices before starting with the actual Konfuzio installaton.</p>
+<p>To run Konfuzio Server, three types of storages are required. First, a PostgreSQL database is needed to store structured application data. Secondly, a storage for Blob needs to be present. Thirdly, a Redis database that manages the background Task of Konfuzio Server is needed. You can choose your preferred deployment option for each storage type and connect Konfuzio via environment variables to the respective storages. We recommend planning your storage choices before starting with the actual Konfuzio installation.</p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 25%" />
@@ -615,11 +615,11 @@ The first argument is the path to the export folder, the second is the project n
 <tr class="row-even"><td><p>Blob Storage</p></td>
 <td><p>Latest Stable</p></td>
 <td><p>All with activ support</p></td>
-<td><p>Filesystem, S3-compatible Storage, Azure Cloud Storage</p></td>
+<td><p>Filesystem, S3-compatible Storage (e.g. [Amazon S3(<a class="reference external" href="https://aws.amazon.com/s3/">https://aws.amazon.com/s3/</a>), <a class="reference external" href="https://azure.microsoft.com/en-us/products/storage/blobs/">Azure Blob Storage</a></p></td>
 </tr>
 </tbody>
 </table>
-<p><a href="#id3"><span class="problematic" id="id4">*</span></a>If you use Kubernetes Deployment you can choose the ‘in-Cluster’ option for Postgres and Redis.</p>
+<p><a href="#id3"><span class="problematic" id="id4">*</span></a>If you use <a class="reference external" href="/web/on_premises.html#kubernetes">Kubernetes Deployment</a> you can choose the ‘in-Cluster’ option for Postgres and Redis.</p>
 </section>
 <section id="id5">
 <h2>Environment Variables<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>

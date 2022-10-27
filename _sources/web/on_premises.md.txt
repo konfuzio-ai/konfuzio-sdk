@@ -484,15 +484,15 @@ python manage.py project_import "/konfuzio-target-system/data_123/" "NewProjectN
 
 ## Database and Storage
 
-In order to run Konfuzio Server three types of storages are required. First a PostgreSQL database is needed to store structured application data. Secondly, a storage for Blobs need to be present. Thirdly, a Redis database in order manage the background Task of Konfuzio Server is needed. You can choose you prefered deployment option for each storage type and connect Konfuzio via environment variables to the respective storages. We recommend to plan your storage choices before starting with the actual Konfuzio installaton.
+To run Konfuzio Server, three types of storages are required. First, a PostgreSQL database is needed to store structured application data. Secondly, a storage for Blob needs to be present. Thirdly, a Redis database that manages the background Task of Konfuzio Server is needed. You can choose your preferred deployment option for each storage type and connect Konfuzio via environment variables to the respective storages. We recommend planning your storage choices before starting with the actual Konfuzio installation.
 
 | Storage Name | Recommended Version | Supported Version | Deployment Options |
 | --- | --- | --- | --- |
 | [Postgres](https://www.postgresql.org/) | Latest Stable | PostgreSQL 11 and higher| Managed (Cloud) Service, VM Installation, Docker, In-Cluster* |
 | [Redis](https://redis.io/) | Latest Stable | Redis 5 and higher | Managed (Cloud) Service, VM Installation, Docker, In-Cluster* |
-| Blob Storage | Latest Stable | All with activ support | Filesystem, S3-compatible Storage, Azure Cloud Storage |
+| Blob Storage | Latest Stable | All with activ support | Filesystem, S3-compatible Storage (e.g. [Amazon S3(https://aws.amazon.com/s3/), [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/) |
 
-\*If you use Kubernetes Deployment you can choose the 'in-Cluster' option for Postgres and Redis.
+\*If you use [Kubernetes Deployment](/web/on_premises.html#kubernetes) you can choose the 'in-Cluster' option for Postgres and Redis.
 
 ## Environment Variables
 
