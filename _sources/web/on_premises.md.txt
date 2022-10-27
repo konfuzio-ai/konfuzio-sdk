@@ -482,6 +482,18 @@ The first argument is the path to the export folder, the second is the project n
 python manage.py project_import "/konfuzio-target-system/data_123/" "NewProjectName"
 ```
 
+## Database and Storage
+
+In order to run Konfuzio Server three types of storages are required. First a PostgreSQL database is needed to store structured application data. Secondly, a storage for Blobs need to be present. Thirdly, a Redis database in order manage the background Task of Konfuzio Server is needed. You can choose you prefered deployment option for each storage type and connect Konfuzio via environment variables to the respective storages. We recommend to plan your storage choices before starting with the actual Konfuzio installaton.
+
+| Storage Name | Recommended Version | Supported Version | Deployment Options |
+| --- | --- | --- | --- |
+| [Postgres](https://www.postgresql.org/) | Latest Stable | PostgreSQL 11 and higher| Managed (Cloud) Service, VM Installation, Docker, In-Cluster* |
+| [Redis](https://redis.io/) | Latest Stable | Redis 5 and higher | Managed (Cloud) Service, VM Installation, Docker, In-Cluster* |
+| Blob Storage | Latest Stable | All with activ support | Filesystem, S3-compatible Storage, Azure Cloud Storage |
+
+\*If you use Kubernetes Deployment you can choose the 'in-Cluster' option for Postgres and Redis.
+
 ## Environment Variables
 
 ### Environment Variables for Konfuzio Server
