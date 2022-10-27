@@ -174,6 +174,13 @@ class ListTokenizer(AbstractTokenizer):
             found_spans_list += tokenizer.found_spans(document)
         return found_spans_list
 
+    def span_match(self, span: 'Span') -> bool:
+        """Run span_match in the given order."""
+        for tokenizer in self.tokenizers:
+            if tokenizer.span_match(span):
+                return True
+        return False
+
     def lose_weight(self):
         """Delete processing steps."""
         self.processing_steps = []
