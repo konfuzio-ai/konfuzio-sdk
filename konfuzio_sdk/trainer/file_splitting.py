@@ -1,5 +1,6 @@
 """Split a multi-Document file into a list of shorter documents based on model's prediction."""
 import cv2
+import logging
 import torch
 
 import numpy as np
@@ -18,10 +19,10 @@ from konfuzio_sdk.data import Document, Page, Project
 
 
 class FusionModel:
-    """Train a fusion model for correct splitting of multi-file documents."""
+    """Train a fusion model for correct splitting of files which contain multiple Documents."""
 
     def __init__(self, project_id: int, split_point: float = 0.5):
-        """Initialize project, training and testing data, and a split point for training dataset."""
+        """Initialize Project, training and testing data, and a split point for training dataset."""
         self.project = Project(id_=project_id)
         self.train_data = self.project.documents
         self.test_data = self.project.test_documents
@@ -35,7 +36,7 @@ class FusionModel:
             for page in doc.pages():
                 pages.append(page.image_path)
                 texts.append(page.text)
-                if page.image_path.split('.')[-2] == 'page_1':
+                if page.number == 1:
                     labels.append(1)
                 else:
                     labels.append(0)
@@ -43,12 +44,15 @@ class FusionModel:
         Path("otsu_vgg16/{}/not_first_page".format(path)).mkdir(parents=True, exist_ok=True)
         return pages, texts, labels
 
-    def _otsu_binarization(self, pages: List, labels: List[int], path: str):
+    def _otsu_binarization(self, pages: List, labels: List[int], path):
         for img, label in zip(pages, labels):
             image = cv2.imread(img)
             image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             ret, thresh1 = cv2.threshold(image, 120, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
             image = cv2.resize(thresh1, (224, 224), interpolation=cv2.INTER_AREA)
+            # cv2.imwrite(
+            #     img.split('.')[0] + '_otsu.png', image
+            # )
             if label == 0:
                 cv2.imwrite(
                     'otsu_vgg16/{}/not_first_page/{}'.format(path, img.split('/')[-2] + '_' + img.split('/')[-1]), image
@@ -91,7 +95,6 @@ class FusionModel:
         return train_data_generator
 
     def _init_vgg16(self):
-
         model = Sequential()
         model.add(Conv2D(input_shape=(224, 224, 3), filters=64, kernel_size=(3, 3), padding="same", activation="relu"))
         model.add(Conv2D(filters=64, kernel_size=(3, 3), padding="same", activation="relu"))
@@ -121,8 +124,8 @@ class FusionModel:
 
     def train_vgg(self, image_data_generator=None):
         """Training or loading trained VGG16 model."""
-        if Path('vgg16.h5').exists():
-            model = load_model('vgg16.h5')
+        if Path(self.project.model_folder + '/vgg16.h5').exists():
+            model = load_model(self.project.model_folder + '/vgg16.h5')
         else:
             model = self._init_vgg16()
             checkpoint = ModelCheckpoint(
@@ -142,7 +145,7 @@ class FusionModel:
                 epochs=100,
                 callbacks=[checkpoint, early],
             )
-            model.save('vgg16.h5')
+            model.save(self.project.model_folder + '/vgg16.h5')
         return model
 
     def init_bert(self):
@@ -194,6 +197,36 @@ class FusionModel:
         input_shape = Xtest.shape[1]
         return Xtrain, Xtest, ytrain, ytest, input_shape
 
+    def _predict_label(self, inputs, model):
+        pred = model.predict(inputs, verbose=0)
+        return round(pred[0, 0])
+
+    def _calculate_metrics(self, model, inputs, labels):
+        true_positive = 0
+        false_positive = 0
+        false_negative = 0
+        for i, test in zip(labels, inputs):
+            pred = self._predict_label(test.reshape((1, 4)), model)
+            if i == 1 and pred == 1:
+                true_positive += 1
+            elif i == 1 and pred == 0:
+                false_negative += 1
+            elif i == 0 and pred == 1:
+                false_positive += 1
+        if true_positive + false_positive != 0:
+            precision = true_positive / (true_positive + false_positive)
+        else:
+            precision = 0
+        if true_positive + false_negative != 0:
+            recall = true_positive / (true_positive + false_negative)
+        else:
+            recall = 0
+        if precision + recall != 0:
+            f1 = 2 * precision * recall / (precision + recall)
+        else:
+            f1 = 0
+        return precision, recall, f1
+
     def train(self):
         """Preprocess data, train VGG16 and a MLP pipeline based on VGG16 and LegalBERT."""
         (
@@ -225,16 +258,21 @@ class FusionModel:
         model.add(Dense(1, activation='sigmoid'))
         model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
         model.fit(Xtrain, ytrain, epochs=100, verbose=2)
-        model.save('fusion.h5')
+        model.save(self.project.model_folder + '/fusion.h5')
+        loss, acc = model.evaluate(Xtest, ytest, verbose=0)
+        logging.info('Accuracy: {}'.format(acc * 100))
+        precision, recall, f1 = self._calculate_metrics(model, Xtest, ytest)
+        logging.info('\n Precision: {} \n Recall: {} \n F1-score: {}'.format(precision, recall, f1))
         return model
 
 
 class PageSplitting:
-    """Split a given document and return a list of resulting shorter documents."""
+    """Split a given Document and return a list of resulting shorter Documents."""
 
     def __init__(self, model_path: str, project_id=None):
-        """Load model, tokenizer, vocabulary and categorization_pipeline."""
+        """Load VGG16 model, BERT and BERTTokenizer."""
         self.file_splitter = FusionModel(project_id=project_id, split_point=0.5)
+        self.project = Project(id_=project_id)
         if Path(model_path).exists():
             self.model = load_model(model_path)
         else:
@@ -242,14 +280,6 @@ class PageSplitting:
         self.bert_model, self.tokenizer = self.file_splitter.init_bert()
         train_data_generator = self.file_splitter._prepare_image_data_generator()
         self.vgg16 = self.file_splitter.train_vgg(train_data_generator)
-
-    # def save(self) -> None:
-    #     """Save model, tokenizer, and vocabulary used for document splitting."""
-    #     pickle.dump((self.model, self.tokenizer, self.vocab))
-    #
-    # def load(self, path: str):
-    #     """Load model, tokenizer, and vocabulary from a previously pickled file."""
-    #     self.model, self.tokenizer, self.vocab = pickle.load(open(path))
 
     def _preprocess_inputs(self, text: str, image):
         text_logits = self.file_splitter.get_logits_bert([text], self.tokenizer, self.bert_model)
@@ -264,7 +294,7 @@ class PageSplitting:
 
     def _create_doc_from_page_interval(self, original_doc: Document, start_page: Page, end_page: Page) -> Document:
         pages_text = original_doc.text[start_page.start_offset : end_page.end_offset]
-        new_doc = Document(id_=None, text=pages_text)
+        new_doc = Document(project=self.project, id_=None, text=pages_text)
         for page in original_doc.pages():
             if page.number in range(start_page.number, end_page.number):
                 _ = Page(
@@ -281,13 +311,14 @@ class PageSplitting:
         for page_i, page in enumerate(document.pages()):
             is_first_page = self._predict(page.text, page.image_path, self.model)
             if is_first_page:
-                suggested_splits.append(page_i)
+                suggested_splits.append(page)
 
         split_docs = []
+        first_page = document.pages()[0]
         last_page = document.pages()[-1]
         for page_i, split_i in enumerate(suggested_splits):
             if page_i == 0:
-                split_docs.append(self._create_doc_from_page_interval(document, page_i, split_i))
+                split_docs.append(self._create_doc_from_page_interval(document, first_page, split_i))
             elif page_i == len(split_docs):
                 split_docs.append(self._create_doc_from_page_interval(document, split_i, last_page))
             else:

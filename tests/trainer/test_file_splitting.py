@@ -20,7 +20,6 @@ class TestFileSplittingModel(unittest.TestCase):
         cls.project = Project(id_=TEST_PROJECT_ID)
         cls.train_data = cls.project.documents
         cls.test_data = cls.project.test_documents
-        cls.split_point = int(0.5 * len(cls.train_data))
         cls.bert_model, cls.bert_tokenizer = cls.fusion_model.init_bert()
         cls.file_splitter = file_splitting.PageSplitting('fusion.h5', project_id=TEST_PROJECT_ID)
         cls.image_data_generator = cls.fusion_model._prepare_image_data_generator
@@ -28,7 +27,7 @@ class TestFileSplittingModel(unittest.TestCase):
     def test_model_training(self):
         """Check that the trainer runs and saves trained model."""
         self.fusion_model.train()
-        assert Path('fusion.h5').exists()
+        assert Path(self.project.model_folder + '/fusion.h5').exists()
 
     def test_get_logits_bert(self):
         """Test that BERT inputs are transformed into logits."""
@@ -61,27 +60,7 @@ class TestFileSplittingModel(unittest.TestCase):
             assert len(logit) == 4
 
     def test_predict_first_page(self):
-        """Check if first pages are predicted correctly."""
+        """Check if first Pages are predicted correctly."""
         for doc in self.train_data:
             pred = self.file_splitter.propose_mappings(doc)
-            assert pred == []
-        # all_pages = [page for doc in self.test_data for page in doc.pages()]
-        # pages_text = '\f'.join([doc.text for doc in self.test_data])
-        # new_doc = Document(project=self.project, id_=None, text=pages_text)
-        # i = 1
-        # running_start_offset = 0
-        # running_end_offset = 0
-        # for page in all_pages:
-        #     running_end_offset += page.end_offset
-        #     _ = Page(id_=i,
-        #              original_size=(1500, 2400),
-        #              document=new_doc,
-        #              start_offset=running_start_offset,
-        #              end_offset=running_end_offset,
-        #              number=i
-        #              )
-        #     i += 1
-        #     running_start_offset += page.end_offset + 1
-        #     running_end_offset += 1
-        # pred = self.file_splitter.propose_mappings(new_doc)
-        # print(pred)
+            assert len(pred) == 1
