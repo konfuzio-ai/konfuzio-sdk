@@ -24,6 +24,7 @@ from konfuzio_sdk.data import (
 from konfuzio_sdk.utils import is_file
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID, TEST_PROJECT_ID
 
+from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer
 from konfuzio_sdk.samples import LocalTextProject
 
 logger = logging.getLogger(__name__)
@@ -2045,6 +2046,25 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
         annotations = document.view_annotations()
         assert len(annotations) == 4
         assert sorted([ann.id_ for ann in annotations]) == [16, 18, 19, 24]
+
+    def test_label_spans_not_found_by_tokenizer(self):
+        """Test Label spans_not_found_by_tokenizer method."""
+        project = LocalTextProject()
+
+        whitespace_tokenizer = WhitespaceTokenizer()
+        al_tokenizer = RegexTokenizer('al')
+
+        category = project.get_category_by_id(1)
+        label = project.get_label_by_id(4)
+        label_span = label.annotations(categories=[category])[0].spans[0]
+
+        whitespace_spans = label.spans_not_found_by_tokenizer(whitespace_tokenizer, categories=[category])
+        assert len(whitespace_spans) == 1
+        assert whitespace_spans not in label_span.regex_matching
+
+        al_spans = label.spans_not_found_by_tokenizer(al_tokenizer, categories=[category])
+        assert len(al_spans) == 0
+        assert al_tokenizer in label_span.regex_matching
 
 
 class TestFillOperation(unittest.TestCase):

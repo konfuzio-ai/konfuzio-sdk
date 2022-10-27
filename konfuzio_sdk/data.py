@@ -874,10 +874,10 @@ class Label(Data):
         categories_ids = [category.id_ for category in categories]
         return {k: v for k, v in self._regex.items() if k in categories_ids}
 
-    def spans_not_found_by_tokenizer(self, tokenizer, categories: List[Category]) -> List['Span']:
+    def spans_not_found_by_tokenizer(self, tokenizer, categories: List[Category], use_correct=False) -> List['Span']:
         """Find Label Spans that are not found by a tokenizer."""
         spans_not_found = []
-        label_annotations = self.annotations(categories=categories)
+        label_annotations = self.annotations(categories=categories, use_correct=use_correct)
         for annotation in label_annotations:
             for span in annotation.spans:
                 if not tokenizer.span_match(span):
