@@ -356,10 +356,6 @@ class Evaluation:
         """Return the Label classifier False Negatives of all Spans."""
         return self._query(search=search)["clf_false_negative"].sum()
 
-    def tokenizer(self, search=None) -> int:
-        """Return the of all Spans that are found by the Tokenizer."""
-        return self._query(search=search)["is_found_by_tokenizer"].sum()
-
     def get_evaluation_data(self, search, allow_zero: bool = True) -> EvaluationCalculator:
         """Get precision, recall, f1, based on TP, FP, FN."""
         return EvaluationCalculator(
