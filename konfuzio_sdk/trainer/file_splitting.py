@@ -283,24 +283,12 @@ class SplittingAI:
         if Path(model_path).exists():
             with ZipFile(self.project.model_folder + '/splitting_ai_models.zip', 'r') as zip_ref:
                 zip_ref.extractall()
-            #
-            # input_zip = ZipFile(self.project.model_folder + '/splitting_ai_models.zip')
-            # models = {name: input_zip.read(name) for name in input_zip.namelist()}
             self.model = load_model(self.project.model_folder + '/fusion.h5')
             self.vgg16 = load_model(self.project.model_folder + '/vgg16.h5')
-            # with ZipFile(self.project.model_folder + '/splitting_ai_models.zip') as zip_file:
-            #     self.model = load_model("fusion.h5")
-            #     self.vgg16 = load_model('vgg16.h5')
-            # self.model = load_model(model_path)
         else:
             logging.info('Model not found, starting training.')
             self.model = self.file_splitter.train()
         self.bert_model, self.tokenizer = self.file_splitter.init_bert()
-        # if Path(vgg16_path).exists():
-        #     self.vgg16 = load_model(vgg16_path)
-        # else:
-        #     train_data_generator = self.file_splitter._prepare_image_data_generator()
-        #     self.vgg16 = self.file_splitter.train_vgg(train_data_generator)
 
     def _preprocess_inputs(self, text: str, image):
         text_logits = self.file_splitter.get_logits_bert([text], self.tokenizer, self.bert_model)
