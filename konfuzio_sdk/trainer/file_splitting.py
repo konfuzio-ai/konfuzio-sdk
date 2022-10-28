@@ -1,6 +1,7 @@
 """Split a multi-Document file into a list of shorter documents based on model's prediction."""
 import cv2
 import logging
+import tarfile
 import torch
 
 import numpy as np
@@ -14,7 +15,6 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img
 from transformers import BertTokenizer, AutoModelForSequenceClassification, AutoConfig
 from typing import List
-from zipfile import ZipFile
 
 from konfuzio_sdk.data import Document, Page, Project
 
@@ -264,10 +264,10 @@ class FusionModel:
         logging.info('Accuracy: {}'.format(acc * 100))
         precision, recall, f1 = self._calculate_metrics(model, Xtest, ytest)
         logging.info('\n Precision: {} \n Recall: {} \n F1-score: {}'.format(precision, recall, f1))
-        zip_obj = ZipFile(self.project.model_folder + '/splitting_ai_models.zip', 'w')
-        zip_obj.write(self.project.model_folder + '/fusion.h5')
-        zip_obj.write(self.project.model_folder + '/vgg16.h5')
-        zip_obj.close()
+        tar = tarfile.open(self.project.model_folder + "/splitting_ai_models.tar.gz", "w:gz")
+        tar.add(self.project.model_folder + '/fusion.h5')
+        tar.add(self.project.model_folder + '/vgg16.h5')
+        tar.close()
         Path(self.project.model_folder + '/fusion.h5').unlink()
         Path(self.project.model_folder + '/vgg16.h5').unlink()
         return model
@@ -281,8 +281,10 @@ class SplittingAI:
         self.file_splitter = FusionModel(project_id=project_id, split_point=0.5)
         self.project = Project(id_=project_id)
         if Path(model_path).exists():
-            with ZipFile(self.project.model_folder + '/splitting_ai_models.zip', 'r') as zip_ref:
-                zip_ref.extractall()
+            tar = tarfile.open(self.project.model_folder + '/splitting_ai_models.tar.gz', "r:gz")
+            tar.extractall()
+            # with ZipFile(self.project.model_folder + '/splitting_ai_models.zip', 'r') as zip_ref:
+            #     zip_ref.extractall()
             self.model = load_model(self.project.model_folder + '/fusion.h5')
             self.vgg16 = load_model(self.project.model_folder + '/vgg16.h5')
         else:

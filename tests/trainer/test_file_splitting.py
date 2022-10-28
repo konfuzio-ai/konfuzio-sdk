@@ -1,4 +1,5 @@
 """Test file splitting model and its training pipeline."""
+import tarfile
 import unittest
 
 import numpy as np
@@ -9,7 +10,6 @@ from tests.variables import TEST_PROJECT_ID
 
 from keras.models import load_model
 from pathlib import Path
-from zipfile import ZipFile
 
 
 class TestFileSplittingModel(unittest.TestCase):
@@ -28,9 +28,9 @@ class TestFileSplittingModel(unittest.TestCase):
     def test_model_training(self):
         """Check that the trainer runs and saves trained model."""
         self.fusion_model.train()
-        assert Path(self.project.model_folder + '/splitting_ai_models.zip').exists()
-        with ZipFile(self.project.model_folder + '/splitting_ai_models.zip') as zip_file:
-            zip_file.extractall()
+        assert Path(self.project.model_folder + '/splitting_ai_models.tar.gz').exists()
+        tar = tarfile.open(self.project.model_folder + '/splitting_ai_models.tar.gz', "r:gz")
+        tar.extractall()
 
     def test_transform_logits_bert(self):
         """Test that BERT inputs are transformed into logits."""
@@ -50,7 +50,7 @@ class TestFileSplittingModel(unittest.TestCase):
             assert type(logit) is np.ndarray
         Path(self.project.model_folder + '/vgg16.h5').unlink()
         Path(self.project.model_folder + '/fusion.h5').unlink()
-        Path(self.project.model_folder + '/splitting_ai_models.zip').unlink()
+        Path(self.project.model_folder + '/splitting_ai_models.tar.gz').unlink()
 
     def test_squash_logits(self):
         """Test that logits are merged for further input to MLP."""
@@ -68,7 +68,7 @@ class TestFileSplittingModel(unittest.TestCase):
     def test_predict_first_page(self):
         """Check if first Pages are predicted correctly."""
         file_splitter = file_splitting.SplittingAI(
-            self.project.model_folder + '/splitting_ai_models.zip', project_id=TEST_PROJECT_ID
+            self.project.model_folder + '/splitting_ai_models.tar.gz', project_id=TEST_PROJECT_ID
         )
         for doc in self.train_data:
             pred = file_splitter.propose_mappings(doc)
