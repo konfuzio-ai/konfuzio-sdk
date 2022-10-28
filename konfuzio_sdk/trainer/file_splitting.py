@@ -14,6 +14,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img
 from transformers import BertTokenizer, AutoModelForSequenceClassification, AutoConfig
 from typing import List
+from zipfile import ZipFile
 
 from konfuzio_sdk.data import Document, Page, Project
 
@@ -263,23 +264,43 @@ class FusionModel:
         logging.info('Accuracy: {}'.format(acc * 100))
         precision, recall, f1 = self._calculate_metrics(model, Xtest, ytest)
         logging.info('\n Precision: {} \n Recall: {} \n F1-score: {}'.format(precision, recall, f1))
+        zip_obj = ZipFile(self.project.model_folder + '/splitting_ai_models.zip', 'w')
+        zip_obj.write(self.project.model_folder + '/fusion.h5')
+        zip_obj.write(self.project.model_folder + '/vgg16.h5')
+        zip_obj.close()
+        Path(self.project.model_folder + '/fusion.h5').unlink()
+        Path(self.project.model_folder + '/vgg16.h5').unlink()
         return model
 
 
-class PageSplitting:
+class SplittingAI:
     """Split a given Document and return a list of resulting shorter Documents."""
 
     def __init__(self, model_path: str, project_id=None):
-        """Load VGG16 model, BERT and BERTTokenizer."""
+        """Load fusion model, VGG16 model, BERT and BERTTokenizer."""
         self.file_splitter = FusionModel(project_id=project_id, split_point=0.5)
         self.project = Project(id_=project_id)
         if Path(model_path).exists():
-            self.model = load_model(model_path)
+            with ZipFile(self.project.model_folder + '/splitting_ai_models.zip', 'r') as zip_ref:
+                zip_ref.extractall()
+            #
+            # input_zip = ZipFile(self.project.model_folder + '/splitting_ai_models.zip')
+            # models = {name: input_zip.read(name) for name in input_zip.namelist()}
+            self.model = load_model(self.project.model_folder + '/fusion.h5')
+            self.vgg16 = load_model(self.project.model_folder + '/vgg16.h5')
+            # with ZipFile(self.project.model_folder + '/splitting_ai_models.zip') as zip_file:
+            #     self.model = load_model("fusion.h5")
+            #     self.vgg16 = load_model('vgg16.h5')
+            # self.model = load_model(model_path)
         else:
+            logging.info('Model not found, starting training.')
             self.model = self.file_splitter.train()
         self.bert_model, self.tokenizer = self.file_splitter.init_bert()
-        train_data_generator = self.file_splitter._prepare_image_data_generator()
-        self.vgg16 = self.file_splitter.train_vgg(train_data_generator)
+        # if Path(vgg16_path).exists():
+        #     self.vgg16 = load_model(vgg16_path)
+        # else:
+        #     train_data_generator = self.file_splitter._prepare_image_data_generator()
+        #     self.vgg16 = self.file_splitter.train_vgg(train_data_generator)
 
     def _preprocess_inputs(self, text: str, image):
         text_logits = self.file_splitter.get_logits_bert([text], self.tokenizer, self.bert_model)
