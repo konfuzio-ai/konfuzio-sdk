@@ -2,7 +2,7 @@
 
 # Overview
 
-The pricing of Konfuzio is based on the number of pages a user processes. This pricing is enforced using [Fakturia](https://www.fakturia.de/).
+The pricing of Konfuzio is based on the number of pages a user processes. This pricing is enforced by configuring Konfuzio Server as 'billing station' and connecting it to [Fakturia](https://www.fakturia.de/).
 
 ```mermaid
 graph LR
@@ -81,4 +81,4 @@ BILLING_SUBSCRIPTION_ARTICLE_NUMBER_CONTRACTS = '00001'
 For on-premise installations, only FAKTURIA_API_URL and FAKTURIA_API_KEY are required. Additional information will added to [On-Premises Documentation](https://dev.konfuzio.com/web/on_premises.html).
 
 ## Management on app.konfuzio.com
-Konfuzio Server will display a Billing Module to manage Contracts and Customers if is configured as Billing Center. On-premise installations will not see the Billing Module. Konfuzio Server is running as Billing Center if the HOST_NAME is part of '\*.konfuzio.com and if the BILLING_API_URL is set to '\*.fakturia.de'.
+Konfuzio Server will display a Billing Module to manage Contracts and Customers if is configured as Billing Center. On-premise installations will not see the Billing Module. Konfuzio Server is running as Billing Center if the HOST_NAME is part of '\*.konfuzio.com' and if the BILLING_API_URL is set to '\*.fakturia.de'.
