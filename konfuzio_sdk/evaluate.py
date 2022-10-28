@@ -4,6 +4,7 @@ from typing import Tuple, List, Optional
 import pandas
 from sklearn.utils.extmath import weighted_mode
 from konfuzio_sdk.utils import sdk_isinstance
+from konfuzio_sdk.data import Document
 
 
 RELEVANT_FOR_EVALUATION = [
@@ -267,8 +268,6 @@ class EvaluationCalculator:
 class Evaluation:
     """Calculated accuracy measures by using the detailed comparison on Span Level."""
 
-    from konfuzio_sdk.data import Document
-
     def __init__(self, documents: List[Tuple[Document, Document]], strict: bool = True):
         """
         Relate to the two document instances.
@@ -283,7 +282,7 @@ class Evaluation:
         self.calculate()
 
     def calculate(self):
-        """Calculate and update the data stored within this Evolution."""
+        """Calculate and update the data stored within this Evaluation."""
         evaluations = []  # start anew, the configuration of the Evaluation might have changed.
         for ground_truth, predicted in self.documents:
             evaluation = compare(
@@ -334,27 +333,27 @@ class Evaluation:
         )
 
     def tokenizer_tp(self, search=None) -> int:
-        """Return the True Positives of all Spans."""
+        """Return the tokenizer True Positives of all Spans."""
         return self._query(search=search)["tokenizer_true_positive"].sum()
 
     def tokenizer_fp(self, search=None) -> int:
-        """Return the True Positives of all Spans."""
+        """Return the tokenizer False Positives of all Spans."""
         return self._query(search=search)["tokenizer_false_positive"].sum()
 
     def tokenizer_fn(self, search=None) -> int:
-        """Return the True Positives of all Spans."""
+        """Return the tokenizer False Negatives of all Spans."""
         return self._query(search=search)["tokenizer_false_negative"].sum()
 
     def clf_tp(self, search=None) -> int:
-        """Return the True Positives of all Spans."""
+        """Return the Label classifier True Positives of all Spans."""
         return self._query(search=search)["clf_true_positive"].sum()
 
     def clf_fp(self, search=None) -> int:
-        """Return the True Positives of all Spans."""
+        """Return the Label classifier False Positives of all Spans."""
         return self._query(search=search)["clf_false_positive"].sum()
 
     def clf_fn(self, search=None) -> int:
-        """Return the True Positives of all Spans."""
+        """Return the Label classifier False Negatives of all Spans."""
         return self._query(search=search)["clf_false_negative"].sum()
 
     def tokenizer(self, search=None) -> int:
@@ -398,7 +397,11 @@ class Evaluation:
         return EvaluationCalculator(tp=self.tp(search=search), fp=self.fp(search=search), fn=self.fn(search=search)).f1
 
     def tokenizer_f1(self, search) -> Optional[float]:
-        """Calculate the F1 Score of one the tokenizer."""
+        """
+        Calculate the F1 Score of one the tokenizer.
+
+        :param search: Parameter used to calculate the value for one Data object.
+        """
         return EvaluationCalculator(
             tp=self.tokenizer_tp(search=search),
             fp=self.tokenizer_fp(search=search),
@@ -406,7 +409,11 @@ class Evaluation:
         ).f1
 
     def clf_f1(self, search) -> Optional[float]:
-        """Calculate the F1 Score of one the Label classifier."""
+        """
+        Calculate the F1 Score of one the Label classifier.
+
+        :param search: Parameter used to calculate the value for one Data object.
+        """
         return EvaluationCalculator(
             tp=self.clf_tp(search=search),
             fp=self.clf_fp(search=search),
