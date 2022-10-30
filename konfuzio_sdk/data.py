@@ -1975,7 +1975,7 @@ class Document(Data):
         """
         Return an Annotation by ID, searching within the document.
 
-        :param id_: ID of the Annotation to get.
+        :param annotation_id: ID of the Annotation to get.
         """
         result = None
         if self._annotations is None:
@@ -2354,6 +2354,14 @@ class Document(Data):
                     _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
 
         return self._annotations
+
+    def propose_splitting(self, splitting_ai) -> List:
+        """Propose splitting for a multi-file Document.
+
+        :param splitting_ai: An initialized SplittingAI class
+        """
+        proposed = splitting_ai.propose_mappings(self)
+        return proposed
 
 
 class Project(Data):

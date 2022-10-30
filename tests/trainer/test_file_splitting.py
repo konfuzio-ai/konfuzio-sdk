@@ -73,3 +73,12 @@ class TestFileSplittingModel(unittest.TestCase):
         for doc in self.train_data:
             pred = file_splitter.propose_mappings(doc)
             assert len(pred) == 1
+
+    def test_split_document(self):
+        """Propose splittings for a document."""
+        doc = self.train_data[0]
+        splitting_ai = file_splitting.SplittingAI(
+            self.project.model_folder + '/splitting_ai_models.tar.gz', project_id=TEST_PROJECT_ID
+        )
+        proposed = doc.propose_splitting(splitting_ai)
+        assert len(proposed) == 1

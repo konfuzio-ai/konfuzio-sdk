@@ -283,8 +283,6 @@ class SplittingAI:
         if Path(model_path).exists():
             tar = tarfile.open(self.project.model_folder + '/splitting_ai_models.tar.gz', "r:gz")
             tar.extractall()
-            # with ZipFile(self.project.model_folder + '/splitting_ai_models.zip', 'r') as zip_ref:
-            #     zip_ref.extractall()
             self.model = load_model(self.project.model_folder + '/fusion.h5')
             self.vgg16 = load_model(self.project.model_folder + '/vgg16.h5')
         else:

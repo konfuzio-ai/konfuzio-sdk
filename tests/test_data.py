@@ -21,6 +21,7 @@ from konfuzio_sdk.data import (
     Page,
     Bbox,
 )
+
 from konfuzio_sdk.utils import is_file
 from tests.variables import (
     OFFLINE_PROJECT,
