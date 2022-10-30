@@ -2,8 +2,6 @@
 import tarfile
 import unittest
 
-import numpy as np
-
 from konfuzio_sdk.data import Project
 from konfuzio_sdk.trainer import file_splitting
 from tests.variables import TEST_PROJECT_ID
@@ -32,25 +30,22 @@ class TestFileSplittingModel(unittest.TestCase):
         tar = tarfile.open(self.project.model_folder + '/splitting_ai_models.tar.gz', "r:gz")
         tar.extractall()
 
-    def test_transform_logits_bert(self):
-        """Test that BERT inputs are transformed into logits."""
-        texts = [page.text for doc in self.train_data for page in doc.pages()]
-        logits = self.fusion_model.get_logits_bert(texts, self.bert_tokenizer, self.bert_model)
-        assert len(texts) == len(logits)
-        for logit in logits:
-            assert type(logit) is int
-
-    def test_transform_logits_vgg16(self):
-        """Test that VGG16 inputs are transformed into logits."""
-        pages = [page.image_path for doc in self.train_data for page in doc.pages()]
-        model = load_model(self.project.model_folder + '/vgg16.h5')
-        logits = self.fusion_model.get_logits_vgg16(pages, model)
-        assert len(pages) == len(logits)
-        for logit in logits:
-            assert type(logit) is np.ndarray
-        Path(self.project.model_folder + '/vgg16.h5').unlink()
-        Path(self.project.model_folder + '/fusion.h5').unlink()
-        Path(self.project.model_folder + '/splitting_ai_models.tar.gz').unlink()
+    # def test_transform_logits_bert(self):
+    #     """Test that BERT inputs are transformed into logits."""
+    #     texts = [page.text for doc in self.train_data for page in doc.pages()]
+    #     logits = self.fusion_model.get_logits_bert(texts, self.bert_tokenizer, self.bert_model)
+    #     assert len(texts) == len(logits)
+    #     for logit in logits:
+    #         assert type(logit) is int
+    #
+    # def test_transform_logits_vgg16(self):
+    #     """Test that VGG16 inputs are transformed into logits."""
+    #     pages = [page.image_path for doc in self.train_data for page in doc.pages()]
+    #     model = load_model(self.project.model_folder + '/vgg16.h5')
+    #     logits = self.fusion_model.get_logits_vgg16(pages, model)
+    #     assert len(pages) == len(logits)
+    #     for logit in logits:
+    #         assert type(logit) is np.ndarray
 
     def test_squash_logits(self):
         """Test that logits are merged for further input to MLP."""
@@ -64,6 +59,9 @@ class TestFileSplittingModel(unittest.TestCase):
         assert len(logits) == len(img_logits)
         for logit in logits:
             assert len(logit) == 4
+        Path(self.project.model_folder + '/vgg16.h5').unlink()
+        Path(self.project.model_folder + '/fusion.h5').unlink()
+        Path(self.project.model_folder + '/splitting_ai_models.tar.gz').unlink()
 
     def test_predict_first_page(self):
         """Check if first Pages are predicted correctly."""
