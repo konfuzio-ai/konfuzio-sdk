@@ -1748,48 +1748,6 @@ class Trainer:
                         )
         return virtual_doc
 
-    # def clf_info(self, feature_pattern=None, contains=True) -> None:
-    #     """
-    #     Log info about feature importance after clf is fitted.
-    #
-    #     Args:
-    #     ----
-    #         feature_pattern: A string which should be or should not be contained in the name of the feature
-    #         contains: Boolean, used to determine if the feature_pattern should be contained or should not be contained
-    #
-    #     Returns: None
-    #
-    #     """
-    #     try:
-    #         infotable = pandas.DataFrame()
-    #         infotable['feature'] = self.X_train.columns
-    #         infotable['importance'] = self.clf.feature_importances_
-    #         if feature_pattern:
-    #             infotable_text = tabulate(
-    #                 infotable[infotable.feature.str.contains(feature_pattern) == contains].sort_values(
-    #                     "importance", ascending=False
-    #                 ),
-    #                 floatfmt=".5%",
-    #                 headers="keys",
-    #                 tablefmt="pipe",
-    #             )
-    #         else:  # return all
-    #             infotable_text = tabulate(
-    #                 infotable.sort_values("importance", ascending=False),
-    #                 floatfmt=".5%",
-    #                 headers="keys",
-    #                 tablefmt="pipe",
-    #             )
-    #
-    #         logger.info(
-    #             f'DOES{"NOT" if not contains else " "} CONTAIN "{feature_pattern}" FEATURE RATING (DESCENDING):'
-    #             f'\n{infotable_text}\n'
-    #         )
-    #     except AttributeError:
-    #         logger.exception('.feature_importances_ not available for classifier')
-    #
-    #     logger.info(f'Size of the classifier is: {sys.getsizeof(self.clf)}')
-
     def save(self, output_dir: str, include_konfuzio=True):
         """
         Save the label model as bz2 compressed pickle object to the release directory.
@@ -1832,7 +1790,7 @@ class Trainer:
         # output_dir = self.category.project.model_folder
         # file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower())}')
 
-        # moke sure output dir exists
+        # make sure output dir exists
         pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
 
         temp_pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower()}.dill')
@@ -1861,61 +1819,6 @@ class Trainer:
         self.category.project._documents = category_documents
 
         return pkl_file_path
-
-    # def update(self, instance):
-    #     """
-    #     Add an extraction model instance to self. Deletes models with the same name before.
-    #
-    #     :param instance:
-    #     :return:
-    #     """
-    #     for i, label in enumerate(self.labels):
-    #         if instance.name == label.name:
-    #             logger.info(f'Delete old label {label.name} before adding new one...')
-    #             del self.labels[i]
-    #
-    #     self.add(instance)
-
-    # def add(self, instance):
-    #     """
-    #     Add an extraction model instance to self.
-    #
-    #     :param instance: An inherited ExtractionModel, i.e. LabelExtractionModels or CategoryExtractionModels
-    #     :return:
-    #     """
-    #     from konfuzio.models_classification import CategoryExtractionModel
-    #     from konfuzio.models_legacy import (
-    #         LabelExtractionModel,
-    #         PatternExtractionModel,
-    #         MultiLabelExtractionModel,
-    #         LabelAnnotationModel,
-    #         DocumentExtractionModel,
-    #     )
-    #
-    #     add_success_info = f'Document {self.name} now also extracts {instance.name}.'
-    #
-    #     for i, label in enumerate(self.labels):
-    #         if instance.name == label.name:
-    #             logger.error(f'{label.name} does already exist as label. You may want to use update().')
-    #             raise Exception('Exiting. See log for details...')
-    #
-    #     if (
-    #         isinstance(instance, Label)
-    #         or isinstance(instance, PatternExtractionModel)
-    #         or isinstance(instance, MultiLabelExtractionModel)
-    #         or isinstance(instance, LabelAnnotationModel)
-    #         or isinstance(instance, LabelExtractionModel)
-    #     ):
-    #         self.labels.append(instance)
-    #         logger.info(add_success_info)
-    #     elif isinstance(instance, CategoryExtractionModel):
-    #         self.categories.append(instance)
-    #         logger.info(add_success_info)
-    #     elif isinstance(instance, DocumentExtractionModel):
-    #         self.documents.append(instance)
-    #         logger.info(add_success_info)
-    #     else:
-    #         raise Exception(f'{instance.name} cannot be added to document {self.name}.')
 
 
 class GroupAnnotationSets:
@@ -2126,26 +2029,6 @@ class GroupAnnotationSets:
 
         return feature_df_template
 
-    # def evaluate_template_clf(self, y_true, y_pred, classes):
-    #     """
-    #     Evaluate a template clf by comparing the ground truth to the predictions.
-    #
-    #     Classes are the different classes of the template clf (the different sections).
-    #     """
-    #     logger.info('Evaluate template classifier on the validation data.')
-    #
-    #     try:
-    #         matrix = pandas.DataFrame(
-    #             confusion_matrix(y_true=y_true, y_pred=y_pred, labels=classes),
-    #             columns=classes,
-    #             index=['y_true_' + x for x in classes],
-    #         )
-    #         logger.info('\n' + tabulate(matrix, headers=classes))
-    #     except ValueError:
-    #         pass
-    #     logger.info(f'precision: {precision_score(y_true, y_pred, average="micro")}')
-    #     logger.info(f'recall: {recall_score(y_true, y_pred, average="micro")}')
-
     def build_document_template_feature(self, document) -> pandas.DataFrame():
         """Build document feature for template classifier given ground truth."""
         df = pandas.DataFrame()
@@ -2330,7 +2213,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
     - features for the Label Set classifier
 
     By default, the text of the Documents is split into smaller chunks of text based on whitespaces
-    ('tokenizer_whitespace'). That means that all words present in the text will be shown to the AI. It is possible to
+    ('WhitespaceTokenizer'). That means that all words present in the text will be shown to the AI. It is possible to
     define if the splitting of the text into smaller chunks should be done based on regexes learned from the
     Spans of the Annotations of the Category ('tokenizer_regex') or if to use a model from Spacy library for German
     language ('tokenizer_spacy'). Another option is to use a pre-defined list of tokenizers based on regexes
@@ -2350,10 +2233,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
     ('n_nearest_left', 'n_nearest_right').
 
     While extracting, the Label Set classifier takes the predictions from the Label classifier as input.
-    The Label Set classifier groups them intoAnnotation sets.
-    It is possible to define the confidence threshold for the predictions to be considered by the
-    Label Set classifier ('label_set_confidence_threshold'). However, the label_set_confidence_threshold is not applied
-    to the final predictions of the Extraction AI.
+    The Label Set classifier groups them into Annotation sets.
     """
 
     def __init__(
