@@ -231,12 +231,17 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
             assert '403' in str(e)
 
     def test_6_evaluate_full(self):
-        """Evaluate DocumentEntityMultiClassModel."""
+        """Evaluate Whitespace RFExtractionAI Model."""
         evaluation = self.pipeline.evaluate_full()
 
         assert evaluation.f1(None) == self.evaluate_full_result
 
-    def test_7_extract_test_document(self):
+    def test_7_data_quality(self):
+        """Evaluate on training documents."""
+        evaluation = self.pipeline.data_quality()
+        assert evaluation.f1(None) >= 0.97
+
+    def test_8_extract_test_document(self):
         """Extract a randomly selected Test Document."""
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
@@ -245,7 +250,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         assert len(self.tests_annotations) == 20
 
     @parameterized.parameterized.expand(entity_results_data)
-    def test_8_test_annotations(self, i, expected):
+    def test_9_test_annotations(self, i, expected):
         """Test extracted annotations."""
         ann = self.tests_annotations[i]
         ann_tuple = (ann.label.name, ann.start_offset, ann.end_offset)
@@ -268,8 +273,8 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 @parameterized.parameterized_class(
     ('use_separate_labels', 'evaluate_full_result'),
     [
-        (False, 0.8378378378378378),  # w/ full dataset: 0.8930232558139535
-        (True, 0.8157894736842105),  # w/ full dataset: 0.9469026548672567
+        (False, 0.8611111111111112),  # w/ full dataset: 0.8930232558139535
+        (True, 0.8266666666666667),  # w/ full dataset: 0.9553571428571429
     ],
 )
 class TestRegexRFExtractionAI(unittest.TestCase):
@@ -289,7 +294,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         self.pipeline.category = self.project.get_category_by_id(id_=63)
 
         for label in self.pipeline.category.labels:
-            for regex in label.regex(categories=[self.pipeline.category], update=True):
+            for regex in label.find_regex(category=self.pipeline.category):
                 self.pipeline.tokenizer.tokenizers.append(RegexTokenizer(regex=regex))
 
         if not TEST_WITH_FULL_DATASET:
@@ -348,7 +353,12 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
         assert evaluation.f1(None) == self.evaluate_full_result
 
-    def test_7_extract_test_document(self):
+    def test_7_data_quality(self):
+        """Evaluate on training documents."""
+        evaluation = self.pipeline.data_quality()
+        assert evaluation.f1(None) >= 0.94
+
+    def test_8_extract_test_document(self):
         """Extract a randomly selected Test Document."""
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
@@ -357,7 +367,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         assert len(self.tests_annotations) == 20
 
     @parameterized.parameterized.expand(entity_results_data)
-    def test_8_test_annotations(self, i, expected):
+    def test_9_test_annotations(self, i, expected):
         """Test extracted annotations."""
         ann = self.tests_annotations[i]
         ann_tuple = (ann.label.name, ann.start_offset, ann.end_offset)
@@ -547,7 +557,7 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
         cls.extraction = {
             'Start': 15,
             'End': 20,
-            'Accuracy': 0.2,
+            'confidence': 0.2,
             'page_index': 0,
             'x0': 10,
             'x1': 20,
@@ -675,7 +685,7 @@ class TestExtractionToDocument(unittest.TestCase):
         cls.extraction_1 = {
             'Start': 5,
             'End': 10,
-            'Accuracy': 0.2,
+            'confidence': 0.2,
             'page_index': 0,
             'x0': 10,
             'x1': 20,
@@ -689,7 +699,7 @@ class TestExtractionToDocument(unittest.TestCase):
         cls.extraction_2 = {
             'Start': 15,
             'End': 20,
-            'Accuracy': 0.2,
+            'confidence': 0.2,
             'page_index': 0,
             'x0': 20,
             'x1': 30,
@@ -830,7 +840,7 @@ class TestGetExtractionResults(unittest.TestCase):
                     data={
                         'Candidate': ['Simon-Muster'],
                         'Translated_Candidate': ['Simon-Muster'],
-                        'Accuracy': [0.94],
+                        'confidence': [0.94],
                         'Start': [1273],
                         'End': [1285],
                     }
@@ -839,7 +849,7 @@ class TestGetExtractionResults(unittest.TestCase):
                     data={
                         'Candidate': ['Merlot'],
                         'Translated_Candidate': ['Merlot'],
-                        'Accuracy': [0.67],
+                        'confidence': [0.67],
                         'Start': [1287],
                         'End': [1293],
                     }
