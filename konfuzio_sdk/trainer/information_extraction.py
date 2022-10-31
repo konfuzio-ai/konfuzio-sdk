@@ -56,8 +56,11 @@ def load_model(pickle_path: str):
     """
     Load a pkl file.
 
-    :param pickle_path:
-    :return:
+    :param pickle_path: Path to the pickled model.
+    :raises FileNotFoundError: If the path is invalid.
+    :raises OSError: When the data is corrupted or invalid and cannot be loaded.
+    :raises TypeError: When the loaded pickle isn't recognized as a Konfuzio AI model.
+    :return: Extraction AI model.
     """
     if not os.path.isfile(pickle_path):
         raise FileNotFoundError("Invalid pickle file path:", pickle_path)
