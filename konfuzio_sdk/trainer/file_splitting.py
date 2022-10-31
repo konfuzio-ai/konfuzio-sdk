@@ -1,4 +1,15 @@
-"""Split a multi-Document file into a list of shorter documents based on model's prediction."""
+"""
+Split a multi-Document file into a list of shorter documents based on model's prediction.
+
+We use an approach suggested by Guha et al.(2022) that incorporates steps for accepting separate visual and textual
+inputs and processing them independently via the VGG16 architecture and LegalBERT model which is essentially
+a BERT-type architecture trained on domain-specific data, and passing the resulting outputs together to
+a Multi-Layered Perceptron.
+
+Guha, A., Alahmadi, A., Samanta, D., Khan, M. Z., & Alahmadi, A. H. (2022).
+A Multi-Modal Approach to Digital Document Stream Segmentation for Title Insurance Domain.
+https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=9684474
+"""
 import cv2
 import logging
 import tarfile
@@ -20,7 +31,16 @@ from konfuzio_sdk.data import Document, Page, Project
 
 
 class FusionModel:
-    """Train a fusion model for correct splitting of files which contain multiple Documents."""
+    """Train a fusion model for correct splitting of files which contain multiple Documents.
+
+    A model consists of two separate inputs for visual and textual data combined together in a Multi-Layered
+    Perceptron (MLP). Visual part is represented by VGG16 architecture and is trained on a first share of split training
+    dataset. Textual part is represented by LegalBERT which is used without any training. Logits received from two of
+    the models are squashed and the resulting logits are fed as inputs to the MLP.
+
+    The resulting trained models (VGG16 and fusion model) are saved in .h5 and packaged into .tar.gz archive, roughly
+    1.5 Gb in size.
+    """
 
     def __init__(self, project_id: int, split_point: float = 0.5):
         """Initialize Project, training and testing data, and a split point for training dataset."""
@@ -29,7 +49,7 @@ class FusionModel:
         self.test_data = self.project.test_documents
         self.split_point = int(split_point * len(self.train_data))
 
-    def _preprocess_documents(self, data: List[Document], path: str):
+    def _preprocess_documents(self, data: List[Document], path: str) -> (List[str], List[str], List[int]):
         pages = []
         texts = []
         labels = []
@@ -45,7 +65,7 @@ class FusionModel:
         Path("otsu_vgg16/{}/not_first_page".format(path)).mkdir(parents=True, exist_ok=True)
         return pages, texts, labels
 
-    def _otsu_binarization(self, pages: List, labels: List[int], path):
+    def _otsu_binarization(self, pages: List[str], labels: List[int], path: str) -> None:
         for img, label in zip(pages, labels):
             image = cv2.imread(img)
             image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -68,7 +88,7 @@ class FusionModel:
         train_data: List[Document],
         test_data: List[Document],
         split_point: int,
-    ):
+    ) -> (List[str], List[str], List[str], List[str], List[str], List[str], List[int], List[int]):
         for doc in train_data + test_data:
             doc.get_images()
         train_pages_1, train_texts_1, train_labels_1 = self._preprocess_documents(train_data[:split_point], 'train_1')
@@ -123,7 +143,7 @@ class FusionModel:
         model.compile(optimizer=opt, loss=categorical_crossentropy, metrics=['accuracy'])
         return model
 
-    def train_vgg(self, image_data_generator=None):
+    def train_vgg(self, image_data_generator: ImageDataGenerator = None):
         """Training or loading trained VGG16 model."""
         if Path(self.project.model_folder + '/vgg16.h5').exists():
             model = load_model(self.project.model_folder + '/vgg16.h5')
@@ -161,7 +181,7 @@ class FusionModel:
         )
         return model, tokenizer
 
-    def get_logits_vgg16(self, pages: List[str], model):
+    def get_logits_vgg16(self, pages: List[str], model) -> List:
         """Transform input images into logits for MLP input."""
         logits = []
         for path in pages:
@@ -172,7 +192,7 @@ class FusionModel:
             logits.append(output)
         return logits
 
-    def get_logits_bert(self, texts, tokenizer, model):
+    def get_logits_bert(self, texts: List[str], tokenizer, model) -> List:
         """Transform input texts into logits for MLP input."""
         logits = []
         for text in texts:
@@ -183,14 +203,16 @@ class FusionModel:
             logits.append(pred)
         return logits
 
-    def squash_logits(self, vgg_logits, bert_logits):
+    def squash_logits(self, vgg_logits: List, bert_logits: List) -> List:
         """Squash image and text logits together for MLP input."""
         logits = []
         for logit_1, logit_2 in zip(vgg_logits, bert_logits):
             logits.append([logit_1[0][0], logit_1[0][1], logit_2, logit_2])
         return logits
 
-    def _preprocess_mlp_inputs(self, train_logits, test_logits, train_labels, test_labels):
+    def _preprocess_mlp_inputs(
+        self, train_logits: List, test_logits: List, train_labels: List[int], test_labels: List[int]
+    ):
         Xtrain = np.array(train_logits)
         Xtest = np.array(test_logits)
         ytrain = np.array(train_labels)
@@ -198,11 +220,11 @@ class FusionModel:
         input_shape = Xtest.shape[1]
         return Xtrain, Xtest, ytrain, ytest, input_shape
 
-    def _predict_label(self, inputs, model):
+    def _predict_label(self, inputs, model) -> int:
         pred = model.predict(inputs, verbose=0)
         return round(pred[0, 0])
 
-    def _calculate_metrics(self, model, inputs, labels):
+    def _calculate_metrics(self, model, inputs: List, labels: List) -> (float, float, float):
         true_positive = 0
         false_positive = 0
         false_negative = 0
@@ -274,7 +296,12 @@ class FusionModel:
 
 
 class SplittingAI:
-    """Split a given Document and return a list of resulting shorter Documents."""
+    """
+    Split a given Document and return a list of resulting shorter Documents.
+
+    For each page of the Document, a prediction is run to determine whether it is a first page or not. Based off on the
+    predictions, the Document is split on pages predicted as first, and a set of new shorter Documents is produced.
+    """
 
     def __init__(self, model_path: str, project_id=None):
         """Load fusion model, VGG16 model, BERT and BERTTokenizer."""
@@ -290,13 +317,13 @@ class SplittingAI:
             self.model = self.file_splitter.train()
         self.bert_model, self.tokenizer = self.file_splitter.init_bert()
 
-    def _preprocess_inputs(self, text: str, image):
+    def _preprocess_inputs(self, text: str, image) -> List:
         text_logits = self.file_splitter.get_logits_bert([text], self.tokenizer, self.bert_model)
         img_logits = self.file_splitter.get_logits_vgg16([image], self.vgg16)
         logits = np.array(self.file_splitter.squash_logits(img_logits, text_logits))
         return logits
 
-    def _predict(self, text_input, img_input, model):
+    def _predict(self, text_input: str, img_input, model) -> int:
         preprocessed = self._preprocess_inputs(text_input, img_input)
         prediction = model.predict(preprocessed, verbose=0)
         return round(prediction[0, 0])
@@ -321,7 +348,6 @@ class SplittingAI:
             is_first_page = self._predict(page.text, page.image_path, self.model)
             if is_first_page:
                 suggested_splits.append(page)
-
         split_docs = []
         first_page = document.pages()[0]
         last_page = document.pages()[-1]
@@ -334,7 +360,7 @@ class SplittingAI:
                 split_docs.append(self._create_doc_from_page_interval(document, split_docs[page_i - 1], split_i))
         return split_docs
 
-    def propose_mappings(self, document: Document) -> List[Document]:
+    def propose_split_documents(self, document: Document) -> List[Document]:
         """
         Propose a set of resulting documents from a single Documents.
 

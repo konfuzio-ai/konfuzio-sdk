@@ -30,23 +30,6 @@ class TestFileSplittingModel(unittest.TestCase):
         tar = tarfile.open(self.project.model_folder + '/splitting_ai_models.tar.gz', "r:gz")
         tar.extractall()
 
-    # def test_transform_logits_bert(self):
-    #     """Test that BERT inputs are transformed into logits."""
-    #     texts = [page.text for doc in self.train_data for page in doc.pages()]
-    #     logits = self.fusion_model.get_logits_bert(texts, self.bert_tokenizer, self.bert_model)
-    #     assert len(texts) == len(logits)
-    #     for logit in logits:
-    #         assert type(logit) is int
-    #
-    # def test_transform_logits_vgg16(self):
-    #     """Test that VGG16 inputs are transformed into logits."""
-    #     pages = [page.image_path for doc in self.train_data for page in doc.pages()]
-    #     model = load_model(self.project.model_folder + '/vgg16.h5')
-    #     logits = self.fusion_model.get_logits_vgg16(pages, model)
-    #     assert len(pages) == len(logits)
-    #     for logit in logits:
-    #         assert type(logit) is np.ndarray
-
     def test_squash_logits(self):
         """Test that logits are merged for further input to MLP."""
         texts = [page.text for doc in self.train_data for page in doc.pages()]

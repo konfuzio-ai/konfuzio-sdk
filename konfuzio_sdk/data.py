@@ -2360,7 +2360,7 @@ class Document(Data):
 
         :param splitting_ai: An initialized SplittingAI class
         """
-        proposed = splitting_ai.propose_mappings(self)
+        proposed = splitting_ai.propose_split_documents(self)
         return proposed
 
 
