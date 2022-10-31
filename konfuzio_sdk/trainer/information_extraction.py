@@ -25,7 +25,6 @@ import shutil
 import sys
 import time
 import unicodedata
-import dill
 from copy import deepcopy
 from heapq import nsmallest
 from typing import Tuple, Optional, List, Union, Callable, Dict
@@ -66,8 +65,8 @@ def load_model(pickle_path: str):
         raise FileNotFoundError("Invalid pickle file path:", pickle_path)
 
     try:
-        with bz2.open(pickle_path, 'rb') as f:
-            model = dill.load(f)
+        with bz2.open(pickle_path, 'rb') as file:
+            model = cloudpickle.load(file)
     except OSError:
         raise OSError(f"Pickle file {pickle_path} data is invalid.")
     except AttributeError as err:
@@ -1791,14 +1790,14 @@ class Trainer:
         """
         Save the label model as bz2 compressed pickle object to the release directory.
 
-        Saving is done by: getting the serialized pickle object (via dill), "optimizing" the serialized object with the
-        built-in pickletools.optimize function (see: https://docs.python.org/3/library/pickletools.html), saving the
-        optimized serialized object.
+        Saving is done by: getting the serialized pickle object (via cloudpickle), "optimizing" the serialized object
+        with the built-in pickletools.optimize function (see: https://docs.python.org/3/library/pickletools.html),
+        saving the optimized serialized object.
 
         We then compress the pickle file with bz2 using shutil.copyfileobject which writes in chunks to avoid loading
         the entire pickle file in memory.
 
-        Finally, we delete the dill file and are left with the bz2 file which has a .pkl extension.
+        Finally, we delete the cloudpickle file and are left with the bz2 file which has a .pkl extension.
 
         :return: Path of the saved model file
         """
@@ -1832,11 +1831,11 @@ class Trainer:
         # make sure output dir exists
         pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
 
-        temp_pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower()}.dill')
+        temp_pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower()}.cloudpickle')
         pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower()}.pkl')
 
-        logger.info('Saving model with dill')
-        # first save with dill
+        logger.info('Saving model with cloudpickle')
+        # first save with cloudpickle
         with open(temp_pkl_file_path, 'wb') as f:  # see: https://stackoverflow.com/a/9519016/5344492
             cloudpickle.dump(self, f)
 
@@ -1847,8 +1846,8 @@ class Trainer:
             with bz2.open(pkl_file_path, 'wb') as output_f:
                 shutil.copyfileobj(input_f, output_f)
 
-        logger.info('Deleting dill file')
-        # then delete dill file
+        logger.info('Deleting cloudpickle file')
+        # then delete cloudpickle file
         os.remove(temp_pkl_file_path)
 
         size_string = f'{os.path.getsize(pkl_file_path) / 1_000_000} MB'

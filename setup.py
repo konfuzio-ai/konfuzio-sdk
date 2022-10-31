@@ -74,9 +74,8 @@ setuptools.setup(
     include_package_data=True,
     entry_points={'console_scripts': ['konfuzio_sdk=konfuzio_sdk.cli:main']},
     install_requires=[
-        'cloudpickle==2.0.0',
+        'cloudpickle==2.0.0',  # Used to pickle objects
         'filetype==1.0.7',  # Used to check that files are in the correct format
-        'dill==0.3.2',  # Used to pickle objects
         'nltk',
         'numpy',  # ==1.22.2',
         'pandas',  # todo add ==1.1.5, which causes conflict konfuzio-sdk[dev] 0.2.3 depends on pandas==1.1.5 / 1.0.5
