@@ -115,4 +115,18 @@ Regex Tokenizer
    :noindex:
 
 .. automodule:: konfuzio_sdk.tokenizer.regex
+    :members:
+
+
+=====================
+Extraction AI
+=====================
+
+`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/trainer.information_extraction.py>`__
+
+
+.. automodule:: konfuzio_sdk.trainer.information_extraction
+
+.. autoclass:: RFExtractionAI
    :members:
+   :noindex:
