@@ -52,7 +52,7 @@ class TestFileSplittingModel(unittest.TestCase):
             self.project.model_folder + '/splitting_ai_models.tar.gz', project_id=TEST_PROJECT_ID
         )
         for doc in self.train_data:
-            pred = file_splitter.propose_mappings(doc)
+            pred = file_splitter.propose_split_documents(doc)
             assert len(pred) == 1
 
     def test_split_document(self):
