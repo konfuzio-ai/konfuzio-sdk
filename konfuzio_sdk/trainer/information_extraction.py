@@ -71,7 +71,13 @@ def load_model(pickle_path: str):
         raise OSError(f"Pickle file {pickle_path} data is invalid.")
     except AttributeError as err:
         if "__forward_module__" in str(err) and '3.9' in sys.version:
-            raise AttributeError("Pickle saved with incompatible Python version.")
+            raise AttributeError("Pickle saved with incompatible Python version.") from err
+        elif "__forward_is_class__" in str(err) and '3.8' in sys.version:
+            raise AttributeError("Pickle saved with incompatible Python version.") from err
+        raise
+    except ValueError as err:
+        if "unsupported pickle protocol: 5" in str(err) and '3.7' in sys.version:
+            raise ValueError("Pickle saved with incompatible Python version.") from err
         raise
 
     if not hasattr(model, "name"):
