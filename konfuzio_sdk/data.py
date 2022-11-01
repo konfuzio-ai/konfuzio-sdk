@@ -7,14 +7,12 @@ import os
 import pathlib
 import re
 import shutil
-import tarfile
 import time
 import zipfile
 from typing import Optional, List, Union, Tuple, Dict
 from warnings import warn
 
 import dateutil.parser
-from keras.models import load_model
 from PIL import Image, ImageDraw, ImageFont
 from tqdm import tqdm
 
@@ -2683,21 +2681,6 @@ class Project(Data):
         self._documents = []
         self._test_documents = []
         return self
-
-    def get_splitting_ai_files(self):
-        """Load models for splitting multi-file Documents."""
-        if pathlib.Path(self.model_folder + '/splitting_ai_models.tar.gz').exists():
-            tar = tarfile.open(self.model_folder + '/splitting_ai_models.tar.gz', "r:gz")
-            tar.extractall()
-            self.vgg16 = load_model(self.model_folder + '/vgg16.h5')
-            self.fusion = load_model(self.model_folder + '/fusion.h5')
-            return self.vgg16, self.fusion
-        else:
-            raise OSError(
-                2, "No model archive found in the directory", self.model_folder + '/splitting_ai_models.tar.gz'
-            )
-
-    # update with the method of loading from external storage when available
 
 
 def download_training_and_test_data(id_: int):

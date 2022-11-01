@@ -63,9 +63,3 @@ class TestFileSplittingModel(unittest.TestCase):
         )
         proposed = doc.propose_splitting(splitting_ai)
         assert len(proposed) == 1
-
-    def test_project_load_splitting_ai_files(self):
-        """Load SplittingAI files if they are within the project's models directory."""
-        vgg16, fusion = self.project.get_splitting_ai_files()
-        assert vgg16 is not None
-        assert fusion is not None
