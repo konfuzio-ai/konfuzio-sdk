@@ -16,7 +16,7 @@ class TestFileSplittingModel(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the tested class."""
-        cls.fusion_model = file_splitting.FusionModel(project_id=TEST_PROJECT_ID, split_point=0.5)
+        cls.fusion_model = file_splitting.FileSplittingModel(project_id=TEST_PROJECT_ID, split_point=0.5)
         cls.project = Project(id_=TEST_PROJECT_ID)
         cls.train_data = cls.project.documents
         cls.test_data = cls.project.test_documents

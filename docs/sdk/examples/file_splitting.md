@@ -1,18 +1,38 @@
 ## Split Multi-File Documents into Separate Files
 
 Let's see how to use the `konfuzio_sdk` to create a pipeline for automatically splitting documents consisting of 
-several files. 
+several files.
 
 ```python
 from konfuzio_sdk.data import Project
 from konfuzio_sdk.trainer import file_splitting
 
 project = Project(id_=YOUR_PROJECT_ID)
+train_documents = project.documents
 test_documents = project.test_documents
 
 # train a file-splitting model on Documents from your Project 
 
-fusion_model = file_splitting.FusionModel(project_id=project.id_, split_point=0.5)
+# train a model for visual inputs
+
+vgg16 = file_splitting.FileSplittingModel.vgg16_preprocess_and_train(train_documents,
+                                                                     test_documents,
+                                                                     0.5)
+# initialize LegalBERT
+
+bert_model, bert_tokenizer = file_splitting.FileSplittingModel.init_bert()
+
+# prepare data for inputs of a file-splitting model 
+
+Xtrain, Xtest, ytrain, ytest, input_shape = file_splitting.FileSplittingModel.prepare_mlp_inputs(train_documents, 
+                                                                                                test_documents, 
+                                                                                                0.5,
+                                                                                                vgg16,
+                                                                                                bert_tokenizer,
+                                                                                                bert_model)
+# run training, evaluation, and saving of the file-splitting model
+
+model = file_splitting.FileSplittingModel.run_mlp(Xtrain, Xtest, ytrain, ytest, input_shape)
 
 # initialize SplittingAI with the model files saved during previous step
 

@@ -30,7 +30,7 @@ from typing import List
 from konfuzio_sdk.data import Document, Page, Project
 
 
-class FusionModel:
+class FileSplittingModel:
     """Train a fusion model for correct splitting of files which contain multiple Documents.
 
     A model consists of two separate inputs for visual and textual data combined together in a Multi-Layered
@@ -250,8 +250,23 @@ class FusionModel:
             f1 = 0
         return precision, recall, f1
 
-    def train(self):
-        """Preprocess data, train VGG16 and a MLP pipeline based on VGG16 and LegalBERT."""
+    def vgg16_preprocess_and_train(self, train_data: List[Document], test_data: List[Document], split_point: float):
+        """Preprocess data and train VGG16 as a public method."""
+        self._prepare_visual_textual_data(train_data, test_data, split_point)
+        train_data_generator = self._prepare_image_data_generator()
+        model_vgg = self.train_vgg(image_data_generator=train_data_generator)
+        return model_vgg
+
+    def prepare_mlp_inputs(
+        self,
+        train_data: List[Document],
+        test_data: List[Document],
+        split_point: float,
+        model_vgg16,
+        bert_model,
+        bert_tokenizer,
+    ):
+        """Prepare data for feeding into an MLP as inputs."""
         (
             train_texts_1,
             train_texts_2,
@@ -261,19 +276,20 @@ class FusionModel:
             test_pages,
             train_labels_2,
             test_labels,
-        ) = self._prepare_visual_textual_data(self.train_data, self.test_data, self.split_point)
-        train_data_generator = self._prepare_image_data_generator()
-        model_vgg = self.train_vgg(image_data_generator=train_data_generator)
-        bert, tokenizer = self.init_bert()
-        vgg16_train_logits = self.get_logits_vgg16(train_pages_2, model_vgg)
-        vgg16_test_logits = self.get_logits_vgg16(test_pages, model_vgg)
-        bert_train_logits = self.get_logits_bert(train_texts_2, tokenizer, bert)
-        bert_test_logits = self.get_logits_bert(test_texts, tokenizer, bert)
+        ) = self._prepare_visual_textual_data(train_data, test_data, split_point)
+        vgg16_train_logits = self.get_logits_vgg16(train_pages_2, model_vgg16)
+        vgg16_test_logits = self.get_logits_vgg16(test_pages, model_vgg16)
+        bert_train_logits = self.get_logits_bert(train_texts_2, bert_tokenizer, bert_model)
+        bert_test_logits = self.get_logits_bert(test_texts, bert_tokenizer, bert_model)
         train_logits = self.squash_logits(vgg16_train_logits, bert_train_logits)
         test_logits = self.squash_logits(vgg16_test_logits, bert_test_logits)
         Xtrain, Xtest, ytrain, ytest, input_shape = self._preprocess_mlp_inputs(
             train_logits, test_logits, train_labels_2, test_labels
         )
+        return Xtrain, Xtest, ytrain, ytest, input_shape
+
+    def run_mlp(self, Xtrain, Xtest, ytrain, ytest, input_shape):
+        """Compile, run, evaluate, and save an MLP architecture."""
         model = Sequential()
         model.add(Dense(50, input_shape=(input_shape,), activation='relu'))
         model.add(Dense(50, activation='elu'))
@@ -290,6 +306,16 @@ class FusionModel:
         tar.add(self.project.model_folder + '/fusion.h5')
         tar.add(self.project.model_folder + '/vgg16.h5')
         tar.close()
+        return model
+
+    def train(self):
+        """Preprocess data, train VGG16 and an MLP pipeline based on VGG16 and LegalBERT."""
+        model_vgg16 = self.vgg16_preprocess_and_train(self.train_data, self.test_data, self.split_point)
+        bert, tokenizer = self.init_bert()
+        Xtrain, Xtest, ytrain, ytest, input_shape = self.prepare_mlp_inputs(
+            self.train_data, self.test_data, self.split_point, model_vgg16, bert, tokenizer
+        )
+        model = self.run_mlp(Xtrain, Xtest, ytrain, ytest, input_shape)
         Path(self.project.model_folder + '/fusion.h5').unlink()
         Path(self.project.model_folder + '/vgg16.h5').unlink()
         return model
@@ -305,7 +331,7 @@ class SplittingAI:
 
     def __init__(self, model_path: str, project_id=None):
         """Load fusion model, VGG16 model, BERT and BERTTokenizer."""
-        self.file_splitter = FusionModel(project_id=project_id, split_point=0.5)
+        self.file_splitter = FileSplittingModel(project_id=project_id, split_point=0.5)
         self.project = Project(id_=project_id)
         if Path(model_path).exists():
             tar = tarfile.open(self.project.model_folder + '/splitting_ai_models.tar.gz', "r:gz")
