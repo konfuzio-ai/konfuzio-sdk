@@ -10,6 +10,8 @@ Code Examples
 
 .. mdinclude:: document_categorization.md
 
+.. mdinclude:: file_splitting.md
+
 Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations
 ---------------------------------------------------------------
 
@@ -38,3 +40,4 @@ and try it by yourself.
 
 .. |OpenInColab2| image:: https://colab.research.google.com/assets/colab-badge.svg
 .. _OpenInColab2: https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/word_count.ipynb
+
