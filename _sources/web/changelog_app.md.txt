@@ -62,7 +62,7 @@ This version uses Konfuzio Trainer in version v.0.3.22, the Konfuzio Python SDK 
 - The SmartView did not use rotated pages due to a caching problem ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9830)).
 - The arrow in the Project- and language selector was not clickable ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9714)).
 - On the Annotation list Page the Category filter was not showing all Annotations ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9732)).
-- Fix an issue where the Category- and Document API V3 endpoint did not include all relevant Label-Sets([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9816)).
+- Fix an issue where the Category- and Document API V3 endpoint did not include all relevant Label-Sets ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9816)).
 
 ## released-2022-10-28_07-23-39
 
