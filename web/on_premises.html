@@ -440,7 +440,7 @@ The container needs to be able to access IP addresses and hostnames used in the 
 <p>The Konfuzio Server application acts as a reverse proxy an servers the flower application. Therefore, django needs to know the flower url. <code class="docutils literal notranslate"><span class="pre">FLOWER_URL=http://host:5555/flower</span></code>. Please ensure that the Flower container is not exposed externally, as it does not handle authentication and authorization itself.</p>
 <div class="mermaid">
             graph LR
-subgraph
+subgraph Network
 a
 end
 subgraph Local Network / Cluster Network

@@ -334,13 +334,13 @@ The Konfuzio Server application acts as a reverse proxy an servers the flower ap
 
 ```mermaid
 graph LR
-subgraph  
+subgraph Network
 a
 end
 subgraph Local Network / Cluster Network
 a("User") --> e
 e("Konfuzio Server") -- FLOWER_URL --> f("Flower")
-end  						
+end
 ```
 
 #### [Optional] 7. Use Azure Read API on-premise
