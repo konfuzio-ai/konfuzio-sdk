@@ -16,18 +16,21 @@ import tarfile
 import torch
 
 import numpy as np
+import tensorflow as tf
 
 from keras.callbacks import ModelCheckpoint, EarlyStopping
+from keras.applications.vgg19 import preprocess_input
 from keras.layers import Dense, Conv2D, MaxPool2D, Flatten
-from keras.losses import categorical_crossentropy
 from keras.models import Sequential, load_model
 from pathlib import Path
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img
+from tensorflow.keras.preprocessing.image import ImageDataGenerator, img_to_array
 from transformers import BertTokenizer, AutoModelForSequenceClassification, AutoConfig
 from typing import List
 
 from konfuzio_sdk.data import Document, Page, Project
+
+tf.config.experimental_run_functions_eagerly(True)
 
 
 class FileSplittingModel:
@@ -61,27 +64,20 @@ class FileSplittingModel:
                     labels.append(1)
                 else:
                     labels.append(0)
-        Path("otsu_vgg16/{}/first_page".format(path)).mkdir(parents=True, exist_ok=True)
-        Path("otsu_vgg16/{}/not_first_page".format(path)).mkdir(parents=True, exist_ok=True)
+        # Path("otsu_vgg16/{}/first_page".format(path)).mkdir(parents=True, exist_ok=True)
+        # Path("otsu_vgg16/{}/not_first_page".format(path)).mkdir(parents=True, exist_ok=True)
         return pages, texts, labels
 
-    def _otsu_binarization(self, pages: List[str], labels: List[int], path: str) -> None:
-        for img, label in zip(pages, labels):
+    def _otsu_binarization(self, pages: List[str]) -> None:
+        images = []
+        for img in pages:
             image = cv2.imread(img)
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            ret, thresh1 = cv2.threshold(image, 120, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-            image = cv2.resize(thresh1, (224, 224), interpolation=cv2.INTER_AREA)
-            # cv2.imwrite(
-            #     img.split('.')[0] + '_otsu.png', image
-            # )
-            if label == 0:
-                cv2.imwrite(
-                    'otsu_vgg16/{}/not_first_page/{}'.format(path, img.split('/')[-2] + '_' + img.split('/')[-1]), image
-                )
-            else:
-                cv2.imwrite(
-                    'otsu_vgg16/{}/first_page/{}'.format(path, img.split('/')[-2] + '_' + img.split('/')[-1]), image
-                )
+            image = cv2.resize(image, (224, 224), interpolation=cv2.INTER_AREA)
+            image = img_to_array(image)
+            image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
+            image = preprocess_input(image)
+            images.append(image)
+        return images
 
     def _prepare_visual_textual_data(
         self,
@@ -94,9 +90,9 @@ class FileSplittingModel:
         train_pages_1, train_texts_1, train_labels_1 = self._preprocess_documents(train_data[:split_point], 'train_1')
         train_pages_2, train_texts_2, train_labels_2 = self._preprocess_documents(train_data[split_point:], 'train_2')
         test_pages, test_texts, test_labels = self._preprocess_documents(test_data, 'test')
-        self._otsu_binarization(train_pages_1, train_labels_1, 'train_1')
-        self._otsu_binarization(train_pages_2, train_labels_2, 'train_2')
-        self._otsu_binarization(test_pages, test_labels, 'test')
+        train_images_1 = self._otsu_binarization(train_pages_1)
+        train_images_2 = self._otsu_binarization(train_pages_2)
+        test_images = self._otsu_binarization(test_pages)
         return (
             train_texts_1,
             train_texts_2,
@@ -104,15 +100,18 @@ class FileSplittingModel:
             train_pages_1,
             train_pages_2,
             test_pages,
+            train_labels_1,
             train_labels_2,
             test_labels,
+            train_images_1,
+            train_images_2,
+            test_images,
         )
 
-    def _prepare_image_data_generator(self):
+    def _prepare_image_data_generator(self, images, labels):
+        labels = np.asarray(labels).astype('float32').reshape((-1, 1))
         image_data_generator = ImageDataGenerator()
-        train_data_generator = image_data_generator.flow_from_directory(
-            directory="otsu_vgg16/train_1", target_size=(224, 224)
-        )
+        train_data_generator = image_data_generator.flow(x=np.squeeze(images, axis=1), y=labels)
         return train_data_generator
 
     def _init_vgg16(self):
@@ -139,8 +138,9 @@ class FileSplittingModel:
         model.add(Dense(units=4096, activation="relu"))
         model.add(Dense(units=4096, activation="relu"))
         model.add(Dense(units=2, activation="softmax"))
+        model.add(Flatten())
         opt = Adam(learning_rate=0.001)
-        model.compile(optimizer=opt, loss=categorical_crossentropy, metrics=['accuracy'])
+        model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
         return model
 
     def train_vgg(self, image_data_generator: ImageDataGenerator = None):
@@ -181,14 +181,14 @@ class FileSplittingModel:
         )
         return model, tokenizer
 
-    def get_logits_vgg16(self, pages: List[str], model) -> List:
+    def get_logits_vgg16(self, images: List, model) -> List:
         """Transform input images into logits for MLP input."""
         logits = []
-        for path in pages:
-            img = load_img(path, target_size=(224, 224))
-            img = np.asarray(img)
-            img = np.expand_dims(img, axis=0)
-            output = model.predict(img)
+        for image in images:
+            # img = load_img(path, target_size=(224, 224))
+            # img = np.asarray(img)
+            # img = np.expand_dims(img, axis=0)
+            output = model.predict(image)
             logits.append(output)
         return logits
 
@@ -252,8 +252,21 @@ class FileSplittingModel:
 
     def vgg16_preprocess_and_train(self, train_data: List[Document], test_data: List[Document], split_point: float):
         """Preprocess data and train VGG16 as a public method."""
-        self._prepare_visual_textual_data(train_data, test_data, split_point)
-        train_data_generator = self._prepare_image_data_generator()
+        (
+            train_texts_1,
+            train_texts_2,
+            test_texts,
+            train_pages_1,
+            train_pages_2,
+            test_pages,
+            train_labels_1,
+            train_labels_2,
+            test_labels,
+            train_images_1,
+            train_images_2,
+            test_images,
+        ) = self._prepare_visual_textual_data(train_data, test_data, split_point)
+        train_data_generator = self._prepare_image_data_generator(train_images_1, train_labels_1)
         model_vgg = self.train_vgg(image_data_generator=train_data_generator)
         return model_vgg
 
@@ -274,11 +287,15 @@ class FileSplittingModel:
             train_pages_1,
             train_pages_2,
             test_pages,
+            train_labels_1,
             train_labels_2,
             test_labels,
+            train_images_1,
+            train_images_2,
+            test_images,
         ) = self._prepare_visual_textual_data(train_data, test_data, split_point)
-        vgg16_train_logits = self.get_logits_vgg16(train_pages_2, model_vgg16)
-        vgg16_test_logits = self.get_logits_vgg16(test_pages, model_vgg16)
+        vgg16_train_logits = self.get_logits_vgg16(train_images_2, model_vgg16)
+        vgg16_test_logits = self.get_logits_vgg16(test_images, model_vgg16)
         bert_train_logits = self.get_logits_bert(train_texts_2, bert_tokenizer, bert_model)
         bert_test_logits = self.get_logits_bert(test_texts, bert_tokenizer, bert_model)
         train_logits = self.squash_logits(vgg16_train_logits, bert_train_logits)
@@ -345,6 +362,11 @@ class SplittingAI:
 
     def _preprocess_inputs(self, text: str, image) -> List:
         text_logits = self.file_splitter.get_logits_bert([text], self.tokenizer, self.bert_model)
+        image = cv2.imread(image)
+        image = cv2.resize(image, (224, 224), interpolation=cv2.INTER_AREA)
+        image = img_to_array(image)
+        image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
+        image = preprocess_input(image)
         img_logits = self.file_splitter.get_logits_vgg16([image], self.vgg16)
         logits = np.array(self.file_splitter.squash_logits(img_logits, text_logits))
         return logits

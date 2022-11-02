@@ -36,7 +36,8 @@ class TestFileSplittingModel(unittest.TestCase):
         text_logits = self.fusion_model.get_logits_bert(texts, self.bert_tokenizer, self.bert_model)
         pages = [page.image_path for doc in self.train_data for page in doc.pages()]
         model_vgg16 = load_model(self.project.model_folder + '/vgg16.h5')
-        img_logits = self.fusion_model.get_logits_vgg16(pages, model_vgg16)
+        images = self.fusion_model._otsu_binarization(pages)
+        img_logits = self.fusion_model.get_logits_vgg16(images, model_vgg16)
         logits = self.fusion_model.squash_logits(img_logits, text_logits)
         assert len(logits) == len(text_logits)
         assert len(logits) == len(img_logits)
