@@ -445,20 +445,7 @@ a(&quot;User&quot;)
 end
 subgraph Local Network / Cluster Network
 a(&quot;User&quot;) --&gt; e(&quot;Konfuzio Server&quot;)
-e(&quot;Konfuzio Server&quot;) --&gt; f(&quot;Flower&quot;)
-end
-        </div><div class="mermaid">
-            graph LR
-subgraph On-Premise
-a(License Key)
-end
-subgraph app.konfuzio.com
-a(&quot;License Key&quot;) --&gt; e(Contract)
-b(Contract)
-end
-subgraph Fakturia
-b(Contract) --&gt; c(Contract)
-e(Contract) --&gt; f(Contract)
+e(&quot;Konfuzio Server&quot;) -- FLOWER_URL --&gt; f(&quot;Flower&quot;)
 end
         </div></section>
 <section id="optional-7-use-azure-read-api-on-premise">
