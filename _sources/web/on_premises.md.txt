@@ -330,7 +330,7 @@ In this example we start three containers, the first one to serve the Konfuzio w
 `celery -A app flower --url_prefix=flower --address=0.0.0.0 --port=5555` 
 ```
 
-The Konfuzio Server application acts as a reverse proxy an servers the flower application. Therefore, django needs to know the flower url. `FLOWER_URL=http://host:5555/flower`. Please ensure that the Flower container is not exposed externally, as it does not handle authentication and authorization itself.
+The Konfuzio Server application acts as a reverse proxy an servers the flower application. Therefore, django needs to know the flower url. `FLOWER_URL=http://host:5555/flower`.
 
 ```mermaid
 graph LR
@@ -342,6 +342,7 @@ a("User") --> e("Konfuzio Server")
 e("Konfuzio Server") -- FLOWER_URL --> f("Flower")
 end
 ```
+Please ensure that the Flower container is not exposed externally, as it does not handle authentication and authorization itself.  
 
 #### [Optional] 7. Use Azure Read API on-premise
 The [Azure Read API](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2) can be installed on-premise and used togehter with Konfuzio.
