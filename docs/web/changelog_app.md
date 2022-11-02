@@ -20,7 +20,7 @@ You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server
 - Add a filter to the list of Documents to find Documents that need to be revised by humans. ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9242)).
 - Improved training time of Extraction AIs when using character detection mode (reduced up to 40%) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9271)).
 - Train custom Page-based Categorization AI via [SDK](https://github.com/konfuzio-ai/konfuzio-sdk/) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9481)).
-- First stable release of Capture Vue in version [0.1.0](#).
+- First stable release of Capture Vue in version ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9958)).
 - Suggest page breaks if one file contains multiple Documents ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/7671)).
 - Perfomance improvement of the Konfuzio Server interface ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9750)).
 - Redirect https://app.konfuzio.com/api/ to stable API Version 3 ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9692)).
