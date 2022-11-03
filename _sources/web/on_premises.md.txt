@@ -509,7 +509,7 @@ To run Konfuzio Server, three types of storages are required. First, a PostgreSQ
 
 \*If you use [Kubernetes Deployment](/web/on_premises.html#kubernetes) you can choose the 'in-Cluster' option for Postgres and Redis.
 
-## Usage of PostgreSQL
+### Usage of PostgreSQL
 
 Konfuzio Server will create a total of 43 tables and use the following data types. This information refers to release [2022-10-28-07-23-39](https://dev.konfuzio.com/web/changelog_app.html#released-2022-10-28-07-23-39).
 

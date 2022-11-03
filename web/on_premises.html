@@ -114,9 +114,9 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#database-and-storage">Database and Storage</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#usage-of-postgresql">Usage of PostgreSQL</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#usage-of-postgresql">Usage of PostgreSQL</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id6">Environment Variables</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-konfuzio-server">Environment Variables for Konfuzio Server</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-read-api-container">Environment Variables for Read API Container</a></li>
@@ -639,9 +639,8 @@ The first argument is the path to the export folder, the second is the project n
 </table>
 <p><a href="#id3"><span class="problematic" id="id4">*</span></a>If you use <a class="reference external" href="/web/on_premises.html#kubernetes">Kubernetes Deployment</a> you can choose the ‘in-Cluster’ option for Postgres and Redis.</p>
 </section>
-</section>
 <section id="usage-of-postgresql">
-<h2>Usage of PostgreSQL<a class="headerlink" href="#usage-of-postgresql" title="Permalink to this headline">¶</a></h2>
+<h3>Usage of PostgreSQL<a class="headerlink" href="#usage-of-postgresql" title="Permalink to this headline">¶</a></h3>
 <p>Konfuzio Server will create a total of 43 tables and use the following data types. This information refers to release <a class="reference external" href="https://dev.konfuzio.com/web/changelog_app.html#released-2022-10-28-07-23-39">2022-10-28-07-23-39</a>.</p>
 <table class="docutils align-default">
 <colgroup>
@@ -693,6 +692,7 @@ The first argument is the path to the export folder, the second is the project n
 </tbody>
 </table>
 <!-- This table was created by running select data_type, count(*) from information_schema.columns where table_schema = 'public'  group by data_type ; --></section>
+</section>
 <section id="id6">
 <h2>Environment Variables<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
 <section id="environment-variables-for-konfuzio-server">
