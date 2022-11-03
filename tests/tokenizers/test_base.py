@@ -189,10 +189,9 @@ class TestAbstractTokenizer(unittest.TestCase):
         result = self.tokenizer.evaluate_dataset(self.category_2.test_documents())
         assert len(result.data) == 2
         assert result.data.loc[0]["category_id"] == self.category_2.id_
-        import numpy as np
 
         # an empty span for the NO_LABEL_SET is always created
-        assert np.isnan(result.data.loc[1]["category_id"])
+        assert result.data.loc[1]["category_id"] is None
 
     @unittest.skip(reason='removed narrow implementation to evaluate multiple Documents: evaluate_category')
     def test_evaluate_category_input(self):

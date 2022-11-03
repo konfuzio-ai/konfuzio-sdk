@@ -148,11 +148,11 @@ template_clf_classes = ['Brutto-Bezug', 'Lohnabrechnung', 'Netto-Bezug', 'No', '
     [
         (
             False,
-            0.7945205479452054,  # w/ full dataset: 0.9237668161434978
+            0.8055555555555556,  # w/ full dataset: 0.9237668161434978
             0.9745762711864406,
             0.9705882352941176,
         ),
-        (True, 0.7945205479452054, 0.9704641350210971, 0.967741935483871),  # w/ full dataset: 0.9783549783549783
+        (True, 0.8055555555555556, 0.9704641350210971, 0.967741935483871),  # w/ full dataset: 0.9783549783549783
     ],
 )
 class TestWhitespaceRFExtractionAI(unittest.TestCase):
