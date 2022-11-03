@@ -166,7 +166,14 @@ class Page(Data):
             draw = ImageDraw.Draw(image)
             draw.rectangle(pos, outline='blue', width=2)
 
-            font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSerifBold.ttf", 24, encoding="unic")
+            try:
+                font = ImageFont.truetype(
+                    "/usr/share/fonts/truetype/liberation/LiberationSerif-Bold.ttf", 24, encoding="unic"
+                )
+            except OSError:
+                logger.warning('Font not found. Loading default.')
+                font = ImageFont.load_default()
+
             draw.text((pos[0], pos[3] - 24), ann.label.name, fill='blue', font=font)
         return image
 

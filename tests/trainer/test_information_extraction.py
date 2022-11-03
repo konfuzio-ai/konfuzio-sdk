@@ -290,8 +290,8 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 @parameterized.parameterized_class(
     ('use_separate_labels', 'evaluate_full_result'),
     [
-        (False, 0.8611111111111112),  # w/ full dataset: 0.8930232558139535
-        (True, 0.8266666666666667),  # w/ full dataset: 0.9553571428571429
+        (False, 0.8266666666666667),  # w/ full dataset: 0.8930232558139535
+        (True, 0.8266666666666667),  # w/ full dataset: 0.9596412556053812
     ],
 )
 class TestRegexRFExtractionAI(unittest.TestCase):
