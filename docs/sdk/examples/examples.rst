@@ -16,8 +16,11 @@ tokenizer <https://dev.konfuzio.com/sdk/sourcecode.html#konfuzio_sdk.tokenizer.r
 train a "RFExtractionAI" model to find and extract relevant information like Name, Date and Recipient
 from payslip documents.
 
-You can download it from `here <https://github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/RFExtractionAI%20Demo.ipynb>`_
+You can |OpenInColab|_ or download it from `here <https://github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/RFExtractionAI%20Demo.ipynb>`_
 and try it by yourself.
+
+.. |OpenInColab| image:: https://colab.research.google.com/assets/colab-badge.svg
+.. _OpenInColab: https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/RFExtractionAI%20Demo.ipynb
 
 Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations
 ---------------------------------------------------------------
@@ -27,12 +30,12 @@ Konfuzio SDK package to include an easy feedback workflow in your training pipel
 can take advantage of open-source models to speed up the annotation process and use the feedback workflow to adapt the
 domain knowledge of the model to your aim.
 
-You can |OpenInColab|_ or download it from
+You can |OpenInColab1|_ or download it from
 `here <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/human_in_the_loop.ipynb>`_
 and try it by yourself.
 
-.. |OpenInColab| image:: https://colab.research.google.com/assets/colab-badge.svg
-.. _OpenInColab: https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/human_in_the_loop.ipynb
+.. |OpenInColab1| image:: https://colab.research.google.com/assets/colab-badge.svg
+.. _OpenInColab1: https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/human_in_the_loop.ipynb
 
 Count Relevant Expressions in Annual Reports
 --------------------------------------------
