@@ -131,7 +131,7 @@ only.
 - A single, non-resilient Deployment is used
 
 You can read more about setting up your production-readydatabase in the PostgreSQL
-documentation. As soon you have an external PostgreSQLdatabase ready, Konfuzio can
+documentation. As soon you have an external PostgreSQL database ready, Konfuzio can
 be configured to use it as shown below.
 
 _Include these options in your Helm install command:_
@@ -227,7 +227,7 @@ Upgrade Konfuzio following our standard procedure,with the following additions o
 4. Extract your previous `--set` arguments with (see Action1)
 5. Decide on all the values you need to set
 6. Perform the upgrade, with all `--set` arguments extracted(see Action 2)
-7. We will perform the migrations for the Database forPostgreSQL automatically.
+7. We will perform the migrations for the Database for PostgreSQL automatically.
 
 _Action 1_
 
@@ -498,6 +498,7 @@ python manage.py project_import "/konfuzio-target-system/data_123/" "NewProjectN
 
 ## Database and Storage
 
+### Overview
 To run Konfuzio Server, three types of storages are required. First, a PostgreSQL database is needed to store structured application data. Secondly, a storage for Blob needs to be present. Thirdly, a Redis database that manages the background Task of Konfuzio Server is needed. You can choose your preferred deployment option for each storage type and connect Konfuzio via environment variables to the respective storages. We recommend planning your storage choices before starting with the actual Konfuzio installation.
 
 | Storage Name | Recommended Version | Supported Version | Deployment Options |
@@ -507,6 +508,27 @@ To run Konfuzio Server, three types of storages are required. First, a PostgreSQ
 | Blob Storage | Latest Stable | All with activ support | Filesystem, S3-compatible Storage (e.g. [Amazon S3](https://aws.amazon.com/s3/), [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/)) |
 
 \*If you use [Kubernetes Deployment](/web/on_premises.html#kubernetes) you can choose the 'in-Cluster' option for Postgres and Redis.
+
+## Usage of PostgreSQL
+
+Konfuzio Server will create a total of 43 tables and use the following data types. This information refers to release [2022-10-28-07-23-39](https://dev.konfuzio.com/web/changelog_app.html#released-2022-10-28-07-23-39).
+
+| data_type | count |
+| --- | --- |
+| bigint                   |     6 |
+| boolean                  |    35 |
+| character varying        |    78 |
+| date                     |     2 |
+| double precision         |    29 |
+| inet                     |     2 |
+| integer                  |   138 |
+| jsonb                    |    28 |
+| smallint                 |     2 |
+| text                     |    21 |
+| timestamp with time zone |    56 |
+| uuid                     |     1 |
+
+<!-- This table was created by running select data_type, count(*) from information_schema.columns where table_schema = 'public'  group by data_type ; -->
 
 ## Environment Variables
 
