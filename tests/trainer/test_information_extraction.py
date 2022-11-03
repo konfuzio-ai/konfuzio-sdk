@@ -243,7 +243,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
     def test_07_data_quality(self):
         """Evaluate on training documents."""
-        evaluation = self.pipeline.data_quality()
+        evaluation = self.pipeline.evaluate_full(use_training_docs=True)
         assert evaluation.f1(None) == self.data_quality_result
 
     def test_08_tokenizer_quality(self):
@@ -372,7 +372,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
     def test_07_data_quality(self):
         """Evaluate on training documents."""
-        evaluation = self.pipeline.data_quality()
+        evaluation = self.pipeline.evaluate_full(use_training_docs=True)
         assert evaluation.f1(None) >= 0.94
 
     def test_08_tokenizer_quality(self):

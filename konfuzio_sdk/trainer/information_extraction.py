@@ -2860,10 +2860,21 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         return self.clf
 
-    def evaluate_full(self, strict: bool = True) -> Evaluation:
-        """Evaluate the full pipeline on the pipeline's Test Documents."""
+    def evaluate_full(self, strict: bool = True, use_training_docs: bool = False) -> Evaluation:
+        """
+        Evaluate the full pipeline on the pipeline's Test Documents.
+
+        :param strict: List of documents to extract features from.
+        :param use_training_docs: Bool for whether to evaluate on the training documents instead of testing documents.
+        :return: Evaluation object.
+        """
         eval_list = []
-        for document in self.test_documents:
+        if not use_training_docs:
+            eval_docs = self.test_documents
+        else:
+            eval_docs = self.documents
+
+        for document in eval_docs:
             predicted_doc = self.extract(document=document)
             eval_list.append((document, predicted_doc))
 
@@ -2871,16 +2882,26 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         return self.full_evaluation
 
-    def evaluate_tokenizer(self) -> Evaluation:
+    def evaluate_tokenizer(self, use_training_docs: bool = False) -> Evaluation:
         """Evaluate the tokenizer."""
-        evaluation = self.tokenizer.evaluate_dataset(self.test_documents)
+        if not use_training_docs:
+            eval_docs = self.test_documents
+        else:
+            eval_docs = self.documents
+
+        evaluation = self.tokenizer.evaluate_dataset(eval_docs)
 
         return evaluation
 
-    def evaluate_clf(self) -> Evaluation:
+    def evaluate_clf(self, use_training_docs: bool = False) -> Evaluation:
         """Evaluate the Label classifier."""
         eval_list = []
-        for document in self.test_documents:
+        if not use_training_docs:
+            eval_docs = self.test_documents
+        else:
+            eval_docs = self.documents
+
+        for document in eval_docs:
             virtual_doc = deepcopy(document)
 
             for ann in document.annotations():
@@ -2906,7 +2927,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         return clf_evaluation
 
-    def evaluate_template_clf(self):
+    def evaluate_template_clf(self, use_training_docs: bool = False) -> Evaluation:
         """Evaluate the LabelSet classifier."""
         if self.template_clf is None:
             raise AttributeError(f'{self} does not provide a LabelSet Classifier.')
@@ -2914,7 +2935,12 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             check_is_fitted(self.template_clf)
 
         eval_list = []
-        for document in self.test_documents:
+        if not use_training_docs:
+            eval_docs = self.test_documents
+        else:
+            eval_docs = self.documents
+
+        for document in eval_docs:
             df, _feature_names, _raw_errors = self.features(document)
 
             df['result_name'] = df['target']
@@ -2939,14 +2965,3 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         template_clf_evaluation = Evaluation(eval_list)
 
         return template_clf_evaluation
-
-    def data_quality(self, strict: bool = True) -> Evaluation:
-        """Evaluate the full pipeline on the pipeline's Training Documents."""
-        eval_list = []
-        for document in self.documents:
-            predicted_doc = self.extract(document=document)
-            eval_list.append((document, predicted_doc))
-
-        evaluation = Evaluation(eval_list, strict=strict)
-
-        return evaluation

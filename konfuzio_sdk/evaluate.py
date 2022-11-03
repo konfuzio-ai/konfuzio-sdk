@@ -2,6 +2,7 @@
 from typing import Tuple, List, Optional
 
 import pandas
+import numpy
 from sklearn.utils.extmath import weighted_mode
 from konfuzio_sdk.utils import sdk_isinstance
 from konfuzio_sdk.data import Document
@@ -177,7 +178,7 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
     )
 
     # Evaluate which **spans** are TN, TP, FP and keep RELEVANT_FOR_MAPPING to allow grouping of confidence measures
-    spans["true_positive"] = 1 * (
+    spans["true_positive"] = (
         (spans["is_matched"])
         & (spans["is_correct"])
         & (spans["above_predicted_threshold"])
@@ -190,13 +191,13 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
         )
     )
 
-    spans["false_negative"] = 1 * (
+    spans["false_negative"] = (
         (spans["is_correct"])
         & (~spans["duplicated"])
         & ((~spans["is_matched"]) | (~spans["above_predicted_threshold"]) | (spans["label_id_predicted"].isna()))
     )
 
-    spans["false_positive"] = 1 * (  # commented out on purpose (spans["is_correct"]) &
+    spans["false_positive"] = (  # commented out on purpose (spans["is_correct"]) &
         (spans["above_predicted_threshold"])
         & (~spans["false_negative"])
         & (~spans["true_positive"])
@@ -209,7 +210,7 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
             | (~spans["is_matched"])
         )
     )
-
+    spans = spans.replace({numpy.nan: None})
     # one Span must not be defined as TP or FP or FN more than once
     quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) <= 1).all()
     assert quality
