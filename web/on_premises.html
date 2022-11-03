@@ -112,8 +112,12 @@
 <li class="toctree-l3"><a class="reference internal" href="#migrate-a-project">Migrate a Project</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#database-and-storage">Database and Storage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id5">Environment Variables</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#database-and-storage">Database and Storage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#usage-of-postgresql">Usage of PostgreSQL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id6">Environment Variables</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-konfuzio-server">Environment Variables for Konfuzio Server</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-read-api-container">Environment Variables for Read API Container</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-detectron-container">Environment Variables for Detectron Container</a></li>
@@ -261,7 +265,7 @@ only.</p>
 <li><p>A single, non-resilient Deployment is used</p></li>
 </ul>
 <p>You can read more about setting up your production-readydatabase in the PostgreSQL
-documentation. As soon you have an external PostgreSQLdatabase ready, Konfuzio can
+documentation. As soon you have an external PostgreSQL database ready, Konfuzio can
 be configured to use it as shown below.</p>
 <p><em>Include these options in your Helm install command:</em></p>
 <p><code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">postgresql.install=false</span></code><span class="raw-html-m2r"><br></span>
@@ -348,7 +352,7 @@ step. Without a backup, Konfuzio data might be lost if the upgrade fails.</p></l
 <li><p>Extract your previous <code class="docutils literal notranslate"><span class="pre">--set</span></code> arguments with (see Action1)</p></li>
 <li><p>Decide on all the values you need to set</p></li>
 <li><p>Perform the upgrade, with all <code class="docutils literal notranslate"><span class="pre">--set</span></code> arguments extracted(see Action 2)</p></li>
-<li><p>We will perform the migrations for the Database forPostgreSQL automatically.</p></li>
+<li><p>We will perform the migrations for the Database for PostgreSQL automatically.</p></li>
 </ol>
 <p><em>Action 1</em></p>
 <p><code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">get</span> <span class="pre">values</span> <span class="pre">konfuzio</span> <span class="pre">&gt;</span> <span class="pre">konfuzio.yaml</span></code></p>
@@ -589,7 +593,7 @@ In comparison for a Categorization AI the targe project has to be chosen from �
 <span class="n">konfuzio_sdk</span> <span class="n">export_project</span> <span class="o">&lt;</span><span class="n">PROJECT_ID</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<p>The export will be saved in a folder with the name <a href="#id6"><span class="problematic" id="id7">data_</span></a><span class="raw-html-m2r"><project_id></span>. This folder needs to be transferred to the target system
+<p>The export will be saved in a folder with the name <a href="#id7"><span class="problematic" id="id8">data_</span></a><span class="raw-html-m2r"><project_id></span>. This folder needs to be transferred to the target system
 The first argument is the path to the export folder, the second is the project name of the imported project on the target system.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">project_import</span> <span class="s2">&quot;/konfuzio-target-system/data_123/&quot;</span> <span class="s2">&quot;NewProjectName&quot;</span>
 </pre></div>
@@ -598,6 +602,8 @@ The first argument is the path to the export folder, the second is the project n
 </section>
 <section id="database-and-storage">
 <h2>Database and Storage<a class="headerlink" href="#database-and-storage" title="Permalink to this headline">¶</a></h2>
+<section id="overview">
+<h3>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h3>
 <p>To run Konfuzio Server, three types of storages are required. First, a PostgreSQL database is needed to store structured application data. Secondly, a storage for Blob needs to be present. Thirdly, a Redis database that manages the background Task of Konfuzio Server is needed. You can choose your preferred deployment option for each storage type and connect Konfuzio via environment variables to the respective storages. We recommend planning your storage choices before starting with the actual Konfuzio installation.</p>
 <table class="docutils align-default">
 <colgroup>
@@ -633,8 +639,62 @@ The first argument is the path to the export folder, the second is the project n
 </table>
 <p><a href="#id3"><span class="problematic" id="id4">*</span></a>If you use <a class="reference external" href="/web/on_premises.html#kubernetes">Kubernetes Deployment</a> you can choose the ‘in-Cluster’ option for Postgres and Redis.</p>
 </section>
-<section id="id5">
-<h2>Environment Variables<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="usage-of-postgresql">
+<h2>Usage of PostgreSQL<a class="headerlink" href="#usage-of-postgresql" title="Permalink to this headline">¶</a></h2>
+<p>Konfuzio Server will create a total of 43 tables and use the following data types. This information refers to release <a class="reference external" href="https://dev.konfuzio.com/web/changelog_app.html#released-2022-10-28-07-23-39">2022-10-28-07-23-39</a>.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>data_type</p></th>
+<th class="head"><p>count</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>bigint</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p>boolean</p></td>
+<td><p>35</p></td>
+</tr>
+<tr class="row-even"><td><p>character varying</p></td>
+<td><p>78</p></td>
+</tr>
+<tr class="row-odd"><td><p>date</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-even"><td><p>double precision</p></td>
+<td><p>29</p></td>
+</tr>
+<tr class="row-odd"><td><p>inet</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-even"><td><p>integer</p></td>
+<td><p>138</p></td>
+</tr>
+<tr class="row-odd"><td><p>jsonb</p></td>
+<td><p>28</p></td>
+</tr>
+<tr class="row-even"><td><p>smallint</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-odd"><td><p>text</p></td>
+<td><p>21</p></td>
+</tr>
+<tr class="row-even"><td><p>timestamp with time zone</p></td>
+<td><p>56</p></td>
+</tr>
+<tr class="row-odd"><td><p>uuid</p></td>
+<td><p>1</p></td>
+</tr>
+</tbody>
+</table>
+<!-- This table was created by running select data_type, count(*) from information_schema.columns where table_schema = 'public'  group by data_type ; --></section>
+<section id="id6">
+<h2>Environment Variables<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
 <section id="environment-variables-for-konfuzio-server">
 <h3>Environment Variables for Konfuzio Server<a class="headerlink" href="#environment-variables-for-konfuzio-server" title="Permalink to this headline">¶</a></h3>
 <p>Konfuzio Server is fully configured via environment variables, these can be passed as dedicated environment variables or a single .env to the Konfuzio Server containers (REGISTRY_URL/konfuzio/text-annotation/master). A template for a .env file is provided here:</p>
