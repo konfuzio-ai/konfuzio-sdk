@@ -169,23 +169,6 @@ Fallback Categorization Model
 
 
 =====================
-AI Evaluation
-=====================
-
-`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/evaluate.py>`__
-
-.. automodule:: konfuzio_sdk.evaluate
-
-
-Evaluation
-=====================
-
-.. autoclass:: Evaluation
-   :members:
-   :noindex:
-
-
-=====================
 Document Categorization
 =====================
 
@@ -197,22 +180,5 @@ Document Categorization
 Fallback Categorization Model
 =====================
 .. autoclass:: FallbackCategorizationModel
-   :members:
-   :noindex:
-
-
-=====================
-AI Evaluation
-=====================
-
-`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/evaluate.py>`__
-
-.. automodule:: konfuzio_sdk.evaluate
-
-
-Evaluation
-=====================
-
-.. autoclass:: Evaluation
    :members:
    :noindex:
