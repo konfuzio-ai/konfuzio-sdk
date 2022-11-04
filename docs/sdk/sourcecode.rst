@@ -122,3 +122,6 @@ Extraction AI
 .. autoclass:: RFExtractionAI
    :members:
    :noindex:
+
+.. autofunction:: konfuzio_sdk.trainer.information_extraction.load_model
+   :noindex:

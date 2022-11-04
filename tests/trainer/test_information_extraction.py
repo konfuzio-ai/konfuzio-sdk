@@ -31,6 +31,7 @@ from konfuzio_sdk.trainer.information_extraction import (
     count_string_differences,
     year_month_day_count,
     add_extractions_as_annotations,
+    load_model,
     RFExtractionAI,
 )
 from konfuzio_sdk.api import upload_ai_model
@@ -217,9 +218,8 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
     def test_4_save_model(self):
         """Save the model."""
-        self.pipeline.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder)
+        self.pipeline.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder, include_konfuzio=False)
         assert os.path.isfile(self.pipeline.pipeline_path)
-        # os.remove(self.pipeline.pipeline_path)  # cleanup
 
     def test_5_upload_ai_model(self):
         """Upload the model."""
@@ -255,6 +255,13 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         ann = self.tests_annotations[i]
         ann_tuple = (ann.label.name, ann.start_offset, ann.end_offset)
         assert ann_tuple == expected
+
+    def test_9_load_ai_model(self):
+        """Test loading of trained model."""
+        self.pipeline = load_model(self.pipeline.pipeline_path)
+        test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        res_doc = self.pipeline.extract(document=test_document)
+        assert len(res_doc.annotations(use_correct=False)) == 20
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -328,7 +335,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
     def test_4_save_model(self):
         """Save the model."""
-        self.pipeline.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder)
+        self.pipeline.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder, include_konfuzio=False)
         assert os.path.isfile(self.pipeline.pipeline_path)
 
     def test_5_upload_ai_model(self):
@@ -365,6 +372,13 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         ann = self.tests_annotations[i]
         ann_tuple = (ann.label.name, ann.start_offset, ann.end_offset)
         assert ann_tuple == expected
+
+    def test_9_load_ai_model(self):
+        """Test loading of trained model."""
+        self.pipeline = load_model(self.pipeline.pipeline_path)
+        test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        res_doc = self.pipeline.extract(document=test_document)
+        assert len(res_doc.annotations(use_correct=False)) == 20
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -875,6 +889,46 @@ class TestGetExtractionResults(unittest.TestCase):
             'y0': 628.833,
             'y1': 636.833,
         }
+
+
+def test_load_model_no_file():
+    """Test loading of model with invalid path."""
+    path = "nhtbgrved"
+    with pytest.raises(FileNotFoundError, match="Invalid pickle file path"):
+        load_model(path)
+
+
+def test_load_model_corrupt_file():
+    """Test loading of corrupted model file."""
+    path = "trainer/corrupt.pkl"
+    with pytest.raises(OSError, match="data is invalid."):
+        load_model(path)
+
+
+def test_load_model_wrong_pickle_data():
+    """Test loading of wrong pickle data."""
+    path = "trainer/list_test.pkl"
+    with pytest.raises(TypeError, match="needs to be a Konfuzio Trainer instance"):
+        load_model(path)
+
+
+def test_load_ai_model():
+    """Test loading of trained model."""
+    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+    path = "trainer/2022-09-27-18-45-41_lohnabrechnung.pkl"
+    pipeline = load_model(path)
+
+    test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
+    res_doc = pipeline.extract(document=test_document)
+    assert len(res_doc.annotations(use_correct=False)) == 20
+
+
+def test_load_old_ai_model():
+    """Test loading of an old trained model."""
+    path = "trainer/2022-03-10-15-14-51_lohnabrechnung_old_model.pkl"
+    pipeline = load_model(path)
+
+    assert pipeline.name == 'DocumentAnnotationMultiClassModel'
 
 
 def test_feat_num_count():
