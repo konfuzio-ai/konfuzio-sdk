@@ -52,3 +52,56 @@ for offsets in matches_locations:
 print(new_annotations_links)
 
 ```
+
+
+## Finding Spans of a Label Not Found by a Tokenizer
+
+Here is an example of how to use the `Label.spans_not_found_by_tokenizer` method. This will allow you to determine if a RegexTokenizer is suitable at finding the Spans of a Label, or what Spans might have been annotated wrong. Say, you have a number of annotations assigned to the `IBAN` Label and want to know which Spans would not be found when using the WhiteSpace Tokenizer. You can follow this example to find all the relevant Spans.
+
+```python
+from konfuzio_sdk.data import Project, Annotation, Label
+from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
+
+my_project = Project(id_=YOUR_PROJECT_ID)
+category = Project.categories[0]
+
+tokenizer = WhitespaceTokenizer()
+
+iban_label = project.get_label_by_name('IBAN')
+
+spans_not_found = iban_label.spans_not_found_by_tokenizer(tokenizer, categories=[category])
+
+for span in spans_not_found:
+    print(f"{span}: {span.offset_string}")
+
+```
+
+## Evaluate a Trained Extraction AI Model
+
+In this example we will see how we can evaluate a trained `RFExtractionAI` model. We will assume that we have a trained pickled model available. See [here](https://dev.konfuzio.com/sdk/examples/examples.html#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents) for how to train such a model, and check out the [Evaluation](https://dev.konfuzio.com/sdk/sourcecode.html#evaluation) documentation for more details.
+
+```python
+from konfuzio_sdk.data import Project
+from konfuzio_sdk.trainer.information_extraction import load_model
+
+pipeline = load_model(MODEL_PATH)
+
+# To get the evaluation of the full pipeline
+evaluation = pipeline.evaluate_full()
+print(f"Full evaluation F1 score: {evaluation.f1()}")
+print(f"Full evaluation recall: {evaluation.recall()}")
+print(f"Full evaluation precision: {evaluation.precision()}")
+
+# To get the evaluation of the tokenizer alone
+evaluation = pipeline.evaluate_tokenizer()
+print(f"Tokenizer evaluation F1 score: {evaluation.tokenizer_f1()}")
+
+# To get the evaluation of the Label classifier given perfect tokenization
+evaluation = pipeline.evaluate_clf()
+print(f"Label classifier evaluation F1 score: {evaluation.clf_f1()}")
+
+# To get the evaluation of the LabelSet given perfect Label classification
+evaluation = pipeline.evaluate_template_clf()
+print(f"Label Set evaluation F1 score: {evaluation.f1()}")
+
+```

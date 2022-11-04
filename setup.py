@@ -41,7 +41,7 @@ else:
     version = f"{version_number}"
 
 CURRENT_PYTHON = sys.version_info[:2]
-REQUIRED_PYTHON = (3, 6)
+REQUIRED_PYTHON = (3, 7)
 
 if CURRENT_PYTHON < REQUIRED_PYTHON:
     sys.stderr.write(
@@ -74,13 +74,12 @@ setuptools.setup(
     include_package_data=True,
     entry_points={'console_scripts': ['konfuzio_sdk=konfuzio_sdk.cli:main']},
     install_requires=[
-        'cloudpickle==2.0.0',
+        'cloudpickle==2.0.0',  # Used to pickle objects
         'filetype==1.0.7',  # Used to check that files are in the correct format
-        'dill==0.3.2',  # Used to pickle objects
         'nltk',
-        'numpy==1.22.2',
-        'pandas',  # todo add ==1.1.5, which causes conflict konfuzio-sdk[dev] 0.2.3 depends on pandas==1.1.5 / 1.0.5
-        'Pillow==9.2.0',
+        'numpy>=1.21.6',
+        'pandas>=1.3.5',
+        'Pillow>=7.1.2',
         'python-dateutil',
         'python-decouple',  # todo add ==3.3 ?
         'requests',  # todo add ==2.24.0 ?
@@ -89,7 +88,7 @@ setuptools.setup(
         'tqdm',
         'pathos==0.2.6',
         'pympler==0.9',  # Use to get pickle file size.
-        'scikit-learn==0.23.1',
+        'scikit-learn==1.0.2',
     ],
     extras_require={
         'dev': [
