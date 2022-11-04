@@ -25,6 +25,7 @@ from konfuzio_sdk.api import (
     get_document_details,
     update_document_konfuzio_api,
     get_page_image,
+    delete_document_annotation,
 )
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
@@ -511,6 +512,13 @@ class Category(Data):
             labels += label_set.labels
 
         return list(set(labels))
+
+    @property
+    def fallback_name(self) -> str:
+        """Turn the category name to lowercase, remove parentheses along with their contents, and trim spaces."""
+        parentheses_removed = re.sub(r'\([^)]*\)', '', self.name.lower()).strip()
+        single_spaces = parentheses_removed.replace("  ", " ")
+        return single_spaces
 
     def documents(self):
         """Filter for Documents of this Category."""
@@ -1440,13 +1448,13 @@ class Annotation(Data):
 
         if not self.is_online:
             response = post_document_annotation(
-                project_id=self.project.id_,
+                project_id=self.document.project.id_,
                 document_id=self.document.id_,
                 start_offset=self.start_offset,
                 end_offset=self.end_offset,
                 label_id=self.label.id_,
                 label_set_id=label_set_id,
-                accuracy=self.confidence,
+                confidence=self.confidence,
                 is_correct=self.is_correct,
                 revised=self.revised,
                 annotation_set=self.annotation_set,
@@ -1542,11 +1550,21 @@ class Annotation(Data):
                 self.token_append(new_regex=regex_f, regex_quality=2)
         return self._tokens
 
-    def delete(self) -> None:
-        """Delete Annotation online."""
-        for index, annotation in enumerate(self.document._annotations):
-            if annotation == self:
-                del self.document._annotations[index]
+    # todo can we circumvent the combined tokens
+    def regex(self):
+        """Return regex of this annotation."""
+        return self.label.combined_tokens(categories=[self.document.category])
+
+    def delete(self, delete_online: bool = True) -> None:
+        """Delete Annotation.
+
+        :param delete_online: Whether the Annotation is deleted online or only locally.
+        """
+        if self.document.is_online and delete_online:
+            delete_document_annotation(self.document.id_, self.id_, self.document.project.id_)
+            self.document.update()
+        else:
+            self.document._annotations.remove(self)
 
     @property
     def spans(self) -> List[Span]:
@@ -2036,6 +2054,24 @@ class Document(Data):
 
         return self
 
+    def get_annotation_by_id(self, annotation_id: int) -> Annotation:
+        """
+        Return an Annotation by ID, searching within the document.
+
+        :param id_: ID of the Annotation to get.
+        """
+        result = None
+        if self._annotations is None:
+            self.annotations()
+        for annotation in self._annotations:
+            if annotation.id_ == annotation_id:
+                result = annotation
+                break
+        if result:
+            return result
+        else:
+            raise IndexError(f"Annotation {annotation_id} is not part of {self}.")
+
     def add_annotation_set(self, annotation_set: AnnotationSet):
         """Add the Annotation Sets to the document."""
         if annotation_set.document and annotation_set.document != self:
@@ -2050,9 +2086,9 @@ class Document(Data):
 
     def get_annotation_set_by_id(self, id_: int) -> AnnotationSet:
         """
-        Return a Label Set by ID.
+        Return an Annotation Set by ID.
 
-        :param id_: ID of the Label Set to get.
+        :param id_: ID of the Annotation Set to get.
         """
         result = None
         if self._annotation_sets is None:

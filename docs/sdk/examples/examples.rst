@@ -8,6 +8,8 @@ Code Examples
 
 .. mdinclude:: helloworld.md
 
+.. mdinclude:: document_categorization.md
+
 Train a Konfuzio SDK Model to Extract Information From Payslip Documents
 -----------------------------------------------------------
 

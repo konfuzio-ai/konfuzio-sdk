@@ -150,3 +150,69 @@ compare
 ---------------------
 .. autofunction:: konfuzio_sdk.evaluate.compare
    :noindex:
+
+
+=====================
+Document Categorization
+=====================
+
+`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/trainer/document_categorization.py>`__
+
+.. automodule:: konfuzio_sdk.trainer.document_categorization
+
+
+Fallback Categorization Model
+=====================
+.. autoclass:: FallbackCategorizationModel
+   :members:
+   :noindex:
+
+
+=====================
+AI Evaluation
+=====================
+
+`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/evaluate.py>`__
+
+.. automodule:: konfuzio_sdk.evaluate
+
+
+Evaluation
+=====================
+
+.. autoclass:: Evaluation
+   :members:
+   :noindex:
+
+
+=====================
+Document Categorization
+=====================
+
+`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/trainer/document_categorization.py>`__
+
+.. automodule:: konfuzio_sdk.trainer.document_categorization
+
+
+Fallback Categorization Model
+=====================
+.. autoclass:: FallbackCategorizationModel
+   :members:
+   :noindex:
+
+
+=====================
+AI Evaluation
+=====================
+
+`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/evaluate.py>`__
+
+.. automodule:: konfuzio_sdk.evaluate
+
+
+Evaluation
+=====================
+
+.. autoclass:: Evaluation
+   :members:
+   :noindex:

@@ -56,9 +56,12 @@ cluster.
 ### Deployment
 
 Before running `helm install`, you need to make some decisions about how you will run
-Konfuzio. Options can be specified using Helm's `--set option.name=value` command
+Konfuzio. Options can be specified using Helm's `--set option.name=value` or `--values=my_values.yaml` command
 line option. A complete list of command line options can be found [here](https://helm.sh/docs/helm/). This guide will
 cover required values and common options.
+
+Create a values.yaml file for your Konfuzio configuration. See Helm docs for information on how your values file will override the defaults.
+Useful default values can be found in the [values.yaml](https://git.konfuzio.com/shared/charts/-/blob/master/values.yaml) in the chart [repository](https://git.konfuzio.com/shared/charts).
 
 #### Selecting configuration options
 
@@ -76,8 +79,10 @@ expose Konfuzio services using name-based virtual servers configured with `Ingre
 objects. You'll need to specify a domain which will contain records to resolve the
 domain to the appropriate IP.
 
-`--set global.hosts.domain=example.com`
+`--set ingress.enabled=True`  
+`--set ingress.HOST_NAME=konfuzio.example.com`  
 
+<!-- 
 ###### IPs
 
 If you plan to use an automatic DNS registration service,you won't need any additional
@@ -91,6 +96,7 @@ For example if you choose `example.com` and you have a static IP of `10.10.10.10
 _Include these options in your Helm install command:_
 
 `--set global.hosts.externalIP=10.10.10.`
+-->
 
 ##### Persistence
 
@@ -125,7 +131,7 @@ only.
 - A single, non-resilient Deployment is used
 
 You can read more about setting up your production-readydatabase in the PostgreSQL
-documentation. As soon you have an external PostgreSQLdatabase ready, Konfuzio can
+documentation. As soon you have an external PostgreSQL database ready, Konfuzio can
 be configured to use it as shown below.
 
 _Include these options in your Helm install command:_
@@ -144,6 +150,7 @@ All the Redis configuration settings are configured automatically.
 Konfuzio relies on object storage for highly-available persistent data in Kubernetes. By default, Konfuzio uses a 
 [persistent volume](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) within the cluster.
 
+<!--
 ##### Outgoing email
 
 By default outgoing email is disabled. To enable it,provide details for your SMTP server
@@ -153,6 +160,7 @@ settings in the command line options.
 `--set global.smtp.address=smtp.example.com:587`  
 `--set global.smtp.AuthUser=username-here`  
 `--set global.smtp.AuthPass=password-here`  
+-->
 
 ##### CPU, GPU and RAM Resource Requirements
 
@@ -168,17 +176,11 @@ into a smaller cluster. Konfuzio can work without a GPU. The GPU is used to trai
 Once you have all of your configuration options collected, we can get any dependencies
 and run Helm. In this example, we've named our Helm release `konfuzio`.
 
-`helm repo add konfuzio`  
+`helm repo add konfuzio-repo https://git.konfuzio.com/api/v4/projects/106/packages/helm/stable`  
 `helm repo update`  
-`helm upgrade --install konfuzio konfuzio/server \`  
-`--timeout 600s \`  
-`--set global.hosts.domain=example.com \`  
-`--set global.hosts.externalIP=10.10.10.10 \`  
-`--set certmanager-issuer.email=me@example.com`  
+`helm upgrade --install konfuzio konfuzio-repo/konfuzio-chart --values my_values.yaml`  
 
-You can also use `--version <installation version>` option if you would like to install
-a specific version of Konfuzio. This will output the list of resources installed once the
-deployment finishes which may take 5-10 minutes.
+Please create a my_values.yaml file for your Konfuzio configuration. Useful default values can be found in the values.yaml in the chart repository. See Helm docs for information on how your values file will override the defaults. Alternativ you can specify you configuration using `--set option.name=value`. 
 
 #### Monitoring the Deployment
 
@@ -189,6 +191,16 @@ another terminal.
 #### Initial login
 
 You can access the Konfuzio instance by visiting the domain specified during
+installation. In order to create an initial superuser, please to connect to a running pod.
+
+`kubectl get pod`  
+`kubectl exec --stdin --tty my-konfuzio-* --  bash`  
+`python manage.py createsuperuser`  
+
+<!--
+#### Initial login
+
+You can access the Konfuzio instance by visiting the domain specified during
 installation. If you manually created the secret for initial root password, you can use that
 to sign in as `root` user. If not, Konfuzio would've automatically created a random
 password for `root` user. This can be extracted by the following command (replace
@@ -196,6 +208,7 @@ password for `root` user. This can be extracted by the following command (replac
 
 `kubectl get secret <name>-konfuzio-initial-root-password`  
 `-ojsonpath='{.data.password}' | base64 --decode ; echo`  
+-->
 
 ### Upgrade
 
@@ -214,7 +227,7 @@ Upgrade Konfuzio following our standard procedure,with the following additions o
 4. Extract your previous `--set` arguments with (see Action1)
 5. Decide on all the values you need to set
 6. Perform the upgrade, with all `--set` arguments extracted(see Action 2)
-7. We will perform the migrations for the Database forPostgreSQL automatically.
+7. We will perform the migrations for the Database for PostgreSQL automatically.
 
 _Action 1_
 
@@ -251,17 +264,17 @@ The internet connection can be turned off once the download is complete. In case
 no internet connection available during setup, the container must be transferred with an
 alternative method as a file to the virtual machine.
 
-Registry URL: registry.gitlab.com  
+Registry URL: {PROVIDED_BY_KONFUZIO}  
 Username: {PROVIDED_BY_KONFUZIO}  
 Password: {PROVIDED_BY_KONFUZIO}  
 
-`> docker login registry.gitlab.com`  
-`> docker pull registry.gitlab.com/konfuzio/text-annotation/master:latest`  
+`> docker login REGISTRY_URL`  
+`> docker pull REGISTRY_URL/konfuzio/text-annotation/master:latest`  
 
 The Tag "latest" should be replaced with an actual version. A list of available tags can be found here: https://dev.konfuzio.com/web/changelog_app.html.
 
 #### 2. Setup PostgreSQL, Redis, BlobStorage/FileSystemStorage
-The database credentials are needed in the next step. You may want to use psql and redis-cli to check if database credentials are working.
+The database credentials are needed in this step. Please ensure your selected [databases](/web/on_premises.html#database-and-storage) are setup at this point. You may want to use psql and redis-cli to check if database credentials are working.
 
 In case you use FileSystemStorage and Docker volume mounts, you need to make sure the volume can be accessed by the konfuzio docker user (uid=999). You might want to run "chown 999:999 -R /konfuzio-vm/text-annotation/data" on the host VM.
 
@@ -272,7 +285,7 @@ Copy the /code/.env.example file from the container and adapt it to your setting
 In this example we store the files on the host VM and mount the directory "/konfuzio-vm/text-annotation/data" into the container. In the first step we create a container with a shell to then start the initialization scripts within the container.
 The container needs to be able to access IP addresses and hostnames used in the .env. This can be ensured using --add.host. In the example we make the host IP 10.0.0.1 available.
 
-docker run -it --add-host=10.0.0.1 --env-file /konfuzio-vm/text-annotation.env --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data registry.gitlab.com/konfuzio/text-annotation/master:latest bash
+docker run -it --add-host=10.0.0.1 --env-file /konfuzio-vm/text-annotation.env --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data REGISTRY_URL/konfuzio/text-annotation/master:latest bash
 
 `python manage.py migrate`  
 `python manage.py createsuperuser`  
@@ -289,21 +302,23 @@ In this example we start three containers, the first one to serve the Konfuzio w
 `docker run -p 80:8000 --name web -d --add-host=host:10.0.0.1 \`  
 `--env-file /konfuzio-vm/text-annotation.env \`  
 `--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \`  
-`registry.gitlab.com/konfuzio/text-annotation/master:latest`
+`REGISTRY_URL/konfuzio/text-annotation/master:latest`
 
 `docker run --name worker1 -d --add-host=host:10.0.0.1 \`  
 `--env-file /konfuzio-vm/text-annotation.env \`  
 `--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \`  
-`registry.gitlab.com/konfuzio/text-annotation/master:latest \`  
+`REGISTRY_URL/konfuzio/text-annotation/master:latest \`  
 `celery -A app worker -l INFO --concurrency 1 -Q celery,priority_ocr,ocr,\`  
-`priority_extract,extract,processing,priority_local_ocr,local_ocr,training,finalize,training_heavy,categorize`
+`priority_extract,extract,processing,priority_local_ocr,local_ocr,\`  
+`training,finalize,training_heavy,categorize`  
 
 `docker run --name worker2 -d --add-host=host:10.0.0.1 \`  
 `--env-file /konfuzio-vm/text-annotation.env \`  
 `--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \`  
-`registry.gitlab.com/konfuzio/text-annotation/master:latest \`  
+`REGISTRY_URL/konfuzio/text-annotation/master:latest \`  
 `celery -A app worker -l INFO --concurrency 1 -Q celery,priority_ocr,ocr,\`  
-`priority_extract,extract,processing,priority_local_ocr,local_ocr,training,finalize,training_heavy,categorize`
+`priority_extract,extract,processing,priority_local_ocr,local_ocr,\`  
+`training,finalize,training_heavy,categorize`
 
 #### [Optional] 6. Use Flower to monitor tasks
 
@@ -313,11 +328,23 @@ In this example we start three containers, the first one to serve the Konfuzio w
 `docker run --name flower -d --add-host=host:10.0.0.1 \`  
 `--env-file /konfuzio-vm/text-annotation.env \`  
 `--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \`  
-`registry.gitlab.com/konfuzio/text-annotation/master:latest \`  
+`REGISTRY_URL/konfuzio/text-annotation/master:latest \`  
 `celery -A app flower --url_prefix=flower --address=0.0.0.0 --port=5555` 
 ```
 
-The Konfuzio Server application acts as a reverse proxy an servers the flower application. Therefore, django needs to know the flower url. `FLOWER_URL=http://host:5555/flower`
+The Konfuzio Server application acts as a reverse proxy an servers the flower application. Therefore, django needs to know the flower url. `FLOWER_URL=http://host:5555/flower`.
+
+```mermaid
+graph LR
+subgraph Network
+a("User")
+end
+subgraph Local Network / Cluster Network
+a("User") --> e("Konfuzio Server")
+e("Konfuzio Server") -- FLOWER_URL --> f("Flower")
+end
+```
+Please ensure that the Flower container is not exposed externally, as it does not handle authentication and authorization itself.  
 
 #### [Optional] 7. Use Azure Read API on-premise
 The [Azure Read API](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2) can be installed on-premise and used togehter with Konfuzio.
@@ -334,13 +361,13 @@ Once the Azure Read API container is running you need to set the following varia
 
 Download the container with the credentials provided by Konfuzio
 
-Registry URL: registry.gitlab.com  
+Registry URL: {PROVIDED_BY_KONFUZIO}  
 Username: {PROVIDED_BY_KONFUZIO}  
 Password: {PROVIDED_BY_KONFUZIO}  
 
-`> docker login registry.gitlab.com`  
-`> docker pull registry.gitlab.com/konfuzio/detectron2:2021-10-07_13-45-34`  
-`> docker run --env-file /path_to_env_file.env registry.gitlab.com/konfuzio/detectron2:2021-10-07_13-45-34 bash -c "export LC_ALL=C.UTF-8; export LANG=C.UTF-8; ./run_celery.sh"`
+`> docker login REGISTRY_URL`  
+`> docker pull REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28`  
+`> docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28 bash -c "export LC_ALL=C.UTF-8; export LANG=C.UTF-8; ./run_celery.sh"`
 
 The segmentation container needs to be started with the following environment variables which you can enter into your .env file
 ```
@@ -469,11 +496,45 @@ The first argument is the path to the export folder, the second is the project n
 python manage.py project_import "/konfuzio-target-system/data_123/" "NewProjectName"
 ```
 
+## Database and Storage
+
+### Overview
+To run Konfuzio Server, three types of storages are required. First, a PostgreSQL database is needed to store structured application data. Secondly, a storage for Blob needs to be present. Thirdly, a Redis database that manages the background Task of Konfuzio Server is needed. You can choose your preferred deployment option for each storage type and connect Konfuzio via environment variables to the respective storages. We recommend planning your storage choices before starting with the actual Konfuzio installation.
+
+| Storage Name | Recommended Version | Supported Version | Deployment Options |
+| --- | --- | --- | --- |
+| [Postgres](https://www.postgresql.org/) | Latest Stable | PostgreSQL 11 and higher| Managed (Cloud) Service, VM Installation, Docker, In-Cluster* |
+| [Redis](https://redis.io/) | Latest Stable | Redis 5 and higher | Managed (Cloud) Service, VM Installation, Docker, In-Cluster* |
+| Blob Storage | Latest Stable | All with activ support | Filesystem, S3-compatible Storage (e.g. [Amazon S3](https://aws.amazon.com/s3/), [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/)) |
+
+\*If you use [Kubernetes Deployment](/web/on_premises.html#kubernetes) you can choose the 'in-Cluster' option for Postgres and Redis.
+
+### Usage of PostgreSQL
+
+Konfuzio Server will create a total of 43 tables and use the following data types. This information refers to release [2022-10-28-07-23-39](https://dev.konfuzio.com/web/changelog_app.html#released-2022-10-28-07-23-39).
+
+| data_type | count |
+| --- | --- |
+| bigint                   |     6 |
+| boolean                  |    35 |
+| character varying        |    78 |
+| date                     |     2 |
+| double precision         |    29 |
+| inet                     |     2 |
+| integer                  |   138 |
+| jsonb                    |    28 |
+| smallint                 |     2 |
+| text                     |    21 |
+| timestamp with time zone |    56 |
+| uuid                     |     1 |
+
+<!-- This table was created by running select data_type, count(*) from information_schema.columns where table_schema = 'public'  group by data_type ; -->
+
 ## Environment Variables
 
 ### Environment Variables for Konfuzio Server
 
-Konfuzio Server is fully configured via environment variables, these can be passed as dedicated environment variables or a single .env to the Konfuzio Server containers (registry.gitlab.com/konfuzio/text-annotation/master). A template for a .env file is provided here:
+Konfuzio Server is fully configured via environment variables, these can be passed as dedicated environment variables or a single .env to the Konfuzio Server containers (REGISTRY_URL/konfuzio/text-annotation/master). A template for a .env file is provided here:
 
 ```text
 # False for production, True for local development (mandatory).
@@ -616,6 +677,15 @@ TRAIN_EXTRACTION_AI_AUTOMATICALLY_IF_QUEUE_IS_EMPTY=False
 
 # Turn on/off the immediate generation of sandwich pdf in full document workflow (optional).
 ALWAYS_GENERATE_SANDWICH_PDF=True
+
+# Default time limits for background tasks (optional).
+EXTRACTION_TIME_LIMIT = 
+CATEGORIZATION_TIME_LIMIT = 
+EVALUATION_TIME_LIMIT = 
+TRAINING_EXTRACTION_TIME_LIMIT = 
+TRAINING_CATEGORIZATION_TIME_LIMIT = 
+SANDWICH_PDF_TIME_LIMIT = 
+DOCUMENT_TEXT_AND_BBOXES_TIME_LIMIT = 
 ```
 
 ### Environment Variables for Read API Container

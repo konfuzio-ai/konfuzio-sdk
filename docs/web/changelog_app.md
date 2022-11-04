@@ -15,36 +15,73 @@ Self-hosted Konfuzio Server can be upgraded according to the [documentation](htt
 
 You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server features our team is actively working on. This list covers a planning horizon of 12 weeks. 
 
-- Add self-service customer center to manage contracts and invoices ([Internal Documentation](https://gitlab.com/konfuzio/manual/-/merge_requests/23/diffs), [Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/8235)).
-- API v3 endpoint to sort and split Pages into Documents with different categories containted in one file ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9452)).
-- Calculate and access Tokenizers via the web interface. The name Tokenizer might be revised. The SDK refers to this concept as Tokenizer. ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9271)).
-- Add a filter to the list of Documents to find Documents that need to be revised by humans. ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9242)).
-- Train custom Page-based Categorization AI via [SDK](https://github.com/konfuzio-ai/konfuzio-sdk/) ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9481)).
-- First stable release of Capture Vue in version [0.1.0](#).
-- Suggest page breaks if one file contains multiple Documents ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/7671)).
-- Redirect https://app.konfuzio.com/api/ to stable API Version 3 ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9692)).
-- Make all List Views sortable by click on column ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9470)).
+- Add self-service customer center to manage contracts and invoices ([Internal Documentation](https://git.konfuzio.com/konfuzio/manual/-/merge_requests/23/diffs), [Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/8235)).
+- Calculate and access Tokenizers via the web interface. The name Tokenizer might be revised. The SDK refers to this concept as Tokenizer. ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9271)).
+- Add a filter to the list of Documents to find Documents that need to be revised by humans. ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9242)).
+- Improved training time of Extraction AIs when using character detection mode (reduced up to 40%) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9271)).
+- Train custom Page-based Categorization AI via [SDK](https://github.com/konfuzio-ai/konfuzio-sdk/) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9481)).
+- First stable release of Capture Vue in version ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9958)).
+- Suggest page breaks if one file contains multiple Documents ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/7671)).
+- Perfomance improvement of the Konfuzio Server interface ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9750)).
+- Redirect https://app.konfuzio.com/api/ to stable API Version 3 ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9692)).
+- Make all List Views sortable by click on column ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9470)).
+- Sort Labels in Label-Sets to allow users to customize the UI per Category ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/8932)).
+- Delta Training, Partial Fit an exisiting classifier, so that training documents used previously can be deleted ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9251))
+- Allow administrators of Konfuzio on-premise installations to run a speedtest ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9870))
+- Start automatic AI retraining after user confirms that he has finished a annotation review ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9166))
+- [Show a warning if a user works on a Document that is not assigned to him](https://help.konfuzio.com/modules/documents/index.html#assignee) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9466)).
+
+<!---
+### Fixed
+- A bug when training with character detection mode, which was tokenizing some labels incorrectly, causing them to be skipped during extraction ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9666))
+- A bug during the extraction post-processing steps, which was causing the first line items of each page to be skipped ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9561))
+-->
 
 ## Next Release
 
+This version uses Konfuzio Trainer in version v.0.3.22, the Konfuzio Python SDK in version v.0.1.15 and Konfuzio Capture Vue in version [0.0.9](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
+
 ### Added
-- Save feedback that there are no Annotations for a Label/Label-Set combination in a document ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9163)).
-- Superusers can define custom Roles for Members: Inviting Users can select from those Roles when inviting new Members to a Project. ([Internal Documentation](https://gitlab.com/konfuzio/manual/-/merge_requests/21/diffs), [Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/7364)).
-- Sort Labels in Label-Sets to allow users to customize the UI per Category ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/8932)).
-- Add the property `has_multiple_top_candidates` to the Label API V3 ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9687)).
-- Add the property `has_multiple_annotation_sets` to the Label Set API V3 ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9687)).
+- [Allow to invite Members with different Roles to Projects. Available Roles are "Reviewer" and "Manager". All existing Members keep their current Permissions and will become Managers.](https://help.konfuzio.com/modules/members/index.html)
+- [Superusers can define custom Roles for Members: Inviting Users can select from those Roles when inviting new Members to a Project](https://help.konfuzio.com/modules/superuserroles/index.html). ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/7364)).
+- [Add the property 'has_multiple_top_candidates' to the Label API V3](https://app.konfuzio.com/v3/swagger/#/labels) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9687)).
+- [Add the property 'has_multiple_annotation_sets' to the Label Set API V3](https://app.konfuzio.com/v3/swagger/#/labels) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9687)).
+- [Save feedback that there are no Annotations for a Label/Label-Set combination in a document](http://localhost:8000/v3/swagger/#/documents/documents_missing_annotations_list) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9163)).
+- [Add the property 'number' to the Page API V3](https://app.konfuzio.com/v3/swagger/#/documents) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9619)).
+- [Include the Label Set name in the API V3 even when no Label Set is present](https://app.konfuzio.com/v3/swagger/#/documents) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9399)).
+- [API v3 endpoint to sort and split Pages into Documents with different categories contained in one file](https://testing.konfuzio.com/v3/swagger/#/documents/documents_postprocess_create) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9452)).
+
+### Changed
+- [When a user creates a new Project, this user will become the default assignee for new Documents](https://help.konfuzio.com/modules/projects/index.html#default-assignee) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9705))
+- [If a user rejects an Annotation, this user is tracked in the 'revised_by' attribute of the Annotation](https://help.konfuzio.com/modules/annotations/index.html#declined) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9479)).
 
 ### Fixed
-- The numbering of Annotation Sets in the SmartView does not consider deleted Annotation Sets anymore ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9604)).
+- The numbering of Annotation Sets in the SmartView does not consider deleted Annotation Sets anymore ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9604)).
+- In some situations a Project could not be deleted via API ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9706)).
+- In specific scenarios, the deletion of the last remaining Annotation in a Document was not possible ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9736)).
+- The SmartView did not use rotated pages due to a caching problem ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9830)).
+- The arrow in the Project- and language selector was not clickable ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9714)).
+- On the Annotation list Page the Category filter was not showing all Annotations ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9732)).
+- Fix an issue where the Category- and Document API V3 endpoint did not include all relevant Label-Sets ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9816)).
 
-## 2022-09-21_12-00-31
+## released-2022-10-28_07-23-39
+
+### Added
+- [Allow on-premise users to customize timeouts of backgroud tasks](https://dev.konfuzio.com/web/on_premises.html#environment-variables-for-konfuzio-server) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9812)).
+
+### Fixed
+- Accepting an Annotation was overwritting already existing custom offset strings ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9830)).
+- In some cases an Extraction AI training was failing when detecton mode 'Character' was selected ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9935)).
+
+## released-2022-09-21_12-00-31
 
 This version uses Konfuzio Trainer in version v.0.3.22, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Capture Vue in version [0.0.8](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
 
 ### Fixed
-- Prevent an issue where a popup window could not be closed when using the SmartView ([Internal Ticket](https://gitlab.com/konfuzio/objectives/-/issues/9766)).
+- Prevent an issue where a popup window could not be closed when using the SmartView ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9766)).
+- Filtering for "feedback required" on Document overview ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9696)).
 
-## 2022-09-04_09-11-18
+## released-2022-09-04_09-11-18
 
 This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Capture Vue in version [0.0.8](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
 

@@ -4,9 +4,9 @@ from typing import Tuple, List, Optional
 import pandas
 import numpy
 from sklearn.utils.extmath import weighted_mode
+
 from konfuzio_sdk.utils import sdk_isinstance
 from konfuzio_sdk.data import Document
-
 
 RELEVANT_FOR_EVALUATION = [
     "is_matched",  # needed to group spans in Annotations

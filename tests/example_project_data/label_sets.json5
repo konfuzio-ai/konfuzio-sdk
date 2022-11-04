@@ -80,5 +80,120 @@
     ],
     "name": "Verdiensibescheinigung",
     "name_clean": "Verdiensibescheinigung"
+  },
+  {
+    "default_section_labels": [
+      735
+    ],
+    "has_multiple_sections": true,
+    "id": 916,
+    "is_default": false,
+    "labels": [
+      2956,
+      4327,
+      4326,
+      4331,
+      2957,
+      2958,
+      4333,
+      4344,
+      4328,
+      2939
+    ],
+    "name": "Einzelposition",
+    "name_clean": "Einzelposition"
+  },
+  {
+    "default_section_labels": [
+      735
+    ],
+    "has_multiple_sections": false,
+    "id": 929,
+    "is_default": false,
+    "labels": [
+      4339,
+      4337,
+      2970,
+      2951,
+      2950,
+      4346,
+      2969,
+      4345,
+      4347
+    ],
+    "name": "Kreditor",
+    "name_clean": "Kreditor"
+  },
+  {
+    "default_section_labels": [
+      916,
+      929,
+      931,
+      930,
+      926
+    ],
+    "has_multiple_sections": false,
+    "id": 735,
+    "is_default": true,
+    "labels": [
+      2965,
+      8498,
+      8497,
+      4579,
+      8499,
+      8369,
+      8500,
+      4313
+    ],
+    "name": "Quittung (GERMAN)",
+    "name_clean": "Quittung_GERMAN"
+  },
+  {
+    "default_section_labels": [
+      735
+    ],
+    "has_multiple_sections": true,
+    "id": 931,
+    "is_default": false,
+    "labels": [
+      4579,
+      4333,
+      4344,
+      4343,
+      4328,
+      2939
+    ],
+    "name": "Steuer (quittung)",
+    "name_clean": "Steuer_quittung"
+  },
+  {
+    "default_section_labels": [
+      735
+    ],
+    "has_multiple_sections": false,
+    "id": 930,
+    "is_default": false,
+    "labels": [
+      4579,
+      4343
+    ],
+    "name": "Summe",
+    "name_clean": "Summe"
+  },
+  {
+    "default_section_labels": [
+      735
+    ],
+    "has_multiple_sections": true,
+    "id": 926,
+    "is_default": false,
+    "labels": [
+      2965,
+      4333,
+      4313,
+      4334
+    ],
+    "name": "Zahlungsdetails",
+    "name_clean": "Zahlungsdetails"
   }
 ]
