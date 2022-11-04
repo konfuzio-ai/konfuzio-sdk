@@ -285,7 +285,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         self.pipeline = load_model(self.pipeline.pipeline_path)
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
-        assert len(res_doc.annotations(use_correct=False)) == 20
+        assert len(res_doc.view_annotations()) == 20
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -417,12 +417,12 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         ann_tuple = (ann.label.name, ann.start_offset, ann.end_offset)
         assert ann_tuple == expected
 
-    def test_9_load_ai_model(self):
+    def test_13_load_ai_model(self):
         """Test loading of trained model."""
         self.pipeline = load_model(self.pipeline.pipeline_path)
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
-        assert len(res_doc.annotations(use_correct=False)) == 20
+        assert len(res_doc.view_annotations()) == 20
 
     @classmethod
     def tearDownClass(cls) -> None:

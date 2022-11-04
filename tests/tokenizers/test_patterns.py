@@ -1082,28 +1082,28 @@ class TestCapitalizedTextTokenizer(TestTemplateRegexTokenizer):
         document = self._create_artificial_document(text="Company A&B GmbH  ", offsets=[(0, 16)])
         assert document.annotations()[0].offset_string == ["Company A&B GmbH"]
         result = self.tokenizer.evaluate(document)
-        assert result.is_found_by_tokenizer.sum() == 1
+        assert result.tokenizer_true_positive.sum() == 1
 
         start_offset = document.annotations()[0].spans[0].start_offset
         end_offset = document.annotations()[0].spans[0].end_offset
 
         assert self.tokenizer.span_match(document.annotations()[0].spans[0])
-        assert result[result.is_found_by_tokenizer == 1].start_offset[0] == start_offset
-        assert result[result.is_found_by_tokenizer == 1].end_offset[0] == end_offset
+        assert result[result.tokenizer_true_positive == 1].start_offset[0] == start_offset
+        assert result[result.tokenizer_true_positive == 1].end_offset[0] == end_offset
 
     def test_case_2_group_capitalized_words_in_the_middle_of_text(self):
         """Test if tokenizer can find a group of words starting with a capitalized character in the middle of text."""
         document = self._create_artificial_document(text="Company is Company A&B GmbH now", offsets=[(11, 27)])
         assert document.annotations()[0].offset_string == ["Company A&B GmbH"]
         result = self.tokenizer.evaluate(document)
-        assert result.is_found_by_tokenizer.sum() == 1
+        assert result.tokenizer_true_positive.sum() == 1
 
         start_offset = document.annotations()[0].spans[0].start_offset
         end_offset = document.annotations()[0].spans[0].end_offset
 
         assert self.tokenizer.span_match(document.annotations()[0].spans[0])
-        assert result[result.is_found_by_tokenizer == 1].start_offset[0] == start_offset
-        assert result[result.is_found_by_tokenizer == 1].end_offset[0] == end_offset
+        assert result[result.tokenizer_true_positive == 1].start_offset[0] == start_offset
+        assert result[result.tokenizer_true_positive == 1].end_offset[0] == end_offset
 
     def test_case_3_group_capitalized_words_in_the_middle_of_text_without_period(self):
         """Test output for the evaluate method with a Document with 1 Span."""
