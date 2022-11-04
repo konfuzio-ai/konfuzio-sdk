@@ -2447,6 +2447,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         virtual_doc = self.extraction_result_to_document(document, res_dict)
 
+        self.tokenizer.found_spans(virtual_doc)
+
         return virtual_doc
 
     def merge_dict(self, res_dict: Dict, document: Document) -> Dict:
