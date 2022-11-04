@@ -42,7 +42,12 @@ class FileSplittingModel:
     """
 
     def __init__(self, project_id: int):
-        """Initialize Project, training and testing data."""
+        """
+        Initialize Project, training and testing data.
+
+        :param project_id: ID of the Project used for training the model.
+        :type project_id: int
+        """
         self.project = Project(id_=project_id)
         self.train_data = self.project.documents
         self.test_data = self.project.test_documents
@@ -124,6 +129,7 @@ class FileSplittingModel:
         Initialize the fusion model.
 
         :param input_shape: Input shape for the textual part of the model.
+        :type input_shape: tuple
         :return: A compiled fusion model.
         """
         txt_input = Input(shape=input_shape, name='text')
@@ -217,7 +223,11 @@ class FileSplittingModel:
         return precision, recall, f1
 
     def train(self):
-        """Training or loading the trained model."""
+        """
+        Training or loading the trained model.
+
+        :return: A trained fusion model.
+        """
         if Path(self.project.model_folder + '/fusion.h5').exists():
             model = load_model(self.project.model_folder + '/fusion.h5')
         else:
@@ -250,7 +260,14 @@ class SplittingAI:
     """
 
     def __init__(self, model_path: str, project_id=None):
-        """Load fusion model, VGG16 model, BERT and BERTTokenizer."""
+        """
+        Load fusion model, VGG16 model, BERT and BERTTokenizer.
+
+        :param model_path: A path to the trained model, if exists.
+        :type model_path: str
+        :param project_id: Project from which the Documents eligible for splitting are taken.
+        :type project_id: int
+        """
         self.file_splitter = FileSplittingModel(project_id=project_id)
         self.project = Project(id_=project_id)
         if Path(model_path).exists():
@@ -319,6 +336,7 @@ class SplittingAI:
         Propose a set of resulting documents from a single Documents.
 
         :param document: An input Document to be split.
+        :return: A list of suggested new sub-Documents built from the original Document.
         """
         split_docs = self._suggest_page_split(document)
         return split_docs
