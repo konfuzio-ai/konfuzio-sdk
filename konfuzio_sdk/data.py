@@ -881,6 +881,16 @@ class Label(Data):
         categories_ids = [category.id_ for category in categories]
         return {k: v for k, v in self._regex.items() if k in categories_ids}
 
+    def spans_not_found_by_tokenizer(self, tokenizer, categories: List[Category], use_correct=False) -> List['Span']:
+        """Find Label Spans that are not found by a tokenizer."""
+        spans_not_found = []
+        label_annotations = self.annotations(categories=categories, use_correct=use_correct)
+        for annotation in label_annotations:
+            for span in annotation.spans:
+                if not tokenizer.span_match(span):
+                    spans_not_found.append(span)
+        return spans_not_found
+
     # def save(self) -> bool:
     #     """
     #     Save Label online.
@@ -928,6 +938,7 @@ class Span(Data):
         self._line_index = None
         self._page: Union[Page, None] = None
         self._bbox: Union[Bbox, None] = None
+        self.regex_matching = []
         annotation and annotation.add_span(self)  # only add if Span has access to an Annotation
         self._valid()
 

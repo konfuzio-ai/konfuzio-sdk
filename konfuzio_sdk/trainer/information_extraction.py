@@ -51,6 +51,50 @@ CANDIDATES_CACHE_SIZE = 100
 warn('This module is WIP: https://gitlab.com/konfuzio/objectives/-/issues/9311', FutureWarning, stacklevel=2)
 
 
+def load_model(pickle_path: str):
+    """
+    Load a pkl file.
+
+    :param pickle_path: Path to the pickled model.
+    :raises FileNotFoundError: If the path is invalid.
+    :raises OSError: When the data is corrupted or invalid and cannot be loaded.
+    :raises TypeError: When the loaded pickle isn't recognized as a Konfuzio AI model.
+    :return: Extraction AI model.
+    """
+    if not os.path.isfile(pickle_path):
+        raise FileNotFoundError("Invalid pickle file path:", pickle_path)
+
+    try:
+        with bz2.open(pickle_path, 'rb') as file:
+            model = cloudpickle.load(file)
+    except OSError:
+        raise OSError(f"Pickle file {pickle_path} data is invalid.")
+    except AttributeError as err:
+        if "__forward_module__" in str(err) and '3.9' in sys.version:
+            raise AttributeError("Pickle saved with incompatible Python version.") from err
+        elif "__forward_is_class__" in str(err) and '3.8' in sys.version:
+            raise AttributeError("Pickle saved with incompatible Python version.") from err
+        raise
+    except ValueError as err:
+        if "unsupported pickle protocol: 5" in str(err) and '3.7' in sys.version:
+            raise ValueError("Pickle saved with incompatible Python version.") from err
+        raise
+
+    if not hasattr(model, "name"):
+        raise TypeError("Saved model file needs to be a Konfuzio Trainer instance.")
+    elif model.name in {
+        "DocumentAnnotationMultiClassModel",
+        "DocumentEntityMulticlassModel",
+        "SeparateLabelsAnnotationMultiClassModel",
+        "SeparateLabelsEntityMultiClassModel",
+    }:
+        logger.warning(f"Loading legacy {model.name} AI model.")
+    else:
+        logger.info(f"Loading {model.name} AI model.")
+
+    return model
+
+
 def get_offsets_per_page(doc_text: str) -> Dict:
     """Get the first start and last end offsets per page."""
     page_text = doc_text.split('\f')
@@ -1756,14 +1800,14 @@ class Trainer:
         """
         Save the label model as bz2 compressed pickle object to the release directory.
 
-        Saving is done by: getting the serialized pickle object (via dill), "optimizing" the serialized object with the
-        built-in pickletools.optimize function (see: https://docs.python.org/3/library/pickletools.html), saving the
-        optimized serialized object.
+        Saving is done by: getting the serialized pickle object (via cloudpickle), "optimizing" the serialized object
+        with the built-in pickletools.optimize function (see: https://docs.python.org/3/library/pickletools.html),
+        saving the optimized serialized object.
 
         We then compress the pickle file with bz2 using shutil.copyfileobject which writes in chunks to avoid loading
         the entire pickle file in memory.
 
-        Finally, we delete the dill file and are left with the bz2 file which has a .pkl extension.
+        Finally, we delete the cloudpickle file and are left with the bz2 file which has a .pkl extension.
 
         :return: Path of the saved model file
         """
@@ -1797,11 +1841,11 @@ class Trainer:
         # make sure output dir exists
         pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
 
-        temp_pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower()}.dill')
+        temp_pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower()}.cloudpickle')
         pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower()}.pkl')
 
-        logger.info('Saving model with dill')
-        # first save with dill
+        logger.info('Saving model with cloudpickle')
+        # first save with cloudpickle
         with open(temp_pkl_file_path, 'wb') as f:  # see: https://stackoverflow.com/a/9519016/5344492
             cloudpickle.dump(self, f)
 
@@ -1812,8 +1856,8 @@ class Trainer:
             with bz2.open(pkl_file_path, 'wb') as output_f:
                 shutil.copyfileobj(input_f, output_f)
 
-        logger.info('Deleting dill file')
-        # then delete dill file
+        logger.info('Deleting cloudpickle file')
+        # then delete cloudpickle file
         os.remove(temp_pkl_file_path)
 
         size_string = f'{os.path.getsize(pkl_file_path) / 1_000_000} MB'
@@ -2402,6 +2446,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         virtual_doc = self.extraction_result_to_document(inference_document, res_dict)
 
         # join document Spans into multi-line Annotation
+
+        self.tokenizer.found_spans(virtual_doc)
 
         return virtual_doc
 

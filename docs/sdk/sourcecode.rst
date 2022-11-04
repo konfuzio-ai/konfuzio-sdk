@@ -107,6 +107,14 @@ Rule Based Tokenizer
 =====================
 
 .. automodule:: konfuzio_sdk.tokenizer.regex
+
+Regex Tokenizer
+=====================
+.. autoclass:: RegexTokenizer
+   :members:
+   :noindex:
+
+.. automodule:: konfuzio_sdk.tokenizer.regex
     :members:
 
 
@@ -121,6 +129,9 @@ Extraction AI
 
 .. autoclass:: RFExtractionAI
    :members:
+   :noindex:
+
+.. autofunction:: konfuzio_sdk.trainer.information_extraction.load_model
    :noindex:
 
 =====================
