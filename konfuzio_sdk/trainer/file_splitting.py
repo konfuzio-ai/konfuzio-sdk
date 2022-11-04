@@ -33,7 +33,7 @@ tf.config.experimental_run_functions_eagerly(True)
 class FileSplittingModel:
     """Train a fusion model for correct splitting of files which contain multiple Documents.
 
-    A model consists of two separate inputs for visual and textual data combined together in a Multi-Layered
+    A model consists of two separate inputs for visual and textual data combined in a Multi-Layered
     Perceptron (MLP). Visual part is represented by VGG16 architecture and is trained on a first share of split training
     dataset. Textual part is represented by LegalBERT which is used without any training.
     Embeddings received from two of he models are squashed and the resulting vectors are fed as inputs to the MLP.
@@ -72,9 +72,21 @@ class FileSplittingModel:
             images.append(image)
         return images
 
-    def _prepare_visual_textual_data(
+    def prepare_visual_textual_data(
         self, train_data: List[Document], test_data: List[Document], bert_model, bert_tokenizer
     ):
+        """
+        Prepare visual and textual inputs and transform them for feeding to the fusion model.
+
+        :param train_data: Train dataset from the project.documents.
+        :type train_data: list
+        :param test_data: Test dataset from the project.test_documents.
+        :type test_data: list
+        :param bert_model: Initialized LegalBERT model.
+        :param bert_tokenizer: Initialized BERTTokenizer.
+        :return: Train and test visual inputs, train and test textual inputs, train and test labels, input shape for
+        textual inputs.
+        """
         for doc in train_data + test_data:
             doc.get_images()
         train_pages, train_texts, train_labels = self._preprocess_documents(train_data)
@@ -107,7 +119,13 @@ class FileSplittingModel:
         test_txt_data = np.asarray(test_txt_data)
         return train_img_data, train_txt_data, test_img_data, test_txt_data, train_labels, test_labels, txt_input_shape
 
-    def _init_model(self, input_shape):
+    def init_model(self, input_shape):
+        """
+        Initialize the fusion model.
+
+        :param input_shape: Input shape for the textual part of the model.
+        :return: A compiled fusion model.
+        """
         txt_input = Input(shape=input_shape, name='text')
         txt_x = Dense(units=768, activation="relu")(txt_input)
         txt_x = Flatten()(txt_x)
@@ -160,7 +178,19 @@ class FileSplittingModel:
         pred = model.predict([img_input.reshape((1, 224, 224, 3)), txt_input.reshape((1, 1, 768))], verbose=0)
         return round(pred[0, 0])
 
-    def _calculate_metrics(self, model, img_inputs: List, txt_inputs: List, labels: List) -> (float, float, float):
+    def calculate_metrics(self, model, img_inputs: List, txt_inputs: List, labels: List) -> (float, float, float):
+        """
+        Calculate precision, recall, and F1 measure for the trained model.
+
+        :param model: The trained model.
+        :param img_inputs: Processed visual inputs from the test dataset.
+        :type img_inputs: list
+        :param txt_inputs: Processed textual inputs from the test dataset.
+        :type txt_inputs: list
+        :param labels: Labels from the test dataset.
+        :type labels: list
+        :return: Calculated precision, recall, and F1 measure.
+        """
         true_positive = 0
         false_positive = 0
         false_negative = 0
@@ -200,13 +230,13 @@ class FileSplittingModel:
                 train_labels,
                 test_labels,
                 input_shape,
-            ) = self._prepare_visual_textual_data(self.train_data, self.test_data, bert_model, bert_tokenizer)
+            ) = self.prepare_visual_textual_data(self.train_data, self.test_data, bert_model, bert_tokenizer)
             model = self._init_model(input_shape)
             model.fit([train_img_data, train_txt_data], train_labels, epochs=10, verbose=1)
             model.save(self.project.model_folder + '/fusion.h5')
             loss, acc = model.evaluate([test_img_data, test_txt_data], test_labels, verbose=0)
             logging.info('Accuracy: {}'.format(acc * 100))
-            precision, recall, f1 = self._calculate_metrics(model, test_img_data, test_txt_data, test_labels)
+            precision, recall, f1 = self.calculate_metrics(model, test_img_data, test_txt_data, test_labels)
             logging.info('\n Precision: {} \n Recall: {} \n F1-score: {}'.format(precision, recall, f1))
         return model
 
