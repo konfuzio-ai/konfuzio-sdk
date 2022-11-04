@@ -131,6 +131,9 @@ Extraction AI
    :members:
    :noindex:
 
+Load Saved AI Model
+=====================
+
 .. autofunction:: konfuzio_sdk.trainer.information_extraction.load_model
    :noindex:
 
