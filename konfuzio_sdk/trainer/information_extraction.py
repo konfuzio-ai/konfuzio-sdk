@@ -166,25 +166,24 @@ def flush_buffer(buffer: List[pandas.Series], doc_text: str, merge_vertical=Fals
         text = ""
         n_buf = len(buffer)
         for ind, buf in enumerate(buffer):
-            starts.append(buf['Start'])
-            ends.append(buf['End'])
-            text += doc_text[buf['Start'] : buf['End']]
+            starts.append(buf['start_offset'])
+            ends.append(buf['end_offset'])
+            text += doc_text[buf['start_offset'] : buf['end_offset']]
             if ind < n_buf - 1:
                 text += '\n'
     else:
-        starts = buffer[0]['Start']
-        ends = buffer[-1]['End']
+        starts = buffer[0]['start_offset']
+        ends = buffer[-1]['end_offset']
         text = doc_text[starts:ends]
 
     res_dict = dict()
-    res_dict['Start'] = starts
-    res_dict['End'] = ends
-    # res_dict['label'] = label
+    res_dict['start_offset'] = starts
+    res_dict['end_offset'] = ends
     res_dict['label_name'] = label
-    res_dict['Candidate'] = text
-    res_dict['Translated_Candidate'] = res_dict['Candidate']
-    res_dict['Translation'] = None
-    res_dict['confidence'] = numpy.mean([b['confidence'] for b in buffer])
+    res_dict['offset_string'] = text
+    # res_dict['Translated_Candidate'] = res_dict['Candidate']
+    # res_dict['Translation'] = None
+    res_dict['confidence'] = numpy.mean([b['confidence'] for b in buffer])  # if b['confidence'] > 0.1])
     res_dict['x0'] = min([b['x0'] for b in buffer])
     res_dict['x1'] = max([b['x1'] for b in buffer])
     res_dict['y0'] = min([b['y0'] for b in buffer])
@@ -200,7 +199,6 @@ def is_valid_merge(
     doc_bbox: Union[None, Dict] = None,
     offsets_per_page: Union[None, Dict] = None,
     merge_vertical: bool = False,
-    threshold: float = 0.1,
     max_offset_distance: int = 5,
 ) -> bool:
     """
@@ -243,7 +241,7 @@ def is_valid_merge(
         # only merge if there are no characters in between (or only maximum of 5 whitespaces)
         char_bboxes = [
             doc_bbox[str(char_bbox_id)]
-            for char_bbox_id in range(buffer[-1]['End'], row['Start'])
+            for char_bbox_id in range(buffer[-1]['end_offset'], row['start_offset'])
             if str(char_bbox_id) in doc_bbox
         ]
 
@@ -257,12 +255,17 @@ def is_valid_merge(
             return False
 
     # Do not merge if the difference in the offsets is bigger than the maximum offset distance
-    if row['Start'] - buffer[-1]['End'] > max_offset_distance:
+    if row['start_offset'] - buffer[-1]['end_offset'] > max_offset_distance:
         return False
 
     # only merge if text is on same line
     # row can include entity that is already part of the buffer (buffer: Ankerkette Meterware, row: Ankerkette)
-    if '\n' in doc_text[min(buffer[0]['Start'], row['Start']) : max(buffer[-1]['End'], row['End'])]:
+    if (
+        '\n'
+        in doc_text[
+            min(buffer[0]['start_offset'], row['start_offset']) : max(buffer[-1]['end_offset'], row['end_offset'])
+        ]
+    ):
         return False
     # always merge if not one of these data types
     # never merge numbers or positive numbers
@@ -270,12 +273,12 @@ def is_valid_merge(
         return True
     # only merge percentages if the result of the merge is still a percentage
     if label_types[0] == 'Percentage':
-        text = doc_text[buffer[0]['Start'] : row['End']]
+        text = doc_text[buffer[0]['start_offset'] : row['end_offset']]
         merge = normalize_to_percentage(text)
         return merge is not None
     # only merge date if the result of the merge is still a date
     if label_types[0] == 'Date':
-        text = doc_text[buffer[0]['Start'] : row['End']]
+        text = doc_text[buffer[0]['start_offset'] : row['end_offset']]
         merge = normalize_to_date(text)
         return merge is not None
     # should only get here if we have a single data type that is either Number or Positive Number,
@@ -337,7 +340,7 @@ def is_valid_merge_vertical(
     # get page index (necessary to select the bboxes of the characters)
     for buf in temp_buffer:
         for page_index, offsets in offsets_per_page.items():
-            if buf['Start'] >= offsets[0] and buf['End'] <= offsets[1]:
+            if buf['start_offset'] >= offsets[0] and buf['end_offset'] <= offsets[1]:
                 break
 
         buf['page_index'] = page_index
@@ -351,7 +354,7 @@ def is_valid_merge_vertical(
     for buf in temp_buffer:
         char_bboxes = [
             doc_bbox[str(char_bbox_id)]
-            for char_bbox_id in range(buf['Start'], buf['End'] + 1)
+            for char_bbox_id in range(buf['start_offset'], buf['end_offset'] + 1)
             if str(char_bbox_id) in doc_bbox
         ]
         bboxes_by_offset.extend(char_bboxes)
@@ -405,8 +408,9 @@ def merge_df(
 
     for _, row in df.iterrows():  # iterate over the rows in the DataFrame
         # skip extractions bellow threshold
-        if row['confidence'] < row['label_threshold']:
-            continue
+        # if row['confidence'] < row['label_threshold']:
+        #     res_dicts.append(flush_buffer([row], doc_text, merge_vertical=merge_vertical))
+        #     continue
         # if they are valid merges then add to buffer
         if end and is_valid_merge(
             row,
@@ -416,21 +420,21 @@ def merge_df(
             doc_bbox,
             offsets_per_page,
             merge_vertical,
-            row['label_threshold'],  # threshold
-        ):
+        ):  # and row['confidence'] >= row['label_threshold']:
             buffer.append(row)
-            end = row['End']
+            end = row['end_offset']
         else:  # else, flush the buffer by creating a res_dict
             if buffer:
                 res_dict = flush_buffer(buffer, doc_text, merge_vertical=merge_vertical)
                 res_dicts.append(res_dict)
             buffer = []
             buffer.append(row)
-            end = row['End']
+            end = row['end_offset']
     if buffer:  # flush buffer at the very end to clear anything left over
         res_dict = flush_buffer(buffer, doc_text, merge_vertical=merge_vertical)
         res_dicts.append(res_dict)
     df = pandas.DataFrame(res_dicts)  # convert the list of res_dicts created by `flush_buffer` into a DataFrame
+    # df = df[df['confidence'] > 0.1]
     return df
 
 
@@ -1584,7 +1588,7 @@ def add_extractions_as_annotations(
         raise TypeError(f'Provided extraction object should be a Dataframe, got a {type(extractions)} instead')
     if not extractions.empty:
         # TODO: define required fields
-        required_fields = ['Start', 'End', 'confidence']
+        required_fields = ['start_offset', 'end_offset', 'confidence']
         if not set(required_fields).issubset(extractions.columns):
             raise ValueError(
                 f'Extraction do not contain all required fields: {required_fields}.'
@@ -1593,10 +1597,10 @@ def add_extractions_as_annotations(
 
         extracted_spans = extractions[required_fields].sort_values(by='confidence', ascending=False)
 
-        for span in extracted_spans.to_dict('records'):  # todo: are Start and End always ints?
+        for span in extracted_spans.to_dict('records'):  # todo: are start_offset and end_offset always ints?
             if document.bboxes is not None:
-                start = span['Start']
-                end = span['End']
+                start = span['start_offset']
+                end = span['end_offset']
                 offset_string = document.text[start:end]
                 bbox0 = document.bboxes[start]
                 bbox1 = document.bboxes[end - 1]
@@ -1629,7 +1633,7 @@ def add_extractions_as_annotations(
                     confidence=span['confidence'],
                     label_set=label_set,
                     annotation_set=annotation_set,
-                    spans=[Span(start_offset=span['Start'], end_offset=span['End'])],
+                    spans=[Span(start_offset=span['start_offset'], end_offset=span['end_offset'])],
                 )
             if annotation.spans[0].offset_string is None:
                 raise NotImplementedError(
@@ -1892,9 +1896,9 @@ class GroupAnnotationSets:
         # ignores the section count as it actually worsens results
         # todo check if no category labels should be ignored
         # self.template_feature_list = [label.name for label in self.category.project.labels]
-        self.template_feature_list = list(self.clf.classes_)  # ?
+        self.template_feature_list = list(self.clf.classes_)  # list of label classifier targets
         # logger.warning("template_feature_list:", self.template_feature_list)
-        n_nearest = self.n_nearest_template if hasattr(self, 'n_nearest_template') else 0
+        n_nearest = self.n_nearest_template  # if hasattr(self, 'n_nearest_template') else 0
 
         # Pretty long feature generation
         df_train_label = self.df_train
@@ -2043,27 +2047,15 @@ class GroupAnnotationSets:
         )
 
         # Remove no_label predictions
-        if 'NO_LABEL' in results.columns:
-            results = results.drop(['NO_LABEL'], axis=1)
+        # if 'NO_LABEL' in results.columns:
+        #     results = results.drop(['NO_LABEL'], axis=1)
+
+        # if self.no_label_name in results.columns:
+        #     results = results.drop([self.no_label_name], axis=1)
 
         # Store most likely prediction and its accuracy in separated columns
         feature_df_label['result_name'] = results.idxmax(axis=1)
         feature_df_label['confidence'] = results.max(axis=1)
-
-        # Do column renaming to be compatible with text-annotation
-        feature_df_label.rename(
-            columns={
-                'start_offset': 'Start',
-                'end_offset': 'End',
-                'offset_string': 'Candidate',
-                'regex': 'Regex',
-                'threshold': 'OptimalThreshold',
-            },
-            inplace=True,
-        )
-        feature_df_label['Translated_Candidate'] = feature_df_label['Candidate']
-
-        # feature_df_label['target'] = feature_df_label['result_name']
 
         # convert the transformed df to the new template features
         feature_df_template = self.build_document_template_feature_X(document_text, feature_df_label).filter(
@@ -2125,13 +2117,13 @@ class GroupAnnotationSets:
         # Using OptimalThreshold is a bad idea as it might defer between training (actual treshold from the label)
         # and runtime (default treshold.
 
-        df = df[df['confidence'] >= 0.1]  # df['OptimalThreshold']]
+        # df = df[df['confidence'] >= 0.1]  # df['OptimalThreshold']]
         for i, line in enumerate(text.replace('\f', '\n').split('\n')):
             new_char_count = char_count + len(line)
             assert line == text[char_count:new_char_count]
-            line_df = df[(char_count <= df['Start']) & (df['End'] <= new_char_count)]
-            annotations = [row for index, row in line_df.iterrows()]
-            annotations_dict = dict((x['result_name'], True) for x in annotations)
+            line_df = df[(char_count <= df['start_offset']) & (df['end_offset'] <= new_char_count)]
+            spans = [row for index, row in line_df.iterrows()]
+            spans_dict = dict((x['result_name'], True) for x in spans)
             counter_dict = {}  # why?
             # annotations_accuracy_dict = defaultdict(lambda: 0)
             # for annotation in annotations:
@@ -2147,7 +2139,7 @@ class GroupAnnotationSets:
             #             counter_dict[label_set.name] += 1
             #         else:
             #             counter_dict[label_set.name] = 1
-            tmp_df = pandas.DataFrame([{**annotations_dict, **counter_dict}])
+            tmp_df = pandas.DataFrame([{**spans_dict, **counter_dict}])
             global_df = pandas.concat([global_df, tmp_df], ignore_index=True)
             char_count = new_char_count + 1
         global_df['text'] = text.replace('\f', '\n').split('\n')
@@ -2195,7 +2187,7 @@ class GroupAnnotationSets:
                                 # todo: the next line is memory heavy
                                 #  https://gitlab.com/konfuzio/objectives/-/issues/9342
                                 label_df['line'] = (
-                                    label_df['Start'].apply(lambda x: text_replaced[: int(x)]).str.count('\n')
+                                    label_df['start_offset'].apply(lambda x: text_replaced[: int(x)]).str.count('\n')
                                 )
                                 try:
                                     next_section_start: int = detected_sections.index[i + 1]  # line_list[i + 1][0]
@@ -2342,13 +2334,12 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             df['target'] = df['label_name']
         return df, _feature_list, _temp_df_raw_errors
 
-    def extract(self, document: Document) -> 'Dict':
+    def extract(self, document: Document) -> Document:
         """
         Infer information from a given Document.
 
-        :param text: HTML or raw text of document
-        :param bbox: Bbox of the document
-        :return: dictionary of labels and top candidates
+        :param document: Document object
+        :return: Document with predicted labels
 
         :raises:
          AttributeError: When missing a Tokenizer
@@ -2374,12 +2365,18 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         if not inference_document.spans():
             logger.error(f'{self.tokenizer} does not provide Spans for {document}')
             raise NotImplementedError('No error handling when Spans are missing.')
+
         # 3. preprocessing
         df, _feature_names, _raw_errors = self.features(inference_document)
+
+        return self.extract_from_df(df, inference_document)
+
+    def extract_from_df(self, df: pandas.DataFrame, inference_document: Document) -> Document:
+        """Predict Labels from features."""
         try:
             independent_variables = df[self.label_feature_list]
         except KeyError:
-            raise KeyError(f'Features of {document} do not match the features of the pipeline.')
+            raise KeyError(f'Features of {inference_document} do not match the features of the pipeline.')
             # todo calculate features of Document as defined in pipeline and do not check afterwards
         # 4. prediction and store most likely prediction and its accuracy in separated columns
         results = pandas.DataFrame(data=self.clf.predict_proba(X=independent_variables), columns=self.clf.classes_)
@@ -2397,55 +2394,58 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         df['result_name'] = results.idxmax(axis=1)
         df['confidence'] = results.max(axis=1)
+
         # 5. Translation
-        df['Translated_Candidate'] = df['offset_string']  # todo: make translation explicit: It's a cool Feature
+        # df['Translated_Candidate'] = df['offset_string']  # todo: make translation explicit: It's a cool Feature
         # Main Logic -------------------------
 
         # Do column renaming to be compatible with text-annotation
         # todo: how can multilines be created via SDK
         # todo: why do we need to adjust the woring for Server?
         # todo: which other attributes could be send in the extraction method?
-        df.rename(
-            columns={
-                'start_offset': 'Start',
-                'end_offset': 'End',
-                'page_index': 'page_index',
-                'offset_string': 'Candidate',
-                'regex': 'Regex',
-                'threshold': 'OptimalThreshold',
-            },
-            inplace=True,
-        )
 
         # Convert DataFrame to Dict with labels as keys and label dataframes as value.
         res_dict = {}
         for result_name in set(df['result_name']):
-            result_df = df[df['result_name'] == result_name].copy()
+            result_df = df[(df['result_name'] == result_name) & (df['confidence'] >= df['label_threshold'])].copy()
+
             if not result_df.empty:
                 res_dict[result_name] = result_df
+
+        no_label_res_dict = {}
+        for result_name in set(df['result_name']):
+            result_df = df[(df['result_name'] == result_name) & (df['confidence'] < df['label_threshold'])].copy()
+
+            if not result_df.empty:
+                no_label_res_dict[result_name] = result_df
 
         # Filter results that are bellow the extract threshold
         # (helpful to reduce the size in case of many predictions/ big documents)
 
-        if hasattr(self, 'extract_threshold') and self.extract_threshold is not None:
-            logger.info('Filtering res_dict')
-            for result_name, value in res_dict.items():
-                if isinstance(value, pandas.DataFrame):
-                    res_dict[result_name] = value[value['confidence'] > self.extract_threshold]
+        # if hasattr(self, 'extract_threshold') and self.extract_threshold is not None:
+        #     logger.info('Filtering res_dict')
+        #     for result_name, value in res_dict.items():
+        #         if isinstance(value, pandas.DataFrame):
+        #             res_dict[result_name] = value[value['confidence'] > self.extract_threshold]
 
         res_dict = self.remove_empty_dataframes_from_extraction(res_dict)
-        res_dict = self.filter_low_confidence_extractions(res_dict)
+        no_label_res_dict = self.remove_empty_dataframes_from_extraction(no_label_res_dict)
+
+        # res_dict = self.filter_low_confidence_extractions(res_dict)
 
         res_dict = self.merge_dict(res_dict, inference_document)
 
         # Try to calculate sections based on template classifier.
         if self.template_clf is not None:  # todo smarter handling of multiple clf
             res_dict = self.extract_template_with_clf(inference_document.text, res_dict)
+            res_dict[self.no_label_set_name] = no_label_res_dict
 
         if self.use_separate_labels:
             res_dict = self.separate_labels(res_dict)
 
-        virtual_doc = self.extraction_result_to_document(document, res_dict)
+        virtual_doc = self.extraction_result_to_document(inference_document, res_dict)
+
+        # join document Spans into multi-line Annotation
 
         self.tokenizer.found_spans(virtual_doc)
 
@@ -2786,181 +2786,108 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         return self.clf
 
-    def evaluate_full(self, strict: bool = True) -> Evaluation:
-        """Evaluate the full pipeline on the pipeline's Test Documents."""
+    def evaluate_full(self, strict: bool = True, use_training_docs: bool = False) -> Evaluation:
+        """
+        Evaluate the full pipeline on the pipeline's Test Documents.
+
+        :param strict: List of documents to extract features from.
+        :param use_training_docs: Bool for whether to evaluate on the training documents instead of testing documents.
+        :return: Evaluation object.
+        """
         eval_list = []
-        for document in self.test_documents:
+        if not use_training_docs:
+            eval_docs = self.test_documents
+        else:
+            eval_docs = self.documents
+
+        for document in eval_docs:
             predicted_doc = self.extract(document=document)
             eval_list.append((document, predicted_doc))
 
-        self.evaluation = Evaluation(eval_list, strict=strict)
+        self.full_evaluation = Evaluation(eval_list, strict=strict)
 
-        return self.evaluation
+        return self.full_evaluation
 
-    def data_quality(self, strict: bool = True) -> Evaluation:
-        """Evaluate the full pipeline on the pipeline's Training Documents."""
+    def evaluate_tokenizer(self, use_training_docs: bool = False) -> Evaluation:
+        """Evaluate the tokenizer."""
+        if not use_training_docs:
+            eval_docs = self.test_documents
+        else:
+            eval_docs = self.documents
+
+        evaluation = self.tokenizer.evaluate_dataset(eval_docs)
+
+        return evaluation
+
+    def evaluate_clf(self, use_training_docs: bool = False) -> Evaluation:
+        """Evaluate the Label classifier."""
         eval_list = []
-        for document in self.documents:
-            predicted_doc = self.extract(document=document)
+        if not use_training_docs:
+            eval_docs = self.test_documents
+        else:
+            eval_docs = self.documents
+
+        for document in eval_docs:
+            virtual_doc = deepcopy(document)
+
+            for ann in document.annotations():
+                new_spans = []
+                for span in ann.spans:
+                    new_span = Span(start_offset=span.start_offset, end_offset=span.end_offset)
+                    new_spans.append(new_span)
+
+                _ = Annotation(
+                    document=virtual_doc,
+                    annotation_set=virtual_doc.no_label_annotation_set,
+                    label=virtual_doc.project.no_label,
+                    label_set=virtual_doc.project.no_label_set,
+                    category=virtual_doc.category,
+                    spans=new_spans,
+                )
+
+            feats_df, _, _ = self.features(virtual_doc)
+            predicted_doc = self.extract_from_df(feats_df, virtual_doc)
             eval_list.append((document, predicted_doc))
 
-        self.evaluation = Evaluation(eval_list, strict=strict)
+        clf_evaluation = Evaluation(eval_list)
 
-        return self.evaluation
+        return clf_evaluation
 
-    # def evaluate(self):
-    #     """
-    #     Evaluate the label classifier on a given DataFrame.
+    def evaluate_template_clf(self, use_training_docs: bool = False) -> Evaluation:
+        """Evaluate the LabelSet classifier."""
+        if self.template_clf is None:
+            raise AttributeError(f'{self} does not provide a LabelSet Classifier.')
+        else:
+            check_is_fitted(self.template_clf)
 
-    #     Evaluates by computing the accuracy, balanced accuracy and f1-score across all labels
-    #     plus the f1-score, precision and recall across each label individually.
-    #     """
-    #     # copy the df as we do not want to modify it
-    #     df = self.df_test.copy()
+        eval_list = []
+        if not use_training_docs:
+            eval_docs = self.test_documents
+        else:
+            eval_docs = self.documents
 
-    #     # get probability of each class
-    #     _results = pandas.DataFrame(
-    #         data=self.clf.predict_proba(X=df[self.label_feature_list]), columns=self.clf.classes_
-    #     )
+        for document in eval_docs:
+            df, _feature_names, _raw_errors = self.features(document)
 
-    #     # get predicted label index over all classes
-    #     predicted_label_list = list(_results.idxmax(axis=1))
-    #     # get predicted label probability over all classes
-    #     accuracy_list = list(_results.max(axis=1))
+            df['result_name'] = df['target']
 
-    #     # get another dataframe with only the probability over the classes that aren't NO_LABEL
-    #     _results_only_label = pandas.DataFrame()
-    #     if 'NO_LABEL' in _results.columns:
-    #         _results_only_label = _results.drop(['NO_LABEL'], axis=1)
+            # Convert DataFrame to Dict with labels as keys and label dataframes as value.
+            res_dict = {}
+            for result_name in set(df['result_name']):
+                result_df = df[(df['result_name'] == result_name)].copy()
 
-    #     if _results_only_label.shape[1] > 0:
-    #         # get predicted label index over all classes that are not NO_LABEL
-    #         only_label_predicted_label_list = list(_results_only_label.idxmax(axis=1))
-    #         # get predicted label probability over all classes that are not NO_LABEL
-    #         only_label_accuracy_list = list(_results_only_label.max(axis=1))
+                if not result_df.empty:
+                    res_dict[result_name] = result_df
 
-    #         # for each predicted label (over all classes)
-    #         for index in range(len(predicted_label_list)):
-    #             # if the highest probability to a non NO_LABEL class is >=0.2, we say it predicted that class instead
-    #             # replace predicted label index and probability
-    #             if only_label_accuracy_list[index] >= 0.2:  # todo: why 0.2
-    #                 predicted_label_list[index] = only_label_predicted_label_list[index]
-    #                 accuracy_list[index] = only_label_accuracy_list[index]
-    #     else:
-    #         logger.info('\n[WARNING] _results_only_label is empty.\n')
+            res_dict = self.extract_template_with_clf(document.text, res_dict)
 
-    #     # add a column for predicted label index
-    #     df.insert(loc=0, column='predicted_label_text', value=predicted_label_list)
+            if self.use_separate_labels:
+                res_dict = self.separate_labels(res_dict)
 
-    #     # add a column for prediction probability (not actually accuracy)
-    #     df.insert(loc=0, column='confidence', value=accuracy_list)
+            predicted_doc = self.extraction_result_to_document(document, res_dict)
 
-    #     # get and sort the importance of each feature
-    #     feature_importances = self.clf.feature_importances_
+            eval_list.append((document, predicted_doc))
 
-    #     feature_importances_list = sorted(
-    #         list(zip(self.label_feature_list, feature_importances)), key=lambda item: item[1], reverse=True
-    #     )
+        template_clf_evaluation = Evaluation(eval_list)
 
-    #     # computes the general metrics, i.e. across all labels
-    #     y_true = df['label_name']
-    #     y_pred = df['predicted_label_text']
-
-    #     # gets accuracy, balanced accuracy and f1-score over all labels
-    #     results_general = {
-    #         'label': 'general/all annotations',
-    #         'accuracy': accuracy_score(y_true, y_pred),
-    #         'balanced accuracy': balanced_accuracy_score(y_true, y_pred),
-    #         'f1-score': f1_score(y_true, y_pred, average='weighted'),
-    #     }
-
-    #     # gets accuracy, balanced accuracy and f1-score over all labels (except for 'NO_LABEL'/'NO_LABEL')
-    #     y_true_filtered = []
-    #     y_pred_filtered = []
-    #     for s_true, s_pred in zip(y_true, y_pred):
-    #         if not (s_true == 'NO_LABEL' and s_pred == 'NO_LABEL'):
-    #             y_true_filtered.append(s_true)
-    #             y_pred_filtered.append(s_pred)
-    #     results_general_filtered = {
-    #         'label': 'all annotations except TP of NO_LABEL',
-    #         'accuracy': accuracy_score(y_true_filtered, y_pred_filtered),
-    #         'balanced accuracy': balanced_accuracy_score(y_true_filtered, y_pred_filtered),
-    #         'f1-score': f1_score(y_true_filtered, y_pred_filtered, average='weighted'),
-    #     }
-
-    #     # compute all metrics again, but per label
-    #     labels = list(set(df['label_name']))
-    #     precision, recall, fscore, support = precision_recall_fscore_support(y_pred, y_true, labels=labels)
-
-    #     # store results for each label
-    #     results_labels_list = []
-
-    #     for i, label in enumerate(labels):
-    #         results = {
-    #             'label': label,
-    #             'accuracy': None,
-    #             'balanced accuracy': None,
-    #             'f1-score': fscore[i],
-    #             'precision': precision[i],
-    #             'recall': recall[i],
-    #         }
-    #         results_labels_list.append(results)
-
-    #     # sort results for each label in descending order by their f1-score
-    #     results_labels_list_sorted = sorted(results_labels_list, key=lambda k: k['f1-score'], reverse=True)
-
-    #     # combine general results and label specific results into one dict
-    #     results_summary = {
-    #         'general': results_general,
-    #         'general_filtered': results_general_filtered,
-    #         'label-specific': results_labels_list_sorted,
-    #     }
-
-    #     # get the probability_distribution
-    #     prob_dict = self._get_probability_distribution(df, start_from=0.2)
-    #     prob_list = [(k, v) for k, v in prob_dict.items()]
-    #     prob_list.sort(key=lambda tup: tup[0])
-    #     df_prob = pandas.DataFrame(prob_list, columns=['Range of predicted confidence', 'Real confidence in this range'])
-
-    #     # log results and feature importance and probability distribution as tables
-    #     logger.info(
-    #         '\n'
-    #         + tabulate(
-    #             pandas.DataFrame([results_general, results_general_filtered] + results_labels_list_sorted),
-    #             floatfmt=".1%",
-    #             headers="keys",
-    #             tablefmt="pipe",
-    #         )
-    #         + '\n'
-    #     )
-
-    #     logger.info(
-    #         '\n'
-    #         + tabulate(
-    #             pandas.DataFrame(feature_importances_list, columns=['feature_name', 'feature_importance']),
-    #             floatfmt=".4%",
-    #             headers="keys",
-    #             tablefmt="pipe",
-    #         )
-    #         + '\n'
-    #     )
-
-    #     logger.info('\n' + tabulate(df_prob, floatfmt=".2%", headers="keys", tablefmt="pipe") + '\n')
-
-    #     return results_summary
-
-    # def _get_probability_distribution(self, df, start_from=0.2):
-    #     """Calculate the probability distribution according to the range of confidence."""
-    #     # group by accuracy
-    #     step_size = 0.1
-    #     step_list = numpy.arange(start_from, 1 + step_size, step_size)
-    #     df_dict = {}
-    #     for index, step in enumerate(step_list):
-    #         if index + 1 < len(step_list):
-    #             lower_bound = round(step, 2)
-    #             upper_bound = round(step_list[index + 1], 2)
-    #             df_range = df[df['confidence'].between(lower_bound, upper_bound)]
-    #             df_range_acc = accuracy_score(df_range['label_name'], df_range['predicted_label_text'])
-    #             df_dict[str(lower_bound) + '-' + str(upper_bound)] = df_range_acc
-
-    #     return df_dict
+        return template_clf_evaluation
