@@ -66,7 +66,8 @@ pipeline = load_model(MODEL_PATH)
 # To get the evaluation of the full pipeline
 evaluation = pipeline.evaluate_full()
 print(f"Full evaluation F1 score: {evaluation.f1()}")
-print(f"Full evaluation recall {evaluation.recall()}")
+print(f"Full evaluation recall: {evaluation.recall()}")
+print(f"Full evaluation precision: {evaluation.precision()}")
 
 # To get the evaluation of the tokenizer alone
 evaluation = pipeline.evaluate_tokenizer()
