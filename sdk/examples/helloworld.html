@@ -45,9 +45,10 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../configuration_reference.html">Install SDK</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sourcecode.html">Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html#tokenizer">Tokenizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html#tokenizers">Tokenizers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html#extraction-ai">Extraction AI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html#evaluation">Evaluation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sourcecode.html#document-categorization">Document Categorization</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html#ai-evaluation">AI Evaluation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Code Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../contribution.html">Contribution Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../coordinates_system.html">Coordinates System</a></li>
@@ -134,6 +135,54 @@
         <span class="n">new_annotations_links</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">annotation_obj</span><span class="o">.</span><span class="n">get_link</span><span class="p">())</span>
 
 <span class="k">print</span><span class="p">(</span><span class="n">new_annotations_links</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="finding-spans-of-a-label-not-found-by-a-tokenizer">
+<h1>Finding Spans of a Label Not Found by a Tokenizer<a class="headerlink" href="#finding-spans-of-a-label-not-found-by-a-tokenizer" title="Permalink to this headline">¶</a></h1>
+<p>Here is an example of how to use the <code class="docutils literal notranslate"><span class="pre">Label.spans_not_found_by_tokenizer</span></code> method. This will allow you to determine if a RegexTokenizer is suitable at finding the Spans of a Label, or what Spans might have been annotated wrong. Say, you have a number of annotations assigned to the <code class="docutils literal notranslate"><span class="pre">IBAN</span></code> Label and want to know which Spans would not be found when using the WhiteSpace Tokenizer. You can follow this example to find all the relevant Spans.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Annotation</span><span class="p">,</span> <span class="n">Label</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.regex</span> <span class="kn">import</span> <span class="n">WhitespaceTokenizer</span>
+
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+<span class="n">category</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">categories</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">WhitespaceTokenizer</span><span class="p">()</span>
+
+<span class="n">iban_label</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s1">&#39;IBAN&#39;</span><span class="p">)</span>
+
+<span class="n">spans_not_found</span> <span class="o">=</span> <span class="n">iban_label</span><span class="o">.</span><span class="n">spans_not_found_by_tokenizer</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="p">[</span><span class="n">category</span><span class="p">])</span>
+
+<span class="k">for</span> <span class="n">span</span> <span class="ow">in</span> <span class="n">spans_not_found</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;{span}: {span.offset_string}&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="evaluate-a-trained-extraction-ai-model">
+<h1>Evaluate a Trained Extraction AI Model<a class="headerlink" href="#evaluate-a-trained-extraction-ai-model" title="Permalink to this headline">¶</a></h1>
+<p>In this example we will see how we can evaluate a trained <code class="docutils literal notranslate"><span class="pre">RFExtractionAI</span></code> model. We will assume that we have a trained pickled model available. See <a class="reference external" href="https://dev.konfuzio.com/sdk/examples/examples.html#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents">here</a> for how to train such a model, and check out the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#evaluation">Evaluation</a> documentation for more details.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">MODEL_PATH</span><span class="p">)</span>
+
+<span class="c1"># To get the evaluation of the full pipeline</span>
+<span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_full</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Full evaluation F1 score: {evaluation.f1()}&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Full evaluation recall: {evaluation.recall()}&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Full evaluation precision: {evaluation.precision()}&quot;</span><span class="p">)</span>
+
+<span class="c1"># To get the evaluation of the tokenizer alone</span>
+<span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_tokenizer</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Tokenizer evaluation F1 score: {evaluation.tokenizer_f1()}&quot;</span><span class="p">)</span>
+
+<span class="c1"># To get the evaluation of the Label classifier given perfect tokenization</span>
+<span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_clf</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Label classifier evaluation F1 score: {evaluation.clf_f1()}&quot;</span><span class="p">)</span>
+
+<span class="c1"># To get the evaluation of the LabelSet given perfect Label classification</span>
+<span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_template_clf</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Label Set evaluation F1 score: {evaluation.f1()}&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
