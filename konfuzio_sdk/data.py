@@ -155,7 +155,7 @@ class Page(Data):
         # bbox information are based on a downscaled image
         scale_mult = image.size[1] / self.height
 
-        anns = self.annotations(use_correct=False)
+        anns = self.view_annotations()
 
         for ann in anns:
             pos = [
@@ -236,6 +236,11 @@ class Page(Data):
             label=label, use_correct=use_correct, start_offset=start_offset, end_offset=end_offset, fill=fill
         )
         return page_annotations
+
+    def view_annotations(self) -> List['Annotation']:
+        """Get the best Annotations, where the Spans are not overlapping in Page."""
+        page_view_anns = self.document.view_annotations(start_offset=self.start_offset, end_offset=self.end_offset)
+        return page_view_anns
 
 
 class Bbox:
@@ -860,7 +865,7 @@ class Label(Data):
         return best_regex
 
     def regex(self, categories: List[Category], update=False) -> List:
-        """Calculate regex to be used in the LabelExtractionModel."""
+        """Calculate regex to be used in the Extraction AI."""
         # if not is_file(self.regex_file_path, raise_exception=False) or update:
         logger.info(f'Build regexes for Label {self.name}.')
         regex = {}
@@ -1775,12 +1780,13 @@ class Document(Data):
 
     def __deepcopy__(self, memo) -> 'Document':
         """Create a new Document of the instance."""
+        copy_id = self.id_ if self.id_ else self.copy_of_id
         document = Document(
             id_=None,
             project=self.project,
             category=self.category,
             text=self.text,
-            copy_of_id=self.id_,
+            copy_of_id=copy_id,
             bbox=self.get_bbox(),
         )
         for page in self.pages():
@@ -1923,14 +1929,14 @@ class Document(Data):
 
         return sorted(annotations)
 
-    def view_annotations(self) -> List[Annotation]:
+    def view_annotations(self, start_offset: int = 0, end_offset: int = None) -> List[Annotation]:
         """Get the best Annotations, where the Spans are not overlapping."""
         self.get_annotations()
         annotations: List[Annotation] = []
 
         filled = 0  # binary number keeping track of filled offsets
         priority_annotations = sorted(
-            self._annotations,
+            self.annotations(use_correct=False, start_offset=start_offset, end_offset=end_offset),
             key=lambda x: (
                 not x.is_correct,  # x.is_correct == True first
                 -x.confidence if x.confidence else 0,  # higher confidence first
