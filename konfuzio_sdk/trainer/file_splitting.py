@@ -231,7 +231,7 @@ class FileSplittingModel:
                 test_labels,
                 input_shape,
             ) = self.prepare_visual_textual_data(self.train_data, self.test_data, bert_model, bert_tokenizer)
-            model = self._init_model(input_shape)
+            model = self.init_model(input_shape)
             model.fit([train_img_data, train_txt_data], train_labels, epochs=10, verbose=1)
             model.save(self.project.model_folder + '/fusion.h5')
             loss, acc = model.evaluate([test_img_data, test_txt_data], test_labels, verbose=0)
