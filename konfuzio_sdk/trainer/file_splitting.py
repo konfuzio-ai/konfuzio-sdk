@@ -102,12 +102,13 @@ class FileSplittingModel:
             with torch.no_grad():
                 output = bert_model(**inputs)
             test_txt_data.append(output.pooler_output)
+        txt_input_shape = test_txt_data[0].shape
         test_txt_data = [np.asarray(x).astype('float32') for x in test_txt_data]
         test_txt_data = np.asarray(test_txt_data)
-        return train_img_data, train_txt_data, test_img_data, test_txt_data, train_labels, test_labels
+        return train_img_data, train_txt_data, test_img_data, test_txt_data, train_labels, test_labels, txt_input_shape
 
-    def _init_model(self):
-        txt_input = Input(shape=(1, 768), name='text')
+    def _init_model(self, input_shape):
+        txt_input = Input(shape=input_shape, name='text')
         txt_x = Dense(units=768, activation="relu")(txt_input)
         txt_x = Flatten()(txt_x)
         txt_x = Dense(units=4096, activation="relu")(txt_x)
@@ -198,8 +199,9 @@ class FileSplittingModel:
                 test_txt_data,
                 train_labels,
                 test_labels,
+                input_shape,
             ) = self._prepare_visual_textual_data(self.train_data, self.test_data, bert_model, bert_tokenizer)
-            model = self._init_model()
+            model = self._init_model(input_shape)
             model.fit([train_img_data, train_txt_data], train_labels, epochs=10, verbose=1)
             model.save(self.project.model_folder + '/fusion.h5')
             loss, acc = model.evaluate([test_img_data, test_txt_data], test_labels, verbose=0)
