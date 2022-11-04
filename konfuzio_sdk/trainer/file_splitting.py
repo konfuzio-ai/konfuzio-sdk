@@ -12,20 +12,17 @@ https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=9684474
 """
 import cv2
 import logging
-import tarfile
 import torch
 
 import numpy as np
 import tensorflow as tf
 
-from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras.applications.vgg19 import preprocess_input
-from keras.layers import Dense, Conv2D, MaxPool2D, Flatten
-from keras.models import Sequential, load_model
+from keras.layers import Dense, Conv2D, MaxPool2D, Flatten, Input, concatenate
+from keras.models import load_model, Model
 from pathlib import Path
-from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, img_to_array
-from transformers import BertTokenizer, AutoModelForSequenceClassification, AutoConfig
+from transformers import BertTokenizer, AutoModel, AutoConfig
 from typing import List
 
 from konfuzio_sdk.data import Document, Page, Project
@@ -38,21 +35,19 @@ class FileSplittingModel:
 
     A model consists of two separate inputs for visual and textual data combined together in a Multi-Layered
     Perceptron (MLP). Visual part is represented by VGG16 architecture and is trained on a first share of split training
-    dataset. Textual part is represented by LegalBERT which is used without any training. Logits received from two of
-    the models are squashed and the resulting logits are fed as inputs to the MLP.
+    dataset. Textual part is represented by LegalBERT which is used without any training.
+    Embeddings received from two of he models are squashed and the resulting vectors are fed as inputs to the MLP.
 
-    The resulting trained models (VGG16 and fusion model) are saved in .h5 and packaged into .tar.gz archive, roughly
-    1.5 Gb in size.
+    The resulting trained model is saved in .h5, roughly 1.5 Gb in size.
     """
 
-    def __init__(self, project_id: int, split_point: float = 0.5):
-        """Initialize Project, training and testing data, and a split point for training dataset."""
+    def __init__(self, project_id: int):
+        """Initialize Project, training and testing data."""
         self.project = Project(id_=project_id)
         self.train_data = self.project.documents
         self.test_data = self.project.test_documents
-        self.split_point = int(split_point * len(self.train_data))
 
-    def _preprocess_documents(self, data: List[Document], path: str) -> (List[str], List[str], List[int]):
+    def _preprocess_documents(self, data: List[Document]) -> (List[str], List[str], List[int]):
         pages = []
         texts = []
         labels = []
@@ -64,11 +59,9 @@ class FileSplittingModel:
                     labels.append(1)
                 else:
                     labels.append(0)
-        # Path("otsu_vgg16/{}/first_page".format(path)).mkdir(parents=True, exist_ok=True)
-        # Path("otsu_vgg16/{}/not_first_page".format(path)).mkdir(parents=True, exist_ok=True)
         return pages, texts, labels
 
-    def _otsu_binarization(self, pages: List[str]) -> None:
+    def _otsu_binarization(self, pages: List[str]):
         images = []
         for img in pages:
             image = cv2.imread(img)
@@ -80,161 +73,103 @@ class FileSplittingModel:
         return images
 
     def _prepare_visual_textual_data(
-        self,
-        train_data: List[Document],
-        test_data: List[Document],
-        split_point: int,
-    ) -> (List[str], List[str], List[str], List[str], List[str], List[str], List[int], List[int]):
+        self, train_data: List[Document], test_data: List[Document], bert_model, bert_tokenizer
+    ):
         for doc in train_data + test_data:
             doc.get_images()
-        train_pages_1, train_texts_1, train_labels_1 = self._preprocess_documents(train_data[:split_point], 'train_1')
-        train_pages_2, train_texts_2, train_labels_2 = self._preprocess_documents(train_data[split_point:], 'train_2')
-        test_pages, test_texts, test_labels = self._preprocess_documents(test_data, 'test')
-        train_images_1 = self._otsu_binarization(train_pages_1)
-        train_images_2 = self._otsu_binarization(train_pages_2)
+        train_pages, train_texts, train_labels = self._preprocess_documents(train_data)
+        test_pages, test_texts, test_labels = self._preprocess_documents(test_data)
+        train_images = self._otsu_binarization(train_pages)
         test_images = self._otsu_binarization(test_pages)
-        return (
-            train_texts_1,
-            train_texts_2,
-            test_texts,
-            train_pages_1,
-            train_pages_2,
-            test_pages,
-            train_labels_1,
-            train_labels_2,
-            test_labels,
-            train_images_1,
-            train_images_2,
-            test_images,
-        )
-
-    def _prepare_image_data_generator(self, images, labels):
-        labels = np.asarray(labels).astype('float32').reshape((-1, 1))
+        train_labels = tf.cast(np.asarray(train_labels).reshape((-1, 1)), tf.float32)
+        test_labels = tf.cast(np.asarray(test_labels).reshape((-1, 1)), tf.float32)
         image_data_generator = ImageDataGenerator()
-        train_data_generator = image_data_generator.flow(x=np.squeeze(images, axis=1), y=labels)
-        return train_data_generator
+        train_data_generator = image_data_generator.flow(x=np.squeeze(train_images, axis=1), y=train_labels)
+        train_img_data = np.concatenate([train_data_generator.next()[0] for i in range(train_data_generator.__len__())])
+        test_data_generator = image_data_generator.flow(x=np.squeeze(test_images, axis=1), y=test_labels)
+        test_img_data = np.concatenate([test_data_generator.next()[0] for i in range(test_data_generator.__len__())])
+        train_txt_data = []
+        for text in train_texts:
+            inputs = bert_tokenizer(text, truncation=True, return_tensors='pt')
+            with torch.no_grad():
+                output = bert_model(**inputs)
+            train_txt_data.append(output.pooler_output)
+        train_txt_data = [np.asarray(x).astype('float32') for x in train_txt_data]
+        train_txt_data = np.asarray(train_txt_data)
+        test_txt_data = []
+        for text in test_texts:
+            inputs = bert_tokenizer(text, truncation=True, return_tensors='pt')
+            with torch.no_grad():
+                output = bert_model(**inputs)
+            test_txt_data.append(output.pooler_output)
+        test_txt_data = [np.asarray(x).astype('float32') for x in test_txt_data]
+        test_txt_data = np.asarray(test_txt_data)
+        return train_img_data, train_txt_data, test_img_data, test_txt_data, train_labels, test_labels
 
-    def _init_vgg16(self):
-        model = Sequential()
-        model.add(Conv2D(input_shape=(224, 224, 3), filters=64, kernel_size=(3, 3), padding="same", activation="relu"))
-        model.add(Conv2D(filters=64, kernel_size=(3, 3), padding="same", activation="relu"))
-        model.add(MaxPool2D(pool_size=(2, 2), strides=(2, 2)))
-        model.add(Conv2D(filters=128, kernel_size=(3, 3), padding="same", activation="relu"))
-        model.add(Conv2D(filters=128, kernel_size=(3, 3), padding="same", activation="relu"))
-        model.add(MaxPool2D(pool_size=(2, 2), strides=(2, 2)))
-        model.add(Conv2D(filters=256, kernel_size=(3, 3), padding="same", activation="relu"))
-        model.add(Conv2D(filters=256, kernel_size=(3, 3), padding="same", activation="relu"))
-        model.add(Conv2D(filters=256, kernel_size=(3, 3), padding="same", activation="relu"))
-        model.add(MaxPool2D(pool_size=(2, 2), strides=(2, 2)))
-        model.add(Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu"))
-        model.add(Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu"))
-        model.add(Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu"))
-        model.add(MaxPool2D(pool_size=(2, 2), strides=(2, 2)))
-        model.add(Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu"))
-        model.add(Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu"))
-        model.add(Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu"))
-        model.add(MaxPool2D(pool_size=(2, 2), strides=(2, 2)))
-        model.add(Flatten())
-        model.add(Dense(units=4096, activation="relu"))
-        model.add(Dense(units=4096, activation="relu"))
-        model.add(Dense(units=2, activation="softmax"))
-        model.add(Flatten())
-        opt = Adam(learning_rate=0.001)
-        model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
-        return model
-
-    def train_vgg(self, image_data_generator: ImageDataGenerator = None):
-        """Training or loading trained VGG16 model."""
-        if Path(self.project.model_folder + '/vgg16.h5').exists():
-            model = load_model(self.project.model_folder + '/vgg16.h5')
-        else:
-            model = self._init_vgg16()
-            checkpoint = ModelCheckpoint(
-                "vgg16.h5",
-                monitor='val_accuracy',
-                verbose=1,
-                save_best_only=True,
-                save_weights_only=False,
-                mode='auto',
-                period=1,
-            )
-            early = EarlyStopping(monitor='val_accuracy', min_delta=0, patience=20, verbose=1, mode='auto')
-            model.fit_generator(
-                steps_per_epoch=100,
-                generator=image_data_generator,
-                validation_steps=10,
-                epochs=100,
-                callbacks=[checkpoint, early],
-            )
-            model.save(self.project.model_folder + '/vgg16.h5')
+    def _init_model(self):
+        txt_input = Input(shape=(1, 768), name='text')
+        txt_x = Dense(units=768, activation="relu")(txt_input)
+        txt_x = Flatten()(txt_x)
+        txt_x = Dense(units=4096, activation="relu")(txt_x)
+        img_input = Input(shape=(224, 224, 3), name='image')
+        img_x = Conv2D(input_shape=(224, 224, 3), filters=64, kernel_size=(3, 3), padding="same", activation="relu")(
+            img_input
+        )
+        img_x = Conv2D(filters=64, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        img_x = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
+        img_x = Conv2D(filters=128, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        img_x = Conv2D(filters=128, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        img_x = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
+        img_x = Conv2D(filters=256, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        img_x = Conv2D(filters=256, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        img_x = Conv2D(filters=256, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        img_x = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
+        img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        img_x = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
+        img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        img_x = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
+        img_x = Flatten()(img_x)
+        img_x = Dense(units=4096, activation="relu")(img_x)
+        img_x = Dense(units=4096, activation="relu", name='img_outputs')(img_x)
+        concatenated = concatenate([img_x, txt_x], axis=-1)
+        x = Dense(50, input_shape=(8192,), activation='relu')(concatenated)
+        x = Dense(50, activation='elu')(x)
+        x = Dense(50, activation='elu')(x)
+        output = Dense(1, activation='sigmoid')(x)
+        model = Model(inputs=[img_input, txt_input], outputs=output)
+        model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
         return model
 
     def init_bert(self):
         """Initialize BERT model and tokenizer."""
         configuration = AutoConfig.from_pretrained('nlpaueb/legal-bert-base-uncased')
         configuration.num_labels = 2
-        model = AutoModelForSequenceClassification.from_pretrained(
-            'nlpaueb/legal-bert-base-uncased', config=configuration
-        )
+        configuration.output_hidden_states = True
+        model = AutoModel.from_pretrained('nlpaueb/legal-bert-base-uncased', config=configuration)
         tokenizer = BertTokenizer.from_pretrained(
             'nlpaueb/legal-bert-base-uncased', do_lower_case=True, max_length=10000, padding="max_length", truncate=True
         )
         return model, tokenizer
 
-    def get_logits_vgg16(self, images: List, model) -> List:
-        """Transform input images into logits for MLP input."""
-        logits = []
-        for image in images:
-            # img = load_img(path, target_size=(224, 224))
-            # img = np.asarray(img)
-            # img = np.expand_dims(img, axis=0)
-            output = model.predict(image)
-            logits.append(output)
-        return logits
-
-    def get_logits_bert(self, texts: List[str], tokenizer, model) -> List:
-        """Transform input texts into logits for MLP input."""
-        logits = []
-        for text in texts:
-            inputs = tokenizer(text, truncation=True, return_tensors='pt')
-            with torch.no_grad():
-                output = model(**inputs).logits
-            pred = output.argmax().item()
-            logits.append(pred)
-        return logits
-
-    def squash_logits(self, vgg_logits: List, bert_logits: List) -> List:
-        """Squash image and text logits together for MLP input."""
-        logits = []
-        for logit_1, logit_2 in zip(vgg_logits, bert_logits):
-            logits.append([logit_1[0][0], logit_1[0][1], logit_2, logit_2])
-        return logits
-
-    def _preprocess_mlp_inputs(
-        self, train_logits: List, test_logits: List, train_labels: List[int], test_labels: List[int]
-    ):
-        Xtrain = np.array(train_logits)
-        Xtest = np.array(test_logits)
-        ytrain = np.array(train_labels)
-        ytest = np.array(test_labels)
-        input_shape = Xtest.shape[1]
-        return Xtrain, Xtest, ytrain, ytest, input_shape
-
-    def _predict_label(self, inputs, model) -> int:
-        pred = model.predict(inputs, verbose=0)
+    def _predict_label(self, img_input, txt_input, model) -> int:
+        pred = model.predict([img_input.reshape((1, 224, 224, 3)), txt_input.reshape((1, 1, 768))], verbose=0)
         return round(pred[0, 0])
 
-    def _calculate_metrics(self, model, inputs: List, labels: List) -> (float, float, float):
+    def _calculate_metrics(self, model, img_inputs: List, txt_inputs: List, labels: List) -> (float, float, float):
         true_positive = 0
         false_positive = 0
         false_negative = 0
-        for i, test in zip(labels, inputs):
-            pred = self._predict_label(test.reshape((1, 4)), model)
-            if i == 1 and pred == 1:
+        for img, txt, label in zip(img_inputs, txt_inputs, labels):
+            pred = self._predict_label(img, txt, model)
+            if label == 1 and pred == 1:
                 true_positive += 1
-            elif i == 1 and pred == 0:
+            elif label == 1 and pred == 0:
                 false_negative += 1
-            elif i == 0 and pred == 1:
+            elif label == 0 and pred == 1:
                 false_positive += 1
         if true_positive + false_positive != 0:
             precision = true_positive / (true_positive + false_positive)
@@ -250,91 +185,27 @@ class FileSplittingModel:
             f1 = 0
         return precision, recall, f1
 
-    def vgg16_preprocess_and_train(self, train_data: List[Document], test_data: List[Document], split_point: float):
-        """Preprocess data and train VGG16 as a public method."""
-        (
-            train_texts_1,
-            train_texts_2,
-            test_texts,
-            train_pages_1,
-            train_pages_2,
-            test_pages,
-            train_labels_1,
-            train_labels_2,
-            test_labels,
-            train_images_1,
-            train_images_2,
-            test_images,
-        ) = self._prepare_visual_textual_data(train_data, test_data, split_point)
-        train_data_generator = self._prepare_image_data_generator(train_images_1, train_labels_1)
-        model_vgg = self.train_vgg(image_data_generator=train_data_generator)
-        return model_vgg
-
-    def prepare_mlp_inputs(
-        self,
-        train_data: List[Document],
-        test_data: List[Document],
-        split_point: float,
-        model_vgg16,
-        bert_model,
-        bert_tokenizer,
-    ):
-        """Prepare data for feeding into an MLP as inputs."""
-        (
-            train_texts_1,
-            train_texts_2,
-            test_texts,
-            train_pages_1,
-            train_pages_2,
-            test_pages,
-            train_labels_1,
-            train_labels_2,
-            test_labels,
-            train_images_1,
-            train_images_2,
-            test_images,
-        ) = self._prepare_visual_textual_data(train_data, test_data, split_point)
-        vgg16_train_logits = self.get_logits_vgg16(train_images_2, model_vgg16)
-        vgg16_test_logits = self.get_logits_vgg16(test_images, model_vgg16)
-        bert_train_logits = self.get_logits_bert(train_texts_2, bert_tokenizer, bert_model)
-        bert_test_logits = self.get_logits_bert(test_texts, bert_tokenizer, bert_model)
-        train_logits = self.squash_logits(vgg16_train_logits, bert_train_logits)
-        test_logits = self.squash_logits(vgg16_test_logits, bert_test_logits)
-        Xtrain, Xtest, ytrain, ytest, input_shape = self._preprocess_mlp_inputs(
-            train_logits, test_logits, train_labels_2, test_labels
-        )
-        return Xtrain, Xtest, ytrain, ytest, input_shape
-
-    def run_mlp(self, Xtrain, Xtest, ytrain, ytest, input_shape):
-        """Compile, run, evaluate, and save an MLP architecture."""
-        model = Sequential()
-        model.add(Dense(50, input_shape=(input_shape,), activation='relu'))
-        model.add(Dense(50, activation='elu'))
-        model.add(Dense(50, activation='elu'))
-        model.add(Dense(1, activation='sigmoid'))
-        model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-        model.fit(Xtrain, ytrain, epochs=100, verbose=2)
-        model.save(self.project.model_folder + '/fusion.h5')
-        loss, acc = model.evaluate(Xtest, ytest, verbose=0)
-        logging.info('Accuracy: {}'.format(acc * 100))
-        precision, recall, f1 = self._calculate_metrics(model, Xtest, ytest)
-        logging.info('\n Precision: {} \n Recall: {} \n F1-score: {}'.format(precision, recall, f1))
-        tar = tarfile.open(self.project.model_folder + "/splitting_ai_models.tar.gz", "w:gz")
-        tar.add(self.project.model_folder + '/fusion.h5')
-        tar.add(self.project.model_folder + '/vgg16.h5')
-        tar.close()
-        return model
-
     def train(self):
-        """Preprocess data, train VGG16 and an MLP pipeline based on VGG16 and LegalBERT."""
-        model_vgg16 = self.vgg16_preprocess_and_train(self.train_data, self.test_data, self.split_point)
-        bert, tokenizer = self.init_bert()
-        Xtrain, Xtest, ytrain, ytest, input_shape = self.prepare_mlp_inputs(
-            self.train_data, self.test_data, self.split_point, model_vgg16, bert, tokenizer
-        )
-        model = self.run_mlp(Xtrain, Xtest, ytrain, ytest, input_shape)
-        Path(self.project.model_folder + '/fusion.h5').unlink()
-        Path(self.project.model_folder + '/vgg16.h5').unlink()
+        """Training or loading the trained model."""
+        if Path(self.project.model_folder + '/fusion.h5').exists():
+            model = load_model(self.project.model_folder + '/fusion.h5')
+        else:
+            bert_model, bert_tokenizer = self.init_bert()
+            (
+                train_img_data,
+                train_txt_data,
+                test_img_data,
+                test_txt_data,
+                train_labels,
+                test_labels,
+            ) = self._prepare_visual_textual_data(self.train_data, self.test_data, bert_model, bert_tokenizer)
+            model = self._init_model()
+            model.fit([train_img_data, train_txt_data], train_labels, epochs=10, verbose=1)
+            model.save(self.project.model_folder + '/fusion.h5')
+            loss, acc = model.evaluate([test_img_data, test_txt_data], test_labels, verbose=0)
+            logging.info('Accuracy: {}'.format(acc * 100))
+            precision, recall, f1 = self._calculate_metrics(model, test_img_data, test_txt_data, test_labels)
+            logging.info('\n Precision: {} \n Recall: {} \n F1-score: {}'.format(precision, recall, f1))
         return model
 
 
@@ -348,28 +219,31 @@ class SplittingAI:
 
     def __init__(self, model_path: str, project_id=None):
         """Load fusion model, VGG16 model, BERT and BERTTokenizer."""
-        self.file_splitter = FileSplittingModel(project_id=project_id, split_point=0.5)
+        self.file_splitter = FileSplittingModel(project_id=project_id)
         self.project = Project(id_=project_id)
         if Path(model_path).exists():
-            tar = tarfile.open(self.project.model_folder + '/splitting_ai_models.tar.gz', "r:gz")
-            tar.extractall()
             self.model = load_model(self.project.model_folder + '/fusion.h5')
-            self.vgg16 = load_model(self.project.model_folder + '/vgg16.h5')
         else:
             logging.info('Model not found, starting training.')
             self.model = self.file_splitter.train()
         self.bert_model, self.tokenizer = self.file_splitter.init_bert()
 
     def _preprocess_inputs(self, text: str, image) -> List:
-        text_logits = self.file_splitter.get_logits_bert([text], self.tokenizer, self.bert_model)
+        inputs = self.tokenizer(text, truncation=True, return_tensors='pt')
+        with torch.no_grad():
+            output = self.bert_model(**inputs)
+        txt_data = [output.pooler_output]
+        txt_data = [np.asarray(x).astype('float32') for x in txt_data]
+        txt_data = np.asarray(txt_data)
         image = cv2.imread(image)
         image = cv2.resize(image, (224, 224), interpolation=cv2.INTER_AREA)
         image = img_to_array(image)
         image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
         image = preprocess_input(image)
-        img_logits = self.file_splitter.get_logits_vgg16([image], self.vgg16)
-        logits = np.array(self.file_splitter.squash_logits(img_logits, text_logits))
-        return logits
+        image_data_generator = ImageDataGenerator()
+        data_generator = image_data_generator.flow(x=np.squeeze([image], axis=1))
+        img_data = np.concatenate([data_generator.next()[0] for i in range(data_generator.__len__())])
+        return [img_data.reshape((1, 224, 224, 3)), txt_data.reshape((1, 1, 768))]
 
     def _predict(self, text_input: str, img_input, model) -> int:
         preprocessed = self._preprocess_inputs(text_input, img_input)
