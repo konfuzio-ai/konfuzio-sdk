@@ -679,6 +679,7 @@ TRAIN_EXTRACTION_AI_AUTOMATICALLY_IF_QUEUE_IS_EMPTY=False
 ALWAYS_GENERATE_SANDWICH_PDF=True
 
 # Default time limits for background tasks (optional).
+# These defaults can be viewed here: https://dev.konfuzio.com/web/on_premises.html#background-processes.
 EXTRACTION_TIME_LIMIT = 
 CATEGORIZATION_TIME_LIMIT = 
 EVALUATION_TIME_LIMIT = 
@@ -719,3 +720,68 @@ TASK_TRACK_STARTED=
 TASK_ACKS_ON_FAILURE_OR_TIMEOUT=
 TASK_ACKS_LATE=
 ```
+## Background processes
+
+Processes within our server are distributed between
+[Celery](https://docs.celeryq.dev/en/stable/) [workers](https://docs.celeryq.dev/en/stable/userguide/workers.html)
+between several [tasks](https://docs.celeryq.dev/en/stable/userguide/tasks.html). Together this creates the definition 
+of Servers internal workflow. Below the individual tasks of the Server's workflow are described in order of their 
+triggered events. Tasks are run in parallel queue's which are grouped in celery chords. While some tasks in each queue 
+run in parallel, some tasks are still dependent on others. And no next queue will start until all tasks in the queue are finished. 
+More on Celery workflows can be found here: https://docs.celeryq.dev/en/stable/userguide/canvas.html
+
+### Queue's
+
+
+| id  | queue-name   |                   description                   |
+|-----|--------------|:-----------------------------------------------:|
+| 1   | `ocr`        |             ocr and post ocr tasks              |
+| 2   | `processing` |               non dependent tasks               |
+| 3   | `categorize` |              categorization tasks               |
+| 4   | `extract`    |              extraction after ocr               |
+| 5   | `finalize`   | end queue after OCR and extraction has occurred |
+| 6   | `training`   |              queue for AI training              |
+| 7   | `evaluation` |             queue for AI evaluation             |
+
+
+
+### Celery Tasks
+
+#### Document tasks
+
+Series of events & tasks triggered when uploading a Document
+
+| Queue | task id | task name                    | description                                                                                                     | default time limit |
+|-------|---------|------------------------------|-----------------------------------------------------------------------------------------------------------------|--------------------|
+| 1, 2  | 1       | page_ocr                     | Apply OCR to the documents page(s).                                                                             | 10 minutes         |
+| 1, 2  | 2       | page_image                   | Create png image for a page. If a PNG was submitted or already exists it will be returned without regeneration. | 10 minutes         |
+| 1     | 3       | set_document_text_and_bboxes | Collect the result of the pages OCR (OCR from task_id #1) and set text & bboxes.                                | 1 minute           |
+| 3     | 4       | categorize                   | Categorize the document.                                                                                        | 3 minutes          |
+| 4     | 5       | document_extract             | Extract the document using the AI models linked to the Project.                                                 | 60 minutes         |
+| 5     | 6       | build_sandwich               | Generates the pdfsandwich for a submitted PDF                                                                   | 30 minutes         |
+| 5     | 7       | generate_entities            | Generate entities for a document which are shown in the labeling tool.                                          | 60 minutes         |
+| 5     | 8       | set_labeling_available       | Sets the document available for labeling                                                                        | 10 minutes         |
+| 5     | 9       | get_hocr                     | Get hOCR representation for bboxes (bboxes from task_id #3).                                                    | 5 minutes          |
+
+#### Extraction & Category AI Training
+
+##### Extraction AI
+
+Series of events triggered when training an extraction AI
+
+| Queue | task id | task name           | description                                                                                                     | default time limit |
+|-------|---------|---------------------|-----------------------------------------------------------------------------------------------------------------|--------------------|
+| 2     | 1       | page_image          | Create png image for a page. If a PNG was submitted or already exists it will be returned without regeneration. | 10 minutes         |
+| 6     | 1       | train_extraction_ai | Start the training of the Ai model.                                                                             | 20 hours           |
+| 4     | 2       | document_extract    | Extract the document using the AI models linked to the Project.                                                 | 60 minutes         |
+| 7     | 3       | evaluate_ai_model   | Evaluate the trained Ai models performance.                                                                     | 60 minutes         |
+
+##### Category AI
+
+Series of events triggered when training a Categorization AI
+
+| Queue | task id | task name         | description                                                                                                     | default time limit |
+|-------|---------|-------------------|-----------------------------------------------------------------------------------------------------------------|--------------------|
+| 7     | 2       | train_category_ai | Start the training of the categorization model.                                                                 | 10 hours           |
+| 7, 3  | 3       | categorize        | Run the categorization against all Documents in the its category.                                               | 3 minutes          |
+| 7, 3  | 4       | evaluate_ai_model | Evaluate the categorization Ai models performance.                                                              | 60 hours           | 

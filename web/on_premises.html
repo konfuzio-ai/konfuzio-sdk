@@ -124,6 +124,15 @@
 <li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-detectron-container">Environment Variables for Detectron Container</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#background-processes">Background processes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#queue-s">Queue’s</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#celery-tasks">Celery Tasks</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#document-tasks">Document tasks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#extraction-category-ai-training">Extraction &amp; Category AI Training</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="changelog_app.html">Changelog</a></li>
@@ -841,6 +850,7 @@ TRAIN_EXTRACTION_AI_AUTOMATICALLY_IF_QUEUE_IS_EMPTY=False
 ALWAYS_GENERATE_SANDWICH_PDF=True
 
 # Default time limits for background tasks (optional).
+# These defaults can be viewed here: https://dev.konfuzio.com/web/on_premises.html#background-processes.
 EXTRACTION_TIME_LIMIT =
 CATEGORIZATION_TIME_LIMIT =
 EVALUATION_TIME_LIMIT =
@@ -883,6 +893,233 @@ TASK_ACKS_ON_FAILURE_OR_TIMEOUT=
 TASK_ACKS_LATE=
 </pre></div>
 </div>
+</section>
+</section>
+<section id="background-processes">
+<h2>Background processes<a class="headerlink" href="#background-processes" title="Permalink to this headline">¶</a></h2>
+<p>Processes within our server are distributed between
+<a class="reference external" href="https://docs.celeryq.dev/en/stable/">Celery</a> <a class="reference external" href="https://docs.celeryq.dev/en/stable/userguide/workers.html">workers</a>
+between several <a class="reference external" href="https://docs.celeryq.dev/en/stable/userguide/tasks.html">tasks</a>. Together this creates the definition
+of Servers internal workflow. Below the individual tasks of the Server’s workflow are described in order of their
+triggered events. Tasks are run in parallel queue’s which are grouped in celery chords. While some tasks in each queue
+run in parallel, some tasks are still dependent on others. And no next queue will start until all tasks in the queue are finished.
+More on Celery workflows can be found here: <a class="reference external" href="https://docs.celeryq.dev/en/stable/userguide/canvas.html">https://docs.celeryq.dev/en/stable/userguide/canvas.html</a></p>
+<section id="queue-s">
+<h3>Queue’s<a class="headerlink" href="#queue-s" title="Permalink to this headline">¶</a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>id</p></th>
+<th class="head"><p>queue-name</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ocr</span></code></p></td>
+<td><p>ocr and post ocr tasks</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">processing</span></code></p></td>
+<td><p>non dependent tasks</p></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">categorize</span></code></p></td>
+<td><p>categorization tasks</p></td>
+</tr>
+<tr class="row-odd"><td><p>4</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">extract</span></code></p></td>
+<td><p>extraction after ocr</p></td>
+</tr>
+<tr class="row-even"><td><p>5</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">finalize</span></code></p></td>
+<td><p>end queue after OCR and extraction has occurred</p></td>
+</tr>
+<tr class="row-odd"><td><p>6</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">training</span></code></p></td>
+<td><p>queue for AI training</p></td>
+</tr>
+<tr class="row-even"><td><p>7</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">evaluation</span></code></p></td>
+<td><p>queue for AI evaluation</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="celery-tasks">
+<h3>Celery Tasks<a class="headerlink" href="#celery-tasks" title="Permalink to this headline">¶</a></h3>
+<section id="document-tasks">
+<h4>Document tasks<a class="headerlink" href="#document-tasks" title="Permalink to this headline">¶</a></h4>
+<p>Series of events &amp; tasks triggered when uploading a Document</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Queue</p></th>
+<th class="head"><p>task id</p></th>
+<th class="head"><p>task name</p></th>
+<th class="head"><p>description</p></th>
+<th class="head"><p>default time limit</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1, 2</p></td>
+<td><p>1</p></td>
+<td><p>page_ocr</p></td>
+<td><p>Apply OCR to the documents page(s).</p></td>
+<td><p>10 minutes</p></td>
+</tr>
+<tr class="row-odd"><td><p>1, 2</p></td>
+<td><p>2</p></td>
+<td><p>page_image</p></td>
+<td><p>Create png image for a page. If a PNG was submitted or already exists it will be returned without regeneration.</p></td>
+<td><p>10 minutes</p></td>
+</tr>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>3</p></td>
+<td><p>set_document_text_and_bboxes</p></td>
+<td><p>Collect the result of the pages OCR (OCR from task_id #1) and set text &amp; bboxes.</p></td>
+<td><p>1 minute</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>4</p></td>
+<td><p>categorize</p></td>
+<td><p>Categorize the document.</p></td>
+<td><p>3 minutes</p></td>
+</tr>
+<tr class="row-even"><td><p>4</p></td>
+<td><p>5</p></td>
+<td><p>document_extract</p></td>
+<td><p>Extract the document using the AI models linked to the Project.</p></td>
+<td><p>60 minutes</p></td>
+</tr>
+<tr class="row-odd"><td><p>5</p></td>
+<td><p>6</p></td>
+<td><p>build_sandwich</p></td>
+<td><p>Generates the pdfsandwich for a submitted PDF</p></td>
+<td><p>30 minutes</p></td>
+</tr>
+<tr class="row-even"><td><p>5</p></td>
+<td><p>7</p></td>
+<td><p>generate_entities</p></td>
+<td><p>Generate entities for a document which are shown in the labeling tool.</p></td>
+<td><p>60 minutes</p></td>
+</tr>
+<tr class="row-odd"><td><p>5</p></td>
+<td><p>8</p></td>
+<td><p>set_labeling_available</p></td>
+<td><p>Sets the document available for labeling</p></td>
+<td><p>10 minutes</p></td>
+</tr>
+<tr class="row-even"><td><p>5</p></td>
+<td><p>9</p></td>
+<td><p>get_hocr</p></td>
+<td><p>Get hOCR representation for bboxes (bboxes from task_id #3).</p></td>
+<td><p>5 minutes</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="extraction-category-ai-training">
+<h4>Extraction &amp; Category AI Training<a class="headerlink" href="#extraction-category-ai-training" title="Permalink to this headline">¶</a></h4>
+<section id="extraction-ai">
+<h5>Extraction AI<a class="headerlink" href="#extraction-ai" title="Permalink to this headline">¶</a></h5>
+<p>Series of events triggered when training an extraction AI</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Queue</p></th>
+<th class="head"><p>task id</p></th>
+<th class="head"><p>task name</p></th>
+<th class="head"><p>description</p></th>
+<th class="head"><p>default time limit</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>1</p></td>
+<td><p>page_image</p></td>
+<td><p>Create png image for a page. If a PNG was submitted or already exists it will be returned without regeneration.</p></td>
+<td><p>10 minutes</p></td>
+</tr>
+<tr class="row-odd"><td><p>6</p></td>
+<td><p>1</p></td>
+<td><p>train_extraction_ai</p></td>
+<td><p>Start the training of the Ai model.</p></td>
+<td><p>20 hours</p></td>
+</tr>
+<tr class="row-even"><td><p>4</p></td>
+<td><p>2</p></td>
+<td><p>document_extract</p></td>
+<td><p>Extract the document using the AI models linked to the Project.</p></td>
+<td><p>60 minutes</p></td>
+</tr>
+<tr class="row-odd"><td><p>7</p></td>
+<td><p>3</p></td>
+<td><p>evaluate_ai_model</p></td>
+<td><p>Evaluate the trained Ai models performance.</p></td>
+<td><p>60 minutes</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="category-ai">
+<h5>Category AI<a class="headerlink" href="#category-ai" title="Permalink to this headline">¶</a></h5>
+<p>Series of events triggered when training a Categorization AI</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Queue</p></th>
+<th class="head"><p>task id</p></th>
+<th class="head"><p>task name</p></th>
+<th class="head"><p>description</p></th>
+<th class="head"><p>default time limit</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>7</p></td>
+<td><p>2</p></td>
+<td><p>train_category_ai</p></td>
+<td><p>Start the training of the categorization model.</p></td>
+<td><p>10 hours</p></td>
+</tr>
+<tr class="row-odd"><td><p>7, 3</p></td>
+<td><p>3</p></td>
+<td><p>categorize</p></td>
+<td><p>Run the categorization against all Documents in the its category.</p></td>
+<td><p>3 minutes</p></td>
+</tr>
+<tr class="row-even"><td><p>7, 3</p></td>
+<td><p>4</p></td>
+<td><p>evaluate_ai_model</p></td>
+<td><p>Evaluate the categorization Ai models performance.</p></td>
+<td><p>60 hours</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
 </section>
 </section>
 </section>
