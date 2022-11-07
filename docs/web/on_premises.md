@@ -217,10 +217,10 @@ The following commands allow you to get a Konfuzio Server installation running w
 ```
 helm repo add konfuzio-repo https://git.konfuzio.com/api/v4/projects/106/packages/helm/stable
 helm repo update
-helm install my-konfuzio konfuzio-repo/konfuzio-chart \  
-  --set envs.HOST_NAME="host-name-for-you-installation.com" \  
-  --set image.tag="released-****** \  
-  --set image.imageCredentials.username=****** \
+helm install my-konfuzio konfuzio-repo/konfuzio-chart  \  
+  --set envs.HOST_NAME="host-name-for-you-installation.com"  \  
+  --set image.tag="released-******"  \  
+  --set image.imageCredentials.username=******  \
   --set image.imageCredentials.password=******
 ```
 
