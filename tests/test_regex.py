@@ -307,9 +307,8 @@ class TestTokens(unittest.TestCase):
         tokens = label.base_regex(category)
 
         assert (
-            """[A-ZÄÖÜ]+\\d\\d[ ]{1,2}\\d\\d\\d\\d[ ]{1,2}\\d\\d\\d\\d[ ]\
-                {1,2}\\d\\d\\d\\d[ ]{1,2}\\d\\d\\d\\d[ ]{1,2}\\d\\d"""
-            in tokens
+            "[A-ZÄÖÜ]+\\d\\d[ ]{1,2}\\d\\d\\d\\d[ ]{1,2}\\d\\d\\d\\d[ ]{1,2}"
+            "\\d\\d\\d\\d[ ]{1,2}\\d\\d\\d\\d[ ]{1,2}\\d\\d" in tokens
         )
 
         regexes = label.find_regex(category=category)
