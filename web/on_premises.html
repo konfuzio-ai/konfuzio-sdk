@@ -76,6 +76,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#initial-login">Initial login</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#minimal-setup">Minimal Setup</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#upgrade">Upgrade</a></li>
 </ul>
 </li>
@@ -346,6 +347,19 @@ password for `root` user. This can be extracted by the following command (replac
 `kubectl get secret <name>-konfuzio-initial-root-password`
 `-ojsonpath='{.data.password}' | base64 --decode ; echo`
 --></section>
+</section>
+<section id="minimal-setup">
+<h3>Minimal Setup<a class="headerlink" href="#minimal-setup" title="Permalink to this headline">¶</a></h3>
+<p>The following commands allow you to get a Konfuzio Server installation running with minimal configuration effort and relying on the <a class="reference external" href="https://git.konfuzio.com/shared/charts/-/blob/master/values.yaml">default values</a> of the Chart. This uses Postgres, Redis and S3 via <a class="reference external" href="https://min.io/">MinIO</a> as in-cluster deployments. This setup is not suited for production and may use insecure defaults.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">helm</span> <span class="n">repo</span> <span class="n">add</span> <span class="n">konfuzio</span><span class="o">-</span><span class="n">repo</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">git</span><span class="o">.</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">projects</span><span class="o">/</span><span class="mi">106</span><span class="o">/</span><span class="n">packages</span><span class="o">/</span><span class="n">helm</span><span class="o">/</span><span class="n">stable</span>
+<span class="n">helm</span> <span class="n">repo</span> <span class="n">update</span>
+<span class="n">helm</span> <span class="n">install</span> <span class="n">my</span><span class="o">-</span><span class="n">konfuzio</span> <span class="n">konfuzio</span><span class="o">-</span><span class="n">repo</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">chart</span>
+  <span class="o">--</span><span class="nb">set</span> <span class="n">envs</span><span class="o">.</span><span class="n">HOST_NAME</span><span class="o">=</span><span class="s2">&quot;host-name-for-you-installation.com&quot;</span>
+  <span class="o">--</span><span class="nb">set</span> <span class="n">image</span><span class="o">.</span><span class="n">tag</span><span class="o">=</span><span class="s2">&quot;released-******</span>
+  <span class="o">--</span><span class="nb">set</span> <span class="n">image</span><span class="o">.</span><span class="n">imageCredentials</span><span class="o">.</span><span class="n">username</span><span class="o">=******</span> \
+  <span class="o">--</span><span class="nb">set</span> <span class="n">image</span><span class="o">.</span><span class="n">imageCredentials</span><span class="o">.</span><span class="n">password</span><span class="o">=******</span>
+</pre></div>
+</div>
 </section>
 <section id="upgrade">
 <h3>Upgrade<a class="headerlink" href="#upgrade" title="Permalink to this headline">¶</a></h3>

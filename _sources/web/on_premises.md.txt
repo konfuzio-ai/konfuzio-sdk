@@ -210,6 +210,20 @@ password for `root` user. This can be extracted by the following command (replac
 `-ojsonpath='{.data.password}' | base64 --decode ; echo`  
 -->
 
+### Minimal Setup
+
+The following commands allow you to get a Konfuzio Server installation running with minimal configuration effort and relying on the [default values](https://git.konfuzio.com/shared/charts/-/blob/master/values.yaml) of the Chart. This uses Postgres, Redis and S3 via [MinIO](https://min.io/) as in-cluster deployments. This setup is not suited for production and may use insecure defaults.
+
+```
+helm repo add konfuzio-repo https://git.konfuzio.com/api/v4/projects/106/packages/helm/stable
+helm repo update
+helm install my-konfuzio konfuzio-repo/konfuzio-chart \  
+  --set envs.HOST_NAME="host-name-for-you-installation.com" \  
+  --set image.tag="released-****** \  
+  --set image.imageCredentials.username=****** \
+  --set image.imageCredentials.password=******
+```
+
 ### Upgrade
 
 Before upgrading your Konfuzio installation, you need to check the [changelog](./changelog_app.html)
