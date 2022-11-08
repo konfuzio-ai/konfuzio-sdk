@@ -436,7 +436,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 47
+        assert len(cls.project.virtual_documents) == 48
 
     # def test_document_only_needs_project(self):
     #     """Test that a Document can be created without category"""
@@ -1219,6 +1219,63 @@ class TestOfflineDataSetup(unittest.TestCase):
         Annotation(document=document, spans=[first_span], label_set=self.label_set, label=self.label)
         Annotation(document=document, spans=[first_span, second_span], label_set=self.label_set, label=self.label)
         assert len(document.annotations(use_correct=False)) == 2
+
+    def test_merge_vertical(self):
+        """Test the vertical merging of spans into a single Annotation."""
+        document_bbox = {
+            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'page_number': 1, 'text': 'p'},
+            '1': {'x0': 2, 'x1': 3, 'y0': 0, 'y1': 2, 'page_number': 1, 'text': '1'},
+            '2': {'x0': 4, 'x1': 5, 'y0': 0, 'y1': 2, 'page_number': 1, 'text': ' '},
+            '3': {'x0': 5, 'x1': 6, 'y0': 0, 'y1': 2, 'page_number': 1, 'text': 'r'},
+            '4': {'x0': 7, 'x1': 8, 'y0': 0, 'y1': 2, 'page_number': 1, 'text': 'a'},
+            '5': {'x0': 2, 'x1': 3, 'y0': 3, 'y1': 5, 'page_number': 1, 'text': 'p'},
+            '6': {'x0': 5, 'x1': 6, 'y0': 3, 'y1': 5, 'page_number': 1, 'text': '2'},
+            '7': {'x0': 7, 'x1': 8, 'y0': 3, 'y1': 5, 'page_number': 1, 'text': ' '},
+            '8': {'x0': 8, 'x1': 9, 'y0': 3, 'y1': 5, 'page_number': 1, 'text': 'r'},
+            '9': {'x0': 10, 'x1': 11, 'y0': 3, 'y1': 5, 'page_number': 1, 'text': 'a'},
+            '10': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'page_number': 2, 'text': 'r'},
+            '11': {'x0': 2, 'x1': 3, 'y0': 0, 'y1': 2, 'page_number': 2, 'text': 'a'},
+            '12': {'x0': 4, 'x1': 5, 'y0': 0, 'y1': 2, 'page_number': 2, 'text': 'p'},
+            '13': {'x0': 5, 'x1': 6, 'y0': 0, 'y1': 2, 'page_number': 2, 'text': '3'},
+            '14': {'x0': 7, 'x1': 8, 'y0': 3, 'y1': 5, 'page_number': 2, 'text': 'p'},
+            '15': {'x0': 2, 'x1': 3, 'y0': 3, 'y1': 5, 'page_number': 2, 'text': '4'},
+            '16': {'x0': 5, 'x1': 6, 'y0': 3, 'y1': 5, 'page_number': 2, 'text': 'r'},
+            '17': {'x0': 7, 'x1': 8, 'y0': 3, 'y1': 5, 'page_number': 2, 'text': 'a'},
+        }
+
+        document = Document(
+            project=self.project, category=self.category, text='p1 ra\np2 ra\fra p3\np4 ra', bbox=document_bbox
+        )
+        span1 = Span(start_offset=0, end_offset=2)
+        span2 = Span(start_offset=6, end_offset=8)
+        span3 = Span(start_offset=15, end_offset=17)
+        span4 = Span(start_offset=18, end_offset=20)
+
+        _ = Annotation(
+            document=document, is_correct=False, label=self.label, label_set=self.project.no_label_set, spans=[span1]
+        )
+        _ = Annotation(
+            document=document, is_correct=False, label=self.label, label_set=self.project.no_label_set, spans=[span2]
+        )
+        _ = Annotation(
+            document=document, is_correct=False, label=self.label, label_set=self.project.no_label_set, spans=[span3]
+        )
+        _ = Annotation(
+            document=document, is_correct=False, label=self.label, label_set=self.project.no_label_set, spans=[span4]
+        )
+
+        assert span1.offset_string == 'p1'
+        assert span2.offset_string == 'p2'
+        assert span3.offset_string == 'p3'
+        assert span4.offset_string == 'p4'
+
+        assert len(document.spans()) == 4
+        assert len(document.annotations(use_correct=False)) == 4
+
+        document.merge_vertical()
+
+        assert len(document.spans()) == 4
+        # assert len(document.annotations(use_correct=False)) == 2  # WIP
 
     def test_lose_weight(self):
         """Lose weight should remove session and documents."""
