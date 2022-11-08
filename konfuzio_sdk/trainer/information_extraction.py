@@ -149,139 +149,139 @@ def get_bboxes_by_coordinates(doc_bbox: Dict, selection_bboxes: List[Dict]) -> L
     return final_bboxes
 
 
-def flush_buffer(buffer: List[pandas.Series], doc_text: str) -> Dict:
-    """
-    Merge a buffer of entities into a dictionary (which will eventually be turned into a DataFrame).
+# def flush_buffer(buffer: List[pandas.Series], doc_text: str) -> Dict:
+#     """
+#     Merge a buffer of entities into a dictionary (which will eventually be turned into a DataFrame).
 
-    A buffer is a list of pandas.Series objects.
-    """
-    assert 'label_name' in buffer[0]
-    if 'label_name' in buffer[0]:
-        label = buffer[0]['label_name']
+#     A buffer is a list of pandas.Series objects.
+#     """
+#     assert 'label_name' in buffer[0]
+#     if 'label_name' in buffer[0]:
+#         label = buffer[0]['label_name']
 
-    # considering multiline case
-    # if merge_vertical:
-    #     starts = []
-    #     ends = []
-    #     text = ""
-    #     n_buf = len(buffer)
-    #     for ind, buf in enumerate(buffer):
-    #         starts.append(buf['start_offset'])
-    #         ends.append(buf['end_offset'])
-    #         text += doc_text[buf['start_offset'] : buf['end_offset']]
-    #         if ind < n_buf - 1:
-    #             text += '\n'
-    # else:
-    starts = buffer[0]['start_offset']
-    ends = buffer[-1]['end_offset']
-    text = doc_text[starts:ends]
+#     # considering multiline case
+#     # if merge_vertical:
+#     #     starts = []
+#     #     ends = []
+#     #     text = ""
+#     #     n_buf = len(buffer)
+#     #     for ind, buf in enumerate(buffer):
+#     #         starts.append(buf['start_offset'])
+#     #         ends.append(buf['end_offset'])
+#     #         text += doc_text[buf['start_offset'] : buf['end_offset']]
+#     #         if ind < n_buf - 1:
+#     #             text += '\n'
+#     # else:
+#     starts = buffer[0]['start_offset']
+#     ends = buffer[-1]['end_offset']
+#     text = doc_text[starts:ends]
 
-    res_dict = dict()
-    res_dict['start_offset'] = starts
-    res_dict['end_offset'] = ends
-    res_dict['label_name'] = label
-    res_dict['offset_string'] = text
-    # res_dict['Translated_Candidate'] = res_dict['Candidate']
-    # res_dict['Translation'] = None
-    res_dict['confidence'] = numpy.mean([b['confidence'] for b in buffer])  # if b['confidence'] > 0.1])
-    res_dict['x0'] = min([b['x0'] for b in buffer])
-    res_dict['x1'] = max([b['x1'] for b in buffer])
-    res_dict['y0'] = min([b['y0'] for b in buffer])
-    res_dict['y1'] = max([b['y1'] for b in buffer])
-    return res_dict
+#     res_dict = dict()
+#     res_dict['start_offset'] = starts
+#     res_dict['end_offset'] = ends
+#     res_dict['label_name'] = label
+#     res_dict['offset_string'] = text
+#     # res_dict['Translated_Candidate'] = res_dict['Candidate']
+#     # res_dict['Translation'] = None
+#     res_dict['confidence'] = numpy.mean([b['confidence'] for b in buffer])  # if b['confidence'] > 0.1])
+#     res_dict['x0'] = min([b['x0'] for b in buffer])
+#     res_dict['x1'] = max([b['x1'] for b in buffer])
+#     res_dict['y0'] = min([b['y0'] for b in buffer])
+#     res_dict['y1'] = max([b['y1'] for b in buffer])
+#     return res_dict
 
 
-def is_valid_merge(
-    row: pandas.Series,
-    buffer: List[pandas.Series],
-    doc_text: str,
-    label_types: Dict[str, str],
-    doc_bbox: Union[None, Dict] = None,
-    offsets_per_page: Union[None, Dict] = None,
-    max_offset_distance: int = 5,
-) -> bool:
-    """
-    Verify if the merging that we are trying to do is valid.
+# def is_valid_merge(
+#     row: pandas.Series,
+#     buffer: List[pandas.Series],
+#     doc_text: str,
+#     label_types: Dict[str, str],
+#     doc_bbox: Union[None, Dict] = None,
+#     offsets_per_page: Union[None, Dict] = None,
+#     max_offset_distance: int = 5,
+# ) -> bool:
+#     """
+#     Verify if the merging that we are trying to do is valid.
 
-    If merging certain labels we only merge them if their merge keeps them a valid data type.
+#     If merging certain labels we only merge them if their merge keeps them a valid data type.
 
-    For example if two dates are next to each other in text then we only want to merge them if the result of the merge
-    is still a valid date.
+#     For example if two dates are next to each other in text then we only want to merge them if the result of the merge
+#     is still a valid date.
 
-    If merging vertically we only check the vertical merging condition. Everything else is skipped.
+#     If merging vertically we only check the vertical merging condition. Everything else is skipped.
 
-    :param row: Row candidate to be merged to what is already in the buffer.
-    :param buffer: Previous information.
-    :param doc_text: Text of the document.
-    :param label_types: Types of the entities.
-    :param doc_bbox: Bboxes of the characters in the document.
-    :param offsets_per_page: Start and end offset of each page in the document.
-    :param max_offset_distance: Maximum distance between two entities that can be merged.
-    :return: If the merge is valid or not.
-    """
-    # Vertical case
-    # if merge_vertical:
-    #     return is_valid_merge_vertical(row=row, buffer=buffer, doc_bbox=doc_bbox, offsets_per_page=offsets_per_page)
+#     :param row: Row candidate to be merged to what is already in the buffer.
+#     :param buffer: Previous information.
+#     :param doc_text: Text of the document.
+#     :param label_types: Types of the entities.
+#     :param doc_bbox: Bboxes of the characters in the document.
+#     :param offsets_per_page: Start and end offset of each page in the document.
+#     :param max_offset_distance: Maximum distance between two entities that can be merged.
+#     :return: If the merge is valid or not.
+#     """
+#     # Vertical case
+#     # if merge_vertical:
+#     #     return is_valid_merge_vertical(row=row, buffer=buffer, doc_bbox=doc_bbox, offsets_per_page=offsets_per_page)
 
-    # Horizontal case
-    # only merge if candidate is above accuracy threshold for merging
-    # if threshold is None:
-    #     threshold = 0.1
+#     # Horizontal case
+#     # only merge if candidate is above accuracy threshold for merging
+#     # if threshold is None:
+#     #     threshold = 0.1
 
-    if row['confidence'] < row['label_threshold']:
-        return False
-    # only merge if all are the same data type
-    if len(set(label_types)) > 1:
-        return False
+#     if row['confidence'] < row['label_threshold']:
+#         return False
+#     # only merge if all are the same data type
+#     if len(set(label_types)) > 1:
+#         return False
 
-    if doc_bbox is not None:
-        # only merge if there are no characters in between (or only maximum of 5 whitespaces)
-        char_bboxes = [
-            doc_bbox[str(char_bbox_id)]
-            for char_bbox_id in range(buffer[-1]['end_offset'], row['start_offset'])
-            if str(char_bbox_id) in doc_bbox
-        ]
+#     if doc_bbox is not None:
+#         # only merge if there are no characters in between (or only maximum of 5 whitespaces)
+#         char_bboxes = [
+#             doc_bbox[str(char_bbox_id)]
+#             for char_bbox_id in range(buffer[-1]['end_offset'], row['start_offset'])
+#             if str(char_bbox_id) in doc_bbox
+#         ]
 
-        char_text = [chat_bbox['text'] for chat_bbox in char_bboxes]
-        # Do not merge if there are characters between
-        if not all([c == '' or c == ' ' for c in char_text]):
-            return False
+#         char_text = [chat_bbox['text'] for chat_bbox in char_bboxes]
+#         # Do not merge if there are characters between
+#         if not all([c == '' or c == ' ' for c in char_text]):
+#             return False
 
-        # Do not merge if there are more than the maximum offset distance
-        if len(char_text) > max_offset_distance:
-            return False
+#         # Do not merge if there are more than the maximum offset distance
+#         if len(char_text) > max_offset_distance:
+#             return False
 
-    # Do not merge if the difference in the offsets is bigger than the maximum offset distance
-    if row['start_offset'] - buffer[-1]['end_offset'] > max_offset_distance:
-        return False
+#     # Do not merge if the difference in the offsets is bigger than the maximum offset distance
+#     if row['start_offset'] - buffer[-1]['end_offset'] > max_offset_distance:
+#         return False
 
-    # only merge if text is on same line
-    # row can include entity that is already part of the buffer (buffer: Ankerkette Meterware, row: Ankerkette)
-    if (
-        '\n'
-        in doc_text[
-            min(buffer[0]['start_offset'], row['start_offset']) : max(buffer[-1]['end_offset'], row['end_offset'])
-        ]
-    ):
-        return False
-    # always merge if not one of these data types
-    # never merge numbers or positive numbers
-    if label_types[0] not in {'Number', 'Positive Number', 'Percentage', 'Date'}:
-        return True
-    # only merge percentages if the result of the merge is still a percentage
-    if label_types[0] == 'Percentage':
-        text = doc_text[buffer[0]['start_offset'] : row['end_offset']]
-        merge = normalize_to_percentage(text)
-        return merge is not None
-    # only merge date if the result of the merge is still a date
-    if label_types[0] == 'Date':
-        text = doc_text[buffer[0]['start_offset'] : row['end_offset']]
-        merge = normalize_to_date(text)
-        return merge is not None
-    # should only get here if we have a single data type that is either Number or Positive Number,
-    # which we do not merge
-    else:
-        return False
+#     # only merge if text is on same line
+#     # row can include entity that is already part of the buffer (buffer: Ankerkette Meterware, row: Ankerkette)
+#     if (
+#         '\n'
+#         in doc_text[
+#             min(buffer[0]['start_offset'], row['start_offset']) : max(buffer[-1]['end_offset'], row['end_offset'])
+#         ]
+#     ):
+#         return False
+#     # always merge if not one of these data types
+#     # never merge numbers or positive numbers
+#     if label_types[0] not in {'Number', 'Positive Number', 'Percentage', 'Date'}:
+#         return True
+#     # only merge percentages if the result of the merge is still a percentage
+#     if label_types[0] == 'Percentage':
+#         text = doc_text[buffer[0]['start_offset'] : row['end_offset']]
+#         merge = normalize_to_percentage(text)
+#         return merge is not None
+#     # only merge date if the result of the merge is still a date
+#     if label_types[0] == 'Date':
+#         text = doc_text[buffer[0]['start_offset'] : row['end_offset']]
+#         merge = normalize_to_date(text)
+#         return merge is not None
+#     # should only get here if we have a single data type that is either Number or Positive Number,
+#     # which we do not merge
+#     else:
+#         return False
 
 
 def is_valid_merge_vertical(
@@ -1791,6 +1791,7 @@ class Trainer:
                         )
         return virtual_doc
 
+    @staticmethod
     def flush_buffer(buffer: List[pandas.Series], doc_text: str) -> Dict:
         """
         Merge a buffer of entities into a dictionary (which will eventually be turned into a DataFrame).
@@ -1817,6 +1818,137 @@ class Trainer:
         res_dict['y0'] = min([b['y0'] for b in buffer])
         res_dict['y1'] = max([b['y1'] for b in buffer])
         return res_dict
+
+    def merge_df(
+        self,
+        df: pandas.DataFrame,
+        doc_text: str,
+        doc_bbox: Union[Dict, None] = None,
+    ) -> pandas.DataFrame:
+        """
+        Merge a DataFrame of entities with matching predicted sections/labels.
+
+        Merge is performed between entities which are only separated by a space.
+        Stores entities to be merged in the `buffer` and then creates a dict from those entities by calling `flush_buffer`.
+        All of the dicts created by `flush_buffer` are then converted into a DataFrame and then returned.
+        """
+        res_dicts = []
+        buffer = []
+        end = None
+
+        offsets_per_page = None
+
+        label_types = [row['data_type'] for _, row in df.iterrows()]
+
+        for _, row in df.iterrows():  # iterate over the rows in the DataFrame
+            # if they are valid merges then add to buffer
+            if end and self.is_valid_merge(
+                row,
+                buffer,
+                doc_text,
+                label_types,
+                doc_bbox,
+                offsets_per_page,
+                # merge_vertical,
+            ):
+                buffer.append(row)
+                end = row['end_offset']
+            else:  # else, flush the buffer by creating a res_dict
+                if buffer:
+                    res_dict = self.flush_buffer(buffer, doc_text)
+                    res_dicts.append(res_dict)
+                buffer = []
+                buffer.append(row)
+                end = row['end_offset']
+        if buffer:  # flush buffer at the very end to clear anything left over
+            res_dict = self.flush_buffer(buffer, doc_text)
+            res_dicts.append(res_dict)
+        df = pandas.DataFrame(res_dicts)  # convert the list of res_dicts created by `flush_buffer` into a DataFrame
+        return df
+
+    def is_valid_merge(
+        self,
+        row: pandas.Series,
+        buffer: List[pandas.Series],
+        doc_text: str,
+        label_types: Dict[str, str],
+        doc_bbox: Union[None, Dict] = None,
+        offsets_per_page: Union[None, Dict] = None,
+        max_offset_distance: int = 5,
+    ) -> bool:
+        """
+        Verify if the merging that we are trying to do is valid.
+
+        If merging certain labels we only merge them if their merge keeps them a valid data type.
+
+        For example if two dates are next to each other in text then we only want to merge them if the result of the merge
+        is still a valid date.
+
+        If merging vertically we only check the vertical merging condition. Everything else is skipped.
+
+        :param row: Row candidate to be merged to what is already in the buffer.
+        :param buffer: Previous information.
+        :param doc_text: Text of the document.
+        :param label_types: Types of the entities.
+        :param doc_bbox: Bboxes of the characters in the document.
+        :param offsets_per_page: Start and end offset of each page in the document.
+        :param max_offset_distance: Maximum distance between two entities that can be merged.
+        :return: If the merge is valid or not.
+        """
+        if row['confidence'] < row['label_threshold']:
+            return False
+        # only merge if all are the same data type
+        if len(set(label_types)) > 1:
+            return False
+
+        if doc_bbox is not None:
+            # only merge if there are no characters in between (or only maximum of 5 whitespaces)
+            char_bboxes = [
+                doc_bbox[str(char_bbox_id)]
+                for char_bbox_id in range(buffer[-1]['end_offset'], row['start_offset'])
+                if str(char_bbox_id) in doc_bbox
+            ]
+
+            char_text = [chat_bbox['text'] for chat_bbox in char_bboxes]
+            # Do not merge if there are characters between
+            if not all([c == '' or c == ' ' for c in char_text]):
+                return False
+
+            # Do not merge if there are more than the maximum offset distance
+            if len(char_text) > max_offset_distance:
+                return False
+
+        # Do not merge if the difference in the offsets is bigger than the maximum offset distance
+        if row['start_offset'] - buffer[-1]['end_offset'] > max_offset_distance:
+            return False
+
+        # only merge if text is on same line
+        # row can include entity that is already part of the buffer (buffer: Ankerkette Meterware, row: Ankerkette)
+        if (
+            '\n'
+            in doc_text[
+                min(buffer[0]['start_offset'], row['start_offset']) : max(buffer[-1]['end_offset'], row['end_offset'])
+            ]
+        ):
+            return False
+        # always merge if not one of these data types
+        # never merge numbers or positive numbers
+        if label_types[0] not in {'Number', 'Positive Number', 'Percentage', 'Date'}:
+            return True
+        # only merge percentages if the result of the merge is still a percentage
+        if label_types[0] == 'Percentage':
+            text = doc_text[buffer[0]['start_offset'] : row['end_offset']]
+            merge = normalize_to_percentage(text)
+            return merge is not None
+        # only merge date if the result of the merge is still a date
+        if label_types[0] == 'Date':
+            text = doc_text[buffer[0]['start_offset'] : row['end_offset']]
+            merge = normalize_to_date(text)
+            return merge is not None
+        # should only get here if we have a single data type that is either Number or Positive Number,
+        # which we do not merge
+        else:
+            return False
 
     def save(self, output_dir: str, include_konfuzio=True):
         """
@@ -2456,53 +2588,6 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
                 # if it's a dict then it is a res_dict within a list of sections
                 merged_res_dict[section_label] = self.merge_dict(res_dict=items, document=document)
         return merged_res_dict
-
-    def merge_df(
-        self,
-        df: pandas.DataFrame,
-        doc_text: str,
-        doc_bbox: Union[Dict, None] = None,
-    ) -> pandas.DataFrame:
-        """
-        Merge a DataFrame of entities with matching predicted sections/labels.
-
-        Merge is performed between entities which are only separated by a space.
-        Stores entities to be merged in the `buffer` and then creates a dict from those entities by calling `flush_buffer`.
-        All of the dicts created by `flush_buffer` are then converted into a DataFrame and then returned.
-        """
-        res_dicts = []
-        buffer = []
-        end = None
-
-        offsets_per_page = None
-
-        label_types = [row['data_type'] for _, row in df.iterrows()]
-
-        for _, row in df.iterrows():  # iterate over the rows in the DataFrame
-            # if they are valid merges then add to buffer
-            if end and is_valid_merge(
-                row,
-                buffer,
-                doc_text,
-                label_types,
-                doc_bbox,
-                offsets_per_page,
-                # merge_vertical,
-            ):
-                buffer.append(row)
-                end = row['end_offset']
-            else:  # else, flush the buffer by creating a res_dict
-                if buffer:
-                    res_dict = flush_buffer(buffer, doc_text)
-                    res_dicts.append(res_dict)
-                buffer = []
-                buffer.append(row)
-                end = row['end_offset']
-        if buffer:  # flush buffer at the very end to clear anything left over
-            res_dict = flush_buffer(buffer, doc_text)
-            res_dicts.append(res_dict)
-        df = pandas.DataFrame(res_dicts)  # convert the list of res_dicts created by `flush_buffer` into a DataFrame
-        return df
 
     def separate_labels(self, res_dict: 'Dict') -> 'Dict':
         """
