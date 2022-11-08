@@ -383,7 +383,7 @@ def is_valid_merge_vertical(
 #     Merge a DataFrame of entities with matching predicted sections/labels.
 
 #     Merge is performed between entities which are only separated by a space.
-#     Stores entities to be merged in the `buffer` and then creates a dict from those entities by calling `flush_buffer`.
+#     Stores entities to be merged in the `buffer` and then creates a dict from those entities by calling `flush_buffer`
 #     All of the dicts created by `flush_buffer` are then converted into a DataFrame and then returned.
 #     """
 #     res_dicts = []
@@ -1792,6 +1792,32 @@ class Trainer:
         return virtual_doc
 
     @staticmethod
+    def merge_horizontal(res_dict: Dict, document: Document) -> Dict:
+        """Merge contiguous spans with same predicted label."""
+        doc_text = document.text
+        doc_bbox = document.get_bbox()
+        merged_res_dict = dict()  # stores final results
+        for section_label, items in res_dict.items():
+            if isinstance(items, pandas.DataFrame):  # perform merge on DataFrames within res_dict
+
+                merged_df = Trainer.merge_df(
+                    df=items,
+                    doc_text=doc_text,
+                    doc_bbox=doc_bbox,
+                )
+                merged_res_dict[section_label] = merged_df
+            # if the value of the res_dict is not a DataFrame then we recursively call merge_horizontal on it
+            elif isinstance(items, list):
+                # if it's a list then it is a list of sections
+                merged_res_dict[section_label] = [
+                    Trainer.merge_horizontal(res_dict=item, document=document) for item in items
+                ]
+            elif isinstance(items, dict):
+                # if it's a dict then it is a res_dict within a list of sections
+                merged_res_dict[section_label] = Trainer.merge_horizontal(res_dict=items, document=document)
+        return merged_res_dict
+
+    @staticmethod
     def flush_buffer(buffer: List[pandas.Series], doc_text: str) -> Dict:
         """
         Merge a buffer of entities into a dictionary (which will eventually be turned into a DataFrame).
@@ -1819,8 +1845,8 @@ class Trainer:
         res_dict['y1'] = max([b['y1'] for b in buffer])
         return res_dict
 
+    @staticmethod
     def merge_df(
-        self,
         df: pandas.DataFrame,
         doc_text: str,
         doc_bbox: Union[Dict, None] = None,
@@ -1829,51 +1855,46 @@ class Trainer:
         Merge a DataFrame of entities with matching predicted sections/labels.
 
         Merge is performed between entities which are only separated by a space.
-        Stores entities to be merged in the `buffer` and then creates a dict from those entities by calling `flush_buffer`.
+        Stores entities to be merged in the `buffer` and then creates a dict from those entities with `flush_buffer`.
         All of the dicts created by `flush_buffer` are then converted into a DataFrame and then returned.
         """
         res_dicts = []
         buffer = []
         end = None
 
-        offsets_per_page = None
-
         label_types = [row['data_type'] for _, row in df.iterrows()]
 
         for _, row in df.iterrows():  # iterate over the rows in the DataFrame
             # if they are valid merges then add to buffer
-            if end and self.is_valid_merge(
+            if end and Trainer.is_valid_merge(
                 row,
                 buffer,
                 doc_text,
                 label_types,
                 doc_bbox,
-                offsets_per_page,
-                # merge_vertical,
             ):
                 buffer.append(row)
                 end = row['end_offset']
             else:  # else, flush the buffer by creating a res_dict
                 if buffer:
-                    res_dict = self.flush_buffer(buffer, doc_text)
+                    res_dict = Trainer.flush_buffer(buffer, doc_text)
                     res_dicts.append(res_dict)
                 buffer = []
                 buffer.append(row)
                 end = row['end_offset']
         if buffer:  # flush buffer at the very end to clear anything left over
-            res_dict = self.flush_buffer(buffer, doc_text)
+            res_dict = Trainer.flush_buffer(buffer, doc_text)
             res_dicts.append(res_dict)
         df = pandas.DataFrame(res_dicts)  # convert the list of res_dicts created by `flush_buffer` into a DataFrame
         return df
 
+    @staticmethod
     def is_valid_merge(
-        self,
         row: pandas.Series,
         buffer: List[pandas.Series],
         doc_text: str,
         label_types: Dict[str, str],
         doc_bbox: Union[None, Dict] = None,
-        offsets_per_page: Union[None, Dict] = None,
         max_offset_distance: int = 5,
     ) -> bool:
         """
@@ -1881,8 +1902,8 @@ class Trainer:
 
         If merging certain labels we only merge them if their merge keeps them a valid data type.
 
-        For example if two dates are next to each other in text then we only want to merge them if the result of the merge
-        is still a valid date.
+        For example if two dates are next to each other in text then we only want to merge them if the result of
+        the merge is still a valid date.
 
         If merging vertically we only check the vertical merging condition. Everything else is skipped.
 
@@ -1891,7 +1912,6 @@ class Trainer:
         :param doc_text: Text of the document.
         :param label_types: Types of the entities.
         :param doc_bbox: Bboxes of the characters in the document.
-        :param offsets_per_page: Start and end offset of each page in the document.
         :param max_offset_distance: Maximum distance between two entities that can be merged.
         :return: If the merge is valid or not.
         """
@@ -2546,7 +2566,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         # res_dict = self.filter_low_confidence_extractions(res_dict)
 
-        res_dict = self.merge_dict(res_dict, inference_document)
+        res_dict = self.merge_horizontal(res_dict, inference_document)
 
         # Try to calculate sections based on template classifier.
         if self.template_clf is not None:  # todo smarter handling of multiple clf
@@ -2558,36 +2578,12 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         virtual_doc = self.extraction_result_to_document(inference_document, res_dict)
 
-        # join document Spans into multi-line Annotation
-
         self.tokenizer.found_spans(virtual_doc)
 
-        # merge vertical
+        # join document Spans into multi-line Annotation
+        virtual_doc.merge_vertical()
 
         return virtual_doc
-
-    def merge_dict(self, res_dict: Dict, document: Document) -> Dict:
-        """Merge contiguous spans with same predicted label."""
-        doc_text = document.text
-        doc_bbox = document.get_bbox()
-        merged_res_dict = dict()  # stores final results
-        for section_label, items in res_dict.items():
-            if isinstance(items, pandas.DataFrame):  # perform merge on DataFrames within res_dict
-
-                merged_df = self.merge_df(
-                    df=items,
-                    doc_text=doc_text,
-                    doc_bbox=doc_bbox,
-                )
-                merged_res_dict[section_label] = merged_df
-            # if the value of the res_dict is not a DataFrame then we recursively call merge_annotations on it
-            elif isinstance(items, list):
-                # if it's a list then it is a list of sections
-                merged_res_dict[section_label] = [self.merge_dict(res_dict=item, document=document) for item in items]
-            elif isinstance(items, dict):
-                # if it's a dict then it is a res_dict within a list of sections
-                merged_res_dict[section_label] = self.merge_dict(res_dict=items, document=document)
-        return merged_res_dict
 
     def separate_labels(self, res_dict: 'Dict') -> 'Dict':
         """
