@@ -259,7 +259,7 @@ class SplittingAI:
     predictions, the Document is split on pages predicted as first, and a set of new shorter Documents is produced.
     """
 
-    def __init__(self, model_path: str, project_id=None):
+    def __init__(self, model_path: str = '', project_id=None, train: bool = False):
         """
         Load fusion model, VGG16 model, BERT and BERTTokenizer.
 
@@ -267,15 +267,22 @@ class SplittingAI:
         :type model_path: str
         :param project_id: Project from which the Documents eligible for splitting are taken.
         :type project_id: int
+        :param train: Whether to train a new filesplitting model or not.
+        :type train: bool
         """
         self.file_splitter = FileSplittingModel(project_id=project_id)
         self.project = Project(id_=project_id)
-        if Path(model_path).exists():
+        self.bert_model, self.tokenizer = self.file_splitter.init_bert()
+        self.train = train
+        self.model_path = model_path
+        if Path(self.model_path).exists() and self.model_path != '':
             self.model = load_model(self.project.model_folder + '/fusion.h5')
         else:
-            logging.info('Model not found, starting training.')
-            self.model = self.file_splitter.train()
-        self.bert_model, self.tokenizer = self.file_splitter.init_bert()
+            if self.train:
+                logging.info('Model not found, starting training.')
+                self.model = self.file_splitter.train()
+            else:
+                logging.info('Model not found, apply fallback logic.')
 
     def _preprocess_inputs(self, text: str, image) -> List:
         inputs = self.tokenizer(text, truncation=True, return_tensors='pt')
@@ -315,10 +322,31 @@ class SplittingAI:
     def _suggest_page_split(self, document: Document) -> List[Document]:
         suggested_splits = []
         document.get_images()
-        for page_i, page in enumerate(document.pages()):
-            is_first_page = self._predict(page.text, page.image_path, self.model)
-            if is_first_page:
-                suggested_splits.append(page)
+        if Path(self.model_path).exists() and self.model_path != '':
+            for page_i, page in enumerate(document.pages()):
+                is_first_page = self._predict(page.text, page.image_path, self.model)
+                if is_first_page:
+                    suggested_splits.append(page)
+        else:
+            first_page_spans = set()
+            another_page_spans = set()
+            for page in document.pages():
+                if page.number == 1:
+                    for span in page.spans():
+                        first_page_spans.add(span)
+                else:
+                    for span in page.spans():
+                        another_page_spans.add(span)
+            first_page_spans = first_page_spans - another_page_spans
+            for page in document.pages():
+                all_spans = len(page.spans())
+                intersection_spans = 0
+                for span in page.spans():
+                    if span in first_page_spans:
+                        intersection_spans += 1
+                first_page_percentage = intersection_spans / all_spans
+                if first_page_percentage >= 0.5:
+                    suggested_splits.append(page)
         split_docs = []
         first_page = document.pages()[0]
         last_page = document.pages()[-1]
@@ -338,5 +366,6 @@ class SplittingAI:
         :param document: An input Document to be split.
         :return: A list of suggested new sub-Documents built from the original Document.
         """
+        # where to check if an according Categorization model exists?
         split_docs = self._suggest_page_split(document)
         return split_docs

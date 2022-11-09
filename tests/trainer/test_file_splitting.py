@@ -32,10 +32,17 @@ class TestFileSplittingModel(unittest.TestCase):
             pred = file_splitter.propose_split_documents(doc)
             assert len(pred) == 1
 
-    def test_split_document(self):
-        """Propose splittings for a document."""
+    def test_split_document_model(self):
+        """Propose splittings for a document using the model."""
         doc = self.train_data[0]
         splitting_ai = file_splitting.SplittingAI(self.project.model_folder + '/fusion.h5', project_id=TEST_PROJECT_ID)
         proposed = doc.propose_splitting(splitting_ai)
         assert len(proposed) == 1
         Path(self.project.model_folder + '/fusion.h5').unlink()
+
+    def test_split_document_fallback_logic(self):
+        """Propose splittings for a document using the fallback logic."""
+        splitting_ai = file_splitting.SplittingAI(project_id=TEST_PROJECT_ID, train=False)
+        for doc in self.test_data:
+            pred = splitting_ai.propose_split_documents(doc)
+            assert len(pred) == 1
