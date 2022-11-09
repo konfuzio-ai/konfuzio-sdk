@@ -2,6 +2,7 @@
 from typing import Tuple, List, Optional
 
 import pandas
+import numpy
 from sklearn.utils.extmath import weighted_mode
 
 from konfuzio_sdk.utils import sdk_isinstance
@@ -40,6 +41,8 @@ RELEVANT_FOR_EVALUATION = [
     "is_correct_label_set",
     "is_correct_annotation_set_id",
     "is_correct_id_",
+    "duplicated",
+    "duplicated_predicted",
 ]
 
 
@@ -93,8 +96,12 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
         spans["end_offset_predicted"] = spans['end_offset']  # start and end offset are identical
 
         spans["above_predicted_threshold"] = spans["confidence_predicted"] >= spans["label_threshold_predicted"]
+
         spans["is_correct_label"] = spans["label_id"] == spans["label_id_predicted"]
         spans["is_correct_label_set"] = spans["label_set_id"] == spans["label_set_id_predicted"]
+        spans['duplicated'] = False
+        spans['duplicated_predicted'] = False
+
         # add check to evaluate multiline Annotations
         spans = spans.groupby("id_local", dropna=False).apply(lambda group: grouped(group, "id_"))
         # add check to evaluate Annotation Sets
@@ -113,6 +120,11 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
         spans["is_correct_label_set"] = True
         spans["label_id_predicted"] = spans["label_id"]
         spans["label_set_id_predicted"] = spans["label_set_id"]
+
+        spans = spans.sort_values(by='is_matched', ascending=False)
+        spans['duplicated'] = spans.duplicated(subset=['id_local'], keep='first')
+        spans['duplicated_predicted'] = spans.duplicated(subset=['id_local_predicted'], keep='first')
+        spans = spans.drop(spans[(spans['duplicated']) & (spans['duplicated_predicted'])].index)
         # add check to evaluate multiline Annotations
         spans = spans.groupby("id_local", dropna=False).apply(lambda group: grouped(group, "id_"))
         # add check to evaluate Annotation Sets
@@ -123,11 +135,54 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
 
     assert not spans.empty  # this function must be able to evaluate any two docs even without annotations
 
+    spans["tokenizer_true_positive"] = (
+        (spans["is_correct"])
+        & (spans["is_matched"])
+        & (spans["start_offset_predicted"] == spans['start_offset'])
+        & (spans["end_offset_predicted"] == spans['end_offset'])
+        & (spans["document_id_local_predicted"].notna())
+    )
+
+    spans["tokenizer_false_negative"] = (
+        (spans["is_correct"]) & (spans["is_matched"]) & (spans["document_id_local_predicted"].isna())
+    )
+
+    spans["tokenizer_false_positive"] = (
+        (~spans["tokenizer_false_negative"])
+        & (~spans["tokenizer_true_positive"])
+        & (spans["document_id_local_predicted"].notna())
+        & (spans["end_offset"] != 0)  # ignore placeholder
+    )
+
+    spans["clf_true_positive"] = (
+        (spans["is_correct"])
+        & (spans["is_matched"])
+        & (spans["document_id_local_predicted"].notna())
+        & (spans["above_predicted_threshold"])
+        & (spans["is_correct_label"])
+    )
+
+    spans["clf_false_negative"] = (
+        (spans["is_correct"])
+        & (spans["is_matched"])
+        & (spans["document_id_local_predicted"].notna())
+        & (~spans["above_predicted_threshold"])
+        & (spans["is_correct_label"])
+    )
+
+    spans["clf_false_positive"] = (
+        (spans["is_correct"])
+        & (spans["is_matched"])
+        & (spans["document_id_local_predicted"].notna())
+        & (~spans["is_correct_label"])
+    )
+
     # Evaluate which **spans** are TN, TP, FP and keep RELEVANT_FOR_MAPPING to allow grouping of confidence measures
-    spans["true_positive"] = 1 * (
+    spans["true_positive"] = (
         (spans["is_matched"])
         & (spans["is_correct"])
         & (spans["above_predicted_threshold"])
+        & (~spans["duplicated"])
         & (  # Everything is correct
             (spans["is_correct_label"])
             & (spans["is_correct_label_set"])
@@ -136,29 +191,26 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
         )
     )
 
-    spans["false_negative"] = 1 * (
-        (spans["is_correct"]) & ((~spans["is_matched"]) | (~spans["above_predicted_threshold"]))
+    spans["false_negative"] = (
+        (spans["is_correct"])
+        & (~spans["duplicated"])
+        & ((~spans["is_matched"]) | (~spans["above_predicted_threshold"]) | (spans["label_id_predicted"].isna()))
     )
 
-    spans["false_positive"] = 1 * (  # commented out on purpose (spans["is_correct"]) &
+    spans["false_positive"] = (  # commented out on purpose (spans["is_correct"]) &
         (spans["above_predicted_threshold"])
         & (~spans["false_negative"])
         & (~spans["true_positive"])
+        & (~spans["duplicated_predicted"])
         & (  # Something is wrong
             (~spans["is_correct_label"])
             | (~spans["is_correct_label_set"])
             | (~spans["is_correct_annotation_set_id"])
             | (~spans["is_correct_id_"])
+            | (~spans["is_matched"])
         )
     )
-
-    spans["is_found_by_tokenizer"] = 1 * (
-        (spans["start_offset"] == spans["start_offset_predicted"])
-        & (spans["end_offset"] == spans["end_offset_predicted"])
-        & (spans["is_correct"])
-        & (spans["document_id_local_predicted"].notna())
-    )
-
+    spans = spans.replace({numpy.nan: None})
     # one Span must not be defined as TP or FP or FN more than once
     quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) <= 1).all()
     assert quality
@@ -211,7 +263,7 @@ class EvaluationCalculator:
     @property
     def f1(self) -> Optional[float]:
         """Apply F1-score formula. Returns None if precision and recall are both None."""
-        return None if (self.tp + self.fp + self.fn == 0) else self.tp / (self.tp + 0.5 * (self.fp + self.fn))
+        return None if (self.tp + 0.5 * (self.fp + self.fn) == 0) else self.tp / (self.tp + 0.5 * (self.fp + self.fn))
 
 
 class Evaluation:
@@ -231,7 +283,7 @@ class Evaluation:
         self.calculate()
 
     def calculate(self):
-        """Calculate and update the data stored within this Evolution."""
+        """Calculate and update the data stored within this Evaluation."""
         evaluations = []  # start anew, the configuration of the Evaluation might have changed.
         for ground_truth, predicted in self.documents:
             evaluation = compare(
@@ -281,9 +333,29 @@ class Evaluation:
             len(self._query(search=search)) - self.tp(search=search) - self.fn(search=search) - self.fp(search=search)
         )
 
-    def tokenizer(self, search=None) -> int:
-        """Return the of all Spans that are found by the Tokenizer."""
-        return self._query(search=search)["is_found_by_tokenizer"].sum()
+    def tokenizer_tp(self, search=None) -> int:
+        """Return the tokenizer True Positives of all Spans."""
+        return self._query(search=search)["tokenizer_true_positive"].sum()
+
+    def tokenizer_fp(self, search=None) -> int:
+        """Return the tokenizer False Positives of all Spans."""
+        return self._query(search=search)["tokenizer_false_positive"].sum()
+
+    def tokenizer_fn(self, search=None) -> int:
+        """Return the tokenizer False Negatives of all Spans."""
+        return self._query(search=search)["tokenizer_false_negative"].sum()
+
+    def clf_tp(self, search=None) -> int:
+        """Return the Label classifier True Positives of all Spans."""
+        return self._query(search=search)["clf_true_positive"].sum()
+
+    def clf_fp(self, search=None) -> int:
+        """Return the Label classifier False Positives of all Spans."""
+        return self._query(search=search)["clf_false_positive"].sum()
+
+    def clf_fn(self, search=None) -> int:
+        """Return the Label classifier False Negatives of all Spans."""
+        return self._query(search=search)["clf_false_negative"].sum()
 
     def get_evaluation_data(self, search, allow_zero: bool = True) -> EvaluationCalculator:
         """Get precision, recall, f1, based on TP, FP, FN."""
@@ -291,15 +363,15 @@ class Evaluation:
             tp=self.tp(search), fp=self.fp(search), fn=self.fn(search), tn=self.tn(search), allow_zero=allow_zero
         )
 
-    def precision(self, search) -> Optional[float]:
+    def precision(self, search=None) -> Optional[float]:
         """Calculate the Precision and see f1 to calculate imbalanced classes."""
         return EvaluationCalculator(tp=self.tp(search=search), fp=self.fp(search=search)).precision
 
-    def recall(self, search) -> Optional[float]:
+    def recall(self, search=None) -> Optional[float]:
         """Calculate the Recall and see f1 to calculate imbalanced classes."""
         return EvaluationCalculator(tp=self.tp(search=search), fn=self.fn(search=search)).recall
 
-    def f1(self, search) -> Optional[float]:
+    def f1(self, search=None) -> Optional[float]:
         """Calculate the F1 Score of one class.
 
         Please note: As suggested by Opitz et al. (2021) use the arithmetic mean over individual F1 scores.
@@ -320,3 +392,27 @@ class Evaluation:
 
         """
         return EvaluationCalculator(tp=self.tp(search=search), fp=self.fp(search=search), fn=self.fn(search=search)).f1
+
+    def tokenizer_f1(self, search=None) -> Optional[float]:
+        """
+        Calculate the F1 Score of one the tokenizer.
+
+        :param search: Parameter used to calculate the value for one Data object.
+        """
+        return EvaluationCalculator(
+            tp=self.tokenizer_tp(search=search),
+            fp=self.tokenizer_fp(search=search),
+            fn=self.tokenizer_fn(search=search),
+        ).f1
+
+    def clf_f1(self, search=None) -> Optional[float]:
+        """
+        Calculate the F1 Score of one the Label classifier.
+
+        :param search: Parameter used to calculate the value for one Data object.
+        """
+        return EvaluationCalculator(
+            tp=self.clf_tp(search=search),
+            fp=self.clf_fp(search=search),
+            fn=self.clf_fn(search=search),
+        ).f1

@@ -188,6 +188,9 @@ And download any project via the id:
 
 ## Tutorials
 
+- [Train a Konfuzio SDK Model to Extract Information From Payslip Documents](https://dev.konfuzio.com/sdk/examples/examples.html#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/RFExtractionAI%20Demo.ipynb):
+  An example of how Konfuzio SDK package can be used in a pipeline to have an easy feedback workflow can be seen in this
+  tutorial
 - [Automate Annotations with Regex](https://dev.konfuzio.com/sdk/examples/examples.html#create-regex-based-annotations)
   : An example of how to create regex-based annotations in a Konfuzio project.
 - [Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations](https://dev.konfuzio.com/sdk/examples/examples.html#retrain-flair-ner-ontonotes-fast-with-human-revised-annotations) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/human_in_the_loop.ipynb):

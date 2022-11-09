@@ -31,6 +31,7 @@ from tests.variables import (
     TEST_RECEIPTS_CATEGORY_ID,
 )
 
+from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer
 from konfuzio_sdk.samples import LocalTextProject
 
 logger = logging.getLogger(__name__)
@@ -552,7 +553,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         """Define fallback threshold for a Label."""
         project = Project(id_=None)
         label = Label(project=project, text='Third Offline Label')
-        assert label.threshold == 0.0
+        assert label.threshold == 0.1
 
     def test_to_add_label_to_project(self):
         """Add one Label to a Project."""
@@ -2084,7 +2085,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         """Check regex build for empty Labels."""
         category = self.prj.get_category_by_id(63)
         label = next(x for x in self.prj.labels if len(x.annotations(categories=[category])) == 0)
-        automated_regex_for_label = label.regex(categories=[category])
+        automated_regex_for_label = label.regex(categories=[category])[category.id_]
         # There is no regex available.
         assert len(automated_regex_for_label) == 0
 
@@ -2201,8 +2202,27 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
         project = LocalTextProject()
         document = project.test_documents[-1]
         annotations = document.view_annotations()
-        assert len(annotations) == 4
-        assert sorted([ann.id_ for ann in annotations]) == [16, 18, 19, 24]
+        assert len(annotations) == 5  # 4 if top_annotations filter is used
+        assert sorted([ann.id_ for ann in annotations]) == [16, 17, 18, 19, 24]  # [16, 18, 19, 24]
+
+    def test_label_spans_not_found_by_tokenizer(self):
+        """Test Label spans_not_found_by_tokenizer method."""
+        project = LocalTextProject()
+
+        whitespace_tokenizer = WhitespaceTokenizer()
+        al_tokenizer = RegexTokenizer('al')
+
+        category = project.get_category_by_id(1)
+        label = project.get_label_by_id(4)
+        label_span = label.annotations(categories=[category])[0].spans[0]
+
+        whitespace_spans = label.spans_not_found_by_tokenizer(whitespace_tokenizer, categories=[category])
+        assert len(whitespace_spans) == 1
+        assert whitespace_spans not in label_span.regex_matching
+
+        al_spans = label.spans_not_found_by_tokenizer(al_tokenizer, categories=[category])
+        assert len(al_spans) == 0
+        assert al_tokenizer in label_span.regex_matching
 
 
 class TestFillOperation(unittest.TestCase):
