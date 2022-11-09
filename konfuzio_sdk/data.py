@@ -222,6 +222,7 @@ class Page(Data):
         self,
         label: 'Label' = None,
         use_correct: bool = True,
+        ignore_below_threshold: bool = False,
         start_offset: int = 0,
         end_offset: int = None,
         fill: bool = False,
@@ -233,7 +234,12 @@ class Page(Data):
         else:
             end_offset = min(end_offset, self.end_offset)
         page_annotations = self.document.annotations(
-            label=label, use_correct=use_correct, start_offset=start_offset, end_offset=end_offset, fill=fill
+            label=label,
+            use_correct=use_correct,
+            ignore_below_threshold=ignore_below_threshold,
+            start_offset=start_offset,
+            end_offset=end_offset,
+            fill=fill,
         )
         return page_annotations
 
@@ -618,12 +624,14 @@ class Label(Data):
             logger.error(f'Cannot sort {self} and {other}.')
             return False
 
-    def annotations(self, categories: List[Category], use_correct=True):
+    def annotations(self, categories: List[Category], use_correct=True, ignore_below_threshold=False):
         """Return related Annotations. Consider that one Label can be used across Label Sets in multiple Categories."""
         annotations = []
         for category in categories:
             for document in category.documents():
-                for annotation in document.annotations(label=self, use_correct=use_correct):
+                for annotation in document.annotations(
+                    label=self, use_correct=use_correct, ignore_below_threshold=ignore_below_threshold
+                ):
                     annotations.append(annotation)
 
         if not annotations:
@@ -642,9 +650,7 @@ class Label(Data):
         else:
             raise ValueError(f'In {self} the {label_set} is a duplicate and will not be added.')
 
-    def evaluate_regex(
-        self, regex, category: Category, annotations: List['Annotation'] = None, filtered_group=None, regex_quality=0
-    ):
+    def evaluate_regex(self, regex, category: Category, annotations: List['Annotation'] = None, regex_quality=0):
         """
         Evaluate a regex on Categories.
 
@@ -668,9 +674,7 @@ class Label(Data):
 
         for document in documents:
             # todo: potential time saver: make sure we did a duplicate check for the regex before we run the evaluation
-            evaluation = document.evaluate_regex(
-                regex=regex, filtered_group=filtered_group, label=self, annotations=annotations
-            )
+            evaluation = document.evaluate_regex(regex=regex, label=self, annotations=annotations)
             evaluations.append(evaluation)
 
         total_findings = sum(evaluation['count_total_findings'] for evaluation in evaluations)
@@ -841,9 +845,7 @@ class Label(Data):
 
         # todo replace by compare
         evaluations = [
-            self.evaluate_regex(
-                _regex_made, category=category, annotations=all_annotations, filtered_group=f'{self.id_}_'
-            )
+            self.evaluate_regex(_regex_made, category=category, annotations=all_annotations)
             for _regex_made in regex_made
         ]
 
@@ -967,6 +969,8 @@ class Span(Data):
             raise ValueError(f"{self} must span text: Start {self.start_offset} equals end.")
         elif self.end_offset < self.start_offset:
             raise ValueError(f"{self} length must be positive.")
+        elif self.annotation and ('\n' in self.offset_string or '\f' in self.offset_string):
+            raise ValueError(f'{self} must not span more than one visual line.')
         return True
 
     @property
@@ -986,14 +990,10 @@ class Span(Data):
     @property
     def line_index(self) -> int:
         """Return index of the line of the Span."""
-        if self.annotation.document.text:
-            if self._line_index is None:
-                start_line_number = len(self.annotation.document.text[: self.start_offset].split('\n'))
-                end_line_number = len(self.annotation.document.text[: self.end_offset].split('\n'))
-
-                if start_line_number != end_line_number:
-                    raise ValueError(f'{self} must not span more than one visual line.')
-                self._line_index = start_line_number - 1
+        self._valid()
+        if self.annotation.document.text and self._line_index is None:
+            line_number = len(self.annotation.document.text[: self.start_offset].split('\n'))
+            self._line_index = line_number - 1
 
         return self._line_index
 
@@ -1852,6 +1852,7 @@ class Document(Data):
         self,
         label: Label = None,
         use_correct: bool = True,
+        ignore_below_threshold: bool = False,
         start_offset: int = 0,
         end_offset: int = None,
         fill: bool = False,
@@ -1861,6 +1862,7 @@ class Document(Data):
 
         :param label: Label for which to filter the Annotations.
         :param use_correct: If to filter by correct annotations.
+        :param ignore_below_threshold: To filter out annotations with confidence below Label prediction threshold.
         :return: Annotations in the document.
         """
         self.get_annotations()
@@ -1870,8 +1872,13 @@ class Document(Data):
         annotations: List[Annotation] = []
         add = False
         for annotation in self._annotations:
+            # filter by correct information
+            if not annotation.is_correct:
+                if ignore_below_threshold and (
+                    not annotation.confidence or annotation.confidence < annotation.label.threshold
+                ):
+                    continue
             for span in annotation.spans:
-                # filter by correct information
                 if (use_correct and annotation.is_correct) or not use_correct:
                     # todo: add option to filter for overruled Annotations where mult.=F
                     # todo: add option to filter for overlapping Annotations, `add_annotation` just checks for identical
@@ -2303,7 +2310,22 @@ class Document(Data):
         self._annotations = None
         self._annotation_sets = None
 
-    def evaluate_regex(self, regex, label: Label, annotations: List['Annotation'] = None, filtered_group=None):
+    def merge_vertical(self):
+        """Merge Annotations with the same Label."""
+        labels_dict = {}
+        for label in self.project.labels:
+            labels_dict[label.id_] = []
+
+        for annotation in self.annotations(use_correct=False, ignore_below_threshold=True):
+            labels_dict[annotation.label.id_].append(annotation)
+
+        for label_id in labels_dict:
+            buffer = []
+            for annotation in labels_dict[label_id]:
+                for span in annotation.spans:
+                    pass
+
+    def evaluate_regex(self, regex, label: Label, annotations: List['Annotation'] = None):
         """Evaluate a regex based on the Document."""
         start_time = time.time()
         findings_in_document = regex_matches(
@@ -2312,7 +2334,6 @@ class Document(Data):
             keep_full_match=False,
             filtered_group=f'Label_{label.id_}'
             # filter by name of label: one regex can match multiple labels
-            # filtered_group=filtered_group,
         )
         processing_time = time.time() - start_time
         correct_findings = []
