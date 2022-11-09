@@ -626,6 +626,10 @@ EMAIL_USE_SSL=False
 EMAIL_TIMEOUT=
 DEFAULT_FROM_EMAIL=
 
+# Customize the email verification (optional)
+# When set to “mandatory” the user is blocked from logging in until the email address is verified. Choose “optional” or “none” to allow logins with an unverified e-mail address. In case of “optional”, the e-mail verification mail is still sent, whereas in case of “none” no e-mail verification mails are sent.
+ACCOUNT_EMAIL_VERIFICATION='mandatory'
+
 # Api Key to sent emails via SendGrid if Debug=False (optional).
 # If you use the SENDGRID_API_KEY you must also set EMAIL_BACKEND=sendgrid_backend.SendgridBackend
 SENDGRID_API_KEY=
