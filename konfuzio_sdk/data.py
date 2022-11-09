@@ -969,7 +969,7 @@ class Span(Data):
             raise ValueError(f"{self} must span text: Start {self.start_offset} equals end.")
         elif self.end_offset < self.start_offset:
             raise ValueError(f"{self} length must be positive.")
-        elif self.annotation and ('\n' in self.offset_string or '\f' in self.offset_string):
+        elif self.offset_string and ('\n' in self.offset_string or '\f' in self.offset_string):
             raise ValueError(f'{self} must not span more than one visual line.')
         return True
 
