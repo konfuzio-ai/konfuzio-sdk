@@ -2,6 +2,7 @@
 import logging
 import numpy as np
 from typing import Dict, Optional
+import regex as re
 
 
 logger = logging.getLogger(__name__)
@@ -99,6 +100,12 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
 
     if offset_string.lower() in ['zwölf', 'twelve']:
         return 12.0
+
+    # check for major spaces
+    if re.search(r'(\d)[ ]{3,}(\d)', offset_string):
+        return None
+
+    offset_string = re.sub(r"(\d)[ ]{1,2}(\d)", r'\1.\2', offset_string)
 
     offset_string = (
         offset_string.replace('O', '0')

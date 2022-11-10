@@ -38,7 +38,12 @@ from sklearn.utils.validation import check_is_fitted
 from tabulate import tabulate
 
 from konfuzio_sdk.data import Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span
-from konfuzio_sdk.normalize import normalize_to_float, normalize_to_date, normalize_to_percentage
+from konfuzio_sdk.normalize import (
+    normalize_to_float,
+    normalize_to_date,
+    normalize_to_percentage,
+    normalize_to_positive_float,
+)
 from konfuzio_sdk.regex import regex_matches
 from konfuzio_sdk.utils import get_timestamp, get_bbox
 from konfuzio_sdk.evaluate import Evaluation
@@ -1956,19 +1961,21 @@ class Trainer:
         if label_types[0] not in {'Number', 'Positive Number', 'Percentage', 'Date'}:
             return True
         # only merge percentages if the result of the merge is still a percentage
+
+        text = doc_text[buffer[0]['start_offset'] : row['end_offset']]
+        merge = None
+
         if label_types[0] == 'Percentage':
-            text = doc_text[buffer[0]['start_offset'] : row['end_offset']]
             merge = normalize_to_percentage(text)
-            return merge is not None
         # only merge date if the result of the merge is still a date
-        if label_types[0] == 'Date':
-            text = doc_text[buffer[0]['start_offset'] : row['end_offset']]
+        elif label_types[0] == 'Date':
             merge = normalize_to_date(text)
-            return merge is not None
-        # should only get here if we have a single data type that is either Number or Positive Number,
-        # which we do not merge
-        else:
-            return False
+        elif label_types[0] == 'Number':
+            merge = normalize_to_float(text)
+        elif label_types[0] == 'Positive Number':
+            merge = normalize_to_positive_float(text)
+
+        return merge is not None
 
     def save(self, output_dir: str, include_konfuzio=True):
         """
