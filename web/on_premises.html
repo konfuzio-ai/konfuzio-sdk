@@ -119,7 +119,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#usage-of-postgresql">Usage of PostgreSQL</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id6">Environment Variables</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id7">Environment Variables</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-konfuzio-server">Environment Variables for Konfuzio Server</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-read-api-container">Environment Variables for Read API Container</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-detectron-container">Environment Variables for Detectron Container</a></li>
@@ -617,7 +617,7 @@ In comparison for a Categorization AI the targe project has to be chosen from �
 <span class="n">konfuzio_sdk</span> <span class="n">export_project</span> <span class="o">&lt;</span><span class="n">PROJECT_ID</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<p>The export will be saved in a folder with the name <a href="#id7"><span class="problematic" id="id8">data_</span></a><span class="raw-html-m2r"><project_id></span>. This folder needs to be transferred to the target system
+<p>The export will be saved in a folder with the name <a href="#id8"><span class="problematic" id="id9">data_</span></a><span class="raw-html-m2r"><project_id></span>. This folder needs to be transferred to the target system
 The first argument is the path to the export folder, the second is the project name of the imported project on the target system.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">project_import</span> <span class="s2">&quot;/konfuzio-target-system/data_123/&quot;</span> <span class="s2">&quot;NewProjectName&quot;</span>
 </pre></div>
@@ -657,11 +657,11 @@ The first argument is the path to the export folder, the second is the project n
 <tr class="row-even"><td><p>Blob Storage</p></td>
 <td><p>Latest Stable</p></td>
 <td><p>All with activ support</p></td>
-<td><p>Filesystem, S3-compatible Storage (e.g. <a class="reference external" href="https://aws.amazon.com/s3/">Amazon S3</a>, <a class="reference external" href="https://azure.microsoft.com/en-us/products/storage/blobs/">Azure Blob Storage</a>)</p></td>
+<td><p>Filesystem, S3-compatible Service (e.g. <a class="reference external" href="https://aws.amazon.com/s3/">Amazon S3</a>, <a class="reference external" href="https://azure.microsoft.com/en-us/products/storage/blobs/">Azure Blob Storage</a>), In-Cluster* S3 via <a class="reference external" href="https://min.io/docs/minio/container/index.html">MinIO</a></p></td>
 </tr>
 </tbody>
 </table>
-<p><a href="#id3"><span class="problematic" id="id4">*</span></a>If you use <a class="reference external" href="/web/on_premises.html#kubernetes">Kubernetes Deployment</a> you can choose the ‘in-Cluster’ option for Postgres and Redis.</p>
+<p><a href="#id4"><span class="problematic" id="id5">*</span></a>If you use <a class="reference external" href="/web/on_premises.html#kubernetes">Kubernetes Deployment</a> you can choose the ‘in-Cluster’ option for Postgres, Redis and S3-Storage.</p>
 </section>
 <section id="usage-of-postgresql">
 <h3>Usage of PostgreSQL<a class="headerlink" href="#usage-of-postgresql" title="Permalink to this headline">¶</a></h3>
@@ -717,8 +717,8 @@ The first argument is the path to the export folder, the second is the project n
 </table>
 <!-- This table was created by running select data_type, count(*) from information_schema.columns where table_schema = 'public'  group by data_type ; --></section>
 </section>
-<section id="id6">
-<h2>Environment Variables<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<section id="id7">
+<h2>Environment Variables<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
 <section id="environment-variables-for-konfuzio-server">
 <h3>Environment Variables for Konfuzio Server<a class="headerlink" href="#environment-variables-for-konfuzio-server" title="Permalink to this headline">¶</a></h3>
 <p>Konfuzio Server is fully configured via environment variables, these can be passed as dedicated environment variables or a single .env to the Konfuzio Server containers (REGISTRY_URL/konfuzio/text-annotation/master). A template for a .env file is provided here:</p>
