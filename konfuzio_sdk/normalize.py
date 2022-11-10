@@ -20,6 +20,9 @@ def _get_is_negative(offset_string: str) -> bool:
         if offset_string.count('S') == 1 and offset_string[-1] == "S" and is_negative is False:
             is_negative = True
 
+    if offset_string[0] == '*':
+        is_negative = True
+
     offset_string_negative_check = (
         offset_string.replace(' ', '')
         .replace('"', '')
@@ -118,6 +121,7 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
         .replace('-', '')
         .replace('–', '')
         .replace('€', '')
+        .replace('*', '')
     )
 
     if len(offset_string) > 1:
