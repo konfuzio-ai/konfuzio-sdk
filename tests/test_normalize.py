@@ -198,7 +198,8 @@ test_data_numbers = [
     (' XIV  ', 14, None),
     ('12³', None, 0),
     (' XL IV  ', 44, None),
-    ('*(118,704)', -118704, None)
+    ('*(118,704)', -118704, None),
+    ('*118,704', -118704, None)
     # ('Woch.Arb.Zt.', None, 0), TODO this raises uncaught ValuError
     # ('12.', 12.0, 0), undefined test cases:
     # ('1.', 1.0, 0),
