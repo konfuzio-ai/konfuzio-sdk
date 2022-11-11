@@ -1796,31 +1796,72 @@ class Trainer:
                         )
         return virtual_doc
 
-    @staticmethod
-    def merge_horizontal(res_dict: Dict, document: Document) -> Dict:
+    @classmethod
+    def merge_horizontal(cls, res_dict: Dict, document: Document) -> Dict:
         """Merge contiguous spans with same predicted label."""
         doc_text = document.text
-        doc_bbox = document.get_bbox()
+        # doc_bbox = document.get_bbox()
         merged_res_dict = dict()  # stores final results
         for section_label, items in res_dict.items():
             if isinstance(items, pandas.DataFrame):  # perform merge on DataFrames within res_dict
 
-                merged_df = Trainer.merge_df(
+                merged_df = cls.merge_df(
                     df=items,
                     doc_text=doc_text,
-                    doc_bbox=doc_bbox,
                 )
                 merged_res_dict[section_label] = merged_df
             # if the value of the res_dict is not a DataFrame then we recursively call merge_horizontal on it
             elif isinstance(items, list):
                 # if it's a list then it is a list of sections
                 merged_res_dict[section_label] = [
-                    Trainer.merge_horizontal(res_dict=item, document=document) for item in items
+                    cls.merge_horizontal(res_dict=item, document=document) for item in items
                 ]
             elif isinstance(items, dict):
                 # if it's a dict then it is a res_dict within a list of sections
-                merged_res_dict[section_label] = Trainer.merge_horizontal(res_dict=items, document=document)
+                merged_res_dict[section_label] = cls.merge_horizontal(res_dict=items, document=document)
         return merged_res_dict
+
+    @classmethod
+    def merge_df(
+        cls,
+        df: pandas.DataFrame,
+        doc_text: str,
+    ) -> pandas.DataFrame:
+        """
+        Merge a DataFrame of entities with matching predicted sections/labels.
+
+        Merge is performed between entities which are only separated by a space.
+        Stores entities to be merged in the `buffer` and then creates a dict from those entities with `flush_buffer`.
+        All of the dicts created by `flush_buffer` are then converted into a DataFrame and then returned.
+        """
+        res_dicts = []
+        buffer = []
+        end = None
+
+        label_types = [row['data_type'] for _, row in df.iterrows()]
+
+        for _, row in df.iterrows():  # iterate over the rows in the DataFrame
+            # if they are valid merges then add to buffer
+            if end and cls.is_valid_merge(
+                row,
+                buffer,
+                doc_text,
+                label_types,
+            ):
+                buffer.append(row)
+                end = row['end_offset']
+            else:  # else, flush the buffer by creating a res_dict
+                if buffer:
+                    res_dict = cls.flush_buffer(buffer, doc_text)
+                    res_dicts.append(res_dict)
+                buffer = []
+                buffer.append(row)
+                end = row['end_offset']
+        if buffer:  # flush buffer at the very end to clear anything left over
+            res_dict = cls.flush_buffer(buffer, doc_text)
+            res_dicts.append(res_dict)
+        df = pandas.DataFrame(res_dicts)  # convert the list of res_dicts created by `flush_buffer` into a DataFrame
+        return df
 
     @staticmethod
     def flush_buffer(buffer: List[pandas.Series], doc_text: str) -> Dict:
@@ -1851,55 +1892,11 @@ class Trainer:
         return res_dict
 
     @staticmethod
-    def merge_df(
-        df: pandas.DataFrame,
-        doc_text: str,
-        doc_bbox: Union[Dict, None] = None,
-    ) -> pandas.DataFrame:
-        """
-        Merge a DataFrame of entities with matching predicted sections/labels.
-
-        Merge is performed between entities which are only separated by a space.
-        Stores entities to be merged in the `buffer` and then creates a dict from those entities with `flush_buffer`.
-        All of the dicts created by `flush_buffer` are then converted into a DataFrame and then returned.
-        """
-        res_dicts = []
-        buffer = []
-        end = None
-
-        label_types = [row['data_type'] for _, row in df.iterrows()]
-
-        for _, row in df.iterrows():  # iterate over the rows in the DataFrame
-            # if they are valid merges then add to buffer
-            if end and Trainer.is_valid_merge(
-                row,
-                buffer,
-                doc_text,
-                label_types,
-                doc_bbox,
-            ):
-                buffer.append(row)
-                end = row['end_offset']
-            else:  # else, flush the buffer by creating a res_dict
-                if buffer:
-                    res_dict = Trainer.flush_buffer(buffer, doc_text)
-                    res_dicts.append(res_dict)
-                buffer = []
-                buffer.append(row)
-                end = row['end_offset']
-        if buffer:  # flush buffer at the very end to clear anything left over
-            res_dict = Trainer.flush_buffer(buffer, doc_text)
-            res_dicts.append(res_dict)
-        df = pandas.DataFrame(res_dicts)  # convert the list of res_dicts created by `flush_buffer` into a DataFrame
-        return df
-
-    @staticmethod
     def is_valid_merge(
         row: pandas.Series,
         buffer: List[pandas.Series],
         doc_text: str,
         label_types: Dict[str, str],
-        doc_bbox: Union[None, Dict] = None,
         max_offset_distance: int = 5,
     ) -> bool:
         """
@@ -1926,22 +1923,8 @@ class Trainer:
         if len(set(label_types)) > 1:
             return False
 
-        if doc_bbox is not None:
-            # only merge if there are no characters in between (or only maximum of 5 whitespaces)
-            char_bboxes = [
-                doc_bbox[str(char_bbox_id)]
-                for char_bbox_id in range(buffer[-1]['end_offset'], row['start_offset'])
-                if str(char_bbox_id) in doc_bbox
-            ]
-
-            char_text = [chat_bbox['text'] for chat_bbox in char_bboxes]
-            # Do not merge if there are characters between
-            if not all([c == '' or c == ' ' for c in char_text]):
-                return False
-
-            # Do not merge if there are more than the maximum offset distance
-            if len(char_text) > max_offset_distance:
-                return False
+        if not all([c == ' ' for c in doc_text[buffer[-1]['end_offset'] : row['start_offset']]]):
+            return False
 
         # Do not merge if the difference in the offsets is bigger than the maximum offset distance
         if row['start_offset'] - buffer[-1]['end_offset'] > max_offset_distance:

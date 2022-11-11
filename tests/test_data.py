@@ -436,7 +436,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 48
+        assert len(cls.project.virtual_documents) == 47
 
     # def test_document_only_needs_project(self):
     #     """Test that a Document can be created without category"""
@@ -1220,6 +1220,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         Annotation(document=document, spans=[first_span, second_span], label_set=self.label_set, label=self.label)
         assert len(document.annotations(use_correct=False)) == 2
 
+    @unittest.skip(reason='Not yet implemented.')
     def test_merge_vertical(self):
         """Test the vertical merging of spans into a single Annotation."""
         document_bbox = {
@@ -1275,7 +1276,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         document.merge_vertical()
 
         assert len(document.spans()) == 4
-        # assert len(document.annotations(use_correct=False)) == 2  # WIP
+        assert len(document.annotations(use_correct=False)) == 2  # WIP
 
     def test_lose_weight(self):
         """Lose weight should remove session and documents."""
