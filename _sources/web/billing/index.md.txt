@@ -12,7 +12,7 @@ subgraph app.konfuzio.com
 a("License Key") --> e(Contract)
 b(Contract)
 end
-subgraph Fakturia 
+subgraph Contract Center
 b(Contract) --> c(Contract)
 e(Contract) --> f(Contract)
 end  						
@@ -80,4 +80,4 @@ BILLING_SUBSCRIPTION_ARTICLE_NUMBER_CONTRACTS = '00001'
 For on-premise installations, only BILLING_API_URL and BILLING_API_KEY are required. Additional information will added to [On-Premises Documentation](https://dev.konfuzio.com/web/on_premises.html).
 
 ## Management on app.konfuzio.com
-Konfuzio Server will display a Billing Module to manage Contracts and Customers if is configured as Billing Center. On-premise installations will not see the Billing Module. Konfuzio Server is running as Billing Center if the HOST_NAME is part of '\*.konfuzio.com' and if the BILLING_API_URL is set to '\*.fakturia.de'.
+Konfuzio Server will display a Billing Module to manage Contracts and Customers if is configured as Contract Center. On-premise installations will not see the Billing Module. Konfuzio Server is running as Contract Center if the HOST_NAME is part of '\*.konfuzio.com' and if the BILLING_API_URL is set to '\*.fakturia.de'.
