@@ -562,6 +562,11 @@ MAINTENANCE_MODE=False
 # See https://docs.djangoproject.com/en/4.0/ref/settings/#secret-key
 SECRET_KEY=
 
+# The Billing API Key (optional) 
+BILLING_API_KEY=
+# The URL of the biling Server (optional)
+BILLING_API_URL=https://app.konfuzio.com
+
 # The HOSTNAME variable is used in the E-Mail templates (mandatory).
 # https://example.konfuzio.com or http://localhost:8000 for local development.
 # Note: Please include the protocol (e.g. http://) even the variable is named HOST_NAME
@@ -602,7 +607,7 @@ BROKER_URL=
 RESULT_BACKEND=
 TASK_ALWAYS_EAGER=True
 
-# Defender settings (optional).
+# Defender (Brute-Force protection) settings (optional).
 DEFENDER_REDIS_URL=
 
 # SENTRY_DSN e.g. "https://123456789@sentry.io/1234567" (optional).
