@@ -89,7 +89,7 @@
   <p><strong>Internal Documentation. This does not apply to on-premise Konfuzio Server installations.</strong></p>
 <section id="overview">
 <h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
-<p>The pricing of Konfuzio is based on the number of pages a user processes. This pricing is enforced by configuring Konfuzio Server as ‘billing station’ and connecting it to <a class="reference external" href="https://www.fakturia.de/">Fakturia</a>.</p>
+<p>The pricing of Konfuzio is based on the number of Pages a user assigned to one Contract processes. a user processes. This pricing is enforced by configuring Konfuzio Server as ‘Contract Center’(<a class="reference external" href="https://it.vertragscenter.com/">https://it.vertragscenter.com/</a>).</p>
 <div class="mermaid">
             graph LR
 subgraph On-Premise
@@ -103,8 +103,8 @@ subgraph Fakturia
 b(Contract) --&gt; c(Contract)
 e(Contract) --&gt; f(Contract)
 end
-        </div><section id="set-up-konfuzio-server-as-billing-station-e-g-https-app-konfuzio-com">
-<h2>Set up Konfuzio Server as billing station (e.g. <a class="reference external" href="https://app.konfuzio.com">https://app.konfuzio.com</a>)<a class="headerlink" href="#set-up-konfuzio-server-as-billing-station-e-g-https-app-konfuzio-com" title="Permalink to this headline">¶</a></h2>
+        </div><section id="set-up-konfuzio-server-as-contract-center">
+<h2>Set up Konfuzio Server as Contract Center<a class="headerlink" href="#set-up-konfuzio-server-as-contract-center" title="Permalink to this headline">¶</a></h2>
 <section id="to-activate-the-billing-you-need">
 <h3>To activate the billing, you need:<a class="headerlink" href="#to-activate-the-billing-you-need" title="Permalink to this headline">¶</a></h3>
 <ol class="arabic simple">
@@ -170,7 +170,7 @@ it will appear on your server.</p>
 </section>
 <section id="on-premise-setup">
 <h2>On-Premise Setup<a class="headerlink" href="#on-premise-setup" title="Permalink to this headline">¶</a></h2>
-<p>For on-premise installations, only FAKTURIA_API_URL and FAKTURIA_API_KEY are required. Additional information will added to <a class="reference external" href="https://dev.konfuzio.com/web/on_premises.html">On-Premises Documentation</a>.</p>
+<p>For on-premise installations, only BILLING_API_URL and BILLING_API_KEY are required. Additional information will added to <a class="reference external" href="https://dev.konfuzio.com/web/on_premises.html">On-Premises Documentation</a>.</p>
 </section>
 <section id="management-on-app-konfuzio-com">
 <h2>Management on app.konfuzio.com<a class="headerlink" href="#management-on-app-konfuzio-com" title="Permalink to this headline">¶</a></h2>
