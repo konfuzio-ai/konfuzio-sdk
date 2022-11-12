@@ -2,8 +2,7 @@
 
 # Overview
 
-The pricing of Konfuzio is based on the number of pages a user processes. This pricing is enforced by configuring Konfuzio Server as 'billing station' and connecting it to [Fakturia](https://www.fakturia.de/).
-
+The pricing of Konfuzio is based on the number of Pages a user assigned to one Contract processes. a user processes. This pricing is enforced by configuring Konfuzio Server as 'Contract Center'(https://it.vertragscenter.com/).
 ```mermaid
 graph LR
 subgraph On-Premise
@@ -19,7 +18,7 @@ e(Contract) --> f(Contract)
 end  						
 ```
 
-## Set up Konfuzio Server as billing station (e.g. https://app.konfuzio.com)
+## Set up Konfuzio Server as Contract Center
 
 ### To activate the billing, you need:
 1. Set `IS_BILLING_ACTIVATED` environment variable to `True`
@@ -78,7 +77,7 @@ BILLING_SUBSCRIPTION_ARTICLE_NUMBER_CONTRACTS = '00001'
 ```
 
 ## On-Premise Setup
-For on-premise installations, only FAKTURIA_API_URL and FAKTURIA_API_KEY are required. Additional information will added to [On-Premises Documentation](https://dev.konfuzio.com/web/on_premises.html).
+For on-premise installations, only BILLING_API_URL and BILLING_API_KEY are required. Additional information will added to [On-Premises Documentation](https://dev.konfuzio.com/web/on_premises.html).
 
 ## Management on app.konfuzio.com
 Konfuzio Server will display a Billing Module to manage Contracts and Customers if is configured as Billing Center. On-premise installations will not see the Billing Module. Konfuzio Server is running as Billing Center if the HOST_NAME is part of '\*.konfuzio.com' and if the BILLING_API_URL is set to '\*.fakturia.de'.
