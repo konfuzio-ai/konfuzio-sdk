@@ -260,13 +260,13 @@ migration work.</p>
 </section>
 <section id="tls-certificates">
 <h5>TLS certificates<a class="headerlink" href="#tls-certificates" title="Permalink to this headline">¶</a></h5>
-<p>You should be running Konfuzio using https which requiresTLS certificates. By default, the setup will install and
-configure <a class="reference external" href="https://github.com/jetstack/cert-manager">cert-manager</a> to obtain free TLS certificates. If you
+<p>You should be running Konfuzio using https which requires TLS certificates. To get automated certificates using letesencrypt you need to install <a class="reference external" href="https://cert-manager.io/docs/installation/helm/">cert-manager</a> in your cluster. If you
 have your own wildcard certificate, you already have cert-manager installed, or you have
 some other way of obtaining TLS certificates. For the default configuration, you must
 specify an email address to register your TLS certificates.</p>
 <p><em>Include these options in your Helm install command:</em></p>
-<p><code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">certmanager-issuer.email=me&#64;example.com</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">letsencrypt.enabled=True</span></code><span class="raw-html-m2r"><br></span>
+<code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">letsencrypt.email=me&#64;example.com</span></code></p>
 </section>
 <section id="postgresql">
 <h5>PostgreSQL<a class="headerlink" href="#postgresql" title="Permalink to this headline">¶</a></h5>
