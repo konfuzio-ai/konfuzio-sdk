@@ -111,15 +111,15 @@ migration work.
 
 ##### TLS certificates
 
-You should be running Konfuzio using https which requiresTLS certificates. By default, the setup will install and 
-configure [cert-manager](https://github.com/jetstack/cert-manager) to obtain free TLS certificates. If you
+You should be running Konfuzio using https which requires TLS certificates. To get automated certificates using letesencrypt you need to install [cert-manager](https://cert-manager.io/docs/installation/helm/) in your cluster. If you
 have your own wildcard certificate, you already have cert-manager installed, or you have
 some other way of obtaining TLS certificates. For the default configuration, you must
 specify an email address to register your TLS certificates.
 
 _Include these options in your Helm install command:_
 
-`--set certmanager-issuer.email=me@example.com`
+`--set letsencrypt.enabled=True`  
+`--set letsencrypt.email=me@example.com`
 
 ##### PostgreSQL
 
