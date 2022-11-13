@@ -1800,68 +1800,34 @@ class Trainer:
     def merge_horizontal(cls, res_dict: Dict, document: Document) -> Dict:
         """Merge contiguous spans with same predicted label."""
         doc_text = document.text
-        # doc_bbox = document.get_bbox()
         merged_res_dict = dict()  # stores final results
-        for section_label, items in res_dict.items():
-            if isinstance(items, pandas.DataFrame):  # perform merge on DataFrames within res_dict
+        for label, items in res_dict.items():
+            res_dicts = []
+            buffer = []
+            end = None
 
-                merged_df = cls.merge_df(
-                    df=items,
-                    doc_text=doc_text,
-                )
-                merged_res_dict[section_label] = merged_df
-            # if the value of the res_dict is not a DataFrame then we recursively call merge_horizontal on it
-            elif isinstance(items, list):
-                # if it's a list then it is a list of sections
-                merged_res_dict[section_label] = [
-                    cls.merge_horizontal(res_dict=item, document=document) for item in items
-                ]
-            elif isinstance(items, dict):
-                # if it's a dict then it is a res_dict within a list of sections
-                merged_res_dict[section_label] = cls.merge_horizontal(res_dict=items, document=document)
+            for _, row in items.iterrows():  # iterate over the rows in the DataFrame
+                # if they are valid merges then add to buffer
+                if end and cls.is_valid_merge(row, buffer, doc_text):
+                    buffer.append(row)
+                    end = row['end_offset']
+                else:  # else, flush the buffer by creating a res_dict
+                    if buffer:
+                        res_dict = cls.flush_buffer(buffer, doc_text)
+                        res_dicts.append(res_dict)
+                    buffer = []
+                    buffer.append(row)
+                    end = row['end_offset']
+            if buffer:  # flush buffer at the very end to clear anything left over
+                res_dict = cls.flush_buffer(buffer, doc_text)
+                res_dicts.append(res_dict)
+            merged_df = pandas.DataFrame(
+                res_dicts
+            )  # convert the list of res_dicts created by `flush_buffer` into a DataFrame
+
+            merged_res_dict[label] = merged_df
+
         return merged_res_dict
-
-    @classmethod
-    def merge_df(
-        cls,
-        df: pandas.DataFrame,
-        doc_text: str,
-    ) -> pandas.DataFrame:
-        """
-        Merge a DataFrame of entities with matching predicted sections/labels.
-
-        Merge is performed between entities which are only separated by a space.
-        Stores entities to be merged in the `buffer` and then creates a dict from those entities with `flush_buffer`.
-        All of the dicts created by `flush_buffer` are then converted into a DataFrame and then returned.
-        """
-        res_dicts = []
-        buffer = []
-        end = None
-
-        label_types = [row['data_type'] for _, row in df.iterrows()]
-
-        for _, row in df.iterrows():  # iterate over the rows in the DataFrame
-            # if they are valid merges then add to buffer
-            if end and cls.is_valid_merge(
-                row,
-                buffer,
-                doc_text,
-                label_types,
-            ):
-                buffer.append(row)
-                end = row['end_offset']
-            else:  # else, flush the buffer by creating a res_dict
-                if buffer:
-                    res_dict = cls.flush_buffer(buffer, doc_text)
-                    res_dicts.append(res_dict)
-                buffer = []
-                buffer.append(row)
-                end = row['end_offset']
-        if buffer:  # flush buffer at the very end to clear anything left over
-            res_dict = cls.flush_buffer(buffer, doc_text)
-            res_dicts.append(res_dict)
-        df = pandas.DataFrame(res_dicts)  # convert the list of res_dicts created by `flush_buffer` into a DataFrame
-        return df
 
     @staticmethod
     def flush_buffer(buffer: List[pandas.Series], doc_text: str) -> Dict:
@@ -1871,8 +1837,8 @@ class Trainer:
         A buffer is a list of pandas.Series objects.
         """
         assert 'label_name' in buffer[0]
-        if 'label_name' in buffer[0]:
-            label = buffer[0]['label_name']
+
+        label = buffer[0]['label_name']
 
         starts = buffer[0]['start_offset']
         ends = buffer[-1]['end_offset']
@@ -1883,12 +1849,7 @@ class Trainer:
         res_dict['end_offset'] = ends
         res_dict['label_name'] = label
         res_dict['offset_string'] = text
-
         res_dict['confidence'] = numpy.mean([b['confidence'] for b in buffer])
-        res_dict['x0'] = min([b['x0'] for b in buffer])
-        res_dict['x1'] = max([b['x1'] for b in buffer])
-        res_dict['y0'] = min([b['y0'] for b in buffer])
-        res_dict['y1'] = max([b['y1'] for b in buffer])
         return res_dict
 
     @staticmethod
@@ -1896,7 +1857,6 @@ class Trainer:
         row: pandas.Series,
         buffer: List[pandas.Series],
         doc_text: str,
-        label_types: Dict[str, str],
         max_offset_distance: int = 5,
     ) -> bool:
         """
@@ -1907,20 +1867,13 @@ class Trainer:
         For example if two dates are next to each other in text then we only want to merge them if the result of
         the merge is still a valid date.
 
-        If merging vertically we only check the vertical merging condition. Everything else is skipped.
-
         :param row: Row candidate to be merged to what is already in the buffer.
         :param buffer: Previous information.
         :param doc_text: Text of the document.
-        :param label_types: Types of the entities.
-        :param doc_bbox: Bboxes of the characters in the document.
         :param max_offset_distance: Maximum distance between two entities that can be merged.
         :return: If the merge is valid or not.
         """
         if row['confidence'] < row['label_threshold']:
-            return False
-        # only merge if all are the same data type
-        if len(set(label_types)) > 1:
             return False
 
         if not all([c == ' ' for c in doc_text[buffer[-1]['end_offset'] : row['start_offset']]]):
@@ -1931,31 +1884,25 @@ class Trainer:
             return False
 
         # only merge if text is on same line
-        # row can include entity that is already part of the buffer (buffer: Ankerkette Meterware, row: Ankerkette)
-        if (
-            '\n'
-            in doc_text[
-                min(buffer[0]['start_offset'], row['start_offset']) : max(buffer[-1]['end_offset'], row['end_offset'])
-            ]
-        ):
+        if '\n' in doc_text[buffer[0]['start_offset'] : row['end_offset']]:
             return False
+
+        data_type = row['data_type']
         # always merge if not one of these data types
-        # never merge numbers or positive numbers
-        if label_types[0] not in {'Number', 'Positive Number', 'Percentage', 'Date'}:
+        if data_type not in {'Number', 'Positive Number', 'Percentage', 'Date'}:
             return True
-        # only merge percentages if the result of the merge is still a percentage
 
-        text = doc_text[buffer[0]['start_offset'] : row['end_offset']]
         merge = None
+        text = doc_text[buffer[0]['start_offset'] : row['end_offset']]
 
-        if label_types[0] == 'Percentage':
+        # only merge percentages/dates/(positive) numbers if the result is still normalizable to the type
+        if data_type == 'Percentage':
             merge = normalize_to_percentage(text)
-        # only merge date if the result of the merge is still a date
-        elif label_types[0] == 'Date':
+        elif data_type == 'Date':
             merge = normalize_to_date(text)
-        elif label_types[0] == 'Number':
+        elif data_type == 'Number':
             merge = normalize_to_float(text)
-        elif label_types[0] == 'Positive Number':
+        elif data_type == 'Positive Number':
             merge = normalize_to_positive_float(text)
 
         return merge is not None
@@ -2518,8 +2465,6 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         df['result_name'] = results.idxmax(axis=1)
         df['confidence'] = results.max(axis=1)
 
-        # 5. Translation
-        # df['Translated_Candidate'] = df['offset_string']  # todo: make translation explicit: It's a cool Feature
         # Main Logic -------------------------
 
         # Do column renaming to be compatible with text-annotation
