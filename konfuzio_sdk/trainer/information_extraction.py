@@ -1475,9 +1475,8 @@ class Trainer:
         return virtual_doc
 
     @classmethod
-    def merge_horizontal(cls, res_dict: Dict, document: Document) -> Dict:
+    def merge_horizontal(cls, res_dict: Dict, doc_text: str) -> Dict:
         """Merge contiguous spans with same predicted label."""
-        doc_text = document.text
         merged_res_dict = dict()  # stores final results
         for label, items in res_dict.items():
             res_dicts = []
@@ -2186,7 +2185,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         # res_dict = self.filter_low_confidence_extractions(res_dict)
 
-        res_dict = self.merge_horizontal(res_dict, inference_document)
+        res_dict = self.merge_horizontal(res_dict, inference_document.text)
 
         # Try to calculate sections based on template classifier.
         if self.template_clf is not None:  # todo smarter handling of multiple clf
