@@ -612,7 +612,7 @@ In comparison for a Categorization AI the targe project has to be chosen from â€
 </section>
 <section id="migrate-a-project">
 <h3>Migrate a Project<a class="headerlink" href="#migrate-a-project" title="Permalink to this headline">Â¶</a></h3>
-<p>Export the project data from the source Konfuzio server system.</p>
+<p>Export the Project data from the source Konfuzio server system.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">konfuzio_sdk</span>
 <span class="n">konfuzio_sdk</span> <span class="n">init</span>
 <span class="n">konfuzio_sdk</span> <span class="n">export_project</span> <span class="o">&lt;</span><span class="n">PROJECT_ID</span><span class="o">&gt;</span>
@@ -621,6 +621,10 @@ In comparison for a Categorization AI the targe project has to be chosen from â€
 <p>The export will be saved in a folder with the name <a href="#id8"><span class="problematic" id="id9">data_</span></a><span class="raw-html-m2r"><project_id></span>. This folder needs to be transferred to the target system
 The first argument is the path to the export folder, the second is the project name of the imported project on the target system.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">project_import</span> <span class="s2">&quot;/konfuzio-target-system/data_123/&quot;</span> <span class="s2">&quot;NewProjectName&quot;</span>
+</pre></div>
+</div>
+<p>Alternatively, you can merge the Project export into an existing Project.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">project_import</span> <span class="s2">&quot;/konfuzio-target-system/data_123/&quot;</span> <span class="o">--</span><span class="n">merge_project_id</span> <span class="o">&lt;</span><span class="n">EXISTING_PROJECT_ID</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 </section>
