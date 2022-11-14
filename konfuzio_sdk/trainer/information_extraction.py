@@ -1539,13 +1539,13 @@ class Trainer:
         Verify if the merging that we are trying to do is valid.
 
         A merging is valid only if:
-        - All spans have the same predicted Label
-        - Confidence of predicted Label is above the Label threshold
-        - All spans are on the same line
-        - No extraneous characters in between spans
-        - A maximum of 5 spaces in between spans
-        - The Label type is not one of the following: 'Number', 'Positive Number', 'Percentage', 'Date'
-          - OR The resulting merging create a span normalizable to the same type
+          * All spans have the same predicted Label
+          * Confidence of predicted Label is above the Label threshold
+          * All spans are on the same line
+          * No extraneous characters in between spans
+          * A maximum of 5 spaces in between spans
+          * The Label type is not one of the following: 'Number', 'Positive Number', 'Percentage', 'Date'
+            OR the resulting merging create a span normalizable to the same type
 
         :param row: Row candidate to be merged to what is already in the buffer.
         :param buffer: Previous information.
