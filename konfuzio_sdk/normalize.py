@@ -210,10 +210,7 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
         _float = float(offset_string.replace(',', ''))  # => 500000
         _float = abs(_float)
         normalization = _float
-    # elif (offset_string[-1] == '*'
-    #     and offset_string[-2].isdigit()
-    # ):
-    #     normalization = offset_string[:-1]
+
     # check for 500.000
     elif (
         ln > 4
