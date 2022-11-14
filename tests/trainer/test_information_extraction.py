@@ -552,6 +552,8 @@ class TestInformationExtraction(unittest.TestCase):
         """Test merge_horizontal method."""
         doc_text = """a1l1 a2l1    a3l1        a4l1 x a5l1
 32   22 98
+760°
+89 76
         """
 
         res_dict = {
@@ -568,13 +570,24 @@ class TestInformationExtraction(unittest.TestCase):
             ),
             'label2': pd.DataFrame(
                 {
-                    'label_name': ['label2', 'label2', 'label2'],
-                    'start_offset': [37, 42, 45],
-                    'end_offset': [39, 44, 47],
-                    'offset_string': ['32', '22', '98'],
-                    'confidence': [0.6, 0.7, 0.9],
-                    'data_type': ['Number', 'Number', 'Number'],
-                    'label_threshold': [0.1, 0.1, 0.1],
+                    'label_name': ['label2', 'label2', 'label2', 'label2'],
+                    'start_offset': [37, 42, 45, 48],
+                    'end_offset': [39, 44, 47, 51],
+                    'offset_string': ['32', '22', '98', '760'],
+                    'confidence': [0.6, 0.7, 0.9, 0.4],
+                    'data_type': ['Number', 'Number', 'Number', 'Number'],
+                    'label_threshold': [0.1, 0.1, 0.1, 0.1],
+                }
+            ),
+            'label3': pd.DataFrame(
+                {
+                    'label_name': ['label3', 'label3'],
+                    'start_offset': [53, 56],
+                    'end_offset': [55, 58],
+                    'offset_string': ['89', '76'],
+                    'confidence': [0.7, 0.6],
+                    'data_type': ['Percentage', 'Percentage'],
+                    'label_threshold': [0.1, 0.1],
                 }
             ),
         }
@@ -588,10 +601,16 @@ class TestInformationExtraction(unittest.TestCase):
         assert merged_res_dict['label1'].iloc[1]['start_offset'] == 25
         assert merged_res_dict['label1'].iloc[2]['start_offset'] == 32
 
-        assert len(merged_res_dict['label2']) == 2
+        assert len(merged_res_dict['label2']) == 3
         assert merged_res_dict['label2'].iloc[0]['offset_string'] == "32"
         assert merged_res_dict['label2'].iloc[1]['offset_string'] == "22 98"
         assert round(merged_res_dict['label2'].iloc[1]['confidence'], 1) == 0.8
+        assert merged_res_dict['label2'].iloc[2]['offset_string'] == "760"
+
+        assert len(merged_res_dict['label3']) == 1
+        assert merged_res_dict['label3'].iloc[0]['offset_string'] == "89 76"
+        assert merged_res_dict['label3'].iloc[0]['start_offset'] == 53
+        assert merged_res_dict['label3'].iloc[0]['end_offset'] == 58
 
     def test_separate_labels(self):
         """Test separate_labels method for res_dict when using use_separate_labels extraction model."""
