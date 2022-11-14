@@ -496,7 +496,7 @@ If you upload the extraction AI to a new project without the labels and label se
 
 ### Migrate a Project
 
-Export the project data from the source Konfuzio server system.  
+Export the Project data from the source Konfuzio server system.  
 ```
 pip install konfuzio_sdk  
 konfuzio_sdk init  
@@ -508,6 +508,12 @@ The first argument is the path to the export folder, the second is the project n
 
 ```
 python manage.py project_import "/konfuzio-target-system/data_123/" "NewProjectName"
+```
+
+Alternatively, you can merge the Project export into an existing Project.
+
+```
+python manage.py project_import "/konfuzio-target-system/data_123/" --merge_project_id <EXISTING_PROJECT_ID>
 ```
 
 ## Database and Storage
