@@ -33,6 +33,7 @@ from konfuzio_sdk.trainer.information_extraction import (
     add_extractions_as_annotations,
     load_model,
     RFExtractionAI,
+    Trainer,
 )
 from konfuzio_sdk.api import upload_ai_model
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer
@@ -547,6 +548,51 @@ class TestInformationExtraction(unittest.TestCase):
             'NO_LABEL',
         ]
 
+    def test_horizontal_merge(self):
+        """Test merge_horizontal method."""
+        doc_text = """a1l1 a2l1    a3l1        a4l1 x a5l1
+32   22 98
+        """
+
+        res_dict = {
+            'label1': pd.DataFrame(
+                {
+                    'label_name': ['label1', 'label1', 'label1', 'label1', 'label1'],
+                    'start_offset': [0, 5, 13, 25, 32],
+                    'end_offset': [4, 9, 17, 29, 36],
+                    'offset_string': ['a1l1', 'a2l1', 'a3l1', 'a4l1', 'a5l1'],
+                    'confidence': [0.2, 0.4, 0.6, 0.5, 0.7],
+                    'data_type': ['Text', 'Text', 'Text', 'Text', 'Text'],
+                    'label_threshold': [0.1, 0.1, 0.1, 0.1, 0.1],
+                }
+            ),
+            'label2': pd.DataFrame(
+                {
+                    'label_name': ['label2', 'label2', 'label2'],
+                    'start_offset': [37, 42, 45],
+                    'end_offset': [39, 44, 47],
+                    'offset_string': ['32', '22', '98'],
+                    'confidence': [0.6, 0.7, 0.9],
+                    'data_type': ['Number', 'Number', 'Number'],
+                    'label_threshold': [0.1, 0.1, 0.1],
+                }
+            ),
+        }
+
+        merged_res_dict = Trainer.merge_horizontal(res_dict=res_dict, doc_text=doc_text)
+
+        assert len(merged_res_dict['label1']) == 3
+        assert round(merged_res_dict['label1'].iloc[0]['confidence'], 1) == 0.4
+        assert merged_res_dict['label1'].iloc[0]['end_offset'] == 17
+        assert merged_res_dict['label1'].iloc[0]['offset_string'] == "a1l1 a2l1    a3l1"
+        assert merged_res_dict['label1'].iloc[1]['start_offset'] == 25
+        assert merged_res_dict['label1'].iloc[2]['start_offset'] == 32
+
+        assert len(merged_res_dict['label2']) == 2
+        assert merged_res_dict['label2'].iloc[0]['offset_string'] == "32"
+        assert merged_res_dict['label2'].iloc[1]['offset_string'] == "22 98"
+        assert round(merged_res_dict['label2'].iloc[1]['confidence'], 1) == 0.8
+
     def test_separate_labels(self):
         """Test separate_labels method for res_dict when using use_separate_labels extraction model."""
         pipeline = RFExtractionAI(use_separate_labels=True)
@@ -572,18 +618,18 @@ class TestInformationExtraction(unittest.TestCase):
         }
 
         res_test_reparate_dict = pipeline.separate_labels(res_test_dict)
-        list(res_test_reparate_dict.keys()) == ['Brutto-Bezug', 'Steuer', 'Lohnabrechnung', 'NO_LABEL_SET']
+        assert list(res_test_reparate_dict.keys()) == ['Brutto-Bezug', 'Steuer', 'Lohnabrechnung', 'NO_LABEL_SET']
 
-        len(res_test_reparate_dict['Brutto-Bezug']) == 2
-        list(res_test_reparate_dict['Brutto-Bezug'][0].keys()) == ['Betrag', 'Bezeichnung']
-        list(res_test_reparate_dict['Brutto-Bezug'][1].keys()) == ['Betrag', 'Bezeichnung', 'Faktor']
+        assert len(res_test_reparate_dict['Brutto-Bezug']) == 2
+        assert list(res_test_reparate_dict['Brutto-Bezug'][0].keys()) == ['Betrag', 'Bezeichnung']
+        assert list(res_test_reparate_dict['Brutto-Bezug'][1].keys()) == ['Betrag', 'Bezeichnung', 'Faktor']
 
-        len(res_test_reparate_dict['Steuer']) == 1
-        list(res_test_reparate_dict['Steuer'][0].keys()) == ['Sozialversicherung', 'Steuerrechtliche Abzüge']
+        assert len(res_test_reparate_dict['Steuer']) == 1
+        assert list(res_test_reparate_dict['Steuer'][0].keys()) == ['Sozialversicherung', 'Steuerrechtliche Abzüge']
 
-        list(res_test_reparate_dict['Lohnabrechnung'].keys()) == ['Netto-Verdienst', 'Nachname']
+        assert list(res_test_reparate_dict['Lohnabrechnung'].keys()) == ['Netto-Verdienst', 'Nachname']
 
-        list(res_test_reparate_dict['NO_LABEL_SET'].keys()) == ['NO_LABEL']
+        assert list(res_test_reparate_dict['NO_LABEL_SET'].keys()) == ['NO_LABEL']
 
 
 class TestAddExtractionAsAnnotation(unittest.TestCase):

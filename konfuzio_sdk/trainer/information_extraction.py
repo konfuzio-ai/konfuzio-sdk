@@ -1556,8 +1556,10 @@ class Trainer:
         if row['confidence'] < row['label_threshold']:
             return False
 
-        # sanity check
+        # sanity checks
         if buffer[-1]['label_name'] != row['label_name']:
+            return False
+        elif buffer[-1]['confidence'] < buffer[-1]['label_threshold']:
             return False
 
         if not all([c == ' ' for c in doc_text[buffer[-1]['end_offset'] : row['start_offset']]]):
