@@ -20,7 +20,12 @@ def _get_is_negative(offset_string: str) -> bool:
         if offset_string.count('S') == 1 and offset_string[-1] == "S" and is_negative is False:
             is_negative = True
 
-    if offset_string[0] == '*':
+    if (
+        offset_string[0] == '*'
+        and offset_string.count('*') == 1
+        and offset_string.count('(') == 1
+        and offset_string.count(')') == 1
+    ):
         is_negative = True
 
     offset_string_negative_check = (
@@ -102,6 +107,12 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
 
     if offset_string.lower() in ['zwölf', 'twelve']:
         return 12.0
+
+    if offset_string.count('*') > 1:
+        return None
+
+    if offset_string.count('*') == 1 and offset_string[0] == '*' and offset_string.count('(') == 0:
+        return None
 
     offset_string = (
         offset_string.replace('O', '0')
