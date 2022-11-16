@@ -11,10 +11,16 @@ my_project = Project(id_=YOUR_PROJECT_ID)
 The information will be stored in the folder that you defined to allocate the data in the package initialization.
 A subfolder will be created for each document in the project.
 
-Every time that there are changes in the project in the Konfuzio Server, the local project can be updated with:
+Every time that there are changes in the project in the Konfuzio Server, the local project can be updated this way:
 
 ```python
-my_project.update()
+my_project.get(update=True)
+```
+
+To make sure that your project is loaded with all the latest data:
+
+```python
+my_project = Project(id_=YOUR_PROJECT_ID, update=True)
 ```
 
 ### Documents
@@ -22,10 +28,10 @@ my_project.update()
 To access the documents in the project you can use:
 
 ```python
-documents = my_project.get_documents_by_status()
+documents = my_project.documents
 ```
 
-By default, it will get the documents without dataset status (dataset_status = 0 (None)).
+By default, it will get the documents with training status (dataset_status = 2).
 You can specify another dataset status with the argument 'dataset_statuses'. The code for the status is:
 
 - None: 0
@@ -34,18 +40,13 @@ You can specify another dataset status with the argument 'dataset_statuses'. The
 - Test: 3
 - Excluded: 4
 
-For example, to get all documents in the project, you can do:
+The test documents can be accessed directly by:
 
 ```python
-documents = my_project.get_documents_by_status(dataset_statuses=[0, 1, 2, 3, 4])
-```
-
-The training and test documents can be accessed directly by:
-
-```python
-training_documents = my_project.documents
 test_documents = my_project.test_documents
 ```
+
+For more details, you can checkout the [Project documentation](https://dev.konfuzio.com/sdk/sourcecode.html#project).
 
 By default, you get 4 files for each document that contain information of the text, pages, annotation sets and annotations.
 You can see these files inside the document folder.
@@ -225,7 +226,7 @@ After downloading these files, the paths to them will also become available in t
 For example, you can get the path to the file with the document text with:
 
 ```python
-my_project.txt_file_path
+my_project.documents_folder
 ```
 
 #### Update Document
