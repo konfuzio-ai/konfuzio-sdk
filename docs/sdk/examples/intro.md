@@ -239,41 +239,6 @@ document.update()
 If a document is part of the training or test set, you can also update it by updating the entire project via
 project.update(). However, for projects with many documents it can be faster to update only the relevant documents.
 
-#### Upload Document
-You can upload a document via SDK. Create a Document instance and save it.
-The document will be uploaded to the Konfuzio Server.
-
-```python
-document = Document(file_path=<path_to_the_file>, project=my_project)
-document.save()
-```
-
-By default, the document is uploaded with the dataset status "None". If there is only one category in the project, the
-document will assume that category. If there is more than one category in the project, the document is uploaded without
-a category.
-
-You can specify both these parameters when you upload the document by passing the correspondent code for the dataset
-status (see code [here](https://app.konfuzio.com/v2/swagger/#/docs/docs_create)) and the ID of the category.
-
-```python
-document = Document(file_path=<path_to_the_file>, project=my_project,
-                    dataset_status=<dataset_status_code>, category_template=<category_id>)
-document.save()
-```
-
-#### Modify Document
-The dataset status and the category of a document can be modified after the document is uploaded.
-To change the category, you can select the category that you desire from the project based on its ID and attribute it
-to the document.
-
-```python
-category = my_project.get_category_by_id(<category_id>)
-
-document.category = category
-document.dataset_status = 2
-document.save()
-```
-
 #### Delete Document
 To locally delete a document, you can use:
 
