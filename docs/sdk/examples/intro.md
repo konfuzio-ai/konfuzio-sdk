@@ -31,8 +31,7 @@ To access the documents in the project you can use:
 documents = my_project.documents
 ```
 
-By default, it will get the documents with training status (dataset_status = 2).
-You can specify another dataset status with the argument 'dataset_statuses'. The code for the status is:
+By default, it will get the documents with training status (dataset_status = 2). The code for the status is:
 
 - None: 0
 - Preparation: 1
@@ -47,6 +46,7 @@ test_documents = my_project.test_documents
 ```
 
 For more details, you can checkout the [Project documentation](https://dev.konfuzio.com/sdk/sourcecode.html#project).
+
 
 By default, you get 4 files for each document that contain information of the text, pages, annotation sets and annotations.
 You can see these files inside the document folder.
