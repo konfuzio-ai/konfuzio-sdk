@@ -1827,18 +1827,18 @@ class GroupAnnotationSets:
         char_count = 0
 
         document_annotations = [
-            annotation for annotation_set in document.annotation_sets() for annotation in annotation_set.annotations
+            annotation for annotation_set in document.annotation_sets() for annotation in annotation_set.annotations()
         ]
 
         # Loop over lines
         for i, line in enumerate(document.text.replace('\f', '\n').split('\n')):
-            matched_section = None
+            matched_annotation_set = None
             new_char_count = char_count + len(line)
             assert line == document.text[char_count:new_char_count]
             # TODO: Currently we can't handle
-            for section in document.annotation_sets():
-                if section.start_offset and char_count <= section.start_offset < new_char_count:
-                    matched_section: AnnotationSet = section
+            for annotation_set in document.annotation_sets():
+                if annotation_set.start_offset and char_count <= annotation_set.start_offset < new_char_count:
+                    matched_annotation_set: AnnotationSet = annotation_set
                     break
 
             line_annotations = [
@@ -1848,7 +1848,7 @@ class GroupAnnotationSets:
             counter_dict = dict(
                 collections.Counter(annotation.annotation_set.label_set.name for annotation in line_annotations)
             )
-            y = matched_section.label_set.name if matched_section else 'No'
+            y = matched_annotation_set.label_set.name if matched_annotation_set else 'No'
             tmp_df = pandas.DataFrame(
                 [{'line': i, 'y': y, 'document': document.id_, **annotations_dict, **counter_dict}]
             )
