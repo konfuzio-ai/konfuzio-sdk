@@ -2403,12 +2403,12 @@ class Document(Data):
 
         return self._annotations
 
-    def propose_splitting(self, splitting_ai) -> List:
+    def propose_splitting(self, splitting_ai, first_page_spans) -> List:
         """Propose splitting for a multi-file Document.
 
         :param splitting_ai: An initialized SplittingAI class
         """
-        proposed = splitting_ai.propose_split_documents(self)
+        proposed = splitting_ai.propose_split_documents(self, first_page_spans)
         return proposed
 
 

@@ -1,7 +1,9 @@
 """Split a multi-Document file into a list of shorter documents."""
-from typing import List
+from copy import deepcopy
+from typing import List, Set
 
 from konfuzio_sdk.data import Document, Page, Project
+from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 
 
 class SplittingAI:
@@ -15,6 +17,8 @@ class SplittingAI:
         :type project_id: int
         """
         self.project = Project(id_=project_id)
+        self.tokenizer = ConnectedTextTokenizer()
+        self.train_data = self.project.documents
 
     def _create_doc_from_page_interval(self, original_doc: Document, start_page: Page, end_page: Page) -> Document:
         pages_text = original_doc.text[start_page.start_offset : end_page.end_offset]
@@ -29,46 +33,53 @@ class SplittingAI:
                 )
         return new_doc
 
-    def _suggest_page_split(self, document: Document) -> List[Document]:
+    def train(self) -> Set:
+        first_page_spans = []
+        not_first_page_spans = []
+        for doc in self.project.documents:
+            doc = self.tokenizer.tokenize(deepcopy(doc))
+            for page in doc.pages():
+                if page.number == 1:
+                    first_page_spans.append({span.offset_string for span in page.spans()})
+                else:
+                    not_first_page_spans.append({span.offset_string for span in page.spans()})
+        if not first_page_spans:
+            first_page_spans.append(set())
+        true_first_page_spans = set.intersection(*first_page_spans)
+        if not not_first_page_spans:
+            not_first_page_spans.append(set())
+        true_not_first_page_spans = set.intersection(*not_first_page_spans)
+        true_first_page_spans = true_first_page_spans - true_not_first_page_spans
+        return true_first_page_spans
+
+    def _suggest_page_split(self, document: Document, first_page_spans: Set) -> List[Document]:
         suggested_splits = []
-        document.get_images()
-        first_page_spans = set()
-        another_page_spans = set()
         for page in document.pages():
-            if page.number == 1:
-                for span in page.spans():
-                    first_page_spans.add(span)
-            else:
-                for span in page.spans():
-                    another_page_spans.add(span)
-        first_page_spans = first_page_spans - another_page_spans
-        for page in document.pages():
-            all_spans = len(page.spans())
-            intersection_spans = 0
-            for span in page.spans():
-                if span in first_page_spans:
-                    intersection_spans += 1
-            first_page_percentage = intersection_spans / all_spans
-            if first_page_percentage >= 0.5:
+            if len({span.offset_string for span in page.spans()}.intersection(first_page_spans)) > 1:
                 suggested_splits.append(page)
         split_docs = []
         first_page = document.pages()[0]
         last_page = document.pages()[-1]
+        if not suggested_splits:
+            return [document]
         for page_i, split_i in enumerate(suggested_splits):
             if page_i == 0:
                 split_docs.append(self._create_doc_from_page_interval(document, first_page, split_i))
             elif page_i == len(split_docs):
                 split_docs.append(self._create_doc_from_page_interval(document, split_i, last_page))
             else:
-                split_docs.append(self._create_doc_from_page_interval(document, split_docs[page_i - 1], split_i))
+                split_docs.append(self._create_doc_from_page_interval(document, suggested_splits[page_i - 1], split_i))
         return split_docs
 
-    def propose_split_documents(self, document: Document) -> List[Document]:
+    def propose_split_documents(self, document: Document, first_page_spans: Set) -> List[Document]:
         """
         Propose a set of resulting documents from a single Documents.
 
         :param document: An input Document to be split.
+        :type document: Document
+        :param first_page_spans: A set of Spans unique for the first Pages in the training data.
+        :type first_page_spans: set
         :return: A list of suggested new sub-Documents built from the original Document.
         """
-        split_docs = self._suggest_page_split(document)
+        split_docs = self._suggest_page_split(document, first_page_spans)
         return split_docs
