@@ -110,7 +110,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         """Test to get Document that does not exist."""
         with pytest.raises(HTTPError) as e:
             get_document_details(document_id=0, project_id=0)
-        assert 'You do not have permission' in str(e.value)
+        assert '404 Not Found' in str(e.value)
 
     def test_document_details_document_not_available_but_project_exists(self):
         """Test to get Document that does not exist."""

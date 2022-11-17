@@ -39,11 +39,22 @@ You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server
 
 ## Next Release
 
-This version uses Konfuzio Trainer in version v.0.3.22, the Konfuzio Python SDK in version v.0.1.15 and Konfuzio Capture Vue in version [0.0.9](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
+### Added
+- Access Service Desk Tickets which have been created via https://konfuzio.com/support.
+
+## released-2022-11-16_12-13-49
+
+### Fixed
+- Speedup the Document List page for Superuser ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10036)).
+- The Annotation creation on empty areas in a Document is now possible ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10049)).
+
+## released-2022-11-11_13-19-29
+
+This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Capture Vue in version [0.0.10-pre-release-7](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
 
 ### Added
-- [Allow to invite Members with different Roles to Projects. Available Roles are "Reviewer" and "Manager". All existing Members keep their current Permissions and will become Managers.](https://help.konfuzio.com/modules/members/index.html)
-- [Superusers can define custom Roles for Members: Inviting Users can select from those Roles when inviting new Members to a Project](https://help.konfuzio.com/modules/superuserroles/index.html). ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/7364)).
+- [Allow to invite Members with different Roles to Projects. Available Roles are "Reviewer" and "Manager". All existing Members keep their current Permissions and will become Managers.](https://help.konfuzio.com/modules/members/index.html) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/7364)).
+- [Superusers can define custom Roles for Members: Inviting Users can select from those Roles when inviting new Members to a Project](https://help.konfuzio.com/modules/superuserroles/index.html) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/7364)).
 - [Add the property 'has_multiple_top_candidates' to the Label API V3](https://app.konfuzio.com/v3/swagger/#/labels) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9687)).
 - [Add the property 'has_multiple_annotation_sets' to the Label Set API V3](https://app.konfuzio.com/v3/swagger/#/labels) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9687)).
 - [Save feedback that there are no Annotations for a Label/Label-Set combination in a document](http://localhost:8000/v3/swagger/#/documents/documents_missing_annotations_list) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9163)).
@@ -52,7 +63,7 @@ This version uses Konfuzio Trainer in version v.0.3.22, the Konfuzio Python SDK 
 - [API v3 endpoint to sort and split Pages into Documents with different categories contained in one file](https://testing.konfuzio.com/v3/swagger/#/documents/documents_postprocess_create) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9452)).
 
 ### Changed
-- [When a user creates a new Project, this user will become the default assignee for new Documents](https://help.konfuzio.com/modules/projects/index.html#default-assignee) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9705))
+- [When a user creates a new Project, this user will become the default assignee for new Documents](https://help.konfuzio.com/modules/projects/index.html#default-assignee) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9705)).
 - [If a user rejects an Annotation, this user is tracked in the 'revised_by' attribute of the Annotation](https://help.konfuzio.com/modules/annotations/index.html#declined) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9479)).
 
 ### Fixed
@@ -63,6 +74,7 @@ This version uses Konfuzio Trainer in version v.0.3.22, the Konfuzio Python SDK 
 - The arrow in the Project- and language selector was not clickable ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9714)).
 - On the Annotation list Page the Category filter was not showing all Annotations ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9732)).
 - Fix an issue where the Category- and Document API V3 endpoint did not include all relevant Label-Sets ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9816)).
+- Fix an issue that prevented specific SmartView messages to be dismissed ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9766)).
 
 ## released-2022-10-28_07-23-39
 

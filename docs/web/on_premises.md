@@ -111,15 +111,15 @@ migration work.
 
 ##### TLS certificates
 
-You should be running Konfuzio using https which requiresTLS certificates. By default, the setup will install and 
-configure [cert-manager](https://github.com/jetstack/cert-manager) to obtain free TLS certificates. If you
+You should be running Konfuzio using https which requires TLS certificates. To get automated certificates using letesencrypt you need to install [cert-manager](https://cert-manager.io/docs/installation/helm/) in your cluster. If you
 have your own wildcard certificate, you already have cert-manager installed, or you have
 some other way of obtaining TLS certificates. For the default configuration, you must
 specify an email address to register your TLS certificates.
 
 _Include these options in your Helm install command:_
 
-`--set certmanager-issuer.email=me@example.com`
+`--set letsencrypt.enabled=True`  
+`--set letsencrypt.email=me@example.com`
 
 ##### PostgreSQL
 
@@ -209,6 +209,20 @@ password for `root` user. This can be extracted by the following command (replac
 `kubectl get secret <name>-konfuzio-initial-root-password`  
 `-ojsonpath='{.data.password}' | base64 --decode ; echo`  
 -->
+
+### Minimal Setup
+
+The following commands allow you to get a Konfuzio Server installation running with minimal configuration effort and relying on the [default values](https://git.konfuzio.com/shared/charts/-/blob/master/values.yaml) of the Chart. This uses Postgres, Redis and S3 via [MinIO](https://min.io/) as in-cluster deployments. This setup is not suited for production and may use insecure defaults.
+
+```
+helm repo add konfuzio-repo https://git.konfuzio.com/api/v4/projects/106/packages/helm/stable
+helm repo update
+helm install my-konfuzio konfuzio-repo/konfuzio-chart  \  
+  --set envs.HOST_NAME="host-name-for-you-installation.com"  \  
+  --set image.tag="released-******"  \  
+  --set image.imageCredentials.username=******  \
+  --set image.imageCredentials.password=******
+```
 
 ### Upgrade
 
@@ -482,7 +496,7 @@ If you upload the extraction AI to a new project without the labels and label se
 
 ### Migrate a Project
 
-Export the project data from the source Konfuzio server system.  
+Export the Project data from the source Konfuzio server system.  
 ```
 pip install konfuzio_sdk  
 konfuzio_sdk init  
@@ -496,6 +510,12 @@ The first argument is the path to the export folder, the second is the project n
 python manage.py project_import "/konfuzio-target-system/data_123/" "NewProjectName"
 ```
 
+Alternatively, you can merge the Project export into an existing Project.
+
+```
+python manage.py project_import "/konfuzio-target-system/data_123/" --merge_project_id <EXISTING_PROJECT_ID>
+```
+
 ## Database and Storage
 
 ### Overview
@@ -505,9 +525,9 @@ To run Konfuzio Server, three types of storages are required. First, a PostgreSQ
 | --- | --- | --- | --- |
 | [Postgres](https://www.postgresql.org/) | Latest Stable | PostgreSQL 11 and higher| Managed (Cloud) Service, VM Installation, Docker, In-Cluster* |
 | [Redis](https://redis.io/) | Latest Stable | Redis 5 and higher | Managed (Cloud) Service, VM Installation, Docker, In-Cluster* |
-| Blob Storage | Latest Stable | All with activ support | Filesystem, S3-compatible Storage (e.g. [Amazon S3](https://aws.amazon.com/s3/), [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/)) |
+| Blob Storage | Latest Stable | All with activ support | Filesystem, S3-compatible Service (e.g. [Amazon S3](https://aws.amazon.com/s3/), [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/)), In-Cluster* S3 via [MinIO](https://min.io/docs/minio/container/index.html) |
 
-\*If you use [Kubernetes Deployment](/web/on_premises.html#kubernetes) you can choose the 'in-Cluster' option for Postgres and Redis.
+\*If you use [Kubernetes Deployment](/web/on_premises.html#kubernetes) you can choose the 'in-Cluster' option for Postgres, Redis and S3-Storage.
 
 ### Usage of PostgreSQL
 
@@ -530,6 +550,12 @@ Konfuzio Server will create a total of 43 tables and use the following data type
 
 <!-- This table was created by running select data_type, count(*) from information_schema.columns where table_schema = 'public'  group by data_type ; -->
 
+## Billing and License
+
+A Konfuzio Server self-hosted license can be purchased [online](https://konfuzio.com/en/price/). After your order has been placed, we will provide you with credentials to [download the Konfuzio Docker Images](https://dev.konfuzio.com/web/on_premises.html#download-docker-image) and a BILLING_API_KEY which needs to be set as [environment variable](/web/on_premises.html#environment-variables-for-konfuzio-server). The Konfuzio Container reports the usage once a day to our billing server (i.e. https://app.konfuzio.com). Konfuzio containers don't send customer data, such as the image or text that's being analyzed, to the billing server.
+
+If you operate Konfuzio Server in an air-gapped environment, the Konfuzio Docker images are licensed to operate for one year (based on the release date) without being connected to the billing server.
+
 ## Environment Variables
 
 ### Environment Variables for Konfuzio Server
@@ -547,6 +573,11 @@ MAINTENANCE_MODE=False
 # Insert random secret key (mandatory).
 # See https://docs.djangoproject.com/en/4.0/ref/settings/#secret-key
 SECRET_KEY=
+
+# The Billing API Key (optional) 
+BILLING_API_KEY=
+# The URL of the biling Server (optional)
+BILLING_API_URL=https://app.konfuzio.com
 
 # The HOSTNAME variable is used in the E-Mail templates (mandatory).
 # https://example.konfuzio.com or http://localhost:8000 for local development.
@@ -588,7 +619,7 @@ BROKER_URL=
 RESULT_BACKEND=
 TASK_ALWAYS_EAGER=True
 
-# Defender settings (optional).
+# Defender (Brute-Force protection) settings (optional).
 DEFENDER_REDIS_URL=
 
 # SENTRY_DSN e.g. "https://123456789@sentry.io/1234567" (optional).
@@ -611,6 +642,10 @@ EMAIL_USE_SSL=False
 # See https://docs.djangoproject.com/en/4.0/ref/settings/#email-timeout
 EMAIL_TIMEOUT=
 DEFAULT_FROM_EMAIL=
+
+# Customize the email verification (optional)
+# When set to “mandatory” the user is blocked from logging in until the email address is verified. Choose “optional” or “none” to allow logins with an unverified e-mail address. In case of “optional”, the e-mail verification mail is still sent, whereas in case of “none” no e-mail verification mails are sent.
+ACCOUNT_EMAIL_VERIFICATION='mandatory'
 
 # Api Key to sent emails via SendGrid if Debug=False (optional).
 # If you use the SENDGRID_API_KEY you must also set EMAIL_BACKEND=sendgrid_backend.SendgridBackend
