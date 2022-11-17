@@ -18,7 +18,7 @@ tokenizer <https://dev.konfuzio.com/sdk/sourcecode.html#konfuzio_sdk.tokenizer.r
 train a "RFExtractionAI" model to find and extract relevant information like Name, Date and Recipient
 from payslip documents.
 
-You can |OpenInColab|_ or download it from `here <https://github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/RFExtractionAI%20Demo.ipynb>`_
+You can |OpenInColab|_ or download it from `here <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/RFExtractionAI%20Demo.ipynb>`_
 and try it by yourself.
 
 .. |OpenInColab| image:: https://colab.research.google.com/assets/colab-badge.svg
