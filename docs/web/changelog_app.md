@@ -37,9 +37,18 @@ You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server
 - A bug during the extraction post-processing steps, which was causing the first line items of each page to be skipped ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9561))
 -->
 
-<!-- ## Next Release -->
+## Next Release
 
-## released-2022-11-09_16-29-13
+### Added
+- Access Service Desk Tickets which have been created via https://konfuzio.com/support.
+
+## released-2022-11-16_12-13-49
+
+### Fixed
+- Speedup the Document List page for Superuser ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10036)).
+- The Annotation creation on empty areas in a Document is now possible ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10049)).
+
+## released-2022-11-11_13-19-29
 
 This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Capture Vue in version [0.0.10-pre-release-7](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
 
