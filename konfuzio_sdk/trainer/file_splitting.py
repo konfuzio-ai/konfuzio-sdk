@@ -34,6 +34,7 @@ class SplittingAI:
         return new_doc
 
     def train(self) -> Set:
+        """Gather the Spans unique for the first Pages."""
         first_page_spans = []
         not_first_page_spans = []
         for doc in self.project.documents:
