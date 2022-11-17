@@ -343,6 +343,7 @@ class AnnotationSet(Data):
         self.label_set: LabelSet = label_set
         self.document: Document = document  # we don't add it to the Document as it's added via get_annotations
         self._force_offline = document._force_offline
+        self._annotations = []
         document.add_annotation_set(self)
 
     def __repr__(self):
@@ -354,19 +355,24 @@ class AnnotationSet(Data):
         self.label_set = None
         self.document = None
 
-    @property
-    def annotations(self):
+    def annotations(self, use_correct: bool = True, ignore_below_threshold: bool = False):
         """All Annotations currently in this Annotation Set."""
-        related_annotation = []
-        for annotation in self.document.annotations():
-            if annotation.annotation_set == self:
-                related_annotation.append(annotation)
-        return related_annotation
+        if not self._annotations:
+            for annotation in self.document.annotations(use_correct=False, ignore_below_threshold=False):
+                if annotation.annotation_set == self:
+                    self._annotations.append(annotation)
+
+        annotations: List[Annotation] = []
+        if use_correct:
+            annotations = [ann for ann in self._annotations if ann.is_correct]
+        elif ignore_below_threshold:
+            annotations = [ann for ann in self._annotations if ann.is_correct or ann.confidence > ann.label.threshold]
+        return annotations
 
     @property
     def start_offset(self):
         """Calculate the earliest start based on all Annotations currently in this Annotation Set."""
-        return min((s.start_offset for a in self.annotations for s in a.spans), default=None)
+        return min((s.start_offset for a in self.annotations() for s in a.spans), default=None)
 
     @property
     def start_line_index(self):
@@ -376,7 +382,7 @@ class AnnotationSet(Data):
     @property
     def end_offset(self):
         """Calculate the end based on all Annotations currently in this Annotation Set."""
-        return max((a.end_offset for a in self.annotations), default=None)
+        return max((a.end_offset for a in self.annotations()), default=None)
 
 
 class LabelSet(Data):
@@ -1852,6 +1858,7 @@ class Document(Data):
         self,
         label: Label = None,
         use_correct: bool = True,
+        ignore_below_threshold: bool = False,
         start_offset: int = 0,
         end_offset: int = None,
         fill: bool = False,
@@ -1861,6 +1868,7 @@ class Document(Data):
 
         :param label: Label for which to filter the Annotations.
         :param use_correct: If to filter by correct annotations.
+        :param ignore_below_threshold: To filter out annotations with confidence below Label prediction threshold.
         :return: Annotations in the document.
         """
         self.get_annotations()
@@ -1870,8 +1878,13 @@ class Document(Data):
         annotations: List[Annotation] = []
         add = False
         for annotation in self._annotations:
+            # filter by correct information
+            if not annotation.is_correct:
+                if ignore_below_threshold and (
+                    not annotation.confidence or annotation.confidence < annotation.label.threshold
+                ):
+                    continue
             for span in annotation.spans:
-                # filter by correct information
                 if (use_correct and annotation.is_correct) or not use_correct:
                     # todo: add option to filter for overruled Annotations where mult.=F
                     # todo: add option to filter for overlapping Annotations, `add_annotation` just checks for identical
