@@ -206,6 +206,10 @@ test_data_numbers = [
     ('4,258  23', 4258.23, None),
     ('4  258  23', 4258.23, None),
     ('42 58', 42.58, None),
+    ('129.684,46*', 129684.46, None),
+    ('*(118,704)', -118704, None),
+    ('*118,704', None, None),
+    ('*1*2*3*4', None, None),
     # ('Woch.Arb.Zt.', None, 0), TODO this raises uncaught ValuError
     # ('12.', 12.0, 0), undefined test cases:
     # ('1.', 1.0, 0),
