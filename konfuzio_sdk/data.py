@@ -361,12 +361,13 @@ class AnnotationSet(Data):
             for annotation in self.document.annotations(use_correct=False, ignore_below_threshold=False):
                 if annotation.annotation_set == self:
                     self._annotations.append(annotation)
-        set_anns = self._annotations
+
+        annotations: List[Annotation] = []
         if use_correct:
-            set_anns = [ann for ann in set_anns if ann.is_correct]
+            annotations = [ann for ann in self._annotations if ann.is_correct]
         elif ignore_below_threshold:
-            set_anns = [ann for ann in set_anns if ann.is_correct or ann.confidence > ann.label.threshold]
-        return set_anns
+            annotations = [ann for ann in self._annotations if ann.is_correct or ann.confidence > ann.label.threshold]
+        return annotations
 
     @property
     def start_offset(self):
