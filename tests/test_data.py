@@ -1026,7 +1026,7 @@ class TestOfflineDataSetup(unittest.TestCase):
             spans=[span],
         )
 
-        assert annotation in annotation_set.annotations
+        assert annotation in annotation_set.annotations()
 
     def test_create_document_with_page_object(self):
         """Create a Document with pages information from a Page object."""
