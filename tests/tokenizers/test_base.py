@@ -55,6 +55,9 @@ class TestAbstractTokenizer(unittest.TestCase):
                 self.processing_steps.append(ProcessingStep(self.__repr__(), document, time.monotonic() - t0))
                 pass
 
+            def found_spans(self, document: Document):
+                pass
+
             def __eq__(self, other):
                 pass
 
@@ -136,7 +139,7 @@ class TestAbstractTokenizer(unittest.TestCase):
         result = self.tokenizer.evaluate(document)
         assert result.shape[0] == 1
         assert result.is_correct[0] is None
-        assert result.is_found_by_tokenizer.sum() == 0
+        assert result.tokenizer_true_positive.sum() == 0
 
     def test_processing_runtime_with_empty_document(self):
         """Test the information of the processing runtime with a Document without text."""
@@ -154,7 +157,7 @@ class TestAbstractTokenizer(unittest.TestCase):
         result = self.tokenizer.evaluate(self.document)
         assert result.shape[0] == 2
         assert result.is_correct.sum() == 1
-        assert result.is_found_by_tokenizer.sum() == 0
+        assert result.tokenizer_true_positive.sum() == 0
 
     def test_processing_runtime_with_document(self):
         """Test the information of the processing runtime with a Document with text."""
@@ -171,6 +174,27 @@ class TestAbstractTokenizer(unittest.TestCase):
         result = self.tokenizer.evaluate(self.document)
         assert result.start_offset[0] == self.span.start_offset
         assert result.end_offset[0] == self.span.end_offset
+
+    def test_evaluate_dataset_input(self):
+        """Test input for the evaluate_category method."""
+        with pytest.raises(TypeError, match='is not iterable'):
+            self.tokenizer.evaluate_dataset(self.project)
+        with pytest.raises(AssertionError, match='Invalid document type'):
+            self.tokenizer.evaluate_dataset([self.project])
+
+    def test_evaluate_dataset_output_without_test_documents(self):
+        """Test evaluate an empty list of Documents."""
+        with pytest.raises(ValueError, match='No objects to concatenate'):
+            self.tokenizer.evaluate_dataset([])
+
+    def test_evaluate_dataset_output_with_test_documents(self):
+        """Test evaluate a Category with a test Documents."""
+        result = self.tokenizer.evaluate_dataset(self.category_2.test_documents())
+        assert len(result.data) == 2
+        assert result.data.loc[0]["category_id"] == self.category_2.id_
+
+        # an empty span for the NO_LABEL_SET is always created
+        assert result.data.loc[1]["category_id"] is None
 
     @unittest.skip(reason='removed narrow implementation to evaluate multiple Documents: evaluate_category')
     def test_evaluate_category_input(self):
@@ -288,35 +312,38 @@ class TestListTokenizer(unittest.TestCase):
 
         self.tokenizer.tokenize(document)
         no_label_annotations = document.annotations(use_correct=False, label=self.project.no_label)
+
         assert len(no_label_annotations) == 2
         assert no_label_annotations[0].spans[0] != span_1
         assert no_label_annotations[1].spans[0] != span_2
+        assert span_1.regex_matching == []
+        assert span_2.regex_matching == []
+        assert self.tokenizer.missing_spans(document) == document.spans(use_correct=True)
 
     def test_tokenize_with_empty_document(self):
         """Test tokenize a Document without text."""
         document = Document(project=self.project, category=self.category_1)
-        with pytest.raises(NotImplementedError) as e:
-            self.tokenizer.tokenize(document)
 
-        assert 'be tokenized when text is None' in str(e.value)
+        with pytest.raises(NotImplementedError, match='be tokenized when text is None'):
+            self.tokenizer.tokenize(document)
 
     def test_tokenizer_1(self):
         """Test that tokenizer_1 has only 1 match."""
         result = self.tokenizer_1.evaluate(self.document)
         assert result.is_correct.sum() == 2
-        assert result.is_found_by_tokenizer.sum() == 1
+        assert result.tokenizer_true_positive.sum() == 1
 
     def test_tokenizer_2(self):
         """Test that tokenizer_2 has only 1 match."""
         result = self.tokenizer_2.evaluate(self.document)
         assert result.is_correct.sum() == 2
-        assert result.is_found_by_tokenizer.sum() == 1
+        assert result.tokenizer_true_positive.sum() == 1
 
     def test_evaluate_list_tokenizer(self):
         """Test that with the combination of the tokenizers is possible to find both correct Spans."""
         result = self.tokenizer.evaluate(self.document)
         assert result.is_correct.sum() == 2
-        assert result.is_found_by_tokenizer.sum() == 2
+        assert result.tokenizer_true_positive.sum() == 2
 
     def test_evaluate_list_tokenizer_offsets(self):
         """Test offsets of the result of the tokenizer."""
@@ -392,9 +419,9 @@ class TestTokenize(unittest.TestCase):
     def test_find_missing_spans(self):
         """Find all missing Spans in a Project."""
         tokenizer = RegexTokenizer(regex=r'\d')
-        document = tokenizer.missing_spans(self.document)
+        missing_spans = tokenizer.missing_spans(self.document)
         # Span 365 to 366 (Tax ID) can be found be Tokenizer
         # three Spans are not correct and don't need to be found
         # (1 revised and 2 unrevised)
         assert sum([not span.annotation.is_correct for span in self.document.spans()]) == 3
-        self.assertEqual(len(document.spans()), 20)
+        self.assertEqual(len(missing_spans), 20)

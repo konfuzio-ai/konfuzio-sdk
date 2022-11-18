@@ -19,6 +19,13 @@ Span
    :noindex:
 
 
+Bbox
+=====================
+
+.. autoclass:: Bbox
+   :members:
+   :noindex:
+
 Annotation
 =====================
 .. autoclass:: Annotation
@@ -40,11 +47,13 @@ Label
    :members:
    :noindex:
 
+
 Label Set
 =====================
 .. autoclass:: LabelSet
    :members:
    :noindex:
+
 
 Category
 =====================
@@ -52,11 +61,20 @@ Category
    :members:
    :noindex:
 
+
 Document
 =====================
 .. autoclass:: Document
    :members:
    :noindex:
+
+
+Page
+=====================
+.. autoclass:: Page
+   :members:
+   :noindex:
+
 
 Project
 =====================
@@ -66,20 +84,88 @@ Project
 
 
 =====================
-Tokenizer
+Tokenizers
 =====================
 
-`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/utils.py>`__
+`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/tokenizer>`__
 
+.. automodule:: konfuzio_sdk.tokenizer.base
 
 Abstract Tokenizer
 =====================
+.. autoclass:: AbstractTokenizer
+   :members:
+   :noindex:
 
-.. automodule:: konfuzio_sdk.tokenizer.base
-    :members:
+List Tokenizer
+=====================
+.. autoclass:: ListTokenizer
+   :members:
+   :noindex:
 
 Rule Based Tokenizer
 =====================
 
 .. automodule:: konfuzio_sdk.tokenizer.regex
+
+Regex Tokenizer
+=====================
+.. autoclass:: RegexTokenizer
+   :members:
+   :noindex:
+
+.. automodule:: konfuzio_sdk.tokenizer.regex
     :members:
+
+
+=====================
+Extraction AI
+=====================
+
+`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/trainer.information_extraction.py>`__
+
+
+.. automodule:: konfuzio_sdk.trainer.information_extraction
+
+.. autoclass:: RFExtractionAI
+   :members:
+   :noindex:
+
+Load Saved AI Model
+=====================
+
+.. autofunction:: konfuzio_sdk.trainer.information_extraction.load_model
+   :noindex:
+
+=====================
+Evaluation
+=====================
+
+`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/evaluate.py>`__
+
+Evaluation
+---------------------
+.. autoclass:: konfuzio_sdk.evaluate.Evaluation
+   :members:
+   :noindex:
+
+compare
+---------------------
+.. autofunction:: konfuzio_sdk.evaluate.compare
+   :noindex:
+
+
+=====================
+Document Categorization
+=====================
+
+`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/trainer/document_categorization.py>`__
+
+.. automodule:: konfuzio_sdk.trainer.document_categorization
+
+
+Fallback Categorization Model
+=====================
+.. autoclass:: FallbackCategorizationModel
+   :members:
+   :noindex:

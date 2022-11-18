@@ -119,7 +119,7 @@ class TestUrls(unittest.TestCase):
 
     def test_annotation_view_url(self):
         """Test to access Annotation online."""
-        self.assertEqual(get_annotation_view_url(ANNOTATION_ID), f'{KONFUZIO_HOST}/a/{ANNOTATION_ID}/')
+        self.assertEqual(get_annotation_view_url(ANNOTATION_ID), f'{KONFUZIO_HOST}/a/{ANNOTATION_ID}')
 
     def test_page_image_url(self):
         """Test to access Page online."""

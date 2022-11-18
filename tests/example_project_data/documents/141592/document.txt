@@ -1,0 +1,24 @@
+               Indian Restaurant
+           *** Indian Crown ***
+           Reichsstr.  15  *  04109  Leipzig
+                           04155  Leipzig
+                     Tel.:  0341 25699737
+           Steuernummer DE322/195/09801
+Restaurant                              Tisch  67
+Rechnung  Nr.  RE  00171  20 Datum  24.07.2020
+Kellner  1                                Zeit  20:11
+    1  044  Lahsuni  Naan               3.90           3.90
+    1  202  Palak  Paneer              13.90          13.90
+    1  217  Matter  Paneer            14.90         14.90
+    1  010  Hara  Bhara  Salat       5.90           5.90
+    1 600  Mango  Lassi                 3.50           3.50
+    1  601  Lassi  süß                     2.90           2.90
+    1 502  Stilles  Wasser  0,    5.90           5.90
+    Barzahlung                                                50.90
+      Satz       Brutto           Netto            USt
+       5  %         38.60           36.76           1.84
+      16  %         12.30            10.60           1.70
+      id: 2232
+   Summe Euro                                50.90
+             Wir  danken  für  Ihren  Besuch
+                                   Thanks

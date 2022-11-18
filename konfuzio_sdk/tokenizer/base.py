@@ -3,12 +3,12 @@
 import abc
 import logging
 from typing import List
-from warnings import warn
+from copy import deepcopy
 
 import pandas as pd
 
-from konfuzio_sdk.data import Document, Category, Project, AnnotationSet, Span, Annotation
-from konfuzio_sdk.evaluate import compare
+from konfuzio_sdk.data import Document, Category, Span
+from konfuzio_sdk.evaluate import compare, Evaluation
 from konfuzio_sdk.utils import sdk_isinstance
 
 logger = logging.getLogger(__name__)
@@ -59,88 +59,60 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
     def tokenize(self, document: Document):
         """Create Annotations with 1 Span based on the result of the Tokenizer."""
 
+    @abc.abstractmethod
+    def found_spans(self, document: Document) -> List[Span]:
+        """Find all Spans in a Document that can be found by a Tokenizer."""
+
     def evaluate(self, document: Document) -> pd.DataFrame:
         """
         Compare a Document with its tokenized version.
 
         :param document: Document to evaluate
-        :return: Evaluation DataFrame and Processing time DataFrame.
+        :return: Evaluation DataFrame
         """
         assert sdk_isinstance(document, Document)
         document.annotations()  # Load Annotations before doing tokenization
 
-        virtual_doc = Document(
-            project=document.project,
-            text=document.text,
-            bbox=document.get_bbox(),
-            category=document.category,
-            copy_of_id=document.id_,
-            pages=document.pages,
-        )
-
+        virtual_doc = deepcopy(document)
         self.tokenize(virtual_doc)
         evaluation = compare(document, virtual_doc)
         logger.warning(
-            f'{evaluation["is_found_by_tokenizer"].sum()} of {evaluation["is_correct"].sum()} corrects'
+            f'{evaluation["tokenizer_true_positive"].sum()} of {evaluation["is_correct"].sum()} corrects'
             f' Spans are found by Tokenizer'
         )
         return evaluation
 
-    def missing_spans(self, document: Document) -> Document:
+    def evaluate_dataset(self, dataset_documents: List[Document]) -> Evaluation:
         """
-        Apply a Tokenizer on a list of Document and remove all Spans that can be found.
+        Evaluate the tokenizer on a dataset of documents.
+
+        :param dataset_documents: Documents to evaluate
+        :return: Evaluation instance
+        """
+        eval_list = []
+        for document in dataset_documents:
+            assert sdk_isinstance(document, Document), f"Invalid document type: {type(document)}. Should be Document."
+            document.annotations()  # Load Annotations before doing tokenization
+            virtual_doc = deepcopy(document)
+            self.tokenize(virtual_doc)
+            eval_list.append((document, virtual_doc))
+        return Evaluation(eval_list)
+
+    def missing_spans(self, document: Document) -> List[Span]:
+        """
+        Apply a Tokenizer on a Document and find all Spans that cannot be found.
 
         Use this approach to sequentially work on remaining Spans after a Tokenizer ran on a List of Documents.
 
-        :param tokenizer: A Tokenizer that runs on a list of Documents
-        :param documents: Any list of Documents
+        :param document: A Document
 
-        :return: A new Document containing all missing Spans contained in a copied version of all Documents.
+        :return: A list containing all missing Spans.
 
         """
-        warn(
-            'This method is WIP, as we return a new instance, however the document should be kept and missing Span '
-            'instances of this document should be returned.',
-            FutureWarning,
-            stacklevel=2,
-        )
-        virtual_project = Project(None)
-        virtual_category = Category(project=virtual_project)
-        virtual_label_set = virtual_project.no_label_set
-        virtual_label = virtual_project.no_label
+        self.found_spans(document)
+        missing_spans_list = [span for span in document.spans(use_correct=True) if span.regex_matching == []]
 
-        compared = self.evaluate(document=document)  # todo summarize evaluation, as we are calculating it
-        # return all Spans that were not found
-        missing_spans = compared[(compared['is_correct']) & (compared['is_found_by_tokenizer'] == 0)]
-        remaining_span_doc = Document(
-            bbox=document.get_bbox(),
-            pages=document.pages,
-            text=document.text,
-            project=virtual_project,
-            category=virtual_category,
-            dataset_status=document.dataset_status,
-            copy_of_id=document.id_,
-        )
-        annotation_set_1 = AnnotationSet(id_=None, document=remaining_span_doc, label_set=virtual_label_set)
-        # add Spans to the virtual Document in case the Tokenizer was not able to find them
-        for index, span_info in missing_spans.iterrows():
-            # todo: Schema for bbox format https://gitlab.com/konfuzio/objectives/-/issues/8661
-            new_span = Span(start_offset=span_info['start_offset'], end_offset=span_info['end_offset'])
-            # todo add Tokenizer used to create Span
-            _ = Annotation(
-                id_=int(span_info['id_']),
-                document=remaining_span_doc,
-                is_correct=True,
-                annotation_set=annotation_set_1,
-                label=virtual_label,
-                label_set=virtual_label_set,
-                spans=[new_span],
-            )
-        logger.warning(
-            f'{len(remaining_span_doc.spans())} of {len(document.spans())} '
-            f'correct Spans in {document} the abstract Tokenizer did not find.'
-        )
-        return remaining_span_doc
+        return missing_spans_list
 
     def get_runtime_info(self) -> pd.DataFrame:
         """
@@ -177,7 +149,7 @@ class ListTokenizer(AbstractTokenizer):
 
     def fit(self, category: Category):
         """Call fit on all tokenizers."""
-        assert isinstance(category, Category)
+        assert sdk_isinstance(category, Category)
 
         for tokenizer in self.tokenizers:
             tokenizer.fit(category)
@@ -194,6 +166,20 @@ class ListTokenizer(AbstractTokenizer):
                 self.processing_steps.append(tokenizer.processing_steps[-1])
 
         return document
+
+    def found_spans(self, document: Document) -> List[Span]:
+        """Run found_spans in the given order on a Document."""
+        found_spans_list = []
+        for tokenizer in self.tokenizers:
+            found_spans_list += tokenizer.found_spans(document)
+        return found_spans_list
+
+    def span_match(self, span: 'Span') -> bool:
+        """Run span_match in the given order."""
+        for tokenizer in self.tokenizers:
+            if tokenizer.span_match(span):
+                return True
+        return False
 
     def lose_weight(self):
         """Delete processing steps."""

@@ -149,7 +149,7 @@ def get_annotation_view_url(annotation_id: int, host: str = KONFUZIO_HOST) -> st
     :param annotation_id: ID of the Annotation
     :return: URL to get visually access Annotation online.
     """
-    return f'{host}/a/{annotation_id}/'
+    return f'{host}/a/{annotation_id}'
 
 
 # LABELS

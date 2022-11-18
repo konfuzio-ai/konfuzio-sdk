@@ -1,6 +1,8 @@
 """Regex tokenizers."""
 import logging
 import time
+from typing import List
+
 
 from konfuzio_sdk.data import Annotation, Document, Category, Span
 from konfuzio_sdk.regex import regex_matches
@@ -53,12 +55,16 @@ class RegexTokenizer(AbstractTokenizer):
         # do not keep the full regex match as we will see many matches whitespaces as pre or suffix
         for span_info in regex_matches(document.text, self.regex, keep_full_match=False):
             span = Span(start_offset=span_info['start_offset'], end_offset=span_info['end_offset'])
+            span.regex_matching.append(self)
             if span not in spans:  # do not use duplicated spans  # todo add test
                 spans.append(span)
 
         # Create a revised = False and is_correct = False (defaults) Annotation
+        document_spans = {(span.start_offset, span.end_offset): span for span in document.spans()}
         for span in spans:
-            if span not in document.spans():  # (use_correct=False):
+            span_key = (span.start_offset, span.end_offset)
+            if span_key not in document_spans:  # (use_correct=False):
+                document_spans[span_key] = span
                 # todo this hides the fact, that Tokenizers of different quality can create the same Span
                 # todo we create an overlapping Annotation in case the Tokenizer finds a correct match
                 annotation = Annotation(
@@ -79,6 +85,8 @@ class RegexTokenizer(AbstractTokenizer):
                     #   logger.error(f'Typeerror Bbox of {span} "{span.offset_string}": {repr(e)} - {span.eval_dict()}')
                     #   # annotation.delete()  # todo we should skip Annotations that have no valide bbox
             else:
+                if self not in document_spans[span_key].regex_matching:
+                    document_spans[span_key].regex_matching.append(self)  # add tokenizer to Span.regex_matches:
                 logger.warning(f'{document} contains {span} already. It will not be added by the Tokenizer.')
         after_none = len(document.annotations(use_correct=False, label=document.project.no_label))
         logger.info(f'{after_none - before_none} new Annotations in {document} by {repr(self)}.')
@@ -86,6 +94,41 @@ class RegexTokenizer(AbstractTokenizer):
         self.processing_steps.append(ProcessingStep(self, document, time.monotonic() - t0))
 
         return document
+
+    def span_match(self, span: 'Span') -> bool:
+        """Check if Span is detected by Tokenizer."""
+        if self in span.regex_matching:
+            return True
+        else:
+            relevant_text_slice = span.annotation.document.text
+            for span_info in regex_matches(relevant_text_slice, self.regex, keep_full_match=False):
+                span_info_offsets = (span_info['start_offset'], span_info['end_offset'])
+                if span_info_offsets == (span.start_offset, span.end_offset):
+                    span.regex_matching.append(self)
+                    return True
+        return False
+
+    def found_spans(self, document: Document) -> List[Span]:
+        """
+        Find Spans found by the Tokenizer and add Tokenizer info to Span.
+
+        :param document: Document with Annotation to find.
+        :return: List of Spans found by the Tokenizer.
+        """
+        assert sdk_isinstance(document, Document)
+        if document.text is None:
+            raise NotImplementedError(f'{document} text is None.')
+
+        document_spans = {(span.start_offset, span.end_offset): span for span in document.spans()}
+        found_spans_list = []
+        for span_info in regex_matches(document.text, self.regex, keep_full_match=False):
+            span_offsets = (span_info['start_offset'], span_info['end_offset'])
+            if span_offsets in document_spans:
+                found_spans_list.append(document_spans[span_offsets])
+                if self not in document_spans[span_offsets].regex_matching:
+                    document_spans[span_offsets].regex_matching.append(self)
+
+        return found_spans_list
 
 
 class WhitespaceTokenizer(RegexTokenizer):

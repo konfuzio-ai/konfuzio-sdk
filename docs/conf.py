@@ -42,6 +42,7 @@ extensions = [
     'm2r2',
     'sphinx.ext.githubpages',
     'sphinx_sitemap',
+    'sphinxcontrib.mermaid',
     'notfound.extension',
 ]
 

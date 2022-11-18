@@ -51,7 +51,7 @@ class TestCompare(unittest.TestCase):
         assert evaluation["false_positive"].sum() == 0
         # due to the fact that Konfuzio Server does not save confidence = 100 % if Annotation was not created by a human
         assert evaluation["false_negative"].sum() == 0
-        assert evaluation["is_found_by_tokenizer"].sum() == 21
+        assert evaluation["tokenizer_true_positive"].sum() == 21
 
     def test_strict_doc_where_first_annotation_was_skipped(self):
         """Test if a Document is 100 % equivalent with first Annotation not existing for a certain Label."""
@@ -67,7 +67,7 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 19
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 0
-        assert evaluation["is_found_by_tokenizer"].sum() == 19
+        assert evaluation["tokenizer_true_positive"].sum() == 19
 
     def test_strict_doc_where_last_annotation_was_skipped(self):
         """Test if a Document is 100 % equivalent with last Annotation not existing for a certain Label."""
@@ -83,7 +83,7 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 20
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 0
-        assert evaluation["is_found_by_tokenizer"].sum() == 20
+        assert evaluation["tokenizer_true_positive"].sum() == 20
 
     def test_strict_if_first_multiline_annotation_is_missing_in_b(self):
         """Test if a Document is equivalent if first Annotation is missing."""
@@ -100,7 +100,7 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 19  # 1 multiline with 2 lines = 2 Annotations
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 2
-        assert evaluation["is_found_by_tokenizer"].sum() == 19
+        assert evaluation["tokenizer_true_positive"].sum() == 19
 
     def test_strict_doc_where_first_annotation_is_missing_in_a(self):
         """Test if a Document is equivalent if first Annotation is not present."""
@@ -119,7 +119,7 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 19
         assert evaluation["false_positive"].sum() == 4  # 1 multiline (2 lines == 2 Annotations) + 2 feedback required
         assert evaluation["false_negative"].sum() == 0
-        assert evaluation["is_found_by_tokenizer"].sum() == 19
+        assert evaluation["tokenizer_true_positive"].sum() == 19
 
     def test_strict_only_unrevised_annotations(self):
         """Test to evaluate on a Document that has only unrevised Annotations."""
@@ -133,7 +133,9 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 0
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 0
-        assert evaluation["is_found_by_tokenizer"].sum() == 0
+        assert evaluation["tokenizer_true_positive"].sum() == 0
+        assert evaluation["tokenizer_false_positive"].sum() == 0
+        assert evaluation["tokenizer_false_negative"].sum() == 0
 
     def test_strict_doc_where_first_annotation_from_all_is_missing_in_a(self):
         """Test if a Document is equivalent if all Annotation are not present and feedback required are included."""
@@ -151,7 +153,9 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 19
         assert evaluation["false_positive"].sum() == 2  # 1 multiline (2 lines == 2 Annotations)
         assert evaluation["false_negative"].sum() == 0
-        assert evaluation["is_found_by_tokenizer"].sum() == 19
+        assert evaluation["tokenizer_true_positive"].sum() == 19
+        assert evaluation["tokenizer_false_positive"].sum() == 5
+        assert evaluation["tokenizer_false_negative"].sum() == 0
 
     def test_strict_doc_where_last_annotation_is_missing_in_b(self):
         """Test if a Document is equivalent if last Annotation is missing."""
@@ -168,7 +172,9 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 20  # due to the fact that we find both offsets of the multiline
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 1
-        assert evaluation["is_found_by_tokenizer"].sum() == 20
+        assert evaluation["tokenizer_true_positive"].sum() == 20
+        assert evaluation["tokenizer_false_positive"].sum() == 3
+        assert evaluation["tokenizer_false_negative"].sum() == 1
 
     def test_strict_doc_where_last_annotation_is_missing_in_a(self):
         """Test if a Document is equivalent if last Annotation is not present."""
@@ -185,7 +191,9 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 20  # due to the fact that we find both offsets of the multiline
         assert evaluation["false_positive"].sum() == 1
         assert evaluation["false_negative"].sum() == 0
-        assert evaluation["is_found_by_tokenizer"].sum() == 20
+        assert evaluation["tokenizer_true_positive"].sum() == 20
+        assert evaluation["tokenizer_false_positive"].sum() == 4
+        assert evaluation["tokenizer_false_negative"].sum() == 0
 
     def test_strict_nothing_should_be_predicted(self):
         """Support to evaluate that nothing is found in a document."""
@@ -199,7 +207,9 @@ class TestCompare(unittest.TestCase):
         assert len([an for an in doc_b.annotations(use_correct=False) if an.confidence > an.label.threshold]) == 21
         assert evaluation["false_positive"].sum() == 23  # but one annotation is multiline
         assert evaluation["false_negative"].sum() == 0
-        assert evaluation["is_found_by_tokenizer"].sum() == 0
+        assert evaluation["tokenizer_true_positive"].sum() == 0
+        assert evaluation["tokenizer_false_positive"].sum() == 24
+        assert evaluation["tokenizer_false_negative"].sum() == 0
 
     def test_strict_nothing_can_be_predicted(self):
         """Support to evaluate that nothing must be found in a document."""
@@ -207,12 +217,14 @@ class TestCompare(unittest.TestCase):
         doc_a = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_b = Document(project=prj, category=doc_a.category)
         evaluation = compare(doc_a, doc_b)
-        # 25 if considering negative Annotations, we evaluate on span level an one annotation is multiline
+        # 25 if considering negative Annotations, we evaluate on span level and one annotation is multiline
         assert len(evaluation) == 25
         assert evaluation["true_positive"].sum() == 0
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 21
-        assert evaluation["is_found_by_tokenizer"].sum() == 0
+        assert evaluation["tokenizer_true_positive"].sum() == 0
+        assert evaluation["tokenizer_false_positive"].sum() == 0
+        assert evaluation["tokenizer_false_negative"].sum() == 21
 
     def test_strict_doc_with_overruled_top_annotations(self):
         """
@@ -242,7 +254,9 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 20
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 1
-        assert evaluation["is_found_by_tokenizer"].sum() == 20
+        assert evaluation["tokenizer_true_positive"].sum() == 20
+        assert evaluation["tokenizer_false_positive"].sum() == 3
+        assert evaluation["tokenizer_false_negative"].sum() == 1
 
     def test_strict_doc_with_missing_annotation_set(self):
         """
@@ -308,7 +322,7 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 1
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 1
-        assert evaluation["is_found_by_tokenizer"].sum() == 1
+        assert evaluation["tokenizer_true_positive"].sum() == 1
 
     def test_strict_vs_non_strict_doc_with_missing_annotation_set(self):
         """Test if we detect a partially overlapping Span in an Annotation of a missing Annotation Set."""
@@ -332,8 +346,8 @@ class TestCompare(unittest.TestCase):
             spans=[span_1],
         )
         # second Annotation Set
-        span_2 = Span(start_offset=3, end_offset=5)
         annotation_set_a_2 = AnnotationSet(id_=2, document=document_a, label_set=label_set)
+        span_2 = Span(start_offset=3, end_offset=5)
         _ = Annotation(
             id_=2,
             document=document_a,
@@ -344,35 +358,47 @@ class TestCompare(unittest.TestCase):
             spans=[span_2],
         )
         # create a Document B
-        span_3 = Span(start_offset=4, end_offset=5)
+
         document_b = Document(project=project, category=category)
         # with only one Annotation Set, so to say the first one, which then contains the correct Annotation which is in
         # second Annotation Set. This test includes to test if we did not find the first Annotation Set.
-        annotation_set_b = AnnotationSet(id_=3, document=document_b, label_set=label_set)
+        annotation_set_b_1 = AnnotationSet(id_=3, document=document_b, label_set=label_set)
+        span_3 = Span(start_offset=4, end_offset=5)
         _ = Annotation(
             id_=3,
             document=document_b,
             confidence=0.5,
             # is_correct=True, we don't know this from the prediction
-            annotation_set=annotation_set_b,
+            annotation_set=annotation_set_b_1,
             label=label,
             label_set=label_set,
             spans=[span_3],
         )
+        annotation_set_b_2 = AnnotationSet(id_=4, document=document_b, label_set=label_set)
+        span_4 = Span(start_offset=7, end_offset=8)
+        _ = Annotation(
+            id_=4,
+            document=document_b,
+            confidence=0.5,
+            annotation_set=annotation_set_b_2,
+            label=label,
+            label_set=label_set,
+            spans=[span_4],
+        )
 
         evaluation_strict = compare(document_a, document_b)
-        assert len(evaluation_strict) == 3
+        assert len(evaluation_strict) == 4
         assert evaluation_strict["true_positive"].sum() == 0
-        assert evaluation_strict["false_positive"].sum() == 1
+        assert evaluation_strict["false_positive"].sum() == 2
         assert evaluation_strict["false_negative"].sum() == 2
-        assert evaluation_strict["is_found_by_tokenizer"].sum() == 0
+        assert evaluation_strict["tokenizer_true_positive"].sum() == 0
 
         evaluation = compare(document_a, document_b, strict=False)
-        assert len(evaluation) == 2
+        assert len(evaluation) == 3
         assert evaluation["true_positive"].sum() == 1
-        assert evaluation["false_positive"].sum() == 0
+        assert evaluation["false_positive"].sum() == 1
         assert evaluation["false_negative"].sum() == 1
-        assert evaluation["is_found_by_tokenizer"].sum() == 0  # we don't find it with the tokenizer but only parts
+        assert evaluation["tokenizer_true_positive"].sum() == 0  # we don't find it with the tokenizer but only parts
 
     def test_non_strict_is_better_than_strict(self):
         """Test if we detect an Annotation of a missing Annotation Set."""
@@ -416,14 +442,14 @@ class TestCompare(unittest.TestCase):
         assert evaluation_strict["true_positive"].sum() == 0
         assert evaluation_strict["false_positive"].sum() == 1
         assert evaluation_strict["false_negative"].sum() == 1
-        assert evaluation_strict["is_found_by_tokenizer"].sum() == 0
+        assert evaluation_strict["tokenizer_true_positive"].sum() == 0
 
         evaluation = compare(document_a, document_b, strict=False)
         assert len(evaluation) == 1
         assert evaluation["true_positive"].sum() == 1
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 0
-        assert evaluation["is_found_by_tokenizer"].sum() == 0
+        assert evaluation["tokenizer_true_positive"].sum() == 0
 
     def test_strict_documents_with_different_category(self):
         """Test to not compare two Documents with different Categories."""
@@ -481,7 +507,7 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 0
         assert evaluation["false_positive"].sum() == 1
         assert evaluation["false_negative"].sum() == 1
-        assert evaluation["is_found_by_tokenizer"].sum() == 0
+        assert evaluation["tokenizer_true_positive"].sum() == 0
 
     def test_strict_doc_with_annotation_with_wrong_label(self):
         """
@@ -528,7 +554,7 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 0
         assert evaluation["false_positive"].sum() == 1
         assert evaluation["false_negative"].sum() == 0
-        assert evaluation["is_found_by_tokenizer"].sum() == 1
+        assert evaluation["tokenizer_true_positive"].sum() == 1
 
     def test_strict_doc_with_one_missing_span_of_two_in_one_annotation(self):
         """
@@ -578,7 +604,7 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 1
         assert evaluation["false_positive"].sum() == 1
         assert evaluation["false_negative"].sum() == 1
-        assert evaluation["is_found_by_tokenizer"].sum() == 1
+        assert evaluation["tokenizer_true_positive"].sum() == 1
 
     def test_strict_doc_with_extra_annotation_set(self):
         """
@@ -656,7 +682,9 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 1
         assert evaluation["false_positive"].sum() == 1
         assert evaluation["false_negative"].sum() == 1
-        assert evaluation["is_found_by_tokenizer"].sum() == 1
+        assert evaluation["tokenizer_true_positive"].sum() == 1
+        assert evaluation["tokenizer_false_positive"].sum() == 1
+        assert evaluation["tokenizer_false_negative"].sum() == 1
 
     def test_strict_doc_with_annotations_wrongly_grouped_in_one_annotation_set(self):
         """
@@ -733,7 +761,9 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 1
         assert evaluation["false_positive"].sum() == 1
         assert evaluation["false_negative"].sum() == 0
-        assert evaluation["is_found_by_tokenizer"].sum() == 2
+        assert evaluation["tokenizer_true_positive"].sum() == 2
+        assert evaluation["tokenizer_false_positive"].sum() == 0
+        assert evaluation["tokenizer_false_negative"].sum() == 0
 
     def test_strict_to_evaluate_annotations_in_one_line_belonging_to_two_annotation_sets(self):
         """Test to evaluate two Annotations where each one belongs to a different Annotation Set."""
@@ -803,7 +833,7 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 2
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 0
-        assert evaluation["is_found_by_tokenizer"].sum() == 2
+        assert evaluation["tokenizer_true_positive"].sum() == 2
 
     def test_strict_grouped_both_above_threshold_both_correct(self):
         """Test grouped for two correct Spans where both are over threshold."""
@@ -902,18 +932,18 @@ class TestEvaluation(unittest.TestCase):
         """Count two Spans from two Training Documents."""
         project = LocalTextProject()
         evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
-        assert evaluation.tp() == 3
+        assert evaluation.tp() == sum([len(doc.spans()) for doc in project.documents])
 
     def test_false_positive(self):
-        """Count zero Annotations from two Training Documents."""
+        """Count 3 false positives from one Training Document."""
         project = LocalTextProject()
-        true_document = project.documents[0]
-        predicted_document = project.test_documents[0]
+        true_document = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
+        predicted_document = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
         evaluation = Evaluation(documents=list(zip([true_document], [predicted_document])))
-        assert evaluation.fp() == 2
+        assert evaluation.fp() == 3  # A4, A5, A6
 
     def test_true_negatives(self):
-        """Count zero Annotations from two Training Documents."""
+        """Count zero false negatives from two Training Documents (correctly, nothing is predicted under threshold)."""
         project = LocalTextProject()
         evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
         assert evaluation.tn() == 0
@@ -960,20 +990,21 @@ class TestEvaluation(unittest.TestCase):
     def test_false_negatives(self):
         """Count zero Annotations from two Training Documents."""
         project = LocalTextProject()
-        predicted_document = project.documents[0]  # A(3,5,Label_1) + A(7,10,Label_2)
-        true_document = project.test_documents[0]  # A(7,10,Label_1)
+        predicted_document = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
+        true_document = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
         evaluation = Evaluation(documents=list(zip([true_document], [predicted_document])))
-        assert evaluation.tp() == 0
-        assert evaluation.fp() == 2
-        assert evaluation.fn() == 1
-        assert evaluation.tn() == 0
+        assert evaluation.tp() == 0  # nothing correctly predicted
+        assert evaluation.fp() == 3  # A1, A2, A3
+        assert evaluation.fn() == 2  # A4, A6
+        assert evaluation.tn() == 0  # nothing to predict under threshold
 
     def test_true_positive_label(self):
         """Count two Annotations from two Training Documents and filter by one Label."""
         project = LocalTextProject()
         evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
-        label = project.get_label_by_id(id_=3)  # there is only one Label that is not the NONE_LABEL
-        assert evaluation.tp() == 3
+        # there is only one Label that is not the NONE_LABEL or from a default LabelSet
+        label = project.get_label_by_id(id_=4)
+        assert evaluation.tp() == sum([len(doc.spans()) for doc in project.documents])
         assert evaluation.tp(search=label) == 2
         assert evaluation.fp(search=label) == 0
         assert evaluation.fn(search=label) == 0
@@ -988,10 +1019,10 @@ class TestEvaluation(unittest.TestCase):
             assert 'Document None (None) must have a ID.' in e
 
     def test_true_positive_label_set(self):
-        """Count two Annotations from two Training Documents related to one Label Set."""
+        """Count 3 true positives within a specific label set."""
         project = LocalTextProject()
         evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
-        label_set = project.get_label_set_by_id(id_=2)
+        label_set = project.get_label_set_by_id(id_=3)
         assert evaluation.tp(search=label_set) == 3
 
 
@@ -1001,8 +1032,8 @@ class TestEvaluationTwoLabels(unittest.TestCase):
     def setUp(self) -> None:
         """Test evaluation when changing filtered Label and Documents."""
         project = LocalTextProject()
-        document_a = project.documents[0]  # A1(3,5,Label_3) + A2(7,10,Label_4)
-        document_b = project.test_documents[0]  # A3(7,10,Label_3) + A4(11,14,Label_4)
+        document_a = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
+        document_b = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
         self.evaluation = Evaluation(documents=list(zip([document_b], [document_a])))
 
     def test_true_positives(self):
@@ -1010,15 +1041,15 @@ class TestEvaluationTwoLabels(unittest.TestCase):
         assert self.evaluation.tp() == 0
 
     def test_false_positives(self):
-        """Evaluate that Document A predicts two wrong Spans."""
-        assert self.evaluation.fp() == 2  # A1 and A2
+        """Evaluate that Document A predicts three wrong Spans."""
+        assert self.evaluation.fp() == 3  # A1, A2 and A3
 
     def test_false_negatives(self):
-        """Evaluate that Document A misses to predict one Span."""
-        assert self.evaluation.fn() == 1  # A3 OR A2
+        """Evaluate that Document A misses to predict two Spans."""
+        assert self.evaluation.fn() == 2  # A1 and A2
 
     def test_true_negatives(self):
-        """Evaluate that that nothing is correctly predicted below threshold."""
+        """Evaluate that nothing is correctly predicted below threshold."""
         assert self.evaluation.tn() == 0
 
 
@@ -1028,10 +1059,10 @@ class TestEvaluationFirstLabelDocumentADocumentB(unittest.TestCase):
     def setUp(self) -> None:
         """Test evaluation when changing filtered Label and Documents."""
         project = LocalTextProject()
-        document_a = project.documents[0]  # A1(3,5,Label_3) + A2(7,10,Label_4)
-        document_b = project.test_documents[0]  # A3(7,10,Label_3) + A4(11,14,Label_4)
+        document_a = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
+        document_b = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
         self.evaluation = Evaluation(documents=list(zip([document_b], [document_a])))
-        self.label = project.get_label_by_id(id_=3)
+        self.label = project.get_label_by_id(id_=4)
 
     def test_true_positives(self):
         """Evaluate that all is wrong."""
@@ -1070,10 +1101,10 @@ class TestEvaluationFirstLabelDocumentBDocumentA(unittest.TestCase):
     def setUp(self) -> None:
         """Test evaluation when changing filtered Label and Documents."""
         project = LocalTextProject()
-        document_a = project.documents[0]  # A1(3,5,Label_3) + A2(7,10,Label_4)
-        document_b = project.test_documents[0]  # A3(7,10,Label_3) + A4(11,14,Label_4)
+        document_a = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
+        document_b = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
         self.evaluation = Evaluation(documents=list(zip([document_a], [document_b])))
-        self.label = project.get_label_by_id(id_=3)
+        self.label = project.get_label_by_id(id_=4)
 
     def test_true_positives(self):
         """Evaluate that all is wrong."""
@@ -1098,8 +1129,8 @@ class TestEvaluationSecondLabelDocumentADocumentB(unittest.TestCase):
     def setUp(self) -> None:
         """Test evaluation when changing filtered Label and Documents."""
         project = LocalTextProject()
-        document_a = project.documents[0]  # A1(3,5,Label_3) + A2(7,10,Label_4)
-        document_b = project.test_documents[0]  # A3(7,10,Label_3) + A4(11,14,Label_4)
+        document_a = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
+        document_b = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
         self.evaluation = Evaluation(documents=list(zip([document_b], [document_a])))
         self.label = project.get_label_by_id(id_=4)
 
@@ -1109,11 +1140,11 @@ class TestEvaluationSecondLabelDocumentADocumentB(unittest.TestCase):
 
     def test_false_positives(self):
         """Evaluate that Document A predicts one wrong Spans."""
-        assert self.evaluation.fp(search=self.label) == 1  # A2
+        assert self.evaluation.fp(search=self.label) == 2  # A2 and A3
 
     def test_false_negatives(self):
-        """Evaluate that Document A predicts one wrong Spans."""
-        assert self.evaluation.fn(search=self.label) == 1  # A3
+        """Evaluate that Document A doesn't miss any Spans for Label_1."""
+        assert self.evaluation.fn(search=self.label) == 0
 
     def test_true_negatives(self):
         """Evaluate that that nothing is correctly predicted below threshold."""
@@ -1126,10 +1157,10 @@ class TestEvaluationSecondLabelDocumentBDocumentA(unittest.TestCase):
     def setUp(self) -> None:
         """Test evaluation when changing filtered Label and Documents."""
         project = LocalTextProject()
-        document_a = project.documents[0]  # A1(3,5,Label_3) + A2(7,10,Label_4)
-        document_b = project.test_documents[0]  # A3(7,10,Label_3) + A4(11,14,Label_4)
+        document_a = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
+        document_b = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
         self.evaluation = Evaluation(documents=list(zip([document_a], [document_b])))
-        self.label = project.get_label_by_id(id_=4)
+        self.label = project.get_label_by_id(id_=5)
 
     def test_true_positives(self):
         """Evaluate that all is wrong."""
