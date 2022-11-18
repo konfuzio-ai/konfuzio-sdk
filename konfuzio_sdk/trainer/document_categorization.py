@@ -51,8 +51,19 @@ class FallbackCategorizationModel:
             f'evaluation.'
         )
 
+    @staticmethod
+    def _categorize_from_pages(document: Document) -> Document:
+        """Decide the Category of a Document by whether all pages have the same Category (assign None otherwise).
+
+        :param document: Input document
+        :returns: The input Document with added categorization information
+        """
+        all_pages_have_same_category = len(set([page.category for page in document.pages()])) == 1
+        document.category = document.pages()[0].category if all_pages_have_same_category else None
+        return document
+
     def categorize(self, document: Document, recategorize: bool = False, inplace: bool = False) -> Document:
-        """Run categorization.
+        """Run categorization on a Document.
 
         :param document: Input document
         :param recategorize: If the input document is already categorized, the already present category is used unless
@@ -73,21 +84,27 @@ class FallbackCategorizationModel:
             return virtual_doc
         elif recategorize:
             virtual_doc.category = None
+            for page in virtual_doc.pages():
+                page.category = None
 
         relevant_categories = [training_category.fallback_name for training_category in self.categories]
-        found_category_name = None
-        doc_text = virtual_doc.text.lower()
-        for candidate_category_name in relevant_categories:
-            if candidate_category_name in doc_text:
-                found_category_name = candidate_category_name
-                break
+        for page in virtual_doc.pages():
+            found_category_name = None
+            page_text = page.text.lower()
+            for candidate_category_name in relevant_categories:
+                if candidate_category_name in page_text:
+                    found_category_name = candidate_category_name
+                    break
 
-        if found_category_name is None:
-            logger.warning(
-                f'{self} could not find the category of {document} by using the fallback logic '
-                f'with pre-defined common categories.'
-            )
-            return virtual_doc
-        found_category = [category for category in self.categories if category.fallback_name in found_category_name][0]
-        virtual_doc.category = found_category
-        return virtual_doc
+            if found_category_name is None:
+                logger.warning(
+                    f'{self} could not find the category of {page} by using the fallback logic '
+                    f'with pre-defined common categories.'
+                )
+                continue
+            found_category = [
+                category for category in self.categories if category.fallback_name in found_category_name
+            ][0]
+            page.category = found_category
+
+        return self._categorize_from_pages(virtual_doc)

@@ -94,6 +94,7 @@ class Page(Data):
         end_offset: int,
         number: int,
         original_size: Tuple[float, float],
+        category: Optional['Category'] = None,
     ):
         """Create a Page for a Document."""
         self.id_ = id_
@@ -108,6 +109,9 @@ class Page(Data):
         self.width = self._original_size[0]
         self.height = self._original_size[1]
         self.image_path = os.path.join(self.document.document_folder, f'page_{self.number}.png')
+        self.category = category
+        if self.category is None:
+            self.category = self.document.category
 
         check_page = True
         if self.index is None:
