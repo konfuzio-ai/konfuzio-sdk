@@ -111,15 +111,15 @@ migration work.
 
 ##### TLS certificates
 
-You should be running Konfuzio using https which requiresTLS certificates. By default, the setup will install and 
-configure [cert-manager](https://github.com/jetstack/cert-manager) to obtain free TLS certificates. If you
+You should be running Konfuzio using https which requires TLS certificates. To get automated certificates using letesencrypt you need to install [cert-manager](https://cert-manager.io/docs/installation/helm/) in your cluster. If you
 have your own wildcard certificate, you already have cert-manager installed, or you have
 some other way of obtaining TLS certificates. For the default configuration, you must
 specify an email address to register your TLS certificates.
 
 _Include these options in your Helm install command:_
 
-`--set certmanager-issuer.email=me@example.com`
+`--set letsencrypt.enabled=True`  
+`--set letsencrypt.email=me@example.com`
 
 ##### PostgreSQL
 
@@ -496,7 +496,7 @@ If you upload the extraction AI to a new project without the labels and label se
 
 ### Migrate a Project
 
-Export the project data from the source Konfuzio server system.  
+Export the Project data from the source Konfuzio server system.  
 ```
 pip install konfuzio_sdk  
 konfuzio_sdk init  
@@ -508,6 +508,12 @@ The first argument is the path to the export folder, the second is the project n
 
 ```
 python manage.py project_import "/konfuzio-target-system/data_123/" "NewProjectName"
+```
+
+Alternatively, you can merge the Project export into an existing Project.
+
+```
+python manage.py project_import "/konfuzio-target-system/data_123/" --merge_project_id <EXISTING_PROJECT_ID>
 ```
 
 ## Database and Storage
@@ -544,6 +550,12 @@ Konfuzio Server will create a total of 43 tables and use the following data type
 
 <!-- This table was created by running select data_type, count(*) from information_schema.columns where table_schema = 'public'  group by data_type ; -->
 
+## Billing and License
+
+A Konfuzio Server self-hosted license can be purchased [online](https://konfuzio.com/en/price/). After your order has been placed, we will provide you with credentials to [download the Konfuzio Docker Images](https://dev.konfuzio.com/web/on_premises.html#download-docker-image) and a BILLING_API_KEY which needs to be set as [environment variable](/web/on_premises.html#environment-variables-for-konfuzio-server). The Konfuzio Container reports the usage once a day to our billing server (i.e. https://app.konfuzio.com). Konfuzio containers don't send customer data, such as the image or text that's being analyzed, to the billing server.
+
+If you operate Konfuzio Server in an air-gapped environment, the Konfuzio Docker images are licensed to operate for one year (based on the release date) without being connected to the billing server.
+
 ## Environment Variables
 
 ### Environment Variables for Konfuzio Server
@@ -561,6 +573,11 @@ MAINTENANCE_MODE=False
 # Insert random secret key (mandatory).
 # See https://docs.djangoproject.com/en/4.0/ref/settings/#secret-key
 SECRET_KEY=
+
+# The Billing API Key (optional) 
+BILLING_API_KEY=
+# The URL of the biling Server (optional)
+BILLING_API_URL=https://app.konfuzio.com
 
 # The HOSTNAME variable is used in the E-Mail templates (mandatory).
 # https://example.konfuzio.com or http://localhost:8000 for local development.
@@ -602,7 +619,7 @@ BROKER_URL=
 RESULT_BACKEND=
 TASK_ALWAYS_EAGER=True
 
-# Defender settings (optional).
+# Defender (Brute-Force protection) settings (optional).
 DEFENDER_REDIS_URL=
 
 # SENTRY_DSN e.g. "https://123456789@sentry.io/1234567" (optional).

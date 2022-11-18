@@ -42,9 +42,17 @@ You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server
 ### Added
 - Access Service Desk Tickets which have been created via https://konfuzio.com/support.
 
-## released-2022-11-10_10-01-45
+## released-2022-11-16_12-13-49
+
+### Fixed
+- Speedup the Document List page for Superuser ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10036)).
+- The Annotation creation on empty areas in a Document is now possible ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10049)).
+
+## released-2022-11-11_13-19-29
 
 This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Capture Vue in version [0.0.10-pre-release-7](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
+
+Please note: When you upgrade to this version (or a newer one) you need to run "python manage.py init_user_permissions". This needs to be run after the usual [update actions](https://dev.konfuzio.com/web/on_premises.html#a-upgrade-to-newer-konfuzio-version).
 
 ### Added
 - [Allow to invite Members with different Roles to Projects. Available Roles are "Reviewer" and "Manager". All existing Members keep their current Permissions and will become Managers.](https://help.konfuzio.com/modules/members/index.html) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/7364)).
