@@ -572,10 +572,11 @@ usually looks like this:
 
 ```
 curl --request POST \
-  --url https://app.konfuzio.com/api/v3/documents/DOCUMENT_ID/annotations \
+  --url https://app.konfuzio.com/api/v3/annotations/ \
   --header 'Authorization: Token YOUR_TOKEN' \
   --header 'Content-Type: application/json' \
   --data '{
+  "document": DOCUMENT_ID,
 	"label": LABEL_ID,
 	"label_set_id": LABEL_SET_ID,
 	"is_correct": true,
