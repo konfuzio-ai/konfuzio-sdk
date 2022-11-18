@@ -58,6 +58,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#running-tests-locally">Running tests locally</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#how-to-release-with-github-to-pypi">How to release with GitHub to PyPI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#how-to-use-nightly-builds">How to use nightly builds?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#internal-release-process">Internal release process</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#running-tests-in-docker">Running tests in Docker</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#general-motivation-for-using-the-vs-code-remote-development-extension">General Motivation for using the VS Code Remote Development Extension</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#download-and-install-vs-code-on-your-machine">1. Download and Install VS Code on your machine</a></li>
@@ -244,6 +245,145 @@ Year-Month-Date-Hour-Minute-Second of last commit date on branch master used to 
 This process allows publish a new package if there are new commits on the master branch.</p>
 </div>
 <a class="reference external image-reference" href="releasing/version-number-prerelease.png"><img alt="img.png" src="../_images/version-number-prerelease.png" /></a>
+</section>
+<section id="internal-release-process">
+<h2>Internal release process<a class="headerlink" href="#internal-release-process" title="Permalink to this headline">¶</a></h2>
+<p>Every day at 5:19 AM UTC (3:19 AM UTC+2, see code <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/.github/workflows/nightly.yml">here</a>) a new nightly release of the SDK (master branch) is released to <a class="reference external" href="https://pypi.org/project/konfuzio-sdk/#history">https://pypi.org/project/konfuzio-sdk/#history</a>.</p>
+<p>Every day at 6:13 AM UTC a new nightly release of the Server using the latest nightly SDK is deployed at <a class="reference external" href="https://nightly-sdk.branch.konfuzio.com/">https://nightly-sdk.branch.konfuzio.com/</a> as a Gitlab schedule from our server repository.</p>
+<a class="reference external image-reference" href="https://lh3.googleusercontent.com/03rOOTgK8ZGvIgO7BSUgF5rREgWkpqmGPXRUrxfYnXArI7chtOZLAvrCwQWcs-yMXEgCJm6nzn0rPp6YyGw75eC_BRR8Ila3idWN4d1IbXooyhxl9L9AFR3J8753pwQFRgpPHgKanZq2rctRRbcqzl6O5UiPXtP-BX8F_3dpAiCgiC6zLQLxAi0x8wnQOA"><img alt="" src="https://lh3.googleusercontent.com/03rOOTgK8ZGvIgO7BSUgF5rREgWkpqmGPXRUrxfYnXArI7chtOZLAvrCwQWcs-yMXEgCJm6nzn0rPp6YyGw75eC_BRR8Ila3idWN4d1IbXooyhxl9L9AFR3J8753pwQFRgpPHgKanZq2rctRRbcqzl6O5UiPXtP-BX8F_3dpAiCgiC6zLQLxAi0x8wnQOA" /></a>
+<p>We get an early chance to find bugs with our integration of the SDK with the Konfuzio Server before the official release. During our internal development sprints (2 week periods) we follow the strategy summarized in the table below.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>T</p></td>
+<td><p>Testing Time</p></td>
+</tr>
+<tr class="row-odd"><td><p>M</p></td>
+<td><p>Merge to next level</p></td>
+</tr>
+<tr class="row-even"><td><p>R</p></td>
+<td><p>Release</p></td>
+</tr>
+<tr class="row-odd"><td><p>B</p></td>
+<td><p>Bug Fixing</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Release</p></th>
+<th class="head"></th>
+<th class="head"><p>1</p></th>
+<th class="head"><p>2</p></th>
+<th class="head"><p>3</p></th>
+<th class="head"><p>4</p></th>
+<th class="head"><p>5</p></th>
+<th class="head"><p>6</p></th>
+<th class="head"><p>7</p></th>
+<th class="head"><p>8</p></th>
+<th class="head"><p>9</p></th>
+<th class="head"><p>10</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Server</p></td>
+<td><p>master Branch Server</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td><p>M</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>Server</p></td>
+<td><p>testing Branch Server</p></td>
+<td></td>
+<td><p>T</p></td>
+<td><p>B</p></td>
+<td><p>B</p></td>
+<td><p>R</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td><p>M</p></td>
+</tr>
+<tr class="row-even"><td><p>Server</p></td>
+<td><p>nightly Build SDK</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td><p>T</p></td>
+<td><p>B</p></td>
+<td><p>B</p></td>
+<td><p>R</p></td>
+</tr>
+<tr class="row-odd"><td><p>SDK</p></td>
+<td><p>master Branch</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td><p>T</p></td>
+<td><p>T</p></td>
+<td><p>B</p></td>
+<td><p>B</p></td>
+<td><p>R</p></td>
+</tr>
+<tr class="row-even"><td><p>SDK</p></td>
+<td><p>Pull Request</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td><p>M</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td><p>–</p></td>
+</tr>
+</tbody>
+</table>
+<p>The strategy follows a 2 weeks sprint schedule (10 work days), with the following plan:</p>
+<ul class="simple">
+<li><p>On the first week we do development on the SDK side, and we open one pull request for each new SDK feature on Github (see the list of currently open pull requests <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/pulls">here</a>).</p></li>
+<li><p>On each Monday of the second week we merge pull requests to master, which triggers the creation of a SDK nightly release. This becomes available as a Konfuzio Server deployment the next day at <a class="reference external" href="https://nightly-sdk.branch.konfuzio.com/">https://nightly-sdk.branch.konfuzio.com/</a>, as a consequence of the Konfuzio Server Gitlab schedule.</p></li>
+<li><p>We internally test the Konfuzio SDK/Server integration with the nightly deployment and collect any bugs that come up, either from the SDK side or the Server side. For the SDK side, these are scheduled as internal tickets for fixing until Friday, which marks the end of the sprint.</p></li>
+<li><p>On Friday the bug fixing is over, the associated pull requests are merged to master and a new SDK official release is created containing the new features and bugfixes.</p></li>
+<li><p>SDK Release Notes are automatically generated from our pull requests using <a class="reference external" href="https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes">the Github’s feature</a>. Each pull request includes links to relevant documentation about how to use the new feature, see for example <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/pull/124">https://github.com/konfuzio-ai/konfuzio-sdk/pull/124</a>.</p></li>
+<li><p>As the new SDK features are available on Friday at the end of each sprint, the Server releases lag one week behind the SDK releases. We internally test and integrate the Konfuzio Server with the latest SDK release, until a new Server release is finally made available at app.konfuzio.com the next Friday. See the <a class="reference external" href="https://dev.konfuzio.com/web/changelog_app.html">changelog</a> for full information on each Konfuzio Server release.</p></li>
+</ul>
 </section>
 <section id="running-tests-in-docker">
 <h2>Running tests in Docker<a class="headerlink" href="#running-tests-in-docker" title="Permalink to this headline">¶</a></h2>
