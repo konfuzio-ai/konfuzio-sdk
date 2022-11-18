@@ -52,6 +52,8 @@ You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server
 
 This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Capture Vue in version [0.0.10-pre-release-7](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
 
+Please note: When you upgrade to this version (or a newer one) you need to run "python manage.py init_user_permissions". This needs to be run after the usual [update actions](https://dev.konfuzio.com/web/on_premises.html#a-upgrade-to-newer-konfuzio-version).
+
 ### Added
 - [Allow to invite Members with different Roles to Projects. Available Roles are "Reviewer" and "Manager". All existing Members keep their current Permissions and will become Managers.](https://help.konfuzio.com/modules/members/index.html) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/7364)).
 - [Superusers can define custom Roles for Members: Inviting Users can select from those Roles when inviting new Members to a Project](https://help.konfuzio.com/modules/superuserroles/index.html) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/7364)).
