@@ -1291,7 +1291,9 @@ class Annotation(Data):
                 if "start_offset" in bbox.keys() and "end_offset" in bbox.keys():
                     Span(start_offset=bbox["start_offset"], end_offset=bbox["end_offset"], annotation=self)
                 else:
-                    ValueError(f'SDK cannot read bbox of Annotation {self.id_} in {self.document}: {bbox}')
+                    # Add Span that does not include any character.
+                    span = Span(annotation=self, start_offset=0, end_offset=0)
+                    span._bbox = bbox
         elif (
             bboxes is None
             and kwargs.get("start_offset", None) is not None
