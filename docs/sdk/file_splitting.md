@@ -83,6 +83,7 @@ Here are the some of properties and methods of the Project you might need when w
 - `project.get_category_by_id(YOUR_CATEGORY_ID).documents()` – Documents filtered by a Category of your choice; 
 - `project.get_document_by_id(YOUR_DOCUMENT_ID)` – access a particular Document from the Project if you know its ID.
 
+------
 
 After initializing the Project, we filter the Documents that will be used for the "training" described [above](#Intro).  
 ```
@@ -106,6 +107,7 @@ Here are some of the properties and methods of the Document you might need when 
 - `document.update()` – download a newer version of the Document from the Server in case you have made some changes in the Smartview;
 - `document.get_images()` – download PNG images of the Pages in the Document; can be used if you wish to use the visual data for training your own models, for example;
 
+------
 
 #### Category
 [Category](https://dev.konfuzio.com/sdk/sourcecode.html#category) is a group of Documents united by common feature or type, i.e. invoice or receipt.
@@ -115,6 +117,7 @@ To find a Category the Document belongs to, you can use `document.category`.
 
 You can also observe all Categories available in the Project via the Smartview: they are listed on the Project's page in the menu on the right.
 
+-------
 
 Next step is creating lists for collecting first-page Spans and Spans from other Pages.  To learn more about concepts of the Span and the Page, read the sections under the code block.
 
@@ -134,18 +137,22 @@ tokenizer = ConnectedTextTokenizer()
 - `page.spans()` – get a list of Spans on the Page;
 - `page.number` – get Page's number, starting from 1.
 
+------
 
 #### Span
 [Span](https://dev.konfuzio.com/sdk/sourcecode.html#span) is a part of the Document's text without the line breaks. Each Span has `start_offset` and `end_offset` denoting its starting and finishing characters in `document.text`. 
 
 To access Span's text, you can call `span.offset_string`. We are going to use it later when collecting the Spans from the Documents.
 
+------
 
 Next, we will iterate through Documents in the training dataset. Note that the more Documents we use, the less intersecting Spans we are likely to find, so if at the end of the tutorial you find that your first-Page Spans set is empty, try using a slice of the dataset instead of the whole like it is done in the example below. However, usually when ran on Documents within same Category, this algorithm should not return an empty set; if that is the case, you might want to check if your data is consistent (i.e. not in different languages, no occurences of other Categories).
 
 For each Document, we create a `deepcopy` .  Deepcopied object is identical to the one being copied but it is not referencing the original one or pointing towards it, unlike when simple `copy`  or variable reassignment is used. Deepcopied Document does not have Annotations (read about them under the code block).
 
 Then, we run tokenizer on the deepcopied Document, which creates a set of Spans for it, and iterate through the Document's Pages.
+
+If the Page is first, we append a set of its Span offset strings to `first_page_spans`; if it is not first, a set of its Span offset strings is appended to `not_first_page_spans`. We use offset_springs and not Spans themselves because while a same string can occur on different Pages, it might not necessarily be in the same position (with same start_offset and end_offset) and thus would not be counted as similar when compared to the Spans of an input Document.
 ```
 for doc in training_docs[:5]:
     document_without_human_annotations = deepcopy(doc)
@@ -156,8 +163,6 @@ for doc in training_docs[:5]:
         else:
             not_first_page_spans.append({span.offset_string for span in page.spans()})
 ```
-If the Page is first, we append a set of its Span offset strings to `first_page_spans`; if it is not first, a set of its Span offset strings is appended to `not_first_page_spans`. We use offset_springs and not Spans themselves because while a same string can occur on different Pages, it might not necessarily be in the same position (with same start_offset and end_offset) and thus would not be counted as similar when compared to the Spans of an input Document.
-
 
 #### Annotation 
 [Annotation](https://dev.konfuzio.com/sdk/sourcecode.html#annotation) is a combination of Spans that has a certain Label  (i.e. Issue_Date, Auszahlungsbetrag) assigned to it. They typically denote a certain type of entity that is found in the text. Annotations can be predicted by AI or human-added. 
@@ -166,6 +171,7 @@ Like Spans, Annotations also have `start_offset` and `end_offset` denoting the s
 
 To see the Annotation in the Smartview, you can call `annotation.get_link()` and open the returned URL. 
 
+----
 
 After gathering all Span sets into two lists, we need to search for the Spans unique to the first Pages only. For that, we append an empty set to both of the lists (in case any of them are empty) and then apply `set.intersection` to both them. 
 
@@ -207,5 +213,4 @@ for page in test_document.pages():
 # output:
 27
 ```
-
 We can see that there is definitely more than one intersection with the list of the unique Spans, which further proves that the prediction is correct.
