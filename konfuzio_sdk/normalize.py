@@ -289,7 +289,7 @@ def _normalize_string_to_absolute_float(offset_string: str) -> Optional[float]:
 
 def normalize_to_percentage(offset_string: str) -> Optional[float]:
     """Given an Annotation this function tries to translate the offset-string to an percentage -a float between 0 -1."""
-    offset_string = offset_string.replace(' ', '').replace('+', '').replace('-', '').replace('"', '').replace('„', '')
+    offset_string = offset_string.replace('+', '').replace('-', '').replace('"', '').replace('„', '')
     if len(offset_string) > 1 and offset_string[-1] in ['.', ';', ',']:
         offset_string = offset_string[:-1]
 
