@@ -623,7 +623,110 @@ create your annotations programmatically.
 
 ### Create training data and train the AI
 
-Coming soon.
+Once you have uploaded enough documents and created enough annotations, you can start training an
+[extraction AI](https://help.konfuzio.com/modules/extractions/index.html). You will need at least one document in the
+"training" dataset for the category you want to train, but more data is usually better (see our
+[improving accuracy guide](https://help.konfuzio.com/tutorials/improve-accuracy/index.html)).
+
+Then to train an AI you can simply call our
+[extraction AI create endpoint](https://app.konfuzio.com/v3/swagger/#/extraction-ais/extraction_ais_create) with the
+ID of the category the training documents belong to:
+
+```
+curl --request POST \
+  --url https://app.konfuzio.com/api/v3/extraction-ais/ \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Token YOUR_TOKEN' \
+  --data '{"category": CATEGORY_ID}'
+```
+
+The training of the AI can take a while, depending on current server load and how large the training dataset is. You
+will receive an email once the process is completed. The newly trained extraction AI will then automatically be used to
+extract machine-generated annotations from newly uploaded documents for that category.
+
+If you add new training/test documents, or change existing ones, don't forget to create another extraction AI, otherwise
+your modifications will not apply to the extraction process of new documents.
+
+### Revise machine-generated annotations
+
+You can revise the annotations that are created automatically by an extraction AI: this will help the next extraction AI
+training you create, as it will tell the system the points where the information it extract was correct and the points
+where it was not.
+
+To retrieve the list of annotations for a document, you can use the annotation list endpoint:
+
+```
+curl --request GET \
+  --url https://app.konfuzio.com/api/v3/annotations/?document=DOCUMENT_ID \
+  --header 'Authorization: Token YOUR_TOKEN'
+```
+
+A hierarchical list of annotations in the context of labels and annotation sets can also be found under the
+`annotation_sets` property of the document detail endpoint:
+
+```
+curl --request GET \
+  --url https://app.konfuzio.com/api/v3/documents/DOCUMENT_ID/ \
+  --header 'Authorization: Token YOUR_TOKEN'
+```
+
+Whichever method you choose, you should be able to retrieve an ID for the annotation(s) you want to revise. Unrevised
+annotations are easily filterable in the list because they have the properties `"revised": false` and
+`"is_correct": false`. (See the
+[annotations documentation](https://help.konfuzio.com/modules/annotations/index.html#automated-annotations) for
+more information.)
+
+To mark an annotation as _accepted_, you can then send a request like this one to the annotation edit endpoint:
+
+```
+curl --request PATCH \
+  --url https://app.konfuzio.com/api/v3/annotations/ANNOTATION_ID/ \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Token YOUR_TOKEN' \
+  --data '{"revised": true, "is_correct": true}'
+```
+
+Conversely, to mark it as _declined_ you should send a request like this one:
+
+```
+curl --request PATCH \
+  --url https://app.konfuzio.com/api/v3/annotations/ANNOTATION_ID/ \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Token YOUR_TOKEN' \
+  --data '{"revised": true, "is_correct": false}'
+```
+
+Once there are no unrevised annotations left in the document, the document is considered _reviewed_.
+
+### Post-process a document: split, rotate and sort pages
+
+We offer a [postprocess endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_postprocess_create)
+that allows you to change uploaded documents in three ways, which can be combined into a single API request:
+
+- _Split_: divide a document into two or more documents, with the same total number of pages. Note: you cannot join
+  documents that have been split.
+- _Rotate_: change the orientation of one or more pages in a document, in multiple of 90 degrees.
+- _Sort_: change the order of the pages in a document.
+
+The endpoint accepts a list of objects, each one representing a single output document. (If you're not using the
+splitting functionality, this list should only contain one document). The `pages` property you send determines the
+content of the document.
+
+### Download the OCR version of an uploaded document
+
+After uploading a document, the Konfuzio server also creates an OCR version of it with indexed and selectable text.
+This version is also used to generate images for each page for our SmartView functionality. If you need it, you can
+download this OCR version of the document: the `file_url` property of the
+[document retrieve endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_retrieve) contains the URL to it
+(relative to the Konfuzio installation: on the main server, `/doc/show/123/` would become
+`https://app.konfuzio.com/doc/show/123/`); to access it, you need to be authenticated, so you would need a request like
+this:
+
+```
+curl --request GET \
+  --url https://app.konfuzio.com/doc/show/DOCUMENT_ID/ \
+  --header 'Authorization: Token YOUR_TOKEN'
+```
 
 ### Create your own document dashboard
 
