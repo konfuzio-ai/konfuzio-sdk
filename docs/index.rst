@@ -39,6 +39,7 @@ use further integrations, see `help.konfuzio.com <https://help.konfuzio.com/inte
    sdk/examples/examples.rst
    sdk/contribution.md
    sdk/coordinates_system.md
+   sdk/horizontal_merge.md
 
 .. toctree::
    :caption: Konfuzio Server
