@@ -23,7 +23,7 @@ my_label = Label(my_project, text=label_name)
 my_label.save()
 
 # Label Set where label belongs
-label_set_id = my_label.label_sets[0].id_
+label_set = my_label.label_sets[0]
 
 # First document in the project
 document = my_project.documents[0]
@@ -36,14 +36,13 @@ new_annotations_links = []
 
 # Create annotation for each match
 for offsets in matches_locations:
+    span = Span(start_offset=offsets[0], end_offset=offsets[1])
     annotation_obj = Annotation(
         document=document,
-        document_id=document.id_,
-        start_offset=offsets[0],
-        end_offset=offsets[1],
         label=my_label,
-        label_set_id=label_set_id,
-        accuracy=1.0,
+        label_set=label_set,
+        confidence=1.0,
+        spans=[span]
     )
     new_annotation_added = annotation_obj.save()
     if new_annotation_added:
@@ -53,6 +52,33 @@ print(new_annotations_links)
 
 ```
 
+## Train Label Regex Tokenizer
+
+You can use the `konfuzio_sdk` package to train a custom Regex tokenizer. 
+
+In this example, you will see how to find regex expressions that match with occurences of the "IBAN" Label in the training data. 
+
+```python
+from konfuzio_sdk.data import Project
+from konfuzio_sdk.tokenizer.regex import RegexTokenizer
+from konfuzio_sdk.tokenizer.base import ListTokenizer
+
+my_project = Project(id_=YOUR_PROJECT_ID)
+category = project.get_category_by_id(id_=CATEGORY_ID)
+
+tokenizer = ListTokenizer(tokenizers=[])
+
+iban_label = my_project.get_label_by_name("IBAN")
+
+for regex in iban_label.find_regex(category=category):
+    regex_tokenizer = RegexTokenizer(regex=regex)
+    tokenizer.tokenizers.append(regex_tokenizer)
+
+# You can then use it to create an Annotation for every matching string in a document.
+document = project.get_document_by_id(DOCUMENT_ID)
+tokenizer.tokenize(document)
+
+```
 
 ## Finding Spans of a Label Not Found by a Tokenizer
 
