@@ -998,7 +998,7 @@ class Span(Data):
         """Return index of the line of the Span."""
         self._valid()
         if self.annotation.document.text and self._line_index is None:
-            line_number = len(self.annotation.document.text[: self.start_offset].split('\n'))
+            line_number = len(self.annotation.document.text[: self.start_offset].replace('\f', '\n').split('\n'))
             self._line_index = line_number - 1
 
         return self._line_index
@@ -2325,16 +2325,53 @@ class Document(Data):
         """Merge Annotations with the same Label."""
         labels_dict = {}
         for label in self.project.labels:
-            labels_dict[label.id_] = []
+            labels_dict[label.id_local] = []
 
         for annotation in self.annotations(use_correct=False, ignore_below_threshold=True):
-            labels_dict[annotation.label.id_].append(annotation)
+            labels_dict[annotation.label.id_local].append(annotation)
 
         for label_id in labels_dict:
             buffer = []
             for annotation in labels_dict[label_id]:
                 for span in annotation.spans:
-                    pass
+                    # remove all spans in buffer more than 1 line apart
+                    while buffer and span.line_index > buffer[0].line_index + 1:
+                        buffer.pop(0)
+
+                    if buffer and buffer[-1].page != span.page:
+                        buffer = [span]
+                        continue
+
+                    # Do not merge new Span if Annotation part of AnnotationSet with more than 1 Annotation
+                    if (
+                        span.annotation.annotation_set
+                        and len(
+                            span.annotation.annotation_set.annotations(use_correct=False, ignore_below_threshold=True)
+                        )
+                        > 1
+                    ):
+                        buffer.append(span)
+                        continue
+                    if len(annotation.spans) > 1:
+                        buffer.append(span)
+                        continue
+
+                    for candidate in buffer:
+                        # only looking for elements in line above
+                        if candidate.line_index == span.line_index:
+                            break
+                        # overlap in x
+                        # or next line
+                        if (
+                            not (span.bbox().x0 > candidate.bbox().x1 or span.bbox().x1 < candidate.bbox().x0)
+                        ) or self.text[candidate.end_offset : span.start_offset].replace(' ', '').replace(
+                            '\n', ''
+                        ) == '':
+                            span.annotation.delete()
+                            span.annotation = None
+                            candidate.annotation.add_span(span)
+                            buffer.remove(candidate)
+                    buffer.append(span)
 
     def evaluate_regex(self, regex, label: Label, annotations: List['Annotation'] = None):
         """Evaluate a regex based on the Document."""
