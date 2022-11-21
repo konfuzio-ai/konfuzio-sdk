@@ -2277,6 +2277,22 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
         assert len(al_spans) == 0
         assert al_tokenizer in label_span.regex_matching
 
+    def test_offline_project_creates_no_files(self):
+        """Test that an offline Project does not create any files, even if documents have IDs."""
+        virtual_project = Project(id_=None)
+        virtual_project.set_offline()
+        assert not os.path.isdir(virtual_project.project_folder)
+
+        virtual_category = Category(project=virtual_project)
+        virtual_document = Document(
+            project=virtual_project,
+            id_=999999999,
+            category=virtual_category,
+            dataset_status=2,
+            copy_of_id=999999999,
+        )
+        assert not os.path.isdir(virtual_document.document_folder)
+
 
 class TestFillOperation(unittest.TestCase):
     """Separate Test as we add non Labels to the Project."""

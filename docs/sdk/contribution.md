@@ -158,6 +158,40 @@ To run tests from a specific file, do:
 
 ![img.png](releasing/version-number-prerelease.png)
 
+## Internal release process
+
+Every day at 5:19 AM UTC (3:19 AM UTC+2, see code [here](https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/.github/workflows/nightly.yml)) a new nightly release of the SDK (master branch) is released to <https://pypi.org/project/konfuzio-sdk/#history>.
+
+Every day at 6:13 AM UTC a new nightly release of the Server using the latest nightly SDK is deployed at <https://nightly-sdk.branch.konfuzio.com/> as a Gitlab schedule from our server repository.
+
+![](https://lh3.googleusercontent.com/03rOOTgK8ZGvIgO7BSUgF5rREgWkpqmGPXRUrxfYnXArI7chtOZLAvrCwQWcs-yMXEgCJm6nzn0rPp6YyGw75eC_BRR8Ila3idWN4d1IbXooyhxl9L9AFR3J8753pwQFRgpPHgKanZq2rctRRbcqzl6O5UiPXtP-BX8F_3dpAiCgiC6zLQLxAi0x8wnQOA)
+
+We get an early chance to find bugs with our integration of the SDK with the Konfuzio Server before the official release. During our internal development sprints (2 week periods) we follow the strategy summarized in the table below.
+
+|  Key | Meaning       |
+|------| ------------- |
+| T    | Testing Time  |
+| M    | Merge to next level |
+| R    | Release       |
+| B    | Bug Fixing    |
+
+
+| Release  |                       | 1  |   2   |   3   |   4   |   5   |   6   |   7   |   8   |   9   |   10   | 
+| -------- | --------------------- | -- | ----- | ----- | ----- | ----- | ----- | ----- | ----- | ----- | ------ |
+| Server   | master Branch Server  |    |       |       |       | M     |       |       |       |       |        |
+| Server   | testing Branch Server |    | T     | B     | B     | R     |       |       |       |       | M      |
+| Server   | nightly Build SDK     |    |       |       |       |       |       | T     | B     | B     | R      |
+| SDK      | master Branch         |    |       |       |       |       | T     | T     | B     | B     | R      |
+| SDK      | Pull Request          |    |       |       |       |       | M     |       |       |       | --      |
+
+The strategy follows a 2 weeks sprint schedule (10 work days), with the following plan:
+
+- On the first week we do development on the SDK side, and we open one pull request for each new SDK feature on Github (see the list of currently open pull requests [here](https://github.com/konfuzio-ai/konfuzio-sdk/pulls)).
+- On each Monday of the second week we merge pull requests to master, which triggers the creation of a SDK nightly release. This becomes available as a Konfuzio Server deployment the next day at <https://nightly-sdk.branch.konfuzio.com/>, as a consequence of the Konfuzio Server Gitlab schedule.
+- We internally test the Konfuzio SDK/Server integration with the nightly deployment and collect any bugs that come up, either from the SDK side or the Server side. For the SDK side, these are scheduled as internal tickets for fixing until Friday, which marks the end of the sprint.
+- On Friday the bug fixing is over, the associated pull requests are merged to master and a new SDK official release is created containing the new features and bugfixes.
+- SDK Release Notes are automatically generated from our pull requests using [the Github’s feature](https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes). Each pull request includes links to relevant documentation about how to use the new feature, see for example <https://github.com/konfuzio-ai/konfuzio-sdk/pull/124>.
+- As the new SDK features are available on Friday at the end of each sprint, the Server releases lag one week behind the SDK releases. We internally test and integrate the Konfuzio Server with the latest SDK release, until a new Server release is finally made available at app.konfuzio.com the next Friday. See the [changelog](https://dev.konfuzio.com/web/changelog_app.html) for full information on each Konfuzio Server release.
 
 ## Running tests in Docker
 
