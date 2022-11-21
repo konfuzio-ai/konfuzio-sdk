@@ -133,6 +133,7 @@ to it (e.g. sum).
    e.g.: 59,00-
    e.g.: 786,71-
    e.g.: (118.704)
+   e.g.: *(118.704)
 
 3) Absolute numbers are shown without negative or positive signs in the common format as described above:
    e.g.: 59,00-
@@ -165,6 +166,7 @@ to it (e.g. sum).
 |         59,00-          |      2      | yes   | -59.0    | -59 | string | number |
 |         786,71-         |      2      | yes   | -786.71    | -786.71 | string | number |
 |        (118.704)        |      2      |yes   | -118704.0    | -118704 | string | number |
+|       *(118.704)        |      2      | yes  | -118704.0 | -118704 | string | number |
 |  absolute no.: 59,00-   |      3      | yes   | 59.0    | 59 | string | number |
 |  absolute no.: 786,71-  |      3      | yes   | 786.71    | 786.71 | string | number |
 | absolute no.: -2.759,7° |      3      | yes   | 2759.7    | 2759.7 | string | number |
