@@ -20,11 +20,17 @@ A horizontal merging is valid only if:
 |  <span style="background-color: #ff726f">Text</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="background-color: #ff726f">Annotation</span> |      no     |    5.    | <span style="background-color: #ff726f">Text</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="background-color: #ff726f">Annotation</span> |
 |  <span style="background-color: #ff726f">Text</span><span>&nbsp;.&nbsp;</span><span style="background-color: #ff726f">Annotation</span> |      no     |    4.    | <span style="background-color: #ff726f">Text</span><span>&nbsp;.&nbsp;</span><span style="background-color: #ff726f">Annotation</span> |
 |  <span style="background-color: #ff726f">Annotation</span><span>&nbsp;</span><span style="background-color: #86c5da">7</span> |      no     |    1.    | <span style="background-color: #ff726f">Annotation</span><span>&nbsp;</span><span style="background-color: #86c5da">7</span> |
-|  <span style="background-color: #86c5da">34</span><span>&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="background-color: #86c5da">98</span> |      no     |  6. ([see here](https://dev.konfuzio.com/web/api.html#supported-data-normalization))  | <span style="background-color: #86c5da">34</span><span>&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="background-color: #86c5da">98</span> |
+|  <span style="background-color: #86c5da">34</span><span>&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="background-color: #86c5da">98</span> |      no     |  6. ([see here](https://dev.konfuzio.com/web/api.html#numbers))  | <span style="background-color: #86c5da">34</span><span>&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="background-color: #86c5da">98</span> |
 |  <span style="background-color: #86c5da">34</span><span>&nbsp;&nbsp;</span><span style="background-color: #86c5da">98</span> |      yes     |  /  | <span style="background-color: #86c5da">34</span><span style="background-color: #86c5da">&nbsp;&nbsp;</span><span style="background-color: #86c5da">98</span> |
 |  <span style="background-color: #34df00">November</span><span>&nbsp;</span><span style="background-color: #34df00">2022</span> |     yes     |   /    | <span style="background-color: #34df00">November</span><span style="background-color: #34df00">&nbsp;</span><span style="background-color: #34df00">2022</span> |
+|  <span style="background-color: #ff8c00">34</span><span>&nbsp;&nbsp;</span><span style="background-color: #ff8c00">98%</span> |      yes     |  /  | <span style="background-color: #ff8c00">34</span><span style="background-color: #ff8c00">&nbsp;&nbsp;</span><span style="background-color: #ff8c00">98%</span> |
+|  <span style="background-color: #ff8c00">34</span><span>&nbsp;&nbsp;</span><span style="background-color: #dcdcdc">98%</span> |      no     |  2.  | <span style="background-color: #ff8c00">34</span><span>&nbsp;&nbsp;</span><span style="background-color: #dcdcdc">98%</span> |
+
 
 Label Type: <span style="background-color: #ff726f">Text</span><br>
 Label Type: <span style="background-color: #86c5da">Number</span><br>
-Label Type: <span style="background-color: #34df00">Date</span>
+Label Type: <span style="background-color: #34df00">Date</span><br>
+Label Type: <span style="background-color: #ff8c00">Percentage</span><br>
+Label Type: <span style="background-color: #dcdcdc">NO LABEL/Below Label threshold</span>
+
 
