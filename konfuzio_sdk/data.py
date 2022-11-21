@@ -1054,7 +1054,9 @@ class Span(Data):
             document = self.annotation.document
             characters = {key: document.bboxes.get(key) for key in character_range if document.text[key] != ' '}
             if not all(characters.values()):
-                logger.error(f'{self} contains Chractacters that don\'t provide a Bounding Box.')
+                logger.error(
+                    f'{self} in {self.annotation.document} contains Characters that don\'t provide a Bounding Box.'
+                )
             self._bbox = Bbox(
                 x0=min([ch.x0 for c, ch in characters.items() if ch is not None]),
                 x1=max([ch.x1 for c, ch in characters.items() if ch is not None]),
@@ -1688,7 +1690,10 @@ class Document(Data):
 
     def __repr__(self):
         """Return the name of the Document incl. the ID."""
-        return f"Document {self.name} ({self.id_})"
+        if self.copy_of_id:
+            return f"Document {self.name} ({self.copy_of_id})"
+        else:
+            return f"Document {self.name} ({self.id_})"
 
     @property
     def file_path(self):
