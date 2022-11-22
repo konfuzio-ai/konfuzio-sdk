@@ -17,7 +17,7 @@ enterprise ready Web, API and Python interfaces to easily customize document wor
 IT infrastructure. Find out more on our `Homepage <https://www.konfuzio.com>`_.
 
 **Konfuzio SDK:** The Open Source Konfuzio Software Development Kit (Konfuzio SDK) provides a Python API to build custom
-document processes. Review the release notes and and the source code on
+document processes. For a quick introduction to the SDK, check out the :ref:`Quickstart` section. Review the release notes and and the source code on
 `GitHub <https://github.com/konfuzio-ai/konfuzio-sdk/releases>`_.
 
 **Konfuzio Server:** Register a trial account via our SaaS hosting on `app.konfuzio.com <https://app.konfuzio.com>`_ or
