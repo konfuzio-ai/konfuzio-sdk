@@ -5,9 +5,10 @@
 Not all PDFs that we process are always neatly scanned and organized. Sometimes we can have more than one actual 
 Document in a single file; such files need to be properly processed and split into several independent Documents. 
 
-In this post, we will look at a simple way to implement an algorithm for splitting a multi-file Document into the 
-sub-Documents. Our approach is based on an assumption that we can go through all Pages of the Document and define 
-splitting points. By splitting points, we mean Pages that are similar in contents to the first Pages in the Documents. 
+In this post, we will look at a simple way to implement an algorithm for searching common features between 
+Documents/Pages which can be used for splitting a multi-file Document into the sub-Documents. Our approach is based on 
+an assumption that we can go through all Pages of the Document and define splitting points. By splitting points, we mean 
+Pages that are similar in contents to the first Pages in the Documents. 
 Note: this approach only works with the Documents of the same Category and in the same language. 
 
 If you are unfamiliar with the SDK's main concepts (like Page or Span), you can get to know them on the Quickstart page.
