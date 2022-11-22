@@ -1,4 +1,5 @@
 """Split a multi-Document file into a list of shorter documents."""
+from abc import ABC
 from copy import deepcopy
 from typing import List, Set
 
@@ -6,19 +7,28 @@ from konfuzio_sdk.data import Document, Page, Project
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 
 
-class SplittingAI:
+class BaseCommonFeatureSearcher(ABC):
+    """Create a class to set constraints for the derivatives."""
+
+    def __init__(self):
+        """Initialize the tokenizer."""
+        self.tokenizer = ConnectedTextTokenizer()
+
+
+class SplittingAI(BaseCommonFeatureSearcher):
     """Split a given Document and return a list of resulting shorter Documents."""
 
-    def __init__(self, project_id=None):
+    def __init__(self, project_id=None, category_id=None):
         """
         Initialize the class.
 
         :param project_id: Project used for the intermediate document.
         :type project_id: int
         """
+        super().__init__()
         self.project = Project(id_=project_id)
-        self.tokenizer = ConnectedTextTokenizer()
         self.train_data = self.project.documents
+        self.category_id = category_id
 
     def _create_doc_from_page_interval(self, original_doc: Document, start_page: Page, end_page: Page) -> Document:
         pages_text = original_doc.text[start_page.start_offset : end_page.end_offset]
@@ -34,10 +44,18 @@ class SplittingAI:
         return new_doc
 
     def train(self) -> Set:
-        """Gather the Spans unique for the first Pages."""
+        """
+        Gather the Spans unique for the first Pages.
+
+        :param category_id: Category by which Documents are filtered.
+        :type category_id: int
+        :return: A set of Spans unique to the first Pages.
+        """
         first_page_spans = []
         not_first_page_spans = []
         for doc in self.project.documents:
+            doc = deepcopy(doc)
+            doc.category = self.project.get_category_by_id(self.category_id)
             doc = self.tokenizer.tokenize(deepcopy(doc))
             for page in doc.pages():
                 if page.number == 1:
