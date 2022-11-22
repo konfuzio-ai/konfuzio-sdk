@@ -1,10 +1,66 @@
-"""Split a multi-Document file into a list of shorter documents."""
+"""Find similarities between Documents or Pages via comparison between their texts."""
 from abc import ABC
 from copy import deepcopy
 from typing import List, Set
 
 from konfuzio_sdk.data import Document, Page, Project
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
+
+
+def find_common_spans_document(documents, category, tokenizer) -> Set:
+    """
+    Gather the Spans common for a group of Documents.
+
+    :param documents: A group of Documents to search unique features of.
+    :type documents: list
+    :param category: A Category for which the search is done.
+    :type category: Category
+    :param tokenizer: A tokenizer to split Documents into Spans.
+    :return: A set of Spans typical for this Category.
+    """
+    span_sets = []
+    for doc in documents:
+        doc = deepcopy(doc)
+        doc.category = category
+        doc = tokenizer.tokenize(doc)
+        span_sets.append({span.offset_string for span in doc.spans()})
+    common_spans = set.intersection(*span_sets)
+    return common_spans
+
+
+def find_unique_spans_page(documents, category, tokenizer, **kwargs) -> Set:
+    # the name for the function can be rethinked
+    """
+    Gather the Spans unique in a defined way for a stream of Pages.
+
+    :param documents: A group of Documents in Pages of which to search for the common Spans.
+    :type documents: list
+    :param category: A Category for which the search is done.
+    :type category: Category
+    :param tokenizer: A tokenizer to split Documents into Spans.
+    :return: A set of unique Spans.
+    """
+    # we can define possible modes of usage and suggest using them for suitable occurences
+    if kwargs['mode'] == 'file_splitting':
+        first_page_spans = []
+        not_first_page_spans = []
+        for doc in documents:
+            doc = deepcopy(doc)
+            doc.category = category
+            doc = tokenizer.tokenize(deepcopy(doc))
+            for page in doc.pages():
+                if page.number == 1:
+                    first_page_spans.append({span.offset_string for span in page.spans()})
+                else:
+                    not_first_page_spans.append({span.offset_string for span in page.spans()})
+        if not first_page_spans:
+            first_page_spans.append(set())
+        true_first_page_spans = set.intersection(*first_page_spans)
+        if not not_first_page_spans:
+            not_first_page_spans.append(set())
+        true_not_first_page_spans = set.intersection(*not_first_page_spans)
+        true_first_page_spans = true_first_page_spans - true_not_first_page_spans
+    return true_first_page_spans
 
 
 class BaseCommonFeatureSearcher(ABC):
@@ -47,8 +103,6 @@ class SplittingAI(BaseCommonFeatureSearcher):
         """
         Gather the Spans unique for the first Pages.
 
-        :param category_id: Category by which Documents are filtered.
-        :type category_id: int
         :return: A set of Spans unique to the first Pages.
         """
         first_page_spans = []
@@ -56,7 +110,7 @@ class SplittingAI(BaseCommonFeatureSearcher):
         for doc in self.project.documents:
             doc = deepcopy(doc)
             doc.category = self.project.get_category_by_id(self.category_id)
-            doc = self.tokenizer.tokenize(deepcopy(doc))
+            doc = self.tokenizer.tokenize(doc)
             for page in doc.pages():
                 if page.number == 1:
                     first_page_spans.append({span.offset_string for span in page.spans()})
