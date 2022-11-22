@@ -3,7 +3,7 @@
 
 # Horizontal Merge
 
-After the Label classifier, we merge adjacent horizontal spans. 
+When using an [Extraction AI](https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai), we merge adjacent horizontal spans right after the Label classifier.
 
 A horizontal merging is valid only if:
 1. All spans have the same predicted Label

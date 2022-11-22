@@ -1477,6 +1477,7 @@ class Trainer:
     @classmethod
     def merge_horizontal(cls, res_dict: Dict, doc_text: str) -> Dict:
         """Merge contiguous spans with same predicted label."""
+        logger.info("Horizontal merge.")
         merged_res_dict = dict()  # stores final results
         for label, items in res_dict.items():
             res_dicts = []
@@ -2036,33 +2037,45 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         max_depth: int = 100,
         no_label_limit: Union[int, float, None] = None,
         n_nearest_across_lines: bool = False,
-        use_separate_labels=False,
+        use_separate_labels: bool = False,
+        category: Category = None,
         tokenizer=None,
         *args,
         **kwargs,
     ):
         """RFExtractionAI."""
+        logging.info("Initializing RFExtractionAI.")
         super().__init__(*args, **kwargs)
         GroupAnnotationSets.__init__(self)
 
         self.label_feature_list = None
-        self.use_separate_labels = use_separate_labels
 
-        # If this is True use the generic regex generator
-        self.use_generic_regex = True
-        self.category: Category = None
+        self.use_separate_labels = use_separate_labels
+        logger.info(f"{use_separate_labels=}")
+
+        self.category: Category = category
+        logger.info(f"{category=}")
+
         self.n_nearest = n_nearest
+        logger.info(f"{n_nearest=}")
+
         self.first_word = first_word
+        logger.info(f"{first_word=}")
+
         self.max_depth = max_depth
+        logger.info(f"{max_depth=}")
+
         self.n_estimators = n_estimators
+        logger.info(f"{n_estimators=}")
+
         self.no_label_limit = no_label_limit
         self.n_nearest_across_lines = n_nearest_across_lines
-        self.train_split_percentage = None
 
         self.substring_features = kwargs.get('substring_features', None)
         self.catchphrase_features = kwargs.get('catchphrase_features', None)
 
         self.tokenizer = tokenizer
+        logger.info(f"{tokenizer=}")
 
         self.clf = None
 
@@ -2071,18 +2084,19 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
     def features(self, document: Document):
         """Calculate features using the best working default values that can be overwritten with self values."""
+        logger.info(f"Starting {document} feature calculation.")
         if self.no_label_name is None or self.no_label_set_name is None:
             self.no_label_name = document.project.no_label.name_clean
             self.no_label_set_name = document.project.no_label_set.name_clean
         df, _feature_list, _temp_df_raw_errors = process_document_data(
             document=document,
             spans=document.spans(use_correct=False),
-            n_nearest=self.n_nearest if hasattr(self, 'n_nearest') else 2,
-            first_word=self.first_word if hasattr(self, 'first_word') else True,
+            n_nearest=self.n_nearest,
+            first_word=self.first_word,
             tokenize_fn=self.tokenizer.tokenize,  # todo: we are tokenizing the document multiple times
-            catchphrase_list=self.catchphrase_features if hasattr(self, 'catchphrase_features') else None,
-            substring_features=self.substring_features if hasattr(self, 'substring_features') else None,
-            n_nearest_across_lines=self.n_nearest_across_lines if hasattr(self, 'n_nearest_across_lines') else False,
+            catchphrase_list=self.catchphrase_features,
+            substring_features=self.substring_features,
+            n_nearest_across_lines=self.n_nearest_across_lines,
         )
         if self.use_separate_labels:
             df['target'] = df['label_set_name'] + '__' + df['label_name']
@@ -2102,6 +2116,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
          NotFittedError: When CLF is not fitted
 
         """
+        logger.info(f"Starting extraction of {document}.")
         if self.tokenizer is None:
             raise AttributeError(f'{self} missing Tokenizer.')
 
@@ -2382,7 +2397,11 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         :param retokenize: Bool for whether to recreate annotations from scratch or use already existing annotations.
         :return: Dataframe of features and list of feature names.
         """
-        logger.info('Start generating features.')
+        logger.info(f'Start generating features for {len(documents)} documents.')
+        logger.info(f'{no_label_limit=}')
+        logger.info(f'{retokenize=}')
+        logger.info(f'{require_revised_annotations=}')
+
         df_real_list = []
         df_raw_errors_list = []
         feature_list = []
