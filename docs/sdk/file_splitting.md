@@ -22,17 +22,17 @@ Then, for every input Document's Page, we determine if it's first or not by goin
 ### Step-by-step explanation
 
 Let's start with making all the necessary imports and initializing our Project:
-```
+```python
 from konfuzio_sdk.data import Project
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 from copy import deepcopy
 
-project = Project(id_=226) # any ID available to you can be here
+project = Project(id_=YOUR_PROJECT_ID) # any ID available to you can be here
 ```
 
 After initializing the Project, we filter the Documents that will be used for the "training" described [above](#Intro).  
-```
-training_docs = project.get_category_by_id(771).documents()
+```python
+training_docs = project.get_category_by_id(YOUR_CATEGORY_ID).documents()
 ```
 This is done because this logic only functions within a single Category – Documents similar in contents will most likely have at least one common first-page Span.
 
@@ -41,7 +41,7 @@ Next step is creating lists for collecting first-page Spans and Spans from other
 We also need to initialize the tokenizer that we imported. The tokenizer goes through the Document's text and separates it into Spans. We will use it to process training Documents, as well as any input Document in testing. This is done to ensure that the Documents are processed in a similar manner and it will be possible to find common Spans. 
 
 ConnectedTextTokenizer in particular separates the text by `\n`  whitespaces.
-```
+```python
 first_page_spans = []
 not_first_page_spans = []
 
@@ -56,7 +56,7 @@ For each Document, we create a `deepcopy` .  Deepcopied object is identical to t
 Then, we run tokenizer on the deepcopied Document, which creates a set of Spans for it, and iterate through the Document's Pages.
 
 If the Page is first, we append a set of its Span offset strings to `first_page_spans`; if it is not first, a set of its Span offset strings is appended to `not_first_page_spans`. We use offset_springs and not Spans themselves because while a same string can occur on different Pages, it might not necessarily be in the same position (with same start_offset and end_offset) and thus would not be counted as similar when compared to the Spans of an input Document.
-```
+```python
 for doc in training_docs[:5]:
     document_without_human_annotations = deepcopy(doc)
     doc = tokenizer.tokenize(document_without_human_annotations)
@@ -73,7 +73,7 @@ After gathering all Span sets into two lists, we need to search for the Spans un
 We use an asterisk before the list because we pass the sets in it as `args` – in other words, as multiple arguments, because we need to search for intersections between all of the sets.
 
 After finding the intersections, we deduct Spans of non-first Pages from Spans of first Pages, thus obtaining a set of Spans that only appear at first Pages. 
-```
+```python
 if not first_page_spans:
     first_page_spans.append(set())
 true_first_page_spans = set.intersection(*first_page_spans)
@@ -86,30 +86,22 @@ So, it is safe to assume that if a Page has at least one Span from the resulting
 Page.
 
 Let's test our algorithm on a test Document from the same Category:
-```
-test_document = project.get_category_by_id(771).test_documents()[0]
+```python
+test_document = project.get_category_by_id(YOUR_CATEGORY_ID).test_documents()[0]
 test_document = tokenizer.tokenize(deepcopy(test_document))
 for page in test_document.pages():
     if len({span.offset_string for span in page.spans()}.intersection(true_first_page_spans)) > 0:
-        print('Page {} is first Page'.format(page.number))
+        print('Page {} is predicted as a first Page'.format(page.number))
     else:
-        print('Page {} is non-first Page'.format(page.number))
-
-# output:
-Page 1 is first Page
+        print('Page {} is predicted as a non-first Page'.format(page.number))
 ```
 After tokenizing it in a manner similar to that of the training data, we go through its Pages (currently it's a one-page Document) and look whether at least one Span from the Page is present in our resulting "gold" set of unique first-page Spans. As we see, the Page is correctly labeled first.
 
 Let's see how many intersections have been found:
-```
+```python
 for page in test_document.pages():
     print(len({span.offset_string for span in page.spans()}.intersection(true_first_page_spans)))
-
-# output:
-27
 ```
-We can see that there is definitely more than one intersection with the list of the unique Spans, which further proves that the prediction is correct.
-
 
 Full code:
 ```python
@@ -117,9 +109,9 @@ from konfuzio_sdk.data import Project
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 from copy import deepcopy
 
-project = Project(id_=226)
+project = Project(id_=YOUR_PROJECT_ID)
 
-training_docs = project.get_category_by_id(771).documents()
+training_docs = project.get_category_by_id(YOUR_CATEGORY_ID).documents()
 
 first_page_spans = []
 not_first_page_spans = []
@@ -147,9 +139,9 @@ test_document = project.get_category_by_id(771).test_documents()[0]
 test_document = tokenizer.tokenize(deepcopy(test_document))
 for page in test_document.pages():
     if len({span.offset_string for span in page.spans()}.intersection(true_first_page_spans)) > 0:
-        print('Page {} is first Page'.format(page.number))
+        print('Page {} is predicted as a first Page'.format(page.number))
     else:
-        print('Page {} is non-first Page'.format(page.number))
+        print('Page {} is predicted as a non-first Page'.format(page.number))
 
 for page in test_document.pages():
     print({span.offset_string for span in page.spans()}.intersection(true_first_page_spans))
