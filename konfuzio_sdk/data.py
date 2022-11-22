@@ -2345,6 +2345,7 @@ class Document(Data):
                     # Do not merge new Span if Annotation part of AnnotationSet with more than 1 Annotation
                     if (
                         span.annotation.annotation_set
+                        and not span.annotation.annotation_set.label_set.is_default
                         and len(
                             span.annotation.annotation_set.annotations(use_correct=False, ignore_below_threshold=True)
                         )
