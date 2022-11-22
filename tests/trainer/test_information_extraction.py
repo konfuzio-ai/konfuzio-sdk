@@ -167,7 +167,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         tokenizer = WhitespaceTokenizer()
         cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_separate_labels, tokenizer=tokenizer)
 
-        cls.tests_annotations = list()
+        cls.tests_annotations_spans = list()
 
     def test_01_configure_pipeline(self):
         """Make sure the Data and Pipeline is configured."""
@@ -270,23 +270,25 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         """Extract a randomly selected Test Document."""
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
-
-        self.tests_annotations += res_doc.view_annotations()  # (use_correct=False)
-        assert len(self.tests_annotations) == 20
+        view_annotations = res_doc.view_annotations()
+        assert len(view_annotations) == 19
+        view_spans = sorted([span for ann in view_annotations for span in ann.spans])
+        self.tests_annotations_spans += view_spans
+        assert len(self.tests_annotations_spans) == 20
 
     @parameterized.parameterized.expand(entity_results_data)
     def test_12_test_annotations(self, i, expected):
         """Test extracted annotations."""
-        ann = self.tests_annotations[i]
-        ann_tuple = (ann.label.name, ann.start_offset, ann.end_offset)
-        assert ann_tuple == expected
+        span = self.tests_annotations_spans[i]
+        span_tuple = (span.annotation.label.name, span.start_offset, span.end_offset)
+        assert span_tuple == expected
 
     def test_13_load_ai_model(self):
         """Test loading of trained model."""
         self.pipeline = load_model(self.pipeline.pipeline_path)
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
-        assert len(res_doc.view_annotations()) == 20
+        assert len(res_doc.view_annotations()) == 19
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -311,7 +313,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
         cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_separate_labels)
 
-        cls.tests_annotations = list()
+        cls.tests_annotations_spans = list()
 
     def test_01_configure_pipeline(self):
         """Make sure the Data and Pipeline is configured."""
@@ -405,25 +407,25 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         """Extract a randomly selected Test Document."""
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
-
-        self.tests_annotations += res_doc.view_annotations()  # annotations(use_correct=False)
-        for span in res_doc.spans():
-            assert len(span.regex_matching) > 0
-        assert len(self.tests_annotations) == 20
+        view_annotations = res_doc.view_annotations()
+        assert len(view_annotations) == 19
+        view_spans = sorted([span for ann in view_annotations for span in ann.spans])
+        self.tests_annotations_spans += view_spans
+        assert len(self.tests_annotations_spans) == 20
 
     @parameterized.parameterized.expand(entity_results_data)
     def test_12_test_annotations(self, i, expected):
         """Test extracted annotations."""
-        ann = self.tests_annotations[i]
-        ann_tuple = (ann.label.name, ann.start_offset, ann.end_offset)
-        assert ann_tuple == expected
+        span = self.tests_annotations_spans[i]
+        span_tuple = (span.annotation.label.name, span.start_offset, span.end_offset)
+        assert span_tuple == expected
 
     def test_13_load_ai_model(self):
         """Test loading of trained model."""
         self.pipeline = load_model(self.pipeline.pipeline_path)
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
-        assert len(res_doc.view_annotations()) == 20
+        assert len(res_doc.view_annotations()) == 19
 
     @classmethod
     def tearDownClass(cls) -> None:
