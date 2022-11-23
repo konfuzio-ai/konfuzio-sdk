@@ -630,7 +630,9 @@ class Label(Data):
             logger.error(f'Cannot sort {self} and {other}.')
             return False
 
-    def annotations(self, categories: List[Category], use_correct=True, ignore_below_threshold=False):
+    def annotations(
+        self, categories: List[Category], use_correct=True, ignore_below_threshold=False
+    ) -> List['Annotation']:
         """Return related Annotations. Consider that one Label can be used across Label Sets in multiple Categories."""
         annotations = []
         for category in categories:
@@ -644,6 +646,15 @@ class Label(Data):
             logger.warning(f'{self} has no correct annotations.')
 
         return annotations
+
+    def has_multiline_annotations(self, categories: List[Category]) -> bool:
+        """Return if any Label annotations are multi-line."""
+        for category in categories:
+            for document in category.documents():
+                for annotation in document.annotations(label=self):
+                    if len(annotation.spans) > 1:
+                        return True
+        return False
 
     def add_label_set(self, label_set: "LabelSet"):
         """
@@ -2321,14 +2332,20 @@ class Document(Data):
         self._annotations = None
         self._annotation_sets = None
 
-    def merge_vertical(self):
-        """Merge Annotations with the same Label."""
+    def merge_vertical(self, only_multiline_labels=True):
+        """
+        Merge Annotations with the same Label.
+
+        :param only_multiline_labels: Only merge if multiline Label Annotation in category training set
+        """
         labels_dict = {}
         for label in self.project.labels:
-            labels_dict[label.id_local] = []
+            if not only_multiline_labels or label.has_multiline_annotations(categories=[self.category]):
+                labels_dict[label.id_local] = []
 
         for annotation in self.annotations(use_correct=False, ignore_below_threshold=True):
-            labels_dict[annotation.label.id_local].append(annotation)
+            if annotation.label.id_local in labels_dict:
+                labels_dict[annotation.label.id_local].append(annotation)
 
         for label_id in labels_dict:
             buffer = []
@@ -2343,6 +2360,7 @@ class Document(Data):
                         continue
 
                     # Do not merge new Span if Annotation part of AnnotationSet with more than 1 Annotation
+                    # (except default annotationSet)
                     if (
                         span.annotation.annotation_set
                         and not span.annotation.annotation_set.label_set.is_default

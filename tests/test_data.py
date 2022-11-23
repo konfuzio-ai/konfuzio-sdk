@@ -436,7 +436,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 48
+        assert len(cls.project.virtual_documents) == 49
 
     # def test_document_only_needs_project(self):
     #     """Test that a Document can be created without category"""
@@ -1294,6 +1294,29 @@ class TestOfflineDataSetup(unittest.TestCase):
 
         assert len(document.spans()) == 4
         assert len(document.annotations(use_correct=False)) == 4
+
+        document.merge_vertical()
+
+        assert len(document.spans()) == 4
+        assert len(document.annotations(use_correct=False)) == 4
+
+        assert self.label.has_multiline_annotations(categories=[self.category]) is False
+
+        # adding training document so that label.has_multiline_annotations() returns True
+        train_document = Document(
+            project=self.project, category=self.category, text='p1\np2', bbox=document_bbox, dataset_status=2
+        )
+        train_span1 = Span(start_offset=0, end_offset=2)
+        train_span2 = Span(start_offset=3, end_offset=5)
+        _ = Annotation(
+            document=train_document,
+            is_correct=True,
+            label=self.label,
+            label_set=self.project.no_label_set,
+            spans=[train_span1, train_span2],
+        )
+
+        assert self.label.has_multiline_annotations(categories=[self.category]) is True
 
         document.merge_vertical()
 
