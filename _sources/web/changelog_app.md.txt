@@ -43,7 +43,8 @@ You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server
 - Access Service Desk Tickets which have been created via https://konfuzio.com/support.
 
 ### Fixed
-- In a very rare case text embeddings could not be extracted from a Document ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10045)).
+- In a very rare case text embeddings could not be extracted from Documents ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10045)).
+- The error handling for invalid PDF Documents ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9984)).
 
 ## released-2022-11-16_12-13-49
 
