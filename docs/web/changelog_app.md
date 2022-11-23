@@ -42,6 +42,9 @@ You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server
 ### Added
 - Access Service Desk Tickets which have been created via https://konfuzio.com/support.
 
+### Fixed
+- In a very rare case text embeddings could not be extracted from a Document ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10045)).
+
 ## released-2022-11-16_12-13-49
 
 ### Fixed
