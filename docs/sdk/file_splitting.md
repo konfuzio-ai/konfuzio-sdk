@@ -3,7 +3,7 @@
 ### Intro
 
 Not all PDFs that we process are always neatly scanned and organized. Sometimes we can have more than one actual 
-Document in a single file; such files need to be properly processed and split into several independent Documents. 
+Document in a stream pf pages; such files need to be properly processed and split into several independent Documents. 
 
 In this post, we will look at a simple way to implement an algorithm for searching common features between 
 Documents/Pages which can be used for splitting a multi-file Document into the sub-Documents. Our approach is based on 
