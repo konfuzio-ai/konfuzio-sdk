@@ -44,6 +44,7 @@ You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server
 
 ### Changed
 - [Improved Swagger Documentation for API V3](https://app.konfuzio.com/v3/swagger/) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9554)).
+- Detectron is now connected via API to uncouple its Python version and dependencies from Konfuzio Server ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9355)).
 
 ### Fixed
 - In a very rare case text embeddings could not be extracted from Documents ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10045)).
