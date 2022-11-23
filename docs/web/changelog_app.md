@@ -40,7 +40,10 @@ You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server
 ## Next Release
 
 ### Added
-- Access Service Desk Tickets which have been created via https://konfuzio.com/support.
+- Access Service Desk Tickets which have been created via https://konfuzio.com/support ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9923)).
+
+### Changed
+- [Improved Swagger Documentation for API V3](https://app.konfuzio.com/v3/swagger/) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9554)).
 
 ### Fixed
 - In a very rare case text embeddings could not be extracted from Documents ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10045)).
