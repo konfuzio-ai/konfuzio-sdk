@@ -45,6 +45,7 @@ You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server
 ### Fixed
 - In a very rare case text embeddings could not be extracted from Documents ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10045)).
 - The error handling for invalid PDF Documents ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9984)).
+- The notification email template for AI trainings was not considering errors in the training process ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9945)).
 
 ## released-2022-11-16_12-13-49
 
