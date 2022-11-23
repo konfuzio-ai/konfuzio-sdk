@@ -5,15 +5,21 @@
 
 ## Quickstart 
 
-Get to know SDK's concepts before you begin working with it. For more detailed information on each concept, follow the 
-link on the concept's name which leads to the automatically generated documentation.
+Get to know all major Data Layer concepts of the SDK before you begin working with it. The relations between them are 
+the following: a [Project](#Project) consists of multiple [Documents](#Document). Each one of the Documents consists of 
+the [Pages](#Page) and belongs to a certain [Category](#Category). Text of the Documents consists of [Spans](#Span) and
+can be marked by [Annotations](#Annotation) from some [Annotation Set](#Annotation Set). Each Annotation is located in 
+a certain [Bbox](#Bbox) and is defined by a [Label](#Label) that is a part of one of the [Label Sets](#Label Set). 
+
+For more detailed information on each concept, follow the link on the concept's name which leads to the automatically 
+generated documentation.
 
 ### Project
 [Project](https://dev.konfuzio.com/sdk/sourcecode.html#project) is essentially a dataset that contains Documents 
-belonging to different Categories or not having any Category assigned. It can be initialized as shown in the block above. 
+belonging to different Categories or not having any Category assigned. To initialize it, call `Project(id_=YOUR_PROJECT_ID)`. 
 
 The Project can also be accessed via the Smartview, with URL typically looking like 
-https://app.konfuzio.com/admin/server/document/?project=YOUR_PROJECT_ID_HERE.
+https://YOUR_HOST/admin/server/document/?project=YOUR_PROJECT_ID.
 
 If you have made some local changes to the Project and want to return to the initial version available at the server, or 
 if you want to fetch the updates from the server, use the argument `update=True`.
@@ -34,7 +40,7 @@ is possible to iterate through the output of `project.documents` (or `test_docum
 Documents are available and what IDs they have.
 
 The Documents can also be accessed via the Smartview, with URL typically looking like 
-https://app.konfuzio.com/projects/PROJECT_ID/docs/DOCUMENT_ID/bbox-annotations/.
+https://YOUR_HOST/projects/PROJECT_ID/docs/DOCUMENT_ID/bbox-annotations/.
 
 Here are some of the properties and methods of the Document you might need when working with the SDK:
 - `document.id_` – get an ID of the Document;
