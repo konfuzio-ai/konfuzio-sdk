@@ -9,23 +9,20 @@ import pickle
 from konfuzio_sdk.data import Project
 from konfuzio_sdk.trainer.file_splitting import FileSplittingModel, SplittingAI
 
-# train a file-splitting model on Documents from your Project 
+# initialize your Project and the FileSplittingModel
 
 project = Project(id_=YOUR_PROJECT_ID)
-train_documents = project.documents
-test_documents = project.test_documents
-
-# initialize LegalBERT
-
-bert_model, bert_tokenizer = FileSplittingModel.init_bert()
+file_splitting_model = FileSplittingModel(project_id=project.id_)
+file_splitting_model.train_data = project.documents
+file_splitting_model.test_data = project.test_documents
 
 # preprocess train and test data
 
-train_img_data, train_txt_data, test_img_data, test_txt_data, train_labels, test_labels, txt_input_shape = file_splitting.FileSplittingModel.prepare_visual_textual_data(
-                                                                                                                                                                        train_documents,
-                                                                                                                                                                        test_documents,
-                                                                                                                                                                        bert_model,
-                                                                                                                                                                        bert_tokenizer)
+train_img_data, train_txt_data, test_img_data, test_txt_data, train_labels, test_labels, txt_input_shape = file_splitting.FileSplittingModel._prepare_visual_textual_data(
+    train_documents,
+    test_documents,
+    bert_model,
+    bert_tokenizer)
 
 # initialize a fusion model
 
@@ -42,10 +39,10 @@ pickler.close()
 
 loss, acc = model.evaluate([test_img_data, test_txt_data], test_labels, verbose=0)
 print('Accuracy: {}'.format(acc * 100))
-precision, recall, f1 = FileSplittingModel.calculate_metrics(model, 
-                                                            test_img_data, 
-                                                            test_txt_data,
-                                                            test_labels)
+precision, recall, f1 = FileSplittingModel.calculate_metrics(model,
+                                                             test_img_data,
+                                                             test_txt_data,
+                                                             test_labels)
 print('\n Precision: {} \n Recall: {} \n F1-score: {}'.format(precision, recall, f1))
 
 # initialize SplittingAI with the model files saved during previous step

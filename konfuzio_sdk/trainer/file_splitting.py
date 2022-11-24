@@ -52,6 +52,14 @@ class FileSplittingModel:
         self.project = Project(id_=project_id)
         self.train_data = None
         self.test_data = None
+        configuration = AutoConfig.from_pretrained('nlpaueb/legal-bert-base-uncased')
+        configuration.num_labels = 2
+        configuration.output_hidden_states = True
+        self.bert_model = AutoModel.from_pretrained('nlpaueb/legal-bert-base-uncased', config=configuration)
+        self.bert_tokenizer = BertTokenizer.from_pretrained(
+            'nlpaueb/legal-bert-base-uncased', do_lower_case=True, max_length=10000, padding="max_length", truncate=True
+        )
+        self.page_classifier = None
 
     def _preprocess_documents(self, data: List[Document]) -> (List[str], List[str], List[int]):
         pages = []
@@ -78,21 +86,7 @@ class FileSplittingModel:
             images.append(image)
         return images
 
-    def prepare_visual_textual_data(
-        self, train_data: List[Document], test_data: List[Document], bert_model, bert_tokenizer
-    ):
-        """
-        Prepare visual and textual inputs and transform them for feeding to the fusion model.
-
-        :param train_data: Train dataset from the project.documents.
-        :type train_data: list
-        :param test_data: Test dataset from the project.test_documents.
-        :type test_data: list
-        :param bert_model: Initialized LegalBERT model.
-        :param bert_tokenizer: Initialized BERTTokenizer.
-        :return: Train and test visual inputs, train and test textual inputs, train and test labels, input shape for
-        textual inputs.
-        """
+    def _prepare_visual_textual_data(self, train_data: List[Document], test_data: List[Document]):
         for doc in train_data + test_data:
             doc.get_images()
         train_pages, train_texts, train_labels = self._preprocess_documents(train_data)
@@ -108,17 +102,17 @@ class FileSplittingModel:
         test_img_data = np.concatenate([test_data_generator.next()[0] for i in range(test_data_generator.__len__())])
         train_txt_data = []
         for text in train_texts:
-            inputs = bert_tokenizer(text, truncation=True, return_tensors='pt')
+            inputs = self.bert_tokenizer(text, truncation=True, return_tensors='pt')
             with torch.no_grad():
-                output = bert_model(**inputs)
+                output = self.bert_model(**inputs)
             train_txt_data.append(output.pooler_output)
         train_txt_data = [np.asarray(x).astype('float32') for x in train_txt_data]
         train_txt_data = np.asarray(train_txt_data)
         test_txt_data = []
         for text in test_texts:
-            inputs = bert_tokenizer(text, truncation=True, return_tensors='pt')
+            inputs = self.bert_tokenizer(text, truncation=True, return_tensors='pt')
             with torch.no_grad():
-                output = bert_model(**inputs)
+                output = self.bert_model(**inputs)
             test_txt_data.append(output.pooler_output)
         txt_input_shape = test_txt_data[0].shape
         test_txt_data = [np.asarray(x).astype('float32') for x in test_txt_data]
@@ -170,30 +164,17 @@ class FileSplittingModel:
         model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
         return model
 
-    def init_bert(self):
-        """Initialize BERT model and tokenizer."""
-        configuration = AutoConfig.from_pretrained('nlpaueb/legal-bert-base-uncased')
-        configuration.num_labels = 2
-        configuration.output_hidden_states = True
-        model = AutoModel.from_pretrained('nlpaueb/legal-bert-base-uncased', config=configuration)
-        tokenizer = BertTokenizer.from_pretrained(
-            'nlpaueb/legal-bert-base-uncased', do_lower_case=True, max_length=10000, padding="max_length", truncate=True
-        )
-        return model, tokenizer
-
     def _predict_label(self, img_input, txt_input, model) -> int:
         pred = model.predict([img_input.reshape((1, 224, 224, 3)), txt_input.reshape((1, 1, 768))], verbose=0)
         return round(pred[0, 0])
 
-    def calculate_metrics(self, model, img_inputs: List, txt_inputs: List, labels: List) -> (float, float, float):
+    def calculate_metrics(self, model, img_inputs, txt_inputs, labels: List) -> (float, float, float):
         """
         Calculate precision, recall, and F1 measure for the trained model.
 
         :param model: The trained model.
         :param img_inputs: Processed visual inputs from the test dataset.
-        :type img_inputs: list
         :param txt_inputs: Processed textual inputs from the test dataset.
-        :type txt_inputs: list
         :param labels: Labels from the test dataset.
         :type labels: list
         :return: Calculated precision, recall, and F1 measure.
@@ -233,9 +214,7 @@ class FileSplittingModel:
             unpickler = open(self.project.model_folder + '/fusion.pickle', 'rb')
             model = pickle.load(unpickler)
             unpickler.close()
-            # model = load_model(model)
         else:
-            bert_model, bert_tokenizer = self.init_bert()
             (
                 train_img_data,
                 train_txt_data,
@@ -244,9 +223,10 @@ class FileSplittingModel:
                 train_labels,
                 test_labels,
                 input_shape,
-            ) = self.prepare_visual_textual_data(self.train_data, self.test_data, bert_model, bert_tokenizer)
+            ) = self._prepare_visual_textual_data(self.train_data, self.test_data)
             model = self.init_model(input_shape)
             model.fit([train_img_data, train_txt_data], train_labels, epochs=10, verbose=1)
+            self.page_classifier = model
             pickler = open(self.project.model_folder + '/fusion.pickle', "wb")
             pickle.dump(model, pickler)
             pickler.close()
@@ -276,6 +256,8 @@ class SplittingAI:
         """
         self.file_splitter = FileSplittingModel(project_id=project_id)
         self.project = Project(id_=project_id)
+        self.file_splitter.train_data = self.project.documents
+        self.file_splitter.test_data = self.project.test_documents
         if Path(model_path).exists():
             unpickler = open(self.project.model_folder + '/fusion.pickle', 'rb')
             self.model = pickle.load(unpickler)
