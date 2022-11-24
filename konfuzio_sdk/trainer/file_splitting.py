@@ -20,7 +20,7 @@ import tensorflow as tf
 
 from keras.applications.vgg19 import preprocess_input
 from keras.layers import Dense, Conv2D, MaxPool2D, Flatten, Input, concatenate
-from keras.models import load_model, Model
+from keras.models import Model
 from pathlib import Path
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, img_to_array
 from transformers import BertTokenizer, AutoModel, AutoConfig
@@ -39,7 +39,7 @@ class FileSplittingModel:
     dataset. Textual part is represented by LegalBERT which is used without any training.
     Embeddings received from two of he models are squashed and the resulting vectors are fed as inputs to the MLP.
 
-    The resulting trained model is saved in .h5, roughly 1.5 Gb in size.
+    The resulting trained model is saved in pickle, roughly 1.5 Gb in size.
     """
 
     def __init__(self, project_id: int):
@@ -50,8 +50,8 @@ class FileSplittingModel:
         :type project_id: int
         """
         self.project = Project(id_=project_id)
-        self.train_data = self.project.documents
-        self.test_data = self.project.test_documents
+        self.train_data = None
+        self.test_data = None
 
     def _preprocess_documents(self, data: List[Document]) -> (List[str], List[str], List[int]):
         pages = []
@@ -229,8 +229,11 @@ class FileSplittingModel:
 
         :return: A trained fusion model.
         """
-        if Path(self.project.model_folder + '/fusion.h5').exists():
-            model = load_model(self.project.model_folder + '/fusion.h5')
+        if Path(self.project.model_folder + '/fusion.pickle').exists():
+            unpickler = open(self.project.model_folder + '/fusion.pickle', 'rb')
+            model = pickle.load(unpickler)
+            unpickler.close()
+            # model = load_model(model)
         else:
             bert_model, bert_tokenizer = self.init_bert()
             (
