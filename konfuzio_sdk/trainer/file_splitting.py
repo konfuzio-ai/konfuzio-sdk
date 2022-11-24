@@ -1,10 +1,93 @@
 """Find similarities between Documents or Pages via comparison between their texts."""
+import abc
 from abc import ABC
 from copy import deepcopy
 from typing import List, Set
 
 from konfuzio_sdk.data import Document, Page, Project
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
+
+
+class AbstractFileSplittingModel(metaclass=abc.ABCMeta):
+    """Abstract definition of a Tokenizer."""
+
+    @abc.abstractmethod
+    def __init__(self, *args, **kwargs):
+        """Documentation here."""
+
+    @abc.abstractmethod
+    def fit(self, *args, **kwargs):
+        """Documentation here."""
+
+    @abc.abstractmethod
+    def save(self, model_path=""):
+        """Documentation here."""
+
+    def calculate_metrics(self, use_training_docs: bool = False):
+        """
+        Calculate precision, recall, and F1 measure for the custom model.
+
+        :return: Calculated precision, recall, and F1 measure.
+        """
+        true_positive = 0
+        false_positive = 0
+        false_negative = 0
+        if use_training_docs:
+            list_of_pages = [
+                page for category in self.categories for document in category.documents() for page in document.pages()
+            ]
+        else:
+            list_of_pages = [
+                page
+                for category in self.categories
+                for document in category.test_documents()
+                for page in document.pages()
+            ]
+        for page in list_of_pages:
+            pred = self.predict(page)
+            if page.number == 1 and pred == 1:
+                true_positive += 1
+            elif page.number == 1 and pred == 0:
+                false_negative += 1
+            elif page.number == 0 and pred == 1:
+                false_positive += 1
+        if true_positive + false_positive != 0:
+            precision = true_positive / (true_positive + false_positive)
+        else:
+            precision = 0
+        if true_positive + false_negative != 0:
+            recall = true_positive / (true_positive + false_negative)
+        else:
+            recall = 0
+        if precision + recall != 0:
+            f1 = 2 * precision * recall / (precision + recall)
+        else:
+            f1 = 0
+        return precision, recall, f1
+
+    @abc.abstractmethod
+    def predict(self, page: Page) -> int:
+        """Take a SDK Page as input and return 1 for first page and 0 for not first page."""
+
+
+class FallbackFileSplittingModel(AbstractFileSplittingModel):
+    """Fallback definition of a File Splitting Model."""
+
+    def __init__(self, *args, **kwargs):
+        """Documentation here."""
+        raise NotImplementedError("Todo: define")
+
+    def fit(self, *args, **kwargs):
+        """Documentation here."""
+        raise NotImplementedError("Todo: define")
+
+    def save(self, model_path=""):
+        """Documentation here."""
+        raise NotImplementedError("Todo: define")
+
+    def predict(self, page: Page) -> int:
+        """Take a SDK Page as input and return 1 for first page and 0 for not first page."""
+        raise NotImplementedError("Todo: define")
 
 
 def find_common_spans_document(documents, category, tokenizer) -> Set:
