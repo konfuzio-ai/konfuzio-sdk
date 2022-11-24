@@ -13,6 +13,7 @@ https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=9684474
 import cv2
 import logging
 import torch
+import pickle
 
 import numpy as np
 import tensorflow as tf
@@ -243,7 +244,9 @@ class FileSplittingModel:
             ) = self.prepare_visual_textual_data(self.train_data, self.test_data, bert_model, bert_tokenizer)
             model = self.init_model(input_shape)
             model.fit([train_img_data, train_txt_data], train_labels, epochs=10, verbose=1)
-            model.save(self.project.model_folder + '/fusion.h5')
+            pickler = open(self.project.model_folder + '/fusion.pickle', "wb")
+            pickle.dump(model, pickler)
+            pickler.close()
             loss, acc = model.evaluate([test_img_data, test_txt_data], test_labels, verbose=0)
             logging.info('Accuracy: {}'.format(acc * 100))
             precision, recall, f1 = self.calculate_metrics(model, test_img_data, test_txt_data, test_labels)
@@ -271,7 +274,9 @@ class SplittingAI:
         self.file_splitter = FileSplittingModel(project_id=project_id)
         self.project = Project(id_=project_id)
         if Path(model_path).exists():
-            self.model = load_model(self.project.model_folder + '/fusion.h5')
+            unpickler = open(self.project.model_folder + '/fusion.pickle', 'rb')
+            self.model = pickle.load(unpickler)
+            unpickler.close()
         else:
             logging.info('Model not found, starting training.')
             self.model = self.file_splitter.train()

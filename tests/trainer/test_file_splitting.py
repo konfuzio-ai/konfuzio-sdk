@@ -23,11 +23,13 @@ class TestFileSplittingModel(unittest.TestCase):
     def test_model_training(self):
         """Check that the trainer runs and saves trained model."""
         self.fusion_model.train()
-        assert Path(self.project.model_folder + '/fusion.h5').exists()
+        assert Path(self.project.model_folder + '/fusion.pickle').exists()
 
     def test_predict_first_page(self):
         """Check if first Pages are predicted correctly."""
-        file_splitter = file_splitting.SplittingAI(self.project.model_folder + '/fusion.h5', project_id=TEST_PROJECT_ID)
+        file_splitter = file_splitting.SplittingAI(
+            self.project.model_folder + '/fusion.pickle', project_id=TEST_PROJECT_ID
+        )
         for doc in self.train_data:
             pred = file_splitter.propose_split_documents(doc)
             assert len(pred) == 1
@@ -35,7 +37,9 @@ class TestFileSplittingModel(unittest.TestCase):
     def test_split_document(self):
         """Propose splittings for a document."""
         doc = self.train_data[0]
-        splitting_ai = file_splitting.SplittingAI(self.project.model_folder + '/fusion.h5', project_id=TEST_PROJECT_ID)
+        splitting_ai = file_splitting.SplittingAI(
+            self.project.model_folder + '/fusion.pickle', project_id=TEST_PROJECT_ID
+        )
         proposed = doc.propose_splitting(splitting_ai)
         assert len(proposed) == 1
-        Path(self.project.model_folder + '/fusion.h5').unlink()
+        Path(self.project.model_folder + '/fusion.pickle').unlink()
