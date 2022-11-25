@@ -133,9 +133,8 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         :param model_path: Path to save the set to.
         :type model_path: str
         """
-        pickler = open(model_path + '/first_page_spans.pickle', "wb")
-        pickle.dump(self.first_page_spans, pickler)
-        pickler.close()
+        with open(model_path + '/first_page_spans.pickle', "wb") as pickler:
+            pickle.dump(self.first_page_spans, pickler)
 
     def predict(self, page: Page) -> int:
         """
