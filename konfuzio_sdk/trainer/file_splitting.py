@@ -106,7 +106,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         for category in self.categories:
             cur_first_page_spans = []
             cur_non_first_page_spans = []
-            for doc in category.documents:
+            for doc in category.documents():
                 doc = deepcopy(doc)
                 doc.category = category
                 doc = self.tokenizer.tokenize(deepcopy(doc))
