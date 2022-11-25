@@ -1026,7 +1026,7 @@ class TestOfflineDataSetup(unittest.TestCase):
             spans=[span],
         )
 
-        assert annotation in annotation_set.annotations
+        assert annotation in annotation_set.annotations()
 
     def test_create_document_with_page_object(self):
         """Create a Document with pages information from a Page object."""
@@ -2196,6 +2196,22 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
         al_spans = label.spans_not_found_by_tokenizer(al_tokenizer, categories=[category])
         assert len(al_spans) == 0
         assert al_tokenizer in label_span.regex_matching
+
+    def test_offline_project_creates_no_files(self):
+        """Test that an offline Project does not create any files, even if documents have IDs."""
+        virtual_project = Project(id_=None)
+        virtual_project.set_offline()
+        assert not os.path.isdir(virtual_project.project_folder)
+
+        virtual_category = Category(project=virtual_project)
+        virtual_document = Document(
+            project=virtual_project,
+            id_=999999999,
+            category=virtual_category,
+            dataset_status=2,
+            copy_of_id=999999999,
+        )
+        assert not os.path.isdir(virtual_document.document_folder)
 
 
 class TestFillOperation(unittest.TestCase):

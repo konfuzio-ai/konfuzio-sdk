@@ -27,7 +27,7 @@ LOG_FORMAT = (
 
 handlers = [logging.StreamHandler()]
 
-if config('LOG_TO_FILE', default=True):
+if config('LOG_TO_FILE', cast=bool, default=True):
     with open(LOG_FILE_PATH, "a") as f:
         if f.writable():
             handlers.append(logging.FileHandler(LOG_FILE_PATH))
