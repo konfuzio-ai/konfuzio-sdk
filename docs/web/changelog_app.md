@@ -44,11 +44,11 @@ These changes are for the tokenizers/new SDK branch.
 ### Added
 - Access Service Desk Tickets which have been created via https://konfuzio.com/support ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9923)).
 - [API v3 endpoint to bulk accept/decline annotations](https://app.konfuzio.com/v3/swagger/#/documents/documents_update_annotations_partial_update) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9726)).
-- API v3 Document endpoint can now be filtered by assignee ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10052)).
+- [API v3 Document endpoint can now be filtered by assignee](https://app.konfuzio.com/v3/swagger/#/documents/documents_list) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10052)).
 
 ### Changed
 - [Improved Swagger Documentation for API V3](https://app.konfuzio.com/v3/swagger/) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9554)).
-- Detectron is now connected via API to uncouple its Python version and dependencies from Konfuzio Server ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9355)).
+- [Detectron is now connected via API to uncouple its Python version and dependencies from Konfuzio Server](https://app.konfuzio.com/v2/swagger/#/projects/projects_docs_segmentation_retrieve) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9355)).
 
 ### Fixed
 - In a very rare case text embeddings could not be extracted from Documents ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10045)).
