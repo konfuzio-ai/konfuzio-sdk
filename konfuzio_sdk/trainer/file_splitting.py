@@ -1,5 +1,7 @@
 """Find similarities between Documents or Pages via comparison between their texts."""
 import abc
+import pickle
+
 from abc import ABC
 from copy import deepcopy
 from typing import List, Set
@@ -9,24 +11,31 @@ from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 
 
 class AbstractFileSplittingModel(metaclass=abc.ABCMeta):
-    """Abstract definition of a Tokenizer."""
+    """Abstract class for the filesplitting model."""
 
     @abc.abstractmethod
     def __init__(self, *args, **kwargs):
-        """Documentation here."""
+        """Initialize the class."""
 
     @abc.abstractmethod
     def fit(self, *args, **kwargs):
-        """Documentation here."""
+        """Fit the custom model on the training Documents."""
 
     @abc.abstractmethod
     def save(self, model_path=""):
-        """Documentation here."""
+        """
+        Save the trained model.
+
+        :param model_path: Path to save the model to.
+        :type model_path: str
+        """
 
     def calculate_metrics(self, use_training_docs: bool = False):
         """
         Calculate precision, recall, and F1 measure for the custom model.
 
+        :param use_training_docs: A flag for using training Documents for evaluation or not.
+        :type use_training_docs: bool
         :return: Calculated precision, recall, and F1 measure.
         """
         true_positive = 0
@@ -67,27 +76,88 @@ class AbstractFileSplittingModel(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def predict(self, page: Page) -> int:
-        """Take a SDK Page as input and return 1 for first page and 0 for not first page."""
+        """
+        Take a Page as an input and return 1 for first page and 0 for not first page.
+
+        :param page: A Page to label first or non-first.
+        :type page: Page
+        :return: A label of a first or a non-first Page.
+        """
 
 
-class FallbackFileSplittingModel(AbstractFileSplittingModel):
+class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
     """Fallback definition of a File Splitting Model."""
 
     def __init__(self, *args, **kwargs):
-        """Documentation here."""
-        raise NotImplementedError("Todo: define")
+        """Initialize the ContextAwareFileSplittingModel."""
+        self.train_data = None
+        self.test_data = None
+        self.categories = None
+        self.tokenizer = None
+        self.first_page_spans = None
 
-    def fit(self, *args, **kwargs):
-        """Documentation here."""
-        raise NotImplementedError("Todo: define")
+    def fit(self, *args, **kwargs) -> dict:
+        """
+        Gather the Spans unique for first Pages in a given stream of Documents.
+
+        :return: Dictionary with unique first-page Span sets by Category ID.
+        """
+        first_page_spans = {}
+        for category in self.categories:
+            cur_first_page_spans = []
+            cur_non_first_page_spans = []
+            for doc in category.documents:
+                doc = deepcopy(doc)
+                doc.category = category
+                doc = self.tokenizer.tokenize(deepcopy(doc))
+                for page in doc.pages():
+                    if page.number == 1:
+                        cur_first_page_spans.append({span.offset_string for span in page.spans()})
+                    else:
+                        cur_non_first_page_spans.append({span.offset_string for span in page.spans()})
+            if not cur_first_page_spans:
+                cur_first_page_spans.append(set())
+            true_first_page_spans = set.intersection(*cur_first_page_spans)
+            if not cur_non_first_page_spans:
+                cur_non_first_page_spans.append(set())
+            true_not_first_page_spans = set.intersection(*cur_non_first_page_spans)
+            true_first_page_spans = true_first_page_spans - true_not_first_page_spans
+            first_page_spans[category.id_] = true_first_page_spans
+        self.first_page_spans = first_page_spans
+        return first_page_spans
 
     def save(self, model_path=""):
-        """Documentation here."""
-        raise NotImplementedError("Todo: define")
+        """
+        Save the resulting set of first-page Spans by Category.
+
+        :param model_path: Path to save the set to.
+        :type model_path: str
+        """
+        pickler = open(model_path + '/first_page_spans.pickle', "wb")
+        pickle.dump(self.first_page_spans, pickler)
+        pickler.close()
 
     def predict(self, page: Page) -> int:
-        """Take a SDK Page as input and return 1 for first page and 0 for not first page."""
-        raise NotImplementedError("Todo: define")
+        """
+        Take a Page as an input and return 1 for a first Page and 0 for a non-first Page.
+
+        :param page: A Page to receive first or non-first label.
+        :type page: Page:
+        :return: A label of a first or a non-first Page.
+        """
+        intersection_lengths = {}
+        for category in self.categories:
+            intersection = len(
+                {span.offset_string for span in page.spans()}.intersection(self.first_page_spans[category.id_])
+            )
+            if intersection > 0:
+                intersection_lengths[category.id_] = len(
+                    {span.offset_string for span in page.spans()}.intersection(self.first_page_spans[category.id_])
+                )
+        if len(intersection_lengths) > 0:
+            return 1
+        else:
+            return 0
 
 
 def find_common_spans_document(documents, category, tokenizer) -> Set:
@@ -211,7 +281,7 @@ class SplittingAI(BaseCommonFeatureSearcher):
     def _suggest_page_split(self, document: Document, first_page_spans: Set) -> List[Document]:
         suggested_splits = []
         for page in document.pages():
-            if len({span.offset_string for span in page.spans()}.intersection(first_page_spans)) > 1:
+            if len({span.offset_string for span in page.spans()}.intersection(first_page_spans)) > 0:
                 suggested_splits.append(page)
         split_docs = []
         first_page = document.pages()[0]
