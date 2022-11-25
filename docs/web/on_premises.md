@@ -1,5 +1,5 @@
 .. meta::
-   :description: Documentation on how to deploy Konfuzio on premises using Kubernetes and Helm.
+   :description: Documentation on how to deploy Konfuzio on premises using Kubernetes and Helm or Docker.
 
 .. _Server Installation:
 
@@ -187,6 +187,10 @@ Please create a my_values.yaml file for your Konfuzio configuration. Useful defa
 The status of the deployment can be checked by running `helm status konfuzio` which
 can also be done while the deployment is taking place if you run the command in
 another terminal.
+
+#### Autoscaling
+
+The deployment of the worker pods can be scaled dynamically using Horizontal Pod Autoscaler and Cluster Autoscaler. This functionality is not included in the Chart and is not supported by us. A proof of concept setup is illustrated [here](https://git.konfuzio.com/shared/monitoring-charts).
 
 #### Initial login
 
