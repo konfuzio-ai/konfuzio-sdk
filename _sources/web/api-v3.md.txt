@@ -298,6 +298,14 @@ For information about file size and page limits, refer to the Content Limits, i
 
 Note that some of these image formats are "lossy" (for example, JPEG). Reducing file sizes for lossy formats may result in a degradation of image quality and accuracy of results from Konfuzio.
 
+##### File extension handling & correction
+
+It is possible to upload files with no (unknown or corrupted) file extension to Konfuzio (e.g. instead of 
+file:`example.pdf`, file: `example.p`, `example`, or even`example.example.example` was uploaded) when this happens, 
+internally  correction logic is run in order to try and guess the correct extension before saving and or extracting 
+the file/document. This correction attempts to guess all supported file types, but success cannot be guaranteed. The 
+maximum file extension for this correction to work should not exceed 99 characters. 
+
 #### PDFs
 
 Konfuzio supports PDF/A-1a, PDF/A-1b, PDF/A-2a, PDF/A-2b, PDF/A-3a, PDF/A-3b, PDF/X-1a, PDF/1.7, PDF/2.0. An attempt

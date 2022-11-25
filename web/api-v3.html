@@ -532,6 +532,11 @@ on-premise installation).</p>
 </tbody>
 </table>
 <p>Note that some of these image formats are “lossy” (for example, JPEG). Reducing file sizes for lossy formats may result in a degradation of image quality and accuracy of results from Konfuzio.</p>
+<p>It is possible to upload files with no (unknown or corrupted) file extension to Konfuzio (e.g. instead of
+file:<code class="docutils literal notranslate"><span class="pre">example.pdf</span></code>, file: <code class="docutils literal notranslate"><span class="pre">example.p</span></code>, <code class="docutils literal notranslate"><span class="pre">example</span></code>, or even<code class="docutils literal notranslate"><span class="pre">example.example.example</span></code> was uploaded) when this happens,
+internally  correction logic is run in order to try and guess the correct extension before saving and or extracting
+the file/document. This correction attempts to guess all supported file types, but success cannot be guaranteed. The
+maximum file extension for this correction to work should not exceed 99 characters.</p>
 <section id="pdfs">
 <h4><a class="toc-backref" href="#id26">PDFs</a><a class="headerlink" href="#pdfs" title="Permalink to this headline">¶</a></h4>
 <p>Konfuzio supports PDF/A-1a, PDF/A-1b, PDF/A-2a, PDF/A-2b, PDF/A-3a, PDF/A-3b, PDF/X-1a, PDF/1.7, PDF/2.0. An attempt
