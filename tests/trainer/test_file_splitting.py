@@ -6,7 +6,7 @@ from copy import deepcopy
 
 from konfuzio_sdk.data import Project
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
-from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel
+from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI
 from tests.variables import TEST_PROJECT_ID
 
 
@@ -27,6 +27,9 @@ class TestFileSplittingModel(unittest.TestCase):
         ]
         cls.file_splitting_model.tokenizer = ConnectedTextTokenizer()
         cls.file_splitting_model.first_page_spans = None
+        cls.test_document = cls.file_splitting_model.tokenizer.tokenize(
+            deepcopy(cls.project.get_document_by_id(399140))
+        )
 
     def test_fit_context_aware_splitting_model(self):
         """Test pseudotraining of the context-aware splitting model."""
@@ -53,21 +56,13 @@ class TestFileSplittingModel(unittest.TestCase):
 
     def test_predict_context_aware_splitting_model(self):
         """Test correct first Page prediction."""
-        test_document = self.project.get_document_by_id(399140)
-        test_document = deepcopy(test_document)
-        test_document = self.file_splitting_model.tokenizer.tokenize(test_document)
-        for page in test_document.pages():
+        for page in self.test_document.pages():
             pred = self.file_splitting_model.predict(page)
             assert pred == 1
 
     def test_split_document_splitting_ai(self):
         """Test the SplittingAI."""
-        pass
-
-    # def test_split_document_model(self):
-    #     """Propose splittings for a document using the model."""
-    #     doc = self.train_data[0]
-    #     splitting_ai = file_splitting.SplittingAI(project_id=46, category_id=63)
-    #     first_page_spans = splitting_ai.train()
-    #     proposed = doc.propose_splitting(splitting_ai, first_page_spans)
-    #     assert len(proposed) == 1
+        splitting_ai = SplittingAI(project_id=self.project.id_)
+        suggested_splits = splitting_ai.propose_split_documents(self.test_document)
+        assert len(suggested_splits) == 6
+        pathlib.Path(self.project.model_folder + '/first_page_spans.pickle').unlink()
