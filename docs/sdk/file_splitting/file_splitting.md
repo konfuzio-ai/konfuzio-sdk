@@ -32,6 +32,9 @@ not in different languages, no occurrences of other Categories).
 
 ### Step-by-step explanation
 
+In this section, we'll go through steps imitating initialization of `ContextAwareFileSplittingModel` class which you can 
+find in the full code block in the lower part of this page. 
+
 Let's start with making all the necessary imports and initializing our Project:
 ```python
 from konfuzio_sdk.data import Project
@@ -179,4 +182,81 @@ for page in test_document.pages():
 for page in test_document.pages():
     print({span.offset_string for span in page.spans()}.intersection(true_first_page_spans))
     print(len({span.offset_string for span in page.spans()}.intersection(true_first_page_spans)))
+
+    
+    
+# an existent class implementaton
+
+from konfuzio_sdk.trainer.file_splitting import AbstractFileSplittingModel
+
+class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
+    """Fallback definition of a File Splitting Model."""
+
+    def __init__(self, *args, **kwargs):
+        """Initialize the ContextAwareFileSplittingModel."""
+        self.train_data = None 
+        self.test_data = None
+        self.categories = None
+        self.tokenizer = None
+        self.first_page_spans = None
+
+    def fit(self, *args, **kwargs) -> dict:
+        """
+        Gather the Spans unique for first Pages in a given stream of Documents.
+        :return: Dictionary with unique first-page Span sets by Category ID.
+        """
+        first_page_spans = {}
+        for category in self.categories:
+            cur_first_page_spans = []
+            cur_non_first_page_spans = []
+            for doc in category.documents():
+                doc = deepcopy(doc)
+                doc.category = category
+                doc = self.tokenizer.tokenize(deepcopy(doc))
+                for page in doc.pages():
+                    if page.number == 1:
+                        cur_first_page_spans.append({span.offset_string for span in page.spans()})
+                    else:
+                        cur_non_first_page_spans.append({span.offset_string for span in page.spans()})
+            if not cur_first_page_spans:
+                cur_first_page_spans.append(set())
+            true_first_page_spans = set.intersection(*cur_first_page_spans)
+            if not cur_non_first_page_spans:
+                cur_non_first_page_spans.append(set())
+            true_not_first_page_spans = set.intersection(*cur_non_first_page_spans)
+            true_first_page_spans = true_first_page_spans - true_not_first_page_spans
+            first_page_spans[category.id_] = true_first_page_spans
+        self.first_page_spans = first_page_spans
+        return first_page_spans
+
+    def save(self, model_path=""):
+        """
+        Save the resulting set of first-page Spans by Category.
+        :param model_path: Path to save the set to.
+        :type model_path: str
+        """
+        with open(model_path + '/first_page_spans.pickle', "wb") as pickler:
+            pickle.dump(self.first_page_spans, pickler)
+
+    def predict(self, page: Page) -> int:
+        """
+        Take a Page as an input and return 1 for a first Page and 0 for a non-first Page.
+        :param page: A Page to receive first or non-first label.
+        :type page: Page:
+        :return: A label of a first or a non-first Page.
+        """
+        intersection_lengths = {}
+        for category in self.categories:
+            intersection = len(
+                {span.offset_string for span in page.spans()}.intersection(self.first_page_spans[category.id_])
+            )
+            if intersection > 0:
+                intersection_lengths[category.id_] = len(
+                    {span.offset_string for span in page.spans()}.intersection(self.first_page_spans[category.id_])
+                )
+        if len(intersection_lengths) > 0:
+            return 1
+        else:
+            return 0
+
 ```
