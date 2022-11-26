@@ -286,8 +286,6 @@ class SplittingAI:
 
         :param document: An input Document to be split.
         :type document: Document
-        :param first_page_spans: A set of Spans unique for the first Pages in the training data.
-        :type first_page_spans: set
         :return: A list of suggested new sub-Documents built from the original Document.
         """
         split_docs = self._suggest_page_split(document)
