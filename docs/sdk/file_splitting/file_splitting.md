@@ -5,6 +5,9 @@
 Not all multipage files that we process are always neatly scanned and organized. Sometimes we can have more than one actual 
 Document in a stream pf pages; such files need to be properly processed and split into several independent Documents. 
 
+![multi-file Document example](https://miro.medium.com/max/4800/1*P6BghoNH9LglgNV3SiDTVg.webp)
+_Multi-file Document Example_ by [Qaisar Tanvir](https://medium.com/@qaisartanvir)
+
 In this post, we will look at a simple way to implement an algorithm for searching common features between 
 Documents/Pages which can be used for splitting a multi-file Document into the sub-Documents. Our approach is based on 
 an assumption that we can go through all Pages of the Document and define splitting points. By splitting points, we mean 
