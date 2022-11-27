@@ -10,6 +10,8 @@ Code Examples
 
 .. mdinclude:: document_categorization.md
 
+.. mdinclude:: file_splitting/file_splitting.md
+
 Train a Konfuzio SDK Model to Extract Information From Payslip Documents
 -----------------------------------------------------------
 
