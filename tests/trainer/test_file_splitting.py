@@ -2,8 +2,6 @@
 import pathlib
 import unittest
 
-from copy import deepcopy
-
 from konfuzio_sdk.data import Project
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI
@@ -27,9 +25,7 @@ class TestFileSplittingModel(unittest.TestCase):
         ]
         cls.file_splitting_model.tokenizer = ConnectedTextTokenizer()
         cls.file_splitting_model.first_page_spans = None
-        cls.test_document = cls.file_splitting_model.tokenizer.tokenize(
-            deepcopy(cls.project.get_document_by_id(399140))
-        )
+        cls.test_document = cls.project.get_document_by_id(399140)
 
     def test_fit_context_aware_splitting_model(self):
         """Test pseudotraining of the context-aware splitting model."""

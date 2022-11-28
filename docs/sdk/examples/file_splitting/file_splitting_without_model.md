@@ -6,8 +6,6 @@ that requires no training.
 
 
 ```python
-from copy import deepcopy
-
 from konfuzio_sdk.data import Project
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI
@@ -40,7 +38,7 @@ splitting_ai = SplittingAI(project_id=project.id_)
 # process the test Document because it needs to be tokenized by the same Tokenizer as the Documents used by 
 # ContextAwareFileSplittingModel for gathering Spans unique for the first Pages. deepcopy is used to remove all previous
 # Annotations.
-test_document = file_splitting_model.tokenizer.tokenize(deepcopy(test_document))
+test_document = file_splitting_model.tokenizer.tokenize(test_document)
 
 # propose a list of sub-Documents. If a test Document consists of a single file, return will consist of a list with the 
 # same Document.

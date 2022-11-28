@@ -4,7 +4,7 @@ import pathlib
 import pickle
 
 from copy import deepcopy
-from typing import List, Set
+from typing import List
 
 from konfuzio_sdk.data import Document, Page, Project
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
@@ -159,62 +159,6 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
             return 0
 
 
-def find_common_spans_document(documents, category, tokenizer) -> Set:
-    """
-    Gather the Spans common for a group of Documents.
-
-    :param documents: A group of Documents to search unique features of.
-    :type documents: list
-    :param category: A Category for which the search is done.
-    :type category: Category
-    :param tokenizer: A tokenizer to split Documents into Spans.
-    :return: A set of Spans typical for this Category.
-    """
-    span_sets = []
-    for doc in documents:
-        doc = deepcopy(doc)
-        doc.category = category
-        doc = tokenizer.tokenize(doc)
-        span_sets.append({span.offset_string for span in doc.spans()})
-    common_spans = set.intersection(*span_sets)
-    return common_spans
-
-
-def find_unique_spans_page(documents, category, tokenizer, **kwargs) -> Set:
-    # the name for the function can be rethinked
-    """
-    Gather the Spans unique in a defined way for a stream of Pages.
-
-    :param documents: A group of Documents in Pages of which to search for the common Spans.
-    :type documents: list
-    :param category: A Category for which the search is done.
-    :type category: Category
-    :param tokenizer: A tokenizer to split Documents into Spans.
-    :return: A set of unique Spans.
-    """
-    # we can define possible modes of usage and suggest using them for suitable occurences
-    if kwargs['mode'] == 'file_splitting':
-        first_page_spans = []
-        not_first_page_spans = []
-        for doc in documents:
-            doc = deepcopy(doc)
-            doc.category = category
-            doc = tokenizer.tokenize(deepcopy(doc))
-            for page in doc.pages():
-                if page.number == 1:
-                    first_page_spans.append({span.offset_string for span in page.spans()})
-                else:
-                    not_first_page_spans.append({span.offset_string for span in page.spans()})
-        if not first_page_spans:
-            first_page_spans.append(set())
-        true_first_page_spans = set.intersection(*first_page_spans)
-        if not not_first_page_spans:
-            not_first_page_spans.append(set())
-        true_not_first_page_spans = set.intersection(*not_first_page_spans)
-        true_first_page_spans = true_first_page_spans - true_not_first_page_spans
-    return true_first_page_spans
-
-
 class SplittingAI:
     """Split a given Document and return a list of resulting shorter Documents."""
 
@@ -263,6 +207,7 @@ class SplittingAI:
 
     def _suggest_page_split(self, document: Document) -> List[Document]:
         suggested_splits = []
+        document = self.context_aware_file_splitting_model.tokenizer.tokenize(deepcopy(document))
         for page in document.pages():
             if self.context_aware_file_splitting_model.predict(page) == 1:
                 suggested_splits.append(page)
