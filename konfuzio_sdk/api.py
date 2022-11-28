@@ -321,7 +321,7 @@ def post_document_annotation(
 
     r = session.post(url, json=data)
     if r.status_code != 201:
-        logger.error(f"Response status code is {r.status_code}. Should be 201.")
+        logger.error(f"Received response status code {r.status_code}.")
     assert r.status_code == 201
     return r
 
