@@ -1,5 +1,5 @@
 .. meta::
-   :description: Documentation on how to deploy Konfuzio on premises using Kubernetes and Helm.
+   :description: Documentation on how to deploy Konfuzio on premises using Kubernetes and Helm or Docker.
 
 .. _Server Installation:
 
@@ -7,7 +7,7 @@
 
 On-premises, also known as self-hosted, is a setup that allows Konfuzio to be implemented 100% on your own infrastructure. In practice, it means that you know where your data is stored, how it's handled and who gets hold of it. This is because you keep the data on your own servers.
 
-A common way to operate a production-ready and scalabe Konfuzio installation is via Kubernetes. An alternative and more light-weight deployment option is the [Single VM setup via Docker](/web/on_premises.html#alternative-deployment-options). We recommend to use the option which is more familiar to you.
+A common way to operate a production-ready and scalabe Konfuzio installation is via Kuberneteens. An alternative and more light-weight deployment option is the [Single VM setup via Docker](/web/on_premises.html#alternative-deployment-options). We recommend to use the option which is more familiar to you.
 
 On-Premise Konfuzio installations allow to create Superuser accounts which can access all [Documents](https://help.konfuzio.com/modules/superuserdocuments/index.html), [Projects](https://help.konfuzio.com/modules/superuserprojects/index.html) and [AIs](https://help.konfuzio.com/modules/superuserais/index.html) via a dedicated view as well as creating custom [Roles](https://help.konfuzio.com/modules/superuserroles/index.html)
 
@@ -187,6 +187,10 @@ Please create a my_values.yaml file for your Konfuzio configuration. Useful defa
 The status of the deployment can be checked by running `helm status konfuzio` which
 can also be done while the deployment is taking place if you run the command in
 another terminal.
+
+#### Autoscaling
+
+The Konfuzio Server deployments can be scaled dynamically using a [Horizontal Pod Autoscaler](https://kubernetes.io/de/docs/tasks/run-application/horizontal-pod-autoscale/) and a [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler). The autoscaling configuration for the Konfuzio Server installation of https://app.konfuzio.com can be found in this [Helm Chart](https://git.konfuzio.com/shared/monitoring-charts).
 
 #### Initial login
 
@@ -722,6 +726,12 @@ TRAINING_EXTRACTION_TIME_LIMIT =
 TRAINING_CATEGORIZATION_TIME_LIMIT = 
 SANDWICH_PDF_TIME_LIMIT = 
 DOCUMENT_TEXT_AND_BBOXES_TIME_LIMIT = 
+# Default time limits for period background tasks (optional)
+# https://help.konfuzio.com/modules/projects/index.html?#auto-deletion-of-documents
+# Both are set to 3600, the max amount of time the task may take. 
+# If a huge amount of documents have been deleted, this may need to be increased. 
+CLEAN_DELETED_DOCUMENT_TIME_LIMIT = 
+CLEAN_DOCUMENT_WITHOUT_DATASET_TIME_LIMIT =
 ```
 
 ### Environment Variables for Read API Container

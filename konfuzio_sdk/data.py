@@ -349,6 +349,7 @@ class AnnotationSet(Data):
         self.label_set: LabelSet = label_set
         self.document: Document = document  # we don't add it to the Document as it's added via get_annotations
         self._force_offline = document._force_offline
+        self._annotations = []
         document.add_annotation_set(self)
 
     def __repr__(self):
@@ -360,19 +361,24 @@ class AnnotationSet(Data):
         self.label_set = None
         self.document = None
 
-    @property
-    def annotations(self):
+    def annotations(self, use_correct: bool = True, ignore_below_threshold: bool = False):
         """All Annotations currently in this Annotation Set."""
-        related_annotation = []
-        for annotation in self.document.annotations():
-            if annotation.annotation_set == self:
-                related_annotation.append(annotation)
-        return related_annotation
+        if not self._annotations:
+            for annotation in self.document.annotations(use_correct=False, ignore_below_threshold=False):
+                if annotation.annotation_set == self:
+                    self._annotations.append(annotation)
+
+        annotations: List[Annotation] = []
+        if use_correct:
+            annotations = [ann for ann in self._annotations if ann.is_correct]
+        elif ignore_below_threshold:
+            annotations = [ann for ann in self._annotations if ann.is_correct or ann.confidence > ann.label.threshold]
+        return annotations
 
     @property
     def start_offset(self):
         """Calculate the earliest start based on all Annotations currently in this Annotation Set."""
-        return min((s.start_offset for a in self.annotations for s in a.spans), default=None)
+        return min((s.start_offset for a in self.annotations() for s in a.spans), default=None)
 
     @property
     def start_line_index(self):
@@ -382,7 +388,7 @@ class AnnotationSet(Data):
     @property
     def end_offset(self):
         """Calculate the end based on all Annotations currently in this Annotation Set."""
-        return max((a.end_offset for a in self.annotations), default=None)
+        return max((a.end_offset for a in self.annotations()), default=None)
 
 
 class LabelSet(Data):
@@ -1048,7 +1054,9 @@ class Span(Data):
             document = self.annotation.document
             characters = {key: document.bboxes.get(key) for key in character_range if document.text[key] != ' '}
             if not all(characters.values()):
-                logger.error(f'{self} contains Chractacters that don\'t provide a Bounding Box.')
+                logger.error(
+                    f'{self} in {self.annotation.document} contains Characters that don\'t provide a Bounding Box.'
+                )
             self._bbox = Bbox(
                 x0=min([ch.x0 for c, ch in characters.items() if ch is not None]),
                 x1=max([ch.x1 for c, ch in characters.items() if ch is not None]),
@@ -1667,7 +1675,7 @@ class Document(Data):
         self._n_pages = None
 
         # prepare local setup for document
-        if self.id_:
+        if self.is_online:
             pathlib.Path(self.document_folder).mkdir(parents=True, exist_ok=True)
         self.annotation_file_path = os.path.join(self.document_folder, "annotations.json5")
         self.annotation_set_file_path = os.path.join(self.document_folder, "annotation_sets.json5")
@@ -1682,7 +1690,10 @@ class Document(Data):
 
     def __repr__(self):
         """Return the name of the Document incl. the ID."""
-        return f"Document {self.name} ({self.id_})"
+        if self.copy_of_id:
+            return f"Document {self.name} ({self.copy_of_id})"
+        else:
+            return f"Document {self.name} ({self.id_})"
 
     @property
     def file_path(self):
