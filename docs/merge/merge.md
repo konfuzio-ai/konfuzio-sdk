@@ -37,3 +37,30 @@ Label Type: <span style="background-color: #86c5da">Number</span><br>
 Label Type: <span style="background-color: #34df00">Date</span><br>
 Label Type: <span style="background-color: #ff8c00">Percentage</span><br>
 Label Type: <span style="background-color: #dcdcdc">NO LABEL/Below Label threshold</span>
+
+
+## Vertical Merge
+
+When using an [Extraction AI](https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai), we join adjacent vertical Spans into a single Annotation after the LabelSet classifier. 
+
+A vertical merging is valid only if:
+
+1. They are on the same Page
+2. They are predicted to have the same Label
+3. Multiline annotations with this Label exist in the training set
+4. Consecutive vertical Spans either overlap in the x-axis, OR the preceding Span is at the end of the line, and following Span is at the beginning of the next
+5. Confidence of predicted Label is above the Label threshold
+6. Spans are on consecutive lines
+7. Merged lower Span belongs to an Annotation in the default LabelSet, OR to an AnnotationSet with only a single Annotation
+
+|          Input          | Able to merge? | Reason | Result |
+|:-----------------------:|:-----------:| :-----------: | :-----------: |
+|  <span style="background-color: #ff726f">Text</span><br><span style="background-color: #ff726f">Annotation</span> |      yes     |    /    | 
+|  <span style="background-color: #ff726f">Annotation</span><br><span style="background-color: #86c5da">42</span> |      no     |    2.    |
+|  <span style="background-color: #ff726f">Text</span><span>&nbsp;</span><span style="background-color: #dcdcdc">more text</span><br><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="background-color: #ff726f">Annotation</span> |     no     |    4.    | 
+| <span style="background-color: #dcdcdc">Some random text</span><span>&nbsp;</span><span style="background-color: #ff726f">Text</span><br><span style="background-color: #ff726f">Annotation</span> |      yes     |    /    |
+|  <span style="background-color: #ff726f">Text</span><span>&nbsp;</span><span style="background-color: #dcdcdc">more text</span><br><span>&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="background-color: #ff726f">Annotation</span><br><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="background-color: #ff726f">42</span> |     yes     |    /    |
+
+<span style="background-color: #ff726f">Label 1</span><br>
+<span style="background-color: #86c5da">Label 2</span><br>
+<span style="background-color: #dcdcdc">NO LABEL/Below Label threshold</span>
