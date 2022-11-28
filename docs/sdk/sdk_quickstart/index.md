@@ -6,8 +6,8 @@
 Get to know all major Data Layer concepts of the SDK before you begin working with it. The relations between them are 
 the following: a [Project](#Project) consists of multiple [Documents](#Document). Each one of the Documents consists of 
 the [Pages](#Page) and belongs to a certain [Category](#Category). Text of the Documents consists of [Spans](#Span) and
-can be marked by [Annotations](#Annotation) from some [Annotation Set](#Annotation Set). Each Annotation is located in 
-a certain [Bbox](#Bbox) and is defined by a [Label](#Label) that is a part of one of the [Label Sets](#Label Set). 
+can be marked by [Annotations](#Annotation) from some [Annotation Set](#Annotation%20Set). Each Annotation is located in 
+a certain [Bbox](#Bbox) and is defined by a [Label](#Label) that is a part of one of the [Label Sets](#Label%20Set). 
 
 For more detailed information on each concept, follow the link on the concept's name which leads to the automatically 
 generated documentation.
