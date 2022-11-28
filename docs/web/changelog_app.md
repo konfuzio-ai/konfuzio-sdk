@@ -49,6 +49,7 @@ These changes are for the tokenizers/new SDK branch.
 
 ### Changed
 - [Improved Swagger Documentation for API V3](https://app.konfuzio.com/v3/swagger/) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9554)).
+- [In the Label endpoint of API V3, rename "categories" to "label_sets"](https://testing.konfuzio.com/v3/swagger/#/labels) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9972)).
 - [Detectron is now connected via API to uncouple its Python version and dependencies from Konfuzio Server](https://app.konfuzio.com/v2/swagger/#/projects/projects_docs_segmentation_retrieve) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9355)).
 
 ### Fixed
