@@ -726,6 +726,18 @@ TRAINING_EXTRACTION_TIME_LIMIT =
 TRAINING_CATEGORIZATION_TIME_LIMIT = 
 SANDWICH_PDF_TIME_LIMIT = 
 DOCUMENT_TEXT_AND_BBOXES_TIME_LIMIT = 
+
+
+# Default time limits for period background tasks (optional)
+
+# https://help.konfuzio.com/modules/projects/index.html?#auto-deletion-of-documents
+
+CLEAN_DELETED_DOCUMENT_TIME_LIMIT = 
+CLEAN_DOCUMENT_WITHOUT_DATASET_TIME_LIMIT =
+
+# Both are set to 3600, the max amount of time the task may take. 
+# If a huge amount of documents have been deleted, this may need to be increased. 
+
 ```
 
 ### Environment Variables for Read API Container
