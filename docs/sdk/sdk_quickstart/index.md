@@ -1,8 +1,6 @@
 .. meta::
 :description: Get to know the main concepts of the SDK before you start working.
 
-.. Quickstart:
-
 ## Quickstart 
 
 Get to know all major Data Layer concepts of the SDK before you begin working with it. The relations between them are 
