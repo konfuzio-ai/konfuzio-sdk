@@ -39,22 +39,24 @@ These changes are for the tokenizers/new SDK branch.
 - A bug during the extraction post-processing steps, which was causing the first line items of each page to be skipped ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9561))
 -->
 
-## Next Release
+## Next Release (estimated release date: 5th December 2022)
 
 ### Added
 - Access Service Desk Tickets which have been created via https://konfuzio.com/support ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9923)).
 - [API v3 endpoint to bulk accept/decline annotations](https://app.konfuzio.com/v3/swagger/#/documents/documents_update_annotations_partial_update) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9726)).
-- API v3 Document endpoint can now be filtered by assignee ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10052)).
+- [API v3 Document endpoint can now be filtered by assignee](https://app.konfuzio.com/v3/swagger/#/documents/documents_list) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10052)).
+- Allow to configure a custom timeout for Document deletion Tasks in self-hosted environemnts. ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10044))
 
 ### Changed
 - [Improved Swagger Documentation for API V3](https://app.konfuzio.com/v3/swagger/) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9554)).
-- Detectron is now connected via API to uncouple its Python version and dependencies from Konfuzio Server ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9355)).
+- [Detectron is now connected via API to uncouple its Python version and dependencies from Konfuzio Server](https://app.konfuzio.com/v2/swagger/#/projects/projects_docs_segmentation_retrieve) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9355)).
 
 ### Fixed
 - In a very rare case text embeddings could not be extracted from Documents ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10045)).
 - The error handling for invalid PDF Documents ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9984)).
 - The notification email template for AI trainings was not considering errors in the training process ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9937)).
 - callback_url is now called if re-extraction is triggered on a Document (for example, when the Category changes) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9901)).
+- Fix an issue that prevented the full deletion of on line of text in multiline Annotations ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10049)).
 
 ## released-2022-11-16_12-13-49
 

@@ -190,7 +190,7 @@ another terminal.
 
 #### Autoscaling
 
-The deployment of the worker pods can be scaled dynamically using Horizontal Pod Autoscaler and Cluster Autoscaler. This functionality is not included in the Chart and is not supported by us. A proof of concept setup is illustrated [here](https://git.konfuzio.com/shared/monitoring-charts).
+The Konfuzio Server deployments can be scaled dynamically using a [Horizontal Pod Autoscaler](https://kubernetes.io/de/docs/tasks/run-application/horizontal-pod-autoscale/) and a [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler). The autoscaling configuration for the Konfuzio Server installation of https://app.konfuzio.com can be found in this [Helm Chart](https://git.konfuzio.com/shared/monitoring-charts).
 
 #### Initial login
 
