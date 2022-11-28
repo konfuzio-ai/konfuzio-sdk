@@ -38,7 +38,12 @@ from sklearn.utils.validation import check_is_fitted
 from tabulate import tabulate
 
 from konfuzio_sdk.data import Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span
-from konfuzio_sdk.normalize import normalize_to_float, normalize_to_date, normalize_to_percentage
+from konfuzio_sdk.normalize import (
+    normalize_to_float,
+    normalize_to_date,
+    normalize_to_percentage,
+    normalize_to_positive_float,
+)
 from konfuzio_sdk.regex import regex_matches
 from konfuzio_sdk.utils import get_timestamp, get_bbox
 from konfuzio_sdk.evaluate import Evaluation
@@ -149,144 +154,6 @@ def get_bboxes_by_coordinates(doc_bbox: Dict, selection_bboxes: List[Dict]) -> L
     return final_bboxes
 
 
-def flush_buffer(buffer: List[pandas.Series], doc_text: str, merge_vertical=False) -> Dict:
-    """
-    Merge a buffer of entities into a dictionary (which will eventually be turned into a DataFrame).
-
-    A buffer is a list of pandas.Series objects.
-    """
-    assert 'label_name' in buffer[0]
-    if 'label_name' in buffer[0]:
-        label = buffer[0]['label_name']
-
-    # considering multiline case
-    if merge_vertical:
-        starts = []
-        ends = []
-        text = ""
-        n_buf = len(buffer)
-        for ind, buf in enumerate(buffer):
-            starts.append(buf['start_offset'])
-            ends.append(buf['end_offset'])
-            text += doc_text[buf['start_offset'] : buf['end_offset']]
-            if ind < n_buf - 1:
-                text += '\n'
-    else:
-        starts = buffer[0]['start_offset']
-        ends = buffer[-1]['end_offset']
-        text = doc_text[starts:ends]
-
-    res_dict = dict()
-    res_dict['start_offset'] = starts
-    res_dict['end_offset'] = ends
-    res_dict['label_name'] = label
-    res_dict['offset_string'] = text
-    # res_dict['Translated_Candidate'] = res_dict['Candidate']
-    # res_dict['Translation'] = None
-    res_dict['confidence'] = numpy.mean([b['confidence'] for b in buffer])  # if b['confidence'] > 0.1])
-    res_dict['x0'] = min([b['x0'] for b in buffer])
-    res_dict['x1'] = max([b['x1'] for b in buffer])
-    res_dict['y0'] = min([b['y0'] for b in buffer])
-    res_dict['y1'] = max([b['y1'] for b in buffer])
-    return res_dict
-
-
-def is_valid_merge(
-    row: pandas.Series,
-    buffer: List[pandas.Series],
-    doc_text: str,
-    label_types: Dict[str, str],
-    doc_bbox: Union[None, Dict] = None,
-    offsets_per_page: Union[None, Dict] = None,
-    merge_vertical: bool = False,
-    max_offset_distance: int = 5,
-) -> bool:
-    """
-    Verify if the merging that we are trying to do is valid.
-
-    If merging certain labels we only merge them if their merge keeps them a valid data type.
-
-    For example if two dates are next to each other in text then we only want to merge them if the result of the merge
-    is still a valid date.
-
-    If merging vertically we only check the vertical merging condition. Everything else is skipped.
-
-    :param row: Row candidate to be merged to what is already in the buffer.
-    :param buffer: Previous information.
-    :param doc_text: Text of the document.
-    :param label_types: Types of the entities.
-    :param doc_bbox: Bboxes of the characters in the document.
-    :param offsets_per_page: Start and end offset of each page in the document.
-    :param merge_vertical: Option to verify the vertical merge of the entities.
-    :param threshold: Confidence threshold for the candidate to be merged.
-    :param max_offset_distance: Maximum distance between two entities that can be merged.
-    :return: If the merge is valid or not.
-    """
-    # Vertical case
-    if merge_vertical:
-        return is_valid_merge_vertical(row=row, buffer=buffer, doc_bbox=doc_bbox, offsets_per_page=offsets_per_page)
-
-    # Horizontal case
-    # only merge if candidate is above accuracy threshold for merging
-    # if threshold is None:
-    #     threshold = 0.1
-
-    if row['confidence'] < row['label_threshold']:
-        return False
-    # only merge if all are the same data type
-    if len(set(label_types)) > 1:
-        return False
-
-    if doc_bbox is not None:
-        # only merge if there are no characters in between (or only maximum of 5 whitespaces)
-        char_bboxes = [
-            doc_bbox[str(char_bbox_id)]
-            for char_bbox_id in range(buffer[-1]['end_offset'], row['start_offset'])
-            if str(char_bbox_id) in doc_bbox
-        ]
-
-        char_text = [chat_bbox['text'] for chat_bbox in char_bboxes]
-        # Do not merge if there are characters between
-        if not all([c == '' or c == ' ' for c in char_text]):
-            return False
-
-        # Do not merge if there are more than the maximum offset distance
-        if len(char_text) > max_offset_distance:
-            return False
-
-    # Do not merge if the difference in the offsets is bigger than the maximum offset distance
-    if row['start_offset'] - buffer[-1]['end_offset'] > max_offset_distance:
-        return False
-
-    # only merge if text is on same line
-    # row can include entity that is already part of the buffer (buffer: Ankerkette Meterware, row: Ankerkette)
-    if (
-        '\n'
-        in doc_text[
-            min(buffer[0]['start_offset'], row['start_offset']) : max(buffer[-1]['end_offset'], row['end_offset'])
-        ]
-    ):
-        return False
-    # always merge if not one of these data types
-    # never merge numbers or positive numbers
-    if label_types[0] not in {'Number', 'Positive Number', 'Percentage', 'Date'}:
-        return True
-    # only merge percentages if the result of the merge is still a percentage
-    if label_types[0] == 'Percentage':
-        text = doc_text[buffer[0]['start_offset'] : row['end_offset']]
-        merge = normalize_to_percentage(text)
-        return merge is not None
-    # only merge date if the result of the merge is still a date
-    if label_types[0] == 'Date':
-        text = doc_text[buffer[0]['start_offset'] : row['end_offset']]
-        merge = normalize_to_date(text)
-        return merge is not None
-    # should only get here if we have a single data type that is either Number or Positive Number,
-    # which we do not merge
-    else:
-        return False
-
-
 def is_valid_merge_vertical(
     row: pandas.Series, buffer: List[pandas.Series], doc_bbox: Dict, offsets_per_page: Dict
 ) -> bool:
@@ -375,195 +242,6 @@ def is_valid_merge_vertical(
     no_diffs = len(diff) == 0
 
     return no_diffs
-
-
-def merge_df(
-    df: pandas.DataFrame,
-    doc_text: str,
-    # label_type_dict: Dict,
-    doc_bbox: Union[Dict, None] = None,
-    merge_vertical: bool = False,
-) -> pandas.DataFrame:
-    """
-    Merge a DataFrame of entities with matching predicted sections/labels.
-
-    Merge is performed between entities which are only separated by a space.
-    Stores entities to be merged in the `buffer` and then creates a dict from those entities by calling `flush_buffer`.
-    All of the dicts created by `flush_buffer` are then converted into a DataFrame and then returned.
-    """
-    res_dicts = []
-    buffer = []
-    end = None
-
-    offsets_per_page = None
-    if merge_vertical:
-        assert doc_bbox is not None
-        if df.empty:
-            return pandas.DataFrame(res_dicts)
-        df.sort_values(by=['y0'])
-        offsets_per_page = get_offsets_per_page(doc_text)
-        label_types = []
-    else:
-        label_types = [row['data_type'] for _, row in df.iterrows()]
-
-    for _, row in df.iterrows():  # iterate over the rows in the DataFrame
-        # skip extractions bellow threshold
-        # if row['confidence'] < row['label_threshold']:
-        #     res_dicts.append(flush_buffer([row], doc_text, merge_vertical=merge_vertical))
-        #     continue
-        # if they are valid merges then add to buffer
-        if end and is_valid_merge(
-            row,
-            buffer,
-            doc_text,
-            label_types,
-            doc_bbox,
-            offsets_per_page,
-            merge_vertical,
-        ):  # and row['confidence'] >= row['label_threshold']:
-            buffer.append(row)
-            end = row['end_offset']
-        else:  # else, flush the buffer by creating a res_dict
-            if buffer:
-                res_dict = flush_buffer(buffer, doc_text, merge_vertical=merge_vertical)
-                res_dicts.append(res_dict)
-            buffer = []
-            buffer.append(row)
-            end = row['end_offset']
-    if buffer:  # flush buffer at the very end to clear anything left over
-        res_dict = flush_buffer(buffer, doc_text, merge_vertical=merge_vertical)
-        res_dicts.append(res_dict)
-    df = pandas.DataFrame(res_dicts)  # convert the list of res_dicts created by `flush_buffer` into a DataFrame
-    # df = df[df['confidence'] > 0.1]
-    return df
-
-
-def merge_annotations(
-    res_dict: Dict,
-    doc_text: str,
-    # label_type_dict: Dict[str, str],
-    doc_bbox: Union[Dict, None] = None,
-    multiline_labels_names: Union[list, None] = None,
-    merge_vertical: bool = False,
-) -> Dict:
-    """
-    Merge annotations by merging neighbouring entities in the res_dict with the same predicted section/label.
-
-    Does so by recursively calling itself until it reaches a pandas DataFrame, at which point it performs the merging
-    on the DataFrame.
-
-    Merging is dependent on the data type of the label, e.g. we always merge 'Text', never merge 'Number', only merge
-    'Percentage' and 'Date' if the resultant merge also gives a valid percentage or date.
-
-    The merge vertical option tries to group multiline predictions of the same label into a single one and should be
-    used only after the merge horizontal (the horizontal merge is skipped if the vertical is enabled).
-    The merge is dependent on the overlapping of the x coordinates and the intersection with other elements in the
-    document.
-    For this option, the document bbox is necessary as well as the names of the labels in which the merge can occur.
-
-    text is the text of the document.
-    label_type_dict is a dictionary where the label names are keys and the values are the data type.
-    doc_bbox are the bounding boxes of the characters in the document.
-    multiline_labels_names is a list with the names of the labels with multiline annotations.
-    merge_vertical is a bool for merging the entities vertically.
-
-    Example:
-    res_dict = {
-        'Text':
-            start end label  candidate
-            0     5   'Text' hello
-            6     10  'Text' world,
-        'Number':
-            start end label    candidate
-            20    25  'Number' 1234
-            26    30  'Number' 5678,
-        'Date':
-            start end label  candidate
-            30    32  'Date' 01.01
-            33    37  'Date' 2001
-            38    48  'Date' 02.02.2002
-                }
-    text = document.text
-    label_type_dict = {label.name: label.data_type for label in self.labels}
-    merged_res_dict = merge_annotations(res_dict, text, label_type_dict)
-    merged_res_dict = {
-        'Text':
-            start end label  candidate
-            0     10  'Text' hello world,
-        'Number':
-            start end label    candidate
-            20    25  'Number' 1234
-            26    30  'Number' 5678,
-        'Date':
-            start end label  candidate
-            30    37  'Date' 01.01 2001
-            38    48  'Date' 02.02.2002
-                }
-
-    If the merge vertical is enabled, entities with the same label that respect the defined conditions are grouped.
-
-    Example:
-    res_dict = {
-        'CompanyName':
-            start end label         candidate
-            0     4  'CompanyName'  Helm
-            6     14  'CompanyName'  & Nagel,
-
-    merged_res_dict = {
-        'CompanyName':
-            start   end     label          candidate
-            [0, 6] [4, 14]  'CompanyName'  Helm & Nagel,
-
-    """
-    if merge_vertical:
-        assert doc_bbox is not None
-        assert multiline_labels_names is not None
-
-    merged_res_dict = dict()  # stores final results
-    for section_label, items in res_dict.items():
-
-        if isinstance(items, pandas.DataFrame):  # perform merge on DataFrames within res_dict
-            if merge_vertical:
-                # only for the labels where multiline annotations can occur
-                if section_label in multiline_labels_names:
-                    merged_df = merge_df(
-                        df=items,
-                        doc_text=doc_text,
-                        doc_bbox=doc_bbox,
-                        merge_vertical=merge_vertical,
-                    )
-                else:
-                    merged_df = items
-            else:
-                merged_df = merge_df(
-                    df=items,
-                    doc_text=doc_text,
-                    doc_bbox=doc_bbox,
-                )
-            merged_res_dict[section_label] = merged_df
-        # if the value of the res_dict is not a DataFrame then we recursively call merge_annotations on it
-        elif isinstance(items, list):
-            # if it's a list then it is a list of sections
-            merged_res_dict[section_label] = [
-                merge_annotations(
-                    res_dict=item,
-                    doc_text=doc_text,
-                    doc_bbox=doc_bbox,
-                    multiline_labels_names=multiline_labels_names,
-                    merge_vertical=merge_vertical,
-                )
-                for item in items
-            ]
-        elif isinstance(items, dict):
-            # if it's a dict then it is a res_dict within a list of sections
-            merged_res_dict[section_label] = merge_annotations(
-                res_dict=items,
-                doc_text=doc_text,
-                doc_bbox=doc_bbox,
-                multiline_labels_names=multiline_labels_names,
-                merge_vertical=merge_vertical,
-            )
-    return merged_res_dict
 
 
 def substring_count(list: list, substring: str) -> list:
@@ -1796,6 +1474,126 @@ class Trainer:
                         )
         return virtual_doc
 
+    @classmethod
+    def merge_horizontal(cls, res_dict: Dict, doc_text: str) -> Dict:
+        """Merge contiguous spans with same predicted label."""
+        logger.info("Horizontal merge.")
+        merged_res_dict = dict()  # stores final results
+        for label, items in res_dict.items():
+            res_dicts = []
+            buffer = []
+            end = None
+
+            for _, row in items.iterrows():  # iterate over the rows in the DataFrame
+                # if they are valid merges then add to buffer
+                if end and cls.is_valid_horizontal_merge(row, buffer, doc_text):
+                    buffer.append(row)
+                    end = row['end_offset']
+                else:  # else, flush the buffer by creating a res_dict
+                    if buffer:
+                        res_dict = cls.flush_buffer(buffer, doc_text)
+                        res_dicts.append(res_dict)
+                    buffer = []
+                    buffer.append(row)
+                    end = row['end_offset']
+            if buffer:  # flush buffer at the very end to clear anything left over
+                res_dict = cls.flush_buffer(buffer, doc_text)
+                res_dicts.append(res_dict)
+            merged_df = pandas.DataFrame(
+                res_dicts
+            )  # convert the list of res_dicts created by `flush_buffer` into a DataFrame
+
+            merged_res_dict[label] = merged_df
+
+        return merged_res_dict
+
+    @staticmethod
+    def flush_buffer(buffer: List[pandas.Series], doc_text: str) -> Dict:
+        """
+        Merge a buffer of entities into a dictionary (which will eventually be turned into a DataFrame).
+
+        A buffer is a list of pandas.Series objects.
+        """
+        assert 'label_name' in buffer[0]
+        label = buffer[0]['label_name']
+
+        starts = buffer[0]['start_offset']
+        ends = buffer[-1]['end_offset']
+        text = doc_text[starts:ends]
+
+        res_dict = dict()
+        res_dict['start_offset'] = starts
+        res_dict['end_offset'] = ends
+        res_dict['label_name'] = label
+        res_dict['offset_string'] = text
+        res_dict['confidence'] = numpy.mean([b['confidence'] for b in buffer])
+        return res_dict
+
+    @staticmethod
+    def is_valid_horizontal_merge(
+        row: pandas.Series,
+        buffer: List[pandas.Series],
+        doc_text: str,
+        max_offset_distance: int = 5,
+    ) -> bool:
+        """
+        Verify if the merging that we are trying to do is valid.
+
+        A merging is valid only if:
+          * All spans have the same predicted Label
+          * Confidence of predicted Label is above the Label threshold
+          * All spans are on the same line
+          * No extraneous characters in between spans
+          * A maximum of 5 spaces in between spans
+          * The Label type is not one of the following: 'Number', 'Positive Number', 'Percentage', 'Date'
+            OR the resulting merging create a span normalizable to the same type
+
+        :param row: Row candidate to be merged to what is already in the buffer.
+        :param buffer: Previous information.
+        :param doc_text: Text of the document.
+        :param max_offset_distance: Maximum distance between two entities that can be merged.
+        :return: If the merge is valid or not.
+        """
+        if row['confidence'] < row['label_threshold']:
+            return False
+
+        # sanity checks
+        if buffer[-1]['label_name'] != row['label_name']:
+            return False
+        elif buffer[-1]['confidence'] < buffer[-1]['label_threshold']:
+            return False
+
+        if not all([c == ' ' for c in doc_text[buffer[-1]['end_offset'] : row['start_offset']]]):
+            return False
+
+        # Do not merge if the difference in the offsets is bigger than the maximum offset distance
+        if row['start_offset'] - buffer[-1]['end_offset'] > max_offset_distance:
+            return False
+
+        # only merge if text is on same line
+        if '\n' in doc_text[buffer[0]['start_offset'] : row['end_offset']]:
+            return False
+
+        data_type = row['data_type']
+        # always merge if not one of these data types
+        if data_type not in {'Number', 'Positive Number', 'Percentage', 'Date'}:
+            return True
+
+        merge = None
+        text = doc_text[buffer[0]['start_offset'] : row['end_offset']]
+
+        # only merge percentages/dates/(positive) numbers if the result is still normalizable to the type
+        if data_type == 'Percentage':
+            merge = normalize_to_percentage(text)
+        elif data_type == 'Date':
+            merge = normalize_to_date(text)
+        elif data_type == 'Number':
+            merge = normalize_to_float(text)
+        elif data_type == 'Positive Number':
+            merge = normalize_to_positive_float(text)
+
+        return merge is not None
+
     def save(self, output_dir: str, include_konfuzio=True):
         """
         Save the label model as bz2 compressed pickle object to the release directory.
@@ -1887,7 +1685,7 @@ class GroupAnnotationSets:
         :return:
         """
         # Only train template clf is there are non default templates
-        self.label_sets = self.category.label_sets  # todo what is it?
+        self.label_sets = self.category.label_sets
         if not [lset for lset in self.category.label_sets if not lset.is_default]:
             # todo see https://gitlab.com/konfuzio/objectives/-/issues/2247
             # todo check for NO_LABEL_SET if we should keep it
@@ -1902,7 +1700,6 @@ class GroupAnnotationSets:
 
         # Pretty long feature generation
         df_train_label = self.df_train
-        # df_valid_label = self.df_valid
 
         df_train_label_list = [(document_id, df_doc) for document_id, df_doc in df_train_label.groupby('document_id')]
 
@@ -1921,61 +1718,26 @@ class GroupAnnotationSets:
             df_train_template_list.append(self.convert_label_features_to_template_features(df_doc, document.text))
             df_train_ground_truth_list.append(self.build_document_template_feature(document))
 
-        # df_valid_template_list = []
-        # df_valid_ground_truth_list = []
-
-        # df_valid_label_list = []  # todo why?
-        # for document_id, df_doc in df_valid_label_list:
-        #     document = self._get_document(document_id)
-        #     # if (
-        #     #     hasattr(self, 'default_section_label')
-        #     #     and self.default_section_label
-        #     #     and self.default_section_label != document.category_template
-        #     # ):
-        #     #     logger.info(f'Skip document {document} because its template does not match.')
-        #     #     continue
-        #     df_valid_template_list.append(self.convert_label_features_to_template_features(df_doc, document.text))
-        #     df_valid_ground_truth_list.append(self.build_document_template_feature(document))
-
         df_train_expanded_features_list = [
             self.generate_relative_line_features(n_nearest, pandas.DataFrame(df, columns=self.template_feature_list))
             for df in df_train_template_list
         ]
-        # df_valid_expanded_features_list = [
-        #     self.generate_relative_line_features(n_nearest, pandas.DataFrame(df, columns=self.template_feature_list))
-        #     for df in df_valid_template_list
-        # ]
 
         df_train_ground_truth = pandas.DataFrame(
             pandas.concat(df_train_ground_truth_list), columns=self.template_feature_list + ['y']
         )
-        # if len(df_valid_expanded_features_list) > 0:
-        #     df_valid_ground_truth = pandas.DataFrame(
-        #         pandas.concat(df_valid_ground_truth_list), columns=self.template_feature_list + ['y']
-        #     )
 
         self.template_expanded_feature_list = list(df_train_expanded_features_list[0].columns)
 
         df_train_expanded_features = pandas.DataFrame(
             pandas.concat(df_train_expanded_features_list), columns=self.template_expanded_feature_list
         )
-        # if len(df_valid_expanded_features_list) > 0:
-        #     df_valid_expanded_features = pandas.DataFrame(
-        #         pandas.concat(df_valid_expanded_features_list), columns=self.template_expanded_feature_list
-        #     )
 
         y_train = numpy.array(df_train_ground_truth['y']).astype('str')
         x_train = df_train_expanded_features[self.template_expanded_feature_list]
 
-        # if len(df_valid_expanded_features_list) > 0:
-        #     y_valid = numpy.array(df_valid_ground_truth['y']).astype('str')
-        #     x_valid = df_valid_expanded_features[self.template_expanded_feature_list]
-
         # fillna(0) is used here as not every label is found in every document at least once
         x_train.fillna(0, inplace=True)
-
-        # if len(df_valid_expanded_features_list) > 0:
-        #     x_valid.fillna(0, inplace=True)
 
         # No features available
         if x_train.empty:
@@ -1986,11 +1748,6 @@ class GroupAnnotationSets:
 
         clf = RandomForestClassifier(n_estimators=self.n_estimators, max_depth=self.max_depth, random_state=420)
         clf.fit(x_train, y_train)
-
-        # if len(df_valid_expanded_features_list) > 0:
-        #     y_pred = clf.predict(x_valid)
-        #     # evaluate the clf
-        #     self.evaluate_template_clf(y_valid, y_pred, clf.classes_)
 
         self.template_clf = clf
         return self.template_clf, self.template_feature_list
@@ -2280,33 +2037,45 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         max_depth: int = 100,
         no_label_limit: Union[int, float, None] = None,
         n_nearest_across_lines: bool = False,
-        use_separate_labels=False,
+        use_separate_labels: bool = False,
+        category: Category = None,
         tokenizer=None,
         *args,
         **kwargs,
     ):
         """RFExtractionAI."""
+        logging.info("Initializing RFExtractionAI.")
         super().__init__(*args, **kwargs)
         GroupAnnotationSets.__init__(self)
 
         self.label_feature_list = None
-        self.use_separate_labels = use_separate_labels
 
-        # If this is True use the generic regex generator
-        self.use_generic_regex = True
-        self.category: Category = None
+        self.use_separate_labels = use_separate_labels
+        logger.info(f"{use_separate_labels=}")
+
+        self.category: Category = category
+        logger.info(f"{category=}")
+
         self.n_nearest = n_nearest
+        logger.info(f"{n_nearest=}")
+
         self.first_word = first_word
+        logger.info(f"{first_word=}")
+
         self.max_depth = max_depth
+        logger.info(f"{max_depth=}")
+
         self.n_estimators = n_estimators
+        logger.info(f"{n_estimators=}")
+
         self.no_label_limit = no_label_limit
         self.n_nearest_across_lines = n_nearest_across_lines
-        self.train_split_percentage = None
 
         self.substring_features = kwargs.get('substring_features', None)
         self.catchphrase_features = kwargs.get('catchphrase_features', None)
 
         self.tokenizer = tokenizer
+        logger.info(f"{tokenizer=}")
 
         self.clf = None
 
@@ -2315,18 +2084,19 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
     def features(self, document: Document):
         """Calculate features using the best working default values that can be overwritten with self values."""
+        logger.info(f"Starting {document} feature calculation.")
         if self.no_label_name is None or self.no_label_set_name is None:
             self.no_label_name = document.project.no_label.name_clean
             self.no_label_set_name = document.project.no_label_set.name_clean
         df, _feature_list, _temp_df_raw_errors = process_document_data(
             document=document,
             spans=document.spans(use_correct=False),
-            n_nearest=self.n_nearest if hasattr(self, 'n_nearest') else 2,
-            first_word=self.first_word if hasattr(self, 'first_word') else True,
+            n_nearest=self.n_nearest,
+            first_word=self.first_word,
             tokenize_fn=self.tokenizer.tokenize,  # todo: we are tokenizing the document multiple times
-            catchphrase_list=self.catchphrase_features if hasattr(self, 'catchphrase_features') else None,
-            substring_features=self.substring_features if hasattr(self, 'substring_features') else None,
-            n_nearest_across_lines=self.n_nearest_across_lines if hasattr(self, 'n_nearest_across_lines') else False,
+            catchphrase_list=self.catchphrase_features,
+            substring_features=self.substring_features,
+            n_nearest_across_lines=self.n_nearest_across_lines,
         )
         if self.use_separate_labels:
             df['target'] = df['label_set_name'] + '__' + df['label_name']
@@ -2346,6 +2116,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
          NotFittedError: When CLF is not fitted
 
         """
+        logger.info(f"Starting extraction of {document}.")
         if self.tokenizer is None:
             raise AttributeError(f'{self} missing Tokenizer.')
 
@@ -2395,8 +2166,6 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         df['result_name'] = results.idxmax(axis=1)
         df['confidence'] = results.max(axis=1)
 
-        # 5. Translation
-        # df['Translated_Candidate'] = df['offset_string']  # todo: make translation explicit: It's a cool Feature
         # Main Logic -------------------------
 
         # Do column renaming to be compatible with text-annotation
@@ -2433,7 +2202,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         # res_dict = self.filter_low_confidence_extractions(res_dict)
 
-        res_dict = self.merge_dict(res_dict, inference_document)
+        res_dict = self.merge_horizontal(res_dict, inference_document.text)
 
         # Try to calculate sections based on template classifier.
         if self.template_clf is not None:  # todo smarter handling of multiple clf
@@ -2445,32 +2214,12 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         virtual_doc = self.extraction_result_to_document(inference_document, res_dict)
 
-        # join document Spans into multi-line Annotation
-
         self.tokenizer.found_spans(virtual_doc)
 
+        # join document Spans into multi-line Annotation
+        virtual_doc.merge_vertical()
+
         return virtual_doc
-
-    def merge_dict(self, res_dict: Dict, document: Document) -> Dict:
-        """Merge contiguous spans with same predicted label."""
-        merged_res_dict = merge_annotations(
-            res_dict=res_dict,
-            doc_text=document.text,
-            doc_bbox=document.get_bbox(),
-        )
-
-        # If the training has labels with multiline annotations, we try to merge entities vertically
-        if hasattr(self, 'multiline_labels'):
-            multiline_labels_names = [label.name for label in self.multiline_labels]
-            merged_res_dict = merge_annotations(
-                res_dict=merged_res_dict,
-                doc_text=document.text,
-                doc_bbox=document.get_bbox(),
-                multiline_labels_names=multiline_labels_names,
-                merge_vertical=True,
-            )
-
-        return merged_res_dict
 
     def separate_labels(self, res_dict: 'Dict') -> 'Dict':
         """
@@ -2648,7 +2397,11 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         :param retokenize: Bool for whether to recreate annotations from scratch or use already existing annotations.
         :return: Dataframe of features and list of feature names.
         """
-        logger.info('Start generating features.')
+        logger.info(f'Start generating features for {len(documents)} documents.')
+        logger.info(f'{no_label_limit=}')
+        logger.info(f'{retokenize=}')
+        logger.info(f'{require_revised_annotations=}')
+
         df_real_list = []
         df_raw_errors_list = []
         feature_list = []
