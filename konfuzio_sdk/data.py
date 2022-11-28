@@ -1675,7 +1675,7 @@ class Document(Data):
         self._n_pages = None
 
         # prepare local setup for document
-        if self.id_:
+        if self.is_online:
             pathlib.Path(self.document_folder).mkdir(parents=True, exist_ok=True)
         self.annotation_file_path = os.path.join(self.document_folder, "annotations.json5")
         self.annotation_set_file_path = os.path.join(self.document_folder, "annotation_sets.json5")

@@ -20,6 +20,7 @@ import pytest
 
 from konfuzio_sdk.regex import regex_matches
 from konfuzio_sdk.data import Project, Annotation, Label, Category, LabelSet, Document, AnnotationSet, Span
+from konfuzio_sdk.tokenizer.regex import RegexTokenizer
 from konfuzio_sdk.utils import is_file
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 
@@ -297,6 +298,24 @@ class TestTokens(unittest.TestCase):
             assert is_file(os.path.join(self.prj.regex_folder, f'{category.name}_{label.name_clean}_tokens.json5'))
         except StopIteration:
             pass
+
+    def test_iban_regex_from_offline_project(self):
+        """Test to get evaluation."""
+        project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+        label = project.get_label_by_name('Bank inkl. IBAN')
+        category = project.get_category_by_id(63)
+        tokens = label.base_regex(category)
+
+        assert (
+            "[A-ZÄÖÜ]+\\d\\d[ ]{1,2}\\d\\d\\d\\d[ ]{1,2}\\d\\d\\d\\d[ ]{1,2}"
+            "\\d\\d\\d\\d[ ]{1,2}\\d\\d\\d\\d[ ]{1,2}\\d\\d" in tokens
+        )
+
+        regexes = label.find_regex(category=category)
+        assert len(regexes) == 1
+        l_tok = RegexTokenizer(regexes[0])
+        missing_spans = label.spans_not_found_by_tokenizer(l_tok, categories=[category], use_correct=True)
+        assert len(missing_spans) == 17
 
 
 class TestTokensMultipleCategories(unittest.TestCase):
