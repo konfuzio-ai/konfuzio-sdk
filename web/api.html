@@ -24,7 +24,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="REST API v3" href="api-v3.html" />
-    <link rel="prev" title="Coordinates System" href="../sdk/coordinates_system.html" /> 
+    <link rel="prev" title="Merging Logic" href="../merge/merge.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -54,6 +54,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../sdk/examples/examples.html">Code Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sdk/contribution.html">Contribution Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sdk/coordinates_system.html">Coordinates System</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../merge/merge.html">Merging Logic</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
 <ul class="current">
@@ -234,6 +235,10 @@ e.g.: :2.000, 08
 e.g.: -2.759,7°
 e.g.: €1.010.296
 e.g.: 7,375,009+</p></li>
+<li><p>Spaces separating digits are interpreted either as decimal or as thousands separators:
+e.g.: 59  45
+e.g.: 90 123
+e.g.: 202 123 89</p></li>
 <li><p>Written numbers are changed into a digits number format:
 e.g.: ein
 e.g.: eleven</p></li>
@@ -369,48 +374,72 @@ e.g.: StringThatIncludesNIL</p></li>
 <td><p>string</p></td>
 <td><p>number</p></td>
 </tr>
-<tr class="row-odd"><td><p>ein</p></td>
+<tr class="row-odd"><td><p>59  45</p></td>
 <td><p>5</p></td>
+<td><p>yes</p></td>
+<td><p>59.45</p></td>
+<td><p>59.45</p></td>
+<td><p>string</p></td>
+<td><p>number</p></td>
+</tr>
+<tr class="row-even"><td><p>90 123</p></td>
+<td><p>5</p></td>
+<td><p>yes</p></td>
+<td><p>90123.0</p></td>
+<td><p>90123.0</p></td>
+<td><p>string</p></td>
+<td><p>number</p></td>
+</tr>
+<tr class="row-odd"><td><p>202 123 89</p></td>
+<td><p>5</p></td>
+<td><p>yes</p></td>
+<td><p>202123.89</p></td>
+<td><p>202123.89</p></td>
+<td><p>string</p></td>
+<td><p>number</p></td>
+</tr>
+<tr class="row-even"><td><p>ein</p></td>
+<td><p>6</p></td>
 <td><p>yes</p></td>
 <td><p>1.0</p></td>
 <td><p>1</p></td>
 <td><p>string</p></td>
 <td><p>number</p></td>
 </tr>
-<tr class="row-even"><td><p>eleven</p></td>
-<td><p>5</p></td>
+<tr class="row-odd"><td><p>eleven</p></td>
+<td><p>6</p></td>
 <td><p>yes</p></td>
 <td><p>11.0</p></td>
 <td><p>11</p></td>
 <td><p>string</p></td>
 <td><p>number</p></td>
 </tr>
-<tr class="row-odd"><td><p>43.34.34</p></td>
-<td><p>6</p></td>
+<tr class="row-even"><td><p>43.34.34</p></td>
+<td><p>7</p></td>
 <td><p>no</p></td>
 <td><p>None</p></td>
 <td><p>null</p></td>
 <td><p>string</p></td>
 <td><p>null</p></td>
 </tr>
-<tr class="row-even"><td><p>NIL</p></td>
-<td><p>7</p></td>
+<tr class="row-odd"><td><p>NIL</p></td>
+<td><p>8</p></td>
 <td><p>yes</p></td>
 <td><p>0.0</p></td>
 <td><p>0</p></td>
 <td><p>string</p></td>
 <td><p>number</p></td>
 </tr>
-<tr class="row-odd"><td><p>keinen</p></td>
-<td><p>7</p></td>
+<tr class="row-even"><td><p>keinen</p></td>
+<td><p>8</p></td>
 <td><p>yes</p></td>
 <td><p>0.0</p></td>
 <td><p>0</p></td>
 <td><p>string</p></td>
 <td><p>number</p></td>
 </tr>
-<tr class="row-even"><td><p>StringThatIncludesNIL</p></td>
-<td><p>7</p></td>
+<tr class="row-odd"><td><p>StringThatIncludesNIL</p></td>
+<td><p>8</p></td>
 <td><p>no</p></td>
 <td><p>None</p></td>
 <td><p>null</p></td>
@@ -842,7 +871,7 @@ email <a class="reference external" href="emailto:support&#64;konfuzio.com">supp
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../sdk/coordinates_system.html" class="btn btn-neutral float-left" title="Coordinates System" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../merge/merge.html" class="btn btn-neutral float-left" title="Merging Logic" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="api-v3.html" class="btn btn-neutral float-right" title="REST API v3" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

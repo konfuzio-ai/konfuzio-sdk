@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+<meta content="Documentation of the ExtractionAI merge logic." name="description" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Merging Logic &mdash; Konfuzio  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/full_green_square.png"/>
+    <link rel="canonical" href="https://dev.konfuzio.com/merge/merge.html" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+        <script>mermaid.initialize({startOnLoad:true});</script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="REST API v2" href="../web/api.html" />
+    <link rel="prev" title="Coordinates System" href="../sdk/coordinates_system.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Konfuzio
+            <img src="../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../sdk/configuration_reference.html">Install SDK</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/sourcecode.html">Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/sourcecode.html#tokenizers">Tokenizers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/sourcecode.html#extraction-ai">Extraction AI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/sourcecode.html#evaluation">Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/sourcecode.html#document-categorization">Document Categorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/examples/examples.html">Code Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/contribution.html">Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/coordinates_system.html">Coordinates System</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Merging Logic</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#horizontal-merge">Horizontal Merge</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../web/api.html">REST API v2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api-v3.html">REST API v3</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/frontend/index.html">Frontend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/on_premises.html">On-Premises Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/changelog_app.html">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Konfuzio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Merging Logic</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/merge/merge.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="merging-logic">
+<h1>Merging Logic<a class="headerlink" href="#merging-logic" title="Permalink to this headline">¶</a></h1>
+<p>Our extraction AI runs a merging logic at two steps in the extraction process. The first is a horizontal merging of Spans right after the Label classifier. This can be particularly useful when using the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#konfuzio_sdk.tokenizer.regex.WhitespaceTokenizer">Whitespace tokenizer</a> as it can find Spans containing spaces. The second merging logic is a vertical merging of Spans into a single multiline Annotation. Checkout the <a class="reference external" href="https://dev.konfuzio.com/sdk/contribution.html#architecture-sdk-to-server">architecture diagram</a> for more detail.</p>
+<section id="horizontal-merge">
+<h2>Horizontal Merge<a class="headerlink" href="#horizontal-merge" title="Permalink to this headline">¶</a></h2>
+<p>When using an <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai">Extraction AI</a>, we merge adjacent horizontal Spans right after the Label classifier.</p>
+<p>A horizontal merging is valid only if:</p>
+<ol class="arabic simple">
+<li><p>All Spans have the same predicted Label</p></li>
+<li><p>Confidence of predicted Label is above the Label threshold</p></li>
+<li><p>All Spans are on the same line</p></li>
+<li><p>No extraneous characters in between Spans</p></li>
+<li><p>A maximum of 5 spaces in between Spans</p></li>
+<li><p>The <a class="reference external" href="https://dev.konfuzio.com/web/api.html#supported-data-normalization">Label type</a> is not one of the following: ‘Number’, ‘Positive Number’, ‘Percentage’, ‘Date’
+OR the resulting merging create a Span <a class="reference external" href="https://dev.konfuzio.com/web/api.html#supported-data-normalization">normalizable</a> to the same type</p></li>
+</ol>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Input</p></th>
+<th class="head"><p>Able to merge?</p></th>
+<th class="head"><p>Reason</p></th>
+<th class="head"><p>Result</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span></p></td>
+<td><p>yes</p></td>
+<td><p>/</p></td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span></p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span></p></td>
+<td><p>no</p></td>
+<td><ol class="arabic simple" start="5">
+<li></li>
+</ol>
+</td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span></p></td>
+</tr>
+<tr class="row-even"><td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><span>&nbsp;.&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span></p></td>
+<td><p>no</p></td>
+<td><ol class="arabic simple" start="4">
+<li></li>
+</ol>
+</td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><span>&nbsp;.&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span></p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span><span class="raw-html-m2r"><span>&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #86c5da">7</span></span></p></td>
+<td><p>no</p></td>
+<td><ol class="arabic simple">
+<li></li>
+</ol>
+</td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #ff726f">Annotation</span></span><span class="raw-html-m2r"><span>&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #86c5da">7</span></span></p></td>
+</tr>
+<tr class="row-even"><td><p><span class="raw-html-m2r"><span style="background-color: #86c5da">34</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #86c5da">98</span></span></p></td>
+<td><p>no</p></td>
+<td><ol class="arabic simple" start="6">
+<li><p>(<a class="reference external" href="https://dev.konfuzio.com/web/api.html#numbers">see here</a>)</p></li>
+</ol>
+</td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #86c5da">34</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #86c5da">98</span></span></p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="raw-html-m2r"><span style="background-color: #86c5da">34</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #86c5da">98</span></span></p></td>
+<td><p>yes</p></td>
+<td><p>/</p></td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #86c5da">34</span></span><span class="raw-html-m2r"><span style="background-color: #86c5da">&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #86c5da">98</span></span></p></td>
+</tr>
+<tr class="row-even"><td><p><span class="raw-html-m2r"><span style="background-color: #34df00">November</span></span><span class="raw-html-m2r"><span>&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #34df00">2022</span></span></p></td>
+<td><p>yes</p></td>
+<td><p>/</p></td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #34df00">November</span></span><span class="raw-html-m2r"><span style="background-color: #34df00">&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #34df00">2022</span></span></p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="raw-html-m2r"><span style="background-color: #34df00">Novamber</span></span><span class="raw-html-m2r"><span>&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #34df00">2022</span></span></p></td>
+<td><p>no</p></td>
+<td><ol class="arabic simple" start="6">
+<li><p>(<a class="reference external" href="https://dev.konfuzio.com/web/api.html#date-values">see here</a>)</p></li>
+</ol>
+</td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #34df00">Novamber</span></span><span class="raw-html-m2r"><span>&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #34df00">2022</span></span></p></td>
+</tr>
+<tr class="row-even"><td><p><span class="raw-html-m2r"><span style="background-color: #ff8c00">34</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff8c00">98%</span></span></p></td>
+<td><p>yes</p></td>
+<td><p>/</p></td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #ff8c00">34</span></span><span class="raw-html-m2r"><span style="background-color: #ff8c00">&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #ff8c00">98%</span></span></p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="raw-html-m2r"><span style="background-color: #ff8c00">34</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #dcdcdc">98%</span></span></p></td>
+<td><p>no</p></td>
+<td><ol class="arabic simple" start="2">
+<li></li>
+</ol>
+</td>
+<td><p><span class="raw-html-m2r"><span style="background-color: #ff8c00">34</span></span><span class="raw-html-m2r"><span>&nbsp;&nbsp;</span></span><span class="raw-html-m2r"><span style="background-color: #dcdcdc">98%</span></span></p></td>
+</tr>
+</tbody>
+</table>
+<p>Label Type: <span class="raw-html-m2r"><span style="background-color: #ff726f">Text</span></span><span class="raw-html-m2r"><br></span>
+Label Type: <span class="raw-html-m2r"><span style="background-color: #86c5da">Number</span></span><span class="raw-html-m2r"><br></span>
+Label Type: <span class="raw-html-m2r"><span style="background-color: #34df00">Date</span></span><span class="raw-html-m2r"><br></span>
+Label Type: <span class="raw-html-m2r"><span style="background-color: #ff8c00">Percentage</span></span><span class="raw-html-m2r"><br></span>
+Label Type: <span class="raw-html-m2r"><span style="background-color: #dcdcdc">NO LABEL/Below Label threshold</span></span></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../sdk/coordinates_system.html" class="btn btn-neutral float-left" title="Coordinates System" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../web/api.html" class="btn btn-neutral float-right" title="REST API v2" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Helm und Nagel GmbH.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-D02B3QF8Z3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-D02B3QF8Z3');
+</script>
+<script src="https://cmp.osano.com/16CVyMSbk3Iar1G3f/97ee6223-b0cb-4f8c-abd6-a25a0d6f6507/osano.js"></script>
+
+
+</body>
+</html>
