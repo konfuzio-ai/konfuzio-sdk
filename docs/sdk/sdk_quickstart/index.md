@@ -25,7 +25,6 @@ if you want to fetch the updates from the server, use the argument `update=True`
 Here are the some of properties and methods of the Project you might need when working with the SDK:
 - `project.documents` – training Documents within the Project;
 - `project.test_documents` – test Documents within the Project;
-- `project._documents` – all the Documents available within the Project;
 - `project.get_category_by_id(YOUR_CATEGORY_ID).documents()` – Documents filtered by a Category of your choice; 
 - `project.get_document_by_id(YOUR_DOCUMENT_ID)` – access a particular Document from the Project if you know its ID.
 
