@@ -3,16 +3,9 @@
 ### Intro
 
 Not all multipage files that we process are always neatly scanned and organized. Sometimes we can have more than one actual 
-Document in a stream pf pages; such files need to be properly processed and split into several independent Documents. 
-
-| | Page number |
-|---|-------------|
-| Document | 1 | 2 | 3 |
-
-
+Document in a stream pf pages; such files need to be properly processed and split into several independent Documents
 
 ![multi-file Document example](image.png)
-
 _Multi-file Document Example_
 
 In this post, we will look at a simple way to implement an algorithm for searching common features between 
