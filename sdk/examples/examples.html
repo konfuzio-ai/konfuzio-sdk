@@ -60,14 +60,13 @@
 <li class="toctree-l4"><a class="reference internal" href="#download-pages-as-images">Download pages as images</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#download-bounding-boxes-of-the-characters">Download bounding boxes of the characters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#update-document">Update Document</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#upload-document">Upload Document</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#modify-document">Modify Document</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#delete-document">Delete Document</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#create-regex-based-annotations">Create Regex-based Annotations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#train-label-regex-tokenizer">Train Label Regex Tokenizer</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#finding-spans-of-a-label-not-found-by-a-tokenizer">Finding Spans of a Label Not Found by a Tokenizer</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#evaluate-a-trained-extraction-ai-model">Evaluate a Trained Extraction AI Model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#document-categorization">Document Categorization</a><ul>
@@ -128,19 +127,22 @@
 </div>
 <p>The information will be stored in the folder that you defined to allocate the data in the package initialization.
 A subfolder will be created for each document in the project.</p>
-<p>Every time that there are changes in the project in the Konfuzio Server, the local project can be updated with:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+<p>Every time that there are changes in the project in the Konfuzio Server, the local project can be updated this way:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">update</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To make sure that your project is loaded with all the latest data:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
 <section id="documents">
 <h3>Documents<a class="headerlink" href="#documents" title="Permalink to this headline">¶</a></h3>
 <p>To access the documents in the project you can use:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">documents</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_documents_by_status</span><span class="p">()</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">documents</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span>
 </pre></div>
 </div>
-<p>By default, it will get the documents without dataset status (dataset_status = 0 (None)).
-You can specify another dataset status with the argument ‘dataset_statuses’. The code for the status is:</p>
+<p>By default, it will get the documents with training status (dataset_status = 2). The code for the status is:</p>
 <ul class="simple">
 <li><p>None: 0</p></li>
 <li><p>Preparation: 1</p></li>
@@ -148,15 +150,11 @@ You can specify another dataset status with the argument ‘dataset_statuses’.
 <li><p>Test: 3</p></li>
 <li><p>Excluded: 4</p></li>
 </ul>
-<p>For example, to get all documents in the project, you can do:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">documents</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_documents_by_status</span><span class="p">(</span><span class="n">dataset_statuses</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+<p>The test documents can be accessed directly by:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">test_documents</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">test_documents</span>
 </pre></div>
 </div>
-<p>The training and test documents can be accessed directly by:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">training_documents</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span>
-<span class="n">test_documents</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">test_documents</span>
-</pre></div>
-</div>
+<p>For more details, you can checkout the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#project">Project documentation</a>.</p>
 <p>By default, you get 4 files for each document that contain information of the text, pages, annotation sets and annotations.
 You can see these files inside the document folder.</p>
 <p><strong>document.txt</strong> - Contains the text of the document. If OCR was used, it will correspond to the result from the OCR.</p>
@@ -316,7 +314,7 @@ information of the characters and the image of the document.</p>
 <p>You will get a file named “bbox.json5”.</p>
 <p>After downloading these files, the paths to them will also become available in the project instance.
 For example, you can get the path to the file with the document text with:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span><span class="o">.</span><span class="n">txt_file_path</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span><span class="o">.</span><span class="n">documents_folder</span>
 </pre></div>
 </div>
 </section>
@@ -328,38 +326,6 @@ For example, you can get the path to the file with the document text with:</p>
 </div>
 <p>If a document is part of the training or test set, you can also update it by updating the entire project via
 project.update(). However, for projects with many documents it can be faster to update only the relevant documents.</p>
-</section>
-<section id="upload-document">
-<h4>Upload Document<a class="headerlink" href="#upload-document" title="Permalink to this headline">¶</a></h4>
-<p>You can upload a document via SDK. Create a Document instance and save it.
-The document will be uploaded to the Konfuzio Server.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">file_path</span><span class="o">=&lt;</span><span class="n">path_to_the_file</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">my_project</span><span class="p">)</span>
-<span class="n">document</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>By default, the document is uploaded with the dataset status “None”. If there is only one category in the project, the
-document will assume that category. If there is more than one category in the project, the document is uploaded without
-a category.</p>
-<p>You can specify both these parameters when you upload the document by passing the correspondent code for the dataset
-status (see code <a class="reference external" href="https://app.konfuzio.com/v2/swagger/#/docs/docs_create">here</a>) and the ID of the category.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">file_path</span><span class="o">=&lt;</span><span class="n">path_to_the_file</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">my_project</span><span class="p">,</span>
-                    <span class="n">dataset_status</span><span class="o">=&lt;</span><span class="n">dataset_status_code</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">category_template</span><span class="o">=&lt;</span><span class="n">category_id</span><span class="o">&gt;</span><span class="p">)</span>
-<span class="n">document</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
-</pre></div>
-</div>
-</section>
-<section id="modify-document">
-<h4>Modify Document<a class="headerlink" href="#modify-document" title="Permalink to this headline">¶</a></h4>
-<p>The dataset status and the category of a document can be modified after the document is uploaded.
-To change the category, you can select the category that you desire from the project based on its ID and attribute it
-to the document.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">category</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_category_by_id</span><span class="p">(</span><span class="o">&lt;</span><span class="n">category_id</span><span class="o">&gt;</span><span class="p">)</span>
-
-<span class="n">document</span><span class="o">.</span><span class="n">category</span> <span class="o">=</span> <span class="n">category</span>
-<span class="n">document</span><span class="o">.</span><span class="n">dataset_status</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="n">document</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
-</pre></div>
-</div>
 </section>
 <section id="delete-document">
 <h4>Delete Document<a class="headerlink" href="#delete-document" title="Permalink to this headline">¶</a></h4>
@@ -388,13 +354,11 @@ If you want to get it again you can update the project.</p>
 
 <span class="c1"># Label for the annotation</span>
 <span class="n">label_name</span> <span class="o">=</span> <span class="s2">&quot;Name&quot;</span>
-<span class="c1"># Creation of the Label in the project default label set</span>
-<span class="n">my_label</span> <span class="o">=</span> <span class="n">Label</span><span class="p">(</span><span class="n">my_project</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">label_name</span><span class="p">)</span>
-<span class="c1"># Saving it online</span>
-<span class="n">my_label</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="c1"># Getting the Label from the project</span>
+<span class="n">my_label</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="n">label_name</span><span class="p">)</span>
 
-<span class="c1"># Label Set where label belongs</span>
-<span class="n">label_set_id</span> <span class="o">=</span> <span class="n">my_label</span><span class="o">.</span><span class="n">label_sets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">id_</span>
+<span class="c1"># LabelSet to which the Label belongs</span>
+<span class="n">label_set</span> <span class="o">=</span> <span class="n">my_label</span><span class="o">.</span><span class="n">label_sets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
 <span class="c1"># First document in the project</span>
 <span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -407,20 +371,45 @@ If you want to get it again you can update the project.</p>
 
 <span class="c1"># Create annotation for each match</span>
 <span class="k">for</span> <span class="n">offsets</span> <span class="ow">in</span> <span class="n">matches_locations</span><span class="p">:</span>
+    <span class="n">span</span> <span class="o">=</span> <span class="n">Span</span><span class="p">(</span><span class="n">start_offset</span><span class="o">=</span><span class="n">offsets</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">end_offset</span><span class="o">=</span><span class="n">offsets</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
     <span class="n">annotation_obj</span> <span class="o">=</span> <span class="n">Annotation</span><span class="p">(</span>
         <span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">,</span>
-        <span class="n">document_id</span><span class="o">=</span><span class="n">document</span><span class="o">.</span><span class="n">id_</span><span class="p">,</span>
-        <span class="n">start_offset</span><span class="o">=</span><span class="n">offsets</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-        <span class="n">end_offset</span><span class="o">=</span><span class="n">offsets</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
         <span class="n">label</span><span class="o">=</span><span class="n">my_label</span><span class="p">,</span>
-        <span class="n">label_set_id</span><span class="o">=</span><span class="n">label_set_id</span><span class="p">,</span>
-        <span class="n">accuracy</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">label_set</span><span class="o">=</span><span class="n">label_set</span><span class="p">,</span>
+        <span class="n">confidence</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">spans</span><span class="o">=</span><span class="p">[</span><span class="n">span</span><span class="p">],</span>
+        <span class="n">is_correct</span><span class="o">=</span><span class="bp">True</span>
     <span class="p">)</span>
     <span class="n">new_annotation_added</span> <span class="o">=</span> <span class="n">annotation_obj</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">new_annotation_added</span><span class="p">:</span>
         <span class="n">new_annotations_links</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">annotation_obj</span><span class="o">.</span><span class="n">get_link</span><span class="p">())</span>
 
 <span class="k">print</span><span class="p">(</span><span class="n">new_annotations_links</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="train-label-regex-tokenizer">
+<h2>Train Label Regex Tokenizer<a class="headerlink" href="#train-label-regex-tokenizer" title="Permalink to this headline">¶</a></h2>
+<p>You can use the <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> package to train a custom Regex tokenizer.</p>
+<p>In this example, you will see how to find regex expressions that match with occurences of the “IBAN” Label in the training data.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.regex</span> <span class="kn">import</span> <span class="n">RegexTokenizer</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.base</span> <span class="kn">import</span> <span class="n">ListTokenizer</span>
+
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+<span class="n">category</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_category_by_id</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">CATEGORY_ID</span><span class="p">)</span>
+
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">ListTokenizer</span><span class="p">(</span><span class="n">tokenizers</span><span class="o">=</span><span class="p">[])</span>
+
+<span class="n">iban_label</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s2">&quot;IBAN&quot;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">regex</span> <span class="ow">in</span> <span class="n">iban_label</span><span class="o">.</span><span class="n">find_regex</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">category</span><span class="p">):</span>
+    <span class="n">regex_tokenizer</span> <span class="o">=</span> <span class="n">RegexTokenizer</span><span class="p">(</span><span class="n">regex</span><span class="o">=</span><span class="n">regex</span><span class="p">)</span>
+    <span class="n">tokenizer</span><span class="o">.</span><span class="n">tokenizers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">regex_tokenizer</span><span class="p">)</span>
+
+<span class="c1"># You can then use it to create an Annotation for every matching string in a document.</span>
+<span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">DOCUMENT_ID</span><span class="p">)</span>
+<span class="n">tokenizer</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
