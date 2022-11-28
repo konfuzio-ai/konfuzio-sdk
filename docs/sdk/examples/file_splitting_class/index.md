@@ -37,7 +37,8 @@ not in different languages, no occurrences of other Categories).
 ### Step-by-step explanation
 
 In this section, we'll go through steps imitating initialization of `ContextAwareFileSplittingModel` class which you can 
-find in the full code block in the lower part of this page. 
+find in the full code block in the lower part of this page. A class itself is already implemented and can be imported via
+`from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel`.
 
 Let's start with making all the necessary imports and initializing the class of `ContextAwareFileSplittingModel`:
 ```python
