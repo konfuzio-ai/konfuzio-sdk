@@ -1,13 +1,41 @@
 """Find similarities between Documents or Pages via comparison between their texts."""
 import abc
+import bz2
+import cloudpickle
+import konfuzio_sdk
+import os
 import pathlib
-import pickle
+import shutil
+import sys
 
 from copy import deepcopy
 from typing import List
 
 from konfuzio_sdk.data import Document, Page, Project
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
+
+
+def load_model(pickle_path: str):
+    """
+    Load a pkl file.
+
+    :param pickle_path: Path to the pickled model.
+    :raises FileNotFoundError: If the path is invalid.
+    :raises OSError: When the data is corrupted or invalid and cannot be loaded.
+    :return: A set of first-page Spans.
+    """
+    if not os.path.isfile(pickle_path):
+        raise FileNotFoundError("Invalid pickle file path:", pickle_path)
+    try:
+        with bz2.open(pickle_path, 'rb') as file:
+            model = cloudpickle.load(file)
+    except OSError:
+        raise OSError(f"Pickle file {pickle_path} data is invalid.")
+    except ValueError as err:
+        if "unsupported pickle protocol: 5" in str(err) and '3.7' in sys.version:
+            raise ValueError("Pickle saved with incompatible Python version.") from err
+        raise
+    return model
 
 
 class AbstractFileSplittingModel(metaclass=abc.ABCMeta):
@@ -126,22 +154,33 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         self.first_page_spans = first_page_spans
         return first_page_spans
 
-    def save(self, model_path=""):
+    def save(self, model_path="", include_konfuzio=True):
         """
         Save the resulting set of first-page Spans by Category.
 
         :param model_path: Path to save the set to.
         :type model_path: str
         """
-        with open(model_path + '/first_page_spans.pickle', "wb") as pickler:
-            pickle.dump(self.first_page_spans, pickler)
+        sys.setrecursionlimit(99999999)
+        if include_konfuzio:
+            cloudpickle.register_pickle_by_value(konfuzio_sdk)
+        pathlib.Path(model_path).mkdir(parents=True, exist_ok=True)
+        tmp_pkl_file_path = model_path + '/first_page_spans_tmp.cloudpickle'
+        with open(tmp_pkl_file_path, 'wb') as f:
+            cloudpickle.dump(self.first_page_spans, f)
+        pkl_file_path = model_path + '/first_page_spans.cloudpickle'
+        with open(tmp_pkl_file_path, 'rb') as input_f:
+            with bz2.open(pkl_file_path, 'wb') as output_f:
+                shutil.copyfileobj(input_f, output_f)
+        os.remove(tmp_pkl_file_path)
+        return pkl_file_path
 
     def predict(self, page: Page) -> int:
         """
         Take a Page as an input and return 1 for a first Page and 0 for a non-first Page.
 
         :param page: A Page to receive first or non-first label.
-        :type page: Page:
+        :type page: Page
         :return: A label of a first or a non-first Page.
         """
         intersection_lengths = {}
@@ -154,9 +193,8 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
                     {span.offset_string for span in page.spans()}.intersection(self.first_page_spans[category.id_])
                 )
         if len(intersection_lengths) > 0:
-            return 1
-        else:
-            return 0
+            page.is_split_page = True
+        return page
 
 
 class SplittingAI:
@@ -183,10 +221,10 @@ class SplittingAI:
             for category in self.context_aware_file_splitting_model.categories
             for document in category.test_documents()
         ]
-        if pathlib.Path(self.project.model_folder + '/first_page_spans.pickle').exists():
-            with open(self.project.model_folder + '/first_page_spans.pickle', 'rb') as unpickler:
-                unpickled = pickle.load(unpickler)
-            self.context_aware_file_splitting_model.first_page_spans = unpickled
+        if pathlib.Path(self.project.model_folder + '/first_page_spans.cloudpickle').exists():
+            self.context_aware_file_splitting_model.first_page_spans = load_model(
+                self.project.model_folder + '/first_page_spans.cloudpickle'
+            )
         else:
             self.context_aware_file_splitting_model.first_page_spans = self.context_aware_file_splitting_model.fit()
 
@@ -209,13 +247,14 @@ class SplittingAI:
         suggested_splits = []
         document = self.context_aware_file_splitting_model.tokenizer.tokenize(deepcopy(document))
         for page in document.pages():
-            if self.context_aware_file_splitting_model.predict(page) == 1:
+            if page.number == 1:
                 suggested_splits.append(page)
+            else:
+                if hasattr(self.context_aware_file_splitting_model.predict(page), 'is_split_page'):
+                    suggested_splits.append(page)
         split_docs = []
         first_page = document.pages()[0]
         last_page = document.pages()[-1]
-        if not suggested_splits:
-            return [document]
         for page_i, split_i in enumerate(suggested_splits):
             if page_i == 0:
                 split_docs.append(self._create_doc_from_page_interval(document, first_page, split_i))

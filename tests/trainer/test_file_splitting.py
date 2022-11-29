@@ -48,17 +48,18 @@ class TestFileSplittingModel(unittest.TestCase):
     def test_save_context_aware_splitting_model(self):
         """Test saving of the first-page Spans."""
         self.file_splitting_model.save(self.project.model_folder)
-        assert pathlib.Path(self.project.model_folder + '/first_page_spans.pickle').exists()
+        assert pathlib.Path(self.project.model_folder + '/first_page_spans.cloudpickle').exists()
 
     def test_predict_context_aware_splitting_model(self):
         """Test correct first Page prediction."""
         for page in self.test_document.pages():
             pred = self.file_splitting_model.predict(page)
-            assert pred == 1
+            assert hasattr(pred, 'is_split_page')
 
     def test_split_document_splitting_ai(self):
         """Test the SplittingAI."""
         splitting_ai = SplittingAI(project_id=self.project.id_)
         suggested_splits = splitting_ai.propose_split_documents(self.test_document)
-        assert len(suggested_splits) == 6
-        pathlib.Path(self.project.model_folder + '/first_page_spans.pickle').unlink()
+        assert len(suggested_splits) == 5
+        assert [len(doc.pages()) for doc in suggested_splits] == [2, 1, 1, 1, 1]
+        pathlib.Path(self.project.model_folder + '/first_page_spans.cloudpickle').unlink()
