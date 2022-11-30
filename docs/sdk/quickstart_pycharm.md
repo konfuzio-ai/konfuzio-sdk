@@ -5,11 +5,18 @@
 
 ## Install SDK using PyCharm
 
+This guide explains the necessary steps to use the [Konfuzio SDK](https://github.com/konfuzio-ai/konfuzio-sdk) (version >=0.2) with PyCharm.
+
+It was tested on the following Operating Systems and PyCharm versions:
+- Ubuntu 18.04 with PyCharm 2021.3.3 (Professional Edition)
+- Windows 10 with PyCharm 2022.1.4 (Professional Edition)
+- macOS 12 with PyCharm 2022.2.1 (Community Edition)
+
 #### 1. PyCharm Setup
 
 PyCharm is a widespread common Integrated Development Environment (IDE) with strong debugging functionalities, which is
 why we choose PyCharm as our preferred IDE in this context. To start with, please download the Community version of
-PyCharm for your respective operating system here: https://www.jetbrains.com/de-de/pycharm/download/#section=windows.
+PyCharm for your respective operating system here: https://www.jetbrains.com/pycharm/download/.
 
 Once it is downloaded, create a new Project in PyCharm (File -> New Project) and choose the location and name for it.
 Please also refer to this documentation for further
