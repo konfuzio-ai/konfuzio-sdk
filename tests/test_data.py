@@ -436,7 +436,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 49
+        assert len(cls.project.virtual_documents) == 47
 
     # def test_document_only_needs_project(self):
     #     """Test that a Document can be created without category"""
@@ -468,7 +468,8 @@ class TestOfflineDataSetup(unittest.TestCase):
         """Test if setup worked."""
         assert self.document.category == self.category
 
-    @unittest.skip(reason='Span validation.')
+    dataset_status = 0
+
     def test_span_negative_offset(self):
         """Negative Span creation should not be possible."""
         project = Project(id_=None)
@@ -1220,108 +1221,53 @@ class TestOfflineDataSetup(unittest.TestCase):
         Annotation(document=document, spans=[first_span, second_span], label_set=self.label_set, label=self.label)
         assert len(document.annotations(use_correct=False)) == 2
 
-    def test_merge_vertical(self):
+    def test_merge_vertical_1(self):
         """Test the vertical merging of spans into a single Annotation."""
-        document_bbox = {
-            '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'page_number': 1, 'text': 'p'},
-            '1': {'x0': 2, 'x1': 3, 'y0': 0, 'y1': 2, 'page_number': 1, 'text': '1'},
-            '2': {'x0': 4, 'x1': 5, 'y0': 0, 'y1': 2, 'page_number': 1, 'text': ' '},
-            '3': {'x0': 5, 'x1': 6, 'y0': 0, 'y1': 2, 'page_number': 1, 'text': 'r'},
-            '4': {'x0': 7, 'x1': 8, 'y0': 0, 'y1': 2, 'page_number': 1, 'text': 'a'},
-            '6': {'x0': 2, 'x1': 3, 'y0': 3, 'y1': 5, 'page_number': 1, 'text': 'p'},
-            '7': {'x0': 5, 'x1': 6, 'y0': 3, 'y1': 5, 'page_number': 1, 'text': '2'},
-            '8': {'x0': 7, 'x1': 8, 'y0': 3, 'y1': 5, 'page_number': 1, 'text': ' '},
-            '9': {'x0': 8, 'x1': 9, 'y0': 3, 'y1': 5, 'page_number': 1, 'text': 'r'},
-            '10': {'x0': 10, 'x1': 11, 'y0': 3, 'y1': 5, 'page_number': 1, 'text': 'a'},
-            '12': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'page_number': 2, 'text': 'r'},
-            '13': {'x0': 2, 'x1': 3, 'y0': 0, 'y1': 2, 'page_number': 2, 'text': 'a'},
-            '15': {'x0': 4, 'x1': 5, 'y0': 0, 'y1': 2, 'page_number': 2, 'text': 'p'},
-            '16': {'x0': 5, 'x1': 6, 'y0': 0, 'y1': 2, 'page_number': 2, 'text': '3'},
-            '18': {'x0': 7, 'x1': 8, 'y0': 3, 'y1': 5, 'page_number': 2, 'text': 'p'},
-            '19': {'x0': 2, 'x1': 3, 'y0': 3, 'y1': 5, 'page_number': 2, 'text': '4'},
-            '21': {'x0': 5, 'x1': 6, 'y0': 3, 'y1': 5, 'page_number': 2, 'text': 'r'},
-            '22': {'x0': 7, 'x1': 8, 'y0': 3, 'y1': 5, 'page_number': 2, 'text': 'a'},
-        }
+        project = LocalTextProject()
 
-        document = Document(
-            project=self.project, category=self.category, text='p1 ra\np2 ra\fra p3\np4 ra', bbox=document_bbox
-        )
-        _ = Page(id_=None, document=document, start_offset=0, end_offset=8, number=1, original_size=(12, 6))
-        _ = Page(id_=None, document=document, start_offset=9, end_offset=23, number=2, original_size=(12, 6))
-
-        span1 = Span(start_offset=0, end_offset=2)
-        span2 = Span(start_offset=6, end_offset=8)
-        span3 = Span(start_offset=15, end_offset=17)
-        span4 = Span(start_offset=18, end_offset=20)
-
-        _ = Annotation(
-            document=document,
-            is_correct=False,
-            label=self.label,
-            label_set=self.project.no_label_set,
-            spans=[span1],
-            confidence=0.4,
-        )
-        _ = Annotation(
-            document=document,
-            is_correct=False,
-            label=self.label,
-            label_set=self.project.no_label_set,
-            spans=[span2],
-            confidence=0.2,
-        )
-        _ = Annotation(
-            document=document,
-            is_correct=False,
-            label=self.label,
-            label_set=self.project.no_label_set,
-            spans=[span3],
-            confidence=0.6,
-        )
-        _ = Annotation(
-            document=document,
-            is_correct=False,
-            label=self.label,
-            label_set=self.project.no_label_set,
-            spans=[span4],
-            confidence=0.8,
-        )
-
-        assert span1.offset_string == 'p1'
-        assert span2.offset_string == 'p2'
-        assert span3.offset_string == 'p3'
-        assert span4.offset_string == 'p4'
+        document = project.no_status_documents[1]
 
         assert len(document.spans()) == 4
         assert len(document.annotations(use_correct=False)) == 4
 
         document.merge_vertical()
 
-        assert len(document.spans()) == 4
-        assert len(document.annotations(use_correct=False)) == 4
+        label = document.annotations(use_correct=False)[0].label
+        category = project.get_category_by_id(1)
+        assert label.has_multiline_annotations(categories=[category]) is False
 
-        assert self.label.has_multiline_annotations(categories=[self.category]) is False
-
-        # adding training document so that label.has_multiline_annotations() returns True
         train_document = Document(
-            project=self.project, category=self.category, text='p1\np2', bbox=document_bbox, dataset_status=2
+            project=project, category=category, text='p1\np2', bbox=document.get_bbox(), dataset_status=2
         )
         train_span1 = Span(start_offset=0, end_offset=2)
         train_span2 = Span(start_offset=3, end_offset=5)
         _ = Annotation(
             document=train_document,
             is_correct=True,
-            label=self.label,
-            label_set=self.project.no_label_set,
+            label=label,
+            label_set=project.no_label_set,
             spans=[train_span1, train_span2],
         )
 
-        assert self.label.has_multiline_annotations(categories=[self.category]) is True
+        assert label.has_multiline_annotations(categories=[category]) is True
 
         document.merge_vertical()
 
         assert len(document.spans()) == 4
-        assert len(document.annotations(use_correct=False)) == 2  # WIP
+        assert len(document.annotations(use_correct=False)) == 2
+
+    @unittest.skip(reason='WIP')
+    def test_merge_vertical_2(self):
+        """Test the vertical merging of Spans into a single Annotation."""
+        project = LocalTextProject()
+
+        document = project.no_status_documents[1]
+
+        assert document.annotations(use_correct=False) == 5
+
+        document.merge_vertical(only_multiline_labels=False)
+
+        assert document.annotations(use_correct=False) == 4
 
     def test_lose_weight(self):
         """Lose weight should remove session and documents."""
