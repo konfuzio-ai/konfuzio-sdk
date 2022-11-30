@@ -413,8 +413,6 @@ The following steps need to be undertaken:
 - Install the desired Konfuzio Server version by starting with 1.)
 - Import the projects using ["python manage.py project_import"]([konfuzio_sdk](https://help.konfuzio.com/integrations/migration-between-konfuzio-server-instances/index.html#migrate-projects-between-konfuzio-server-instances)
 
-
-
 ## Alternative deployment options
 
 ### Custom AI model training via CI pipelines
@@ -830,3 +828,30 @@ Series of events triggered when training a Categorization AI
 | 7     | 2       | train_category_ai | Start the training of the categorization model.                                                                 | 10 hours           |
 | 7, 3  | 3       | categorize        | Run the categorization against all Documents in the its category.                                               | 3 minutes          |
 | 7, 3  | 4       | evaluate_ai_model | Evaluate the categorization Ai models performance.                                                              | 60 hours           | 
+
+
+## Django-silk integration
+
+[Django-silk](https://github.com/jazzband/django-silk) is an integration into our server which offers a detailed
+overview of time spend in the database or within the internal code. When trying to troubleshoot performance issues,
+wanting to understand where queries are made, or needing to cooperate with our support on technical problems, it may be
+useful to use the Django-silk profiling to analyze performance. 
+
+By default, the package is installed but turned off, you can enable the package by setting the following variable:
+
+- `SILK_PROFILING: True`
+
+By default, only 15% of requests are being profiled, this can be changed to any number between 0 and 100:
+
+- `SILKY_INTERCEPT_PERCENT: 15`
+
+To avoid the database from filling up, only the past 10k requests are being kept, this can be changed to any value:
+
+- `SILKY_MAX_RECORDED_REQUESTS: 10000`
+
+### Profiling with Django silk
+
+After enabling Django silk, the dashboard will become available on `http://localhost:8000/silk` for users who are 
+logged in as superuser. The database can also be cleared by navigating to `http://localhost:8000/silk/cleardb/`. Do keep
+in mind that this package does add some overhead querying to each request. So unless there are active problems, it
+may be best to keep it turned off or at a low `SILKY_INTERCEPT_PERCENT` percentage. 
