@@ -34,7 +34,7 @@ use further integrations, see `help.konfuzio.com <https://help.konfuzio.com/inte
    :maxdepth: 3
    :caption: Konfuzio SDK
 
-   sdk/sdk_quickstart/sdk_quickstart.md
+   sdk/home/index.md
    sdk/configuration_reference.md
    sdk/sourcecode.rst
    sdk/examples/examples.rst
