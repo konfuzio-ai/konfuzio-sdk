@@ -22,6 +22,7 @@ def load_model(pickle_path: str):
     :param pickle_path: Path to the pickled model.
     :raises FileNotFoundError: If the path is invalid.
     :raises OSError: When the data is corrupted or invalid and cannot be loaded.
+    :raises ValueError: When the model is saved with the incompatible Python version.
     :return: A set of first-page Spans.
     """
     if not os.path.isfile(pickle_path):
@@ -103,13 +104,13 @@ class AbstractFileSplittingModel(metaclass=abc.ABCMeta):
         return precision, recall, f1
 
     @abc.abstractmethod
-    def predict(self, page: Page) -> int:
+    def predict(self, page: Page) -> Page:
         """
         Take a Page as an input and return 1 for first page and 0 for not first page.
 
         :param page: A Page to label first or non-first.
         :type page: Page
-        :return: A label of a first or a non-first Page.
+        :return: A Page with or without is_first_page label.
         """
 
 
@@ -123,6 +124,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         self.categories = None
         self.tokenizer = None
         self.first_page_spans = None
+        sys.setrecursionlimit(99999999)
 
     def fit(self, *args, **kwargs) -> dict:
         """
@@ -137,7 +139,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
             for doc in category.documents():
                 doc = deepcopy(doc)
                 doc.category = category
-                doc = self.tokenizer.tokenize(deepcopy(doc))
+                doc = self.tokenizer.tokenize(doc)
                 for page in doc.pages():
                     if page.number == 1:
                         cur_first_page_spans.append({span.offset_string for span in page.spans()})
@@ -160,8 +162,10 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
 
         :param model_path: Path to save the set to.
         :type model_path: str
+        :param include_konfuzio: Enables pickle serialization as a value, not as a reference (for more info, read
+        https://github.com/cloudpipe/cloudpickle#overriding-pickles-serialization-mechanism-for-importable-constructs).
+        :type include_konfuzio: bool
         """
-        sys.setrecursionlimit(99999999)
         if include_konfuzio:
             cloudpickle.register_pickle_by_value(konfuzio_sdk)
         pathlib.Path(model_path).mkdir(parents=True, exist_ok=True)
@@ -175,13 +179,13 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         os.remove(tmp_pkl_file_path)
         return pkl_file_path
 
-    def predict(self, page: Page) -> int:
+    def predict(self, page: Page) -> Page:
         """
         Take a Page as an input and return 1 for a first Page and 0 for a non-first Page.
 
         :param page: A Page to receive first or non-first label.
         :type page: Page
-        :return: A label of a first or a non-first Page.
+        :return: A Page with or without is_first_page label.
         """
         intersection_lengths = {}
         for category in self.categories:
@@ -193,7 +197,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
                     {span.offset_string for span in page.spans()}.intersection(self.first_page_spans[category.id_])
                 )
         if len(intersection_lengths) > 0:
-            page.is_split_page = True
+            page.is_first_page = True
         return page
 
 
@@ -250,7 +254,7 @@ class SplittingAI:
             if page.number == 1:
                 suggested_splits.append(page)
             else:
-                if hasattr(self.context_aware_file_splitting_model.predict(page), 'is_split_page'):
+                if hasattr(self.context_aware_file_splitting_model.predict(page), 'is_first_page'):
                     suggested_splits.append(page)
         split_docs = []
         first_page = document.pages()[0]
