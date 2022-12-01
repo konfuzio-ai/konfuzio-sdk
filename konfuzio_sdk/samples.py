@@ -329,8 +329,7 @@ uncertain
             22: Bbox(x0=7, x1=8, y0=3, y1=5, page=page2),
         }
 
-        vert_document._characters = document_bbox
-        vert_document.bboxes_available = True
+        vert_document.set_bboxes(document_bbox)
 
         span1 = Span(start_offset=0, end_offset=2)
         span2 = Span(start_offset=6, end_offset=8)
@@ -412,8 +411,7 @@ a2  s4
             27: Bbox(x0=7, x1=8, y0=10, y1=12, page=page1),
         }
 
-        vert_document_2._characters = document_bbox_2
-        vert_document_2.bboxes_available = True
+        vert_document_2.set_bboxes(document_bbox_2)
 
         vert_label_set = LabelSet(id_=24, project=self, categories=[category])
         vert_label = Label(id_=20, text='VertLabelName', project=self, label_sets=[vert_label_set])
