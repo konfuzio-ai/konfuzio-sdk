@@ -45,6 +45,7 @@ Here are some of the properties and methods of the Document you might need when 
 - `document.pages()` – a list of Pages in the Document;
 - `document.update()` – download a newer version of the Document from the Server in case you have made some changes in 
 the Smartview;
+- `document.category()` – get a Category the Document belongs to;
 - `document.get_images()` – download PNG images of the Pages in the Document; can be used if you wish to use the visual 
 data for training your own models, for example;
 
@@ -53,6 +54,7 @@ data for training your own models, for example;
 
 To see all Categories in the Project, you can use `project.get_categories()`. 
 To find a Category the Document belongs to, you can use `document.category`.
+To get `documents` or `test_documents` under the Category, use `category.documents()` or `category.test_documents()` respectively.
 
 You can also observe all Categories available in the Project via the Smartview: they are listed on the Project's page in the menu on the right.
 
