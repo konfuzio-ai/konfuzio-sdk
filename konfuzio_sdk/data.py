@@ -2237,6 +2237,16 @@ class Document(Data):
             self._characters = boxes
         return self._characters
 
+    def set_bboxes(self, characters: Dict[int, Bbox]):
+        """Set character Bbox dictionary."""
+        characters = {int(key): bbox for key, bbox in characters.items()}
+
+        for key, bbox in characters.items():
+            bbox._valid(self._strict_bbox_validation)
+
+        self._characters = characters
+        self.bboxes_available = True
+
     @property
     def text(self):
         """Get Document text. Once loaded stored in memory."""
