@@ -42,10 +42,11 @@ These changes are for the tokenizers/new SDK branch.
 ## Next Release (estimated release date: 5th December 2022)
 
 ### Added
-- Access Service Desk Tickets which have been created via https://konfuzio.com/support ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9923)).
+- [Access Service Desk Tickets which have been created via https://konfuzio.com/support](https://help.konfuzio.com/modules/servicedesk/index.html) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9923)).
 - [API v3 endpoint to bulk accept/decline annotations](https://app.konfuzio.com/v3/swagger/#/documents/documents_update_annotations_partial_update) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9726)).
 - [API v3 Document endpoint can now be filtered by assignee](https://app.konfuzio.com/v3/swagger/#/documents/documents_list) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10052)).
 - [Allow to configure a custom timeout for Document deletion Tasks in self-hosted environemnts](https://dev.konfuzio.com/web/on_premises.html#id7) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10044)).
+- [Add 'Reader' as new Role for Project Members](https://help.konfuzio.com/modules/members/index.html#detailed-permissions-of-available-roles) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9868)).
 
 ### Changed
 - [Improved Swagger Documentation for API V3](https://app.konfuzio.com/v3/swagger/) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9554)).
