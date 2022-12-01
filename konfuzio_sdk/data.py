@@ -373,6 +373,8 @@ class AnnotationSet(Data):
             annotations = [ann for ann in self._annotations if ann.is_correct]
         elif ignore_below_threshold:
             annotations = [ann for ann in self._annotations if ann.is_correct or ann.confidence > ann.label.threshold]
+        else:
+            annotations = self._annotations
         return annotations
 
     @property

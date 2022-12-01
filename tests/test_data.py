@@ -2236,6 +2236,17 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
         assert len(annotations) == 5  # 4 if top_annotations filter is used
         assert sorted([ann.id_ for ann in annotations]) == [16, 17, 18, 19, 24]  # [16, 18, 19, 24]
 
+    def test_annotationset_annotations(self):
+        """Test AnnotationSet.annotations method."""
+        project = LocalTextProject()
+        document = project.test_documents[-1]
+
+        annotation_set = document.annotation_sets()[0]
+
+        assert len(annotation_set.annotations()) == 1
+        assert len(annotation_set.annotations(use_correct=False)) == 10
+        assert len(annotation_set.annotations(use_correct=False, ignore_below_threshold=True)) == 9
+
     def test_label_spans_not_found_by_tokenizer(self):
         """Test Label spans_not_found_by_tokenizer method."""
         project = LocalTextProject()
