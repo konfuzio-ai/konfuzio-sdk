@@ -52,15 +52,17 @@ class TestFileSplittingModel(unittest.TestCase):
 
     def test_predict_context_aware_splitting_model(self):
         """Test correct first Page prediction."""
-        for document in self.file_splitting_model.test_data:
-            for page in document.pages():
-                pred = self.file_splitting_model.predict(page)
-                assert hasattr(pred, 'is_first_page')
+        test_document = self.project.get_category_by_id(3).test_documents()[0]
+        preds = []
+        for page in test_document.pages():
+            pred = self.file_splitting_model.predict(page)
+            preds.append(pred)
+        assert preds
 
     def test_splitting_ai_predict(self):
         """Test SplittingAI's predict method."""
         splitting_ai = SplittingAI(self.project)
-        test_document = self.project.get_document_by_id(42)
+        test_document = self.project.get_category_by_id(3).test_documents()[0]
         pred = splitting_ai.propose_split_documents(test_document)
         assert len(pred) == 3
         pathlib.Path(self.project.model_folder + '/first_page_spans.cloudpickle').unlink()
