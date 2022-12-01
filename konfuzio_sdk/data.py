@@ -2023,6 +2023,7 @@ class Document(Data):
                 json.dump(data["pages"], f, indent=2, sort_keys=True)
         else:
             raise NotImplementedError
+            raise NotImplementedError
 
         return self
 

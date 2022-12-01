@@ -1,5 +1,5 @@
 """Provide a hardcoded setup for Project data."""
-from konfuzio_sdk.data import Category, Project, LabelSet, Document, Label, Annotation, Span, AnnotationSet
+from konfuzio_sdk.data import Category, Project, LabelSet, Document, Label, Annotation, Span, AnnotationSet, Page
 
 
 class LocalTextProject(Project):
@@ -293,4 +293,75 @@ uncertain
             label=view_label_5,
             label_set=label_set,
             spans=[Span(start_offset=68, end_offset=72)],
+        )
+
+        # Document with sub-Documents in them
+
+        text_3 = "Hi all, I like bread.\fI hope to get everything done soon.\fMorning.\fI'm glad to see you.\fMorning."
+        document_3 = Document(id_=42, project=self, category=category, text=text_3, dataset_status=2)
+        _ = Page(
+            id_=1,
+            original_size=(320, 240),
+            document=document_3,
+            start_offset=0,
+            end_offset=21,
+            number=1,
+        )
+
+        _ = Page(
+            id_=2,
+            original_size=(320, 240),
+            document=document_3,
+            start_offset=22,
+            end_offset=57,
+            number=2,
+        )
+
+        _ = Page(
+            id_=3,
+            original_size=(320, 240),
+            document=document_3,
+            start_offset=58,
+            end_offset=66,
+            number=3,
+        )
+
+        _ = Page(
+            id_=4,
+            original_size=(320, 240),
+            document=document_3,
+            start_offset=67,
+            end_offset=87,
+            number=4,
+        )
+
+        _ = Page(
+            id_=1,
+            original_size=(320, 240),
+            document=document_3,
+            start_offset=88,
+            end_offset=97,
+            number=5,
+        )
+
+        annotation_set_3 = AnnotationSet(id_=8, document=document_3, label_set=label_set)
+        _ = Annotation(
+            id_=25,
+            document=document_3,
+            is_correct=True,
+            confidence=1.0,
+            annotation_set=annotation_set_3,
+            label=label,
+            label_set=label_set,
+            spans=[Span(start_offset=0, end_offset=6)],
+        )
+        _ = Annotation(
+            id_=26,
+            document=document_3,
+            is_correct=True,
+            confidence=1.0,
+            annotation_set=annotation_set_3,
+            label=label,
+            label_set=label_set,
+            spans=[Span(start_offset=8, end_offset=13)],
         )

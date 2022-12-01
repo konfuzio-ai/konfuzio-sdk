@@ -4,7 +4,7 @@ import unittest
 
 from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
-from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel
+from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI
 
 TEST_WITH_FULL_DATASET = True
 
@@ -49,7 +49,6 @@ class TestFileSplittingModel(unittest.TestCase):
         """Test saving of the first-page Spans."""
         self.file_splitting_model.save(self.project.model_folder)
         assert pathlib.Path(self.project.model_folder + '/first_page_spans.cloudpickle').exists()
-        pathlib.Path(self.project.model_folder + '/first_page_spans.cloudpickle').unlink()
 
     def test_predict_context_aware_splitting_model(self):
         """Test correct first Page prediction."""
@@ -57,3 +56,11 @@ class TestFileSplittingModel(unittest.TestCase):
             for page in document.pages():
                 pred = self.file_splitting_model.predict(page)
                 assert hasattr(pred, 'is_first_page')
+
+    def test_splitting_ai_predict(self):
+        """Test SplittingAI's predict method."""
+        splitting_ai = SplittingAI(self.project)
+        test_document = self.project.get_document_by_id(42)
+        pred = splitting_ai.propose_split_documents(test_document)
+        assert len(pred) == 3
+        pathlib.Path(self.project.model_folder + '/first_page_spans.cloudpickle').unlink()

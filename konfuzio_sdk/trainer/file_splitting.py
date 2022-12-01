@@ -11,7 +11,7 @@ import sys
 from copy import deepcopy
 from typing import List
 
-from konfuzio_sdk.data import Document, Page, Project
+from konfuzio_sdk.data import Document, Page
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 
 
@@ -204,14 +204,14 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
 class SplittingAI:
     """Split a given Document and return a list of resulting shorter Documents."""
 
-    def __init__(self, project_id=None):
+    def __init__(self, project):
         """
         Initialize the class.
 
-        :param project_id: Project used for the intermediate document.
-        :type project_id: int
+        :param project: Project used for the intermediate document.
+        :type project: Project
         """
-        self.project = Project(id_=project_id)
+        self.project = project
         self.context_aware_file_splitting_model = ContextAwareFileSplittingModel()
         self.context_aware_file_splitting_model.categories = self.project.categories
         self.context_aware_file_splitting_model.tokenizer = ConnectedTextTokenizer()
