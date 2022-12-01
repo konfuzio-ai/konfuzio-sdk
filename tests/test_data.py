@@ -468,8 +468,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         """Test if setup worked."""
         assert self.document.category == self.category
 
-    dataset_status = 0
-
+    @unittest.skip(reason='Span validation.')
     def test_span_negative_offset(self):
         """Negative Span creation should not be possible."""
         project = Project(id_=None)
@@ -1235,10 +1234,9 @@ class TestOfflineDataSetup(unittest.TestCase):
         label = document.annotations(use_correct=False)[0].label
         category = project.get_category_by_id(1)
         assert label.has_multiline_annotations(categories=[category]) is False
+        assert document.bboxes_available is True
 
-        train_document = Document(
-            project=project, category=category, text='p1\np2', bbox=document.get_bbox(), dataset_status=2
-        )
+        train_document = Document(project=project, category=category, text='p1\np2', dataset_status=2)
         train_span1 = Span(start_offset=0, end_offset=2)
         train_span2 = Span(start_offset=3, end_offset=5)
         _ = Annotation(
@@ -1256,18 +1254,18 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert len(document.spans()) == 4
         assert len(document.annotations(use_correct=False)) == 2
 
-    @unittest.skip(reason='WIP')
     def test_merge_vertical_2(self):
         """Test the vertical merging of Spans into a single Annotation."""
         project = LocalTextProject()
 
-        document = project.no_status_documents[1]
+        document = project.no_status_documents[2]
 
-        assert document.annotations(use_correct=False) == 5
+        assert len(document.annotations(use_correct=False)) == 6
 
         document.merge_vertical(only_multiline_labels=False)
 
-        assert document.annotations(use_correct=False) == 4
+        assert len(document.annotations(use_correct=False)) == 4
+        assert len(document.annotations(use_correct=False)[1].spans) == 3
 
     def test_lose_weight(self):
         """Lose weight should remove session and documents."""
