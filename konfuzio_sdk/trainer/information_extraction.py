@@ -1429,7 +1429,7 @@ class Trainer:
     def extraction_result_to_document(document: Document, extraction_result: dict) -> Document:
         """Return a virtual Document annotated with AI Model output."""
         virtual_doc = deepcopy(document)
-        virtual_annotation_set_id = 0  # counter for across mult. Annotation Set groups of a Label Set
+        virtual_annotation_set_id = 1  # counter for across mult. Annotation Set groups of a Label Set
 
         # define Annotation Set for the Category Label Set: todo: this is unclear from API side
         # default Annotation Set will be always added even if there are no predictions for it
