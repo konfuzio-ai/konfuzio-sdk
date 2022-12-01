@@ -52,7 +52,7 @@ class Data:
             # Compare to virtual instances
             return self.id_local == other.id_local
         else:
-            return self.id_ and other and other.id_ and self.id_ == other.id_
+            return self.id_ is not None and other is not None and other.id_ is not None and self.id_ == other.id_
 
     def __hash__(self):
         """Make any online or local concept hashable. See https://stackoverflow.com/a/7152650."""
