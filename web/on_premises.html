@@ -739,12 +739,12 @@ The first argument is the path to the export folder, the second is the project n
    classDef optional fill:#DAE8FC,stroke:#6C8EBF,color:#000000,stroke-dasharray: 3 3;
 
    ip(&quot;Loadbalancer / Public IP&quot;)
-   ip &lt;--&gt; f
    a(&quot;Database&quot;)
    b(&quot;Task Queue&quot;)
    c(&quot;File Storage&quot;)
    worker(&quot;Generic Worker (1:n)&quot;)
    web(&quot;Web &amp; API (1:n)&quot;)
+   ip &lt;--&gt; web
 
    %% Optional Containers
    ocr(&quot;OCR (0:n)&quot;)
