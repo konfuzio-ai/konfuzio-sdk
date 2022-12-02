@@ -562,20 +562,23 @@ The diagram illustrates the components of a Konfuzio Server deployment. Optional
 
    graph TD
       classDef client fill:#D5E8D4,stroke:#82B366,color:#000000;
-      classDef _optional fill:#E1D5E7,stroke:#9673A6,color:#000000;
+      classDef old_optional fill:#E1D5E7,stroke:#9673A6,color:#000000;
       classDef optional fill:#DAE8FC,stroke:#6C8EBF,color:#000000,stroke-dasharray: 3 3;
+      
       ip("Loadbalancer / Public IP")
       ip <--> f
       a("Database")
       b("Task Queue")
       c("File Storage")
-      d("Generic Worker (1:n)")
-      f("Web & API (1:n)")
+      worker("Generic Worker (1:n)")
+      web("Web & API (1:n)")
+      
       %% Optional Containers
       ocr("OCR (0:n)")
       segmentation("Segmentation (0:n)")
       summarization("Summarization (0:n)")
       flower("Flower (0:1)")
+      
       %% Server / Cluster
       h0("Server 1")
       h1("Server 2")
@@ -592,9 +595,9 @@ The diagram illustrates the components of a Konfuzio Server deployment. Optional
       b
       end
       subgraph containers["Stateless Containers"]
-      f
+      web
       flower
-      d
+      worker
       subgraph optional["Optional Containers"]
       ocr
       segmentation
@@ -609,17 +612,18 @@ The diagram illustrates the components of a Konfuzio Server deployment. Optional
       h4
       i
       j
-      end
-      d <--> databases
-      d -- Can delegate tasks--> optional
-      d -- "Can do tasks"--> d
-      f <--> databases
-      f <--> flower
+      end    
+      worker <--> databases
+      worker -- Can delegate tasks--> optional
+      worker -- "Can process tasks"--> d
+      web <--> databases
+      web <--> flower
       flower <--> b
-      containers -- "Operated on."--> servers
-      databases -- "Can be operated on."--> servers
+      containers -- "Operated on"--> servers
+      databases -- "Can be operated on"--> servers
       end
-      click d "http://www.github.com" "This is a link"
+      
+      %% click worker "http://www.github.com" "This is a link"
       class flower optional
       class ocr optional
       class segmentation optional

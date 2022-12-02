@@ -735,20 +735,23 @@ The first argument is the path to the export folder, the second is the project n
 <div class="mermaid">
             graph TD
    classDef client fill:#D5E8D4,stroke:#82B366,color:#000000;
-   classDef _optional fill:#E1D5E7,stroke:#9673A6,color:#000000;
+   classDef old_optional fill:#E1D5E7,stroke:#9673A6,color:#000000;
    classDef optional fill:#DAE8FC,stroke:#6C8EBF,color:#000000,stroke-dasharray: 3 3;
+
    ip(&quot;Loadbalancer / Public IP&quot;)
    ip &lt;--&gt; f
    a(&quot;Database&quot;)
    b(&quot;Task Queue&quot;)
    c(&quot;File Storage&quot;)
-   d(&quot;Generic Worker (1:n)&quot;)
-   f(&quot;Web &amp; API (1:n)&quot;)
+   worker(&quot;Generic Worker (1:n)&quot;)
+   web(&quot;Web &amp; API (1:n)&quot;)
+
    %% Optional Containers
    ocr(&quot;OCR (0:n)&quot;)
    segmentation(&quot;Segmentation (0:n)&quot;)
    summarization(&quot;Summarization (0:n)&quot;)
    flower(&quot;Flower (0:1)&quot;)
+
    %% Server / Cluster
    h0(&quot;Server 1&quot;)
    h1(&quot;Server 2&quot;)
@@ -765,9 +768,9 @@ The first argument is the path to the export folder, the second is the project n
    b
    end
    subgraph containers[&quot;Stateless Containers&quot;]
-   f
+   web
    flower
-   d
+   worker
    subgraph optional[&quot;Optional Containers&quot;]
    ocr
    segmentation
@@ -783,16 +786,17 @@ The first argument is the path to the export folder, the second is the project n
    i
    j
    end
-   d &lt;--&gt; databases
-   d -- Can delegate tasks--&gt; optional
-   d -- &quot;Can do tasks&quot;--&gt; d
-   f &lt;--&gt; databases
-   f &lt;--&gt; flower
+   worker &lt;--&gt; databases
+   worker -- Can delegate tasks--&gt; optional
+   worker -- &quot;Can process tasks&quot;--&gt; d
+   web &lt;--&gt; databases
+   web &lt;--&gt; flower
    flower &lt;--&gt; b
-   containers -- &quot;Operated on.&quot;--&gt; servers
-   databases -- &quot;Can be operated on.&quot;--&gt; servers
+   containers -- &quot;Operated on&quot;--&gt; servers
+   databases -- &quot;Can be operated on&quot;--&gt; servers
    end
-   click d &quot;http://www.github.com&quot; &quot;This is a link&quot;
+
+   %% click worker &quot;http://www.github.com&quot; &quot;This is a link&quot;
    class flower optional
    class ocr optional
    class segmentation optional
