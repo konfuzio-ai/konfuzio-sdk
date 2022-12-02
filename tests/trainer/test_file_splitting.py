@@ -2,6 +2,8 @@
 import pathlib
 import unittest
 
+from copy import deepcopy
+
 from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI
@@ -52,12 +54,24 @@ class TestFileSplittingModel(unittest.TestCase):
 
     def test_predict_context_aware_splitting_model(self):
         """Test correct first Page prediction."""
-        test_document = self.project.get_category_by_id(3).test_documents()[0]
-        preds = []
+        test_document = self.file_splitting_model.tokenizer.tokenize(
+            deepcopy(self.project.get_category_by_id(3).test_documents()[0])
+        )
         for page in test_document.pages():
-            pred = self.file_splitting_model.predict(page)
-            preds.append(pred)
-        assert preds
+            intersections = []
+            for category in self.file_splitting_model.categories:
+                intersection = {span.offset_string for span in page.spans()}.intersection(
+                    self.file_splitting_model.first_page_spans[category.id_]
+                )
+                if intersection:
+                    intersections.append(intersection)
+            if category.id_ == 3:
+                if page.number == 1:
+                    assert intersections == [{'I like bread.'}]
+                if page.number in (2, 4):
+                    assert intersections == []
+                if page.number in (3, 5):
+                    assert intersections == [{'Morning,'}]
 
     def test_splitting_ai_predict(self):
         """Test SplittingAI's predict method."""
