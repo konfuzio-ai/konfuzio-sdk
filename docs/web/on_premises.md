@@ -557,28 +557,20 @@ Konfuzio Server will create a total of 43 tables and use the following data type
 ## Architectural Overview
 
 .. mermaid::
-
    graph TD
       ip("Loadbalancer / Public IP")
-
-      classDef client fill:#D5E8D4,stroke:#82B366,color:#000000;
-      classDef utility fill:#E1D5E7,stroke:#9673A6,color:#000000;
-      classDef resource fill:#DAE8FC,stroke:#6C8EBF,color:#000000,stroke-dasharray: 3 3;
-
-      %% r("Loadbalancer / Public IP") <--> f  
-
+      ip <--> f
       a("Database")
       b("Task Queue")
       c("File Storage")
-
       d("Generic Worker (1:n)")
-      d -- "Can do tasks"--> d
-      e("OCR (0:n)")
       f("Web & API (1:n)")
-      m("Segmentation (0:n)")
-      n("Summarization (0:n)")
-      o("Flower (0:1)")
-
+      %% Optional Containers
+      ocr("OCR (0:n)")
+      segmentation("Segmentation (0:n)")
+      summarization("Summarization (0:n)")
+      flower("Flower (0:1)")
+      %% Server / Cluster
       h0("Server 1")
       h1("Server 2")
       h2("Server 3")
@@ -588,40 +580,22 @@ Konfuzio Server will create a total of 43 tables and use the following data type
       j("Server with GPU")
 
       subgraph all["Private Network"]
-      subgraph dbs["Persistent Container / Services"]
+      subgraph databases["Persistent Container / Services"]
       a
       c
       b
       end
-
-      subgraph s["Stateless Containers"]
+      subgraph containers["Stateless Containers"]
       f
-      o
+      flower
       d
       subgraph optional["Optional Containers"]
-      e
-      m
-      n
+      ocr
+      segmentation
+      summarization
       end
       end
-
-      d <--> dbs
-      d -- Can delegate tasks--> optional
-      %% d --> m
-      %%d --> n
-      %%d --> e
-
-      f <--> dbs
-      f <--> o
-      o <--> b
-      click d "http://www.github.com" "This is a link"
-      class e utility
-      class m utility
-      class n utility
-
-      %% class a resource
-
-      subgraph sc["Server / Cluster"]
+      subgraph servers["Server / Cluster"]
       h0
       h1
       h2
@@ -631,12 +605,33 @@ Konfuzio Server will create a total of 43 tables and use the following data type
       j
       end
 
+      d <--> databases
+      d -- Can delegate tasks--> optional
+      d -- "Can do tasks"--> d
+
+      f <--> databases
+      f <--> flower
+      flower <--> b
+
+      containers -- "Operated on."--> servers
+      databases -- "Can be operated on."--> servers
       end
 
+      classDef client fill:#D5E8D4,stroke:#82B366,color:#000000;
+      classDef _optional fill:#E1D5E7,stroke:#9673A6,color:#000000;
+      classDef optional fill:#DAE8FC,stroke:#6C8EBF,color:#000000,stroke-dasharray: 3 3;
 
-      ip <--> f
-      s -- "Operated on."--> sc
-      dbs -- "Can be operated on."--> sc
+      click d "http://www.github.com" "This is a link"
+      class flower optional
+      class ocr optional
+      class segmentation optional
+      class summarization optional
+      class h1 optional
+      class h2 optional
+      class h3 optional
+      class h4 optional
+      class i optional
+      class j optional
 
 ## Billing and License
 
