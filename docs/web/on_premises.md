@@ -566,12 +566,12 @@ The diagram illustrates the components of a Konfuzio Server deployment. Optional
       classDef optional fill:#DAE8FC,stroke:#6C8EBF,color:#000000,stroke-dasharray: 3 3;
       
       ip("Loadbalancer / Public IP")
-      ip <--> f
       a("Database")
       b("Task Queue")
       c("File Storage")
       worker("Generic Worker (1:n)")
       web("Web & API (1:n)")
+      ip <--> web
       
       %% Optional Containers
       ocr("OCR (0:n)")
