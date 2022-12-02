@@ -65,6 +65,7 @@ Please note: When you upgrade to this version (or a newer one) we recommend to r
 - callback_url is now called if re-extraction is triggered on a Document (for example, when the Category changes) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9901)).
 - Fix an issue that prevented the full deletion of on line of text in multiline Annotations ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10049)).
 - Fix a missing placeholder in an email template ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10192)).
+- Improved loading time of the Category list view ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10088)).
 
 ## released-2022-11-16_12-13-49
 
