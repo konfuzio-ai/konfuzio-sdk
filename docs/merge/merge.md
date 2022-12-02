@@ -54,12 +54,19 @@ A vertical merging is valid only if:
 7. Merged lower Span belongs to an Annotation in the default LabelSet, OR to an AnnotationSet with only a single Annotation
 
 |          Input          | Able to merge? | Reason |
-|:-----------------------:|:-----------:| :-----------: |
+|:-----------------------:|:----------:| :-----------: |
 |  <span style="background-color: #ff726f">Text</span><br><span style="background-color: #ff726f">Annotation</span> |      yes     |    /    | 
 |  <span style="background-color: #ff726f">Annotation</span><br><span style="background-color: #86c5da">42</span> |      no     |    2.    |
 |  <span style="background-color: #ff726f">Text</span><span>&nbsp;</span><span style="background-color: #dcdcdc">more text</span><br><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="background-color: #ff726f">Annotation</span> |     no     |    4.    | 
 | <span style="background-color: #dcdcdc">Some random text</span><span>&nbsp;</span><span style="background-color: #ff726f">Text</span><br><span style="background-color: #ff726f">Annotation</span> |      yes     |    /    |
+| <span style="background-color: #dcdcdc">Some random text</span><span>&nbsp;</span><span style="background-color: #ff726f">Text</span><span>&nbsp;&nbsp;</span><span style="background-color: #dcdcdc">.</span><br><span style="background-color: #ff726f">Annotation</span> |      no     |    4.    |
 |  <span style="background-color: #ff726f">Text</span><span>&nbsp;</span><span style="background-color: #dcdcdc">more text</span><br><span>&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="background-color: #ff726f">Annotation</span><br><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="background-color: #ff726f">42</span> |     yes     |    /    |
+|  <span style="background-color: #ff726f">Text</span><span>&nbsp;</span><br><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="background-color: #dcdcdc">more text</span><span>&nbsp;&nbsp;&nbsp;&nbsp;</span><br><span>&nbsp;&nbsp;&nbsp;</span><span style="background-color: #ff726f">Annotation</span> |     no     |    6.    |
+|  <span style="background-color: #ff726f">Annotation</span><span>&nbsp;&nbsp;</span><span style="background-color: #86c5da">Nb.</span><br><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="background-color: #86c5da">42</span> |      yes     |   <span>*</span>  |
+|  <span style="background-color: #ff726f">Annotation</span><span>&nbsp;&nbsp;</span><span style="background-color: #86c5da">41</span><br><span style="background-color: #ff726f">Annotation</span><span>&nbsp;&nbsp;</span><span style="background-color: #86c5da">42</span> |      no     |    7. <span>**</span> |
+
+<span>* The bottom Annotation is alone in its AnnotationSet and therefore can be merged.</span><br>
+<span>** The Annotations on each line have been grouped into their own AnnotationSets and are not merged.</span>
 
 <span style="background-color: #ff726f">Label 1</span><br>
 <span style="background-color: #86c5da">Label 2</span><br>
