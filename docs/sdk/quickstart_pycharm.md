@@ -5,7 +5,8 @@
 
 ## Install SDK using PyCharm
 
-This guide explains the necessary steps to use the [Konfuzio SDK](https://github.com/konfuzio-ai/konfuzio-sdk) (version >=0.2) with PyCharm.
+This guide explains the necessary steps to use the [Konfuzio SDK](https://github.com/konfuzio-ai/konfuzio-sdk)
+(version >=0.2) with PyCharm.
 
 It was tested on the following Operating Systems and PyCharm versions:
 - Ubuntu 18.04 with PyCharm 2021.3.3 (Professional Edition)
@@ -24,7 +25,7 @@ explanations: https://www.jetbrains.com/help/pycharm/creating-empty-project.html
 to choose the Python interpreter which will be used for the project. Please move on to step 2 to check how to create a
 new virtual environment for the project.
 
-![image](https://user-images.githubusercontent.com/102763000/204694874-605a17af-7a42-4b26-a61f-0b03fa2c27b8.png)
+![pycharm_setup](../_static/img/pycharm_setup.png)
 
 #### 2. Create a Virtual Environment
 
@@ -39,7 +40,7 @@ right corner) and in the project setting preferences if not already specified wh
 a local virtual environment in combination with the community version of PyCharm, as the users of the community version
 can't carry out debugging of code that is executed in Docker containers or on a remote-host SSH.
 
-![image](https://user-images.githubusercontent.com/102763000/204694878-60ec2ebc-69ab-48c3-b799-ebd97f2e2a45.png)
+![pycharm_create_virtual_env](../_static/img/pycharm_create_virtual_env.png)
 
 After the installation of PyCharm and this setup of the virtual environment is completed, we can now start to install
 our Konfuzio SDK package.
@@ -50,7 +51,7 @@ Install the Konfuzio SDK package via pip install in the terminal. This will inst
 working directory:
 `pip install konfuzio-sdk`
 
-![image](https://user-images.githubusercontent.com/102763000/204694880-0ed1e7d1-d95f-48ae-9ae6-1fa20cfeaf64.png)
+![pycharm_install_sdk](../_static/img/pycharm_install_sdk.png)
 
 #### 4. Define your working directory
 
@@ -59,7 +60,7 @@ working directory. This path should be the location of the folder of the PyCharm
 top left corner.
 `cd <your working directory>`
 
-![image](https://user-images.githubusercontent.com/102763000/204694881-4e9ddf1c-0e29-4c3e-bb75-966a238f7dd3.png)
+![pycharm_pwd](../_static/img/pycharm_pwd.png)
 
 #### 5. Initialize the project with the required inputs
 
@@ -79,7 +80,7 @@ the Konfuzio web interface.
 One file have also been created in your working directory: .env. The .env file contains the credentials
 to access the app and must not become public.
 
-![image](https://user-images.githubusercontent.com/102763000/204694882-34ce86a7-f69d-4494-b780-e91d8647561a.png)
+![pycharm_sdk_init](../_static/img/pycharm_sdk_init.png)
 
 #### 6. Test your Setup
 
@@ -108,7 +109,7 @@ print(f"Number of training documents in the project: {len(my_project.documents)}
 
 ```
 
-![image](https://user-images.githubusercontent.com/102763000/204696098-b692aff1-1ea6-4168-9715-d8df38ec2379.png)
+![pycharm_test_setup](../_static/img/pycharm_test_setup.png)
 
 #### 7. Test the Debugging
 
@@ -117,4 +118,4 @@ the code in the line of the print statement and execute "Run" and then "Debug ma
 overview of all available variables. As you can see in the code above, we only accessed the document element - however,
 all other elements can be found and explored in the Debug console under "Variables".
 
-![image](https://user-images.githubusercontent.com/102763000/204694886-c73bb006-2cda-468f-a7fa-4651c0fef5ba.png)
+![pycharm_test_debug](../_static/img/pycharm_test_debug.png)
