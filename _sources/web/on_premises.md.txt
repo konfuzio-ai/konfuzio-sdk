@@ -615,7 +615,7 @@ The diagram illustrates the components of a Konfuzio Server deployment. Optional
       end    
       worker <--> databases
       worker -- Can delegate tasks--> optional
-      worker -- "Can process tasks"--> d
+      worker -- "Can process tasks"--> worker
       web <--> databases
       web <--> flower
       flower <--> b
