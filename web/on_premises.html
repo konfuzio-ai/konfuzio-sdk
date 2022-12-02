@@ -732,7 +732,78 @@ The first argument is the path to the export folder, the second is the project n
 <section id="architectural-overview">
 <h2>Architectural Overview<a class="headerlink" href="#architectural-overview" title="Permalink to this headline">¶</a></h2>
 <p>The diagram illustrates the components of a Konfuzio Server deployment. Optional components are represented by dashed lines. The numbers in brackets represent the minimal and maximal of container count per component.</p>
-</section>
+<div class="mermaid">
+            graph TD
+   classDef client fill:#D5E8D4,stroke:#82B366,color:#000000;
+   classDef _optional fill:#E1D5E7,stroke:#9673A6,color:#000000;
+   classDef optional fill:#DAE8FC,stroke:#6C8EBF,color:#000000,stroke-dasharray: 3 3;
+   ip(&quot;Loadbalancer / Public IP&quot;)
+   ip &lt;--&gt; f
+   a(&quot;Database&quot;)
+   b(&quot;Task Queue&quot;)
+   c(&quot;File Storage&quot;)
+   d(&quot;Generic Worker (1:n)&quot;)
+   f(&quot;Web &amp; API (1:n)&quot;)
+   %% Optional Containers
+   ocr(&quot;OCR (0:n)&quot;)
+   segmentation(&quot;Segmentation (0:n)&quot;)
+   summarization(&quot;Summarization (0:n)&quot;)
+   flower(&quot;Flower (0:1)&quot;)
+   %% Server / Cluster
+   h0(&quot;Server 1&quot;)
+   h1(&quot;Server 2&quot;)
+   h2(&quot;Server 3&quot;)
+   h3(&quot;Server 4&quot;)
+   h4(&quot;Server 5&quot;)
+   i(&quot;...&quot;)
+   j(&quot;Server with GPU&quot;)
+
+   subgraph all[&quot;Private Network&quot;]
+   subgraph databases[&quot;Persistent Container / Services&quot;]
+   a
+   c
+   b
+   end
+   subgraph containers[&quot;Stateless Containers&quot;]
+   f
+   flower
+   d
+   subgraph optional[&quot;Optional Containers&quot;]
+   ocr
+   segmentation
+   summarization
+   end
+   end
+   subgraph servers[&quot;Server / Cluster&quot;]
+   h0
+   h1
+   h2
+   h3
+   h4
+   i
+   j
+   end
+   d &lt;--&gt; databases
+   d -- Can delegate tasks--&gt; optional
+   d -- &quot;Can do tasks&quot;--&gt; d
+   f &lt;--&gt; databases
+   f &lt;--&gt; flower
+   flower &lt;--&gt; b
+   containers -- &quot;Operated on.&quot;--&gt; servers
+   databases -- &quot;Can be operated on.&quot;--&gt; servers
+   end
+   click d &quot;http://www.github.com&quot; &quot;This is a link&quot;
+   class flower optional
+   class ocr optional
+   class segmentation optional
+   class summarization optional
+   class h1 optional
+   class h2 optional
+   class h3 optional
+   class h4 optional
+   class i optional
+   class j optional
+        </div></section>
 <section id="billing-and-license">
 <h2>Billing and License<a class="headerlink" href="#billing-and-license" title="Permalink to this headline">¶</a></h2>
 <p>A Konfuzio Server self-hosted license can be purchased <a class="reference external" href="https://konfuzio.com/en/price/">online</a>. After your order has been placed, we will provide you with credentials to <a class="reference external" href="https://dev.konfuzio.com/web/on_premises.html#download-docker-image">download the Konfuzio Docker Images</a> and a BILLING_API_KEY which needs to be set as <a class="reference external" href="/web/on_premises.html#environment-variables-for-konfuzio-server">environment variable</a>. The Konfuzio Container reports the usage once a day to our billing server (i.e. <a class="reference external" href="https://app.konfuzio.com">https://app.konfuzio.com</a>). Konfuzio containers don’t send customer data, such as the image or text that’s being analyzed, to the billing server.</p>

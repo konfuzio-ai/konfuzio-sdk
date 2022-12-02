@@ -559,6 +559,7 @@ Konfuzio Server will create a total of 43 tables and use the following data type
 The diagram illustrates the components of a Konfuzio Server deployment. Optional components are represented by dashed lines. The numbers in brackets represent the minimal and maximal of container count per component.
 
 .. mermaid::
+
    graph TD
       classDef client fill:#D5E8D4,stroke:#82B366,color:#000000;
       classDef _optional fill:#E1D5E7,stroke:#9673A6,color:#000000;
