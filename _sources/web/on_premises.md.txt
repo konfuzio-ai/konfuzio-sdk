@@ -560,6 +560,9 @@ The diagram illustrates the components of a Konfuzio Server deployment. Optional
 
 .. mermaid::
    graph TD
+      classDef client fill:#D5E8D4,stroke:#82B366,color:#000000;
+      classDef _optional fill:#E1D5E7,stroke:#9673A6,color:#000000;
+      classDef optional fill:#DAE8FC,stroke:#6C8EBF,color:#000000,stroke-dasharray: 3 3;
       ip("Loadbalancer / Public IP")
       ip <--> f
       a("Database")
@@ -606,23 +609,15 @@ The diagram illustrates the components of a Konfuzio Server deployment. Optional
       i
       j
       end
-
       d <--> databases
       d -- Can delegate tasks--> optional
       d -- "Can do tasks"--> d
-
       f <--> databases
       f <--> flower
       flower <--> b
-
       containers -- "Operated on."--> servers
       databases -- "Can be operated on."--> servers
       end
-
-      classDef client fill:#D5E8D4,stroke:#82B366,color:#000000;
-      classDef _optional fill:#E1D5E7,stroke:#9673A6,color:#000000;
-      classDef optional fill:#DAE8FC,stroke:#6C8EBF,color:#000000,stroke-dasharray: 3 3;
-
       click d "http://www.github.com" "This is a link"
       class flower optional
       class ocr optional
@@ -633,7 +628,7 @@ The diagram illustrates the components of a Konfuzio Server deployment. Optional
       class h3 optional
       class h4 optional
       class i optional
-      class j optional
+      class j optional  
 
 ## Billing and License
 
