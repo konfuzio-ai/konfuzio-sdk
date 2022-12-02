@@ -155,13 +155,13 @@ count the total number of all documents allocated to the train set in the projec
 then “Run main”. As we didn’t upload any documents to our project yet, the total number should be 0.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Test your setup with the following code:</span>
 
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="k">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
 
 <span class="c1"># Initialize the project:</span>
 <span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
 
 <span class="c1"># Receive the total number of training documents in the project:</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Number of training documents in the project: {len(my_project.documents)}.&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of training documents in the project: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <a class="reference external image-reference" href="https://user-images.githubusercontent.com/85744792/127325935-5e442366-85d9-4e48-bde2-b7905643c1f8.png"><img alt="image" src="https://user-images.githubusercontent.com/85744792/127325935-5e442366-85d9-4e48-bde2-b7905643c1f8.png" /></a>
