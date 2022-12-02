@@ -554,6 +554,90 @@ Konfuzio Server will create a total of 43 tables and use the following data type
 
 <!-- This table was created by running select data_type, count(*) from information_schema.columns where table_schema = 'public'  group by data_type ; -->
 
+## Architectural Overview
+
+.. mermaid::
+
+   graph TD
+      ip("Loadbalancer / Public IP")
+
+      classDef client fill:#D5E8D4,stroke:#82B366,color:#000000;
+      classDef utility fill:#E1D5E7,stroke:#9673A6,color:#000000;
+      classDef resource fill:#DAE8FC,stroke:#6C8EBF,color:#000000,stroke-dasharray: 3 3;
+
+      %% r("Loadbalancer / Public IP") <--> f  
+
+      a("Database")
+      b("Task Queue")
+      c("File Storage")
+
+      d("Generic Worker (1:n)")
+      d -- "Can do tasks"--> d
+      e("OCR (0:n)")
+      f("Web & API (1:n)")
+      m("Segmentation (0:n)")
+      n("Summarization (0:n)")
+      o("Flower (0:1)")
+
+      h0("Server 1")
+      h1("Server 2")
+      h2("Server 3")
+      h3("Server 4")
+      h4("Server 5")
+      i("...")
+      j("Server with GPU")
+
+      subgraph all["Private Network"]
+      subgraph dbs["Persistent Container / Services"]
+      a
+      c
+      b
+      end
+
+      subgraph s["Stateless Containers"]
+      f
+      o
+      d
+      subgraph optional["Optional Containers"]
+      e
+      m
+      n
+      end
+      end
+
+      d <--> dbs
+      d -- Can delegate tasks--> optional
+      %% d --> m
+      %%d --> n
+      %%d --> e
+
+      f <--> dbs
+      f <--> o
+      o <--> b
+      click d "http://www.github.com" "This is a link"
+      class e utility
+      class m utility
+      class n utility
+
+      %% class a resource
+
+      subgraph sc["Server / Cluster"]
+      h0
+      h1
+      h2
+      h3
+      h4
+      i
+      j
+      end
+
+      end
+
+
+      ip <--> f
+      s -- "Operated on."--> sc
+      dbs -- "Can be operated on."--> sc
+
 ## Billing and License
 
 A Konfuzio Server self-hosted license can be purchased [online](https://konfuzio.com/en/price/). After your order has been placed, we will provide you with credentials to [download the Konfuzio Docker Images](https://dev.konfuzio.com/web/on_premises.html#download-docker-image) and a BILLING_API_KEY which needs to be set as [environment variable](/web/on_premises.html#environment-variables-for-konfuzio-server). The Konfuzio Container reports the usage once a day to our billing server (i.e. https://app.konfuzio.com). Konfuzio containers don't send customer data, such as the image or text that's being analyzed, to the billing server.
