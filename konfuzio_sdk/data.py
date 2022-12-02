@@ -632,7 +632,9 @@ class Label(Data):
             logger.error(f'Cannot sort {self} and {other}.')
             return False
 
-    def annotations(self, categories: List[Category], use_correct=True, ignore_below_threshold=False):
+    def annotations(
+        self, categories: List[Category], use_correct=True, ignore_below_threshold=False
+    ) -> List['Annotation']:
         """Return related Annotations. Consider that one Label can be used across Label Sets in multiple Categories."""
         annotations = []
         for category in categories:
@@ -646,6 +648,15 @@ class Label(Data):
             logger.warning(f'{self} has no correct annotations.')
 
         return annotations
+
+    def has_multiline_annotations(self, categories: List[Category]) -> bool:
+        """Return if any Label annotations are multi-line."""
+        for category in categories:
+            for document in category.documents():
+                for annotation in document.annotations(label=self):
+                    if len(annotation.spans) > 1:
+                        return True
+        return False
 
     def add_label_set(self, label_set: "LabelSet"):
         """
@@ -1000,7 +1011,7 @@ class Span(Data):
         """Return index of the line of the Span."""
         self._valid()
         if self.annotation.document.text and self._line_index is None:
-            line_number = len(self.annotation.document.text[: self.start_offset].split('\n'))
+            line_number = len(self.annotation.document.text[: self.start_offset].replace('\f', '\n').split('\n'))
             self._line_index = line_number - 1
 
         return self._line_index
@@ -2228,6 +2239,16 @@ class Document(Data):
             self._characters = boxes
         return self._characters
 
+    def set_bboxes(self, characters: Dict[int, Bbox]):
+        """Set character Bbox dictionary."""
+        characters = {int(key): bbox for key, bbox in characters.items()}
+
+        for key, bbox in characters.items():
+            bbox._valid(self._strict_bbox_validation)
+
+        self._characters = characters
+        self.bboxes_available = True
+
     @property
     def text(self):
         """Get Document text. Once loaded stored in memory."""
@@ -2323,20 +2344,65 @@ class Document(Data):
         self._annotations = None
         self._annotation_sets = None
 
-    def merge_vertical(self):
-        """Merge Annotations with the same Label."""
+    def merge_vertical(self, only_multiline_labels=True):
+        """
+        Merge Annotations with the same Label.
+
+        :param only_multiline_labels: Only merge if multiline Label Annotation in category training set
+        """
         labels_dict = {}
         for label in self.project.labels:
-            labels_dict[label.id_] = []
+            if not only_multiline_labels or label.has_multiline_annotations(categories=[self.category]):
+                labels_dict[label.id_local] = []
 
         for annotation in self.annotations(use_correct=False, ignore_below_threshold=True):
-            labels_dict[annotation.label.id_].append(annotation)
+            if annotation.label.id_local in labels_dict:
+                labels_dict[annotation.label.id_local].append(annotation)
 
         for label_id in labels_dict:
             buffer = []
             for annotation in labels_dict[label_id]:
                 for span in annotation.spans:
-                    pass
+                    # remove all spans in buffer more than 1 line apart
+                    while buffer and span.line_index > buffer[0].line_index + 1:
+                        buffer.pop(0)
+
+                    if buffer and buffer[-1].page != span.page:
+                        buffer = [span]
+                        continue
+
+                    # Do not merge new Span if Annotation part of AnnotationSet with more than 1 Annotation
+                    # (except default annotationSet)
+                    if (
+                        span.annotation.annotation_set
+                        and not span.annotation.annotation_set.label_set.is_default
+                        and len(
+                            span.annotation.annotation_set.annotations(use_correct=False, ignore_below_threshold=True)
+                        )
+                        > 1
+                    ):
+                        buffer.append(span)
+                        continue
+                    if len(annotation.spans) > 1:
+                        buffer.append(span)
+                        continue
+
+                    for candidate in buffer:
+                        # only looking for elements in line above
+                        if candidate.line_index == span.line_index:
+                            break
+                        # overlap in x
+                        # or next line
+                        if (
+                            not (span.bbox().x0 > candidate.bbox().x1 or span.bbox().x1 < candidate.bbox().x0)
+                        ) or self.text[candidate.end_offset : span.start_offset].replace(' ', '').replace(
+                            '\n', ''
+                        ) == '':
+                            span.annotation.delete()
+                            span.annotation = None
+                            candidate.annotation.add_span(span)
+                            buffer.remove(candidate)
+                    buffer.append(span)
 
     def evaluate_regex(self, regex, label: Label, annotations: List['Annotation'] = None):
         """Evaluate a regex based on the Document."""
