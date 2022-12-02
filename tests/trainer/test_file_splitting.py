@@ -1,5 +1,5 @@
 """Test SplittingAI and the model's training, saving and prediction."""
-import pathlib
+import glob
 import unittest
 
 from copy import deepcopy
@@ -50,7 +50,7 @@ class TestFileSplittingModel(unittest.TestCase):
     def test_save_context_aware_splitting_model(self):
         """Test saving of the first-page Spans."""
         self.file_splitting_model.save(self.project.model_folder)
-        assert pathlib.Path(self.project.model_folder + '/first_page_spans.cloudpickle').exists()
+        assert glob.glob(self.project.model_folder + '/*.pkl')
 
     def test_predict_context_aware_splitting_model(self):
         """Test correct first Page prediction."""
@@ -75,8 +75,7 @@ class TestFileSplittingModel(unittest.TestCase):
 
     def test_splitting_ai_predict(self):
         """Test SplittingAI's predict method."""
-        splitting_ai = SplittingAI(self.project)
+        splitting_ai = SplittingAI(self.file_splitting_model)
         test_document = self.project.get_category_by_id(3).test_documents()[0]
         pred = splitting_ai.propose_split_documents(test_document)
         assert len(pred) == 3
-        pathlib.Path(self.project.model_folder + '/first_page_spans.cloudpickle').unlink()
