@@ -83,7 +83,7 @@ setuptools.setup(
         'python-dateutil',
         'python-decouple',  # todo add ==3.3 ?
         'requests',  # todo add ==2.24.0 ?
-        'regex==2020.6.8',  # re module but better
+        'regex>=2020.6.8',  # re module but better
         'tabulate==0.8.7',  # Used to pretty print DataFrames
         'tqdm',
         'pathos==0.2.6',
