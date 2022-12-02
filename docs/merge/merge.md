@@ -53,8 +53,8 @@ A vertical merging is valid only if:
 6. Spans are on consecutive lines
 7. Merged lower Span belongs to an Annotation in the default LabelSet, OR to an AnnotationSet with only a single Annotation
 
-|          Input          | Able to merge? | Reason | Result |
-|:-----------------------:|:-----------:| :-----------: | :-----------: |
+|          Input          | Able to merge? | Reason |
+|:-----------------------:|:-----------:| :-----------: |
 |  <span style="background-color: #ff726f">Text</span><br><span style="background-color: #ff726f">Annotation</span> |      yes     |    /    | 
 |  <span style="background-color: #ff726f">Annotation</span><br><span style="background-color: #86c5da">42</span> |      no     |    2.    |
 |  <span style="background-color: #ff726f">Text</span><span>&nbsp;</span><span style="background-color: #dcdcdc">more text</span><br><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="background-color: #ff726f">Annotation</span> |     no     |    4.    | 

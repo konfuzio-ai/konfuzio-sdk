@@ -418,7 +418,7 @@ class Evaluation:
             fn=self.clf_fn(search=search),
         ).f1
 
-    def appl(self, group, issue_name):
+    def _apply(self, group, issue_name):
         """Vertical merge error methods helper method."""
         if len(group) < 2:
             group[issue_name] = False
@@ -429,11 +429,11 @@ class Evaluation:
 
     def get_missing_vertical_merge(self):
         """Return Spans that should have been merged."""
-        self.data.groupby('id_local').apply(lambda group: self.appl(group, 'missing_merge'))
+        self.data.groupby('id_local').apply(lambda group: self._apply(group, 'missing_merge'))
 
         return self.data[self.data['missing_merge']]
 
     def get_wrong_vertical_merge(self):
         """Return Spans that were wrongly merged vertically."""
-        self.data.groupby('id_local_predicted').apply(lambda group: self.appl(group, 'wrong_merge'))
+        self.data.groupby('id_local_predicted').apply(lambda group: self._apply(group, 'wrong_merge'))
         return self.data[self.data['wrong_merge']]
