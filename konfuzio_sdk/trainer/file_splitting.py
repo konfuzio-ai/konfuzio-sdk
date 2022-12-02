@@ -3,6 +3,7 @@ import abc
 import bz2
 import cloudpickle
 import konfuzio_sdk
+import logging
 import os
 import pathlib
 import shutil
@@ -13,6 +14,10 @@ from typing import List
 
 from konfuzio_sdk.data import Document, Page
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
+from konfuzio_sdk.samples import LocalTextProject
+from konfuzio_sdk.utils import get_timestamp
+
+logger = logging.getLogger(__name__)
 
 
 def load_model(pickle_path: str):
@@ -169,14 +174,17 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         if include_konfuzio:
             cloudpickle.register_pickle_by_value(konfuzio_sdk)
         pathlib.Path(model_path).mkdir(parents=True, exist_ok=True)
-        tmp_pkl_file_path = model_path + '/first_page_spans_tmp.cloudpickle'
-        with open(tmp_pkl_file_path, 'wb') as f:
+        temp_pkl_file_path = os.path.join(model_path, f'{get_timestamp()}_first_page_spans_tmp.cloudpickle')
+        pkl_file_path = os.path.join(model_path, f'{get_timestamp()}_first_page_spans.pkl')
+        logger.info('Saving model with cloudpickle')
+        with open(temp_pkl_file_path, 'wb') as f:
             cloudpickle.dump(self.first_page_spans, f)
-        pkl_file_path = model_path + '/first_page_spans.cloudpickle'
-        with open(tmp_pkl_file_path, 'rb') as input_f:
+        logger.info('Compressing model with bz2')
+        with open(temp_pkl_file_path, 'rb') as input_f:
             with bz2.open(pkl_file_path, 'wb') as output_f:
                 shutil.copyfileobj(input_f, output_f)
-        os.remove(tmp_pkl_file_path)
+        logger.info('Deleting cloudpickle file')
+        os.remove(temp_pkl_file_path)
         return pkl_file_path
 
     def predict(self, page: Page) -> Page:
@@ -204,37 +212,23 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
 class SplittingAI:
     """Split a given Document and return a list of resulting shorter Documents."""
 
-    def __init__(self, project):
+    def __init__(self, model=""):
         """
         Initialize the class.
 
-        :param project: Project used for the intermediate document.
-        :type project: Project
+        :param model: A path to an existing .cloudpickle model or to a previously trained instance of
+        ContextAwareFileSplittingModel().
         """
-        self.project = project
-        self.context_aware_file_splitting_model = ContextAwareFileSplittingModel()
-        self.context_aware_file_splitting_model.categories = self.project.categories
-        self.context_aware_file_splitting_model.tokenizer = ConnectedTextTokenizer()
-        self.context_aware_file_splitting_model.train_data = [
-            document
-            for category in self.context_aware_file_splitting_model.categories
-            for document in category.documents()
-        ]
-        self.context_aware_file_splitting_model.test_data = [
-            document
-            for category in self.context_aware_file_splitting_model.categories
-            for document in category.test_documents()
-        ]
-        if pathlib.Path(self.project.model_folder + '/first_page_spans.cloudpickle').exists():
-            self.context_aware_file_splitting_model.first_page_spans = load_model(
-                self.project.model_folder + '/first_page_spans.cloudpickle'
-            )
+        self.tokenizer = ConnectedTextTokenizer()
+        if model is str:
+            self.model = ContextAwareFileSplittingModel()
+            self.model.first_page_spans = load_model(model)
         else:
-            self.context_aware_file_splitting_model.first_page_spans = self.context_aware_file_splitting_model.fit()
+            self.model = model
 
     def _create_doc_from_page_interval(self, original_doc: Document, start_page: Page, end_page: Page) -> Document:
         pages_text = original_doc.text[start_page.start_offset : end_page.end_offset]
-        new_doc = Document(project=self.project, id_=None, text=pages_text)
+        new_doc = Document(project=LocalTextProject(), id_=None, text=pages_text)
         for page in original_doc.pages():
             if page.number in range(start_page.number, end_page.number):
                 _ = Page(
@@ -249,12 +243,12 @@ class SplittingAI:
 
     def _suggest_page_split(self, document: Document) -> List[Document]:
         suggested_splits = []
-        document = self.context_aware_file_splitting_model.tokenizer.tokenize(deepcopy(document))
+        document = self.tokenizer.tokenize(deepcopy(document))
         for page in document.pages():
             if page.number == 1:
                 suggested_splits.append(page)
             else:
-                if hasattr(self.context_aware_file_splitting_model.predict(page), 'is_first_page'):
+                if hasattr(self.model.predict(page), 'is_first_page'):
                     suggested_splits.append(page)
         split_docs = []
         first_page = document.pages()[0]

@@ -919,8 +919,8 @@ class TestEvaluation(unittest.TestCase):
     def test_project(self):
         """Test that data has not changed."""
         project = LocalTextProject()
-        assert len(project.documents) == 2
-        assert len(project.test_documents) == 4
+        assert len(project.documents) == 4
+        assert len(project.test_documents) == 5
 
     def test_not_strict(self):
         """Test that evaluation can be initialized with strict mode disabled."""
@@ -945,7 +945,14 @@ class TestEvaluation(unittest.TestCase):
     def test_true_negatives(self):
         """Count zero false negatives from two Training Documents (correctly, nothing is predicted under threshold)."""
         project = LocalTextProject()
-        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
+        documents_without_category_for_filesplitting = (
+            project.get_category_by_id(1).documents() + project.get_category_by_id(2).documents()
+        )
+        evaluation = Evaluation(
+            documents=list(
+                zip(documents_without_category_for_filesplitting, documents_without_category_for_filesplitting)
+            )
+        )
         assert evaluation.tn() == 0
 
     def test_f1(self):
