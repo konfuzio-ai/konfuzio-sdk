@@ -13,35 +13,12 @@ from copy import deepcopy
 from typing import List
 
 from konfuzio_sdk.data import Document, Page
+from konfuzio_sdk.trainer.information_extraction import load_model
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
-
-
-def load_model(pickle_path: str):
-    """
-    Load a pkl file.
-
-    :param pickle_path: Path to the pickled model.
-    :raises FileNotFoundError: If the path is invalid.
-    :raises OSError: When the data is corrupted or invalid and cannot be loaded.
-    :raises ValueError: When the model is saved with the incompatible Python version.
-    :return: A set of first-page Spans.
-    """
-    if not os.path.isfile(pickle_path):
-        raise FileNotFoundError("Invalid pickle file path:", pickle_path)
-    try:
-        with bz2.open(pickle_path, 'rb') as file:
-            model = cloudpickle.load(file)
-    except OSError:
-        raise OSError(f"Pickle file {pickle_path} data is invalid.")
-    except ValueError as err:
-        if "unsupported pickle protocol: 5" in str(err) and '3.7' in sys.version:
-            raise ValueError("Pickle saved with incompatible Python version.") from err
-        raise
-    return model
 
 
 class AbstractFileSplittingModel(metaclass=abc.ABCMeta):
@@ -195,17 +172,12 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         :type page: Page
         :return: A Page with or without is_first_page label.
         """
-        intersection_lengths = {}
         for category in self.categories:
-            intersection = len(
-                {span.offset_string for span in page.spans()}.intersection(self.first_page_spans[category.id_])
+            intersection = {span.offset_string for span in page.spans()}.intersection(
+                self.first_page_spans[category.id_]
             )
-            if intersection > 0:
-                intersection_lengths[category.id_] = len(
-                    {span.offset_string for span in page.spans()}.intersection(self.first_page_spans[category.id_])
-                )
-        if len(intersection_lengths) > 0:
-            page.is_first_page = True
+            if len(intersection) > 0:
+                page.is_first_page = True
         return page
 
 
@@ -241,6 +213,12 @@ class SplittingAI:
                 )
         return new_doc
 
+    def _suggest_first_pages(self, document: Document) -> Document:
+        new_doc = self.tokenizer.tokenize(deepcopy(document))
+        for page in new_doc.pages():
+            self.model.predict(page)
+        return new_doc
+
     def _suggest_page_split(self, document: Document) -> List[Document]:
         suggested_splits = []
         document = self.tokenizer.tokenize(deepcopy(document))
@@ -262,13 +240,20 @@ class SplittingAI:
                 split_docs.append(self._create_doc_from_page_interval(document, suggested_splits[page_i - 1], split_i))
         return split_docs
 
-    def propose_split_documents(self, document: Document) -> List[Document]:
+    def propose_split_documents(self, document: Document, return_pages=False):
         """
         Propose a set of resulting documents from a single Documents.
 
         :param document: An input Document to be split.
         :type document: Document
-        :return: A list of suggested new sub-Documents built from the original Document.
+        :param return_pages: A flag to enable returning a copy of an old Document with Pages marked .is_first_page on
+        splitting points instead of a set of sub-Documents.
+        :type return_pages: bool
+        :return: A list of suggested new sub-Documents built from the original Document or a copy of an old Document
+        with Pages marked .is_first_page on splitting points.
         """
-        split_docs = self._suggest_page_split(document)
-        return split_docs
+        if return_pages:
+            processed = self._suggest_first_pages(document)
+        else:
+            processed = self._suggest_page_split(document)
+        return processed

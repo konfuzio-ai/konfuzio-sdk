@@ -28,6 +28,7 @@ class TestFileSplittingModel(unittest.TestCase):
         ]
         cls.file_splitting_model.tokenizer = ConnectedTextTokenizer()
         cls.file_splitting_model.first_page_spans = None
+        cls.test_document = cls.project.get_category_by_id(3).test_documents()[0]
 
     def test_fit_context_aware_splitting_model(self):
         """Test pseudotraining of the context-aware splitting model."""
@@ -66,16 +67,29 @@ class TestFileSplittingModel(unittest.TestCase):
                 if intersection:
                     intersections.append(intersection)
             if category.id_ == 3:
+                self.file_splitting_model.predict(page)
                 if page.number == 1:
                     assert intersections == [{'I like bread.'}]
+                    assert hasattr(page, 'is_first_page')
                 if page.number in (2, 4):
                     assert intersections == []
                 if page.number in (3, 5):
                     assert intersections == [{'Morning,'}]
+                    assert hasattr(page, 'is_first_page')
 
     def test_splitting_ai_predict(self):
-        """Test SplittingAI's predict method."""
+        """Test SplittingAI's Document-splitting method."""
         splitting_ai = SplittingAI(self.file_splitting_model)
-        test_document = self.project.get_category_by_id(3).test_documents()[0]
-        pred = splitting_ai.propose_split_documents(test_document)
+        pred = splitting_ai.propose_split_documents(self.test_document)
         assert len(pred) == 3
+
+    def test_suggest_first_pages(self):
+        """Test SplittingAI's suggesting first Pages."""
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)
+        for page in pred.pages():
+            print(hasattr(page, 'is_first_page'))
+            if page.number in (1, 3, 5):
+                assert hasattr(page, 'is_first_page')
+            else:
+                assert not hasattr(page, 'is_first_page')
