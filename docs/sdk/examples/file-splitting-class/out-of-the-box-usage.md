@@ -9,6 +9,7 @@ that requires no training.
 from konfuzio_sdk.data import Project
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI
+from konfuzio_sdk.trainer.information_extraction import load_model
 
 # initialize a Project and fetch a test Document of your choice
 project = Project(id_=YOUR_PROJECT_ID)
@@ -32,15 +33,18 @@ file_splitting_model.tokenizer = ConnectedTextTokenizer()
 # the gathered Spans are saved to later be reused in the SplittingAI
 file_splitting_model.fit()
 
-# initialize SplittingAI 
-splitting_ai = SplittingAI(project_id=project.id_)
+# save the gathered Spans
+file_splitting_model.save(project.model_folder)
 
-# process the test Document because it needs to be tokenized by the same Tokenizer as the Documents used by 
-# ContextAwareFileSplittingModel for gathering Spans unique for the first Pages. deepcopy is used to remove all previous
-# Annotations.
-test_document = file_splitting_model.tokenizer.tokenize(test_document)
+# usage with the SplittingAI – you can load a pre-saved model or pass an initialized instance as the input
+# in this example, we load a previously saved one
+model = load_model(project.model_folder)
 
-# propose a list of sub-Documents. If a test Document consists of a single file, return will consist of a list with the 
-# same Document.
-split_documents = splitting_ai.propose_split_documents(test_document)
+# initialize the SplittingAI
+splitting_ai = SplittingAI(model)
+
+# SplittingAI can be ran in two modes: returning a list of sub-Documents as the result of the input Document
+# splitting or returning a copy of the input Document with Pages predicted as first having an attribute
+# "is_first_page". The flag "return_pages" has to be True for the latter; let's use it.
+new_document = splitting_ai.predict(test_document, return_pages=True)
 ```

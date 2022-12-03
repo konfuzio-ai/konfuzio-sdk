@@ -42,13 +42,21 @@ find in the full code block in the lower part of this page. A class itself is al
 
 Let's start with making all the necessary imports and initializing the class of `ContextAwareFileSplittingModel`:
 ```python
-import pickle
+import bz2
+import cloudpickle
+import konfuzio_sdk
+import logging
+import pathlib
+import os
+import shutil
 
 from copy import deepcopy
 
 from konfuzio_sdk.data import Page, Project
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
-from konfuzio_sdk.trainer.file_splitting import AbstractFileSplittingModel
+from konfuzio_sdk.trainer.file_splitting import AbstractFileSplittingModel, SplittingAI
+from konfuzio_sdk.trainer.information_extraction import load_model
+from konfuzio_sdk.utils import get_timestamp
 
 class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
 
@@ -115,7 +123,7 @@ def fit(self, *args, **kwargs) -> dict:
             for doc in category.documents():
                 doc = deepcopy(doc)
                 doc.category = category
-                doc = self.tokenizer.tokenize(deepcopy(doc))
+                doc = self.tokenizer.tokenize(doc)
                 for page in doc.pages():
                     if page.number == 1:
                         cur_first_page_spans.append({span.offset_string for span in page.spans()})
@@ -133,29 +141,40 @@ def fit(self, *args, **kwargs) -> dict:
         return first_page_spans
 ```
 
-Secondly, we define `save()` method which is basically pickling the output of the `fit()` method.
+Secondly, we define `save()` method. For saving, we use cloudpickle utility and compression with bz2. We save a set of 
+unique first-page Spans as the model.
+
+A flag `include_konfuzio` enables pickle serialization as a value, not as a reference (for more info, read [this](https://github.com/cloudpipe/cloudpickle#overriding-pickles-serialization-mechanism-for-importable-constructs)).
+Then, we create the directory provided in `model_path` if it doesn't exist yet. Afterwards, we define filenames, save a 
+temporary cloudpickled object and then compress it using bz2. The temporary object is then removed.
 ```python
-def save(self, model_path=""):
-    with open(model_path + '/first_page_spans.pickle', "wb") as pickler:
-        pickle.dump(self.first_page_spans, pickler)
+def save(self, model_path="", include_konfuzio=True):
+    if include_konfuzio:
+            cloudpickle.register_pickle_by_value(konfuzio_sdk)
+    pathlib.Path(model_path).mkdir(parents=True, exist_ok=True)
+    temp_pkl_file_path = os.path.join(model_path, f'{get_timestamp()}_first_page_spans_tmp.cloudpickle')
+    pkl_file_path = os.path.join(model_path, f'{get_timestamp()}_first_page_spans.pkl')
+    with open(temp_pkl_file_path, 'wb') as f:
+        cloudpickle.dump(self.first_page_spans, f)
+    with open(temp_pkl_file_path, 'rb') as input_f:
+        with bz2.open(pkl_file_path, 'wb') as output_f:
+            shutil.copyfileobj(input_f, output_f)
+    os.remove(temp_pkl_file_path)
+    return pkl_file_path
 ```
 
 Lastly, we define `predict()` method that uses resulting `first_page_spans` gathered from `fit()`. A Page is accepted as
  an input and its Span set is checked for containing first-page Spans for each of the Categories. If there has been at 
 least one intersection, a Page is predicted to be first; if there's no such intersections, it's predicted non-first.
 ```python
-def predict(self, page: Page) -> int:
-        intersections = {}
+def predict(self, page: Page) -> Page:
         for category in self.categories:
-            intersection = len(
-                {span.offset_string for span in page.spans()}.intersection(self.first_page_spans[category.id_])
+            intersection = {span.offset_string for span in page.spans()}.intersection(
+                self.first_page_spans[category.id_]
             )
-            if intersection > 0:
-                intersections[category.id_] = intersection
-        if len(intersections) > 0:
-            return 1
-        else:
-            return 0
+            if len(intersection) > 0:
+                page.is_first_page = True
+        return page
 ```
 
 A quick example of the class's usage:
@@ -182,6 +201,9 @@ file_splitting_model.tokenizer = ConnectedTextTokenizer()
 # the gathered Spans are saved to later be reused in the SplittingAI
 file_splitting_model.first_page_spans = file_splitting_model.fit()
 
+# save the gathered Spans
+file_splitting_model.save(project.model_folder)
+
 # run the prediction
 for page in test_document.pages():
     pred = file_splitting_model.predict(page)
@@ -189,25 +211,45 @@ for page in test_document.pages():
         print('Page {} is predicted as the first.'.format(page.number))
     else:
         print('Page {} is predicted as the non-first.'.format(page.number))
+
+# usage with the SplittingAI – you can load a pre-saved model or pass an initialized instance as the input
+# in this example, we load a previously saved one
+model = load_model(project.model_folder)
+
+# initialize the SplittingAI
+splitting_ai = SplittingAI(model)
+
+# SplittingAI can be ran in two modes: returning a list of sub-Documents as the result of the input Document
+# splitting or returning a copy of the input Document with Pages predicted as first having an attribute
+# "is_first_page". The flag "return_pages" has to be True for the latter; let's use it
+new_document = splitting_ai.predict(test_document, return_pages=True)
 ```
 
 Full code:
 
 ```python
-import pickle
+import bz2
+import cloudpickle
+import konfuzio_sdk
+import logging
+import pathlib
+import os
+import shutil
 
 from copy import deepcopy
 
 from konfuzio_sdk.data import Page, Project
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
-from konfuzio_sdk.trainer.file_splitting import AbstractFileSplittingModel
+from konfuzio_sdk.trainer.file_splitting import AbstractFileSplittingModel, SplittingAI
+from konfuzio_sdk.trainer.information_extraction import load_model
+from konfuzio_sdk.utils import get_timestamp
 
 class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
     """Fallback definition of a File Splitting Model."""
 
     def __init__(self, *args, **kwargs):
         """Initialize the ContextAwareFileSplittingModel."""
-        self.train_data = None 
+        self.train_data = None
         self.test_data = None
         self.categories = None
         self.tokenizer = None
@@ -225,7 +267,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
             for doc in category.documents():
                 doc = deepcopy(doc)
                 doc.category = category
-                doc = self.tokenizer.tokenize(deepcopy(doc))
+                doc = self.tokenizer.tokenize(doc)
                 for page in doc.pages():
                     if page.number == 1:
                         cur_first_page_spans.append({span.offset_string for span in page.spans()})
@@ -242,33 +284,42 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         self.first_page_spans = first_page_spans
         return first_page_spans
 
-    def save(self, model_path=""):
+    def save(self, model_path="", include_konfuzio=True):
         """
         Save the resulting set of first-page Spans by Category.
         :param model_path: Path to save the set to.
         :type model_path: str
+        :param include_konfuzio: Enables pickle serialization as a value, not as a reference (for more info, read
+        https://github.com/cloudpipe/cloudpickle#overriding-pickles-serialization-mechanism-for-importable-constructs).
+        :type include_konfuzio: bool
         """
-        with open(model_path + '/first_page_spans.pickle', "wb") as pickler:
-            pickle.dump(self.first_page_spans, pickler)
+        if include_konfuzio:
+            cloudpickle.register_pickle_by_value(konfuzio_sdk)
+        pathlib.Path(model_path).mkdir(parents=True, exist_ok=True)
+        temp_pkl_file_path = os.path.join(model_path, f'{get_timestamp()}_first_page_spans_tmp.cloudpickle')
+        pkl_file_path = os.path.join(model_path, f'{get_timestamp()}_first_page_spans.pkl')
+        with open(temp_pkl_file_path, 'wb') as f:
+            cloudpickle.dump(self.first_page_spans, f)
+        with open(temp_pkl_file_path, 'rb') as input_f:
+            with bz2.open(pkl_file_path, 'wb') as output_f:
+                shutil.copyfileobj(input_f, output_f)
+        os.remove(temp_pkl_file_path)
+        return pkl_file_path
 
-    def predict(self, page: Page) -> int:
+    def predict(self, page: Page) -> Page:
         """
         Take a Page as an input and return 1 for a first Page and 0 for a non-first Page.
         :param page: A Page to receive first or non-first label.
-        :type page: Page:
-        :return: A label of a first or a non-first Page.
+        :type page: Page
+        :return: A Page with or without is_first_page label.
         """
-        intersections = {}
         for category in self.categories:
-            intersection = len(
-                {span.offset_string for span in page.spans()}.intersection(self.first_page_spans[category.id_])
+            intersection = {span.offset_string for span in page.spans()}.intersection(
+                self.first_page_spans[category.id_]
             )
-            if intersection > 0:
-                intersections[category.id_] = intersection
-        if len(intersections) > 0:
-            return 1
-        else:
-            return 0
+            if len(intersection) > 0:
+                page.is_first_page = True
+        return page
 
 # initialize a Project and fetch a test Document of your choice
 project = Project(id_=YOUR_PROJECT_ID)
@@ -292,6 +343,9 @@ file_splitting_model.tokenizer = ConnectedTextTokenizer()
 # the gathered Spans are saved to later be reused in the SplittingAI
 file_splitting_model.first_page_spans = file_splitting_model.fit()
 
+# save the gathered Spans
+file_splitting_model.save(project.model_folder)
+
 # run the prediction
 for page in test_document.pages():
     pred = file_splitting_model.predict(page)
@@ -299,4 +353,16 @@ for page in test_document.pages():
         print('Page {} is predicted as the first.'.format(page.number))
     else:
         print('Page {} is predicted as the non-first.'.format(page.number))
+
+# usage with the SplittingAI – you can load a pre-saved model or pass an initialized instance as the input
+# in this example, we load a previously saved one
+model = load_model(project.model_folder)
+
+# initialize the SplittingAI
+splitting_ai = SplittingAI(model)
+
+# SplittingAI can be ran in two modes: returning a list of sub-Documents as the result of the input Document
+# splitting or returning a copy of the input Document with Pages predicted as first having an attribute
+# "is_first_page". The flag "return_pages" has to be True for the latter; let's use it
+new_document = splitting_ai.predict(test_document, return_pages=True)
 ```
