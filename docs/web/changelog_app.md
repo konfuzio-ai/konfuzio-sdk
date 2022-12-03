@@ -66,6 +66,7 @@ Please note: When you upgrade to this version (or a newer one) we recommend to r
 - Fix an issue that prevented the full deletion of on line of text in multiline Annotations ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10049)).
 - Fix a missing placeholder in an email template ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10192)).
 - Improved loading time of the Category list view ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10088)).
+- The assignee filter for the Document List now requires Permissions to view the Members of a Project ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10154)).
 
 ## released-2022-11-16_12-13-49
 
