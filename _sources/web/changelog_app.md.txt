@@ -57,6 +57,7 @@ Please note: When you upgrade to this version (or a newer one) we recommend to r
 - [In the Label endpoint of API V3, rename "categories" to "label_sets"](https://testing.konfuzio.com/v3/swagger/#/labels) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9972)).
 - [Detectron is now connected via API to uncouple its Python version and dependencies from Konfuzio Server](https://app.konfuzio.com/v2/swagger/#/projects/projects_docs_segmentation_retrieve) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9355)).
 - [The summarization functionality is now connected via API to uncouple its Python version and dependencies from Konfuzio Server](https://app.konfuzio.com/v2/swagger/#/projects/projects_docs_summarization_retrieve) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9347)).
+- [Limit the number of objects returned from the API](https://dev.konfuzio.com/web/api-v3.html#content-limits) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9975)).
 
 ### Fixed
 - In a very rare case text embeddings could not be extracted from Documents ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10045)).
