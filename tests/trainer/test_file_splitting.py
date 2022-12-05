@@ -93,3 +93,11 @@ class TestFileSplittingModel(unittest.TestCase):
                 assert hasattr(page, 'is_first_page')
             else:
                 assert not hasattr(page, 'is_first_page')
+
+    def test_evaluation_calculation(self):
+        """Test Evaluation class for ContextAwareFileSplitting."""
+        pass
+
+    def test_splitting_ai_evaluation(self):
+        """Test evaluate_full method of SplittingAI."""
+        pass
