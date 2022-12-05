@@ -41,7 +41,7 @@ These changes are for the tokenizers/new SDK branch.
 
 <!-- ## Next Release (estimated release date: 19th December 2022) -->
 
-## released-2022-12-05_18-04-47
+## released-2022-12-05_19-18-47
 
 This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Capture Vue in version [0.0.10-pre-release-7](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
 
