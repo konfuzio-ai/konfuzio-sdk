@@ -55,8 +55,8 @@ working directory:
 
 #### 4. Define your working directory
 
-To store data downloaded with the Konfuzio SDK, indicate (if necessary) the location by inputting the path of your
-working directory. This path should be the location of the folder of the PyCharm project and can be found e.g. on the
+To store data downloaded with the Konfuzio SDK, indicate (if necessary) the location by inputting the path of your 
+working directory. This path should be the location of the folder of the PyCharm project and can be found e.g. on the 
 top left corner.
 `cd <your working directory>`
 
@@ -89,12 +89,13 @@ If you are new to our Konfuzio application, there are no existing projects yet. 
 
 To test whether everything is working as desired, we are going to execute a few basic commands in the main.py file.
 Therefore, please remove the current sample Python script provided by PyCharm by deleting the code. We start with
-initializing the project to retrieve the current version of the project from the web application. The screenshot shows
-the project ID 1290; you should replace this with your own. Once this is done, we count the total number of all
+initializing the project to retrieve the current version of the project from the web application. The screenshot shows 
+the project ID 1290; you should replace this with your own. Once this is done, we count the total number of all 
 documents allocated to the train set in the project.
 
-To run the code, press "Run" and then "Run main". You will noticethat a data folder gets created, containing your
-project files.As we didn't upload any documents to our project yet, the total number should be 0.
+To run the code, press "Run" and then "Run main". You will notice that a data folder gets created, containing your
+project files. As we didn't upload any documents to our project yet, the total number should be 0. If you upload new 
+documents later on, the flag `update=True` ensures that the SDK downloads them in your local data folder. 
 
 ```
 # Test your setup with the following code:
@@ -102,7 +103,7 @@ project files.As we didn't upload any documents to our project yet, the total nu
 from konfuzio_sdk.data import Project
 
 # Initialize the project:
-my_project = Project(id_=YOUR_PROJECT_ID)
+my_project = Project(id_=YOUR_PROJECT_ID, update=True)
 
 # Receive the total number of training documents in the project:
 print(f"Number of training documents in the project: {len(my_project.documents)}.")
