@@ -72,7 +72,7 @@ class FileSplittingEvaluation:
         self.calculate_by_category = calculate_by_category
         self.allow_zero = allow_zero
         if self.calculate_by_category:
-            self.calculate_by_category()
+            self.calculate_metrics_by_category()
         else:
             self.calculate()
 
@@ -116,7 +116,7 @@ class FileSplittingEvaluation:
                 raise ZeroDivisionError("FP and FN are zero, please specify allow_zero=True if you want F1 to be None.")
         self.evaluation_results = {'tp': tp, 'fp': fp, 'fn': fn, 'precision': precision, 'recall': recall, 'f1': f1}
 
-    def calculate_by_category(self):
+    def calculate_metrics_by_category(self):
         """Calculate metrics by Category independently."""
         categories = list(set([doc_pair[0].category for doc_pair in self.documents]))
         self.evaluation_results = {'tp': {}, 'fp': {}, 'fn': {}, 'precision': {}, 'recall': {}, 'f1': {}}
