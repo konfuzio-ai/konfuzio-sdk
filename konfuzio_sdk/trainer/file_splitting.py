@@ -83,11 +83,11 @@ class FileSplittingEvaluation:
         fn = 0
         for ground_truth, prediction in self.documents:
             for page_gt, page_pr in zip(ground_truth.pages(), prediction.pages()):
-                if page_gt.number == 1 and hasattr(page_pr, 'is_first_page'):
+                if hasattr(page_gt, 'is_first_page') and hasattr(page_pr, 'is_first_page'):
                     tp += 1
-                elif page_gt.number > 1 and hasattr(page_pr, 'is_first_page'):
+                elif not hasattr(page_gt, 'is_first_page') and hasattr(page_pr, 'is_first_page'):
                     fp += 1
-                elif page_gt.number == 1 and not hasattr(page_pr, 'is_first_page'):
+                elif hasattr(page_gt, 'is_first_page') and not hasattr(page_pr, 'is_first_page'):
                     fn += 1
         if tp + fp != 0:
             precision = tp / (tp + fp)
@@ -125,14 +125,16 @@ class FileSplittingEvaluation:
             fp = 0
             fn = 0
             for ground_truth, prediction in [
-                document for document in self.documents if document.category.id_ == category.id_
+                [document_1, document_2]
+                for document_1, document_2 in self.documents
+                if document_1.category and document_1.category.id_ == category.id_
             ]:
                 for page_gt, page_pr in zip(ground_truth.pages(), prediction.pages()):
-                    if page_gt.number == 1 and hasattr(page_pr, 'is_first_page'):
+                    if hasattr(page_gt, 'is_first_page') and hasattr(page_pr, 'is_first_page'):
                         tp += 1
-                    elif page_gt.number > 1 and hasattr(page_pr, 'is_first_page'):
+                    elif not hasattr(page_gt, 'is_first_page') and hasattr(page_pr, 'is_first_page'):
                         fp += 1
-                    elif page_gt.number == 1 and not hasattr(page_pr, 'is_first_page'):
+                    elif hasattr(page_gt, 'is_first_page') and not hasattr(page_pr, 'is_first_page'):
                         fn += 1
             if tp + fp != 0:
                 precision = tp / (tp + fp)
@@ -283,6 +285,30 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
                 page.is_first_page = True
         return page
 
+    def evaluate_full(self, use_training_docs: bool = False) -> FileSplittingEvaluation:
+        """
+        Evaluate the filesplitting context-aware logic.
+
+        :param use_training_docs: If enabled, runs evaluation on the training data to define its quality; if disabled,
+        runs evaluation on the test data.
+        :type use_training_docs: bool
+        :return: Evaluation information for the filesplitting context-aware logic.
+        """
+        evaluation_list = []
+        if not use_training_docs:
+            evaluation_docs = self.test_data
+        else:
+            evaluation_docs = self.train_data
+        for doc in evaluation_docs:
+            doc.pages()[0].is_first_page = True
+            pred = self.tokenizer.tokenize(deepcopy(doc))
+            for page in pred.pages():
+                if hasattr(self.predict(page), 'is_first_page'):
+                    page.is_first_page = True
+            evaluation_list.append((doc, pred))
+        self.full_evaluation = FileSplittingEvaluation(evaluation_list)
+        return self.full_evaluation
+
 
 class SplittingAI:
     """Split a given Document and return a list of resulting shorter Documents."""
@@ -361,13 +387,3 @@ class SplittingAI:
         else:
             processed = self._suggest_page_split(document)
         return processed
-
-    def evaluate_full(self, use_training_docs: bool = False) -> FileSplittingEvaluation:
-        """
-        Evaluate the filesplitting context-aware logic.
-
-        :param use_training_docs: If enabled, runs evaluation on the training data to define its quality; if disabled,
-        runs evaluation on the test data.
-        :type use_training_docs: bool
-        """
-        pass

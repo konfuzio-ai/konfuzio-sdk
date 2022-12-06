@@ -21,9 +21,7 @@ class TestFileSplittingModel(unittest.TestCase):
         cls.file_splitting_model.train_data = [
             document for category in cls.file_splitting_model.categories for document in category.documents()
         ]
-        cls.file_splitting_model.test_data = [
-            document for category in cls.file_splitting_model.categories for document in category.test_documents()
-        ]
+        cls.file_splitting_model.test_data = cls.project.get_category_by_id(3).test_documents()
         cls.file_splitting_model.tokenizer = ConnectedTextTokenizer()
         cls.file_splitting_model.first_page_spans = None
         cls.test_document = cls.project.get_category_by_id(3).test_documents()[0]
@@ -86,13 +84,12 @@ class TestFileSplittingModel(unittest.TestCase):
         splitting_ai = SplittingAI(self.file_splitting_model)
         pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)
         for page in pred.pages():
-            print(hasattr(page, 'is_first_page'))
             if page.number in (1, 3, 5):
                 assert hasattr(page, 'is_first_page')
             else:
                 assert not hasattr(page, 'is_first_page')
 
-    def test_evaluation_calculation(self):
+    def test_metrics_calculation(self):
         """Test Evaluation class for ContextAwareFileSplitting."""
         splitting_ai = SplittingAI(self.file_splitting_model)
         ground_truth = self.test_document
@@ -102,12 +99,36 @@ class TestFileSplittingModel(unittest.TestCase):
         pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)
         documents = [[ground_truth, pred]]
         evaluation = FileSplittingEvaluation(documents)
-        print(evaluation.evaluation_results)
+        assert evaluation.tp == 3
+        assert evaluation.fp == 0
+        assert evaluation.fn == 0
+        assert evaluation.precision == 1.0
+        assert evaluation.recall == 1.0
+        assert evaluation.f1 == 1.0
 
-    def test_evaluation_by_category(self):
+    def test_metrics_calculation_by_category(self):
         """Test Evaluation by Category."""
-        pass
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        ground_truth = self.test_document
+        for page in ground_truth.pages():
+            if page.number in (1, 3, 5):
+                page.is_first_page = True
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)
+        documents = [[ground_truth, pred]]
+        evaluation = FileSplittingEvaluation(documents, calculate_by_category=True)
+        assert evaluation.tp[ground_truth.category.id_] == 3
+        assert evaluation.fp[ground_truth.category.id_] == 0
+        assert evaluation.fn[ground_truth.category.id_] == 0
+        assert evaluation.precision[ground_truth.category.id_] == 1.0
+        assert evaluation.recall[ground_truth.category.id_] == 1.0
+        assert evaluation.f1[ground_truth.category.id_] == 1.0
 
     def test_splitting_ai_evaluation(self):
-        """Test evaluate_full method of SplittingAI."""
-        pass
+        """Test evaluate_full method of ContextAwareFileSplittingModel."""
+        self.file_splitting_model.evaluate_full()
+        assert self.file_splitting_model.full_evaluation.tp == 3
+        assert self.file_splitting_model.full_evaluation.fp == 0
+        assert self.file_splitting_model.full_evaluation.fn == 0
+        assert self.file_splitting_model.full_evaluation.precision == 1.0
+        assert self.file_splitting_model.full_evaluation.recall == 1.0
+        assert self.file_splitting_model.full_evaluation.f1 == 1.0
