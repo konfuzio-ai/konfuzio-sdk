@@ -362,7 +362,15 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
     def test_04_save_model(self):
         """Save the model."""
-        self.pipeline.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder, include_konfuzio=False)
+        with pytest.raises(MemoryError):
+            self.pipeline.pipeline_path = self.pipeline.save(include_konfuzio=False, max_ram="5MB")
+
+        self.project._max_ram = "5MB"
+        with pytest.raises(MemoryError):
+            self.pipeline.pipeline_path = self.pipeline.save(include_konfuzio=False)
+        self.project._max_ram = None
+
+        self.pipeline.pipeline_path = self.pipeline.save(include_konfuzio=False)
         assert os.path.isfile(self.pipeline.pipeline_path)
 
     def test_05_upload_ai_model(self):
