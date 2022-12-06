@@ -12,10 +12,9 @@ import sys
 from copy import deepcopy
 from typing import List, Tuple
 
-from konfuzio_sdk.data import Document, Page
+from konfuzio_sdk.data import Document, Page, Project
 from konfuzio_sdk.trainer.information_extraction import load_model
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
-from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
@@ -304,7 +303,8 @@ class SplittingAI:
 
     def _create_doc_from_page_interval(self, original_doc: Document, start_page: Page, end_page: Page) -> Document:
         pages_text = original_doc.text[start_page.start_offset : end_page.end_offset]
-        new_doc = Document(project=LocalTextProject(), id_=None, text=pages_text)
+        project = Project(id_=None)
+        new_doc = Document(project=project, id_=None, text=pages_text)
         for page in original_doc.pages():
             if page.number in range(start_page.number, end_page.number):
                 _ = Page(

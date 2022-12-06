@@ -8,8 +8,6 @@ from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI
 
-TEST_WITH_FULL_DATASET = True
-
 
 class TestFileSplittingModel(unittest.TestCase):
     """Test filesplitting model."""
