@@ -1594,7 +1594,7 @@ class Trainer:
 
         return merge is not None
 
-    def save(self, output_dir: str, include_konfuzio=True):
+    def save(self, output_dir: str, include_konfuzio=True, reduce_weight=False, max_ram=None):
         """
         Save the label model as bz2 compressed pickle object to the release directory.
 
@@ -1609,6 +1609,10 @@ class Trainer:
 
         :return: Path of the saved model file
         """
+        logger.info('Saving model')
+        logger.info(f'{include_konfuzio=}')
+        logger.info(f'{reduce_weight=}')
+        logger.info(f'{max_ram=}')
         # Keep Documents of the Category so that we can restore them later
         category_documents = self.category.documents() + self.category.test_documents()
 
@@ -1618,13 +1622,40 @@ class Trainer:
         #     clean_annotations = list(set(document.annotations()) - set(no_label_annotations))
         #     document._annotations = clean_annotations
 
-        # self.lose_weight() # todo make this optional: otherwise evaluate will not work on self
+        if reduce_weight:
+            self.lose_weight()  # todo: review and test #9461
 
         from pympler import asizeof
 
-        logger.info(f'Saving model - {asizeof.asizeof(self) / 1_048_576} MB')
+        logger.info(f'Model size: {asizeof.asizeof(self) / 1_000_000} MB')
 
-        sys.setrecursionlimit(99999999)
+        # if no argument passed, get project max_ram
+        if not max_ram:
+            max_ram = self.category.project.max_ram
+
+        if max_ram is not None:
+            if type(max_ram) is int or max_ram.isdigit():
+                max_ram = int(max_ram)
+            else:
+                if not max_ram[:-2].isdigit():
+                    logger.error(f"max_ram value {max_ram} invalid.")
+                    max_ram = None
+                else:
+                    max_ram_val = int(max_ram[:-2])
+                if max_ram[-2:].lower() == 'gb':
+                    max_ram = max_ram_val * 1e9
+                elif max_ram[-2:].lower() == 'mb':
+                    max_ram = max_ram_val * 1e6
+                elif max_ram[-2:].lower() == 'kb':
+                    max_ram = max_ram_val * 1e3
+                else:
+                    logger.error(f"max_ram value {max_ram} invalid.")
+                    max_ram = None
+
+            if max_ram and asizeof.asizeof(self) > max_ram:
+                raise MemoryError("AI model memory use exceeds maximum.")
+
+        # sys.setrecursionlimit(99999999)  # ?
 
         logger.info('Getting save paths')
         import konfuzio_sdk
@@ -1658,7 +1689,7 @@ class Trainer:
         # then delete cloudpickle file
         os.remove(temp_pkl_file_path)
 
-        size_string = f'{os.path.getsize(pkl_file_path) / 1_048_576} MB'
+        size_string = f'{os.path.getsize(pkl_file_path) / 1_000_000} MB'
         logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
 
         # restore Documents of the Category so that we can run the evaluation later
