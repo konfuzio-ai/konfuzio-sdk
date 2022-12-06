@@ -1622,7 +1622,7 @@ class Trainer:
 
         from pympler import asizeof
 
-        logger.info(f'Saving model - {asizeof.asizeof(self) / 1_000_000} MB')
+        logger.info(f'Saving model - {asizeof.asizeof(self) / 1_048_576} MB')
 
         sys.setrecursionlimit(99999999)
 
@@ -1658,7 +1658,7 @@ class Trainer:
         # then delete cloudpickle file
         os.remove(temp_pkl_file_path)
 
-        size_string = f'{os.path.getsize(pkl_file_path) / 1_000_000} MB'
+        size_string = f'{os.path.getsize(pkl_file_path) / 1_048_576} MB'
         logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
 
         # restore Documents of the Category so that we can run the evaluation later
