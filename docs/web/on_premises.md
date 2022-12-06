@@ -80,7 +80,9 @@ The diagram illustrates the components of a Konfuzio Server deployment. Optional
       databases -- "Can be operated on"--> servers
       end
       
-      %% click worker "http://www.github.com" "This is a link"
+      click flower "https://dev.konfuzio.com/web/on_premises.html#optional-6-use-flower-to-monitor-tasks"
+      click worker "/web/on_premises.html#start-the-container"
+      
       class flower optional
       class ocr optional
       class segmentation optional
