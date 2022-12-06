@@ -325,8 +325,10 @@ generated automatically.</p>
 expose Konfuzio services using name-based virtual servers configured with <code class="docutils literal notranslate"><span class="pre">Ingress</span></code>
 objects. You’ll need to specify a domain which will contain records to resolve the
 domain to the appropriate IP.</p>
-<p><code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">ingress.enabled=True</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">ingress.HOST_NAME=konfuzio.example.com</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">--</span><span class="nb">set</span> <span class="n">ingress</span><span class="o">.</span><span class="n">enabled</span><span class="o">=</span><span class="kc">True</span>
+<span class="o">--</span><span class="nb">set</span> <span class="n">ingress</span><span class="o">.</span><span class="n">HOST_NAME</span><span class="o">=</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">example</span><span class="o">.</span><span class="n">com</span>
+</pre></div>
+</div>
 <!--
 ###### IPs
 
@@ -340,7 +342,9 @@ For example if you choose `example.com` and you have a static IP of `10.10.10.10
 
 _Include these options in your Helm install command:_
 
-`--set global.hosts.externalIP=10.10.10.`
+```
+--set global.hosts.externalIP=10.10.10.
+```
 --></section>
 <section id="persistence">
 <h5>Persistence<a class="headerlink" href="#persistence" title="Permalink to this headline">¶</a></h5>
@@ -359,8 +363,10 @@ have your own wildcard certificate, you already have cert-manager installed, or 
 some other way of obtaining TLS certificates. For the default configuration, you must
 specify an email address to register your TLS certificates.</p>
 <p><em>Include these options in your Helm install command:</em></p>
-<p><code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">letsencrypt.enabled=True</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">letsencrypt.email=me&#64;example.com</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">--</span><span class="nb">set</span> <span class="n">letsencrypt</span><span class="o">.</span><span class="n">enabled</span><span class="o">=</span><span class="kc">True</span>
+<span class="o">--</span><span class="nb">set</span> <span class="n">letsencrypt</span><span class="o">.</span><span class="n">email</span><span class="o">=</span><span class="n">me</span><span class="nd">@example</span><span class="o">.</span><span class="n">com</span>
+</pre></div>
+</div>
 </section>
 <section id="postgresql">
 <h5>PostgreSQL<a class="headerlink" href="#postgresql" title="Permalink to this headline">¶</a></h5>
@@ -374,10 +380,12 @@ only.</p>
 documentation. As soon you have an external PostgreSQL database ready, Konfuzio can
 be configured to use it as shown below.</p>
 <p><em>Include these options in your Helm install command:</em></p>
-<p><code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">postgresql.install=false</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">global.psql.host=production.postgress.hostname.local</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">global.psql.password.secret=kubernetes_secret_name</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">global.psql.password.key=key_that_contains_postgres_password</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">--</span><span class="nb">set</span> <span class="n">postgresql</span><span class="o">.</span><span class="n">install</span><span class="o">=</span><span class="n">false</span>
+<span class="o">--</span><span class="nb">set</span> <span class="k">global</span><span class="o">.</span><span class="n">psql</span><span class="o">.</span><span class="n">host</span><span class="o">=</span><span class="n">production</span><span class="o">.</span><span class="n">postgress</span><span class="o">.</span><span class="n">hostname</span><span class="o">.</span><span class="n">local</span>
+<span class="o">--</span><span class="nb">set</span> <span class="k">global</span><span class="o">.</span><span class="n">psql</span><span class="o">.</span><span class="n">password</span><span class="o">.</span><span class="n">secret</span><span class="o">=</span><span class="n">kubernetes_secret_name</span>
+<span class="o">--</span><span class="nb">set</span> <span class="k">global</span><span class="o">.</span><span class="n">psql</span><span class="o">.</span><span class="n">password</span><span class="o">.</span><span class="n">key</span><span class="o">=</span><span class="n">key_that_contains_postgres_password</span>
+</pre></div>
+</div>
 </section>
 <section id="redis">
 <h5>Redis<a class="headerlink" href="#redis" title="Permalink to this headline">¶</a></h5>
@@ -412,9 +420,11 @@ into a smaller cluster. Konfuzio can work without a GPU. The GPU is used to trai
 <h4>Deploy using Helm<a class="headerlink" href="#deploy-using-helm" title="Permalink to this headline">¶</a></h4>
 <p>Once you have all of your configuration options collected, we can get any dependencies
 and run Helm. In this example, we’ve named our Helm release <code class="docutils literal notranslate"><span class="pre">konfuzio</span></code>.</p>
-<p><code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">repo</span> <span class="pre">add</span> <span class="pre">konfuzio-repo</span> <span class="pre">https://git.konfuzio.com/api/v4/projects/106/packages/helm/stable</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">repo</span> <span class="pre">update</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">upgrade</span> <span class="pre">--install</span> <span class="pre">konfuzio</span> <span class="pre">konfuzio-repo/konfuzio-chart</span> <span class="pre">--values</span> <span class="pre">my_values.yaml</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">helm</span> <span class="n">repo</span> <span class="n">add</span> <span class="n">konfuzio</span><span class="o">-</span><span class="n">repo</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">git</span><span class="o">.</span><span class="n">konfuzio</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v4</span><span class="o">/</span><span class="n">projects</span><span class="o">/</span><span class="mi">106</span><span class="o">/</span><span class="n">packages</span><span class="o">/</span><span class="n">helm</span><span class="o">/</span><span class="n">stable</span>
+<span class="n">helm</span> <span class="n">repo</span> <span class="n">update</span>
+<span class="n">helm</span> <span class="n">upgrade</span> <span class="o">--</span><span class="n">install</span> <span class="n">konfuzio</span> <span class="n">konfuzio</span><span class="o">-</span><span class="n">repo</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">chart</span> <span class="o">--</span><span class="n">values</span> <span class="n">my_values</span><span class="o">.</span><span class="n">yaml</span>
+</pre></div>
+</div>
 <p>Please create a my_values.yaml file for your Konfuzio configuration. Useful default values can be found in the values.yaml in the chart repository. See Helm docs for information on how your values file will override the defaults. Alternativ you can specify you configuration using <code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">option.name=value</span></code>.</p>
 </section>
 <section id="monitoring-the-deployment">
@@ -431,9 +441,11 @@ another terminal.</p>
 <h4>Initial login<a class="headerlink" href="#initial-login" title="Permalink to this headline">¶</a></h4>
 <p>You can access the Konfuzio instance by visiting the domain specified during
 installation. In order to create an initial superuser, please to connect to a running pod.</p>
-<p><code class="docutils literal notranslate"><span class="pre">kubectl</span> <span class="pre">get</span> <span class="pre">pod</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">kubectl</span> <span class="pre">exec</span> <span class="pre">--stdin</span> <span class="pre">--tty</span> <span class="pre">my-konfuzio-*</span> <span class="pre">--</span>&#160; <span class="pre">bash</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">createsuperuser</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kubectl</span> <span class="n">get</span> <span class="n">pod</span>
+<span class="n">kubectl</span> <span class="n">exec</span> <span class="o">--</span><span class="n">stdin</span> <span class="o">--</span><span class="n">tty</span> <span class="n">my</span><span class="o">-</span><span class="n">konfuzio</span><span class="o">-*</span> <span class="o">--</span>  <span class="n">bash</span>
+<span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">createsuperuser</span>
+</pre></div>
+</div>
 <!--
 #### Initial login
 
@@ -509,8 +521,10 @@ alternative method as a file to the virtual machine.</p>
 <p>Registry URL: {PROVIDED_BY_KONFUZIO}<span class="raw-html-m2r"><br></span>
 Username: {PROVIDED_BY_KONFUZIO}<span class="raw-html-m2r"><br></span>
 Password: {PROVIDED_BY_KONFUZIO}</p>
-<p><code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">docker</span> <span class="pre">login</span> <span class="pre">REGISTRY_URL</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">docker</span> <span class="pre">pull</span> <span class="pre">REGISTRY_URL/konfuzio/text-annotation/master:latest</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">login</span> <span class="n">REGISTRY_URL</span>
+<span class="n">docker</span> <span class="n">pull</span> <span class="n">REGISTRY_URL</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">master</span><span class="p">:</span><span class="n">latest</span>
+</pre></div>
+</div>
 <p>The Tag “latest” should be replaced with an actual version. A list of available tags can be found here: <a class="reference external" href="https://dev.konfuzio.com/web/changelog_app.html">https://dev.konfuzio.com/web/changelog_app.html</a>.</p>
 </section>
 <section id="setup-postgresql-redis-blobstorage-filesystemstorage">
@@ -527,34 +541,41 @@ Password: {PROVIDED_BY_KONFUZIO}</p>
 <p>In this example we store the files on the host VM and mount the directory “/konfuzio-vm/text-annotation/data” into the container. In the first step we create a container with a shell to then start the initialization scripts within the container.
 The container needs to be able to access IP addresses and hostnames used in the .env. This can be ensured using –add.host. In the example we make the host IP 10.0.0.1 available.</p>
 <p>docker run -it –add-host=10.0.0.1 –env-file /konfuzio-vm/text-annotation.env –mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data REGISTRY_URL/konfuzio/text-annotation/master:latest bash</p>
-<p><code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">migrate</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">createsuperuser</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">init_email_templates</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">init_user_permissions</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">migrate</span>
+<span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">createsuperuser</span>
+<span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">init_email_templates</span>
+<span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">init_user_permissions</span>
+</pre></div>
+</div>
 <p>After completing these steps you can exit and remove the container.</p>
 <p>Note: The username used during the createsuperuser dialog must have the format of a valid e-mail in order to be able to login later.</p>
 </section>
 <section id="start-the-container">
 <h4>5. Start the container<a class="headerlink" href="#start-the-container" title="Permalink to this headline">¶</a></h4>
 <p>In this example we start three containers, the first one to serve the Konfuzio web application. The second and third are used to process tasks in the background without blocking the web application.</p>
-<p><code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">run</span> <span class="pre">-p</span> <span class="pre">80:8000</span> <span class="pre">--name</span> <span class="pre">web</span> <span class="pre">-d</span> <span class="pre">--add-host=host:10.0.0.1</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">--env-file</span> <span class="pre">/konfuzio-vm/text-annotation.env</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">--mount</span> <span class="pre">type=bind,source=/konfuzio-vm/text-annotation/data,target=/data</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">REGISTRY_URL/konfuzio/text-annotation/master:latest</span></code></p>
-<p><code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">run</span> <span class="pre">--name</span> <span class="pre">worker1</span> <span class="pre">-d</span> <span class="pre">--add-host=host:10.0.0.1</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">--env-file</span> <span class="pre">/konfuzio-vm/text-annotation.env</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">--mount</span> <span class="pre">type=bind,source=/konfuzio-vm/text-annotation/data,target=/data</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">REGISTRY_URL/konfuzio/text-annotation/master:latest</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">celery</span> <span class="pre">-A</span> <span class="pre">app</span> <span class="pre">worker</span> <span class="pre">-l</span> <span class="pre">INFO</span> <span class="pre">--concurrency</span> <span class="pre">1</span> <span class="pre">-Q</span> <span class="pre">celery,priority_ocr,ocr,\</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">priority_extract,extract,processing,priority_local_ocr,local_ocr,\</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">training,finalize,training_heavy,categorize</span></code></p>
-<p><code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">run</span> <span class="pre">--name</span> <span class="pre">worker2</span> <span class="pre">-d</span> <span class="pre">--add-host=host:10.0.0.1</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">--env-file</span> <span class="pre">/konfuzio-vm/text-annotation.env</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">--mount</span> <span class="pre">type=bind,source=/konfuzio-vm/text-annotation/data,target=/data</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">REGISTRY_URL/konfuzio/text-annotation/master:latest</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">celery</span> <span class="pre">-A</span> <span class="pre">app</span> <span class="pre">worker</span> <span class="pre">-l</span> <span class="pre">INFO</span> <span class="pre">--concurrency</span> <span class="pre">1</span> <span class="pre">-Q</span> <span class="pre">celery,priority_ocr,ocr,\</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">priority_extract,extract,processing,priority_local_ocr,local_ocr,\</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">training,finalize,training_heavy,categorize</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">p</span> <span class="mi">80</span><span class="p">:</span><span class="mi">8000</span> <span class="o">--</span><span class="n">name</span> <span class="n">web</span> <span class="o">-</span><span class="n">d</span> <span class="o">--</span><span class="n">add</span><span class="o">-</span><span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">:</span><span class="mf">10.0.0.1</span> \
+<span class="o">--</span><span class="n">env</span><span class="o">-</span><span class="n">file</span> <span class="o">/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">vm</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">.</span><span class="n">env</span> \
+<span class="o">--</span><span class="n">mount</span> <span class="nb">type</span><span class="o">=</span><span class="n">bind</span><span class="p">,</span><span class="n">source</span><span class="o">=/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">vm</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">data</span><span class="p">,</span><span class="n">target</span><span class="o">=/</span><span class="n">data</span> \
+<span class="n">REGISTRY_URL</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">master</span><span class="p">:</span><span class="n">latest</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">run</span> <span class="o">--</span><span class="n">name</span> <span class="n">worker1</span> <span class="o">-</span><span class="n">d</span> <span class="o">--</span><span class="n">add</span><span class="o">-</span><span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">:</span><span class="mf">10.0.0.1</span>
+<span class="o">--</span><span class="n">env</span><span class="o">-</span><span class="n">file</span> <span class="o">/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">vm</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">.</span><span class="n">env</span>
+<span class="o">--</span><span class="n">mount</span> <span class="nb">type</span><span class="o">=</span><span class="n">bind</span><span class="p">,</span><span class="n">source</span><span class="o">=/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">vm</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">data</span><span class="p">,</span><span class="n">target</span><span class="o">=/</span><span class="n">data</span>
+<span class="n">REGISTRY_URL</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">master</span><span class="p">:</span><span class="n">latest</span>
+<span class="n">celery</span> <span class="o">-</span><span class="n">A</span> <span class="n">app</span> <span class="n">worker</span> <span class="o">-</span><span class="n">l</span> <span class="n">INFO</span> <span class="o">--</span><span class="n">concurrency</span> <span class="mi">1</span> <span class="o">-</span><span class="n">Q</span> <span class="n">celery</span><span class="p">,</span><span class="n">priority_ocr</span><span class="p">,</span><span class="n">ocr</span><span class="p">,</span>
+<span class="n">priority_extract</span><span class="p">,</span><span class="n">extract</span><span class="p">,</span><span class="n">processing</span><span class="p">,</span><span class="n">priority_local_ocr</span><span class="p">,</span><span class="n">local_ocr</span><span class="p">,</span>\
+<span class="n">training</span><span class="p">,</span><span class="n">finalize</span><span class="p">,</span><span class="n">training_heavy</span><span class="p">,</span><span class="n">categorize</span>
+
+<span class="n">docker</span> <span class="n">run</span> <span class="o">--</span><span class="n">name</span> <span class="n">worker2</span> <span class="o">-</span><span class="n">d</span> <span class="o">--</span><span class="n">add</span><span class="o">-</span><span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">:</span><span class="mf">10.0.0.1</span> \
+<span class="o">--</span><span class="n">env</span><span class="o">-</span><span class="n">file</span> <span class="o">/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">vm</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">.</span><span class="n">env</span>
+<span class="o">--</span><span class="n">mount</span> <span class="nb">type</span><span class="o">=</span><span class="n">bind</span><span class="p">,</span><span class="n">source</span><span class="o">=/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">vm</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">data</span><span class="p">,</span><span class="n">target</span><span class="o">=/</span><span class="n">data</span> \
+<span class="n">REGISTRY_URL</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">master</span><span class="p">:</span><span class="n">latest</span> \
+<span class="n">celery</span> <span class="o">-</span><span class="n">A</span> <span class="n">app</span> <span class="n">worker</span> <span class="o">-</span><span class="n">l</span> <span class="n">INFO</span> <span class="o">--</span><span class="n">concurrency</span> <span class="mi">1</span> <span class="o">-</span><span class="n">Q</span> <span class="n">celery</span><span class="p">,</span><span class="n">priority_ocr</span><span class="p">,</span><span class="n">ocr</span><span class="p">,</span>\
+<span class="n">priority_extract</span><span class="p">,</span><span class="n">extract</span><span class="p">,</span><span class="n">processing</span><span class="p">,</span><span class="n">priority_local_ocr</span><span class="p">,</span><span class="n">local_ocr</span><span class="p">,</span>\
+<span class="n">training</span><span class="p">,</span><span class="n">finalize</span><span class="p">,</span><span class="n">training_heavy</span><span class="p">,</span><span class="n">categorize</span>
+</pre></div>
+</div>
 </section>
 <section id="optional-6-use-flower-to-monitor-tasks">
 <h4>[Optional] 6. Use Flower to monitor tasks<a class="headerlink" href="#optional-6-use-flower-to-monitor-tasks" title="Permalink to this headline">¶</a></h4>

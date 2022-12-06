@@ -172,8 +172,10 @@ expose Konfuzio services using name-based virtual servers configured with `Ingre
 objects. You'll need to specify a domain which will contain records to resolve the
 domain to the appropriate IP.
 
-`--set ingress.enabled=True`  
-`--set ingress.HOST_NAME=konfuzio.example.com`  
+```
+--set ingress.enabled=True
+--set ingress.HOST_NAME=konfuzio.example.com
+```
 
 <!-- 
 ###### IPs
@@ -188,7 +190,9 @@ For example if you choose `example.com` and you have a static IP of `10.10.10.10
 
 _Include these options in your Helm install command:_
 
-`--set global.hosts.externalIP=10.10.10.`
+```
+--set global.hosts.externalIP=10.10.10.
+```
 -->
 
 ##### Persistence
@@ -211,8 +215,10 @@ specify an email address to register your TLS certificates.
 
 _Include these options in your Helm install command:_
 
-`--set letsencrypt.enabled=True`  
-`--set letsencrypt.email=me@example.com`
+```
+--set letsencrypt.enabled=True
+--set letsencrypt.email=me@example.com
+```
 
 ##### PostgreSQL
 
@@ -229,10 +235,12 @@ be configured to use it as shown below.
 
 _Include these options in your Helm install command:_
 
-`--set postgresql.install=false`  
-`--set global.psql.host=production.postgress.hostname.local`  
-`--set global.psql.password.secret=kubernetes_secret_name`  
-`--set global.psql.password.key=key_that_contains_postgres_password`  
+```
+--set postgresql.install=false
+--set global.psql.host=production.postgress.hostname.local
+--set global.psql.password.secret=kubernetes_secret_name
+--set global.psql.password.key=key_that_contains_postgres_password
+```
 
 ##### Redis
 
@@ -269,9 +277,11 @@ into a smaller cluster. Konfuzio can work without a GPU. The GPU is used to trai
 Once you have all of your configuration options collected, we can get any dependencies
 and run Helm. In this example, we've named our Helm release `konfuzio`.
 
-`helm repo add konfuzio-repo https://git.konfuzio.com/api/v4/projects/106/packages/helm/stable`  
-`helm repo update`  
-`helm upgrade --install konfuzio konfuzio-repo/konfuzio-chart --values my_values.yaml`  
+```
+helm repo add konfuzio-repo https://git.konfuzio.com/api/v4/projects/106/packages/helm/stable
+helm repo update
+helm upgrade --install konfuzio konfuzio-repo/konfuzio-chart --values my_values.yaml
+```
 
 Please create a my_values.yaml file for your Konfuzio configuration. Useful default values can be found in the values.yaml in the chart repository. See Helm docs for information on how your values file will override the defaults. Alternativ you can specify you configuration using `--set option.name=value`. 
 
@@ -290,9 +300,11 @@ The Konfuzio Server deployments can be scaled dynamically using a [Horizontal Po
 You can access the Konfuzio instance by visiting the domain specified during
 installation. In order to create an initial superuser, please to connect to a running pod.
 
-`kubectl get pod`  
-`kubectl exec --stdin --tty my-konfuzio-* --  bash`  
-`python manage.py createsuperuser`  
+```
+kubectl get pod
+kubectl exec --stdin --tty my-konfuzio-* --  bash
+python manage.py createsuperuser
+```
 
 <!--
 #### Initial login
@@ -379,8 +391,10 @@ Registry URL: {PROVIDED_BY_KONFUZIO}
 Username: {PROVIDED_BY_KONFUZIO}  
 Password: {PROVIDED_BY_KONFUZIO}  
 
-`> docker login REGISTRY_URL`  
-`> docker pull REGISTRY_URL/konfuzio/text-annotation/master:latest`  
+```
+docker login REGISTRY_URL
+docker pull REGISTRY_URL/konfuzio/text-annotation/master:latest
+```
 
 The Tag "latest" should be replaced with an actual version. A list of available tags can be found here: https://dev.konfuzio.com/web/changelog_app.html.
 
@@ -398,10 +412,12 @@ The container needs to be able to access IP addresses and hostnames used in the 
 
 docker run -it --add-host=10.0.0.1 --env-file /konfuzio-vm/text-annotation.env --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data REGISTRY_URL/konfuzio/text-annotation/master:latest bash
 
-`python manage.py migrate`  
-`python manage.py createsuperuser`  
-`python manage.py init_email_templates`  
-`python manage.py init_user_permissions`  
+```
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py init_email_templates
+python manage.py init_user_permissions
+```
 
 After completing these steps you can exit and remove the container.
 
@@ -410,26 +426,30 @@ Note: The username used during the createsuperuser dialog must have the format o
 #### 5. Start the container
 In this example we start three containers, the first one to serve the Konfuzio web application. The second and third are used to process tasks in the background without blocking the web application.
 
-`docker run -p 80:8000 --name web -d --add-host=host:10.0.0.1 \`  
-`--env-file /konfuzio-vm/text-annotation.env \`  
-`--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \`  
-`REGISTRY_URL/konfuzio/text-annotation/master:latest`
+```
+docker run -p 80:8000 --name web -d --add-host=host:10.0.0.1 \
+--env-file /konfuzio-vm/text-annotation.env \
+--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \
+REGISTRY_URL/konfuzio/text-annotation/master:latest
+```
 
-`docker run --name worker1 -d --add-host=host:10.0.0.1 \`  
-`--env-file /konfuzio-vm/text-annotation.env \`  
-`--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \`  
-`REGISTRY_URL/konfuzio/text-annotation/master:latest \`  
-`celery -A app worker -l INFO --concurrency 1 -Q celery,priority_ocr,ocr,\`  
-`priority_extract,extract,processing,priority_local_ocr,local_ocr,\`  
-`training,finalize,training_heavy,categorize`  
+```
+docker run --name worker1 -d --add-host=host:10.0.0.1 \  
+--env-file /konfuzio-vm/text-annotation.env \  
+--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \  
+REGISTRY_URL/konfuzio/text-annotation/master:latest \  
+celery -A app worker -l INFO --concurrency 1 -Q celery,priority_ocr,ocr,\  
+priority_extract,extract,processing,priority_local_ocr,local_ocr,\
+training,finalize,training_heavy,categorize  
 
-`docker run --name worker2 -d --add-host=host:10.0.0.1 \`  
-`--env-file /konfuzio-vm/text-annotation.env \`  
-`--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \`  
-`REGISTRY_URL/konfuzio/text-annotation/master:latest \`  
-`celery -A app worker -l INFO --concurrency 1 -Q celery,priority_ocr,ocr,\`  
-`priority_extract,extract,processing,priority_local_ocr,local_ocr,\`  
-`training,finalize,training_heavy,categorize`
+docker run --name worker2 -d --add-host=host:10.0.0.1 \
+--env-file /konfuzio-vm/text-annotation.env \  
+--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \
+REGISTRY_URL/konfuzio/text-annotation/master:latest \
+celery -A app worker -l INFO --concurrency 1 -Q celery,priority_ocr,ocr,\
+priority_extract,extract,processing,priority_local_ocr,local_ocr,\
+training,finalize,training_heavy,categorize
+```
 
 #### [Optional] 6. Use Flower to monitor tasks
 
