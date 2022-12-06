@@ -94,7 +94,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#optional-6-use-flower-to-monitor-tasks">[Optional] 6. Use Flower to monitor tasks</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#optional-7-use-azure-read-api-on-premise">[Optional] 7. Use Azure Read API on-premise</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#optional-8-install-document-segmentation-container">[Optional] 8. Install document segmentation container</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#optional-9-install-document-summaritazion-container">[Optional] 9. Install document summaritazion container</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#optional-9-install-document-summarization-container">[Optional] 9. Install document summarization container</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#a-upgrade-to-newer-konfuzio-version">10a. Upgrade to newer Konfuzio Version</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#b-downgrade-to-older-konfuzio-version">10b. Downgrade to older Konfuzio Version</a></li>
 </ul>
@@ -240,8 +240,12 @@
    databases -- &quot;Can be operated on&quot;--&gt; servers
    end
 
-   click flower &quot;https://dev.konfuzio.com/web/on_premises.html#optional-6-use-flower-to-monitor-tasks&quot;
+   click flower &quot;/web/on_premises.html#optional-6-use-flower-to-monitor-tasks&quot;
+   click web &quot;/web/on_premises.html#start-the-container&quot;
    click worker &quot;/web/on_premises.html#start-the-container&quot;
+   click ocr &quot;/web/on_premises.html#optional-7-use-azure-read-api-on-premise&quot;
+   click segmentation &quot;/web/on_premises.html#optional-8-install-document-segmentation-container&quot;
+   click summarization &quot;/web/on_premises.html#optional-9-install-document-summarization-container&quot;
 
    class flower optional
    class ocr optional
@@ -600,8 +604,8 @@ Password: {PROVIDED_BY_KONFUZIO}</p>
 </pre></div>
 </div>
 </section>
-<section id="optional-9-install-document-summaritazion-container">
-<h4>[Optional] 9. Install document summaritazion container<a class="headerlink" href="#optional-9-install-document-summaritazion-container" title="Permalink to this headline">¶</a></h4>
+<section id="optional-9-install-document-summarization-container">
+<h4>[Optional] 9. Install document summarization container<a class="headerlink" href="#optional-9-install-document-summarization-container" title="Permalink to this headline">¶</a></h4>
 <p>Download the container with the credentials provided by Konfuzio</p>
 <p>Registry URL: {PROVIDED_BY_KONFUZIO}<span class="raw-html-m2r"><br></span>
 Username: {PROVIDED_BY_KONFUZIO}<span class="raw-html-m2r"><br></span>

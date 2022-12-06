@@ -80,8 +80,12 @@ The diagram illustrates the components of a Konfuzio Server deployment. Optional
       databases -- "Can be operated on"--> servers
       end
       
-      click flower "https://dev.konfuzio.com/web/on_premises.html#optional-6-use-flower-to-monitor-tasks"
+      click flower "/web/on_premises.html#optional-6-use-flower-to-monitor-tasks"
+      click web "/web/on_premises.html#start-the-container"
       click worker "/web/on_premises.html#start-the-container"
+      click ocr "/web/on_premises.html#optional-7-use-azure-read-api-on-premise"
+      click segmentation "/web/on_premises.html#optional-8-install-document-segmentation-container"
+      click summarization "/web/on_premises.html#optional-9-install-document-summarization-container" 
       
       class flower optional
       class ocr optional
@@ -484,7 +488,7 @@ BROKER_URL=  # Set this to an unused redis database
 RESULT_BACKEND=  # Set this to an unused redis database
 ```
 
-#### [Optional] 9. Install document summaritazion container
+#### [Optional] 9. Install document summarization container
 
 Download the container with the credentials provided by Konfuzio
 
