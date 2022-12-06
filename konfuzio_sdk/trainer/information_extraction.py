@@ -1599,7 +1599,7 @@ class Trainer:
 
         return merge is not None
 
-    def save(self, output_dir: str, include_konfuzio=True, reduce_weight=False, max_ram=None):
+    def save(self, output_dir: str = None, include_konfuzio=True, reduce_weight=False, max_ram=None):
         """
         Save the label model as bz2 compressed pickle object to the release directory.
 
@@ -1612,7 +1612,11 @@ class Trainer:
 
         Finally, we delete the cloudpickle file and are left with the bz2 file which has a .pkl extension.
 
-        :return: Path of the saved model file
+        :param output_dir: Folder to save AI model in.
+        :param include_konfuzio: Boolean whether to include konfuzio_sdk package in pickle file.
+        :param reduce_weight: Remove all non-strictly necessary parameters before saving.
+        :param max_ram: Specify maximum memory usage condition to save model.
+        :return: Path of the saved model file.
         """
         logger.info('Saving model')
         logger.info(f'{include_konfuzio=}')
@@ -1650,8 +1654,8 @@ class Trainer:
             cloudpickle.register_pickle_by_value(konfuzio_sdk)
             # todo register all dependencies?
 
-        # output_dir = self.category.project.model_folder
-        # file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower())}')
+        if not output_dir:
+            output_dir = self.category.project.model_folder
 
         # make sure output dir exists
         pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
