@@ -125,7 +125,9 @@ class FileSplittingEvaluation:
             tp = 0
             fp = 0
             fn = 0
-            for ground_truth, prediction in self.documents:
+            for ground_truth, prediction in [
+                document for document in self.documents if document.category.id_ == category.id_
+            ]:
                 for page_gt, page_pr in zip(ground_truth.pages(), prediction.pages()):
                     if page_gt.number == 1 and hasattr(page_pr, 'is_first_page'):
                         tp += 1
