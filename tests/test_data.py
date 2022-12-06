@@ -181,6 +181,32 @@ class TestOnlineProject(unittest.TestCase):
         annotation.delete()  # doc.update() performed internally when delete_online=True, which is default
         assert annotation not in doc.get_annotations()
 
+    def test_merge_documents(self):
+        """Merge documents into a new document."""
+        test_documents = self.project.test_documents
+        all_pages = [page for doc in test_documents for page in doc.pages()]
+        pages_text = '\f'.join([doc.text for doc in test_documents])
+        new_doc = Document(project=self.project, id_=None, text=pages_text)
+        i = 1
+        running_start_offset = 0
+        running_end_offset = 0
+        for page in all_pages:
+            running_end_offset += page.end_offset
+            _ = Page(
+                id_=i,
+                original_size=(1500, 2400),
+                document=new_doc,
+                start_offset=running_start_offset,
+                end_offset=running_end_offset,
+                number=i,
+            )
+            i += 1
+            running_start_offset += page.end_offset + 1
+            running_end_offset += 1
+
+        for i, page in enumerate(all_pages):
+            assert page.text == new_doc.pages()[i].text
+
 
 class TestOfflineExampleData(unittest.TestCase):
     """Test data features without real data."""
@@ -2220,7 +2246,7 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
     def test_view_annotations(self):
         """Test that Document.view_annotations() gets all the right annotations."""
         project = LocalTextProject()
-        document = project.test_documents[-1]
+        document = project.test_documents[-2]
         annotations = document.view_annotations()
         assert len(annotations) == 5  # 4 if top_annotations filter is used
         assert sorted([ann.id_ for ann in annotations]) == [16, 17, 18, 19, 24]  # [16, 18, 19, 24]
@@ -2228,7 +2254,7 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
     def test_annotationset_annotations(self):
         """Test AnnotationSet.annotations method."""
         project = LocalTextProject()
-        document = project.test_documents[-1]
+        document = project.test_documents[-2]
 
         annotation_set = document.annotation_sets()[0]
 

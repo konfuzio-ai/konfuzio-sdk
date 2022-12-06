@@ -18,6 +18,8 @@ class LocalTextProject(Project):
         default_label_set_2 = LabelSet(id_=2, project=self, name="CategoryName 2", categories=[category_2])
         default_label_2 = Label(id_=7, text='DefaultLabelName 2', project=self, label_sets=[default_label_set_2])
 
+        category_3 = Category(project=self, id_=3, name="CategoryName 3")
+
         label_set = LabelSet(id_=3, project=self, name="LabelSetName", categories=[category, category_2])
         label = Label(id_=4, text='LabelName', project=self, label_sets=[label_set])
         label_new = Label(id_=5, text='LabelName 2', project=self, label_sets=[label_set])
@@ -481,4 +483,93 @@ a2  s4
             label=vert_label_2,
             label_set=vert_label_set,
             spans=[Span(start_offset=25, end_offset=27)],
+        )
+
+        # Documents with sub-Documents in them
+
+        text_3 = "Hi all,\nI like bread.\nI hope to get everything done soon.\nMorning,\nI'm glad to see you.\nMorning,"
+        document_3 = Document(id_=None, project=self, category=category_3, text=text_3, dataset_status=3)
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_3,
+            start_offset=0,
+            end_offset=21,
+            number=1,
+        )
+
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_3,
+            start_offset=22,
+            end_offset=57,
+            number=2,
+        )
+
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_3,
+            start_offset=58,
+            end_offset=66,
+            number=3,
+        )
+
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_3,
+            start_offset=67,
+            end_offset=87,
+            number=4,
+        )
+
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_3,
+            start_offset=88,
+            end_offset=97,
+            number=5,
+        )
+
+        text_4 = "Morning,\nI like bread.\n\fI hope to get everything done soon."
+        document_4 = Document(id_=None, project=self, category=category_3, text=text_4, dataset_status=2)
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_4,
+            start_offset=0,
+            end_offset=22,
+            number=1,
+        )
+
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_4,
+            start_offset=23,
+            end_offset=57,
+            number=2,
+        )
+
+        text_5 = "Morning,\nI like bread.\n\fWhat are your plans for today?"
+        document_5 = Document(id_=None, project=self, category=category_3, text=text_5, dataset_status=2)
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_5,
+            start_offset=0,
+            end_offset=22,
+            number=1,
+        )
+
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_5,
+            start_offset=23,
+            end_offset=52,
+            number=2,
         )
