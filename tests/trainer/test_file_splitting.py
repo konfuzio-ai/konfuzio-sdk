@@ -6,9 +6,7 @@ from copy import deepcopy
 
 from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
-from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI
-
-TEST_WITH_FULL_DATASET = True
+from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI, FileSplittingEvaluation
 
 
 class TestFileSplittingModel(unittest.TestCase):
@@ -93,3 +91,23 @@ class TestFileSplittingModel(unittest.TestCase):
                 assert hasattr(page, 'is_first_page')
             else:
                 assert not hasattr(page, 'is_first_page')
+
+    def test_evaluation_calculation(self):
+        """Test Evaluation class for ContextAwareFileSplitting."""
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        ground_truth = self.test_document
+        for page in ground_truth.pages():
+            if page.number in (1, 3, 5):
+                page.is_first_page = True
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)
+        documents = [[ground_truth, pred]]
+        evaluation = FileSplittingEvaluation(documents)
+        print(evaluation.evaluation_results)
+
+    def test_evaluation_by_category(self):
+        """Test Evaluation by Category."""
+        pass
+
+    def test_splitting_ai_evaluation(self):
+        """Test evaluate_full method of SplittingAI."""
+        pass

@@ -10,12 +10,11 @@ import shutil
 import sys
 
 from copy import deepcopy
-from typing import List
+from typing import List, Tuple
 
-from konfuzio_sdk.data import Document, Page
+from konfuzio_sdk.data import Document, Page, Project
 from konfuzio_sdk.trainer.information_extraction import load_model
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
-from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
@@ -41,50 +40,6 @@ class AbstractFileSplittingModel(metaclass=abc.ABCMeta):
         :type model_path: str
         """
 
-    def calculate_metrics(self, use_training_docs: bool = False):
-        """
-        Calculate precision, recall, and F1 measure for the custom model.
-
-        :param use_training_docs: A flag for using training Documents for evaluation or not.
-        :type use_training_docs: bool
-        :return: Calculated precision, recall, and F1 measure.
-        """
-        true_positive = 0
-        false_positive = 0
-        false_negative = 0
-        if use_training_docs:
-            list_of_pages = [
-                page for category in self.categories for document in category.documents() for page in document.pages()
-            ]
-        else:
-            list_of_pages = [
-                page
-                for category in self.categories
-                for document in category.test_documents()
-                for page in document.pages()
-            ]
-        for page in list_of_pages:
-            pred = self.predict(page)
-            if page.number == 1 and pred == 1:
-                true_positive += 1
-            elif page.number == 1 and pred == 0:
-                false_negative += 1
-            elif page.number == 0 and pred == 1:
-                false_positive += 1
-        if true_positive + false_positive != 0:
-            precision = true_positive / (true_positive + false_positive)
-        else:
-            precision = 0
-        if true_positive + false_negative != 0:
-            recall = true_positive / (true_positive + false_negative)
-        else:
-            recall = 0
-        if precision + recall != 0:
-            f1 = 2 * precision * recall / (precision + recall)
-        else:
-            f1 = 0
-        return precision, recall, f1
-
     @abc.abstractmethod
     def predict(self, page: Page) -> Page:
         """
@@ -94,6 +49,154 @@ class AbstractFileSplittingModel(metaclass=abc.ABCMeta):
         :type page: Page
         :return: A Page with or without is_first_page label.
         """
+
+
+class FileSplittingEvaluation:
+    """Evaluate the quality of the filesplitting logic."""
+
+    def __init__(
+        self, documents: List[Tuple[Document, Document]], calculate_by_category: bool = False, allow_zero: bool = False
+    ):
+        """
+        Initialize and run the metrics calculation.
+
+        :param documents: A list of Document pairs – first one is ground truth, second is the prediction.
+        :type documents: list
+        :param calculate_by_category: Calculate metrics for each Category independently.
+        :type calculate_by_category: bool
+        :param allow_zero: If true, will calculate None for precision and recall when the straightforward application
+        of the formula would otherwise result in 0/0. Raises ZeroDivisionError otherwise.
+        :type allow_zero: bool
+        """
+        self.documents = documents
+        self.calculate_by_category = calculate_by_category
+        self.allow_zero = allow_zero
+        if self.calculate_by_category:
+            self.calculate_metrics_by_category()
+        else:
+            self.calculate()
+
+    def calculate(self):
+        """Calculate metrics for the filesplitting logic."""
+        tp = 0
+        fp = 0
+        fn = 0
+        for ground_truth, prediction in self.documents:
+            for page_gt, page_pr in zip(ground_truth.pages(), prediction.pages()):
+                if page_gt.number == 1 and hasattr(page_pr, 'is_first_page'):
+                    tp += 1
+                elif page_gt.number > 1 and hasattr(page_pr, 'is_first_page'):
+                    fp += 1
+                elif page_gt.number == 1 and not hasattr(page_pr, 'is_first_page'):
+                    fn += 1
+        if tp + fp != 0:
+            precision = tp / (tp + fp)
+        else:
+            if self.allow_zero:
+                precision = None
+            else:
+                raise ZeroDivisionError(
+                    "TP and FP are zero, please specify allow_zero=True if you want precision to be None."
+                )
+        if tp + fn != 0:
+            recall = tp / (tp + fn)
+        else:
+            if self.allow_zero:
+                recall = None
+            else:
+                raise ZeroDivisionError(
+                    "TP and FN are zero, please specify allow_zero=True if you want recall to be None."
+                )
+        if precision + recall != 0:
+            f1 = 2 * precision * recall / (precision + recall)
+        else:
+            if self.allow_zero:
+                f1 = None
+            else:
+                raise ZeroDivisionError("FP and FN are zero, please specify allow_zero=True if you want F1 to be None.")
+        self.evaluation_results = {'tp': tp, 'fp': fp, 'fn': fn, 'precision': precision, 'recall': recall, 'f1': f1}
+
+    def calculate_metrics_by_category(self):
+        """Calculate metrics by Category independently."""
+        categories = list(set([doc_pair[0].category for doc_pair in self.documents]))
+        self.evaluation_results = {'tp': {}, 'fp': {}, 'fn': {}, 'precision': {}, 'recall': {}, 'f1': {}}
+        for category in categories:
+            tp = 0
+            fp = 0
+            fn = 0
+            for ground_truth, prediction in [
+                document for document in self.documents if document.category.id_ == category.id_
+            ]:
+                for page_gt, page_pr in zip(ground_truth.pages(), prediction.pages()):
+                    if page_gt.number == 1 and hasattr(page_pr, 'is_first_page'):
+                        tp += 1
+                    elif page_gt.number > 1 and hasattr(page_pr, 'is_first_page'):
+                        fp += 1
+                    elif page_gt.number == 1 and not hasattr(page_pr, 'is_first_page'):
+                        fn += 1
+            if tp + fp != 0:
+                precision = tp / (tp + fp)
+            else:
+                if self.allow_zero:
+                    precision = None
+                else:
+                    raise ZeroDivisionError(
+                        "TP and FP are zero, please specify allow_zero=True if you want precision to be None."
+                    )
+            if tp + fn != 0:
+                recall = tp / (tp + fn)
+            else:
+                if self.allow_zero:
+                    recall = None
+                else:
+                    raise ZeroDivisionError(
+                        "TP and FN are zero, please specify allow_zero=True if you want recall to be None."
+                    )
+            if precision + recall != 0:
+                f1 = 2 * precision * recall / (precision + recall)
+            else:
+                if self.allow_zero:
+                    f1 = None
+                else:
+                    raise ZeroDivisionError(
+                        "FP and FN are zero, please specify allow_zero=True if you want F1 to be None."
+                    )
+            self.evaluation_results['tp'][category.id_] = tp
+            self.evaluation_results['fp'][category.id_] = fp
+            self.evaluation_results['fn'][category.id_] = fn
+            self.evaluation_results['precision'][category.id_] = precision
+            self.evaluation_results['recall'][category.id_] = recall
+            self.evaluation_results['f1'][category.id_] = f1
+
+    @property
+    def tp(self):
+        """Return correctly predicted first Pages."""
+        return self.evaluation_results['tp']
+
+    @property
+    def fp(self):
+        """Return non-first Pages incorrectly predicted as first."""
+        return self.evaluation_results['fp']
+
+    @property
+    def fn(self):
+        """Return first Pages incorrectly predicted as non-first."""
+        return self.evaluation_results['fn']
+
+    @property
+    def precision(self):
+        """Return precision."""
+        return self.evaluation_results['precision']
+
+    @property
+    def recall(self):
+        """Return recall."""
+        return self.evaluation_results['recall']
+
+    @property
+    def f1(self):
+        """Return F1-measure."""
+        return self.evaluation_results['f1']
 
 
 class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
@@ -200,7 +303,8 @@ class SplittingAI:
 
     def _create_doc_from_page_interval(self, original_doc: Document, start_page: Page, end_page: Page) -> Document:
         pages_text = original_doc.text[start_page.start_offset : end_page.end_offset]
-        new_doc = Document(project=LocalTextProject(), id_=None, text=pages_text)
+        project = Project(id_=None)
+        new_doc = Document(project=project, id_=None, text=pages_text)
         for page in original_doc.pages():
             if page.number in range(start_page.number, end_page.number):
                 _ = Page(
@@ -240,7 +344,7 @@ class SplittingAI:
                 split_docs.append(self._create_doc_from_page_interval(document, suggested_splits[page_i - 1], split_i))
         return split_docs
 
-    def propose_split_documents(self, document: Document, return_pages=False):
+    def propose_split_documents(self, document: Document, return_pages: bool = False):
         """
         Propose a set of resulting documents from a single Documents.
 
@@ -257,3 +361,13 @@ class SplittingAI:
         else:
             processed = self._suggest_page_split(document)
         return processed
+
+    def evaluate_full(self, use_training_docs: bool = False) -> FileSplittingEvaluation:
+        """
+        Evaluate the filesplitting context-aware logic.
+
+        :param use_training_docs: If enabled, runs evaluation on the training data to define its quality; if disabled,
+        runs evaluation on the test data.
+        :type use_training_docs: bool
+        """
+        pass
