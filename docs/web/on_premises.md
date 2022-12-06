@@ -11,6 +11,93 @@ A common way to operate a production-ready and scalabe Konfuzio installation is 
 
 On-Premise Konfuzio installations allow to create Superuser accounts which can access all [Documents](https://help.konfuzio.com/modules/superuserdocuments/index.html), [Projects](https://help.konfuzio.com/modules/superuserprojects/index.html) and [AIs](https://help.konfuzio.com/modules/superuserais/index.html) via a dedicated view as well as creating custom [Roles](https://help.konfuzio.com/modules/superuserroles/index.html)
 
+## Architectural Overview
+
+The diagram illustrates the components of a Konfuzio Server deployment. Optional components are represented by dashed lines. The numbers in brackets represent the minimal and maximal container count per component.
+
+.. mermaid::
+
+   graph TD
+      classDef client fill:#D5E8D4,stroke:#82B366,color:#000000;
+      classDef old_optional fill:#E1D5E7,stroke:#9673A6,color:#000000;
+      classDef optional fill:#DAE8FC,stroke:#6C8EBF,color:#000000,stroke-dasharray: 3 3;
+      
+      ip("Loadbalancer / Public IP")
+      a("Database")
+      b("Task Queue")
+      c("File Storage")
+      worker("Generic Worker (1:n)")
+      web("Web & API (1:n)")
+      ip <--> web
+      
+      %% Optional Containers
+      ocr("OCR (0:n)")
+      segmentation("Segmentation (0:n)")
+      summarization("Summarization (0:n)")
+      flower("Flower (0:1)")
+      
+      %% Server / Cluster
+      h0("Server 1")
+      h1("Server 2")
+      h2("Server 3")
+      h3("Server 4")
+      h4("Server 5")
+      i("...")
+      j("Server with GPU")
+
+      subgraph all["Private Network"]
+      subgraph databases["Persistent Container / Services"]
+      a
+      c
+      b
+      end
+      subgraph containers["Stateless Containers"]
+      web
+      flower
+      worker
+      subgraph optional["Optional Containers"]
+      ocr
+      segmentation
+      summarization
+      end
+      end
+      subgraph servers["Server / Cluster"]
+      h0
+      h1
+      h2
+      h3
+      h4
+      i
+      j
+      end    
+      worker <--> databases
+      worker -- Can delegate tasks--> optional
+      worker -- "Can process tasks"--> worker
+      web <--> databases
+      web <--> flower
+      flower <--> b
+      containers -- "Operated on"--> servers
+      databases -- "Can be operated on"--> servers
+      end
+      
+      %% click worker "http://www.github.com" "This is a link"
+      class flower optional
+      class ocr optional
+      class segmentation optional
+      class summarization optional
+      class h1 optional
+      class h2 optional
+      class h3 optional
+      class h4 optional
+      class i optional
+      class j optional  
+
+## Billing and License
+
+A Konfuzio Server self-hosted license can be purchased [online](https://konfuzio.com/en/price/). After your order has been placed, we will provide you with credentials to [download the Konfuzio Docker Images](https://dev.konfuzio.com/web/on_premises.html#download-docker-image) and a BILLING_API_KEY which needs to be set as [environment variable](/web/on_premises.html#environment-variables-for-konfuzio-server). The Konfuzio Container reports the usage once a day to our billing server (i.e. https://app.konfuzio.com). Konfuzio containers don't send customer data, such as the image or text that's being analyzed, to the billing server.
+
+If you operate Konfuzio Server in an air-gapped environment, the Konfuzio Docker images are licensed to operate for one year (based on the release date) without being connected to the billing server.
+
 ## Kubernetes
 
 ### Required tools
@@ -553,93 +640,6 @@ Konfuzio Server will create a total of 43 tables and use the following data type
 | uuid                     |     1 |
 
 <!-- This table was created by running select data_type, count(*) from information_schema.columns where table_schema = 'public'  group by data_type ; -->
-
-## Architectural Overview
-
-The diagram illustrates the components of a Konfuzio Server deployment. Optional components are represented by dashed lines. The numbers in brackets represent the minimal and maximal container count per component.
-
-.. mermaid::
-
-   graph TD
-      classDef client fill:#D5E8D4,stroke:#82B366,color:#000000;
-      classDef old_optional fill:#E1D5E7,stroke:#9673A6,color:#000000;
-      classDef optional fill:#DAE8FC,stroke:#6C8EBF,color:#000000,stroke-dasharray: 3 3;
-      
-      ip("Loadbalancer / Public IP")
-      a("Database")
-      b("Task Queue")
-      c("File Storage")
-      worker("Generic Worker (1:n)")
-      web("Web & API (1:n)")
-      ip <--> web
-      
-      %% Optional Containers
-      ocr("OCR (0:n)")
-      segmentation("Segmentation (0:n)")
-      summarization("Summarization (0:n)")
-      flower("Flower (0:1)")
-      
-      %% Server / Cluster
-      h0("Server 1")
-      h1("Server 2")
-      h2("Server 3")
-      h3("Server 4")
-      h4("Server 5")
-      i("...")
-      j("Server with GPU")
-
-      subgraph all["Private Network"]
-      subgraph databases["Persistent Container / Services"]
-      a
-      c
-      b
-      end
-      subgraph containers["Stateless Containers"]
-      web
-      flower
-      worker
-      subgraph optional["Optional Containers"]
-      ocr
-      segmentation
-      summarization
-      end
-      end
-      subgraph servers["Server / Cluster"]
-      h0
-      h1
-      h2
-      h3
-      h4
-      i
-      j
-      end    
-      worker <--> databases
-      worker -- Can delegate tasks--> optional
-      worker -- "Can process tasks"--> worker
-      web <--> databases
-      web <--> flower
-      flower <--> b
-      containers -- "Operated on"--> servers
-      databases -- "Can be operated on"--> servers
-      end
-      
-      %% click worker "http://www.github.com" "This is a link"
-      class flower optional
-      class ocr optional
-      class segmentation optional
-      class summarization optional
-      class h1 optional
-      class h2 optional
-      class h3 optional
-      class h4 optional
-      class i optional
-      class j optional  
-
-## Billing and License
-
-A Konfuzio Server self-hosted license can be purchased [online](https://konfuzio.com/en/price/). After your order has been placed, we will provide you with credentials to [download the Konfuzio Docker Images](https://dev.konfuzio.com/web/on_premises.html#download-docker-image) and a BILLING_API_KEY which needs to be set as [environment variable](/web/on_premises.html#environment-variables-for-konfuzio-server). The Konfuzio Container reports the usage once a day to our billing server (i.e. https://app.konfuzio.com). Konfuzio containers don't send customer data, such as the image or text that's being analyzed, to the billing server.
-
-If you operate Konfuzio Server in an air-gapped environment, the Konfuzio Docker images are licensed to operate for one year (based on the release date) without being connected to the billing server.
 
 ## Environment Variables
 
