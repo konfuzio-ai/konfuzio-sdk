@@ -320,6 +320,8 @@ def post_document_annotation(
         data['custom_bboxes'] = custom_bboxes
 
     r = session.post(url, json=data)
+    if r.status_code != 201:
+        logger.error(f"Received response status code {r.status_code}.")
     assert r.status_code == 201
     return r
 

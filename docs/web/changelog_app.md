@@ -39,16 +39,27 @@ These changes are for the tokenizers/new SDK branch.
 - A bug during the extraction post-processing steps, which was causing the first line items of each page to be skipped ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9561))
 -->
 
-## Next Release (estimated release date: 5th December 2022)
+<!-- ## Next Release (estimated release date: 19th December 2022) -->
+
+## released-2022-12-05_19-18-47
+
+This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Capture Vue in version [0.0.11-pre-release-1](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
+
+Please note: When you upgrade to this version (or a newer one) we recommend to run "python manage.py init_email_templates" as the email templates have been updated. This needs to be run after the usual update actions.
 
 ### Added
-- Access Service Desk Tickets which have been created via https://konfuzio.com/support ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9923)).
+- [Access Service Desk Tickets which have been created via https://konfuzio.com/support](https://help.konfuzio.com/modules/servicedesk/index.html) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9923)).
 - [API v3 endpoint to bulk accept/decline annotations](https://app.konfuzio.com/v3/swagger/#/documents/documents_update_annotations_partial_update) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9726)).
 - [API v3 Document endpoint can now be filtered by assignee](https://app.konfuzio.com/v3/swagger/#/documents/documents_list) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10052)).
+- [Allow to configure a custom timeout for Document deletion Tasks in self-hosted environemnts](https://dev.konfuzio.com/web/on_premises.html#id7) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10044)).
+- [Add 'Reader' as new Role for Project Members](https://help.konfuzio.com/modules/members/index.html#detailed-permissions-of-available-roles) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9868)).
 
 ### Changed
 - [Improved Swagger Documentation for API V3](https://app.konfuzio.com/v3/swagger/) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9554)).
+- [In the Label endpoint of API V3, rename "categories" to "label_sets"](https://testing.konfuzio.com/v3/swagger/#/labels) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9972)).
 - [Detectron is now connected via API to uncouple its Python version and dependencies from Konfuzio Server](https://app.konfuzio.com/v2/swagger/#/projects/projects_docs_segmentation_retrieve) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9355)).
+- [The summarization functionality is now connected via API to uncouple its Python version and dependencies from Konfuzio Server](https://app.konfuzio.com/v2/swagger/#/projects/projects_docs_summarization_retrieve) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9347)).
+- [Limit the number of objects returned from the API](https://dev.konfuzio.com/web/api-v3.html#content-limits) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9975)).
 
 ### Fixed
 - In a very rare case text embeddings could not be extracted from Documents ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10045)).
@@ -56,6 +67,9 @@ These changes are for the tokenizers/new SDK branch.
 - The notification email template for AI trainings was not considering errors in the training process ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9937)).
 - callback_url is now called if re-extraction is triggered on a Document (for example, when the Category changes) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9901)).
 - Fix an issue that prevented the full deletion of on line of text in multiline Annotations ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10049)).
+- Fix a missing placeholder in an email template ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10192)).
+- Improved loading time of the Category list view ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10088)).
+- The assignee filter for the Document List now requires Permissions to view the Members of a Project ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10154)).
 
 ## released-2022-11-16_12-13-49
 

@@ -26,6 +26,7 @@ RELEVANT_FOR_EVALUATION = [
     "document_id_local",
     "category_id",  # Identify the Category to be able to run an evaluation across categories
     # "id__predicted", we don't care of the id_ see "id_"
+    "id_local_predicted",
     "confidence_predicted",  # we care about the confidence of the prediction
     "start_offset_predicted",
     "end_offset_predicted",
@@ -416,3 +417,23 @@ class Evaluation:
             fp=self.clf_fp(search=search),
             fn=self.clf_fn(search=search),
         ).f1
+
+    def _apply(self, group, issue_name):
+        """Vertical merge error methods helper method."""
+        if len(group) < 2:
+            group[issue_name] = False
+            return group
+        if len(set(group['id_local'])) > 1 or len(set(group['id_local_predicted'])) > 1:
+            group[issue_name] = True
+        return True
+
+    def get_missing_vertical_merge(self):
+        """Return Spans that should have been merged."""
+        self.data.groupby('id_local').apply(lambda group: self._apply(group, 'missing_merge'))
+
+        return self.data[self.data['missing_merge']]
+
+    def get_wrong_vertical_merge(self):
+        """Return Spans that were wrongly merged vertically."""
+        self.data.groupby('id_local_predicted').apply(lambda group: self._apply(group, 'wrong_merge'))
+        return self.data[self.data['wrong_merge']]

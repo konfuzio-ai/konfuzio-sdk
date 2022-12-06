@@ -1224,6 +1224,53 @@ class TestOfflineDataSetup(unittest.TestCase):
         Annotation(document=document, spans=[first_span, second_span], label_set=self.label_set, label=self.label)
         assert len(document.annotations(use_correct=False)) == 2
 
+    def test_merge_vertical_1(self):
+        """Test the vertical merging of spans into a single Annotation."""
+        project = LocalTextProject()
+
+        document = project.no_status_documents[1]
+
+        assert len(document.spans()) == 4
+        assert len(document.annotations(use_correct=False)) == 4
+
+        document.merge_vertical()
+
+        label = document.annotations(use_correct=False)[0].label
+        category = project.get_category_by_id(1)
+        assert label.has_multiline_annotations(categories=[category]) is False
+        assert document.bboxes_available is True
+
+        train_document = Document(project=project, category=category, text='p1\np2', dataset_status=2)
+        train_span1 = Span(start_offset=0, end_offset=2)
+        train_span2 = Span(start_offset=3, end_offset=5)
+        _ = Annotation(
+            document=train_document,
+            is_correct=True,
+            label=label,
+            label_set=project.no_label_set,
+            spans=[train_span1, train_span2],
+        )
+
+        assert label.has_multiline_annotations(categories=[category]) is True
+
+        document.merge_vertical()
+
+        assert len(document.spans()) == 4
+        assert len(document.annotations(use_correct=False)) == 2
+
+    def test_merge_vertical_2(self):
+        """Test the vertical merging of Spans into a single Annotation."""
+        project = LocalTextProject()
+
+        document = project.no_status_documents[2]
+
+        assert len(document.annotations(use_correct=False)) == 6
+
+        document.merge_vertical(only_multiline_labels=False)
+
+        assert len(document.annotations(use_correct=False)) == 4
+        assert len(document.annotations(use_correct=False)[1].spans) == 3
+
     def test_lose_weight(self):
         """Lose weight should remove session and documents."""
         project = Project(id_=None)
@@ -2187,6 +2234,17 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
         annotations = document.view_annotations()
         assert len(annotations) == 5  # 4 if top_annotations filter is used
         assert sorted([ann.id_ for ann in annotations]) == [16, 17, 18, 19, 24]  # [16, 18, 19, 24]
+
+    def test_annotationset_annotations(self):
+        """Test AnnotationSet.annotations method."""
+        project = LocalTextProject()
+        document = project.test_documents[-1]
+
+        annotation_set = document.annotation_sets()[0]
+
+        assert len(annotation_set.annotations()) == 1
+        assert len(annotation_set.annotations(use_correct=False)) == 10
+        assert len(annotation_set.annotations(use_correct=False, ignore_below_threshold=True)) == 9
 
     def test_label_spans_not_found_by_tokenizer(self):
         """Test Label spans_not_found_by_tokenizer method."""
