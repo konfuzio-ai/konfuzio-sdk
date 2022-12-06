@@ -480,20 +480,39 @@ The segmentation container needs to be started with the following environment va
 ```
 GPU=True  # If GPU is present
 C_FORCE_ROOT=True
-BROKER_URL=  # See the konfuzio container
-RESULT_BACKEND=  # See the konfuzio container
-SENTRY_ENVIRONMENT=  # Optional
-SENTRY_RELEASE=  # Optional
-SENTRY_DSN=  # Optional
+BROKER_URL=  # Set this to an unused redis database
+RESULT_BACKEND=  # Set this to an unused redis database
 ```
 
-#### 9a. Upgrade to newer Konfuzio Version
+#### [Optional] 9. Install document summaritazion container
+
+Download the container with the credentials provided by Konfuzio
+
+Registry URL: {PROVIDED_BY_KONFUZIO}  
+Username: {PROVIDED_BY_KONFUZIO}  
+Password: {PROVIDED_BY_KONFUZIO}  
+
+`> docker login REGISTRY_URL`  
+`> docker pull REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28`  
+`> docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28 bash -c "export LC_ALL=C.UTF-8; export LANG=C.UTF-8; ./run_celery.sh"`
+
+The segmentation container needs to be started with the following environment variables which you can enter into your .env file
+```
+GPU=True  # If GPU is present
+TASK_ALWAYS_EAGER=False
+C_FORCE_ROOT=True
+BROKER_URL=  # Set this to an unused redis database
+RESULT_BACKEND=  # Set this to an unised redis database
+
+```
+
+#### 10a. Upgrade to newer Konfuzio Version
 
 Konfuzio upgrades are performed by replacing the Docker Tag to the [desired version](https://dev.konfuzio.com/web/changelog_app.html)
 After starting the new Containers Database migrations need to be applied by `python manage.py migrate` (see 4.).
 In case additional migration steps are needed, they will be mentioned in the release notes.
 
-#### 9b. Downgrade to older Konfuzio Version
+#### 10b. Downgrade to older Konfuzio Version
 
 Konfuzio downgrades are performed by creating a fresh Konfuzio installation in which existing Projects can be imported.
 The following steps need to be undertaken:

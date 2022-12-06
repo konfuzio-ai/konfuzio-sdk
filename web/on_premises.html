@@ -94,8 +94,9 @@
 <li class="toctree-l4"><a class="reference internal" href="#optional-6-use-flower-to-monitor-tasks">[Optional] 6. Use Flower to monitor tasks</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#optional-7-use-azure-read-api-on-premise">[Optional] 7. Use Azure Read API on-premise</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#optional-8-install-document-segmentation-container">[Optional] 8. Install document segmentation container</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#a-upgrade-to-newer-konfuzio-version">9a. Upgrade to newer Konfuzio Version</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#b-downgrade-to-older-konfuzio-version">9b. Downgrade to older Konfuzio Version</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#optional-9-install-document-summaritazion-container">[Optional] 9. Install document summaritazion container</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#a-upgrade-to-newer-konfuzio-version">10a. Upgrade to newer Konfuzio Version</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#b-downgrade-to-older-konfuzio-version">10b. Downgrade to older Konfuzio Version</a></li>
 </ul>
 </li>
 </ul>
@@ -594,22 +595,37 @@ Password: {PROVIDED_BY_KONFUZIO}</p>
 <p>The segmentation container needs to be started with the following environment variables which you can enter into your .env file</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GPU</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># If GPU is present</span>
 <span class="n">C_FORCE_ROOT</span><span class="o">=</span><span class="kc">True</span>
-<span class="n">BROKER_URL</span><span class="o">=</span>  <span class="c1"># See the konfuzio container</span>
-<span class="n">RESULT_BACKEND</span><span class="o">=</span>  <span class="c1"># See the konfuzio container</span>
-<span class="n">SENTRY_ENVIRONMENT</span><span class="o">=</span>  <span class="c1"># Optional</span>
-<span class="n">SENTRY_RELEASE</span><span class="o">=</span>  <span class="c1"># Optional</span>
-<span class="n">SENTRY_DSN</span><span class="o">=</span>  <span class="c1"># Optional</span>
+<span class="n">BROKER_URL</span><span class="o">=</span>  <span class="c1"># Set this to an unused redis database</span>
+<span class="n">RESULT_BACKEND</span><span class="o">=</span>  <span class="c1"># Set this to an unused redis database</span>
+</pre></div>
+</div>
+</section>
+<section id="optional-9-install-document-summaritazion-container">
+<h4>[Optional] 9. Install document summaritazion container<a class="headerlink" href="#optional-9-install-document-summaritazion-container" title="Permalink to this headline">¶</a></h4>
+<p>Download the container with the credentials provided by Konfuzio</p>
+<p>Registry URL: {PROVIDED_BY_KONFUZIO}<span class="raw-html-m2r"><br></span>
+Username: {PROVIDED_BY_KONFUZIO}<span class="raw-html-m2r"><br></span>
+Password: {PROVIDED_BY_KONFUZIO}</p>
+<p><code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">docker</span> <span class="pre">login</span> <span class="pre">REGISTRY_URL</span></code><span class="raw-html-m2r"><br></span>
+<code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">docker</span> <span class="pre">pull</span> <span class="pre">REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28</span></code><span class="raw-html-m2r"><br></span>
+<code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">docker</span> <span class="pre">run</span> <span class="pre">--env-file</span> <span class="pre">/path_to_env_file.env</span> <span class="pre">REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28</span> <span class="pre">bash</span> <span class="pre">-c</span> <span class="pre">&quot;export</span> <span class="pre">LC_ALL=C.UTF-8;</span> <span class="pre">export</span> <span class="pre">LANG=C.UTF-8;</span> <span class="pre">./run_celery.sh&quot;</span></code></p>
+<p>The segmentation container needs to be started with the following environment variables which you can enter into your .env file</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GPU</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># If GPU is present</span>
+<span class="n">TASK_ALWAYS_EAGER</span><span class="o">=</span><span class="kc">False</span>
+<span class="n">C_FORCE_ROOT</span><span class="o">=</span><span class="kc">True</span>
+<span class="n">BROKER_URL</span><span class="o">=</span>  <span class="c1"># Set this to an unused redis database</span>
+<span class="n">RESULT_BACKEND</span><span class="o">=</span>  <span class="c1"># Set this to an unised redis database</span>
 </pre></div>
 </div>
 </section>
 <section id="a-upgrade-to-newer-konfuzio-version">
-<h4>9a. Upgrade to newer Konfuzio Version<a class="headerlink" href="#a-upgrade-to-newer-konfuzio-version" title="Permalink to this headline">¶</a></h4>
+<h4>10a. Upgrade to newer Konfuzio Version<a class="headerlink" href="#a-upgrade-to-newer-konfuzio-version" title="Permalink to this headline">¶</a></h4>
 <p>Konfuzio upgrades are performed by replacing the Docker Tag to the <a class="reference external" href="https://dev.konfuzio.com/web/changelog_app.html">desired version</a>
 After starting the new Containers Database migrations need to be applied by <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">migrate</span></code> (see 4.).
 In case additional migration steps are needed, they will be mentioned in the release notes.</p>
 </section>
 <section id="b-downgrade-to-older-konfuzio-version">
-<h4>9b. Downgrade to older Konfuzio Version<a class="headerlink" href="#b-downgrade-to-older-konfuzio-version" title="Permalink to this headline">¶</a></h4>
+<h4>10b. Downgrade to older Konfuzio Version<a class="headerlink" href="#b-downgrade-to-older-konfuzio-version" title="Permalink to this headline">¶</a></h4>
 <p>Konfuzio downgrades are performed by creating a fresh Konfuzio installation in which existing Projects can be imported.
 The following steps need to be undertaken:</p>
 <ul class="simple">
