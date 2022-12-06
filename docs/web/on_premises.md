@@ -428,27 +428,27 @@ In this example we start three containers, the first one to serve the Konfuzio w
 
 ```
 docker run -p 80:8000 --name web -d --add-host=host:10.0.0.1 \
---env-file /konfuzio-vm/text-annotation.env \
---mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \
-REGISTRY_URL/konfuzio/text-annotation/master:latest
+  --env-file /konfuzio-vm/text-annotation.env \
+  --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \
+  REGISTRY_URL/konfuzio/text-annotation/master:latest
 ```
 
 ```
 docker run --name worker1 -d --add-host=host:10.0.0.1 \  
---env-file /konfuzio-vm/text-annotation.env \  
---mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \  
-REGISTRY_URL/konfuzio/text-annotation/master:latest \  
-celery -A app worker -l INFO --concurrency 1 -Q celery,priority_ocr,ocr,\  
-priority_extract,extract,processing,priority_local_ocr,local_ocr,\
-training,finalize,training_heavy,categorize  
+  --env-file /konfuzio-vm/text-annotation.env \  
+  --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \  
+  REGISTRY_URL/konfuzio/text-annotation/master:latest \  
+  celery -A app worker -l INFO --concurrency 1 -Q celery,priority_ocr,ocr,\  
+  priority_extract,extract,processing,priority_local_ocr,local_ocr,\
+  training,finalize,training_heavy,categorize  
 
 docker run --name worker2 -d --add-host=host:10.0.0.1 \
---env-file /konfuzio-vm/text-annotation.env \  
---mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \
-REGISTRY_URL/konfuzio/text-annotation/master:latest \
-celery -A app worker -l INFO --concurrency 1 -Q celery,priority_ocr,ocr,\
-priority_extract,extract,processing,priority_local_ocr,local_ocr,\
-training,finalize,training_heavy,categorize
+  --env-file /konfuzio-vm/text-annotation.env \  
+  --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \
+  REGISTRY_URL/konfuzio/text-annotation/master:latest \
+  celery -A app worker -l INFO --concurrency 1 -Q celery,priority_ocr,ocr,\
+  priority_extract,extract,processing,priority_local_ocr,local_ocr,\
+  training,finalize,training_heavy,categorize
 ```
 
 #### [Optional] 6. Use Flower to monitor tasks
@@ -456,11 +456,11 @@ training,finalize,training_heavy,categorize
 [Flower](https://flower.readthedocs.io/en/latest/screenshots.html) can be used a task monitoring tool. Flower will be only accessible for Konfuzio superusers and is part of the Konfuzio Server Docker Image.
 
 ```
-`docker run --name flower -d --add-host=host:10.0.0.1 \`  
-`--env-file /konfuzio-vm/text-annotation.env \`  
-`--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \`  
-`REGISTRY_URL/konfuzio/text-annotation/master:latest \`  
-`celery -A app flower --url_prefix=flower --address=0.0.0.0 --port=5555` 
+docker run --name flower -d --add-host=host:10.0.0.1 \  
+  --env-file /konfuzio-vm/text-annotation.env \  
+  --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \
+  REGISTRY_URL/konfuzio/text-annotation/master:latest \  
+  celery -A app flower --url_prefix=flower --address=0.0.0.0 --port=5555
 ```
 
 The Konfuzio Server application acts as a reverse proxy an servers the flower application. Therefore, django needs to know the flower url. `FLOWER_URL=http://host:5555/flower`.
@@ -484,9 +484,11 @@ Please install the Read API Container according to the current [manual](https://
 
 Once the Azure Read API container is running you need to set the following variables in the .env file. This for example look like the following:
 
-`AZURE_OCR_KEY=123456789 # The Azure OCR API key`  
-`AZURE_OCR_BASE_URL=http://host:5000 # The URL of the READ API`  
-`AZURE_OCR_VERSION=v3.2 # The version of the READ API`
+```
+AZURE_OCR_KEY=123456789 # The Azure OCR API key  
+AZURE_OCR_BASE_URL=http://host:5000 # The URL of the READ API  
+AZURE_OCR_VERSION=v3.2 # The version of the READ API
+```
 
 #### [Optional] 8. Install document segmentation container
 
@@ -496,9 +498,11 @@ Registry URL: {PROVIDED_BY_KONFUZIO}
 Username: {PROVIDED_BY_KONFUZIO}  
 Password: {PROVIDED_BY_KONFUZIO}  
 
-`> docker login REGISTRY_URL`  
-`> docker pull REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28`  
-`> docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28 bash -c "export LC_ALL=C.UTF-8; export LANG=C.UTF-8; ./run_celery.sh"`
+```
+docker login REGISTRY_URL  
+docker pull REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28
+docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28 bash -c "export LC_ALL=C.UTF-8; export LANG=C.UTF-8;./run_celery.sh
+```
 
 The segmentation container needs to be started with the following environment variables which you can enter into your .env file
 ```
@@ -516,9 +520,11 @@ Registry URL: {PROVIDED_BY_KONFUZIO}
 Username: {PROVIDED_BY_KONFUZIO}  
 Password: {PROVIDED_BY_KONFUZIO}  
 
-`> docker login REGISTRY_URL`  
-`> docker pull REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28`  
-`> docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28 bash -c "export LC_ALL=C.UTF-8; export LANG=C.UTF-8; ./run_celery.sh"`
+```
+docker login REGISTRY_URL
+docker pull REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28
+docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28 bash -c "export LC_ALL=C.UTF-8; export LANG=C.UTF-8;./run_celery.sh"`
+```
 
 The segmentation container needs to be started with the following environment variables which you can enter into your .env file
 ```
@@ -544,7 +550,6 @@ The following steps need to be undertaken:
 - Create a new Postgres Database and a new Folder/Bucket for file storage which will be used for the downgraded version
 - Install the desired Konfuzio Server version by starting with 1.)
 - Import the projects using ["python manage.py project_import"]([konfuzio_sdk](https://help.konfuzio.com/integrations/migration-between-konfuzio-server-instances/index.html#migrate-projects-between-konfuzio-server-instances)
-
 
 
 ## Alternative deployment options
