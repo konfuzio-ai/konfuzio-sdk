@@ -10,9 +10,10 @@ import shutil
 import sys
 
 from copy import deepcopy
-from typing import List, Tuple, Union
+from typing import List, Union
 
 from konfuzio_sdk.data import Document, Page, Project
+from konfuzio_sdk.evaluate import FileSplittingEvaluation
 from konfuzio_sdk.trainer.information_extraction import load_model
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 from konfuzio_sdk.utils import get_timestamp
@@ -49,153 +50,6 @@ class AbstractFileSplittingModel(metaclass=abc.ABCMeta):
         :type page: Page
         :return: A Page with or without is_first_page label.
         """
-
-
-class FileSplittingEvaluation:
-    """Evaluate the quality of the filesplitting logic."""
-
-    def __init__(
-        self, documents: List[Tuple[Document, Document]], calculate_by_category: bool = False, allow_zero: bool = False
-    ):
-        """
-        Initialize and run the metrics calculation.
-
-        :param documents: A list of Document pairs – first one is ground truth, second is the prediction.
-        :type documents: list
-        :param calculate_by_category: Calculate metrics for each Category independently.
-        :type calculate_by_category: bool
-        :param allow_zero: If true, will calculate None for precision and recall when the straightforward application
-        of the formula would otherwise result in 0/0. Raises ZeroDivisionError otherwise.
-        :type allow_zero: bool
-        """
-        self.documents = documents
-        self.calculate_by_category = calculate_by_category
-        self.allow_zero = allow_zero
-        if self.calculate_by_category:
-            self.calculate_metrics_by_category()
-        else:
-            self.calculate()
-
-    def calculate(self):
-        """Calculate metrics for the filesplitting logic."""
-        tp = 0
-        fp = 0
-        fn = 0
-        for ground_truth, prediction in self.documents:
-            for page_gt, page_pr in zip(ground_truth.pages(), prediction.pages()):
-                if page_gt.is_first_page and page_pr.is_first_page:
-                    tp += 1
-                elif not page_gt.is_first_page and page_pr.is_first_page:
-                    fp += 1
-                elif page_gt.is_first_page and not page_pr.is_first_page:
-                    fn += 1
-        if tp + fp != 0:
-            precision = tp / (tp + fp)
-        else:
-            if self.allow_zero:
-                precision = None
-            else:
-                raise ZeroDivisionError(
-                    "TP and FP are zero, please specify allow_zero=True if you want precision to be None."
-                )
-        if tp + fn != 0:
-            recall = tp / (tp + fn)
-        else:
-            if self.allow_zero:
-                recall = None
-            else:
-                raise ZeroDivisionError(
-                    "TP and FN are zero, please specify allow_zero=True if you want recall to be None."
-                )
-        if precision + recall != 0:
-            f1 = 2 * precision * recall / (precision + recall)
-        else:
-            if self.allow_zero:
-                f1 = None
-            else:
-                raise ZeroDivisionError("FP and FN are zero, please specify allow_zero=True if you want F1 to be None.")
-        self.evaluation_results = {'tp': tp, 'fp': fp, 'fn': fn, 'precision': precision, 'recall': recall, 'f1': f1}
-
-    def calculate_metrics_by_category(self):
-        """Calculate metrics by Category independently."""
-        categories = list(set([doc_pair[0].category for doc_pair in self.documents]))
-        self.evaluation_results = {'tp': {}, 'fp': {}, 'fn': {}, 'precision': {}, 'recall': {}, 'f1': {}}
-        for category in categories:
-            tp = 0
-            fp = 0
-            fn = 0
-            for ground_truth, prediction in [
-                [document_1, document_2]
-                for document_1, document_2 in self.documents
-                if document_1.category and document_1.category.id_ == category.id_
-            ]:
-                for page_gt, page_pr in zip(ground_truth.pages(), prediction.pages()):
-                    if page_gt.is_first_page and page_pr.is_first_page:
-                        tp += 1
-                    elif not page_gt.is_first_page and page_pr.is_first_page:
-                        fp += 1
-                    elif page_gt.is_first_page and not page_pr.is_first_page:
-                        fn += 1
-            if tp + fp != 0:
-                precision = tp / (tp + fp)
-            else:
-                if self.allow_zero:
-                    precision = None
-                else:
-                    raise ZeroDivisionError(
-                        "TP and FP are zero, please specify allow_zero=True if you want precision to be None."
-                    )
-            if tp + fn != 0:
-                recall = tp / (tp + fn)
-            else:
-                if self.allow_zero:
-                    recall = None
-                else:
-                    raise ZeroDivisionError(
-                        "TP and FN are zero, please specify allow_zero=True if you want recall to be None."
-                    )
-            if precision + recall != 0:
-                f1 = 2 * precision * recall / (precision + recall)
-            else:
-                if self.allow_zero:
-                    f1 = None
-                else:
-                    raise ZeroDivisionError(
-                        "FP and FN are zero, please specify allow_zero=True if you want F1 to be None."
-                    )
-            self.evaluation_results['tp'][category.id_] = tp
-            self.evaluation_results['fp'][category.id_] = fp
-            self.evaluation_results['fn'][category.id_] = fn
-            self.evaluation_results['precision'][category.id_] = precision
-            self.evaluation_results['recall'][category.id_] = recall
-            self.evaluation_results['f1'][category.id_] = f1
-
-    @property
-    def tp(self) -> Union[int, dict]:
-        """Return correctly predicted first Pages."""
-        return self.evaluation_results['tp']
-
-    @property
-    def fp(self) -> Union[int, dict]:
-        """Return non-first Pages incorrectly predicted as first."""
-        return self.evaluation_results['fp']
-
-    @property
-    def fn(self) -> Union[int, dict]:
-        """Return first Pages incorrectly predicted as non-first."""
-        return self.evaluation_results['fn']
-
-    def precision(self) -> Union[float, dict]:
-        """Return precision."""
-        return self.evaluation_results['precision']
-
-    def recall(self) -> Union[float, dict]:
-        """Return recall."""
-        return self.evaluation_results['recall']
-
-    def f1(self) -> Union[float, dict]:
-        """Return F1-measure."""
-        return self.evaluation_results['f1']
 
 
 class ContextAwareFileSplittingModel(AbstractFileSplittingModel):

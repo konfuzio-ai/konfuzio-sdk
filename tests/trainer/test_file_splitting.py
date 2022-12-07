@@ -4,9 +4,10 @@ import unittest
 
 from copy import deepcopy
 
+from konfuzio_sdk.evaluate import FileSplittingEvaluation
 from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
-from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI, FileSplittingEvaluation
+from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI
 
 
 class TestFileSplittingModel(unittest.TestCase):
@@ -99,9 +100,9 @@ class TestFileSplittingModel(unittest.TestCase):
         pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)
         documents = [[ground_truth, pred]]
         evaluation = FileSplittingEvaluation(documents)
-        assert evaluation.tp == 3
-        assert evaluation.fp == 0
-        assert evaluation.fn == 0
+        assert evaluation.tp() == 3
+        assert evaluation.fp() == 0
+        assert evaluation.fn() == 0
         assert evaluation.precision() == 1.0
         assert evaluation.recall() == 1.0
         assert evaluation.f1() == 1.0
@@ -115,13 +116,13 @@ class TestFileSplittingModel(unittest.TestCase):
                 page.is_first_page = True
         pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)
         documents = [[ground_truth, pred]]
-        evaluation = FileSplittingEvaluation(documents, calculate_by_category=True)
-        assert evaluation.tp[ground_truth.category.id_] == 3
-        assert evaluation.fp[ground_truth.category.id_] == 0
-        assert evaluation.fn[ground_truth.category.id_] == 0
-        assert evaluation.precision()[ground_truth.category.id_] == 1.0
-        assert evaluation.recall()[ground_truth.category.id_] == 1.0
-        assert evaluation.f1()[ground_truth.category.id_] == 1.0
+        evaluation = FileSplittingEvaluation(documents)
+        assert evaluation.tp(search=ground_truth.category) == 3
+        assert evaluation.fp(search=ground_truth.category) == 0
+        assert evaluation.fn(search=ground_truth.category) == 0
+        assert evaluation.precision(search=ground_truth.category) == 1.0
+        assert evaluation.recall(search=ground_truth.category) == 1.0
+        assert evaluation.f1(search=ground_truth.category) == 1.0
 
     def test_splitting_ai_evaluation(self):
         """Test evaluate_full method of SplittingAI."""
