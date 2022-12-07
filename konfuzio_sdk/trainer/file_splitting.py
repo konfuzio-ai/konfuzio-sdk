@@ -10,7 +10,7 @@ import shutil
 import sys
 
 from copy import deepcopy
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 from konfuzio_sdk.data import Document, Page, Project
 from konfuzio_sdk.trainer.information_extraction import load_model
@@ -83,11 +83,11 @@ class FileSplittingEvaluation:
         fn = 0
         for ground_truth, prediction in self.documents:
             for page_gt, page_pr in zip(ground_truth.pages(), prediction.pages()):
-                if hasattr(page_gt, 'is_first_page') and hasattr(page_pr, 'is_first_page'):
+                if page_gt.is_first_page and page_pr.is_first_page:
                     tp += 1
-                elif not hasattr(page_gt, 'is_first_page') and hasattr(page_pr, 'is_first_page'):
+                elif not page_gt.is_first_page and page_pr.is_first_page:
                     fp += 1
-                elif hasattr(page_gt, 'is_first_page') and not hasattr(page_pr, 'is_first_page'):
+                elif page_gt.is_first_page and not page_pr.is_first_page:
                     fn += 1
         if tp + fp != 0:
             precision = tp / (tp + fp)
@@ -130,11 +130,11 @@ class FileSplittingEvaluation:
                 if document_1.category and document_1.category.id_ == category.id_
             ]:
                 for page_gt, page_pr in zip(ground_truth.pages(), prediction.pages()):
-                    if hasattr(page_gt, 'is_first_page') and hasattr(page_pr, 'is_first_page'):
+                    if page_gt.is_first_page and page_pr.is_first_page:
                         tp += 1
-                    elif not hasattr(page_gt, 'is_first_page') and hasattr(page_pr, 'is_first_page'):
+                    elif not page_gt.is_first_page and page_pr.is_first_page:
                         fp += 1
-                    elif hasattr(page_gt, 'is_first_page') and not hasattr(page_pr, 'is_first_page'):
+                    elif page_gt.is_first_page and not page_pr.is_first_page:
                         fn += 1
             if tp + fp != 0:
                 precision = tp / (tp + fp)
@@ -171,32 +171,29 @@ class FileSplittingEvaluation:
             self.evaluation_results['f1'][category.id_] = f1
 
     @property
-    def tp(self):
+    def tp(self) -> Union[int, dict]:
         """Return correctly predicted first Pages."""
         return self.evaluation_results['tp']
 
     @property
-    def fp(self):
+    def fp(self) -> Union[int, dict]:
         """Return non-first Pages incorrectly predicted as first."""
         return self.evaluation_results['fp']
 
     @property
-    def fn(self):
+    def fn(self) -> Union[int, dict]:
         """Return first Pages incorrectly predicted as non-first."""
         return self.evaluation_results['fn']
 
-    @property
-    def precision(self):
+    def precision(self) -> Union[float, dict]:
         """Return precision."""
         return self.evaluation_results['precision']
 
-    @property
-    def recall(self):
+    def recall(self) -> Union[float, dict]:
         """Return recall."""
         return self.evaluation_results['recall']
 
-    @property
-    def f1(self):
+    def f1(self) -> Union[float, dict]:
         """Return F1-measure."""
         return self.evaluation_results['f1']
 
@@ -243,7 +240,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         self.first_page_spans = first_page_spans
         return first_page_spans
 
-    def save(self, model_path="", include_konfuzio=True):
+    def save(self, model_path="", include_konfuzio=True) -> str:
         """
         Save the resulting set of first-page Spans by Category.
 
@@ -332,7 +329,7 @@ class SplittingAI:
             if page.number == 1:
                 suggested_splits.append(page)
             else:
-                if hasattr(self.model.predict(page), 'is_first_page'):
+                if self.model.predict(page).is_first_page:
                     suggested_splits.append(page)
         split_docs = []
         first_page = document.pages()[0]
@@ -346,7 +343,7 @@ class SplittingAI:
                 split_docs.append(self._create_doc_from_page_interval(document, suggested_splits[page_i - 1], split_i))
         return split_docs
 
-    def propose_split_documents(self, document: Document, return_pages: bool = False):
+    def propose_split_documents(self, document: Document, return_pages: bool = False) -> Union[Document, List]:
         """
         Propose a set of resulting documents from a single Documents.
 
@@ -382,7 +379,7 @@ class SplittingAI:
             doc.pages()[0].is_first_page = True
             pred = self.tokenizer.tokenize(deepcopy(doc))
             for page in pred.pages():
-                if hasattr(self.model.predict(page), 'is_first_page'):
+                if self.model.predict(page).is_first_page:
                     page.is_first_page = True
             evaluation_list.append((doc, pred))
         self.full_evaluation = FileSplittingEvaluation(evaluation_list)

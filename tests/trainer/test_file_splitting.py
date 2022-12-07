@@ -66,12 +66,12 @@ class TestFileSplittingModel(unittest.TestCase):
                 self.file_splitting_model.predict(page)
                 if page.number == 1:
                     assert intersections == [{'I like bread.'}]
-                    assert hasattr(page, 'is_first_page')
+                    assert page.is_first_page
                 if page.number in (2, 4):
                     assert intersections == []
                 if page.number in (3, 5):
                     assert intersections == [{'Morning,'}]
-                    assert hasattr(page, 'is_first_page')
+                    assert page.is_first_page
 
     def test_splitting_ai_predict(self):
         """Test SplittingAI's Document-splitting method."""
@@ -85,9 +85,9 @@ class TestFileSplittingModel(unittest.TestCase):
         pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)
         for page in pred.pages():
             if page.number in (1, 3, 5):
-                assert hasattr(page, 'is_first_page')
+                assert page.is_first_page
             else:
-                assert not hasattr(page, 'is_first_page')
+                assert not page.is_first_page
 
     def test_metrics_calculation(self):
         """Test Evaluation class for ContextAwareFileSplitting."""
@@ -102,9 +102,9 @@ class TestFileSplittingModel(unittest.TestCase):
         assert evaluation.tp == 3
         assert evaluation.fp == 0
         assert evaluation.fn == 0
-        assert evaluation.precision == 1.0
-        assert evaluation.recall == 1.0
-        assert evaluation.f1 == 1.0
+        assert evaluation.precision() == 1.0
+        assert evaluation.recall() == 1.0
+        assert evaluation.f1() == 1.0
 
     def test_metrics_calculation_by_category(self):
         """Test Evaluation by Category."""
@@ -119,15 +119,15 @@ class TestFileSplittingModel(unittest.TestCase):
         assert evaluation.tp[ground_truth.category.id_] == 3
         assert evaluation.fp[ground_truth.category.id_] == 0
         assert evaluation.fn[ground_truth.category.id_] == 0
-        assert evaluation.precision[ground_truth.category.id_] == 1.0
-        assert evaluation.recall[ground_truth.category.id_] == 1.0
-        assert evaluation.f1[ground_truth.category.id_] == 1.0
+        assert evaluation.precision()[ground_truth.category.id_] == 1.0
+        assert evaluation.recall()[ground_truth.category.id_] == 1.0
+        assert evaluation.f1()[ground_truth.category.id_] == 1.0
 
     def test_splitting_ai_evaluation(self):
         """Test evaluate_full method of SplittingAI."""
         splitting_ai = SplittingAI(self.file_splitting_model)
         splitting_ai.evaluate_full()
-        assert splitting_ai.full_evaluation.evaluation_results['tp'] == 3
+        assert splitting_ai.full_evaluation.evaluation_results['tp'] == 4
         assert splitting_ai.full_evaluation.evaluation_results['fp'] == 0
         assert splitting_ai.full_evaluation.evaluation_results['fn'] == 0
         assert splitting_ai.full_evaluation.evaluation_results['precision'] == 1.0

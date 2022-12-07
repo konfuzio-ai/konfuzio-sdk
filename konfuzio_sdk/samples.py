@@ -385,3 +385,22 @@ uncertain
             end_offset=52,
             number=2,
         )
+
+        text_6 = "Morning,\nI wanted to call you.\n\fWhat's up?"
+        document_6 = Document(id_=None, project=self, category=category_3, text=text_6, dataset_status=3)
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_6,
+            start_offset=0,
+            end_offset=30,
+            number=1,
+        )
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_6,
+            start_offset=31,
+            end_offset=41,
+            number=2,
+        )
