@@ -2,30 +2,27 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<meta content="Simple examples of how can the konfuzio_sdk package be used to get and post information on a project. These code snippets should provide a first insight for a quick start with the package." name="description" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Code Examples &mdash; Konfuzio  documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
-    <link rel="shortcut icon" href="../../_static/full_green_square.png"/>
-    <link rel="canonical" href="https://dev.konfuzio.com/sdk/examples/examples.html" />
+  <title>Splitting for multi-file Documents: Step-by-step guide &mdash; Konfuzio  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/full_green_square.png"/>
+    <link rel="canonical" href="https://dev.konfuzio.com/sdk/examples/file-splitting-class/index.html" />
   <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/underscore.js"></script>
-        <script src="../../_static/doctools.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
         <script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
         <script>mermaid.initialize({startOnLoad:true});</script>
-    <script src="../../_static/js/theme.js"></script>
-    <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Contribution Guide" href="../contribution.html" />
-    <link rel="prev" title="Data" href="../sourcecode.html" /> 
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -33,11 +30,11 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html" class="icon icon-home"> Konfuzio
-            <img src="../../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
+            <a href="../../../index.html" class="icon icon-home"> Konfuzio
+            <img src="../../../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
@@ -45,57 +42,26 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../home/index.html">Quickstart</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../configuration_reference.html">Install SDK</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html">Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html#tokenizers">Tokenizers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html#extraction-ai">Extraction AI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html#evaluation">Evaluation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html#document-categorization">Document Categorization</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Code Examples</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#example-usage">Example Usage</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#project">Project</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#documents">Documents</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#download-pdfs">Download PDFs</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#download-pages-as-images">Download pages as images</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#download-bounding-boxes-of-the-characters">Download bounding boxes of the characters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#update-document">Update Document</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#delete-document">Delete Document</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#create-regex-based-annotations">Create Regex-based Annotations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#train-label-regex-tokenizer">Train Label Regex Tokenizer</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#finding-spans-of-a-label-not-found-by-a-tokenizer">Finding Spans of a Label Not Found by a Tokenizer</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#evaluate-a-trained-extraction-ai-model">Evaluate a Trained Extraction AI Model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#document-categorization">Document Categorization</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#categorization-fallback-logic">Categorization Fallback Logic</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#splitting-for-multi-file-documents-step-by-step-guide">Splitting for multi-file Documents: Step-by-step guide</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#intro">Intro</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#quick-explanation">Quick explanation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#step-by-step-explanation">Step-by-step explanation</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents">Train a Konfuzio SDK Model to Extract Information From Payslip Documents</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#retrain-flair-ner-ontonotes-fast-with-human-revised-annotations">Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#count-relevant-expressions-in-annual-reports">Count Relevant Expressions in Annual Reports</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../contribution.html">Contribution Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../coordinates_system.html">Coordinates System</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../merge/merge.html">Merging Logic</a></li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../home/index.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../configuration_reference.html">Install SDK</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html">Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html#tokenizers">Tokenizers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html#extraction-ai">Extraction AI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html#evaluation">Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html#document-categorization">Document Categorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Code Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribution.html">Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../coordinates_system.html">Coordinates System</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../merge/merge.html">Merging Logic</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../web/api.html">REST API v2</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../web/api-v3.html">REST API v3</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../web/frontend/index.html">Frontend</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../web/on_premises.html">On-Premises Documentation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../web/changelog_app.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/api.html">REST API v2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/api-v3.html">REST API v3</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/frontend/index.html">Frontend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/on_premises.html">On-Premises Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/changelog_app.html">Changelog</a></li>
 </ul>
 
         </div>
@@ -104,17 +70,17 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">Konfuzio</a>
+          <a href="../../../index.html">Konfuzio</a>
       </nav>
 
       <div class="wy-nav-content">
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Code Examples</li>
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Splitting for multi-file Documents: Step-by-step guide</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../../_sources/sdk/examples/examples.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../../../_sources/sdk/examples/file-splitting-class/index.md.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -122,390 +88,13 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="code-examples">
-<h1>Code Examples<a class="headerlink" href="#code-examples" title="Permalink to this headline">¶</a></h1>
-<section id="example-usage">
-<h2>Example Usage<a class="headerlink" href="#example-usage" title="Permalink to this headline">¶</a></h2>
-<section id="project">
-<h3>Project<a class="headerlink" href="#project" title="Permalink to this headline">¶</a></h3>
-<p>Retrieve all information available for your project:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>The information will be stored in the folder that you defined to allocate the data in the package initialization.
-A subfolder will be created for each document in the project.</p>
-<p>Every time that there are changes in the project in the Konfuzio Server, the local project can be updated this way:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>To make sure that your project is loaded with all the latest data:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-<section id="documents">
-<h3>Documents<a class="headerlink" href="#documents" title="Permalink to this headline">¶</a></h3>
-<p>To access the documents in the project you can use:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">documents</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span>
-</pre></div>
-</div>
-<p>By default, it will get the documents with training status (dataset_status = 2). The code for the status is:</p>
-<ul class="simple">
-<li><p>None: 0</p></li>
-<li><p>Preparation: 1</p></li>
-<li><p>Training: 2</p></li>
-<li><p>Test: 3</p></li>
-<li><p>Excluded: 4</p></li>
-</ul>
-<p>The test documents can be accessed directly by:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">test_documents</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">test_documents</span>
-</pre></div>
-</div>
-<p>For more details, you can checkout the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#project">Project documentation</a>.</p>
-<p>By default, you get 4 files for each document that contain information of the text, pages, annotation sets and annotations.
-You can see these files inside the document folder.</p>
-<p><strong>document.txt</strong> - Contains the text of the document. If OCR was used, it will correspond to the result from the OCR.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>                                                            x02   328927/10103/00104
-Abrechnung  der Brutto/Netto-Bezüge   für Dezember 2018                   22.05.2018 Bat:  1
-
-Personal-Nr.  Geburtsdatum ski Faktor  Ki,Frbtr.Konfession  ‚Freibetragjährl.! |Freibetrag mt! |DBA  iGleitzone  &#39;St.-Tg.  VJuUr. üb. |Url. Anspr. Url.Tg.gen.  |Resturlaub
-00104 150356 1  |     ‚ev                              30     400  3000       3400
-
-SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  jum.SV-Tg. Anw. Tage |UrlaubTage Krankh. Tg. Fehlz. Tage
-
-50150356B581 AOK  Bayern Die Gesundheitskas 157 101 1111 1 30
-
-                                             Eintritt   ‚Austritt     Anw.Std.  Urlaub Std.  |Krankh. Std. |Fehlz. Std.
-
-                                             170299  L L       l     L     l     l
- -                                       +  Steuer-ID       IMrB?       Zeitlohn Sta.|Überstd.  |Bez. Sta.
-  Teststraße123
-   12345 Testort                                   12345678911           ı     ı     \
-                               B/N
-               Pers.-Nr.  00104        x02
-               Abt.-Nr. A12         10103          HinweisezurAbrechnung
-</pre></div>
-</div>
-<p><strong>pages.json5</strong> - Contains information of each page of the document (for example, their ids and sizes).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
-  <span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1923</span><span class="p">,</span>
-    <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="s2">&quot;/page/show/1923/&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;number&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="s2">&quot;original_size&quot;</span><span class="p">:</span> <span class="p">[</span>
-      <span class="mf">595.2</span><span class="p">,</span>
-      <span class="mf">841.68</span>
-    <span class="p">],</span>
-    <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="p">[</span>
-      <span class="mi">1414</span><span class="p">,</span>
-      <span class="mi">2000</span>
-    <span class="p">]</span>
-  <span class="p">}</span>
-<span class="p">]</span>
-</pre></div>
-</div>
-<p><strong>annotation_sets.json5</strong> - Contains information of each section in the document (for example, their ids and label sets).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
-  <span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">78730</span><span class="p">,</span>
-    <span class="s2">&quot;position&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="s2">&quot;section_label&quot;</span><span class="p">:</span> <span class="mi">63</span>
-  <span class="p">},</span>
-  <span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">292092</span><span class="p">,</span>
-    <span class="s2">&quot;position&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="s2">&quot;section_label&quot;</span><span class="p">:</span> <span class="mi">64</span>
-  <span class="p">}</span>
-<span class="p">]</span>
-</pre></div>
-</div>
-<p><strong>annotations.json5</strong> - Contains information of each annotation in the document (for example, their labels and bounding boxes).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
-  <span class="p">{</span>
-    <span class="s2">&quot;accuracy&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
-    <span class="s2">&quot;bbox&quot;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="s2">&quot;bottom&quot;</span><span class="p">:</span> <span class="mf">44.369</span><span class="p">,</span>
-      <span class="s2">&quot;line_index&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-      <span class="s2">&quot;page_index&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-      <span class="s2">&quot;top&quot;</span><span class="p">:</span> <span class="mf">35.369</span><span class="p">,</span>
-      <span class="s2">&quot;x0&quot;</span><span class="p">:</span> <span class="mf">468.48</span><span class="p">,</span>
-      <span class="s2">&quot;x1&quot;</span><span class="p">:</span> <span class="mf">527.04</span><span class="p">,</span>
-      <span class="s2">&quot;y0&quot;</span><span class="p">:</span> <span class="mf">797.311</span><span class="p">,</span>
-      <span class="s2">&quot;y1&quot;</span><span class="p">:</span> <span class="mf">806.311</span>
-    <span class="p">},</span>
-    <span class="s2">&quot;bboxes&quot;</span><span class="p">:</span> <span class="p">[</span>
-      <span class="p">{</span>
-        <span class="s2">&quot;bottom&quot;</span><span class="p">:</span> <span class="mf">44.369</span><span class="p">,</span>
-        <span class="s2">&quot;end_offset&quot;</span><span class="p">:</span> <span class="mi">169</span><span class="p">,</span>
-        <span class="s2">&quot;line_number&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-        <span class="s2">&quot;offset_string&quot;</span><span class="p">:</span> <span class="s2">&quot;22.05.2018&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;offset_string_original&quot;</span><span class="p">:</span> <span class="s2">&quot;22.05.2018&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;page_index&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="s2">&quot;start_offset&quot;</span><span class="p">:</span> <span class="mi">159</span><span class="p">,</span>
-        <span class="s2">&quot;top&quot;</span><span class="p">:</span> <span class="mf">35.369</span><span class="p">,</span>
-        <span class="s2">&quot;x0&quot;</span><span class="p">:</span> <span class="mf">468.48</span><span class="p">,</span>
-        <span class="s2">&quot;x1&quot;</span><span class="p">:</span> <span class="mf">527.04</span><span class="p">,</span>
-        <span class="s2">&quot;y0&quot;</span><span class="p">:</span> <span class="mf">797.311</span><span class="p">,</span>
-        <span class="s2">&quot;y1&quot;</span><span class="p">:</span> <span class="mf">806.311</span>
-      <span class="p">}</span>
-    <span class="p">],</span>
-    <span class="s2">&quot;created_by&quot;</span><span class="p">:</span> <span class="mi">59</span><span class="p">,</span>
-    <span class="s2">&quot;custom_offset_string&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
-    <span class="s2">&quot;end_offset&quot;</span><span class="p">:</span> <span class="mi">169</span><span class="p">,</span>
-    <span class="s2">&quot;get_created_by&quot;</span><span class="p">:</span> <span class="s2">&quot;user@konfuzio.com&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;get_revised_by&quot;</span><span class="p">:</span> <span class="s2">&quot;n/a&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">4419937</span><span class="p">,</span>
-    <span class="s2">&quot;is_correct&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
-    <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="mi">867</span><span class="p">,</span>
-    <span class="s2">&quot;label_data_type&quot;</span><span class="p">:</span> <span class="s2">&quot;Date&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;label_text&quot;</span><span class="p">:</span> <span class="s2">&quot;Austellungsdatum&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;label_threshold&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span><span class="o">--</span>
-    <span class="s2">&quot;normalized&quot;</span><span class="p">:</span> <span class="s2">&quot;2018-05-22&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;offset_string&quot;</span><span class="p">:</span> <span class="s2">&quot;22.05.2018&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;offset_string_original&quot;</span><span class="p">:</span> <span class="s2">&quot;22.05.2018&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;revised&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
-    <span class="s2">&quot;revised_by&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
-    <span class="s2">&quot;section&quot;</span><span class="p">:</span> <span class="mi">78730</span><span class="p">,</span>
-    <span class="s2">&quot;section_label_id&quot;</span><span class="p">:</span> <span class="mi">63</span><span class="p">,</span>
-    <span class="s2">&quot;section_label_text&quot;</span><span class="p">:</span> <span class="s2">&quot;Lohnabrechnung&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;selection_bbox&quot;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="s2">&quot;bottom&quot;</span><span class="p">:</span> <span class="mf">44.369</span><span class="p">,</span>
-      <span class="s2">&quot;line_index&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-      <span class="s2">&quot;page_index&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-      <span class="s2">&quot;top&quot;</span><span class="p">:</span> <span class="mf">35.369</span><span class="p">,</span>
-      <span class="s2">&quot;x0&quot;</span><span class="p">:</span> <span class="mf">468.48</span><span class="p">,</span>
-      <span class="s2">&quot;x1&quot;</span><span class="p">:</span> <span class="mf">527.04</span><span class="p">,</span>
-      <span class="s2">&quot;y0&quot;</span><span class="p">:</span> <span class="mf">797.311</span><span class="p">,</span>
-      <span class="s2">&quot;y1&quot;</span><span class="p">:</span> <span class="mf">806.311</span>
-    <span class="p">},</span>
-    <span class="s2">&quot;start_offset&quot;</span><span class="p">:</span> <span class="mi">159</span><span class="p">,</span>
-    <span class="s2">&quot;translated_string&quot;</span><span class="p">:</span> <span class="n">null</span>
-  <span class="p">},</span>
-<span class="o">...</span>
-<span class="p">]</span>
-</pre></div>
-</div>
-<section id="download-pdfs">
-<h4>Download PDFs<a class="headerlink" href="#download-pdfs" title="Permalink to this headline">¶</a></h4>
-<p>To get the PDFs of the documents, you can use <strong>get_file()</strong>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
-    <span class="n">document</span><span class="o">.</span><span class="n">get_file</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>This will download the OCR version of the document which contains the text, the bounding boxes
-information of the characters and the image of the document.</p>
-<p>In the document folder, you will see a new file with the original name followed by “_ocr”.</p>
-<p>If you want to original version of the document (without OCR) you can use <strong>ocr_version=False</strong>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
-    <span class="n">document</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span><span class="n">ocr_version</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>In the document folder, you will see a new file with the original name.</p>
-</section>
-<section id="download-pages-as-images">
-<h4>Download pages as images<a class="headerlink" href="#download-pages-as-images" title="Permalink to this headline">¶</a></h4>
-<p>To get the pages of the document as png images, you can use <strong>get_images()</strong>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
-    <span class="n">document</span><span class="o">.</span><span class="n">get_images</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>You will get one png image named “page_number_of_page.png” for each page in the document.</p>
-</section>
-<section id="download-bounding-boxes-of-the-characters">
-<h4>Download bounding boxes of the characters<a class="headerlink" href="#download-bounding-boxes-of-the-characters" title="Permalink to this headline">¶</a></h4>
-<p>To get the bounding boxes information of the characters, you can use <strong>get_bbox()</strong>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
-    <span class="n">document</span><span class="o">.</span><span class="n">get_bbox</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>You will get a file named “bbox.json5”.</p>
-<p>After downloading these files, the paths to them will also become available in the project instance.
-For example, you can get the path to the file with the document text with:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_project</span><span class="o">.</span><span class="n">documents_folder</span>
-</pre></div>
-</div>
-</section>
-<section id="update-document">
-<h4>Update Document<a class="headerlink" href="#update-document" title="Permalink to this headline">¶</a></h4>
-<p>If there are changes in the document in the Konfuzio Server, you can update the document with:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>If a document is part of the training or test set, you can also update it by updating the entire project via
-project.update(). However, for projects with many documents it can be faster to update only the relevant documents.</p>
-</section>
-<section id="delete-document">
-<h4>Delete Document<a class="headerlink" href="#delete-document" title="Permalink to this headline">¶</a></h4>
-<p>To locally delete a document, you can use:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">document</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>The document will be deleted from your local data folder but it will remain in the Konfuzio Server.
-If you want to get it again you can update the project.</p>
-</section>
-</section>
-</section>
-<section id="create-regex-based-annotations">
-<h2>Create Regex-based Annotations<a class="headerlink" href="#create-regex-based-annotations" title="Permalink to this headline">¶</a></h2>
-<p>Let’s see a simple example of how can we use the <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> package to get information on a project and to post annotations.</p>
-<p>You can follow the example below to post annotations of a certain word or expression in the first document uploaded.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">re</span>
-
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Annotation</span><span class="p">,</span> <span class="n">Label</span>
-
-<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
-
-<span class="c1"># Word/expression to annotate in the document</span>
-<span class="c1"># should match an existing one in your document</span>
-<span class="n">input_expression</span> <span class="o">=</span> <span class="s2">&quot;John Smith&quot;</span>
-
-<span class="c1"># Label for the annotation</span>
-<span class="n">label_name</span> <span class="o">=</span> <span class="s2">&quot;Name&quot;</span>
-<span class="c1"># Getting the Label from the project</span>
-<span class="n">my_label</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="n">label_name</span><span class="p">)</span>
-
-<span class="c1"># LabelSet to which the Label belongs</span>
-<span class="n">label_set</span> <span class="o">=</span> <span class="n">my_label</span><span class="o">.</span><span class="n">label_sets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-<span class="c1"># First document in the project</span>
-<span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-<span class="c1"># Matches of the word/expression in the document</span>
-<span class="n">matches_locations</span> <span class="o">=</span> <span class="p">[(</span><span class="n">m</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">m</span><span class="o">.</span><span class="n">end</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">input_expression</span><span class="p">,</span> <span class="n">document</span><span class="o">.</span><span class="n">text</span><span class="p">)]</span>
-
-<span class="c1"># List to save the links to the annotations created</span>
-<span class="n">new_annotations_links</span> <span class="o">=</span> <span class="p">[]</span>
-
-<span class="c1"># Create annotation for each match</span>
-<span class="k">for</span> <span class="n">offsets</span> <span class="ow">in</span> <span class="n">matches_locations</span><span class="p">:</span>
-    <span class="n">span</span> <span class="o">=</span> <span class="n">Span</span><span class="p">(</span><span class="n">start_offset</span><span class="o">=</span><span class="n">offsets</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">end_offset</span><span class="o">=</span><span class="n">offsets</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-    <span class="n">annotation_obj</span> <span class="o">=</span> <span class="n">Annotation</span><span class="p">(</span>
-        <span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">,</span>
-        <span class="n">label</span><span class="o">=</span><span class="n">my_label</span><span class="p">,</span>
-        <span class="n">label_set</span><span class="o">=</span><span class="n">label_set</span><span class="p">,</span>
-        <span class="n">confidence</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
-        <span class="n">spans</span><span class="o">=</span><span class="p">[</span><span class="n">span</span><span class="p">],</span>
-        <span class="n">is_correct</span><span class="o">=</span><span class="kc">True</span>
-    <span class="p">)</span>
-    <span class="n">new_annotation_added</span> <span class="o">=</span> <span class="n">annotation_obj</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">new_annotation_added</span><span class="p">:</span>
-        <span class="n">new_annotations_links</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">annotation_obj</span><span class="o">.</span><span class="n">get_link</span><span class="p">())</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">new_annotations_links</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-<section id="train-label-regex-tokenizer">
-<h2>Train Label Regex Tokenizer<a class="headerlink" href="#train-label-regex-tokenizer" title="Permalink to this headline">¶</a></h2>
-<p>You can use the <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> package to train a custom Regex tokenizer.</p>
-<p>In this example, you will see how to find regex expressions that match with occurences of the “IBAN” Label in the training data.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.regex</span> <span class="kn">import</span> <span class="n">RegexTokenizer</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.base</span> <span class="kn">import</span> <span class="n">ListTokenizer</span>
-
-<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
-<span class="n">category</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_category_by_id</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">CATEGORY_ID</span><span class="p">)</span>
-
-<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">ListTokenizer</span><span class="p">(</span><span class="n">tokenizers</span><span class="o">=</span><span class="p">[])</span>
-
-<span class="n">iban_label</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s2">&quot;IBAN&quot;</span><span class="p">)</span>
-
-<span class="k">for</span> <span class="n">regex</span> <span class="ow">in</span> <span class="n">iban_label</span><span class="o">.</span><span class="n">find_regex</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">category</span><span class="p">):</span>
-    <span class="n">regex_tokenizer</span> <span class="o">=</span> <span class="n">RegexTokenizer</span><span class="p">(</span><span class="n">regex</span><span class="o">=</span><span class="n">regex</span><span class="p">)</span>
-    <span class="n">tokenizer</span><span class="o">.</span><span class="n">tokenizers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">regex_tokenizer</span><span class="p">)</span>
-
-<span class="c1"># You can then use it to create an Annotation for every matching string in a document.</span>
-<span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">DOCUMENT_ID</span><span class="p">)</span>
-<span class="n">tokenizer</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-<section id="finding-spans-of-a-label-not-found-by-a-tokenizer">
-<h2>Finding Spans of a Label Not Found by a Tokenizer<a class="headerlink" href="#finding-spans-of-a-label-not-found-by-a-tokenizer" title="Permalink to this headline">¶</a></h2>
-<p>Here is an example of how to use the <code class="docutils literal notranslate"><span class="pre">Label.spans_not_found_by_tokenizer</span></code> method. This will allow you to determine if a RegexTokenizer is suitable at finding the Spans of a Label, or what Spans might have been annotated wrong. Say, you have a number of annotations assigned to the <code class="docutils literal notranslate"><span class="pre">IBAN</span></code> Label and want to know which Spans would not be found when using the WhiteSpace Tokenizer. You can follow this example to find all the relevant Spans.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Annotation</span><span class="p">,</span> <span class="n">Label</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.regex</span> <span class="kn">import</span> <span class="n">WhitespaceTokenizer</span>
-
-<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
-<span class="n">category</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">categories</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">WhitespaceTokenizer</span><span class="p">()</span>
-
-<span class="n">iban_label</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_label_by_name</span><span class="p">(</span><span class="s1">&#39;IBAN&#39;</span><span class="p">)</span>
-
-<span class="n">spans_not_found</span> <span class="o">=</span> <span class="n">iban_label</span><span class="o">.</span><span class="n">spans_not_found_by_tokenizer</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="p">[</span><span class="n">category</span><span class="p">])</span>
-
-<span class="k">for</span> <span class="n">span</span> <span class="ow">in</span> <span class="n">spans_not_found</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">span</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">span</span><span class="o">.</span><span class="n">offset_string</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-<section id="evaluate-a-trained-extraction-ai-model">
-<h2>Evaluate a Trained Extraction AI Model<a class="headerlink" href="#evaluate-a-trained-extraction-ai-model" title="Permalink to this headline">¶</a></h2>
-<p>In this example we will see how we can evaluate a trained <code class="docutils literal notranslate"><span class="pre">RFExtractionAI</span></code> model. We will assume that we have a trained pickled model available. See <a class="reference external" href="https://dev.konfuzio.com/sdk/examples/examples.html#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents">here</a> for how to train such a model, and check out the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#evaluation">Evaluation</a> documentation for more details.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
-
-<span class="n">pipeline</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">MODEL_PATH</span><span class="p">)</span>
-
-<span class="c1"># To get the evaluation of the full pipeline</span>
-<span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_full</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Full evaluation F1 score: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">f1</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Full evaluation recall: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">recall</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Full evaluation precision: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">precision</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-<span class="c1"># To get the evaluation of the tokenizer alone</span>
-<span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_tokenizer</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tokenizer evaluation F1 score: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">tokenizer_f1</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-<span class="c1"># To get the evaluation of the Label classifier given perfect tokenization</span>
-<span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_clf</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Label classifier evaluation F1 score: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">clf_f1</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-<span class="c1"># To get the evaluation of the LabelSet given perfect Label classification</span>
-<span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_template_clf</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Label Set evaluation F1 score: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">f1</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-<section id="document-categorization">
-<h2>Document Categorization<a class="headerlink" href="#document-categorization" title="Permalink to this headline">¶</a></h2>
-<section id="categorization-fallback-logic">
-<h3>Categorization Fallback Logic<a class="headerlink" href="#categorization-fallback-logic" title="Permalink to this headline">¶</a></h3>
-<p>Use the name of the category as an effective fallback logic to categorize documents when no categorization AI is available:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">FallbackCategorizationModel</span>
-
-<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
-<span class="n">categorization_model</span> <span class="o">=</span> <span class="n">FallbackCategorizationModel</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
-<span class="n">categorization_model</span><span class="o">.</span><span class="n">categories</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">categories</span>
-
-<span class="n">test_document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
-
-<span class="c1"># returns virtual SDK Document with category attribute</span>
-<span class="n">result_doc</span> <span class="o">=</span> <span class="n">categorization_model</span><span class="o">.</span><span class="n">categorize</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">test_document</span><span class="p">)</span>
-
-<span class="c1"># if the input document is already categorized, the already present category is used</span>
-<span class="c1"># unless recategorize is True</span>
-<span class="n">result_doc</span> <span class="o">=</span> <span class="n">categorization_model</span><span class="o">.</span><span class="n">categorize</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">test_document</span><span class="p">,</span> <span class="n">recategorize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found category </span><span class="si">{</span><span class="n">result_doc</span><span class="o">.</span><span class="n">category</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">result_doc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-<span class="c1"># option to modify the provided document in place</span>
-<span class="n">categorization_model</span><span class="o">.</span><span class="n">categorize</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">test_document</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found category </span><span class="si">{</span><span class="n">test_document</span><span class="o">.</span><span class="n">category</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">test_document</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-</section>
-<section id="splitting-for-multi-file-documents-step-by-step-guide">
-<h2>Splitting for multi-file Documents: Step-by-step guide<a class="headerlink" href="#splitting-for-multi-file-documents-step-by-step-guide" title="Permalink to this headline">¶</a></h2>
+  <section id="splitting-for-multi-file-documents-step-by-step-guide">
+<h1>Splitting for multi-file Documents: Step-by-step guide<a class="headerlink" href="#splitting-for-multi-file-documents-step-by-step-guide" title="Permalink to this headline">¶</a></h1>
 <section id="intro">
-<h3>Intro<a class="headerlink" href="#intro" title="Permalink to this headline">¶</a></h3>
+<h2>Intro<a class="headerlink" href="#intro" title="Permalink to this headline">¶</a></h2>
 <p>Not all multipage files that we process are always neatly scanned and organized. Sometimes we can have more than one actual
 Document in a stream pf pages; such files need to be properly processed and split into several independent Documents</p>
-<a class="reference external image-reference" href="image.png"><img alt="multi-file Document example" src="sdk/examples/image.png" /></a>
+<a class="reference external image-reference" href="image.png"><img alt="multi-file Document example" src="../../../_images/image.png" /></a>
 <p><em>Multi-file Document Example</em></p>
 <p>In this post, we will look at a simple way to implement an algorithm for searching common features between
 Documents/Pages which can be used for splitting a multi-file Document into the sub-Documents. Our approach is based on
@@ -515,7 +104,7 @@ Note: this approach only works with the Documents of the same Category and in th
 <p>If you are unfamiliar with the SDK’s main concepts (like Page or Span), you can get to know them on the Quickstart page.</p>
 </section>
 <section id="quick-explanation">
-<h3>Quick explanation<a class="headerlink" href="#quick-explanation" title="Permalink to this headline">¶</a></h3>
+<h2>Quick explanation<a class="headerlink" href="#quick-explanation" title="Permalink to this headline">¶</a></h2>
 <p>First step for implementation is “training”: we tokenize the Document (meaning that we split its text into parts, more
 specifically to this tutorial – into strings without line breaks) and gather Spans – the parts of the text in the Page –
 each of which is present on every first Page of each Documents in the training data.</p>
@@ -529,7 +118,7 @@ algorithm should not return an empty set; if that is the case, you might want to
 not in different languages, no occurrences of other Categories).</p>
 </section>
 <section id="step-by-step-explanation">
-<h3>Step-by-step explanation<a class="headerlink" href="#step-by-step-explanation" title="Permalink to this headline">¶</a></h3>
+<h2>Step-by-step explanation<a class="headerlink" href="#step-by-step-explanation" title="Permalink to this headline">¶</a></h2>
 <p>In this section, we’ll go through steps imitating initialization of <code class="docutils literal notranslate"><span class="pre">ContextAwareFileSplittingModel</span></code> class which you can
 find in the full code block in the lower part of this page. A class itself is already implemented and can be imported via
 <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">konfuzio_sdk.trainer.file_splitting</span> <span class="pre">import</span> <span class="pre">ContextAwareFileSplittingModel</span></code>.</p>
@@ -851,43 +440,11 @@ temporary cloudpickled object and then compress it using bz2. The temporary obje
 </div>
 </section>
 </section>
-<section id="train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents">
-<h2>Train a Konfuzio SDK Model to Extract Information From Payslip Documents<a class="headerlink" href="#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents" title="Permalink to this headline">¶</a></h2>
-<p>The tutorial <em>RFExtractionAI Demo</em> aims to show you how to use the Konfuzio SDK package to use a simple <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#konfuzio_sdk.tokenizer.regex.WhitespaceTokenizer">Whitespace
-tokenizer</a> and to
-train a “RFExtractionAI” model to find and extract relevant information like Name, Date and Recipient
-from payslip documents.</p>
-<p>You can <a class="reference external" href="https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/RFExtractionAI%20Demo.ipynb"><img alt="OpenInColab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a> or download it from <a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/RFExtractionAI%20Demo.ipynb">here</a>
-and try it by yourself.</p>
-</section>
-<section id="retrain-flair-ner-ontonotes-fast-with-human-revised-annotations">
-<h2>Retrain Flair NER-Ontonotes-Fast with Human Revised Annotations<a class="headerlink" href="#retrain-flair-ner-ontonotes-fast-with-human-revised-annotations" title="Permalink to this headline">¶</a></h2>
-<p>The tutorial <em>HRetrain Flair NER-Ontonotes-Fast with Human Revised Annotations</em> aims to show you how to use the
-Konfuzio SDK package to include an easy feedback workflow in your training pipeline. It also gives an example of how you
-can take advantage of open-source models to speed up the annotation process and use the feedback workflow to adapt the
-domain knowledge of the model to your aim.</p>
-<p>You can <a class="reference external" href="https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/human_in_the_loop.ipynb"><img alt="OpenInColab1" src="https://colab.research.google.com/assets/colab-badge.svg" /></a> or download it from
-<a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/human_in_the_loop.ipynb">here</a>
-and try it by yourself.</p>
-</section>
-<section id="count-relevant-expressions-in-annual-reports">
-<h2>Count Relevant Expressions in Annual Reports<a class="headerlink" href="#count-relevant-expressions-in-annual-reports" title="Permalink to this headline">¶</a></h2>
-<p>The tutorial <em>Count Relevant Expressions in Annual Reports</em> aims to show you how to use the Konfuzio SDK package to
-retrieve structured and organized information that can be used for a deeper analysis and understanding of your data.
-It will show you how to identify and count pre-specified expressions in documents and how to collect that information.</p>
-<p>You can <a class="reference external" href="https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/word_count.ipynb"><img alt="OpenInColab2" src="https://colab.research.google.com/assets/colab-badge.svg" /></a> or download it from
-<a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/word_count.ipynb">here</a>
-and try it by yourself.</p>
-</section>
-</section>
 
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../sourcecode.html" class="btn btn-neutral float-left" title="Data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../contribution.html" class="btn btn-neutral float-right" title="Contribution Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 

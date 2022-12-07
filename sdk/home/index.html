@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quickstart &mdash; Konfuzio  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../../_static/full_green_square.png"/>
+    <link rel="canonical" href="https://dev.konfuzio.com/sdk/home/index.html" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+        <script>mermaid.initialize({startOnLoad:true});</script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Install SDK" href="../configuration_reference.html" />
+    <link rel="prev" title="Konfuzio Developer Center" href="../../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Konfuzio
+            <img src="../../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Quickstart</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id1">Project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#document">Document</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id4">Category</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#page">Page</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#span">Span</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#annotation">Annotation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id9">Annotation Set</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id11">Label</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#label-set">Label Set</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id14">Bbox</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration_reference.html">Install SDK</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html">Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html#tokenizers">Tokenizers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html#extraction-ai">Extraction AI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html#evaluation">Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html#document-categorization">Document Categorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/examples.html">Code Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribution.html">Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../coordinates_system.html">Coordinates System</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../merge/merge.html">Merging Logic</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../web/api.html">REST API v2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/api-v3.html">REST API v3</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/frontend/index.html">Frontend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/on_premises.html">On-Premises Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/changelog_app.html">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Konfuzio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Quickstart</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/sdk/home/index.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="quickstart">
+<h1>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this headline">¶</a></h1>
+<p>Get to know all major Data Layer concepts of the SDK before you begin working with it. The relations between them are
+the following: a <a class="reference external" href="#Project">Project</a> consists of multiple <a class="reference external" href="#Document">Documents</a>. Each one of the Documents consists of
+the <a class="reference external" href="#Page">Pages</a> and belongs to a certain <a class="reference external" href="#Category">Category</a>. Text of the Documents consists of <a class="reference external" href="#Span">Spans</a> and
+can be marked by <a class="reference external" href="#Annotation">Annotations</a> from some <a class="reference external" href="#Annotation%20Set">Annotation Set</a>. Each Annotation is located in
+a certain <a class="reference external" href="#Bbox">Bbox</a> and is defined by a <a class="reference external" href="#Label">Label</a> that is a part of one of the <a class="reference external" href="#Label%20Set">Label Sets</a>.</p>
+<p>For more detailed information on each concept, follow the link on the concept’s name which leads to the automatically
+generated documentation.</p>
+<section id="id1">
+<h2>Project<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#project">Project</a> is essentially a dataset that contains Documents
+belonging to different Categories or not having any Category assigned. To initialize it, call <code class="docutils literal notranslate"><span class="pre">Project(id_=YOUR_PROJECT_ID)</span></code>.</p>
+<p>The Project can also be accessed via the Smartview, with URL typically looking like
+<a class="reference external" href="https://YOUR_HOST/admin/server/document/?project=YOUR_PROJECT_ID">https://YOUR_HOST/admin/server/document/?project=YOUR_PROJECT_ID</a>.</p>
+<p>If you have made some local changes to the Project and want to return to the initial version available at the server, or
+if you want to fetch the updates from the server, use the argument <code class="docutils literal notranslate"><span class="pre">update=True</span></code>.</p>
+<p>Here are the some of properties and methods of the Project you might need when working with the SDK:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">project.documents</span></code> – training Documents within the Project;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">project.test_documents</span></code> – test Documents within the Project;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">project.get_category_by_id(YOUR_CATEGORY_ID).documents()</span></code> – Documents filtered by a Category of your choice;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">project.get_document_by_id(YOUR_DOCUMENT_ID)</span></code> – access a particular Document from the Project if you know its ID.</p></li>
+</ul>
+</section>
+<section id="document">
+<h2>Document<a class="headerlink" href="#document" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#document">Document</a> is one of the files that constitute a Project. It
+consists of Pages and can belong to a certain Category.</p>
+<p>A Document can be accessed by <code class="docutils literal notranslate"><span class="pre">project.get_document_by_id(YOUR_DOCUMENT_ID)</span></code> when its ID is known to you; otherwise, it
+is possible to iterate through the output of <code class="docutils literal notranslate"><span class="pre">project.documents</span></code> (or <code class="docutils literal notranslate"><span class="pre">test_documents</span></code>/<code class="docutils literal notranslate"><span class="pre">_documents</span></code>) to see which
+Documents are available and what IDs they have.</p>
+<p>The Documents can also be accessed via the Smartview, with URL typically looking like
+<a class="reference external" href="https://YOUR_HOST/projects/PROJECT_ID/docs/DOCUMENT_ID/bbox-annotations/">https://YOUR_HOST/projects/PROJECT_ID/docs/DOCUMENT_ID/bbox-annotations/</a>.</p>
+<p>Here are some of the properties and methods of the Document you might need when working with the SDK:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">document.id_</span></code> – get an ID of the Document;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">document.text</span></code> – get a full text of the Document;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">document.pages()</span></code> – a list of Pages in the Document;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">document.update()</span></code> – download a newer version of the Document from the Server in case you have made some changes in
+the Smartview;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">document.category()</span></code> – get a Category the Document belongs to;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">document.get_images()</span></code> – download PNG images of the Pages in the Document; can be used if you wish to use the visual
+data for training your own models, for example;</p></li>
+</ul>
+</section>
+<section id="id4">
+<h2>Category<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#category">Category</a> is a group of Documents united by common feature or type, i.e. invoice or receipt.</p>
+<p>To see all Categories in the Project, you can use <code class="docutils literal notranslate"><span class="pre">project.get_categories()</span></code>.
+To find a Category the Document belongs to, you can use <code class="docutils literal notranslate"><span class="pre">document.category</span></code>.
+To get <code class="docutils literal notranslate"><span class="pre">documents</span></code> or <code class="docutils literal notranslate"><span class="pre">test_documents</span></code> under the Category, use <code class="docutils literal notranslate"><span class="pre">category.documents()</span></code> or <code class="docutils literal notranslate"><span class="pre">category.test_documents()</span></code> respectively.</p>
+<p>You can also observe all Categories available in the Project via the Smartview: they are listed on the Project’s page in the menu on the right.</p>
+</section>
+<section id="page">
+<h2>Page<a class="headerlink" href="#page" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#page">Page</a> is a constituent part of the Document. Here are some of the properties and methods of the Page you might need when working with the SDK:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">page.text</span></code> – get text of the Page;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">page.spans()</span></code> – get a list of Spans on the Page;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">page.number</span></code> – get Page’s number, starting from 1.</p></li>
+</ul>
+</section>
+<section id="span">
+<h2>Span<a class="headerlink" href="#span" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#span">Span</a> is a part of the Document’s text without the line breaks. Each Span has <code class="docutils literal notranslate"><span class="pre">start_offset</span></code> and <code class="docutils literal notranslate"><span class="pre">end_offset</span></code> denoting its starting and finishing characters in <code class="docutils literal notranslate"><span class="pre">document.text</span></code>.</p>
+<p>To access Span’s text, you can call <code class="docutils literal notranslate"><span class="pre">span.offset_string</span></code>. We are going to use it later when collecting the Spans from the Documents.</p>
+</section>
+<section id="annotation">
+<h2>Annotation<a class="headerlink" href="#annotation" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#annotation">Annotation</a> is a combination of Spans that has a certain Label  (i.e. Issue_Date, Auszahlungsbetrag) assigned to it. They typically denote a certain type of entity that is found in the text. Annotations can be predicted by AI or human-added.</p>
+<p>Like Spans, Annotations also have <code class="docutils literal notranslate"><span class="pre">start_offset</span></code> and <code class="docutils literal notranslate"><span class="pre">end_offset</span></code> denoting the starting and the ending characters. To access the text under the Annotation, call <code class="docutils literal notranslate"><span class="pre">annotation.offset_string</span></code>.</p>
+<p>To see the Annotation in the Smartview, you can call <code class="docutils literal notranslate"><span class="pre">annotation.get_link()</span></code> and open the returned URL.</p>
+</section>
+<section id="id9">
+<h2>Annotation Set<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#annotation-set">Annotation Set</a> is a group of Annotations united by Labels
+belonging to the same Label Set. To see Annotations in the set, call <code class="docutils literal notranslate"><span class="pre">annotation_set.annotations()</span></code>.</p>
+</section>
+<section id="id11">
+<h2>Label<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#label">Label</a> defines what the Annotation is about (i.e. Issue_Date,
+Auszahlungsbetrag). Labels are grouped into Label Sets. To see Annotations with a current Label,
+call <code class="docutils literal notranslate"><span class="pre">label.annotations()</span></code> .</p>
+</section>
+<section id="label-set">
+<h2>Label Set<a class="headerlink" href="#label-set" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#label-set">Label Set</a> is a group of Labels united. A Label Set can belong
+to different Categories and multiple Annotation Sets.</p>
+</section>
+<section id="id14">
+<h2>Bbox<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#bbox">Bbox</a> is an area of the Page denoted by four rectangle-like
+coordinates. You can access Bboxes of the Document by calling <code class="docutils literal notranslate"><span class="pre">document.bboxes</span></code>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../../index.html" class="btn btn-neutral float-left" title="Konfuzio Developer Center" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../configuration_reference.html" class="btn btn-neutral float-right" title="Install SDK" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Helm und Nagel GmbH.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-D02B3QF8Z3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-D02B3QF8Z3');
+</script>
+<script src="https://cmp.osano.com/16CVyMSbk3Iar1G3f/97ee6223-b0cb-4f8c-abd6-a25a0d6f6507/osano.js"></script>
+
+
+</body>
+</html>
