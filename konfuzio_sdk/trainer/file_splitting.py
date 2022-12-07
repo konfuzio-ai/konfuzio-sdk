@@ -285,30 +285,6 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
                 page.is_first_page = True
         return page
 
-    def evaluate_full(self, use_training_docs: bool = False) -> FileSplittingEvaluation:
-        """
-        Evaluate the filesplitting context-aware logic.
-
-        :param use_training_docs: If enabled, runs evaluation on the training data to define its quality; if disabled,
-        runs evaluation on the test data.
-        :type use_training_docs: bool
-        :return: Evaluation information for the filesplitting context-aware logic.
-        """
-        evaluation_list = []
-        if not use_training_docs:
-            evaluation_docs = self.test_data
-        else:
-            evaluation_docs = self.train_data
-        for doc in evaluation_docs:
-            doc.pages()[0].is_first_page = True
-            pred = self.tokenizer.tokenize(deepcopy(doc))
-            for page in pred.pages():
-                if hasattr(self.predict(page), 'is_first_page'):
-                    page.is_first_page = True
-            evaluation_list.append((doc, pred))
-        self.full_evaluation = FileSplittingEvaluation(evaluation_list)
-        return self.full_evaluation
-
 
 class SplittingAI:
     """Split a given Document and return a list of resulting shorter Documents."""
@@ -387,3 +363,27 @@ class SplittingAI:
         else:
             processed = self._suggest_page_split(document)
         return processed
+
+    def evaluate_full(self, use_training_docs: bool = False) -> FileSplittingEvaluation:
+        """
+        Evaluate the SplittingAI's performance.
+
+        :param use_training_docs: If enabled, runs evaluation on the training data to define its quality; if disabled,
+        runs evaluation on the test data.
+        :type use_training_docs: bool
+        :return: Evaluation information for the filesplitting context-aware logic.
+        """
+        evaluation_list = []
+        if not use_training_docs:
+            evaluation_docs = self.model.test_data
+        else:
+            evaluation_docs = self.model.train_data
+        for doc in evaluation_docs:
+            doc.pages()[0].is_first_page = True
+            pred = self.tokenizer.tokenize(deepcopy(doc))
+            for page in pred.pages():
+                if hasattr(self.model.predict(page), 'is_first_page'):
+                    page.is_first_page = True
+            evaluation_list.append((doc, pred))
+        self.full_evaluation = FileSplittingEvaluation(evaluation_list)
+        return self.full_evaluation

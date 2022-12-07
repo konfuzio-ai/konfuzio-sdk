@@ -124,11 +124,12 @@ class TestFileSplittingModel(unittest.TestCase):
         assert evaluation.f1[ground_truth.category.id_] == 1.0
 
     def test_splitting_ai_evaluation(self):
-        """Test evaluate_full method of ContextAwareFileSplittingModel."""
-        self.file_splitting_model.evaluate_full()
-        assert self.file_splitting_model.full_evaluation.tp == 3
-        assert self.file_splitting_model.full_evaluation.fp == 0
-        assert self.file_splitting_model.full_evaluation.fn == 0
-        assert self.file_splitting_model.full_evaluation.precision == 1.0
-        assert self.file_splitting_model.full_evaluation.recall == 1.0
-        assert self.file_splitting_model.full_evaluation.f1 == 1.0
+        """Test evaluate_full method of SplittingAI."""
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        splitting_ai.evaluate_full()
+        assert splitting_ai.full_evaluation.evaluation_results['tp'] == 3
+        assert splitting_ai.full_evaluation.evaluation_results['fp'] == 0
+        assert splitting_ai.full_evaluation.evaluation_results['fn'] == 0
+        assert splitting_ai.full_evaluation.evaluation_results['precision'] == 1.0
+        assert splitting_ai.full_evaluation.evaluation_results['recall'] == 1.0
+        assert splitting_ai.full_evaluation.evaluation_results['f1'] == 1.0
