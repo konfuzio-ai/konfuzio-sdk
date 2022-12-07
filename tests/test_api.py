@@ -103,6 +103,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
             'dataset_status',
             'status',
             'status_data',
+            'created_at',
             'updated_at',
         }
 
