@@ -1631,6 +1631,7 @@ class Trainer:
         #     clean_annotations = list(set(document.annotations()) - set(no_label_annotations))
         #     document._annotations = clean_annotations
 
+        self.df_train = None
         if reduce_weight:
             self.lose_weight()  # todo: review and test (#9461)
 
