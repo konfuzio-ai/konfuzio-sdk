@@ -133,6 +133,7 @@ to it (e.g. sum).
    e.g.: 59,00-
    e.g.: 786,71-
    e.g.: (118.704)
+   e.g.: *(118.704)
 
 3) Absolute numbers are shown without negative or positive signs in the common format as described above:
    e.g.: 59,00-
@@ -147,14 +148,19 @@ to it (e.g. sum).
    e.g.: €1.010.296
    e.g.: 7,375,009+
 
-5) Written numbers are changed into a digits number format:
+5) Spaces separating digits are interpreted either as decimal or as thousands separators:
+   e.g.: 59  45
+   e.g.: 90 123
+   e.g.: 202 123 89
+
+6) Written numbers are changed into a digits number format:
    e.g.: ein
    e.g.: eleven
 
-6) Certain cases can't be normalized from Konfuzio:
+7) Certain cases can't be normalized from Konfuzio:
    e.g.: 43.34.34
 
-7) The expressions "NIL", "kein", "keinen", "keiner", "None", meaning "nothing" are translated into 0; however, strings
+8) The expressions "NIL", "kein", "keinen", "keiner", "None", meaning "nothing" are translated into 0; however, strings
    including any of these expressions can't be normalized:
    e.g.: NIL
    e.g.: StringThatIncludesNIL
@@ -164,7 +170,8 @@ to it (e.g. sum).
 |           -,-           |      1      | yes   | 0.0    | 0| string | number |
 |         59,00-          |      2      | yes   | -59.0    | -59 | string | number |
 |         786,71-         |      2      | yes   | -786.71    | -786.71 | string | number |
-|        (118.704)        |      2      |yes   | -118704.0    | -118704 | string | number |
+|        (118.704)        |      2      | yes   | -118704.0    | -118704 | string | number |
+|       *(118.704)        |      2      | yes  | -118704.0 | -118704 | string | number |
 |  absolute no.: 59,00-   |      3      | yes   | 59.0    | 59 | string | number |
 |  absolute no.: 786,71-  |      3      | yes   | 786.71    | 786.71 | string | number |
 | absolute no.: -2.759,7° |      3      | yes   | 2759.7    | 2759.7 | string | number |
@@ -172,13 +179,16 @@ to it (e.g. sum).
 |       :2.000, 08        |      4      | yes   | 2000.08    | 2000.08 | string | number |
 |        -2.759,7°        |      4      | yes   | -2759.7    | -2759.7 | string | number |
 |       €1.010.296        |      4      | yes   | 1010296.0    | 1010296 | string | number |
-|       7,375,009+        |      4      |yes   | 7375009.0  | 7375009 | string | number |
-|           ein           |      5      | yes   | 1.0   | 1 | string | number |
-|         eleven          |      5      | yes   | 11.0   | 11 | string | number |
-|        43.34.34         |      6      |no   | None    | null | string | null |
-|           NIL           |      7      | yes   | 0.0   | 0  | string |number |
-|         keinen          |      7      | yes   | 0.0   | 0  | string |number |
-|  StringThatIncludesNIL  |      7      | no  | None   | null  | string | null |
+|       7,375,009+        |      4      | yes   | 7375009.0  | 7375009 | string | number |
+|         59  45          |      5      | yes   | 59.45   | 59.45 | string | number |
+|         90 123          |      5      | yes   | 90123.0    | 90123.0 | string | number |
+|       202 123 89        |      5      | yes   |  202123.89 | 202123.89 | string | number |
+|           ein           |      6      | yes   | 1.0   | 1 | string | number |
+|         eleven          |      6      | yes   | 11.0   | 11 | string | number |
+|        43.34.34         |      7      | no    | None  | null | string | null |
+|           NIL           |      8      | yes   | 0.0   | 0  | string |number |
+|         keinen          |      8      | yes   | 0.0   | 0  | string |number |
+|  StringThatIncludesNIL  |      8      | no    | None   | null  | string | null |
 
 ### 2. Percentage Numbers
 

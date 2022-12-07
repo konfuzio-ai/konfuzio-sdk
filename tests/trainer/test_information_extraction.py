@@ -33,6 +33,7 @@ from konfuzio_sdk.trainer.information_extraction import (
     add_extractions_as_annotations,
     load_model,
     RFExtractionAI,
+    Trainer,
 )
 from konfuzio_sdk.api import upload_ai_model
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer
@@ -166,7 +167,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         tokenizer = WhitespaceTokenizer()
         cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_separate_labels, tokenizer=tokenizer)
 
-        cls.tests_annotations = list()
+        cls.tests_annotations_spans = list()
 
     def test_01_configure_pipeline(self):
         """Make sure the Data and Pipeline is configured."""
@@ -269,23 +270,25 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         """Extract a randomly selected Test Document."""
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
-
-        self.tests_annotations += res_doc.view_annotations()  # (use_correct=False)
-        assert len(self.tests_annotations) == 20
+        view_annotations = res_doc.view_annotations()
+        assert len(view_annotations) == 19
+        view_spans = sorted([span for ann in view_annotations for span in ann.spans])
+        self.tests_annotations_spans += view_spans
+        assert len(self.tests_annotations_spans) == 20
 
     @parameterized.parameterized.expand(entity_results_data)
     def test_12_test_annotations(self, i, expected):
         """Test extracted annotations."""
-        ann = self.tests_annotations[i]
-        ann_tuple = (ann.label.name, ann.start_offset, ann.end_offset)
-        assert ann_tuple == expected
+        span = self.tests_annotations_spans[i]
+        span_tuple = (span.annotation.label.name, span.start_offset, span.end_offset)
+        assert span_tuple == expected
 
     def test_13_load_ai_model(self):
         """Test loading of trained model."""
         self.pipeline = load_model(self.pipeline.pipeline_path)
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
-        assert len(res_doc.view_annotations()) == 20
+        assert len(res_doc.view_annotations()) == 19
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -310,7 +313,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
         cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_separate_labels)
 
-        cls.tests_annotations = list()
+        cls.tests_annotations_spans = list()
 
     def test_01_configure_pipeline(self):
         """Make sure the Data and Pipeline is configured."""
@@ -404,25 +407,25 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         """Extract a randomly selected Test Document."""
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
-
-        self.tests_annotations += res_doc.view_annotations()  # annotations(use_correct=False)
-        for span in res_doc.spans():
-            assert len(span.regex_matching) > 0
-        assert len(self.tests_annotations) == 20
+        view_annotations = res_doc.view_annotations()
+        assert len(view_annotations) == 19
+        view_spans = sorted([span for ann in view_annotations for span in ann.spans])
+        self.tests_annotations_spans += view_spans
+        assert len(self.tests_annotations_spans) == 20
 
     @parameterized.parameterized.expand(entity_results_data)
     def test_12_test_annotations(self, i, expected):
         """Test extracted annotations."""
-        ann = self.tests_annotations[i]
-        ann_tuple = (ann.label.name, ann.start_offset, ann.end_offset)
-        assert ann_tuple == expected
+        span = self.tests_annotations_spans[i]
+        span_tuple = (span.annotation.label.name, span.start_offset, span.end_offset)
+        assert span_tuple == expected
 
     def test_13_load_ai_model(self):
         """Test loading of trained model."""
         self.pipeline = load_model(self.pipeline.pipeline_path)
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
-        assert len(res_doc.view_annotations()) == 20
+        assert len(res_doc.view_annotations()) == 19
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -547,6 +550,70 @@ class TestInformationExtraction(unittest.TestCase):
             'NO_LABEL',
         ]
 
+    def test_horizontal_merge(self):
+        """Test merge_horizontal method."""
+        doc_text = """a1l1 a2l1    a3l1        a4l1 x a5l1
+32   22 98
+760°
+89 76
+        """
+
+        res_dict = {
+            'label1': pd.DataFrame(
+                {
+                    'label_name': ['label1', 'label1', 'label1', 'label1', 'label1'],
+                    'start_offset': [0, 5, 13, 25, 32],
+                    'end_offset': [4, 9, 17, 29, 36],
+                    'offset_string': ['a1l1', 'a2l1', 'a3l1', 'a4l1', 'a5l1'],
+                    'confidence': [0.2, 0.4, 0.6, 0.5, 0.7],
+                    'data_type': ['Text', 'Text', 'Text', 'Text', 'Text'],
+                    'label_threshold': [0.1, 0.1, 0.1, 0.1, 0.1],
+                }
+            ),
+            'label2': pd.DataFrame(
+                {
+                    'label_name': ['label2', 'label2', 'label2', 'label2'],
+                    'start_offset': [37, 42, 45, 48],
+                    'end_offset': [39, 44, 47, 51],
+                    'offset_string': ['32', '22', '98', '760'],
+                    'confidence': [0.6, 0.7, 0.9, 0.4],
+                    'data_type': ['Number', 'Number', 'Number', 'Number'],
+                    'label_threshold': [0.1, 0.1, 0.1, 0.1],
+                }
+            ),
+            'label3': pd.DataFrame(
+                {
+                    'label_name': ['label3', 'label3'],
+                    'start_offset': [53, 56],
+                    'end_offset': [55, 58],
+                    'offset_string': ['89', '76'],
+                    'confidence': [0.7, 0.6],
+                    'data_type': ['Percentage', 'Percentage'],
+                    'label_threshold': [0.1, 0.1],
+                }
+            ),
+        }
+
+        merged_res_dict = Trainer.merge_horizontal(res_dict=res_dict, doc_text=doc_text)
+
+        assert len(merged_res_dict['label1']) == 3
+        assert round(merged_res_dict['label1'].iloc[0]['confidence'], 1) == 0.4
+        assert merged_res_dict['label1'].iloc[0]['end_offset'] == 17
+        assert merged_res_dict['label1'].iloc[0]['offset_string'] == "a1l1 a2l1    a3l1"
+        assert merged_res_dict['label1'].iloc[1]['start_offset'] == 25
+        assert merged_res_dict['label1'].iloc[2]['start_offset'] == 32
+
+        assert len(merged_res_dict['label2']) == 3
+        assert merged_res_dict['label2'].iloc[0]['offset_string'] == "32"
+        assert merged_res_dict['label2'].iloc[1]['offset_string'] == "22 98"
+        assert round(merged_res_dict['label2'].iloc[1]['confidence'], 1) == 0.8
+        assert merged_res_dict['label2'].iloc[2]['offset_string'] == "760"
+
+        assert len(merged_res_dict['label3']) == 1
+        assert merged_res_dict['label3'].iloc[0]['offset_string'] == "89 76"
+        assert merged_res_dict['label3'].iloc[0]['start_offset'] == 53
+        assert merged_res_dict['label3'].iloc[0]['end_offset'] == 58
+
     def test_separate_labels(self):
         """Test separate_labels method for res_dict when using use_separate_labels extraction model."""
         pipeline = RFExtractionAI(use_separate_labels=True)
@@ -572,18 +639,18 @@ class TestInformationExtraction(unittest.TestCase):
         }
 
         res_test_reparate_dict = pipeline.separate_labels(res_test_dict)
-        list(res_test_reparate_dict.keys()) == ['Brutto-Bezug', 'Steuer', 'Lohnabrechnung', 'NO_LABEL_SET']
+        assert list(res_test_reparate_dict.keys()) == ['Brutto-Bezug', 'Steuer', 'Lohnabrechnung', 'NO_LABEL_SET']
 
-        len(res_test_reparate_dict['Brutto-Bezug']) == 2
-        list(res_test_reparate_dict['Brutto-Bezug'][0].keys()) == ['Betrag', 'Bezeichnung']
-        list(res_test_reparate_dict['Brutto-Bezug'][1].keys()) == ['Betrag', 'Bezeichnung', 'Faktor']
+        assert len(res_test_reparate_dict['Brutto-Bezug']) == 2
+        assert list(res_test_reparate_dict['Brutto-Bezug'][0].keys()) == ['Betrag', 'Bezeichnung']
+        assert list(res_test_reparate_dict['Brutto-Bezug'][1].keys()) == ['Betrag', 'Bezeichnung', 'Faktor']
 
-        len(res_test_reparate_dict['Steuer']) == 1
-        list(res_test_reparate_dict['Steuer'][0].keys()) == ['Sozialversicherung', 'Steuerrechtliche Abzüge']
+        assert len(res_test_reparate_dict['Steuer']) == 1
+        assert list(res_test_reparate_dict['Steuer'][0].keys()) == ['Sozialversicherung', 'Steuerrechtliche Abzüge']
 
-        list(res_test_reparate_dict['Lohnabrechnung'].keys()) == ['Netto-Verdienst', 'Nachname']
+        assert list(res_test_reparate_dict['Lohnabrechnung'].keys()) == ['Netto-Verdienst', 'Nachname']
 
-        list(res_test_reparate_dict['NO_LABEL_SET'].keys()) == ['NO_LABEL']
+        assert list(res_test_reparate_dict['NO_LABEL_SET'].keys()) == ['NO_LABEL']
 
 
 class TestAddExtractionAsAnnotation(unittest.TestCase):

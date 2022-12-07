@@ -11,10 +11,16 @@ my_project = Project(id_=YOUR_PROJECT_ID)
 The information will be stored in the folder that you defined to allocate the data in the package initialization.
 A subfolder will be created for each document in the project.
 
-Every time that there are changes in the project in the Konfuzio Server, the local project can be updated with:
+Every time that there are changes in the project in the Konfuzio Server, the local project can be updated this way:
 
 ```python
-my_project.update()
+my_project.get(update=True)
+```
+
+To make sure that your project is loaded with all the latest data:
+
+```python
+my_project = Project(id_=YOUR_PROJECT_ID, update=True)
 ```
 
 ### Documents
@@ -22,11 +28,10 @@ my_project.update()
 To access the documents in the project you can use:
 
 ```python
-documents = my_project.get_documents_by_status()
+documents = my_project.documents
 ```
 
-By default, it will get the documents without dataset status (dataset_status = 0 (None)).
-You can specify another dataset status with the argument 'dataset_statuses'. The code for the status is:
+By default, it will get the documents with training status (dataset_status = 2). The code for the status is:
 
 - None: 0
 - Preparation: 1
@@ -34,18 +39,14 @@ You can specify another dataset status with the argument 'dataset_statuses'. The
 - Test: 3
 - Excluded: 4
 
-For example, to get all documents in the project, you can do:
+The test documents can be accessed directly by:
 
 ```python
-documents = my_project.get_documents_by_status(dataset_statuses=[0, 1, 2, 3, 4])
-```
-
-The training and test documents can be accessed directly by:
-
-```python
-training_documents = my_project.documents
 test_documents = my_project.test_documents
 ```
+
+For more details, you can checkout the [Project documentation](https://dev.konfuzio.com/sdk/sourcecode.html#project).
+
 
 By default, you get 4 files for each document that contain information of the text, pages, annotation sets and annotations.
 You can see these files inside the document folder.
@@ -225,7 +226,7 @@ After downloading these files, the paths to them will also become available in t
 For example, you can get the path to the file with the document text with:
 
 ```python
-my_project.txt_file_path
+my_project.documents_folder
 ```
 
 #### Update Document
@@ -237,41 +238,6 @@ document.update()
 
 If a document is part of the training or test set, you can also update it by updating the entire project via
 project.update(). However, for projects with many documents it can be faster to update only the relevant documents.
-
-#### Upload Document
-You can upload a document via SDK. Create a Document instance and save it.
-The document will be uploaded to the Konfuzio Server.
-
-```python
-document = Document(file_path=<path_to_the_file>, project=my_project)
-document.save()
-```
-
-By default, the document is uploaded with the dataset status "None". If there is only one category in the project, the
-document will assume that category. If there is more than one category in the project, the document is uploaded without
-a category.
-
-You can specify both these parameters when you upload the document by passing the correspondent code for the dataset
-status (see code [here](https://app.konfuzio.com/v2/swagger/#/docs/docs_create)) and the ID of the category.
-
-```python
-document = Document(file_path=<path_to_the_file>, project=my_project,
-                    dataset_status=<dataset_status_code>, category_template=<category_id>)
-document.save()
-```
-
-#### Modify Document
-The dataset status and the category of a document can be modified after the document is uploaded.
-To change the category, you can select the category that you desire from the project based on its ID and attribute it
-to the document.
-
-```python
-category = my_project.get_category_by_id(<category_id>)
-
-document.category = category
-document.dataset_status = 2
-document.save()
-```
 
 #### Delete Document
 To locally delete a document, you can use:
