@@ -93,20 +93,29 @@ def normalize_memory(memory: Union[None, str]) -> Union[int, None]:
         if type(memory) is int or memory.isdigit():
             memory = int(memory)
         else:
-            if not memory[:-2].isdigit():
-                logger.error(f"max_ram value {memory} invalid.")
-                memory = None
+            # Check if the first part of the string (before the unit) is numeric
+            if not memory[:-3].isdigit() and not memory[:-2].isdigit():
+                logger.error(f"memory value {memory} invalid.")
+                return None
             else:
-                mem_val = int(memory[:-2])
+                mem_val = int(memory[:-3] if memory[-3:].isalpha() else memory[:-2])
+
+            # Check the unit and convert to bytes
             if memory[-2:].lower() == 'gb':
                 memory = mem_val * 1e9
             elif memory[-2:].lower() == 'mb':
                 memory = mem_val * 1e6
             elif memory[-2:].lower() == 'kb':
                 memory = mem_val * 1e3
+            elif memory[-3:].lower() == 'gib':
+                memory = mem_val * 2**30
+            elif memory[-3:].lower() == 'mib':
+                memory = mem_val * 2**20
+            elif memory[-3:].lower() == 'kib':
+                memory = mem_val * 2**10
             else:
                 logger.error(f"memory value {memory} invalid.")
-                memory = None
+                return None
     return memory
 
 
