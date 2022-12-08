@@ -23,11 +23,17 @@ The diagram illustrates the components of a Konfuzio Server deployment. Optional
       classDef optional fill:#DAE8FC,stroke:#6C8EBF,color:#000000,stroke-dasharray: 3 3;
       
       ip("Loadbalancer / Public IP")
+      smtp("SMTP Mailbox")
       a("Database")
       b("Task Queue")
       c("File Storage")
       worker("Generic Worker (1:n)")
       web("Web & API (1:n)")
+      beats("Beats Worker (1:n)")
+      mail("Mail-Scan (0:1)")
+      
+      %% Outside references
+      smtp <-- Poll emails --> mail
       ip <--> web
       
       %% Optional Containers
@@ -52,9 +58,11 @@ The diagram illustrates the components of a Konfuzio Server deployment. Optional
       b
       end
       subgraph containers["Stateless Containers"]
+      mail
       web
       flower
       worker
+      beats
       subgraph optional["Optional Containers"]
       ocr
       segmentation
@@ -76,6 +84,8 @@ The diagram illustrates the components of a Konfuzio Server deployment. Optional
       web <--> databases
       web <--> flower
       flower <--> b
+      mail <--> databases
+      beats <--> databases
       containers -- "Operated on"--> servers
       databases -- "Can be operated on"--> servers
       end
@@ -88,6 +98,8 @@ The diagram illustrates the components of a Konfuzio Server deployment. Optional
       click summarization "/web/on_premises.html#optional-9-install-document-summarization-container" 
       
       class flower optional
+      class ocr optional
+      class mail optional
       class ocr optional
       class segmentation optional
       class summarization optional
