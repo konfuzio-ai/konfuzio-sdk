@@ -184,11 +184,17 @@
    classDef optional fill:#DAE8FC,stroke:#6C8EBF,color:#000000,stroke-dasharray: 3 3;
 
    ip(&quot;Loadbalancer / Public IP&quot;)
+   smtp(&quot;SMTP Mailbox&quot;)
    a(&quot;Database&quot;)
    b(&quot;Task Queue&quot;)
    c(&quot;File Storage&quot;)
    worker(&quot;Generic Worker (1:n)&quot;)
    web(&quot;Web &amp; API (1:n)&quot;)
+   beats(&quot;Beats Worker (1:n)&quot;)
+   mail(&quot;Mail-Scan (0:1)&quot;)
+
+   %% Outside references
+   smtp &lt;-- Poll emails --&gt; mail
    ip &lt;--&gt; web
 
    %% Optional Containers
@@ -213,9 +219,11 @@
    b
    end
    subgraph containers[&quot;Stateless Containers&quot;]
+   mail
    web
    flower
    worker
+   beats
    subgraph optional[&quot;Optional Containers&quot;]
    ocr
    segmentation
@@ -237,6 +245,8 @@
    web &lt;--&gt; databases
    web &lt;--&gt; flower
    flower &lt;--&gt; b
+   mail &lt;--&gt; databases
+   beats &lt;--&gt; databases
    containers -- &quot;Operated on&quot;--&gt; servers
    databases -- &quot;Can be operated on&quot;--&gt; servers
    end
@@ -249,6 +259,8 @@
    click summarization &quot;/web/on_premises.html#optional-9-install-document-summarization-container&quot;
 
    class flower optional
+   class ocr optional
+   class mail optional
    class ocr optional
    class segmentation optional
    class summarization optional
