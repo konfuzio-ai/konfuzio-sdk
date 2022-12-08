@@ -1659,7 +1659,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         for document in prj.documents:
             document.text
         after = _getsize(prj)
-        assert 1.7 < after / before < 1.8
+        assert 1.6 < after / before < 1.8
 
         # strings in prj take slightly less space than in a list
         assert _getsize([doc.text for doc in prj.documents]) + before < after + 500
@@ -2200,7 +2200,7 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
     def test_view_annotations(self):
         """Test that Document.view_annotations() gets all the right annotations."""
         project = LocalTextProject()
-        document = project.test_documents[-2]
+        document = project.test_documents[-4]
         annotations = document.view_annotations()
         assert len(annotations) == 5  # 4 if top_annotations filter is used
         assert sorted([ann.id_ for ann in annotations]) == [16, 17, 18, 19, 24]  # [16, 18, 19, 24]

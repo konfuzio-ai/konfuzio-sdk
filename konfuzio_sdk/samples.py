@@ -20,6 +20,8 @@ class LocalTextProject(Project):
 
         category_3 = Category(project=self, id_=3, name="CategoryName 3")
 
+        category_4 = Category(project=self, id_=4, name="CategoryName 4")
+
         label_set = LabelSet(id_=3, project=self, name="LabelSetName", categories=[category, category_2])
         label = Label(id_=4, text='LabelName', project=self, label_sets=[label_set])
         label_new = Label(id_=5, text='LabelName 2', project=self, label_sets=[label_set])
@@ -385,3 +387,40 @@ uncertain
             end_offset=52,
             number=2,
         )
+
+        text_7 = "Evening,\nI like fish.\n\fHow was your day?"
+        document_7 = Document(id_=None, project=self, category=category_4, text=text_7, dataset_status=2)
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_7,
+            start_offset=0,
+            end_offset=21,
+            number=1,
+        )
+
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_7,
+            start_offset=22,
+            end_offset=39,
+            number=2,
+        )
+
+        text_8 = (
+            "Hi all,\nI like bread.\n\fWhat are your plans for today?\n\fEvening,\nI like it.\n\fHow was your week?"
+        )
+        document_8 = Document(id_=None, project=self, category=category_3, text=text_8, dataset_status=3)
+        _ = Page(id_=None, original_size=(320, 240), document=document_8, start_offset=0, end_offset=21, number=1)
+        _ = Page(id_=None, original_size=(320, 240), document=document_8, start_offset=22, end_offset=53, number=2)
+        _ = Page(id_=None, original_size=(320, 240), document=document_8, start_offset=54, end_offset=74, number=3)
+        _ = Page(id_=None, original_size=(320, 240), document=document_8, start_offset=75, end_offset=93, number=4)
+
+        text_9 = text_8 + "\n\fEvening,"
+        document_9 = Document(id_=None, project=self, category=category_4, text=text_9, dataset_status=3)
+        _ = Page(id_=None, original_size=(320, 240), document=document_9, start_offset=0, end_offset=21, number=1)
+        _ = Page(id_=None, original_size=(320, 240), document=document_9, start_offset=22, end_offset=53, number=2)
+        _ = Page(id_=None, original_size=(320, 240), document=document_9, start_offset=54, end_offset=74, number=3)
+        _ = Page(id_=None, original_size=(320, 240), document=document_9, start_offset=75, end_offset=93, number=4)
+        _ = Page(id_=None, original_size=(320, 240), document=document_9, start_offset=94, end_offset=102, number=5)

@@ -8,8 +8,6 @@ from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI
 
-TEST_WITH_FULL_DATASET = True
-
 
 class TestFileSplittingModel(unittest.TestCase):
     """Test filesplitting model."""
@@ -20,11 +18,14 @@ class TestFileSplittingModel(unittest.TestCase):
         cls.project = LocalTextProject()
         cls.file_splitting_model = ContextAwareFileSplittingModel()
         cls.file_splitting_model.categories = cls.project.categories
+        # cls.file_splitting_model.categories = [cls.project.get_category_by_id(3), cls.project.get_category_by_id(4)]
         cls.file_splitting_model.train_data = [
-            document for category in cls.file_splitting_model.categories for document in category.documents()
+            document for document in cls.project.documents if document.category in cls.file_splitting_model.categories
         ]
         cls.file_splitting_model.test_data = [
-            document for category in cls.file_splitting_model.categories for document in category.test_documents()
+            document
+            for document in cls.project.test_documents
+            if document.category in cls.file_splitting_model.categories
         ]
         cls.file_splitting_model.tokenizer = ConnectedTextTokenizer()
         cls.file_splitting_model.first_page_spans = None
