@@ -1294,6 +1294,7 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         assert evaluation.tp() == 3
         assert evaluation.fp() == 0
         assert evaluation.fn() == 0
+        assert evaluation.tn() == 2
         assert evaluation.precision() == 1.0
         assert evaluation.recall() == 1.0
         assert evaluation.f1() == 1.0
@@ -1311,6 +1312,7 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         assert evaluation.tp(search=ground_truth.category) == 3
         assert evaluation.fp(search=ground_truth.category) == 0
         assert evaluation.fn(search=ground_truth.category) == 0
+        assert evaluation.tn(search=ground_truth.category) == 2
         assert evaluation.precision(search=ground_truth.category) == 1.0
         assert evaluation.recall(search=ground_truth.category) == 1.0
         assert evaluation.f1(search=ground_truth.category) == 1.0
@@ -1321,6 +1323,7 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         splitting_ai.evaluate_full()
         assert splitting_ai.full_evaluation.evaluation_results['tp'] == 4
         assert splitting_ai.full_evaluation.evaluation_results['fp'] == 0
+        assert splitting_ai.full_evaluation.evaluation_results['fn'] == 0
         assert splitting_ai.full_evaluation.evaluation_results['fn'] == 0
         assert splitting_ai.full_evaluation.evaluation_results['precision'] == 1.0
         assert splitting_ai.full_evaluation.evaluation_results['recall'] == 1.0

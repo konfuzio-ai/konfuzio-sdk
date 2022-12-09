@@ -441,6 +441,7 @@ class FileSplittingEvaluation:
         tp = 0
         fp = 0
         fn = 0
+        tn = 0
         for ground_truth, prediction in self.documents:
             for page_gt, page_pr in zip(ground_truth.pages(), prediction.pages()):
                 if page_gt.is_first_page and page_pr.is_first_page:
@@ -449,6 +450,8 @@ class FileSplittingEvaluation:
                     fp += 1
                 elif page_gt.is_first_page and not page_pr.is_first_page:
                     fn += 1
+                elif not page_gt.is_first_page and not page_pr.is_first_page:
+                    tn += 1
         if tp + fp != 0:
             precision = tp / (tp + fp)
         else:
@@ -474,16 +477,33 @@ class FileSplittingEvaluation:
                 f1 = None
             else:
                 raise ZeroDivisionError("FP and FN are zero, please specify allow_zero=True if you want F1 to be None.")
-        self.evaluation_results = {'tp': tp, 'fp': fp, 'fn': fn, 'precision': precision, 'recall': recall, 'f1': f1}
+        self.evaluation_results = {
+            'tp': tp,
+            'fp': fp,
+            'fn': fn,
+            'tn': tn,
+            'precision': precision,
+            'recall': recall,
+            'f1': f1,
+        }
 
     def calculate_metrics_by_category(self):
         """Calculate metrics by Category independently."""
         categories = list(set([doc_pair[0].category for doc_pair in self.documents]))
-        self.evaluation_results_by_category = {'tp': {}, 'fp': {}, 'fn': {}, 'precision': {}, 'recall': {}, 'f1': {}}
+        self.evaluation_results_by_category = {
+            'tp': {},
+            'fp': {},
+            'fn': {},
+            'tn': {},
+            'precision': {},
+            'recall': {},
+            'f1': {},
+        }
         for category in categories:
             tp = 0
             fp = 0
             fn = 0
+            tn = 0
             for ground_truth, prediction in [
                 [document_1, document_2]
                 for document_1, document_2 in self.documents
@@ -496,6 +516,8 @@ class FileSplittingEvaluation:
                         fp += 1
                     elif page_gt.is_first_page and not page_pr.is_first_page:
                         fn += 1
+                    elif not page_gt.is_first_page and not page_pr.is_first_page:
+                        tn += 1
             if tp + fp != 0:
                 precision = tp / (tp + fp)
             else:
@@ -526,6 +548,7 @@ class FileSplittingEvaluation:
             self.evaluation_results_by_category['tp'][category.id_] = tp
             self.evaluation_results_by_category['fp'][category.id_] = fp
             self.evaluation_results_by_category['fn'][category.id_] = fn
+            self.evaluation_results_by_category['tn'][category.id_] = tn
             self.evaluation_results_by_category['precision'][category.id_] = precision
             self.evaluation_results_by_category['recall'][category.id_] = recall
             self.evaluation_results_by_category['f1'][category.id_] = f1
@@ -562,6 +585,17 @@ class FileSplittingEvaluation:
         if search:
             return self.evaluation_results_by_category['fn'][search.id_]
         return self.evaluation_results['fn']
+
+    def tn(self, search: Category = None) -> Union[int, dict]:
+        """
+        Return non-first Pages predicted as non-first.
+
+        :param search: display true negatives within a certain Category.
+        :type search: Category
+        """
+        if search:
+            return self.evaluation_results_by_category['tn'][search.id_]
+        return self.evaluation_results['tn']
 
     def precision(self, search: Category = None) -> Union[float, dict]:
         """
