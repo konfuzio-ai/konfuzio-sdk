@@ -923,7 +923,7 @@ class TestEvaluation(unittest.TestCase):
         """Test that data has not changed."""
         project = LocalTextProject()
         assert len(project.documents) == 5
-        assert len(project.test_documents) == 7
+        assert len(project.test_documents) == 8
 
     def test_not_strict(self):
         """Test that evaluation can be initialized with strict mode disabled."""
@@ -1321,7 +1321,7 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         """Test evaluate_full method of SplittingAI."""
         splitting_ai = SplittingAI(self.file_splitting_model)
         splitting_ai.evaluate_full()
-        assert splitting_ai.full_evaluation.evaluation_results['tp'] == 4
+        assert splitting_ai.full_evaluation.evaluation_results['tp'] == 5
         assert splitting_ai.full_evaluation.evaluation_results['fp'] == 0
         assert splitting_ai.full_evaluation.evaluation_results['fn'] == 0
         assert splitting_ai.full_evaluation.evaluation_results['fn'] == 0

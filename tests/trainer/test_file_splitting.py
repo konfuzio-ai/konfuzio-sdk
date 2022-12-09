@@ -81,7 +81,7 @@ class TestFileSplittingModel(unittest.TestCase):
         """Test SplittingAI's Document-splitting method."""
         splitting_ai = SplittingAI(self.file_splitting_model)
         pred = splitting_ai.propose_split_documents(self.test_document)
-        assert len(pred) == 5
+        assert len(pred) == 3
 
     def test_suggest_first_pages(self):
         """Test SplittingAI's suggesting first Pages."""
