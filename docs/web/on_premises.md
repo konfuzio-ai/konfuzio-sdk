@@ -489,7 +489,26 @@ end
 ```
 Please ensure that the Flower container is not exposed externally, as it does not handle authentication and authorization itself.  
 
-#### [Optional] 7. Use Azure Read API on-premise
+#### [Optional] 7. Run Container for Email Integration
+
+The ability to [upload documents via email](https://help.konfuzio.com/integrations/upload-by-email/index.html) can be achieved by starting a dedicated container with the respective environment variables.
+
+```
+SCAN_EMAIL_HOST = imap.example.com
+SCAN_EMAIL_HOST_USER = user@example.com
+SCAN_EMAIL_RECIPIENT = automation@example.com
+SCAN_EMAIL_HOST_PASSWORD = xxxxxxxxxxxxxxxxxx
+```
+
+```
+docker run --name flower -d --add-host=host:10.0.0.1 \  
+  --env-file /konfuzio-vm/text-annotation.env \  
+  --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \
+  REGISTRY_URL/konfuzio/text-annotation/master:latest \  
+  python manage.py scan_email
+```
+
+#### [Optional] 8. Use Azure Read API on-premise
 The [Azure Read API](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2) can be installed on-premise and used togehter with Konfuzio.
 
 Please install the Read API Container according to the current [manual](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2)
@@ -502,7 +521,7 @@ AZURE_OCR_BASE_URL=http://host:5000 # The URL of the READ API
 AZURE_OCR_VERSION=v3.2 # The version of the READ API
 ```
 
-#### [Optional] 8. Install document segmentation container
+#### [Optional] 9. Install document segmentation container
 
 Download the container with the credentials provided by Konfuzio
 
@@ -524,7 +543,7 @@ BROKER_URL=  # Set this to an unused redis database
 RESULT_BACKEND=  # Set this to an unused redis database
 ```
 
-#### [Optional] 9. Install document summarization container
+#### [Optional] 10. Install document summarization container
 
 Download the container with the credentials provided by Konfuzio
 
@@ -548,13 +567,13 @@ RESULT_BACKEND=  # Set this to an unised redis database
 
 ```
 
-#### 10a. Upgrade to newer Konfuzio Version
+#### 11a. Upgrade to newer Konfuzio Version
 
 Konfuzio upgrades are performed by replacing the Docker Tag to the [desired version](https://dev.konfuzio.com/web/changelog_app.html)
 After starting the new Containers Database migrations need to be applied by `python manage.py migrate` (see 4.).
 In case additional migration steps are needed, they will be mentioned in the release notes.
 
-#### 10b. Downgrade to older Konfuzio Version
+#### 11b. Downgrade to older Konfuzio Version
 
 Konfuzio downgrades are performed by creating a fresh Konfuzio installation in which existing Projects can be imported.
 The following steps need to be undertaken:
@@ -827,6 +846,12 @@ CSRF_COOKIE_SECURE=True
 NEW_RELIC_LICENSE_KEY=
 NEW_RELIC_APP_NAME=
 NEW_RELIC_ENVIRONMENT=
+
+# Email integration (optional).
+SCAN_EMAIL_HOST=
+SCAN_EMAIL_HOST_USER=
+SCAN_EMAIL_RECIPIENT=
+SCAN_EMAIL_HOST_PASSWORD=
 
 # Directory to cache files during the AI training process and when running AI models (optional).
 KONFUZIO_CACHE_DIR =   # e.g. '/cache', uses tempdir if not set
