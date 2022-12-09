@@ -39,7 +39,10 @@ These changes are for the tokenizers/new SDK branch.
 - A bug during the extraction post-processing steps, which was causing the first line items of each page to be skipped ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9561))
 -->
 
-<!-- ## Next Release (estimated release date: 19th December 2022) -->
+## Next Release (estimated release date: 19th December 2022)
+
+### Fixed
+- Show a message that informs a user if his account was deactivated ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10119)).
 
 ## released-2022-12-05_19-18-47
 
