@@ -2255,7 +2255,7 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
     def test_annotationset_annotations(self):
         """Test AnnotationSet.annotations method."""
         project = LocalTextProject()
-        document = project.test_documents[-1]
+        document = project.test_documents[-4]
 
         annotation_set = document.annotation_sets()[0]
 
