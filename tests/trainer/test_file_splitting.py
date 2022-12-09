@@ -18,11 +18,15 @@ class TestFileSplittingModel(unittest.TestCase):
         """Initialize the tested class."""
         cls.project = LocalTextProject()
         cls.file_splitting_model = ContextAwareFileSplittingModel()
-        cls.file_splitting_model.categories = cls.project.categories
+        cls.file_splitting_model.categories = [cls.project.get_category_by_id(3), cls.project.get_category_by_id(4)]
         cls.file_splitting_model.train_data = [
-            document for category in cls.file_splitting_model.categories for document in category.documents()
+            document for document in cls.project.documents if document.category in cls.file_splitting_model.categories
         ]
-        cls.file_splitting_model.test_data = cls.project.get_category_by_id(3).test_documents()
+        cls.file_splitting_model.test_data = [
+            document
+            for document in cls.project.test_documents
+            if document.category in cls.file_splitting_model.categories
+        ]
         cls.file_splitting_model.tokenizer = ConnectedTextTokenizer()
         cls.file_splitting_model.first_page_spans = None
         cls.test_document = cls.project.get_category_by_id(3).test_documents()[0]
@@ -63,22 +67,21 @@ class TestFileSplittingModel(unittest.TestCase):
                 )
                 if intersection:
                     intersections.append(intersection)
-            if category.id_ == 3:
-                self.file_splitting_model.predict(page)
-                if page.number == 1:
-                    assert intersections == [{'I like bread.'}]
-                    assert page.is_first_page
-                if page.number in (2, 4):
-                    assert intersections == []
-                if page.number in (3, 5):
-                    assert intersections == [{'Morning,'}]
-                    assert page.is_first_page
+            self.file_splitting_model.predict(page)
+            if page.number == 1:
+                assert intersections == [{'I like bread.'}]
+                assert page.is_first_page
+            if page.number in (2, 4):
+                assert intersections == []
+            if page.number in (3, 5):
+                assert intersections == [{'Morning,'}]
+                assert page.is_first_page
 
     def test_splitting_ai_predict(self):
         """Test SplittingAI's Document-splitting method."""
         splitting_ai = SplittingAI(self.file_splitting_model)
         pred = splitting_ai.propose_split_documents(self.test_document)
-        assert len(pred) == 3
+        assert len(pred) == 5
 
     def test_suggest_first_pages(self):
         """Test SplittingAI's suggesting first Pages."""
