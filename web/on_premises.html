@@ -93,11 +93,12 @@
 <li class="toctree-l4"><a class="reference internal" href="#init-the-database-create-first-superuser-via-cli-and-prefill-e-mail-templates">4. Init the database, create first superuser via cli and prefill e-mail templates</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#start-the-container">5. Start the container</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#optional-6-use-flower-to-monitor-tasks">[Optional] 6. Use Flower to monitor tasks</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#optional-7-use-azure-read-api-on-premise">[Optional] 7. Use Azure Read API on-premise</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#optional-8-install-document-segmentation-container">[Optional] 8. Install document segmentation container</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#optional-9-install-document-summarization-container">[Optional] 9. Install document summarization container</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#a-upgrade-to-newer-konfuzio-version">10a. Upgrade to newer Konfuzio Version</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#b-downgrade-to-older-konfuzio-version">10b. Downgrade to older Konfuzio Version</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#optional-7-run-container-for-email-integration">[Optional] 7. Run Container for Email Integration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#optional-8-use-azure-read-api-on-premise">[Optional] 8. Use Azure Read API on-premise</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#optional-9-install-document-segmentation-container">[Optional] 9. Install document segmentation container</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#optional-10-install-document-summarization-container">[Optional] 10. Install document summarization container</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#a-upgrade-to-newer-konfuzio-version">11a. Upgrade to newer Konfuzio Version</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#b-downgrade-to-older-konfuzio-version">11b. Downgrade to older Konfuzio Version</a></li>
 </ul>
 </li>
 </ul>
@@ -612,8 +613,25 @@ e(&quot;Konfuzio Server&quot;) -- FLOWER_URL --&gt; f(&quot;Flower&quot;)
 end
         </div><p>Please ensure that the Flower container is not exposed externally, as it does not handle authentication and authorization itself.</p>
 </section>
-<section id="optional-7-use-azure-read-api-on-premise">
-<h4>[Optional] 7. Use Azure Read API on-premise<a class="headerlink" href="#optional-7-use-azure-read-api-on-premise" title="Permalink to this headline">¶</a></h4>
+<section id="optional-7-run-container-for-email-integration">
+<h4>[Optional] 7. Run Container for Email Integration<a class="headerlink" href="#optional-7-run-container-for-email-integration" title="Permalink to this headline">¶</a></h4>
+<p>The ability to <a class="reference external" href="https://help.konfuzio.com/integrations/upload-by-email/index.html">upload documents via email</a> can be achieved by starting a dedicated container with the respective environment variables.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SCAN_EMAIL_HOST</span> <span class="o">=</span> <span class="n">imap</span><span class="o">.</span><span class="n">example</span><span class="o">.</span><span class="n">com</span>
+<span class="n">SCAN_EMAIL_HOST_USER</span> <span class="o">=</span> <span class="n">user</span><span class="nd">@example</span><span class="o">.</span><span class="n">com</span>
+<span class="n">SCAN_EMAIL_RECIPIENT</span> <span class="o">=</span> <span class="n">automation</span><span class="nd">@example</span><span class="o">.</span><span class="n">com</span>
+<span class="n">SCAN_EMAIL_HOST_PASSWORD</span> <span class="o">=</span> <span class="n">xxxxxxxxxxxxxxxxxx</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">run</span> <span class="o">--</span><span class="n">name</span> <span class="n">flower</span> <span class="o">-</span><span class="n">d</span> <span class="o">--</span><span class="n">add</span><span class="o">-</span><span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">:</span><span class="mf">10.0.0.1</span>
+  <span class="o">--</span><span class="n">env</span><span class="o">-</span><span class="n">file</span> <span class="o">/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">vm</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">.</span><span class="n">env</span>
+  <span class="o">--</span><span class="n">mount</span> <span class="nb">type</span><span class="o">=</span><span class="n">bind</span><span class="p">,</span><span class="n">source</span><span class="o">=/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">vm</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">data</span><span class="p">,</span><span class="n">target</span><span class="o">=/</span><span class="n">data</span> \
+  <span class="n">REGISTRY_URL</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">/</span><span class="n">text</span><span class="o">-</span><span class="n">annotation</span><span class="o">/</span><span class="n">master</span><span class="p">:</span><span class="n">latest</span>
+  <span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">scan_email</span>
+</pre></div>
+</div>
+</section>
+<section id="optional-8-use-azure-read-api-on-premise">
+<h4>[Optional] 8. Use Azure Read API on-premise<a class="headerlink" href="#optional-8-use-azure-read-api-on-premise" title="Permalink to this headline">¶</a></h4>
 <p>The <a class="reference external" href="https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2">Azure Read API</a> can be installed on-premise and used togehter with Konfuzio.</p>
 <p>Please install the Read API Container according to the current <a class="reference external" href="https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2">manual</a></p>
 <p>Once the Azure Read API container is running you need to set the following variables in the .env file. This for example look like the following:</p>
@@ -623,8 +641,8 @@ end
 </pre></div>
 </div>
 </section>
-<section id="optional-8-install-document-segmentation-container">
-<h4>[Optional] 8. Install document segmentation container<a class="headerlink" href="#optional-8-install-document-segmentation-container" title="Permalink to this headline">¶</a></h4>
+<section id="optional-9-install-document-segmentation-container">
+<h4>[Optional] 9. Install document segmentation container<a class="headerlink" href="#optional-9-install-document-segmentation-container" title="Permalink to this headline">¶</a></h4>
 <p>Download the container with the credentials provided by Konfuzio</p>
 <p>Registry URL: {PROVIDED_BY_KONFUZIO}<span class="raw-html-m2r"><br></span>
 Username: {PROVIDED_BY_KONFUZIO}<span class="raw-html-m2r"><br></span>
@@ -642,8 +660,8 @@ Password: {PROVIDED_BY_KONFUZIO}</p>
 </pre></div>
 </div>
 </section>
-<section id="optional-9-install-document-summarization-container">
-<h4>[Optional] 9. Install document summarization container<a class="headerlink" href="#optional-9-install-document-summarization-container" title="Permalink to this headline">¶</a></h4>
+<section id="optional-10-install-document-summarization-container">
+<h4>[Optional] 10. Install document summarization container<a class="headerlink" href="#optional-10-install-document-summarization-container" title="Permalink to this headline">¶</a></h4>
 <p>Download the container with the credentials provided by Konfuzio</p>
 <p>Registry URL: {PROVIDED_BY_KONFUZIO}<span class="raw-html-m2r"><br></span>
 Username: {PROVIDED_BY_KONFUZIO}<span class="raw-html-m2r"><br></span>
@@ -663,13 +681,13 @@ docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/detectron2:202
 </div>
 </section>
 <section id="a-upgrade-to-newer-konfuzio-version">
-<h4>10a. Upgrade to newer Konfuzio Version<a class="headerlink" href="#a-upgrade-to-newer-konfuzio-version" title="Permalink to this headline">¶</a></h4>
+<h4>11a. Upgrade to newer Konfuzio Version<a class="headerlink" href="#a-upgrade-to-newer-konfuzio-version" title="Permalink to this headline">¶</a></h4>
 <p>Konfuzio upgrades are performed by replacing the Docker Tag to the <a class="reference external" href="https://dev.konfuzio.com/web/changelog_app.html">desired version</a>
 After starting the new Containers Database migrations need to be applied by <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">migrate</span></code> (see 4.).
 In case additional migration steps are needed, they will be mentioned in the release notes.</p>
 </section>
 <section id="b-downgrade-to-older-konfuzio-version">
-<h4>10b. Downgrade to older Konfuzio Version<a class="headerlink" href="#b-downgrade-to-older-konfuzio-version" title="Permalink to this headline">¶</a></h4>
+<h4>11b. Downgrade to older Konfuzio Version<a class="headerlink" href="#b-downgrade-to-older-konfuzio-version" title="Permalink to this headline">¶</a></h4>
 <p>Konfuzio downgrades are performed by creating a fresh Konfuzio installation in which existing Projects can be imported.
 The following steps need to be undertaken:</p>
 <ul class="simple">
@@ -997,6 +1015,12 @@ CSRF_COOKIE_SECURE=True
 NEW_RELIC_LICENSE_KEY=
 NEW_RELIC_APP_NAME=
 NEW_RELIC_ENVIRONMENT=
+
+# Email integration (optional).
+SCAN_EMAIL_HOST=
+SCAN_EMAIL_HOST_USER=
+SCAN_EMAIL_RECIPIENT=
+SCAN_EMAIL_HOST_PASSWORD=
 
 # Directory to cache files during the AI training process and when running AI models (optional).
 KONFUZIO_CACHE_DIR =   # e.g. &#39;/cache&#39;, uses tempdir if not set
