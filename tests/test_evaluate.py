@@ -1,4 +1,5 @@
 """Test the evaluation."""
+import os
 import unittest
 from statistics import mean
 
@@ -9,6 +10,8 @@ from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span
 from konfuzio_sdk.evaluate import compare, grouped, Evaluation, EvaluationCalculator
 
 from konfuzio_sdk.samples import LocalTextProject
+from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
+from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI, FileSplittingEvaluation
 from tests.variables import TEST_DOCUMENT_ID
 
 
@@ -1247,3 +1250,81 @@ class TestEvaluationCalculator(unittest.TestCase):
         assert no_f1.precision is None
         assert no_f1.recall is None
         assert no_f1.f1 is None
+
+
+class TestEvaluationFileSplitting(unittest.TestCase):
+    """Test Evaluation class for ContextAwareFileSplitting."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Initialize the tested class."""
+        cls.project = LocalTextProject()
+        cls.file_splitting_model = ContextAwareFileSplittingModel()
+        cls.file_splitting_model.categories = cls.project.categories
+        cls.file_splitting_model.train_data = [
+            document for category in cls.file_splitting_model.categories for document in category.documents()
+        ]
+        cls.file_splitting_model.test_data = cls.project.get_category_by_id(3).test_documents()
+        cls.file_splitting_model.tokenizer = ConnectedTextTokenizer()
+        cls.file_splitting_model.first_page_spans = None
+        cls.test_document = cls.project.get_category_by_id(3).test_documents()[0]
+
+    def test_metrics_calculation(self):
+        """Test Evaluation class for ContextAwareFileSplitting."""
+        self.file_splitting_model.first_page_spans = self.file_splitting_model.fit()
+        non_first_page_spans = {}
+        for category in self.file_splitting_model.categories:
+            cur_non_first_page_spans = []
+            for doc in category.documents():
+                for page in doc.pages():
+                    if page.number > 1:
+                        cur_non_first_page_spans.append({span.offset_string for span in page.spans()})
+            if not cur_non_first_page_spans:
+                cur_non_first_page_spans.append(set())
+            true_non_first_page_spans = set.intersection(*cur_non_first_page_spans)
+            non_first_page_spans[category.id_] = true_non_first_page_spans
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        ground_truth = self.test_document
+        for page in ground_truth.pages():
+            if page.number in (1, 3, 5):
+                page.is_first_page = True
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)
+        documents = [[ground_truth, pred]]
+        evaluation = FileSplittingEvaluation(documents)
+        assert evaluation.tp() == 3
+        assert evaluation.fp() == 0
+        assert evaluation.fn() == 0
+        assert evaluation.precision() == 1.0
+        assert evaluation.recall() == 1.0
+        assert evaluation.f1() == 1.0
+
+    def test_metrics_calculation_by_category(self):
+        """Test Evaluation by Category."""
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        ground_truth = self.test_document
+        for page in ground_truth.pages():
+            if page.number in (1, 3, 5):
+                page.is_first_page = True
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)
+        documents = [[ground_truth, pred]]
+        evaluation = FileSplittingEvaluation(documents)
+        assert evaluation.tp(search=ground_truth.category) == 3
+        assert evaluation.fp(search=ground_truth.category) == 0
+        assert evaluation.fn(search=ground_truth.category) == 0
+        assert evaluation.precision(search=ground_truth.category) == 1.0
+        assert evaluation.recall(search=ground_truth.category) == 1.0
+        assert evaluation.f1(search=ground_truth.category) == 1.0
+
+    def test_splitting_ai_evaluation(self):
+        """Test evaluate_full method of SplittingAI."""
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        splitting_ai.evaluate_full()
+        assert splitting_ai.full_evaluation.evaluation_results['tp'] == 4
+        assert splitting_ai.full_evaluation.evaluation_results['fp'] == 0
+        assert splitting_ai.full_evaluation.evaluation_results['fn'] == 0
+        assert splitting_ai.full_evaluation.evaluation_results['precision'] == 1.0
+        assert splitting_ai.full_evaluation.evaluation_results['recall'] == 1.0
+        assert splitting_ai.full_evaluation.evaluation_results['f1'] == 1.0
+        for item in self.project.model_folder:
+            if item.endswith('.pkl'):
+                os.remove(os.path.join(self.project.model_folder, item))
