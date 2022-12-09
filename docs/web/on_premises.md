@@ -7,7 +7,7 @@
 
 On-premises, also known as self-hosted, is a setup that allows Konfuzio to be implemented 100% on your own infrastructure. In practice, it means that you know where your data is stored, how it's handled and who gets hold of it. This is because you keep the data on your own servers.
 
-A common way to operate a production-ready and scalabe Konfuzio installation is via Kuberneteens. An alternative and more light-weight deployment option is the [Single VM setup via Docker](/web/on_premises.html#alternative-deployment-options). We recommend to use the option which is more familiar to you.
+A common way to operate a production-ready and scalabe Konfuzio installation is via Kubernetens. An alternative deployment option is the [Single VM setup via Docker](/web/on_premises.html#alternative-deployment-options). We recommend to use the option which is more familiar to you. In general
 
 On-Premise Konfuzio installations allow to create Superuser accounts which can access all [Documents](https://help.konfuzio.com/modules/superuserdocuments/index.html), [Projects](https://help.konfuzio.com/modules/superuserprojects/index.html) and [AIs](https://help.konfuzio.com/modules/superuserais/index.html) via a dedicated view as well as creating custom [Roles](https://help.konfuzio.com/modules/superuserroles/index.html)
 
@@ -436,7 +436,7 @@ After completing these steps you can exit and remove the container.
 Note: The username used during the createsuperuser dialog must have the format of a valid e-mail in order to be able to login later.
 
 #### 5. Start the container
-In this example we start three containers, the first one to serve the Konfuzio web application. The second and third are used to process tasks in the background without blocking the web application.
+In this example we start four containers. The first one to serve the Konfuzio web application. 
 
 ```
 docker run -p 80:8000 --name web -d --add-host=host:10.0.0.1 \
@@ -444,6 +444,8 @@ docker run -p 80:8000 --name web -d --add-host=host:10.0.0.1 \
   --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \
   REGISTRY_URL/konfuzio/text-annotation/master:latest
 ```
+
+The second and third are used to process tasks in the background without blocking the web application. Depending on our load scenario, you might to start a large number of worker containers.
 
 ```
 docker run --name worker1 -d --add-host=host:10.0.0.1 \  
@@ -461,6 +463,16 @@ docker run --name worker2 -d --add-host=host:10.0.0.1 \
   celery -A app worker -l INFO --concurrency 1 -Q celery,priority_ocr,ocr,\
   priority_extract,extract,processing,priority_local_ocr,local_ocr,\
   training,finalize,training_heavy,categorize
+```
+
+The fourth container is a Beats-Worker that takes care of sceduled tasks (e.g. auto-deleted documents).
+
+```
+docker run --name beats -d --add-host=host:10.0.0.1 \  
+  --env-file /konfuzio-vm/text-annotation.env \  
+  --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \  
+  REGISTRY_URL/konfuzio/text-annotation/master:latest \  
+  celery -A app beat -l INFO -s /tmp/celerybeat-schedule
 ```
 
 #### [Optional] 6. Use Flower to monitor tasks
