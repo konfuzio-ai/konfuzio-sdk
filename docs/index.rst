@@ -34,13 +34,12 @@ use further integrations, see `help.konfuzio.com <https://help.konfuzio.com/inte
    :maxdepth: 3
    :caption: Konfuzio SDK
 
-   sdk/home/index.md
-   sdk/configuration_reference.md
+   sdk/index.md
+   sdk/examples/index.md
+   sdk/guides.md
    sdk/sourcecode.rst
-   sdk/examples/examples.rst
+   sdk/releases.md
    sdk/contribution.md
-   sdk/coordinates_system.md
-   merge/merge.md
 
 .. toctree::
    :caption: Konfuzio Server

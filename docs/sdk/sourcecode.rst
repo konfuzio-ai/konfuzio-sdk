@@ -3,6 +3,15 @@
 
 
 =====================
+API Reference
+=====================
+
+Quickstart
+=====================
+
+.. mdinclude:: home/index.md
+
+
 Data
 =====================
 
@@ -12,7 +21,7 @@ Data
 
 
 Span
-=====================
+---------------------
 
 .. autoclass:: Span
    :members:
@@ -20,28 +29,28 @@ Span
 
 
 Bbox
-=====================
+---------------------
 
 .. autoclass:: Bbox
    :members:
    :noindex:
 
 Annotation
-=====================
+---------------------
 .. autoclass:: Annotation
    :members:
    :noindex:
 
 
 Annotation Set
-=====================
+---------------------
 .. autoclass:: AnnotationSet
    :members:
    :noindex:
 
 
 Label
-=====================
+---------------------
 
 .. autoclass:: Label
    :members:
@@ -49,41 +58,40 @@ Label
 
 
 Label Set
-=====================
+---------------------
 .. autoclass:: LabelSet
    :members:
    :noindex:
 
 
 Category
-=====================
+---------------------
 .. autoclass:: Category
    :members:
    :noindex:
 
 
 Document
-=====================
+---------------------
 .. autoclass:: Document
    :members:
    :noindex:
 
 
 Page
-=====================
+---------------------
 .. autoclass:: Page
    :members:
    :noindex:
 
 
 Project
-=====================
+---------------------
 .. autoclass:: Project
    :members:
    :noindex:
 
 
-=====================
 Tokenizers
 =====================
 
@@ -92,24 +100,24 @@ Tokenizers
 .. automodule:: konfuzio_sdk.tokenizer.base
 
 Abstract Tokenizer
-=====================
+---------------------
 .. autoclass:: AbstractTokenizer
    :members:
    :noindex:
 
 List Tokenizer
-=====================
+---------------------
 .. autoclass:: ListTokenizer
    :members:
    :noindex:
 
 Rule Based Tokenizer
-=====================
+---------------------
 
 .. automodule:: konfuzio_sdk.tokenizer.regex
 
 Regex Tokenizer
-=====================
+---------------------
 .. autoclass:: RegexTokenizer
    :members:
    :noindex:
@@ -118,7 +126,6 @@ Regex Tokenizer
     :members:
 
 
-=====================
 Extraction AI
 =====================
 
@@ -136,12 +143,11 @@ Extraction AI
    :noindex:
 
 Load Saved AI Model
-=====================
+---------------------
 
 .. autofunction:: konfuzio_sdk.trainer.information_extraction.load_model
    :noindex:
 
-=====================
 Evaluation
 =====================
 
@@ -159,7 +165,6 @@ compare
    :noindex:
 
 
-=====================
 Document Categorization
 =====================
 
@@ -169,7 +174,8 @@ Document Categorization
 
 
 Fallback Categorization Model
-=====================
+---------------------
 .. autoclass:: FallbackCategorizationModel
    :members:
    :noindex:
+

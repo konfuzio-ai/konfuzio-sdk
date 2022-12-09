@@ -1,12 +1,17 @@
 .. meta::
    :description: Simple examples of how can the konfuzio_sdk package be used to get and post information on a project. These code snippets should provide a first insight for a quick start with the package.
 
-Code Examples
+Get Started
 =============
+
+.. mdinclude:: configuration_reference.md
 
 .. mdinclude:: intro.md
 
 .. mdinclude:: helloworld.md
+
+Tutorials
+=============
 
 .. mdinclude:: document_categorization.md
 
@@ -15,8 +20,8 @@ Code Examples
 Train a Konfuzio SDK Model to Extract Information From Payslip Documents
 -----------------------------------------------------------
 
-The tutorial *RFExtractionAI Demo* aims to show you how to use the Konfuzio SDK package to use a simple `Whitespace 
-tokenizer <https://dev.konfuzio.com/sdk/sourcecode.html#konfuzio_sdk.tokenizer.regex.WhitespaceTokenizer>`_ and to 
+The tutorial *RFExtractionAI Demo* aims to show you how to use the Konfuzio SDK package to use a simple `Whitespace
+tokenizer <https://dev.konfuzio.com/sdk/sourcecode.html#konfuzio_sdk.tokenizer.regex.WhitespaceTokenizer>`_ and to
 train a "RFExtractionAI" model to find and extract relevant information like Name, Date and Recipient
 from payslip documents.
 
