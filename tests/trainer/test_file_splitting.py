@@ -77,11 +77,11 @@ class TestFileSplittingModel(unittest.TestCase):
                 assert intersections == [{'Morning,'}]
                 assert page.is_first_page
 
-    def test_splitting_ai_predict(self):
-        """Test SplittingAI's Document-splitting method."""
-        splitting_ai = SplittingAI(self.file_splitting_model)
-        pred = splitting_ai.propose_split_documents(self.test_document)
-        assert len(pred) == 3
+    # def test_splitting_ai_predict(self):
+    #     """Test SplittingAI's Document-splitting method."""
+    #     splitting_ai = SplittingAI(self.file_splitting_model)
+    #     pred = splitting_ai.propose_split_documents(self.test_document)
+    #     assert len(pred) == 3
 
     def test_suggest_first_pages(self):
         """Test SplittingAI's suggesting first Pages."""
