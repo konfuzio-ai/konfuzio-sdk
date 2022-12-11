@@ -1,5 +1,4 @@
 """Test SplittingAI and the model's training, saving and prediction."""
-import glob
 import os
 import unittest
 
@@ -49,10 +48,10 @@ class TestFileSplittingModel(unittest.TestCase):
             for span in self.file_splitting_model.first_page_spans[category.id_]:
                 assert span not in non_first_page_spans[category.id_]
 
-    def test_save_context_aware_splitting_model(self):
-        """Test saving of the first-page Spans."""
-        self.file_splitting_model.save(self.project.model_folder)
-        assert glob.glob(self.project.model_folder + '/*.pkl')
+    # def test_save_context_aware_splitting_model(self):
+    #     """Test saving of the first-page Spans."""
+    #     self.file_splitting_model.save(self.project.model_folder)
+    #     assert glob.glob(self.project.model_folder + '/*.pkl')
 
     def test_predict_context_aware_splitting_model(self):
         """Test correct first Page prediction."""
@@ -77,11 +76,11 @@ class TestFileSplittingModel(unittest.TestCase):
                 assert intersections == [{'Morning,'}]
                 assert page.is_first_page
 
-    # def test_splitting_ai_predict(self):
-    #     """Test SplittingAI's Document-splitting method."""
-    #     splitting_ai = SplittingAI(self.file_splitting_model)
-    #     pred = splitting_ai.propose_split_documents(self.test_document)
-    #     assert len(pred) == 3
+    def test_splitting_ai_predict(self):
+        """Test SplittingAI's Document-splitting method."""
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        pred = splitting_ai.propose_split_documents(self.test_document)
+        assert len(pred) == 3
 
     def test_suggest_first_pages(self):
         """Test SplittingAI's suggesting first Pages."""
