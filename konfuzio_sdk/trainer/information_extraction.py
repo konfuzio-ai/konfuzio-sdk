@@ -1297,15 +1297,14 @@ class Trainer:
         logger.warning(f'{self} does not extract.')
         pass
 
-    @staticmethod
-    def extraction_result_to_document(document: Document, extraction_result: dict) -> Document:
+    def extraction_result_to_document(self, document: Document, extraction_result: dict) -> Document:
         """Return a virtual Document annotated with AI Model output."""
         virtual_doc = deepcopy(document)
         virtual_annotation_set_id = 1  # counter for across mult. Annotation Set groups of a Label Set
 
         # define Annotation Set for the Category Label Set: todo: this is unclear from API side
         # default Annotation Set will be always added even if there are no predictions for it
-        category_label_set = document.category.project.get_label_set_by_id(document.category.id_)
+        category_label_set = self.category.project.get_label_set_by_id(self.category.id_)
         virtual_default_annotation_set = AnnotationSet(
             document=virtual_doc, label_set=category_label_set, id_=virtual_annotation_set_id
         )
@@ -1313,7 +1312,7 @@ class Trainer:
         for label_or_label_set_name, information in extraction_result.items():
             if isinstance(information, pandas.DataFrame) and not information.empty:
                 # annotations belong to the default Annotation Set
-                label = document.category.project.get_label_by_name(label_or_label_set_name)
+                label = self.category.project.get_label_by_name(label_or_label_set_name)
                 add_extractions_as_annotations(
                     document=virtual_doc,
                     extractions=information,
@@ -1324,7 +1323,7 @@ class Trainer:
 
             elif isinstance(information, list) or isinstance(information, dict):
                 # process multi Annotation Sets that are not part of the category Label Set
-                label_set = document.category.project.get_label_set_by_name(label_or_label_set_name)
+                label_set = self.category.project.get_label_set_by_name(label_or_label_set_name)
 
                 if not isinstance(information, list):
                     information = [information]
@@ -1336,7 +1335,7 @@ class Trainer:
                     )
 
                     for label_name, extractions in entry.items():
-                        label = document.category.project.get_label_by_name(label_name)
+                        label = self.category.project.get_label_by_name(label_name)
                         add_extractions_as_annotations(
                             document=virtual_doc,
                             extractions=extractions,
@@ -1614,14 +1613,6 @@ class GroupAnnotationSets:
         df_train_ground_truth_list = []
         for document_id, df_doc in df_train_label_list:
             document = self.category.project.get_document_by_id(document_id)
-            # Train classifier only on documents with a matching document template.
-            # if (
-            #     hasattr(self, 'default_section_label')
-            #     and self.default_section_label
-            #     and self.default_section_label != document.category_template
-            # ):
-            #     logger.info(f'Skip document {document} because its template does not match.')
-            #     continue
             df_train_template_list.append(self.convert_label_features_to_template_features(df_doc, document.text))
             df_train_ground_truth_list.append(self.build_document_template_feature(document))
 
@@ -2367,7 +2358,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
                         annotation_set=virt_document.no_label_annotation_set,
                         label=ann.label,
                         label_set=virt_document.project.no_label_set,
-                        category=virt_document.category,
+                        category=self.category,
                         spans=new_spans,
                     )
                     new_ann.label_set = ann.label_set
