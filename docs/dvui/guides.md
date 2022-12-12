@@ -66,7 +66,7 @@ You can also deploy the app by following the steps below:
 
 1. Clone the repository
 
-You can download the app by cloning our GitHub repository or downloading the source code.
+You can download the app by cloning our [GitHub repository](https://github.com/konfuzio-ai/konfuzio-capture-vue) or downloading the source code.
 
 `git clone git@github.com:konfuzio-ai/konfuzio-capture-vue.git`
 
