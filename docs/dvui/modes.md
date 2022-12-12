@@ -4,7 +4,7 @@ The Document Validation UI can be configured to be run as Read Only or Full Mode
 
 ## Read Only Mode
 
-This is the default mode of the app. In this mode, you will have a sample document with annotations that you can only preview. The default API endpoint will be https://app.konfuzio.com and no user account is needed.
+This is the default mode of the app. In this mode, you will have a sample Document with annotations that you can only preview. The default API endpoint will be https://app.konfuzio.com and no user account is needed.
 
 ## Full Mode
 
@@ -14,6 +14,6 @@ You will also need a [Document uploaded](https://app.konfuzio.com/v3/swagger/#/d
 
 ![docid.png](./images/docid.png)
 
-You can create an environment variables file `.env` on the root of the repository based on the [`.env.example`](https://github.com/konfuzio-ai/konfuzio-capture-vue/blob/main/.env.example) for specifying various options, especially the API endpoint, the user Token, the Document id and Category to load, and the default language of the app.
+You can create an environment variables file `.env` on the root of the repository based on the [`.env.example`](https://github.com/konfuzio-ai/konfuzio-capture-vue/blob/main/.env.example) for specifying various options, especially the API endpoint, the user Token, the Document id and Category to load (optional), and the default language of the app.
 
 Please be aware that any variable in the `.env` will have priority from the variables defined in the `index.html`.

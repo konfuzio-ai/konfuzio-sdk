@@ -50,6 +50,8 @@ module.exports = {
 
 In the html we should load the script we created with the webpack and customise the variables we want. Please note that customising the variables is optional and that, as previously mentioned, any variable in the `.env` will have priority from the variables defined in the `index.html`.
 
+The following example includes the custom variables (Document id, Category id, User Token, Locale), but it is not necessary to add these.
+
 ```
  <div id="app">
     <App document="DOCUMENT_ID" category="CATEGORY_ID" user_token:”USER_TOKEN” locale="LOCALE"></App>
@@ -63,15 +65,18 @@ In the html we should load the script we created with the webpack and customise 
 You can also deploy the app by following the steps below:
 
 1. Clone the repository
-   You can download the app by cloning our GitHub repository or downloading the source code.
+
+You can download the app by cloning our GitHub repository or downloading the source code.
 
 `git clone git@github.com:konfuzio-ai/konfuzio-capture-vue.git`
 
 2. Configure the App
-   Decide if the app will be run as [Read Only or Full Mode](./modes.md).
+
+Decide if the app will be run as [Read Only or Full Mode](./modes.md).
 
 3. Install all packages
-   Install all the dependencies by running:
+
+Install all the dependencies by running:
 
 `npm install`
 
