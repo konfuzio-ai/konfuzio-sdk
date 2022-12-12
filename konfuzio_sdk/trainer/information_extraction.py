@@ -1616,6 +1616,7 @@ class Trainer:
         :param include_konfuzio: Boolean whether to include konfuzio_sdk package in pickle file.
         :param reduce_weight: Remove all non-strictly necessary parameters before saving.
         :param max_ram: Specify maximum memory usage condition to save model.
+        :raises MemoryError: When the size of the model in memory is greater than the maximum value.
         :return: Path of the saved model file.
         """
         logger.info('Saving model')
