@@ -63,5 +63,5 @@ use further integrations, see `help.konfuzio.com <https://help.konfuzio.com/inte
    dvui/modes.md
    dvui/guides.md
    dvui/sourcecode.md
-   
+   dvui/changelog.md
    
