@@ -575,7 +575,17 @@ class FileSplittingEvaluation:
             self.evaluation_results_by_category['recall'][category.id_] = recall
             self.evaluation_results_by_category['f1'][category.id_] = f1
 
-    def tp(self, search: Category = None) -> Union[int, dict]:
+    def _query(self, metric: str, search: Category = None) -> Union[int, float, None]:
+        if search:
+            if search.id_ not in self.evaluation_results_by_category[metric]:
+                raise KeyError(
+                    f'{search} is not present in {self.project}. Only Categories within a Project can be used for \
+                    viewing metrics.'
+                )
+            return self.evaluation_results_by_category[metric][search.id_]
+        return self.evaluation_results[metric]
+
+    def tp(self, search: Category = None) -> int:
         """
         Return correctly predicted first Pages.
 
@@ -583,18 +593,9 @@ class FileSplittingEvaluation:
         :type search: Category
         :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
         """
-        if search:
-            try:
-                return self.evaluation_results_by_category['tp'][search.id_]
-            except KeyError:
-                raise KeyError(
-                    '{} is not present in {}. Only Categories within a Project can be used for viewing metrics.'.format(
-                        search, self.project
-                    )
-                )
-        return self.evaluation_results['tp']
+        return self._query('tp', search)
 
-    def fp(self, search: Category = None) -> Union[int, dict]:
+    def fp(self, search: Category = None) -> int:
         """
         Return non-first Pages incorrectly predicted as first.
 
@@ -602,18 +603,9 @@ class FileSplittingEvaluation:
         :type search: Category
         :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
         """
-        if search:
-            try:
-                return self.evaluation_results_by_category['fp'][search.id_]
-            except KeyError:
-                raise KeyError(
-                    '{} is not present in {}. Only Categories within a Project can be used for viewing metrics.'.format(
-                        search, self.project
-                    )
-                )
-        return self.evaluation_results['fp']
+        return self._query('fp', search)
 
-    def fn(self, search: Category = None) -> Union[int, dict]:
+    def fn(self, search: Category = None) -> int:
         """
         Return first Pages incorrectly predicted as non-first.
 
@@ -621,18 +613,9 @@ class FileSplittingEvaluation:
         :type search: Category
         :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
         """
-        if search:
-            try:
-                return self.evaluation_results_by_category['fn'][search.id_]
-            except KeyError:
-                raise KeyError(
-                    '{} is not present in {}. Only Categories within a Project can be used for viewing metrics.'.format(
-                        search, self.project
-                    )
-                )
-        return self.evaluation_results['fn']
+        return self._query('fn', search)
 
-    def tn(self, search: Category = None) -> Union[int, dict]:
+    def tn(self, search: Category = None) -> int:
         """
         Return non-first Pages predicted as non-first.
 
@@ -640,18 +623,9 @@ class FileSplittingEvaluation:
         :type search: Category
         :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
         """
-        if search:
-            try:
-                return self.evaluation_results_by_category['tn'][search.id_]
-            except KeyError:
-                raise KeyError(
-                    '{} is not present in {}. Only Categories within a Project can be used for viewing metrics.'.format(
-                        search, self.project
-                    )
-                )
-        return self.evaluation_results['tn']
+        return self._query('tn', search)
 
-    def precision(self, search: Category = None) -> Union[float, dict]:
+    def precision(self, search: Category = None) -> float:
         """
         Return precision.
 
@@ -659,18 +633,9 @@ class FileSplittingEvaluation:
         :type search: Category
         :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
         """
-        if search:
-            try:
-                return self.evaluation_results_by_category['precision'][search.id_]
-            except KeyError:
-                raise KeyError(
-                    '{} is not present in {}. Only Categories within a Project can be used for viewing metrics.'.format(
-                        search, self.project
-                    )
-                )
-        return self.evaluation_results['precision']
+        return self._query('precision', search)
 
-    def recall(self, search: Category = None) -> Union[float, dict]:
+    def recall(self, search: Category = None) -> float:
         """
         Return recall.
 
@@ -678,18 +643,9 @@ class FileSplittingEvaluation:
         :type search: Category
         :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
         """
-        if search:
-            try:
-                return self.evaluation_results_by_category['recall'][search.id_]
-            except KeyError:
-                raise KeyError(
-                    '{} is not present in {}. Only Categories within a Project can be used for viewing metrics.'.format(
-                        search, self.project
-                    )
-                )
-        return self.evaluation_results['recall']
+        return self._query('recall', search)
 
-    def f1(self, search: Category = None) -> Union[float, dict]:
+    def f1(self, search: Category = None) -> float:
         """
         Return F1-measure.
 
@@ -697,13 +653,4 @@ class FileSplittingEvaluation:
         :type search: Category
         :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
         """
-        if search:
-            try:
-                return self.evaluation_results_by_category['f1'][search.id_]
-            except KeyError:
-                raise KeyError(
-                    '{} is not present in {}. Only Categories within a Project can be used for viewing metrics.'.format(
-                        search, self.project
-                    )
-                )
-        return self.evaluation_results['f1']
+        return self._query('f1', search)
