@@ -1,25 +1,39 @@
 ### FileSplittingEvaluation class
 
-FileSplittingEvaluation class can be used to evaluate performance of ContextAwareFileSplittingModel, returning a set of metrics that includes precision, recall, f1 measure, true positives, false positives and false negatives. 
+FileSplittingEvaluation class can be used to evaluate performance of ContextAwareFileSplittingModel, returning a set of 
+metrics that includes precision, recall, f1 measure, true positives, false positives and false negatives. 
 
-The class's methods `calculate()` and `calculate_by_category()` are ran at initialization. The class receives pairs of Documents as an input – first Document is ground-truth where all first Pages are marked as such, second is Document on Pages of which FileSplittingModel ran a prediction of them being first or non-first. Pages of each pair are compared; if a Page is first and predicted as such, it is a true positive; if it is first and predicted as non-first, it is a false negative; if it is non-first and predicted as first, it is a false positive; if it is non-first and predicted as such, it is true negative. 
+The class's methods `calculate()` and `calculate_by_category()` are ran at initialization. The class receives pairs of 
+Documents as an input – first Document is ground-truth where all first Pages are marked as such, second is Document on 
+Pages of which FileSplittingModel ran a prediction of them being first or non-first. 
+
+Suppose `gt_doc_1`, `gt_doc_2` and the following are ground truth Documents, and `pred_doc_1`, `pred_doc2` and the 
+following are the versions of these Documents that underwent the prediction step. Then the initialization would look 
+like this:
+```python
+evaluation = FileSplittingEvaluation([(gt_doc_1, pred_doc_1), (gt_doc_2, pred_doc_2), ...])
+```
+
+Pages of each pair are compared; if a Page is first and predicted as such, it is a true positive; if it is first and 
+predicted as non-first, it is a false negative; if it is non-first and predicted as first, it is a false positive; if 
+it is non-first and predicted as such, it is true negative. 
 
 |  | predicted correctly | predicted incorrectly |
 | ------ | ------ | ------ |
 |    first Page    |    TP    | FN |
 |    non-first Page    |   TN     | FP |
 
-After iterating through all Pages of all Documents, precision, recall and f1 measure are calculated. If you wish to set metrics to `None` in case there has been an attempt of zero division, set `allow_zero=True` at the initialization.
+After iterating through all Pages of all Documents, precision, recall and f1 measure are calculated. If you wish to set 
+metrics to `None` in case there has been an attempt of zero division, set `allow_zero=True` at the initialization.
 
-To see a certain metric after the class has been initialized, you can call a metric's method:
+
+To see a certain metric after the class has been initialized, you can call a metric's method. 
 ```
-evaluation = FileSplittingEvaluation()
 print(evaluation.fn())
 ```
 
 It is also possible to look at the metrics calculated by each Category independently. For this, pass `search=YOUR_CATEGORY_HERE` when calling the wanted metric's method: 
 ```
-evaluation = FileSplittingEvaluation()
 print(evaluation.fn(search=YOUR_CATEGORY_HERE))
 ``` 
 

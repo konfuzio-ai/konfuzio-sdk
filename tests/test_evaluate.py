@@ -1303,6 +1303,7 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         """Test Evaluation by Category."""
         splitting_ai = SplittingAI(self.file_splitting_model)
         ground_truth = self.test_document
+        wrong_category = Project(id_=46).categories[0]
         for page in ground_truth.pages():
             if page.number in (1, 3, 5):
                 page.is_first_page = True
@@ -1316,6 +1317,62 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         assert evaluation.precision(search=ground_truth.category) == 1.0
         assert evaluation.recall(search=ground_truth.category) == 1.0
         assert evaluation.f1(search=ground_truth.category) == 1.0
+        with self.assertRaises(KeyError) as e:
+            evaluation.tp(wrong_category)
+            self.assertEquals(
+                str(e.exception),
+                '{} is not present in {}. Only Categories within a Project can be used for viewing metrics.'.format(
+                    wrong_category, self.project
+                ),
+            )
+        with self.assertRaises(KeyError) as e:
+            evaluation.fp(wrong_category)
+            self.assertEquals(
+                str(e.exception),
+                '{} is not present in {}. Only Categories within a Project can be used for viewing metrics.'.format(
+                    wrong_category, self.project
+                ),
+            )
+        with self.assertRaises(KeyError) as e:
+            evaluation.fn(wrong_category)
+            self.assertEquals(
+                str(e.exception),
+                '{} is not present in {}. Only Categories within a Project can be used for viewing metrics.'.format(
+                    wrong_category, self.project
+                ),
+            )
+        with self.assertRaises(KeyError) as e:
+            evaluation.tn(wrong_category)
+            self.assertEquals(
+                str(e.exception),
+                '{} is not present in {}. Only Categories within a Project can be used for viewing metrics.'.format(
+                    wrong_category, self.project
+                ),
+            )
+        with self.assertRaises(KeyError) as e:
+            evaluation.recall(wrong_category)
+            self.assertEquals(
+                str(e.exception),
+                '{} is not present in {}. Only Categories within a Project can be used for viewing metrics.'.format(
+                    wrong_category, self.project
+                ),
+            )
+        with self.assertRaises(KeyError) as e:
+            evaluation.precision(wrong_category)
+            self.assertEquals(
+                str(e.exception),
+                '{} is not present in {}. Only Categories within a Project can be used for viewing metrics.'.format(
+                    wrong_category, self.project
+                ),
+            )
+        with self.assertRaises(KeyError) as e:
+            evaluation.f1(wrong_category)
+            self.assertEquals(
+                str(e.exception),
+                '{} is not present in {}. Only Categories within a Project can be used for viewing metrics.'.format(
+                    wrong_category, self.project
+                ),
+            )
 
     def test_splitting_ai_evaluation(self):
         """Test evaluate_full method of SplittingAI."""

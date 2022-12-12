@@ -498,6 +498,7 @@ class FileSplittingEvaluation:
                 f1 = None
             else:
                 raise ZeroDivisionError("FP and FN are zero, please specify allow_zero=True if you want F1 to be None.")
+        self.project = self.documents[0][0].project
         self.evaluation_results = {
             'tp': tp,
             'fp': fp,
@@ -580,9 +581,17 @@ class FileSplittingEvaluation:
 
         :param search: display true positives within a certain Category.
         :type search: Category
+        :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
         """
         if search:
-            return self.evaluation_results_by_category['tp'][search.id_]
+            try:
+                return self.evaluation_results_by_category['tp'][search.id_]
+            except KeyError:
+                raise KeyError(
+                    '{} is not present in {}. Only Categories within a Project can be used for viewing metrics.'.format(
+                        search, self.project
+                    )
+                )
         return self.evaluation_results['tp']
 
     def fp(self, search: Category = None) -> Union[int, dict]:
@@ -591,9 +600,17 @@ class FileSplittingEvaluation:
 
         :param search: display false positives within a certain Category.
         :type search: Category
+        :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
         """
         if search:
-            return self.evaluation_results_by_category['fp'][search.id_]
+            try:
+                return self.evaluation_results_by_category['fp'][search.id_]
+            except KeyError:
+                raise KeyError(
+                    '{} is not present in {}. Only Categories within a Project can be used for viewing metrics.'.format(
+                        search, self.project
+                    )
+                )
         return self.evaluation_results['fp']
 
     def fn(self, search: Category = None) -> Union[int, dict]:
@@ -602,9 +619,17 @@ class FileSplittingEvaluation:
 
         :param search: display false negatives within a certain Category.
         :type search: Category
+        :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
         """
         if search:
-            return self.evaluation_results_by_category['fn'][search.id_]
+            try:
+                return self.evaluation_results_by_category['fn'][search.id_]
+            except KeyError:
+                raise KeyError(
+                    '{} is not present in {}. Only Categories within a Project can be used for viewing metrics.'.format(
+                        search, self.project
+                    )
+                )
         return self.evaluation_results['fn']
 
     def tn(self, search: Category = None) -> Union[int, dict]:
@@ -613,9 +638,17 @@ class FileSplittingEvaluation:
 
         :param search: display true negatives within a certain Category.
         :type search: Category
+        :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
         """
         if search:
-            return self.evaluation_results_by_category['tn'][search.id_]
+            try:
+                return self.evaluation_results_by_category['tn'][search.id_]
+            except KeyError:
+                raise KeyError(
+                    '{} is not present in {}. Only Categories within a Project can be used for viewing metrics.'.format(
+                        search, self.project
+                    )
+                )
         return self.evaluation_results['tn']
 
     def precision(self, search: Category = None) -> Union[float, dict]:
@@ -624,9 +657,17 @@ class FileSplittingEvaluation:
 
         :param search: display precision within a certain Category.
         :type search: Category
+        :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
         """
         if search:
-            return self.evaluation_results_by_category['precision'][search.id_]
+            try:
+                return self.evaluation_results_by_category['precision'][search.id_]
+            except KeyError:
+                raise KeyError(
+                    '{} is not present in {}. Only Categories within a Project can be used for viewing metrics.'.format(
+                        search, self.project
+                    )
+                )
         return self.evaluation_results['precision']
 
     def recall(self, search: Category = None) -> Union[float, dict]:
@@ -635,9 +676,17 @@ class FileSplittingEvaluation:
 
         :param search: display recall within a certain Category.
         :type search: Category
+        :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
         """
         if search:
-            return self.evaluation_results_by_category['recall'][search.id_]
+            try:
+                return self.evaluation_results_by_category['recall'][search.id_]
+            except KeyError:
+                raise KeyError(
+                    '{} is not present in {}. Only Categories within a Project can be used for viewing metrics.'.format(
+                        search, self.project
+                    )
+                )
         return self.evaluation_results['recall']
 
     def f1(self, search: Category = None) -> Union[float, dict]:
@@ -646,7 +695,15 @@ class FileSplittingEvaluation:
 
         :param search: display F1 measure within a certain Category.
         :type search: Category
+        :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
         """
         if search:
-            return self.evaluation_results_by_category['f1'][search.id_]
+            try:
+                return self.evaluation_results_by_category['f1'][search.id_]
+            except KeyError:
+                raise KeyError(
+                    '{} is not present in {}. Only Categories within a Project can be used for viewing metrics.'.format(
+                        search, self.project
+                    )
+                )
         return self.evaluation_results['f1']
