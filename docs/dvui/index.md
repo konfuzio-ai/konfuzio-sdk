@@ -32,4 +32,6 @@ This component is responsible for creating a list to interact with each Annotati
 
 ### Documents List
 
+![documents_list.png](./images/documents_list.png)
+
 This is an optional component that is only loaded if a [Category](https://help.konfuzio.com/modules/categories/index.html) id is provided under the environment file. You also need to add an Authentication Token. Is responsible for loading the Documents list for a given Category and that are assigned to the currently authenticated user. You can then select which Document will appear on the dashboard.
