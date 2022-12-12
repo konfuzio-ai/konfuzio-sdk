@@ -1,4 +1,5 @@
 """Test SplittingAI and the model's training, saving and prediction."""
+import os
 import unittest
 
 from copy import deepcopy
@@ -79,7 +80,7 @@ class TestFileSplittingModel(unittest.TestCase):
         """Test SplittingAI's Document-splitting method."""
         splitting_ai = SplittingAI(self.file_splitting_model)
         pred = splitting_ai.propose_split_documents(self.test_document)
-        assert len(pred) == 5
+        assert len(pred) == 3
 
     def test_suggest_first_pages(self):
         """Test SplittingAI's suggesting first Pages."""
@@ -90,3 +91,6 @@ class TestFileSplittingModel(unittest.TestCase):
                 assert page.is_first_page
             else:
                 assert not page.is_first_page
+        for item in self.project.model_folder:
+            if item.endswith('.pkl'):
+                os.remove(os.path.join(self.project.model_folder, item))

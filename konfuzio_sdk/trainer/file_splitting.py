@@ -10,12 +10,12 @@ import shutil
 import sys
 
 from copy import deepcopy
-from typing import List
+from typing import List, Union
 
 from konfuzio_sdk.data import Document, Page
+from konfuzio_sdk.evaluate import FileSplittingEvaluation
 from konfuzio_sdk.trainer.information_extraction import load_model
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
-from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
@@ -40,50 +40,6 @@ class AbstractFileSplittingModel(metaclass=abc.ABCMeta):
         :param model_path: Path to save the model to.
         :type model_path: str
         """
-
-    def calculate_metrics(self, use_training_docs: bool = False):
-        """
-        Calculate precision, recall, and F1 measure for the custom model.
-
-        :param use_training_docs: A flag for using training Documents for evaluation or not.
-        :type use_training_docs: bool
-        :return: Calculated precision, recall, and F1 measure.
-        """
-        true_positive = 0
-        false_positive = 0
-        false_negative = 0
-        if use_training_docs:
-            list_of_pages = [
-                page for category in self.categories for document in category.documents() for page in document.pages()
-            ]
-        else:
-            list_of_pages = [
-                page
-                for category in self.categories
-                for document in category.test_documents()
-                for page in document.pages()
-            ]
-        for page in list_of_pages:
-            pred = self.predict(page)
-            if page.number == 1 and pred == 1:
-                true_positive += 1
-            elif page.number == 1 and pred == 0:
-                false_negative += 1
-            elif page.number == 0 and pred == 1:
-                false_positive += 1
-        if true_positive + false_positive != 0:
-            precision = true_positive / (true_positive + false_positive)
-        else:
-            precision = 0
-        if true_positive + false_negative != 0:
-            recall = true_positive / (true_positive + false_negative)
-        else:
-            recall = 0
-        if precision + recall != 0:
-            f1 = 2 * precision * recall / (precision + recall)
-        else:
-            f1 = 0
-        return precision, recall, f1
 
     @abc.abstractmethod
     def predict(self, page: Page) -> Page:
@@ -138,7 +94,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         self.first_page_spans = first_page_spans
         return first_page_spans
 
-    def save(self, model_path="", include_konfuzio=True):
+    def save(self, model_path="", include_konfuzio=True) -> str:
         """
         Save the resulting set of first-page Spans by Category.
 
@@ -200,7 +156,7 @@ class SplittingAI:
 
     def _create_doc_from_page_interval(self, original_doc: Document, start_page: Page, end_page: Page) -> Document:
         pages_text = original_doc.text[start_page.start_offset : end_page.end_offset]
-        new_doc = Document(project=LocalTextProject(), id_=None, text=pages_text)
+        new_doc = Document(project=original_doc.project, id_=None, text=pages_text)
         for page in original_doc.pages():
             if page.number in range(start_page.number, end_page.number):
                 _ = Page(
@@ -226,7 +182,7 @@ class SplittingAI:
             if page.number == 1:
                 suggested_splits.append(page)
             else:
-                if hasattr(self.model.predict(page), 'is_first_page'):
+                if self.model.predict(page).is_first_page:
                     suggested_splits.append(page)
         split_docs = []
         first_page = document.pages()[0]
@@ -240,7 +196,7 @@ class SplittingAI:
                 split_docs.append(self._create_doc_from_page_interval(document, suggested_splits[page_i - 1], split_i))
         return split_docs
 
-    def propose_split_documents(self, document: Document, return_pages=False):
+    def propose_split_documents(self, document: Document, return_pages: bool = False) -> Union[Document, List]:
         """
         Propose a set of resulting documents from a single Documents.
 
@@ -257,3 +213,27 @@ class SplittingAI:
         else:
             processed = self._suggest_page_split(document)
         return processed
+
+    def evaluate_full(self, use_training_docs: bool = False) -> FileSplittingEvaluation:
+        """
+        Evaluate the SplittingAI's performance.
+
+        :param use_training_docs: If enabled, runs evaluation on the training data to define its quality; if disabled,
+        runs evaluation on the test data.
+        :type use_training_docs: bool
+        :return: Evaluation information for the filesplitting context-aware logic.
+        """
+        evaluation_list = []
+        if not use_training_docs:
+            evaluation_docs = self.model.test_data
+        else:
+            evaluation_docs = self.model.train_data
+        for doc in evaluation_docs:
+            doc.pages()[0].is_first_page = True
+            pred = self.tokenizer.tokenize(deepcopy(doc))
+            for page in pred.pages():
+                if self.model.predict(page).is_first_page:
+                    page.is_first_page = True
+            evaluation_list.append((doc, pred))
+        self.full_evaluation = FileSplittingEvaluation(evaluation_list)
+        return self.full_evaluation

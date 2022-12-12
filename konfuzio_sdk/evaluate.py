@@ -1,12 +1,12 @@
 """Calculate the accuracy on any level in a  Document."""
-from typing import Tuple, List, Optional
+from typing import Tuple, List, Optional, Union
 
 import pandas
 import numpy
 from sklearn.utils.extmath import weighted_mode
 
 from konfuzio_sdk.utils import sdk_isinstance
-from konfuzio_sdk.data import Document
+from konfuzio_sdk.data import Document, Category
 
 RELEVANT_FOR_EVALUATION = [
     "is_matched",  # needed to group spans in Annotations
@@ -437,3 +437,220 @@ class Evaluation:
         """Return Spans that were wrongly merged vertically."""
         self.data.groupby('id_local_predicted').apply(lambda group: self._apply(group, 'wrong_merge'))
         return self.data[self.data['wrong_merge']]
+
+
+class FileSplittingEvaluation:
+    """Evaluate the quality of the filesplitting logic."""
+
+    def __init__(self, documents: List[Tuple[Document, Document]], allow_zero: bool = False):
+        """
+        Initialize and run the metrics calculation.
+
+        :param documents: A list of Document pairs – first one is ground truth, second is the prediction.
+        :type documents: list
+        :param allow_zero: If true, will calculate None for precision and recall when the straightforward application
+        of the formula would otherwise result in 0/0. Raises ZeroDivisionError otherwise.
+        :type allow_zero: bool
+        """
+        self.documents = documents
+        self.allow_zero = allow_zero
+        self.calculate()
+        self.calculate_metrics_by_category()
+
+    def calculate(self):
+        """Calculate metrics for the filesplitting logic."""
+        tp = 0
+        fp = 0
+        fn = 0
+        tn = 0
+        for ground_truth, prediction in self.documents:
+            for page_gt, page_pr in zip(ground_truth.pages(), prediction.pages()):
+                if page_gt.is_first_page and page_pr.is_first_page:
+                    tp += 1
+                elif not page_gt.is_first_page and page_pr.is_first_page:
+                    fp += 1
+                elif page_gt.is_first_page and not page_pr.is_first_page:
+                    fn += 1
+                elif not page_gt.is_first_page and not page_pr.is_first_page:
+                    tn += 1
+        if tp + fp != 0:
+            precision = tp / (tp + fp)
+        else:
+            if self.allow_zero:
+                precision = None
+            else:
+                raise ZeroDivisionError(
+                    "TP and FP are zero, please specify allow_zero=True if you want precision to be None."
+                )
+        if tp + fn != 0:
+            recall = tp / (tp + fn)
+        else:
+            if self.allow_zero:
+                recall = None
+            else:
+                raise ZeroDivisionError(
+                    "TP and FN are zero, please specify allow_zero=True if you want recall to be None."
+                )
+        if precision + recall != 0:
+            f1 = 2 * precision * recall / (precision + recall)
+        else:
+            if self.allow_zero:
+                f1 = None
+            else:
+                raise ZeroDivisionError("FP and FN are zero, please specify allow_zero=True if you want F1 to be None.")
+        self.project = self.documents[0][0].project
+        self.evaluation_results = {
+            'tp': tp,
+            'fp': fp,
+            'fn': fn,
+            'tn': tn,
+            'precision': precision,
+            'recall': recall,
+            'f1': f1,
+        }
+
+    def calculate_metrics_by_category(self):
+        """Calculate metrics by Category independently."""
+        categories = list(set([doc_pair[0].category for doc_pair in self.documents]))
+        self.evaluation_results_by_category = {
+            'tp': {},
+            'fp': {},
+            'fn': {},
+            'tn': {},
+            'precision': {},
+            'recall': {},
+            'f1': {},
+        }
+        for category in categories:
+            tp = 0
+            fp = 0
+            fn = 0
+            tn = 0
+            for ground_truth, prediction in [
+                [document_1, document_2]
+                for document_1, document_2 in self.documents
+                if document_1.category and document_1.category.id_ == category.id_
+            ]:
+                for page_gt, page_pr in zip(ground_truth.pages(), prediction.pages()):
+                    if page_gt.is_first_page and page_pr.is_first_page:
+                        tp += 1
+                    elif not page_gt.is_first_page and page_pr.is_first_page:
+                        fp += 1
+                    elif page_gt.is_first_page and not page_pr.is_first_page:
+                        fn += 1
+                    elif not page_gt.is_first_page and not page_pr.is_first_page:
+                        tn += 1
+            if tp + fp != 0:
+                precision = tp / (tp + fp)
+            else:
+                if self.allow_zero:
+                    precision = None
+                else:
+                    raise ZeroDivisionError(
+                        "TP and FP are zero, please specify allow_zero=True if you want precision to be None."
+                    )
+            if tp + fn != 0:
+                recall = tp / (tp + fn)
+            else:
+                if self.allow_zero:
+                    recall = None
+                else:
+                    raise ZeroDivisionError(
+                        "TP and FN are zero, please specify allow_zero=True if you want recall to be None."
+                    )
+            if precision + recall != 0:
+                f1 = 2 * precision * recall / (precision + recall)
+            else:
+                if self.allow_zero:
+                    f1 = None
+                else:
+                    raise ZeroDivisionError(
+                        "FP and FN are zero, please specify allow_zero=True if you want F1 to be None."
+                    )
+            self.evaluation_results_by_category['tp'][category.id_] = tp
+            self.evaluation_results_by_category['fp'][category.id_] = fp
+            self.evaluation_results_by_category['fn'][category.id_] = fn
+            self.evaluation_results_by_category['tn'][category.id_] = tn
+            self.evaluation_results_by_category['precision'][category.id_] = precision
+            self.evaluation_results_by_category['recall'][category.id_] = recall
+            self.evaluation_results_by_category['f1'][category.id_] = f1
+
+    def _query(self, metric: str, search: Category = None) -> Union[int, float, None]:
+        if search:
+            if search.id_ not in self.evaluation_results_by_category[metric]:
+                raise KeyError(
+                    f'{search} is not present in {self.project}. Only Categories within a Project can be used for '
+                    f'viewing metrics.'
+                )
+            return self.evaluation_results_by_category[metric][search.id_]
+        return self.evaluation_results[metric]
+
+    def tp(self, search: Category = None) -> int:
+        """
+        Return correctly predicted first Pages.
+
+        :param search: display true positives within a certain Category.
+        :type search: Category
+        :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
+        """
+        return self._query('tp', search)
+
+    def fp(self, search: Category = None) -> int:
+        """
+        Return non-first Pages incorrectly predicted as first.
+
+        :param search: display false positives within a certain Category.
+        :type search: Category
+        :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
+        """
+        return self._query('fp', search)
+
+    def fn(self, search: Category = None) -> int:
+        """
+        Return first Pages incorrectly predicted as non-first.
+
+        :param search: display false negatives within a certain Category.
+        :type search: Category
+        :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
+        """
+        return self._query('fn', search)
+
+    def tn(self, search: Category = None) -> int:
+        """
+        Return non-first Pages predicted as non-first.
+
+        :param search: display true negatives within a certain Category.
+        :type search: Category
+        :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
+        """
+        return self._query('tn', search)
+
+    def precision(self, search: Category = None) -> float:
+        """
+        Return precision.
+
+        :param search: display precision within a certain Category.
+        :type search: Category
+        :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
+        """
+        return self._query('precision', search)
+
+    def recall(self, search: Category = None) -> float:
+        """
+        Return recall.
+
+        :param search: display recall within a certain Category.
+        :type search: Category
+        :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
+        """
+        return self._query('recall', search)
+
+    def f1(self, search: Category = None) -> float:
+        """
+        Return F1-measure.
+
+        :param search: display F1 measure within a certain Category.
+        :type search: Category
+        :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
+        """
+        return self._query('f1', search)
