@@ -33,6 +33,7 @@ from warnings import warn
 import numpy
 import pandas
 import cloudpickle
+from pympler import asizeof
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.validation import check_is_fitted
 from tabulate import tabulate
@@ -45,7 +46,7 @@ from konfuzio_sdk.normalize import (
     normalize_to_positive_float,
 )
 from konfuzio_sdk.regex import regex_matches
-from konfuzio_sdk.utils import get_timestamp, get_bbox
+from konfuzio_sdk.utils import get_timestamp, get_bbox, normalize_memory
 from konfuzio_sdk.evaluate import Evaluation
 
 logger = logging.getLogger(__name__)
@@ -56,7 +57,7 @@ CANDIDATES_CACHE_SIZE = 100
 warn('This module is WIP: https://gitlab.com/konfuzio/objectives/-/issues/9311', FutureWarning, stacklevel=2)
 
 
-def load_model(pickle_path: str):
+def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     """
     Load a pkl file.
 
@@ -84,6 +85,10 @@ def load_model(pickle_path: str):
         if "unsupported pickle protocol: 5" in str(err) and '3.7' in sys.version:
             raise ValueError("Pickle saved with incompatible Python version.") from err
         raise
+
+    max_ram = normalize_memory(max_ram)
+    if max_ram and asizeof.asizeof(model) > max_ram:
+        logger.error(f"Loaded model's memory use ({asizeof.asizeof(model)}) is greater than max_ram ({max_ram})")
 
     if not hasattr(model, "name"):
         raise TypeError("Saved model file needs to be a Konfuzio Trainer instance.")
@@ -1594,7 +1599,7 @@ class Trainer:
 
         return merge is not None
 
-    def save(self, output_dir: str, include_konfuzio=True):
+    def save(self, output_dir: str = None, include_konfuzio=True, reduce_weight=False, max_ram=None):
         """
         Save the label model as bz2 compressed pickle object to the release directory.
 
@@ -1607,8 +1612,17 @@ class Trainer:
 
         Finally, we delete the cloudpickle file and are left with the bz2 file which has a .pkl extension.
 
-        :return: Path of the saved model file
+        :param output_dir: Folder to save AI model in.
+        :param include_konfuzio: Boolean whether to include konfuzio_sdk package in pickle file.
+        :param reduce_weight: Remove all non-strictly necessary parameters before saving.
+        :param max_ram: Specify maximum memory usage condition to save model.
+        :raises MemoryError: When the size of the model in memory is greater than the maximum value.
+        :return: Path of the saved model file.
         """
+        logger.info('Saving model')
+        logger.info(f'{include_konfuzio=}')
+        logger.info(f'{reduce_weight=}')
+        logger.info(f'{max_ram=}')
         # Keep Documents of the Category so that we can restore them later
         category_documents = self.category.documents() + self.category.test_documents()
 
@@ -1618,13 +1632,22 @@ class Trainer:
         #     clean_annotations = list(set(document.annotations()) - set(no_label_annotations))
         #     document._annotations = clean_annotations
 
-        # self.lose_weight() # todo make this optional: otherwise evaluate will not work on self
+        self.df_train = None
+        if reduce_weight:
+            self.lose_weight()  # todo: review and test (#9461)
 
-        from pympler import asizeof
+        logger.info(f'Model size: {asizeof.asizeof(self) / 1_000_000} MB')
 
-        logger.info(f'Saving model - {asizeof.asizeof(self) / 1_000_000} MB')
+        # if no argument passed, get project max_ram
+        if not max_ram:
+            max_ram = self.category.project.max_ram
 
-        sys.setrecursionlimit(99999999)
+        max_ram = normalize_memory(max_ram)
+
+        if max_ram and asizeof.asizeof(self) > max_ram:
+            raise MemoryError(f"AI model memory use ({asizeof.asizeof(self)}) exceeds maximum ({max_ram=}).")
+
+        sys.setrecursionlimit(99999999)  # ?
 
         logger.info('Getting save paths')
         import konfuzio_sdk
@@ -1633,8 +1656,8 @@ class Trainer:
             cloudpickle.register_pickle_by_value(konfuzio_sdk)
             # todo register all dependencies?
 
-        # output_dir = self.category.project.model_folder
-        # file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower())}')
+        if not output_dir:
+            output_dir = self.category.project.model_folder
 
         # make sure output dir exists
         pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)

@@ -94,7 +94,7 @@ setuptools.setup(
         'tqdm',
         'opencv-python==4.6.0.66',
         'pathos==0.2.6',
-        'pympler==0.9',  # Use to get pickle file size.
+        'pympler==1.0.1',  # Use to get pickle file size.
         'scikit-learn==1.0.2',
     ],
     extras_require={
