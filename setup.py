@@ -87,7 +87,7 @@ setuptools.setup(
         'tabulate==0.8.7',  # Used to pretty print DataFrames
         'tqdm',
         'pathos==0.2.6',
-        'pympler==0.9',  # Use to get pickle file size.
+        'pympler==1.0.1',  # Use to get pickle file size.
         'scikit-learn==1.0.2',
     ],
     extras_require={
