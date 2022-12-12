@@ -1509,7 +1509,7 @@ class Trainer:
         if reduce_weight:
             # category_documents = self.category.documents() + self.category.test_documents()
             # self.lose_weight()  # todo: review and test (#9461)
-            self.category.project._documents = []
+            self.category.project.lose_weight()
             self.documents = []
             self.test_documents = []
             self.tokenizer.lose_weight()
@@ -1523,7 +1523,7 @@ class Trainer:
         if max_ram and asizeof.asizeof(self) > max_ram:
             raise MemoryError(f"AI model memory use ({asizeof.asizeof(self)}) exceeds maximum ({max_ram=}).")
 
-        sys.setrecursionlimit(99999999)  # ?
+        sys.setrecursionlimit(999999)  # ?
 
         logger.info('Getting save paths')
 

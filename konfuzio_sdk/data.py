@@ -356,11 +356,6 @@ class AnnotationSet(Data):
         """Return string representation of the Annotation Set."""
         return f"{self.__class__.__name__}({self.id_}) of {self.label_set} in {self.document}."
 
-    def lose_weight(self):
-        """Delete data of the instance."""
-        self.label_set = None
-        self.document = None
-
     def annotations(self, use_correct: bool = True, ignore_below_threshold: bool = False):
         """All Annotations currently in this Annotation Set."""
         if not self._annotations:
@@ -617,7 +612,6 @@ class Label(Data):
         self._regex = {}  # : List[str] = []
         # self._combined_tokens = None
         self.regex_file_path = os.path.join(self.project.regex_folder, f'{self.name_clean}.json5')
-        self._correct_annotations = []
         self._evaluations = {}  # used to do the duplicate check on Annotation level
 
     def __repr__(self):
@@ -924,6 +918,13 @@ class Label(Data):
                 if not tokenizer.span_match(span):
                     spans_not_found.append(span)
         return spans_not_found
+
+    def lose_weight(self):
+        """Delete data of the instance."""
+        super().lose_weight()
+        self._evaluations = {}
+        self._tokens = {}
+        self._regex = {}
 
     # def save(self) -> bool:
     #     """
@@ -1596,6 +1597,11 @@ class Annotation(Data):
     def spans(self) -> List[Span]:
         """Return default entry to get all Spans of the Annotation."""
         return sorted(self._spans)
+
+    def lose_weight(self):
+        """Delete data of the instance."""
+        super().lose_weight()
+        self._tokens = []
 
 
 class Document(Data):
@@ -2850,7 +2856,6 @@ class Project(Data):
         for label in self.labels:
             label.lose_weight()
         self._documents = []
-        self._test_documents = []
         return self
 
 
