@@ -1,3 +1,6 @@
+.. meta::
+:description: explanation of the two possible user types for the Document Validation UI
+
 # Managing users in the Document Validation UI
 
 There are two options to manage users in the Document Validation UI:

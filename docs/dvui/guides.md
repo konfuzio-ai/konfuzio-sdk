@@ -1,3 +1,6 @@
+.. meta::
+:description: guides to install and integrate the Document Validation UI
+
 # Guides
 
 ## How to integrate the Document Validation UI into custom solutions?

@@ -1,3 +1,6 @@
+.. meta::
+:description: description of the two possible modes to run the app
+
 # Read Only Mode vs Full Mode
 
 The Document Validation UI can be configured to be run as Read Only or Full Mode:
