@@ -114,7 +114,7 @@ In [this link](https://www.ais.com/using-a-vue-component-in-an-angular-app/) you
 
 #### HTML iframe as Public Document
 
-You can mark your Documents as public. Marking Documents as public will generate a read-only, publicly accessible view that does not require authentication. This allows you to share a link to the Document and its extracted data, or embed it in another website.
+You can mark your Documents as public. Marking Documents as public will generate a read-only, publicly accessible view that does not require authentication. This allows you to share a link to the Document and its extracted data, or embed it in another website. See [Read Only mode](./modes.md/#read-only-mode) for reference.
 
 ##### Share a Document with a link
 
@@ -124,7 +124,7 @@ This lightweight version contains an image version of the PDF pages, and its cur
 
 Currently this public view is not allowed to be indexed by search engines.
 
-If you need to programmatically generate public links, you can use the format `https://app.konfuzio.com/d/<id>/`. You can retrieve the ID of a Document from your Konfuzio dashboard or the API. Document IDs which don’t exist or are not public will return a 404 error.
+If you need to programmatically generate public links, you can use the format `https://app.konfuzio.com/d/<id>/`. You can retrieve the id of a Document from your Konfuzio dashboard or the API. Document ids which don’t exist or are not public will return a 404 error.
 
 #### Embed a Konfuzio Document on another website
 
