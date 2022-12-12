@@ -579,8 +579,8 @@ class FileSplittingEvaluation:
         if search:
             if search.id_ not in self.evaluation_results_by_category[metric]:
                 raise KeyError(
-                    f'{search} is not present in {self.project}. Only Categories within a Project can be used for \
-                    viewing metrics.'
+                    f'{search} is not present in {self.project}. Only Categories within a Project can be used for '
+                    f'viewing metrics.'
                 )
             return self.evaluation_results_by_category[metric][search.id_]
         return self.evaluation_results[metric]
