@@ -1212,17 +1212,8 @@ class Trainer:
         self.name = self.__class__.__name__
         self.label_feature_list = None  # will be set later
 
-        self.df_data = None
-        self.df_valid = None
         self.df_train = None
         self.df_test = None
-
-        self.X_train = None
-        self.y_train = None
-        self.X_valid = None
-        self.y_valid = None
-        self.X_test = None
-        self.y_test = None
 
         self.evaluation = None
 
@@ -1519,9 +1510,9 @@ class Trainer:
         if reduce_weight:
             # category_documents = self.category.documents() + self.category.test_documents()
             # self.lose_weight()  # todo: review and test (#9461)
-            self.category = None
-            self.documents = None
-            self.test_documents = None
+            self.category.project._documents = []
+            self.documents = []
+            self.test_documents = []
             self.tokenizer.lose_weight()
 
         logger.info(f'Model size: {asizeof.asizeof(self) / 1_000_000} MB')

@@ -5,6 +5,7 @@ import linecache
 import logging
 import math
 import tracemalloc
+from pympler import asizeof
 import unittest
 import parameterized
 import os
@@ -232,8 +233,26 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
             self.pipeline.pipeline_path = self.pipeline.save(include_konfuzio=False)
         self.project._max_ram = None
 
-        self.pipeline.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder, include_konfuzio=False)
+        test_documents = self.pipeline.test_documents
+        documents = self.pipeline.documents
+
+        previous_size = asizeof.asizeof(self.pipeline)
+
+        self.pipeline.pipeline_path = self.pipeline.save(
+            output_dir=self.project.model_folder, include_konfuzio=False, reduce_weight=True
+        )
         assert os.path.isfile(self.pipeline.pipeline_path)
+
+        assert self.pipeline.documents == []
+        assert self.pipeline.test_documents == []
+        assert self.pipeline.df_train is None
+        assert self.pipeline.tokenizer.processing_steps == []
+
+        self.pipeline.test_documents = test_documents
+        self.pipeline.documents = documents
+        self.pipeline.category.project._documents = test_documents + documents
+
+        assert previous_size > asizeof.asizeof(self.pipeline)
 
     def test_05_upload_ai_model(self):
         """Upload the model."""
@@ -295,6 +314,8 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         """Test loading of trained model."""
         self.pipeline = load_model(self.pipeline.pipeline_path)
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        self.pipeline.category = test_document.category
+
         res_doc = self.pipeline.extract(document=test_document)
         assert len(res_doc.view_annotations()) == 19
 
@@ -378,8 +399,26 @@ class TestRegexRFExtractionAI(unittest.TestCase):
             self.pipeline.pipeline_path = self.pipeline.save(include_konfuzio=False)
         self.project._max_ram = None
 
-        self.pipeline.pipeline_path = self.pipeline.save(include_konfuzio=False)
+        test_documents = self.pipeline.test_documents
+        documents = self.pipeline.documents
+
+        previous_size = asizeof.asizeof(self.pipeline)
+
+        self.pipeline.pipeline_path = self.pipeline.save(
+            output_dir=self.project.model_folder, include_konfuzio=False, reduce_weight=True
+        )
         assert os.path.isfile(self.pipeline.pipeline_path)
+
+        assert self.pipeline.documents == []
+        assert self.pipeline.test_documents == []
+        assert self.pipeline.df_train is None
+        assert self.pipeline.tokenizer.processing_steps == []
+
+        self.pipeline.test_documents = test_documents
+        self.pipeline.documents = documents
+        self.pipeline.category.project._documents = test_documents + documents
+
+        assert previous_size > asizeof.asizeof(self.pipeline)
 
     def test_05_upload_ai_model(self):
         """Upload the model."""
