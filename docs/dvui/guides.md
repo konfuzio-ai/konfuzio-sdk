@@ -100,7 +100,7 @@ If you want to serve the app locally to run on a browser (default URL: http://lo
 
 ### Run the Document Validation UI in non-Vue applications
 
-If your application is developed using technologies other than Vue (for example React or Angular), you can build the Document Validation UI app into a package, as described in our installation guide, and import it to your existing project, or install it as an npm package.
+If your application is developed using technologies other than Vue (for example React or Angular), you can build the Document Validation UI app into a package, as described in our [configuration example](#configure-the-app), and import it to your existing project, or install it as an npm package.
 
 #### Run in React
 
