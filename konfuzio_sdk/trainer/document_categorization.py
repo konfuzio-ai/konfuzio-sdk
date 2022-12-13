@@ -59,7 +59,10 @@ class FallbackCategorizationModel:
         :returns: The input Document with added categorization information
         """
         all_pages_have_same_category = len(set([page.category for page in document.pages()])) == 1
-        document.category = document.pages()[0].category if all_pages_have_same_category else None
+        if all_pages_have_same_category:
+            document.category = document.pages()[0].category
+        else:
+            document.category = None
         return document
 
     def categorize(self, document: Document, recategorize: bool = False, inplace: bool = False) -> Document:
@@ -87,24 +90,16 @@ class FallbackCategorizationModel:
             for page in virtual_doc.pages():
                 page.category = None
 
-        relevant_categories = [training_category.fallback_name for training_category in self.categories]
         for page in virtual_doc.pages():
-            found_category_name = None
-            page_text = page.text.lower()
-            for candidate_category_name in relevant_categories:
-                if candidate_category_name in page_text:
-                    found_category_name = candidate_category_name
+            for training_category in self.categories:
+                if training_category.fallback_name in page.text.lower():
+                    page.category = training_category
                     break
 
-            if found_category_name is None:
+            if page.category is None:
                 logger.warning(
-                    f'{self} could not find the category of {page} by using the fallback logic '
-                    f'with pre-defined common categories.'
+                    f'{self} could not find the category of {page} by using the fallback categorization logic.'
                 )
                 continue
-            found_category = [
-                category for category in self.categories if category.fallback_name in found_category_name
-            ][0]
-            page.category = found_category
 
         return self._categorize_from_pages(virtual_doc)

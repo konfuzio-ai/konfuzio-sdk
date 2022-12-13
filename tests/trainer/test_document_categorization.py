@@ -74,6 +74,14 @@ class TestFallbackCategorizationModel(unittest.TestCase):
         for page in result.pages():
             assert page.category == self.receipts_category
 
+    def test_6a_categorize_document_with_no_pages(self):
+        """Test extract category for a Document without a page."""
+        document_with_no_pages = Document(project=self.project, text="hello")
+        result = self.categorization_pipeline.categorize(document=document_with_no_pages)
+        assert isinstance(result, Document)
+        assert result.category is None
+        assert result.pages() == []
+
     def test_7_already_existing_categorization(self):
         """Test that the existing category attribute for a Test Document will be reused as the fallback result."""
         test_payslip_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
@@ -139,7 +147,15 @@ class TestFallbackCategorizationModel(unittest.TestCase):
         for page in test_receipt_document.pages():
             assert page.category == self.receipts_category
 
-    def test_9b_categorize_defaults_not_in_place(self):
+    def test_9b_categorize_in_place_document_with_no_pages(self):
+        """Test extract category in place for a Document without a page."""
+        document_with_no_pages = Document(project=self.project, text="hello")
+        result = self.categorization_pipeline.categorize(document=document_with_no_pages, inplace=True)
+        assert isinstance(result, Document)
+        assert result.category is None
+        assert result.pages() == []
+
+    def test_9c_categorize_defaults_not_in_place(self):
         """Test cannot re-extract category for a selected Test Document that already contain a category attribute."""
         # this document can be recategorized successfully because its text contains the word "quittung" (receipt) in it
         test_receipt_document = self.project.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID)
@@ -217,3 +233,10 @@ class TestCategorizeFromPagesFallback(unittest.TestCase):
             )
         FallbackCategorizationModel._categorize_from_pages(document)
         assert document.category is None
+
+    def test_categorize_with_no_pages(self):
+        """Test categorizing a Document with no pages."""
+        document = Document(project=self.project, text="hello")
+        FallbackCategorizationModel._categorize_from_pages(document)
+        assert document.category is None
+        assert document.pages() == []
