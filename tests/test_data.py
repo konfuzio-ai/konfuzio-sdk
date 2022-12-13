@@ -1278,6 +1278,9 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert project.categories[0].session is None
         assert project.label_sets[0].session is None
         assert project.labels[0].session is None
+        assert project.labels[0]._evaluations == {}
+        assert project.labels[0]._tokens == {}
+        assert project.labels[0]._regex == {}
         assert project.virtual_documents == []
         assert project.documents == []
         assert project.test_documents == []
