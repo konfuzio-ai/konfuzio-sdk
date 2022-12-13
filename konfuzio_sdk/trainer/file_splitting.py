@@ -278,7 +278,8 @@ class FusionModel(AbstractFileSplittingModel):
         output = Dense(1, activation='sigmoid')(x)
         self.model = Model(inputs=[img_input, txt_input], outputs=output)
         self.model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-        self.model.fit([self.train_img_data, self.train_txt_data], train_labels, epochs=10, verbose=1)
+        self.model.fit([self.train_img_data, self.train_txt_data], self.train_labels, epochs=10, verbose=1)
+        return self.model
 
     def save(self, model_path=""):
         """
@@ -323,17 +324,23 @@ class FusionModel(AbstractFileSplittingModel):
 class SplittingAI:
     """Split a given Document and return a list of resulting shorter Documents."""
 
-    def __init__(self, model=""):
+    def __init__(self, model="", use_fallback_logic=True):
         """
         Initialize the class.
 
-        :param model: A path to an existing .cloudpickle model or to a previously trained instance of
-        ContextAwareFileSplittingModel().
+        :param model: A path to an existing .cloudpickle model or to a previously trained instance of the model.
+        :param use_fallback_logic: Whether to use fallback logic or a fusion model.
+        :type use_fallback_logic: bool
         """
-        self.tokenizer = ConnectedTextTokenizer()
+        if use_fallback_logic:
+            self.tokenizer = ConnectedTextTokenizer()
         if model is str:
-            self.model = ContextAwareFileSplittingModel()
-            self.model.first_page_spans = load_model(model)
+            if use_fallback_logic:
+                self.model = ContextAwareFileSplittingModel()
+                self.model.first_page_spans = load_model(model)
+            else:
+                self.model = FusionModel()
+                self.model.model = load_model(model)
         else:
             self.model = model
 
