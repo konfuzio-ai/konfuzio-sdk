@@ -1,4 +1,5 @@
 """Test the evaluation."""
+import os
 import unittest
 from statistics import mean
 
@@ -9,6 +10,8 @@ from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span
 from konfuzio_sdk.evaluate import compare, grouped, Evaluation, EvaluationCalculator
 
 from konfuzio_sdk.samples import LocalTextProject
+from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
+from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI, FileSplittingEvaluation
 from tests.variables import TEST_DOCUMENT_ID
 
 
@@ -51,7 +54,7 @@ class TestCompare(unittest.TestCase):
         assert evaluation["false_positive"].sum() == 0
         # due to the fact that Konfuzio Server does not save confidence = 100 % if Annotation was not created by a human
         assert evaluation["false_negative"].sum() == 0
-        assert evaluation["is_found_by_tokenizer"].sum() == 21
+        assert evaluation["tokenizer_true_positive"].sum() == 21
 
     def test_strict_doc_where_first_annotation_was_skipped(self):
         """Test if a Document is 100 % equivalent with first Annotation not existing for a certain Label."""
@@ -67,7 +70,7 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 19
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 0
-        assert evaluation["is_found_by_tokenizer"].sum() == 19
+        assert evaluation["tokenizer_true_positive"].sum() == 19
 
     def test_strict_doc_where_last_annotation_was_skipped(self):
         """Test if a Document is 100 % equivalent with last Annotation not existing for a certain Label."""
@@ -83,7 +86,7 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 20
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 0
-        assert evaluation["is_found_by_tokenizer"].sum() == 20
+        assert evaluation["tokenizer_true_positive"].sum() == 20
 
     def test_strict_if_first_multiline_annotation_is_missing_in_b(self):
         """Test if a Document is equivalent if first Annotation is missing."""
@@ -100,7 +103,7 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 19  # 1 multiline with 2 lines = 2 Annotations
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 2
-        assert evaluation["is_found_by_tokenizer"].sum() == 19
+        assert evaluation["tokenizer_true_positive"].sum() == 19
 
     def test_strict_doc_where_first_annotation_is_missing_in_a(self):
         """Test if a Document is equivalent if first Annotation is not present."""
@@ -119,7 +122,7 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 19
         assert evaluation["false_positive"].sum() == 4  # 1 multiline (2 lines == 2 Annotations) + 2 feedback required
         assert evaluation["false_negative"].sum() == 0
-        assert evaluation["is_found_by_tokenizer"].sum() == 19
+        assert evaluation["tokenizer_true_positive"].sum() == 19
 
     def test_strict_only_unrevised_annotations(self):
         """Test to evaluate on a Document that has only unrevised Annotations."""
@@ -133,7 +136,9 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 0
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 0
-        assert evaluation["is_found_by_tokenizer"].sum() == 0
+        assert evaluation["tokenizer_true_positive"].sum() == 0
+        assert evaluation["tokenizer_false_positive"].sum() == 0
+        assert evaluation["tokenizer_false_negative"].sum() == 0
 
     def test_strict_doc_where_first_annotation_from_all_is_missing_in_a(self):
         """Test if a Document is equivalent if all Annotation are not present and feedback required are included."""
@@ -151,7 +156,9 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 19
         assert evaluation["false_positive"].sum() == 2  # 1 multiline (2 lines == 2 Annotations)
         assert evaluation["false_negative"].sum() == 0
-        assert evaluation["is_found_by_tokenizer"].sum() == 19
+        assert evaluation["tokenizer_true_positive"].sum() == 19
+        assert evaluation["tokenizer_false_positive"].sum() == 5
+        assert evaluation["tokenizer_false_negative"].sum() == 0
 
     def test_strict_doc_where_last_annotation_is_missing_in_b(self):
         """Test if a Document is equivalent if last Annotation is missing."""
@@ -168,7 +175,9 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 20  # due to the fact that we find both offsets of the multiline
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 1
-        assert evaluation["is_found_by_tokenizer"].sum() == 20
+        assert evaluation["tokenizer_true_positive"].sum() == 20
+        assert evaluation["tokenizer_false_positive"].sum() == 3
+        assert evaluation["tokenizer_false_negative"].sum() == 1
 
     def test_strict_doc_where_last_annotation_is_missing_in_a(self):
         """Test if a Document is equivalent if last Annotation is not present."""
@@ -185,7 +194,9 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 20  # due to the fact that we find both offsets of the multiline
         assert evaluation["false_positive"].sum() == 1
         assert evaluation["false_negative"].sum() == 0
-        assert evaluation["is_found_by_tokenizer"].sum() == 20
+        assert evaluation["tokenizer_true_positive"].sum() == 20
+        assert evaluation["tokenizer_false_positive"].sum() == 4
+        assert evaluation["tokenizer_false_negative"].sum() == 0
 
     def test_strict_nothing_should_be_predicted(self):
         """Support to evaluate that nothing is found in a document."""
@@ -199,7 +210,9 @@ class TestCompare(unittest.TestCase):
         assert len([an for an in doc_b.annotations(use_correct=False) if an.confidence > an.label.threshold]) == 21
         assert evaluation["false_positive"].sum() == 23  # but one annotation is multiline
         assert evaluation["false_negative"].sum() == 0
-        assert evaluation["is_found_by_tokenizer"].sum() == 0
+        assert evaluation["tokenizer_true_positive"].sum() == 0
+        assert evaluation["tokenizer_false_positive"].sum() == 24
+        assert evaluation["tokenizer_false_negative"].sum() == 0
 
     def test_strict_nothing_can_be_predicted(self):
         """Support to evaluate that nothing must be found in a document."""
@@ -207,12 +220,14 @@ class TestCompare(unittest.TestCase):
         doc_a = prj.get_document_by_id(TEST_DOCUMENT_ID)
         doc_b = Document(project=prj, category=doc_a.category)
         evaluation = compare(doc_a, doc_b)
-        # 25 if considering negative Annotations, we evaluate on span level an one annotation is multiline
+        # 25 if considering negative Annotations, we evaluate on span level and one annotation is multiline
         assert len(evaluation) == 25
         assert evaluation["true_positive"].sum() == 0
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 21
-        assert evaluation["is_found_by_tokenizer"].sum() == 0
+        assert evaluation["tokenizer_true_positive"].sum() == 0
+        assert evaluation["tokenizer_false_positive"].sum() == 0
+        assert evaluation["tokenizer_false_negative"].sum() == 21
 
     def test_strict_doc_with_overruled_top_annotations(self):
         """
@@ -242,7 +257,9 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 20
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 1
-        assert evaluation["is_found_by_tokenizer"].sum() == 20
+        assert evaluation["tokenizer_true_positive"].sum() == 20
+        assert evaluation["tokenizer_false_positive"].sum() == 3
+        assert evaluation["tokenizer_false_negative"].sum() == 1
 
     def test_strict_doc_with_missing_annotation_set(self):
         """
@@ -308,7 +325,7 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 1
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 1
-        assert evaluation["is_found_by_tokenizer"].sum() == 1
+        assert evaluation["tokenizer_true_positive"].sum() == 1
 
     def test_strict_vs_non_strict_doc_with_missing_annotation_set(self):
         """Test if we detect a partially overlapping Span in an Annotation of a missing Annotation Set."""
@@ -332,8 +349,8 @@ class TestCompare(unittest.TestCase):
             spans=[span_1],
         )
         # second Annotation Set
-        span_2 = Span(start_offset=3, end_offset=5)
         annotation_set_a_2 = AnnotationSet(id_=2, document=document_a, label_set=label_set)
+        span_2 = Span(start_offset=3, end_offset=5)
         _ = Annotation(
             id_=2,
             document=document_a,
@@ -344,35 +361,47 @@ class TestCompare(unittest.TestCase):
             spans=[span_2],
         )
         # create a Document B
-        span_3 = Span(start_offset=4, end_offset=5)
+
         document_b = Document(project=project, category=category)
         # with only one Annotation Set, so to say the first one, which then contains the correct Annotation which is in
         # second Annotation Set. This test includes to test if we did not find the first Annotation Set.
-        annotation_set_b = AnnotationSet(id_=3, document=document_b, label_set=label_set)
+        annotation_set_b_1 = AnnotationSet(id_=3, document=document_b, label_set=label_set)
+        span_3 = Span(start_offset=4, end_offset=5)
         _ = Annotation(
             id_=3,
             document=document_b,
             confidence=0.5,
             # is_correct=True, we don't know this from the prediction
-            annotation_set=annotation_set_b,
+            annotation_set=annotation_set_b_1,
             label=label,
             label_set=label_set,
             spans=[span_3],
         )
+        annotation_set_b_2 = AnnotationSet(id_=4, document=document_b, label_set=label_set)
+        span_4 = Span(start_offset=7, end_offset=8)
+        _ = Annotation(
+            id_=4,
+            document=document_b,
+            confidence=0.5,
+            annotation_set=annotation_set_b_2,
+            label=label,
+            label_set=label_set,
+            spans=[span_4],
+        )
 
         evaluation_strict = compare(document_a, document_b)
-        assert len(evaluation_strict) == 3
+        assert len(evaluation_strict) == 4
         assert evaluation_strict["true_positive"].sum() == 0
-        assert evaluation_strict["false_positive"].sum() == 1
+        assert evaluation_strict["false_positive"].sum() == 2
         assert evaluation_strict["false_negative"].sum() == 2
-        assert evaluation_strict["is_found_by_tokenizer"].sum() == 0
+        assert evaluation_strict["tokenizer_true_positive"].sum() == 0
 
         evaluation = compare(document_a, document_b, strict=False)
-        assert len(evaluation) == 2
+        assert len(evaluation) == 3
         assert evaluation["true_positive"].sum() == 1
-        assert evaluation["false_positive"].sum() == 0
+        assert evaluation["false_positive"].sum() == 1
         assert evaluation["false_negative"].sum() == 1
-        assert evaluation["is_found_by_tokenizer"].sum() == 0  # we don't find it with the tokenizer but only parts
+        assert evaluation["tokenizer_true_positive"].sum() == 0  # we don't find it with the tokenizer but only parts
 
     def test_non_strict_is_better_than_strict(self):
         """Test if we detect an Annotation of a missing Annotation Set."""
@@ -416,14 +445,14 @@ class TestCompare(unittest.TestCase):
         assert evaluation_strict["true_positive"].sum() == 0
         assert evaluation_strict["false_positive"].sum() == 1
         assert evaluation_strict["false_negative"].sum() == 1
-        assert evaluation_strict["is_found_by_tokenizer"].sum() == 0
+        assert evaluation_strict["tokenizer_true_positive"].sum() == 0
 
         evaluation = compare(document_a, document_b, strict=False)
         assert len(evaluation) == 1
         assert evaluation["true_positive"].sum() == 1
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 0
-        assert evaluation["is_found_by_tokenizer"].sum() == 0
+        assert evaluation["tokenizer_true_positive"].sum() == 0
 
     def test_strict_documents_with_different_category(self):
         """Test to not compare two Documents with different Categories."""
@@ -481,7 +510,7 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 0
         assert evaluation["false_positive"].sum() == 1
         assert evaluation["false_negative"].sum() == 1
-        assert evaluation["is_found_by_tokenizer"].sum() == 0
+        assert evaluation["tokenizer_true_positive"].sum() == 0
 
     def test_strict_doc_with_annotation_with_wrong_label(self):
         """
@@ -528,7 +557,7 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 0
         assert evaluation["false_positive"].sum() == 1
         assert evaluation["false_negative"].sum() == 0
-        assert evaluation["is_found_by_tokenizer"].sum() == 1
+        assert evaluation["tokenizer_true_positive"].sum() == 1
 
     def test_strict_doc_with_one_missing_span_of_two_in_one_annotation(self):
         """
@@ -578,7 +607,7 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 1
         assert evaluation["false_positive"].sum() == 1
         assert evaluation["false_negative"].sum() == 1
-        assert evaluation["is_found_by_tokenizer"].sum() == 1
+        assert evaluation["tokenizer_true_positive"].sum() == 1
 
     def test_strict_doc_with_extra_annotation_set(self):
         """
@@ -656,7 +685,9 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 1
         assert evaluation["false_positive"].sum() == 1
         assert evaluation["false_negative"].sum() == 1
-        assert evaluation["is_found_by_tokenizer"].sum() == 1
+        assert evaluation["tokenizer_true_positive"].sum() == 1
+        assert evaluation["tokenizer_false_positive"].sum() == 1
+        assert evaluation["tokenizer_false_negative"].sum() == 1
 
     def test_strict_doc_with_annotations_wrongly_grouped_in_one_annotation_set(self):
         """
@@ -733,7 +764,9 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 1
         assert evaluation["false_positive"].sum() == 1
         assert evaluation["false_negative"].sum() == 0
-        assert evaluation["is_found_by_tokenizer"].sum() == 2
+        assert evaluation["tokenizer_true_positive"].sum() == 2
+        assert evaluation["tokenizer_false_positive"].sum() == 0
+        assert evaluation["tokenizer_false_negative"].sum() == 0
 
     def test_strict_to_evaluate_annotations_in_one_line_belonging_to_two_annotation_sets(self):
         """Test to evaluate two Annotations where each one belongs to a different Annotation Set."""
@@ -803,7 +836,7 @@ class TestCompare(unittest.TestCase):
         assert evaluation["true_positive"].sum() == 2
         assert evaluation["false_positive"].sum() == 0
         assert evaluation["false_negative"].sum() == 0
-        assert evaluation["is_found_by_tokenizer"].sum() == 2
+        assert evaluation["tokenizer_true_positive"].sum() == 2
 
     def test_strict_grouped_both_above_threshold_both_correct(self):
         """Test grouped for two correct Spans where both are over threshold."""
@@ -889,8 +922,8 @@ class TestEvaluation(unittest.TestCase):
     def test_project(self):
         """Test that data has not changed."""
         project = LocalTextProject()
-        assert len(project.documents) == 2
-        assert len(project.test_documents) == 4
+        assert len(project.documents) == 5
+        assert len(project.test_documents) == 8
 
     def test_not_strict(self):
         """Test that evaluation can be initialized with strict mode disabled."""
@@ -915,7 +948,14 @@ class TestEvaluation(unittest.TestCase):
     def test_true_negatives(self):
         """Count zero false negatives from two Training Documents (correctly, nothing is predicted under threshold)."""
         project = LocalTextProject()
-        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
+        documents_without_category_for_filesplitting = (
+            project.get_category_by_id(1).documents() + project.get_category_by_id(2).documents()
+        )
+        evaluation = Evaluation(
+            documents=list(
+                zip(documents_without_category_for_filesplitting, documents_without_category_for_filesplitting)
+            )
+        )
         assert evaluation.tn() == 0
 
     def test_f1(self):
@@ -1210,3 +1250,104 @@ class TestEvaluationCalculator(unittest.TestCase):
         assert no_f1.precision is None
         assert no_f1.recall is None
         assert no_f1.f1 is None
+
+
+class TestEvaluationFileSplitting(unittest.TestCase):
+    """Test Evaluation class for ContextAwareFileSplitting."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Initialize the tested class."""
+        cls.project = LocalTextProject()
+        cls.file_splitting_model = ContextAwareFileSplittingModel()
+        cls.file_splitting_model.categories = cls.project.categories
+        cls.file_splitting_model.train_data = [
+            document for category in cls.file_splitting_model.categories for document in category.documents()
+        ]
+        cls.file_splitting_model.test_data = cls.project.get_category_by_id(3).test_documents()
+        cls.file_splitting_model.tokenizer = ConnectedTextTokenizer()
+        cls.file_splitting_model.first_page_spans = None
+        cls.test_document = cls.project.get_category_by_id(3).test_documents()[0]
+
+    def test_metrics_calculation(self):
+        """Test Evaluation class for ContextAwareFileSplitting."""
+        self.file_splitting_model.first_page_spans = self.file_splitting_model.fit()
+        non_first_page_spans = {}
+        for category in self.file_splitting_model.categories:
+            cur_non_first_page_spans = []
+            for doc in category.documents():
+                for page in doc.pages():
+                    if page.number > 1:
+                        cur_non_first_page_spans.append({span.offset_string for span in page.spans()})
+            if not cur_non_first_page_spans:
+                cur_non_first_page_spans.append(set())
+            true_non_first_page_spans = set.intersection(*cur_non_first_page_spans)
+            non_first_page_spans[category.id_] = true_non_first_page_spans
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        ground_truth = self.test_document
+        for page in ground_truth.pages():
+            if page.number in (1, 3, 5):
+                page.is_first_page = True
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)
+        documents = [[ground_truth, pred]]
+        evaluation = FileSplittingEvaluation(documents)
+        assert evaluation.tp() == 3
+        assert evaluation.fp() == 0
+        assert evaluation.fn() == 0
+        assert evaluation.tn() == 2
+        assert evaluation.precision() == 1.0
+        assert evaluation.recall() == 1.0
+        assert evaluation.f1() == 1.0
+
+    def test_metrics_calculation_by_category(self):
+        """Test Evaluation by Category."""
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        ground_truth = self.test_document
+        for page in ground_truth.pages():
+            if page.number in (1, 3, 5):
+                page.is_first_page = True
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)
+        documents = [[ground_truth, pred]]
+        evaluation = FileSplittingEvaluation(documents)
+        assert evaluation.tp(search=ground_truth.category) == 3
+        assert evaluation.fp(search=ground_truth.category) == 0
+        assert evaluation.fn(search=ground_truth.category) == 0
+        assert evaluation.tn(search=ground_truth.category) == 2
+        assert evaluation.precision(search=ground_truth.category) == 1.0
+        assert evaluation.recall(search=ground_truth.category) == 1.0
+        assert evaluation.f1(search=ground_truth.category) == 1.0
+
+    def test_wrong_category_search(self):
+        """Test filtering by wrongly input Category."""
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        ground_truth = self.test_document
+        for page in ground_truth.pages():
+            if page.number in (1, 3, 5):
+                page.is_first_page = True
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)
+        documents = [[ground_truth, pred]]
+        evaluation = FileSplittingEvaluation(documents)
+        wrong_category = Project(id_=46).categories[0]
+        with pytest.raises(KeyError, match="Only Categories within a Project can be used for viewing metrics."):
+            evaluation.tp(wrong_category)
+            evaluation.fp(wrong_category)
+            evaluation.fn(wrong_category)
+            evaluation.tn(wrong_category)
+            evaluation.precision(wrong_category)
+            evaluation.recall(wrong_category)
+            evaluation.f1(wrong_category)
+
+    def test_splitting_ai_evaluation(self):
+        """Test evaluate_full method of SplittingAI."""
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        splitting_ai.evaluate_full()
+        assert splitting_ai.full_evaluation.evaluation_results['tp'] == 5
+        assert splitting_ai.full_evaluation.evaluation_results['fp'] == 0
+        assert splitting_ai.full_evaluation.evaluation_results['fn'] == 0
+        assert splitting_ai.full_evaluation.evaluation_results['fn'] == 0
+        assert splitting_ai.full_evaluation.evaluation_results['precision'] == 1.0
+        assert splitting_ai.full_evaluation.evaluation_results['recall'] == 1.0
+        assert splitting_ai.full_evaluation.evaluation_results['f1'] == 1.0
+        for item in self.project.model_folder:
+            if item.endswith('.pkl'):
+                os.remove(os.path.join(self.project.model_folder, item))

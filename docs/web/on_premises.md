@@ -1,5 +1,5 @@
 .. meta::
-   :description: Documentation on how to deploy Konfuzio on premises using Kubernetes and Helm.
+   :description: Documentation on how to deploy Konfuzio on premises using Kubernetes and Helm or Docker.
 
 .. _Server Installation:
 
@@ -7,9 +7,114 @@
 
 On-premises, also known as self-hosted, is a setup that allows Konfuzio to be implemented 100% on your own infrastructure. In practice, it means that you know where your data is stored, how it's handled and who gets hold of it. This is because you keep the data on your own servers.
 
-A common way to operate a production-ready and scalabe Konfuzio installation is via Kubernetes. An alternative and more light-weight deployment option is the [Single VM setup via Docker](/web/on_premises.html#alternative-deployment-options). We recommend to use the option which is more familiar to you.
+A common way to operate a production-ready and scalabe Konfuzio installation is via Kubernetens. An alternative deployment option is the [Single VM setup via Docker](/web/on_premises.html#alternative-deployment-options). We recommend to use the option which is more familiar to you. In general
 
 On-Premise Konfuzio installations allow to create Superuser accounts which can access all [Documents](https://help.konfuzio.com/modules/superuserdocuments/index.html), [Projects](https://help.konfuzio.com/modules/superuserprojects/index.html) and [AIs](https://help.konfuzio.com/modules/superuserais/index.html) via a dedicated view as well as creating custom [Roles](https://help.konfuzio.com/modules/superuserroles/index.html)
+
+## Architectural Overview
+
+The diagram illustrates the components of a Konfuzio Server deployment. Optional components are represented by dashed lines. The numbers in brackets represent the minimal and maximal container count per component.
+
+.. mermaid::
+
+   graph TD
+      classDef client fill:#D5E8D4,stroke:#82B366,color:#000000;
+      classDef old_optional fill:#E1D5E7,stroke:#9673A6,color:#000000;
+      classDef optional fill:#DAE8FC,stroke:#6C8EBF,color:#000000,stroke-dasharray: 3 3;
+      
+      ip("Loadbalancer / Public IP")
+      smtp("SMTP Mailbox")
+      a("Database")
+      b("Task Queue")
+      c("File Storage")
+      worker("Generic Worker (1:n)")
+      web("Web & API (1:n)")
+      beats("Beats Worker (1:n)")
+      mail("Mail-Scan (0:1)")
+      
+      %% Outside references
+      smtp <-- Poll emails --> mail
+      ip <--> web
+      
+      %% Optional Containers
+      ocr("OCR (0:n)")
+      segmentation("Segmentation (0:n)")
+      summarization("Summarization (0:n)")
+      flower("Flower (0:1)")
+      
+      %% Server / Cluster
+      h0("Server 1")
+      h1("Server 2")
+      h2("Server 3")
+      h3("Server 4")
+      h4("Server 5")
+      i("...")
+      j("Server with GPU")
+
+      subgraph all["Private Network"]
+      subgraph databases["Persistent Container / Services"]
+      a
+      c
+      b
+      end
+      subgraph containers["Stateless Containers"]
+      mail
+      web
+      flower
+      worker
+      beats
+      subgraph optional["Optional Containers"]
+      ocr
+      segmentation
+      summarization
+      end
+      end
+      subgraph servers["Server / Cluster"]
+      h0
+      h1
+      h2
+      h3
+      h4
+      i
+      j
+      end    
+      worker <--> databases
+      worker -- Can delegate tasks--> optional
+      worker -- "Can process tasks"--> worker
+      web <--> databases
+      web <--> flower
+      flower <--> b
+      mail <--> databases
+      beats <--> databases
+      containers -- "Operated on"--> servers
+      databases -- "Can be operated on"--> servers
+      end
+      
+      click flower "/web/on_premises.html#optional-6-use-flower-to-monitor-tasks"
+      click web "/web/on_premises.html#start-the-container"
+      click worker "/web/on_premises.html#start-the-container"
+      click ocr "/web/on_premises.html#optional-7-use-azure-read-api-on-premise"
+      click segmentation "/web/on_premises.html#optional-8-install-document-segmentation-container"
+      click summarization "/web/on_premises.html#optional-9-install-document-summarization-container" 
+      
+      class flower optional
+      class ocr optional
+      class mail optional
+      class ocr optional
+      class segmentation optional
+      class summarization optional
+      class h1 optional
+      class h2 optional
+      class h3 optional
+      class h4 optional
+      class i optional
+      class j optional  
+
+## Billing and License
+
+A Konfuzio Server self-hosted license can be purchased [online](https://konfuzio.com/en/price/). After your order has been placed, we will provide you with credentials to [download the Konfuzio Docker Images](https://dev.konfuzio.com/web/on_premises.html#download-docker-image) and a BILLING_API_KEY which needs to be set as [environment variable](/web/on_premises.html#environment-variables-for-konfuzio-server). The Konfuzio Container reports the usage once a day to our billing server (i.e. https://app.konfuzio.com). Konfuzio containers don't send customer data, such as the image or text that's being analyzed, to the billing server.
+
+If you operate Konfuzio Server in an air-gapped environment, the Konfuzio Docker images are licensed to operate for one year (based on the release date) without being connected to the billing server.
 
 ## Kubernetes
 
@@ -56,9 +161,12 @@ cluster.
 ### Deployment
 
 Before running `helm install`, you need to make some decisions about how you will run
-Konfuzio. Options can be specified using Helm's `--set option.name=value` command
+Konfuzio. Options can be specified using Helm's `--set option.name=value` or `--values=my_values.yaml` command
 line option. A complete list of command line options can be found [here](https://helm.sh/docs/helm/). This guide will
 cover required values and common options.
+
+Create a values.yaml file for your Konfuzio configuration. See Helm docs for information on how your values file will override the defaults.
+Useful default values can be found in the [values.yaml](https://git.konfuzio.com/shared/charts/-/blob/master/values.yaml) in the chart [repository](https://git.konfuzio.com/shared/charts).
 
 #### Selecting configuration options
 
@@ -76,8 +184,12 @@ expose Konfuzio services using name-based virtual servers configured with `Ingre
 objects. You'll need to specify a domain which will contain records to resolve the
 domain to the appropriate IP.
 
-`--set global.hosts.domain=example.com`
+```
+--set ingress.enabled=True
+--set ingress.HOST_NAME=konfuzio.example.com
+```
 
+<!-- 
 ###### IPs
 
 If you plan to use an automatic DNS registration service,you won't need any additional
@@ -90,7 +202,10 @@ For example if you choose `example.com` and you have a static IP of `10.10.10.10
 
 _Include these options in your Helm install command:_
 
-`--set global.hosts.externalIP=10.10.10.`
+```
+--set global.hosts.externalIP=10.10.10.
+```
+-->
 
 ##### Persistence
 
@@ -105,15 +220,17 @@ migration work.
 
 ##### TLS certificates
 
-You should be running Konfuzio using https which requiresTLS certificates. By default, the setup will install and 
-configure [cert-manager](https://github.com/jetstack/cert-manager) to obtain free TLS certificates. If you
+You should be running Konfuzio using https which requires TLS certificates. To get automated certificates using letesencrypt you need to install [cert-manager](https://cert-manager.io/docs/installation/helm/) in your cluster. If you
 have your own wildcard certificate, you already have cert-manager installed, or you have
 some other way of obtaining TLS certificates. For the default configuration, you must
 specify an email address to register your TLS certificates.
 
 _Include these options in your Helm install command:_
 
-`--set certmanager-issuer.email=me@example.com`
+```
+--set letsencrypt.enabled=True
+--set letsencrypt.email=me@example.com
+```
 
 ##### PostgreSQL
 
@@ -125,15 +242,17 @@ only.
 - A single, non-resilient Deployment is used
 
 You can read more about setting up your production-readydatabase in the PostgreSQL
-documentation. As soon you have an external PostgreSQLdatabase ready, Konfuzio can
+documentation. As soon you have an external PostgreSQL database ready, Konfuzio can
 be configured to use it as shown below.
 
 _Include these options in your Helm install command:_
 
-`--set postgresql.install=false`  
-`--set global.psql.host=production.postgress.hostname.local`  
-`--set global.psql.password.secret=kubernetes_secret_name`  
-`--set global.psql.password.key=key_that_contains_postgres_password`  
+```
+--set postgresql.install=false
+--set global.psql.host=production.postgress.hostname.local
+--set global.psql.password.secret=kubernetes_secret_name
+--set global.psql.password.key=key_that_contains_postgres_password
+```
 
 ##### Redis
 
@@ -144,6 +263,7 @@ All the Redis configuration settings are configured automatically.
 Konfuzio relies on object storage for highly-available persistent data in Kubernetes. By default, Konfuzio uses a 
 [persistent volume](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) within the cluster.
 
+<!--
 ##### Outgoing email
 
 By default outgoing email is disabled. To enable it,provide details for your SMTP server
@@ -153,6 +273,7 @@ settings in the command line options.
 `--set global.smtp.address=smtp.example.com:587`  
 `--set global.smtp.AuthUser=username-here`  
 `--set global.smtp.AuthPass=password-here`  
+-->
 
 ##### CPU, GPU and RAM Resource Requirements
 
@@ -168,17 +289,13 @@ into a smaller cluster. Konfuzio can work without a GPU. The GPU is used to trai
 Once you have all of your configuration options collected, we can get any dependencies
 and run Helm. In this example, we've named our Helm release `konfuzio`.
 
-`helm repo add konfuzio`  
-`helm repo update`  
-`helm upgrade --install konfuzio konfuzio/server \`  
-`--timeout 600s \`  
-`--set global.hosts.domain=example.com \`  
-`--set global.hosts.externalIP=10.10.10.10 \`  
-`--set certmanager-issuer.email=me@example.com`  
+```
+helm repo add konfuzio-repo https://git.konfuzio.com/api/v4/projects/106/packages/helm/stable
+helm repo update
+helm upgrade --install konfuzio konfuzio-repo/konfuzio-chart --values my_values.yaml
+```
 
-You can also use `--version <installation version>` option if you would like to install
-a specific version of Konfuzio. This will output the list of resources installed once the
-deployment finishes which may take 5-10 minutes.
+Please create a my_values.yaml file for your Konfuzio configuration. Useful default values can be found in the values.yaml in the chart repository. See Helm docs for information on how your values file will override the defaults. Alternativ you can specify you configuration using `--set option.name=value`. 
 
 #### Monitoring the Deployment
 
@@ -186,6 +303,22 @@ The status of the deployment can be checked by running `helm status konfuzio` wh
 can also be done while the deployment is taking place if you run the command in
 another terminal.
 
+#### Autoscaling
+
+The Konfuzio Server deployments can be scaled dynamically using a [Horizontal Pod Autoscaler](https://kubernetes.io/de/docs/tasks/run-application/horizontal-pod-autoscale/) and a [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler). The autoscaling configuration for the Konfuzio Server installation of https://app.konfuzio.com can be found in this [Helm Chart](https://git.konfuzio.com/shared/monitoring-charts).
+
+#### Initial login
+
+You can access the Konfuzio instance by visiting the domain specified during
+installation. In order to create an initial superuser, please to connect to a running pod.
+
+```
+kubectl get pod
+kubectl exec --stdin --tty my-konfuzio-* --  bash
+python manage.py createsuperuser
+```
+
+<!--
 #### Initial login
 
 You can access the Konfuzio instance by visiting the domain specified during
@@ -196,6 +329,21 @@ password for `root` user. This can be extracted by the following command (replac
 
 `kubectl get secret <name>-konfuzio-initial-root-password`  
 `-ojsonpath='{.data.password}' | base64 --decode ; echo`  
+-->
+
+### Minimal Setup
+
+The following commands allow you to get a Konfuzio Server installation running with minimal configuration effort and relying on the [default values](https://git.konfuzio.com/shared/charts/-/blob/master/values.yaml) of the Chart. This uses Postgres, Redis and S3 via [MinIO](https://min.io/) as in-cluster deployments. This setup is not suited for production and may use insecure defaults.
+
+```
+helm repo add konfuzio-repo https://git.konfuzio.com/api/v4/projects/106/packages/helm/stable
+helm repo update
+helm install my-konfuzio konfuzio-repo/konfuzio-chart  \  
+  --set envs.HOST_NAME="host-name-for-you-installation.com"  \  
+  --set image.tag="released-******"  \  
+  --set image.imageCredentials.username=******  \
+  --set image.imageCredentials.password=******
+```
 
 ### Upgrade
 
@@ -214,7 +362,7 @@ Upgrade Konfuzio following our standard procedure,with the following additions o
 4. Extract your previous `--set` arguments with (see Action1)
 5. Decide on all the values you need to set
 6. Perform the upgrade, with all `--set` arguments extracted(see Action 2)
-7. We will perform the migrations for the Database forPostgreSQL automatically.
+7. We will perform the migrations for the Database for PostgreSQL automatically.
 
 _Action 1_
 
@@ -251,17 +399,19 @@ The internet connection can be turned off once the download is complete. In case
 no internet connection available during setup, the container must be transferred with an
 alternative method as a file to the virtual machine.
 
-Registry URL: registry.gitlab.com  
+Registry URL: {PROVIDED_BY_KONFUZIO}  
 Username: {PROVIDED_BY_KONFUZIO}  
 Password: {PROVIDED_BY_KONFUZIO}  
 
-`> docker login registry.gitlab.com`  
-`> docker pull registry.gitlab.com/konfuzio/text-annotation/master:latest`  
+```
+docker login REGISTRY_URL
+docker pull REGISTRY_URL/konfuzio/text-annotation/master:latest
+```
 
 The Tag "latest" should be replaced with an actual version. A list of available tags can be found here: https://dev.konfuzio.com/web/changelog_app.html.
 
 #### 2. Setup PostgreSQL, Redis, BlobStorage/FileSystemStorage
-The database credentials are needed in the next step. You may want to use psql and redis-cli to check if database credentials are working.
+The database credentials are needed in this step. Please ensure your selected [databases](/web/on_premises.html#database-and-storage) are setup at this point. You may want to use psql and redis-cli to check if database credentials are working.
 
 In case you use FileSystemStorage and Docker volume mounts, you need to make sure the volume can be accessed by the konfuzio docker user (uid=999). You might want to run "chown 999:999 -R /konfuzio-vm/text-annotation/data" on the host VM.
 
@@ -272,94 +422,170 @@ Copy the /code/.env.example file from the container and adapt it to your setting
 In this example we store the files on the host VM and mount the directory "/konfuzio-vm/text-annotation/data" into the container. In the first step we create a container with a shell to then start the initialization scripts within the container.
 The container needs to be able to access IP addresses and hostnames used in the .env. This can be ensured using --add.host. In the example we make the host IP 10.0.0.1 available.
 
-docker run -it --add-host=10.0.0.1 --env-file /konfuzio-vm/text-annotation.env --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data registry.gitlab.com/konfuzio/text-annotation/master:latest bash
+docker run -it --add-host=10.0.0.1 --env-file /konfuzio-vm/text-annotation.env --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data REGISTRY_URL/konfuzio/text-annotation/master:latest bash
 
-`python manage.py migrate`  
-`python manage.py createsuperuser`  
-`python manage.py init_email_templates`  
-`python manage.py init_user_permissions`  
+```
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py init_email_templates
+python manage.py init_user_permissions
+```
 
 After completing these steps you can exit and remove the container.
 
 Note: The username used during the createsuperuser dialog must have the format of a valid e-mail in order to be able to login later.
 
 #### 5. Start the container
-In this example we start three containers, the first one to serve the Konfuzio web application. The second and third are used to process tasks in the background without blocking the web application.
+In this example we start four containers. The first one to serve the Konfuzio web application. 
 
-`docker run -p 80:8000 --name web -d --add-host=host:10.0.0.1 \`  
-`--env-file /konfuzio-vm/text-annotation.env \`  
-`--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \`  
-`registry.gitlab.com/konfuzio/text-annotation/master:latest`
+```
+docker run -p 80:8000 --name web -d --add-host=host:10.0.0.1 \
+  --env-file /konfuzio-vm/text-annotation.env \
+  --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \
+  REGISTRY_URL/konfuzio/text-annotation/master:latest
+```
 
-`docker run --name worker1 -d --add-host=host:10.0.0.1 \`  
-`--env-file /konfuzio-vm/text-annotation.env \`  
-`--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \`  
-`registry.gitlab.com/konfuzio/text-annotation/master:latest \`  
-`celery -A app worker -l INFO --concurrency 1 -Q celery,priority_ocr,ocr,\`  
-`priority_extract,extract,processing,priority_local_ocr,local_ocr,training,finalize,training_heavy,categorize`
+The second and third are used to process tasks in the background without blocking the web application. Depending on our load scenario, you might to start a large number of worker containers.
 
-`docker run --name worker2 -d --add-host=host:10.0.0.1 \`  
-`--env-file /konfuzio-vm/text-annotation.env \`  
-`--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \`  
-`registry.gitlab.com/konfuzio/text-annotation/master:latest \`  
-`celery -A app worker -l INFO --concurrency 1 -Q celery,priority_ocr,ocr,\`  
-`priority_extract,extract,processing,priority_local_ocr,local_ocr,training,finalize,training_heavy,categorize`
+```
+docker run --name worker1 -d --add-host=host:10.0.0.1 \  
+  --env-file /konfuzio-vm/text-annotation.env \  
+  --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \  
+  REGISTRY_URL/konfuzio/text-annotation/master:latest \  
+  celery -A app worker -l INFO --concurrency 1 -Q celery,priority_ocr,ocr,\  
+  priority_extract,extract,processing,priority_local_ocr,local_ocr,\
+  training,finalize,training_heavy,categorize  
+
+docker run --name worker2 -d --add-host=host:10.0.0.1 \
+  --env-file /konfuzio-vm/text-annotation.env \  
+  --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \
+  REGISTRY_URL/konfuzio/text-annotation/master:latest \
+  celery -A app worker -l INFO --concurrency 1 -Q celery,priority_ocr,ocr,\
+  priority_extract,extract,processing,priority_local_ocr,local_ocr,\
+  training,finalize,training_heavy,categorize
+```
+
+The fourth container is a Beats-Worker that takes care of sceduled tasks (e.g. auto-deleted documents).
+
+```
+docker run --name beats -d --add-host=host:10.0.0.1 \  
+  --env-file /konfuzio-vm/text-annotation.env \  
+  --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \  
+  REGISTRY_URL/konfuzio/text-annotation/master:latest \  
+  celery -A app beat -l INFO -s /tmp/celerybeat-schedule
+```
 
 #### [Optional] 6. Use Flower to monitor tasks
 
 [Flower](https://flower.readthedocs.io/en/latest/screenshots.html) can be used a task monitoring tool. Flower will be only accessible for Konfuzio superusers and is part of the Konfuzio Server Docker Image.
 
 ```
-`docker run --name flower -d --add-host=host:10.0.0.1 \`  
-`--env-file /konfuzio-vm/text-annotation.env \`  
-`--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \`  
-`registry.gitlab.com/konfuzio/text-annotation/master:latest \`  
-`celery -A app flower --url_prefix=flower --address=0.0.0.0 --port=5555` 
+docker run --name flower -d --add-host=host:10.0.0.1 \  
+  --env-file /konfuzio-vm/text-annotation.env \  
+  --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \
+  REGISTRY_URL/konfuzio/text-annotation/master:latest \  
+  celery -A app flower --url_prefix=flower --address=0.0.0.0 --port=5555
 ```
 
-The Konfuzio Server application acts as a reverse proxy an servers the flower application. Therefore, django needs to know the flower url. `FLOWER_URL=http://host:5555/flower`
+The Konfuzio Server application acts as a reverse proxy an servers the flower application. Therefore, django needs to know the flower url. `FLOWER_URL=http://host:5555/flower`.
 
-#### [Optional] 7. Use Azure Read API on-premise
+```mermaid
+graph LR
+subgraph Network
+a("User")
+end
+subgraph Local Network / Cluster Network
+a("User") --> e("Konfuzio Server")
+e("Konfuzio Server") -- FLOWER_URL --> f("Flower")
+end
+```
+Please ensure that the Flower container is not exposed externally, as it does not handle authentication and authorization itself.  
+
+#### [Optional] 7. Run Container for Email Integration
+
+The ability to [upload documents via email](https://help.konfuzio.com/integrations/upload-by-email/index.html) can be achieved by starting a dedicated container with the respective environment variables.
+
+```
+SCAN_EMAIL_HOST = imap.example.com
+SCAN_EMAIL_HOST_USER = user@example.com
+SCAN_EMAIL_RECIPIENT = automation@example.com
+SCAN_EMAIL_HOST_PASSWORD = xxxxxxxxxxxxxxxxxx
+```
+
+```
+docker run --name flower -d --add-host=host:10.0.0.1 \  
+  --env-file /konfuzio-vm/text-annotation.env \  
+  --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \
+  REGISTRY_URL/konfuzio/text-annotation/master:latest \  
+  python manage.py scan_email
+```
+
+#### [Optional] 8. Use Azure Read API on-premise
 The [Azure Read API](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2) can be installed on-premise and used togehter with Konfuzio.
 
 Please install the Read API Container according to the current [manual](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2)
 
 Once the Azure Read API container is running you need to set the following variables in the .env file. This for example look like the following:
 
-`AZURE_OCR_KEY=123456789 # The Azure OCR API key`  
-`AZURE_OCR_BASE_URL=http://host:5000 # The URL of the READ API`  
-`AZURE_OCR_VERSION=v3.2 # The version of the READ API`
+```
+AZURE_OCR_KEY=123456789 # The Azure OCR API key  
+AZURE_OCR_BASE_URL=http://host:5000 # The URL of the READ API  
+AZURE_OCR_VERSION=v3.2 # The version of the READ API
+```
 
-#### [Optional] 8. Install document segmentation container
+#### [Optional] 9. Install document segmentation container
 
 Download the container with the credentials provided by Konfuzio
 
-Registry URL: registry.gitlab.com  
+Registry URL: {PROVIDED_BY_KONFUZIO}  
 Username: {PROVIDED_BY_KONFUZIO}  
 Password: {PROVIDED_BY_KONFUZIO}  
 
-`> docker login registry.gitlab.com`  
-`> docker pull registry.gitlab.com/konfuzio/detectron2:2021-10-07_13-45-34`  
-`> docker run --env-file /path_to_env_file.env registry.gitlab.com/konfuzio/detectron2:2021-10-07_13-45-34 bash -c "export LC_ALL=C.UTF-8; export LANG=C.UTF-8; ./run_celery.sh"`
+```
+docker login REGISTRY_URL  
+docker pull REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28
+docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28 bash -c "export LC_ALL=C.UTF-8; export LANG=C.UTF-8;./run_celery.sh
+```
 
 The segmentation container needs to be started with the following environment variables which you can enter into your .env file
 ```
 GPU=True  # If GPU is present
 C_FORCE_ROOT=True
-BROKER_URL=  # See the konfuzio container
-RESULT_BACKEND=  # See the konfuzio container
-SENTRY_ENVIRONMENT=  # Optional
-SENTRY_RELEASE=  # Optional
-SENTRY_DSN=  # Optional
+BROKER_URL=  # Set this to an unused redis database
+RESULT_BACKEND=  # Set this to an unused redis database
 ```
 
-#### 9a. Upgrade to newer Konfuzio Version
+#### [Optional] 10. Install document summarization container
+
+Download the container with the credentials provided by Konfuzio
+
+Registry URL: {PROVIDED_BY_KONFUZIO}  
+Username: {PROVIDED_BY_KONFUZIO}  
+Password: {PROVIDED_BY_KONFUZIO}  
+
+```
+docker login REGISTRY_URL
+docker pull REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28
+docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28 bash -c "export LC_ALL=C.UTF-8; export LANG=C.UTF-8;./run_celery.sh"`
+```
+
+The segmentation container needs to be started with the following environment variables which you can enter into your .env file
+```
+GPU=True  # If GPU is present
+TASK_ALWAYS_EAGER=False
+C_FORCE_ROOT=True
+BROKER_URL=  # Set this to an unused redis database
+RESULT_BACKEND=  # Set this to an unised redis database
+
+```
+
+#### 11a. Upgrade to newer Konfuzio Version
 
 Konfuzio upgrades are performed by replacing the Docker Tag to the [desired version](https://dev.konfuzio.com/web/changelog_app.html)
 After starting the new Containers Database migrations need to be applied by `python manage.py migrate` (see 4.).
 In case additional migration steps are needed, they will be mentioned in the release notes.
 
-#### 9b. Downgrade to older Konfuzio Version
+#### 11b. Downgrade to older Konfuzio Version
 
 Konfuzio downgrades are performed by creating a fresh Konfuzio installation in which existing Projects can be imported.
 The following steps need to be undertaken:
@@ -367,7 +593,6 @@ The following steps need to be undertaken:
 - Create a new Postgres Database and a new Folder/Bucket for file storage which will be used for the downgraded version
 - Install the desired Konfuzio Server version by starting with 1.)
 - Import the projects using ["python manage.py project_import"]([konfuzio_sdk](https://help.konfuzio.com/integrations/migration-between-konfuzio-server-instances/index.html#migrate-projects-between-konfuzio-server-instances)
-
 
 
 ## Alternative deployment options
@@ -455,7 +680,7 @@ If you upload the extraction AI to a new project without the labels and label se
 
 ### Migrate a Project
 
-Export the project data from the source Konfuzio server system.  
+Export the Project data from the source Konfuzio server system.  
 ```
 pip install konfuzio_sdk  
 konfuzio_sdk init  
@@ -469,11 +694,51 @@ The first argument is the path to the export folder, the second is the project n
 python manage.py project_import "/konfuzio-target-system/data_123/" "NewProjectName"
 ```
 
+Alternatively, you can merge the Project export into an existing Project.
+
+```
+python manage.py project_import "/konfuzio-target-system/data_123/" --merge_project_id <EXISTING_PROJECT_ID>
+```
+
+## Database and Storage
+
+### Overview
+To run Konfuzio Server, three types of storages are required. First, a PostgreSQL database is needed to store structured application data. Secondly, a storage for Blob needs to be present. Thirdly, a Redis database that manages the background Task of Konfuzio Server is needed. You can choose your preferred deployment option for each storage type and connect Konfuzio via environment variables to the respective storages. We recommend planning your storage choices before starting with the actual Konfuzio installation.
+
+| Storage Name | Recommended Version | Supported Version | Deployment Options |
+| --- | --- | --- | --- |
+| [Postgres](https://www.postgresql.org/) | Latest Stable | PostgreSQL 11 and higher| Managed (Cloud) Service, VM Installation, Docker, In-Cluster* |
+| [Redis](https://redis.io/) | Latest Stable | Redis 5 and higher | Managed (Cloud) Service, VM Installation, Docker, In-Cluster* |
+| Blob Storage | Latest Stable | All with activ support | Filesystem, S3-compatible Service (e.g. [Amazon S3](https://aws.amazon.com/s3/), [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/)), In-Cluster* S3 via [MinIO](https://min.io/docs/minio/container/index.html) |
+
+\*If you use [Kubernetes Deployment](/web/on_premises.html#kubernetes) you can choose the 'in-Cluster' option for Postgres, Redis and S3-Storage.
+
+### Usage of PostgreSQL
+
+Konfuzio Server will create a total of 43 tables and use the following data types. This information refers to release [2022-10-28-07-23-39](https://dev.konfuzio.com/web/changelog_app.html#released-2022-10-28-07-23-39).
+
+| data_type | count |
+| --- | --- |
+| bigint                   |     6 |
+| boolean                  |    35 |
+| character varying        |    78 |
+| date                     |     2 |
+| double precision         |    29 |
+| inet                     |     2 |
+| integer                  |   138 |
+| jsonb                    |    28 |
+| smallint                 |     2 |
+| text                     |    21 |
+| timestamp with time zone |    56 |
+| uuid                     |     1 |
+
+<!-- This table was created by running select data_type, count(*) from information_schema.columns where table_schema = 'public'  group by data_type ; -->
+
 ## Environment Variables
 
 ### Environment Variables for Konfuzio Server
 
-Konfuzio Server is fully configured via environment variables, these can be passed as dedicated environment variables or a single .env to the Konfuzio Server containers (registry.gitlab.com/konfuzio/text-annotation/master). A template for a .env file is provided here:
+Konfuzio Server is fully configured via environment variables, these can be passed as dedicated environment variables or a single .env to the Konfuzio Server containers (REGISTRY_URL/konfuzio/text-annotation/master). A template for a .env file is provided here:
 
 ```text
 # False for production, True for local development (mandatory).
@@ -486,6 +751,11 @@ MAINTENANCE_MODE=False
 # Insert random secret key (mandatory).
 # See https://docs.djangoproject.com/en/4.0/ref/settings/#secret-key
 SECRET_KEY=
+
+# The Billing API Key (optional) 
+BILLING_API_KEY=
+# The URL of the biling Server (optional)
+BILLING_API_URL=https://app.konfuzio.com
 
 # The HOSTNAME variable is used in the E-Mail templates (mandatory).
 # https://example.konfuzio.com or http://localhost:8000 for local development.
@@ -527,7 +797,7 @@ BROKER_URL=
 RESULT_BACKEND=
 TASK_ALWAYS_EAGER=True
 
-# Defender settings (optional).
+# Defender (Brute-Force protection) settings (optional).
 DEFENDER_REDIS_URL=
 
 # SENTRY_DSN e.g. "https://123456789@sentry.io/1234567" (optional).
@@ -550,6 +820,10 @@ EMAIL_USE_SSL=False
 # See https://docs.djangoproject.com/en/4.0/ref/settings/#email-timeout
 EMAIL_TIMEOUT=
 DEFAULT_FROM_EMAIL=
+
+# Customize the email verification (optional)
+# When set to “mandatory” the user is blocked from logging in until the email address is verified. Choose “optional” or “none” to allow logins with an unverified e-mail address. In case of “optional”, the e-mail verification mail is still sent, whereas in case of “none” no e-mail verification mails are sent.
+ACCOUNT_EMAIL_VERIFICATION='mandatory'
 
 # Api Key to sent emails via SendGrid if Debug=False (optional).
 # If you use the SENDGRID_API_KEY you must also set EMAIL_BACKEND=sendgrid_backend.SendgridBackend
@@ -585,6 +859,12 @@ NEW_RELIC_LICENSE_KEY=
 NEW_RELIC_APP_NAME=
 NEW_RELIC_ENVIRONMENT=
 
+# Email integration (optional).
+SCAN_EMAIL_HOST=
+SCAN_EMAIL_HOST_USER=
+SCAN_EMAIL_RECIPIENT=
+SCAN_EMAIL_HOST_PASSWORD=
+
 # Directory to cache files during the AI training process and when running AI models (optional).
 KONFUZIO_CACHE_DIR =   # e.g. '/cache', uses tempdir if not set
 
@@ -616,6 +896,22 @@ TRAIN_EXTRACTION_AI_AUTOMATICALLY_IF_QUEUE_IS_EMPTY=False
 
 # Turn on/off the immediate generation of sandwich pdf in full document workflow (optional).
 ALWAYS_GENERATE_SANDWICH_PDF=True
+
+# Default time limits for background tasks (optional).
+# These defaults can be viewed here: https://dev.konfuzio.com/web/on_premises.html#background-processes.
+EXTRACTION_TIME_LIMIT = 
+CATEGORIZATION_TIME_LIMIT = 
+EVALUATION_TIME_LIMIT = 
+TRAINING_EXTRACTION_TIME_LIMIT = 
+TRAINING_CATEGORIZATION_TIME_LIMIT = 
+SANDWICH_PDF_TIME_LIMIT = 
+DOCUMENT_TEXT_AND_BBOXES_TIME_LIMIT = 
+# Default time limits for period background tasks (optional)
+# https://help.konfuzio.com/modules/projects/index.html?#auto-deletion-of-documents
+# Both are set to 3600, the max amount of time the task may take. 
+# If a huge amount of documents have been deleted, this may need to be increased. 
+CLEAN_DELETED_DOCUMENT_TIME_LIMIT = 
+CLEAN_DOCUMENT_WITHOUT_DATASET_TIME_LIMIT =
 ```
 
 ### Environment Variables for Read API Container
@@ -649,3 +945,68 @@ TASK_TRACK_STARTED=
 TASK_ACKS_ON_FAILURE_OR_TIMEOUT=
 TASK_ACKS_LATE=
 ```
+## Background processes
+
+Processes within our server are distributed between
+[Celery](https://docs.celeryq.dev/en/stable/) [workers](https://docs.celeryq.dev/en/stable/userguide/workers.html)
+between several [tasks](https://docs.celeryq.dev/en/stable/userguide/tasks.html). Together this creates the definition 
+of Servers internal workflow. Below the individual tasks of the Server's workflow are described in order of their 
+triggered events. Tasks are run in parallel queue's which are grouped in celery chords. While some tasks in each queue 
+run in parallel, some tasks are still dependent on others. And no next queue will start until all tasks in the queue are finished. 
+More on Celery workflows can be found here: https://docs.celeryq.dev/en/stable/userguide/canvas.html
+
+### Queue's
+
+
+| id  | queue-name   |                   description                   |
+|-----|--------------|:-----------------------------------------------:|
+| 1   | `ocr`        |             ocr and post ocr tasks              |
+| 2   | `processing` |               non dependent tasks               |
+| 3   | `categorize` |              categorization tasks               |
+| 4   | `extract`    |              extraction after ocr               |
+| 5   | `finalize`   | end queue after OCR and extraction has occurred |
+| 6   | `training`   |              queue for AI training              |
+| 7   | `evaluation` |             queue for AI evaluation             |
+
+
+
+### Celery Tasks
+
+#### Document tasks
+
+Series of events & tasks triggered when uploading a Document
+
+| Queue | task id | task name                    | description                                                                                                     | default time limit |
+|-------|---------|------------------------------|-----------------------------------------------------------------------------------------------------------------|--------------------|
+| 1, 2  | 1       | page_ocr                     | Apply OCR to the documents page(s).                                                                             | 10 minutes         |
+| 1, 2  | 2       | page_image                   | Create png image for a page. If a PNG was submitted or already exists it will be returned without regeneration. | 10 minutes         |
+| 1     | 3       | set_document_text_and_bboxes | Collect the result of the pages OCR (OCR from task_id #1) and set text & bboxes.                                | 1 minute           |
+| 3     | 4       | categorize                   | Categorize the document.                                                                                        | 3 minutes          |
+| 4     | 5       | document_extract             | Extract the document using the AI models linked to the Project.                                                 | 60 minutes         |
+| 5     | 6       | build_sandwich               | Generates the pdfsandwich for a submitted PDF                                                                   | 30 minutes         |
+| 5     | 7       | generate_entities            | Generate entities for a document which are shown in the labeling tool.                                          | 60 minutes         |
+| 5     | 8       | set_labeling_available       | Sets the document available for labeling                                                                        | 10 minutes         |
+| 5     | 9       | get_hocr                     | Get hOCR representation for bboxes (bboxes from task_id #3).                                                    | 5 minutes          |
+
+#### Extraction & Category AI Training
+
+##### Extraction AI
+
+Series of events triggered when training an extraction AI
+
+| Queue | task id | task name           | description                                                                                                     | default time limit |
+|-------|---------|---------------------|-----------------------------------------------------------------------------------------------------------------|--------------------|
+| 2     | 1       | page_image          | Create png image for a page. If a PNG was submitted or already exists it will be returned without regeneration. | 10 minutes         |
+| 6     | 1       | train_extraction_ai | Start the training of the Ai model.                                                                             | 20 hours           |
+| 4     | 2       | document_extract    | Extract the document using the AI models linked to the Project.                                                 | 60 minutes         |
+| 7     | 3       | evaluate_ai_model   | Evaluate the trained Ai models performance.                                                                     | 60 minutes         |
+
+##### Category AI
+
+Series of events triggered when training a Categorization AI
+
+| Queue | task id | task name         | description                                                                                                     | default time limit |
+|-------|---------|-------------------|-----------------------------------------------------------------------------------------------------------------|--------------------|
+| 7     | 2       | train_category_ai | Start the training of the categorization model.                                                                 | 10 hours           |
+| 7, 3  | 3       | categorize        | Run the categorization against all Documents in the its category.                                               | 3 minutes          |
+| 7, 3  | 4       | evaluate_ai_model | Evaluate the categorization Ai models performance.                                                              | 60 hours           | 

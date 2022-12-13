@@ -298,6 +298,14 @@ For information about file size and page limits, refer to the Content Limits, i
 
 Note that some of these image formats are "lossy" (for example, JPEG). Reducing file sizes for lossy formats may result in a degradation of image quality and accuracy of results from Konfuzio.
 
+##### File extension handling & correction
+
+It is possible to upload files with no (unknown or corrupted) file extension to Konfuzio (e.g. instead of 
+file:`example.pdf`, file: `example.p`, `example`, or even`example.example.example` was uploaded) when this happens, 
+internally  correction logic is run in order to try and guess the correct extension before saving and or extracting 
+the file/document. This correction attempts to guess all supported file types, but success cannot be guaranteed. The 
+maximum file extension for this correction to work should not exceed 99 characters. 
+
 #### PDFs
 
 Konfuzio supports PDF/A-1a, PDF/A-1b, PDF/A-2a, PDF/A-2b, PDF/A-3a, PDF/A-3b, PDF/X-1a, PDF/1.7, PDF/2.0. An attempt
@@ -322,12 +330,14 @@ The following content limits apply to Konfuzio SaaS.
 | Content limit                                                | Default Value                   |
 | ------------------------------------------------------------ | ------------------------------- |
 | Maximum image resolution (limit does not apply to PDF files) | megapixels not limited per page |
+| Maximum PDF dimension (limit does not apply to images)       | 17 x 17 inches                  |
 | Maximum file size per request                                | not limited                     |
 | Maximum number of Pages per Document (synchronous requests)  | 250 pages                       |
 | Maximum number of Pages (batch/asynchronous requests)        | 250 pages                       |
 | Concurrent processor version training requests               | one per Category                |
 | Concurrent files processing per Project (Batch / Parallel)   | not limited                     |
 | Requests per minute                                          | not limited                     |
+| Maximum number of objects per API Call                       | 1000                            |
 | Synchronous requests process requests per minute             | not limited                     |
 | Asynchronous requests process requests per minute            | not limited                     |
 | Number of pages in active processing                         | not limited                     |
@@ -551,7 +561,10 @@ In this request:
   the upload, confirming that the document was received and is now queuing for extraction. If set to `true`, the server
   will wait for the document processing to be done before returning a response with the extracted data. This might take
   a long time with big documents, so it is recommended to use `sync=false` or set a high timeout for your request.
-- The `callback_url` parameter is optional. If provided, the document details are sent to the specified URL via a POST request after the processing of the document has been completed. Future Document changes via web interface or [API](https://app.konfuzio.com/v3/swagger/#/documents/documents_update) do not trigger any additional callbacks.
+- The `callback_url` parameter is optional. If provided, the document details are sent to the specified URL via a POST
+  request after the processing of the document has been completed. Future document changes via web interface or
+  [API](https://app.konfuzio.com/v3/swagger/#/documents/documents_update) might also cause the callback URL to be
+  called again if the changes trigger a re-extraction (for example when changing the category of the document).
 - The `assignee` parameter is optional. If provided, it is the email of the user assigned to work on this document,
   which must be a member of the project you're uploading the document to.
 - Finally, `data_file` is the document you're going to upload. Replace `LOCAL_FILE_NAME` with the path to the existing
@@ -572,10 +585,11 @@ usually looks like this:
 
 ```
 curl --request POST \
-  --url https://app.konfuzio.com/api/v3/documents/DOCUMENT_ID/annotations \
+  --url https://app.konfuzio.com/api/v3/annotations/ \
   --header 'Authorization: Token YOUR_TOKEN' \
   --header 'Content-Type: application/json' \
   --data '{
+  "document": DOCUMENT_ID,
 	"label": LABEL_ID,
 	"label_set_id": LABEL_SET_ID,
 	"is_correct": true,

@@ -20,17 +20,22 @@ import pytest
 
 from konfuzio_sdk.regex import regex_matches
 from konfuzio_sdk.data import Project, Annotation, Label, Category, LabelSet, Document, AnnotationSet, Span
+from konfuzio_sdk.tokenizer.regex import RegexTokenizer
 from konfuzio_sdk.utils import is_file
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 
 logger = logging.getLogger(__name__)
 
 suggest_regex_for_string_data = [
-    ({'string': ' '}, r'[ ]+', does_not_raise()),
-    ({'string': 'VAG GmbH', 'replace_characters': True}, r'[A-ZÄÖÜ]+[ ]+[A-ZÄÖÜ][a-zäöüß]+[A-ZÄÖÜ]', does_not_raise()),
+    ({'string': ' '}, r'[ ]{1,2}', does_not_raise()),
+    (
+        {'string': 'VAG GmbH', 'replace_characters': True},
+        r'[A-ZÄÖÜ]+[ ]{1,2}[A-ZÄÖÜ][a-zäöüß]+[A-ZÄÖÜ]',
+        does_not_raise(),
+    ),
     (
         {'string': 'a2bau GmbH', 'replace_characters': True},
-        r'[a-zäöüß]\d[a-zäöüß]+[ ]+[A-ZÄÖÜ][a-zäöüß]+[A-ZÄÖÜ]',
+        r'[a-zäöüß]\d[a-zäöüß]+[ ]{1,2}[A-ZÄÖÜ][a-zäöüß]+[A-ZÄÖÜ]',
         does_not_raise(),
     ),
     (
@@ -40,12 +45,16 @@ suggest_regex_for_string_data = [
     ),
     ({'string': 'Bau-Wohn-Gesellschaft', 'replace_characters': False}, 'Bau[-]Wohn[-]Gesellschaft', does_not_raise()),
     ({'string': '  '}, '[ ]{2,}', does_not_raise()),
-    ({'string': ' $ hello @ ! ? # [ ]'}, r'[ ]+\$[ ]+hello[ ]+\@[ ]+\![ ]+\?[ ]+\#[ ]+\[[ ]+\]', does_not_raise()),
+    (
+        {'string': ' $ hello @ ! ? # [ ]'},
+        r'[ ]{1,2}\$[ ]{1,2}hello[ ]{1,2}\@[ ]{1,2}\![ ]{1,2}\?[ ]{1,2}\#[ ]{1,2}\[[ ]{1,2}\]',
+        does_not_raise(),
+    ),
     ({'string': '(hello)+'}, '\\(hello\\)[\\+]', does_not_raise()),
-    ({'string': '(hello) +'}, '\\(hello\\)[ ]+[\\+]', does_not_raise()),
+    ({'string': '(hello) +'}, '\\(hello\\)[ ]{1,2}[\\+]', does_not_raise()),
     (
         {'string': 'Große Bäume, haben Äpfel.', 'replace_characters': True},
-        r'[A-ZÄÖÜ][a-zäöüß]+[ ]+[A-ZÄÖÜ][a-zäöüß]+\,[ ]+[a-zäöüß]+[ ]+[A-ZÄÖÜ][a-zäöüß]+\.',
+        r'[A-ZÄÖÜ][a-zäöüß]+[ ]{1,2}[A-ZÄÖÜ][a-zäöüß]+\,[ ]{1,2}[a-zäöüß]+[ ]{1,2}[A-ZÄÖÜ][a-zäöüß]+\.',
         does_not_raise(),
     ),
     # check äöüß
@@ -53,27 +62,27 @@ suggest_regex_for_string_data = [
     ({'string': 'Hello\n\nWorld'}, 'Hello\n\nWorld', does_not_raise()),
     (
         {'string': '  GRUPPE\n\n   Industrie-Police  \\\n  Nachtrag Nr. '},
-        '[ ]{2,}GRUPPE\n\n[ ]{2,}Industrie[-]Police[ ]{2,}\\\\\n[ ]{2,}Nachtrag[ ]+Nr\\.[ ]+',
+        '[ ]{2,}GRUPPE\n\n[ ]{2,}Industrie[-]Police[ ]{2,}\\\\\n[ ]{2,}Nachtrag[ ]{1,2}Nr\\.[ ]{1,2}',
         does_not_raise(),
     ),
     ({'string': 'Hello\nWorld'}, 'Hello\nWorld', does_not_raise()),
-    ({'string': 'Am 22.05.2020'}, r'Am[ ]+\d\d\.\d\d\.\d\d\d\d', does_not_raise()),
-    ({'string': 'Am 22.05.2020'}, r'Am[ ]+\d\d\.\d\d\.\d\d\d\d', does_not_raise()),
+    ({'string': 'Am 22.05.2020'}, r'Am[ ]{1,2}\d\d\.\d\d\.\d\d\d\d', does_not_raise()),
+    ({'string': 'Am 22.05.2020'}, r'Am[ ]{1,2}\d\d\.\d\d\.\d\d\d\d', does_not_raise()),
     ({'string': '[mailto:ch@helm-nagel.com]'}, '\\[mailto:ch\\@helm[-]nagel\\.com\\]', does_not_raise()),
     ({'string': '              \\       ifr'}, '[ ]{2,}\\\\[ ]{2,}ifr', does_not_raise()),
     (
         {'string': '22. Januar 2020', 'replace_characters': True},
-        r'\d\d\.[ ]+[A-ZÄÖÜ][a-zäöüß]+[ ]+\d\d\d\d',
+        r'\d\d\.[ ]{1,2}[A-ZÄÖÜ][a-zäöüß]+[ ]{1,2}\d\d\d\d',
         does_not_raise(),
     ),
     (
         {'string': '22. \nJanuar 2020', 'replace_characters': True},
-        '\\d\\d\\.[ ]+\n[A-ZÄÖÜ][a-zäöüß]+[ ]+\\d\\d\\d\\d',
+        '\\d\\d\\.[ ]{1,2}\n[A-ZÄÖÜ][a-zäöüß]+[ ]{1,2}\\d\\d\\d\\d',
         does_not_raise(),
     ),
     (
         {'string': '22. \n\nJanuar 2020', 'replace_characters': True},
-        '\\d\\d\\.[ ]+\n\n[A-ZÄÖÜ][a-zäöüß]+[ ]+\\d\\d\\d\\d',
+        '\\d\\d\\.[ ]{1,2}\n\n[A-ZÄÖÜ][a-zäöüß]+[ ]{1,2}\\d\\d\\d\\d',
         does_not_raise(),
     ),
     # ('input', 'output', pytest.raises(ValueError)),
@@ -83,15 +92,15 @@ suggest_regex_for_string_data = [
     # The following three examples, show the main functionality of the suggest_regex_for_string function.
     (
         {'string': 'Achtung       Kontrolle 911    ', 'replace_numbers': False},
-        'Achtung[ ]{2,}Kontrolle[ ]+911[ ]{2,}',
+        'Achtung[ ]{2,}Kontrolle[ ]{1,2}911[ ]{2,}',
         does_not_raise(),
     ),
-    ({'string': 'Achtung       Kontrolle 911    '}, r'Achtung[ ]{2,}Kontrolle[ ]+\d\d\d[ ]{2,}', does_not_raise()),
+    ({'string': 'Achtung       Kontrolle 911    '}, r'Achtung[ ]{2,}Kontrolle[ ]{1,2}\d\d\d[ ]{2,}', does_not_raise()),
     # see issue https://gitlab.com/konfuzio/objectives/-/issues/1373
     # ({'string': 'Garage/n'}, r'Garage\/n', does_not_raise()),
     (
         {'string': 'Achtung       Kontrolle 911    ', 'replace_characters': True},
-        r'[A-ZÄÖÜ][a-zäöüß]+[ ]{2,}[A-ZÄÖÜ][a-zäöüß]+[ ]+\d\d\d[ ]{2,}',
+        r'[A-ZÄÖÜ][a-zäöüß]+[ ]{2,}[A-ZÄÖÜ][a-zäöüß]+[ ]{1,2}\d\d\d[ ]{2,}',
         does_not_raise(),
     ),
     (
@@ -168,7 +177,7 @@ def test_regex_spans_filtered_group():
     assert expected_result == result
 
 
-def test_get_best_regex():
+def test_empty_get_best_regex():
     """Test to evaluate an empty list."""
     assert get_best_regex([]) == []
 
@@ -239,7 +248,7 @@ class TestTokens(unittest.TestCase):
         assert '_W_' in regex
         assert '_F_' not in regex
         assert '_N_' not in regex
-        assert regex == '(?P<Betrag_W_None_fallback>Dezember[ ]+2018)'
+        assert regex == '(?P<Betrag_W_None_fallback>Dezember[ ]{1,2}2018)'
 
     def test_generic_candidate_function(self):
         """Test to create a function which applies a RegEx."""
@@ -252,68 +261,61 @@ class TestTokens(unittest.TestCase):
         """Extract value for Steuerklasse."""
         label = next(x for x in self.prj.labels if x.name == 'Steuerklasse')
         category = self.prj.get_category_by_id(63)
-        tokens = label.tokens(categories=[category])
-        assert len(sorted(tokens[category.id_])) == 1
+        regexes = label.regex(categories=[category], update=True)
+        assert len(sorted(regexes)) == 1
         assert is_file(os.path.join(self.prj.regex_folder, f'{category.name}_{label.name_clean}_tokens.json5'))
 
     def test_label_plz_token(self):
         """Extract all tax gross amounts of all payslips."""
         label = self.prj.get_label_by_name('Steuer-Brutto')
         category = self.prj.get_category_by_id(63)
-        tokens = label.tokens(categories=[category])
-        assert len(tokens[category.id_]) == 4
-        assert '(?P<Label_12503_N_' in tokens[category.id_][0]
+        regexes = label.regex(categories=[category], update=True)[category.id_]
+        assert len(regexes) == 1
+        assert '(?P<Label_12503_N_' in regexes[0]
         assert is_file(os.path.join(self.prj.regex_folder, f'{category.name}_{label.name_clean}_tokens.json5'))
 
-    @unittest.skip(reason='Optimization does not work accurately at the moment. See "expected" result.')
     def test_label_token_auszahlungsbetrag(self):
         """Return the summary of all regex needed to get the wage."""
         label = self.prj.get_label_by_name('Auszahlungsbetrag')
         category = self.prj.get_category_by_id(63)
-        tokens = label.tokens(categories=[category])
-        tokens = sorted(tokens[category.id_])
-        assert len(tokens) == 3
-        assert '(?P<Auszahlungsbetrag_' in tokens[0]
-        assert '(?P<Auszahlungsbetrag_' in tokens[1]
-        assert '(?P<Auszahlungsbetrag_' in tokens[2]
-        assert '>\\d\\d\\d\\,\\d\\d)' in tokens[0] + tokens[1] + tokens[2]
-        assert '>\\d\\.\\d\\d\\d\\,\\d\\d)' in tokens[0] + tokens[1] + tokens[2]
-        assert '>\\d\\d\\,[ ]+\\d\\d[-])' in tokens[0] + tokens[1] + tokens[2]
+        regexes = label.regex(categories=[category], update=True)[category.id_]
+
+        assert len(regexes[0].split('|')) == 3
+        assert '(?P<Label_858_' in regexes[0].split('|')[0]
+        assert '(?P<Label_858_' in regexes[0].split('|')[1]
+        assert '(?P<Label_858_' in regexes[0].split('|')[2]
+        assert '>\\d\\d\\d\\,\\d\\d)' in regexes[0]
+        assert '>\\d\\.\\d\\d\\d\\,\\d\\d)' in regexes[0]
 
     def test_label_empty_annotations(self):
         """Empty Annotations should not create regex."""
         category = self.prj.get_category_by_id(63)
         try:
             label = next(x for x in self.prj.labels if len(x.annotations(categories=[category])) == 0)
-            tokens = label.tokens(categories=[category])
-            assert sorted(tokens[category.id_]) == []
+            regexes = label.regex(categories=[category])[category.id_]
+            assert sorted(regexes) == []
             # File is created even if there are no Annotations
             assert is_file(os.path.join(self.prj.regex_folder, f'{category.name}_{label.name_clean}_tokens.json5'))
         except StopIteration:
             pass
 
-    @unittest.skip(reason="Line breaks are not supported.")
-    def test_linebreaks_in_tokens(self):
-        """Calculate a Annotation that has line breaks."""
-        category = self.prj.get_category_by_id(63)
-        label = next(x for x in self.prj.labels if len(x.annotations(categories=[category])) == 0)
-        doc = self.prj.documents[0]
-        new_anno_1 = Annotation(
-            start_offset=177,
-            end_offset=179,
-            label=label.id_,
-            label_set_id=label.label_sets[0].id_,  # hand selected Document label_set
-            annotation_set_id=1,
-            revised=True,
-            is_correct=True,
-            accuracy=0.98765431,
-            document=doc,
+    def test_iban_regex_from_offline_project(self):
+        """Test to get evaluation."""
+        project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+        label = project.get_label_by_name('Bank inkl. IBAN')
+        category = project.get_category_by_id(63)
+        tokens = label.base_regex(category)
+
+        assert (
+            "[A-ZÄÖÜ]+\\d\\d[ ]{1,2}\\d\\d\\d\\d[ ]{1,2}\\d\\d\\d\\d[ ]{1,2}"
+            "\\d\\d\\d\\d[ ]{1,2}\\d\\d\\d\\d[ ]{1,2}\\d\\d" in tokens
         )
-        tokens = new_anno_1.tokens(categories=[category])
-        assert len(tokens) == 3
-        assert new_anno_1.tokens(categories=[category])[0]['regex'] == '(?P<EMPTY_LABEL_W_None_fallback>\n[ ]+)'
-        assert new_anno_1.tokens(categories=[category])[1]['regex'] == '(?P<EMPTY_LABEL_N_None_fallback>\n[ ]+)'
-        assert new_anno_1.tokens(categories=[category])[2]['regex'] == '(?P<EMPTY_LABEL_F_None_fallback>\n[ ]+)'
+
+        regexes = label.find_regex(category=category)
+        assert len(regexes) == 1
+        l_tok = RegexTokenizer(regexes[0])
+        missing_spans = label.spans_not_found_by_tokenizer(l_tok, categories=[category], use_correct=True)
+        assert len(missing_spans) == 17
 
 
 class TestTokensMultipleCategories(unittest.TestCase):
@@ -358,28 +360,29 @@ class TestTokensMultipleCategories(unittest.TestCase):
 
     def test_tokens_single_category(self):
         """Test tokens created for a single Category."""
-        tokens = self.label.tokens(categories=[self.category])
-        assert len(tokens) == 1
-        assert tokens[self.category.id_] == ['(?P<Label_3_W_5_3>all)']
+        regexes = self.label.regex(categories=[self.category], update=True)
+        assert len(regexes) == 1
+        assert '(?P<Label_3_W_5_3>all)' in regexes[self.category.id_][0]
 
     def test_find_tokens(self):
         """Test to find tokens a Category."""
-        tokens = self.label.find_tokens(category=self.category)
+        regexes = self.label.find_regex(category=self.category)
         # clean evaluations for other tests (this test creates 16 evaluations)
         self.label._evaluations = {}
-        assert tokens == ['(?P<Label_3_W_5_3>all)']
+        self.label._tokens = {}
+
+        assert '(?P<Label_3_W_5_3>all)' in regexes[0]
 
     def test_find_regex(self):
         """Test to find regex for a Category."""
-        regexes = self.label.find_regex(category=self.category)
+        regexes = self.label.regex(categories=[self.category], update=True)[self.category.id_]
         self.annotation._tokens = []  # reset after test
         # clean evaluations for other tests (this test creates 16 evaluations)
         self.label._evaluations = {}
+        self.label._tokens = {}
         # we can have a different regex selected if the regexes are very similar because of slightly variations in
         # runtime
-        assert regexes == ['(?:(?P<Label_3_W_5_3>all))\\,'] or regexes == [
-            '[A-ZÄÖÜ][a-zäöüß][ ]+(?:(?P<Label_3_W_5_3>all))\\,'
-        ]
+        assert regexes == ['[ ]{1,2}(?:(?P<Label_3_W_5_3>all))\\,']
 
     def test_annotation_tokens(self):
         """Test tokens created for an Annotation."""
@@ -398,10 +401,11 @@ class TestTokensMultipleCategories(unittest.TestCase):
 
     def test_tokens_multiple_categories(self):
         """Test tokens created based on multiple Categories."""
-        tokens = self.label.tokens(categories=[self.category, self.category_2])
-        assert len(tokens) == 2
-        assert tokens[self.category.id_] == ['(?P<Label_3_W_5_3>all)']
-        assert tokens[self.category_2.id_] == ['(?P<Label_3_F_11_0>[A-ZÄÖÜ][a-zäöüß]+)']
+        regexes = self.label.regex(categories=[self.category, self.category_2], update=True)
+        assert len(regexes) == 2
+        assert '(?P<Label_3_W_5_3>all)' in regexes[self.category.id_][0]
+        assert '(?P<Label_3_F_11_0>[A-ZÄÖÜ][a-zäöüß]+)' in regexes[self.category_2.id_][0]
+        # regexes[self.category_2.id_][0] == '[ ]{1,2}(?:(?P<Label_3_W_5_3>all))\\,'
 
     def test_tokens_one_category_after_another(self):
         """
@@ -409,21 +413,30 @@ class TestTokensMultipleCategories(unittest.TestCase):
 
         This could be the situation when running in a loop for multiple Categories in a Project.
         """
-        tokens_1 = self.label.tokens(categories=[self.category])
-        tokens_2 = self.label.tokens(categories=[self.category_2])
+        tokens_1 = self.label.regex(categories=[self.category], update=True)
+        tokens_2 = self.label.regex(categories=[self.category_2], update=True)
         assert len(tokens_1) == 1
         assert len(tokens_2) == 1
-        assert tokens_1[self.category.id_] == ['(?P<Label_3_W_5_3>all)']
-        assert tokens_2[self.category_2.id_] == ['(?P<Label_3_F_11_0>[A-ZÄÖÜ][a-zäöüß]+)']
+        assert '(?P<Label_3_W_5_3>all)' in tokens_1[self.category.id_][0]
+        assert '(?P<Label_3_F_11_0>[A-ZÄÖÜ][a-zäöüß]+)' in tokens_2[self.category_2.id_][0]
 
     def test_tokens_evaluations_single_category(self):
         """Test if the number of evaluations is the expected after getting the tokens for a single Category."""
-        _ = self.label.tokens(categories=[self.category])
-        assert len(self.label._evaluations) == 2
+        all_annotations = self.label.annotations(categories=[self.category])
+
+        proposals = []
+        for annotation in all_annotations:
+            annotation_proposals = annotation.tokens()
+            proposals += annotation_proposals
+
+        assert len(proposals) == 2
+        assert 'regex' in proposals[0]
+        assert 'annotation_recall' in proposals[0]
+        assert 'annotation_precision' in proposals[0]
 
     def test_tokens_evaluations_multiple_categories(self):
         """Test if the number of evaluations is the expected after getting the tokens for a single Category."""
-        _ = self.label.tokens(categories=[self.category, self.category_2])
+        _ = self.label.regex(categories=[self.category, self.category_2], update=True)
         print(len(self.label._evaluations[self.category.id_]))
         print(len(self.label._evaluations[self.category_2.id_]))
         assert len(self.label._evaluations[self.category.id_]) == 2
@@ -455,62 +468,30 @@ class TestRegexGenerator(unittest.TestCase):
         assert len(cls.prj.get_label_by_id(867).annotations(categories=[cls.category])) == cls.correct_annotations
         # cls.prj.delete()
 
-    @unittest.skip(reason='Cumbersome and too slow.')
     def test_regex_single_annotation_in_row(self):
         """Build a simple extraction for an amount."""
         analyzed_label = self.prj.get_label_by_name('Auszahlungsbetrag')
-        for label in self.prj.labels:
-            label.regex(categories=[self.category], update=True)
+        analyzed_label.regex(categories=[self.category], update=True)
 
         assert len(analyzed_label.regex(categories=[self.category])) == 1
         # we now use the f_score to balance the annotation_precision and the document_recall
         # thereby we find the top regex easily: we only need one regex to match all findings
         for document in self.category.documents():
             annos = document.annotations(label=analyzed_label)
-            for auto_regex in analyzed_label.regex(categories=[self.category]):
+            for auto_regex in analyzed_label.regex(categories=[self.category])[self.category.id_]:
                 findings = re.findall(auto_regex, document.text)
                 clean_findings = set([item for sublist in findings for item in sublist])
                 for anno in annos:
                     for span in anno._spans:
                         assert span.offset_string in clean_findings
 
-    @unittest.skip(reason='Replace test by hardcoded data setup.')
-    def test_two_annotations_with_same_label_close_to_each_other(self):
-        """Test that any text to regex subset works, even if the text contains two Annotations with the same label."""
-        # previously this resulted in "sre_constants.error: redefinition of group name" error
-        document = self.prj.get_document_by_id(44823)
-        assert len(document.annotations()) == 19
-        # new functionality let you create a regex for a region in a document, from 950 to 1500 character
-        regex = document.regex(start_offset=950, end_offset=1500, categories=[self.category])[0]
-        # in this Document region we will use 2 times the regex tokens for Ort, each uses two tokens
-        assert regex.count('(?P<Personalausweis_') == 1
-
-    def test_offset_start_to_early(self):
-        """Test to calculate a regex."""
-        project = Project(id_=None)
-        category = Category(project=project)
-        document = Document(project=project, category=category, text="From 14.12.2021 to 1.1.2022.")
-        with self.assertRaises(IndexError) as context:
-            document.regex(start_offset=-1, end_offset=1500)
-            assert 'The offset must be a positive number' in context.exception
-
-    def test_two_annotations_out_of_text_scope(self):
-        """Test to calculate a regex."""
-        project = Project(id_=None)
-        category = Category(project=project)
-        document = Document(project=project, category=category, text="From 14.12.2021 to 1.1.2022.")
-        with self.assertRaises(IndexError) as context:
-            document.regex(start_offset=0, end_offset=1500)
-            assert 'The end offset must not exceed' in context.exception
-
-    @unittest.skip(reason='Optimization does not work accurately at the moment. See "expected" result.')
     def test_annotation_to_regex(self):
         """Test to calculate a regex."""
         project = Project(id_=None)
         category = Category(project=project)
         label_set = LabelSet(id_=33, project=project, categories=[category])
         label = Label(
-            id_=22, text='Label Name', text_clean='LabeName', project=project, label_sets=[label_set], threshold=0.5
+            id_=22, text='Label Name', text_clean='LabelName', project=project, label_sets=[label_set], threshold=0.5
         )
         document = Document(project=project, category=category, text="From 14.12.2021 to 1.1.2022.", dataset_status=2)
         span_1 = Span(start_offset=5, end_offset=15)
@@ -523,19 +504,19 @@ class TestRegexGenerator(unittest.TestCase):
             label_set=label_set,
             spans=[span_1],
         )
-        regex = label.regex(categories=[category])
-        self.assertEqual([r'[ ]+(?:(?P<LabeName_N_None_5>\d\d\.\d\d\.\d\d\d\d))[ ]+'], regex)
+        regex = label.find_regex(category=category)
+        self.assertEqual([r'[ ]{1,2}(?:(?P<Label_22_N_None_5>\d\d\.\d\d\.\d\d\d\d))[ ]{1,2}'], regex)
 
-    @unittest.skip(reason='Optimization does not work accurately at the moment. See "expected" result.')
+    # @unittest.skip(reason='Optimization does not work accurately at the moment. See "expected" result.')
     def test_two_annotation_of_one_label_to_regex(self):
         """Test to calculate a regex."""
         project = Project(id_=None)
         category = Category(project=project)
         label_set = LabelSet(id_=33, project=project, categories=[category])
         label = Label(
-            id_=22, text='Label Name', text_clean='LabeName', project=project, label_sets=[label_set], threshold=0.5
+            id_=22, text='Label Name', text_clean='LabelName', project=project, label_sets=[label_set], threshold=0.5
         )
-        long_text = "From 14.12.2021 to 1.1.2022. " + "From data to information by Konfuzio" * 1000
+        long_text = "From 14.12.2021 to 1.1.2022 " + "From data to information by Konfuzio" * 1000
         document = Document(project=project, category=category, text=long_text, dataset_status=2)
         span_1 = Span(start_offset=5, end_offset=15)
         annotation_set_1 = AnnotationSet(id_=1, document=document, label_set=label_set)
@@ -549,7 +530,6 @@ class TestRegexGenerator(unittest.TestCase):
         )
 
         # we will only have to proposals as the full replacement and the number replacement are identical
-        self.assertEqual(2, len(annotation_1.tokens(categories=[category])))
 
         # second Annotation Set
         span_2 = Span(start_offset=19, end_offset=27)
@@ -563,102 +543,66 @@ class TestRegexGenerator(unittest.TestCase):
             spans=[span_2],
         )
         # we will only have to proposals as the full replacement and the number replacement are identical
-        self.assertEqual(2, len(annotation_2.tokens(categories=[category])))
+        self.assertEqual(2, len(annotation_1.tokens()))
+        self.assertEqual(2, len(annotation_2.tokens()))
 
-        regex = label.regex(categories=[category])
-        expected = [r'[ ]+(?:(?P<LabeName_N_None_5>\d\d\.\d\d\.\d\d\d\d)|(?P<LabeName_N_None_19>\d\.\d\.\d\d\d\d))[ ]+']
-        assert expected == regex
-
-    @unittest.skip(reason='Optimization does not work accurately at the moment. See "expected" result.')
-    def test_offset_to_regex(self):
-        """Test to calculate a regex."""
-        project = Project(id_=None)
-        category = Category(project=project)
-        label_set = LabelSet(id_=33, project=project, categories=[category])
-        label = Label(
-            id_=22, text='Label Name', text_clean='LabeName', project=project, label_sets=[label_set], threshold=0.5
-        )
-        document = Document(project=project, category=category, text="From 14.12.2021 to 1.1.2022 .", dataset_status=2)
-        span_1 = Span(start_offset=5, end_offset=15)
-        annotation_set_1 = AnnotationSet(id_=1, document=document, label_set=label_set)
-        _ = Annotation(
-            document=document,
-            is_correct=True,
-            annotation_set=annotation_set_1,
-            label=label,
-            label_set=label_set,
-            spans=[span_1],
+        regex = label.find_regex(category=category)
+        expected = (
+            r'[ ]{1,2}(?:(?P<Label_22_N_None_5>\d\d\.\d\d\.\d\d\d\d)|(?P<Label_22_N_None_19>\d\.\d\.\d\d\d\d))[ ]{1,2}'
         )
 
-        # second Annotation Set
-        span_2 = Span(start_offset=19, end_offset=27)
-        annotation_set_2 = AnnotationSet(id_=2, document=document, label_set=label_set)
-        _ = Annotation(
-            document=document,
-            is_correct=True,
-            annotation_set=annotation_set_2,
-            label=label,
-            label_set=label_set,
-            spans=[span_2],
-        )
-        regex = document.regex(start_offset=4, end_offset=28, categories=[category], search=[1])
-        expected = [r'[ ]+(?:(?P<LabeName_N_None_5>\d\d\.\d\d\.\d\d\d\d)|(?P<LabeName_N_None_19>\d\.\d\.\d\d\d\d))[ ]+']
-        self.assertEqual(expected, regex)
+        assert expected in regex[0]
 
-    @unittest.skip('We do not support multiple Annotations in one offset for now')
+    # @unittest.skip('We do not support multiple Annotations in one offset for now')
     def test_regex_first_annotation_in_row(self):
         """Add a test if two annotated offsets are connected to each other "please pay <GrossAmount><Currency>."""
         # first name and last name are in one line in the document:
         first_names = self.prj.get_label_by_name('Vorname')
-        category = self.prj.get_category_by_id(63)
-        assert len(first_names.annotations(categories=[category])) == 27
-        assert len(first_names.tokens(categories=[category])) == 1
-        token_three_names = '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)'
-        assert (token_three_names in s for s in first_names.tokens(categories=[category]))
-        token_two_names = '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)'
+        category = self.category
+        assert len(first_names.annotations(categories=[category])) == 25
+        assert len(first_names.regex(categories=[category])) == 1
 
-        assert (token_two_names in s for s in first_names.tokens(categories=[self.category]))
+        proposals = first_names.find_regex(category=category)
+        # assert len(proposals) == 2 + 3  # The default entity regexes
 
-        proposals = first_names.find_regex(categories=[category])
-        assert len(proposals) == 2 + 3  # The default entity regexes
+        first_name_proposal = proposals[0]
 
-        male_first_name = proposals[0]
-        assert 'Herrn' in male_first_name
-        assert '(?P<Vorname_' in male_first_name
-        assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in male_first_name
-        assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in male_first_name
-        assert '(?P<Nachname_' in male_first_name
-        assert '>[A-ZÄÖÜ][a-zäöüß]+)' in male_first_name
+        assert '(?P<Label_865_' in first_name_proposal
+        # assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in male_first_name
+        assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in first_name_proposal
+        assert '(?P<Label_866_' in first_name_proposal  # Nachname label
+        assert '>[A-ZÄÖÜ][a-zäöüß]+)' in first_name_proposal
         textcorpus = ''.join([doc.text for doc in self.prj.documents])
-        results_male = regex_matches(textcorpus, male_first_name, filtered_group=first_names.name)
-        assert [result['value'] for result in results_male] == [
-            'Oskar-Muster',
-            'Tillmannl-Muster',
+        results = regex_matches(textcorpus, first_name_proposal, filtered_group='Label_865')
+        assert [result['value'] for result in results] == [
+            'Erna-Muster',
+            'Daniel-Muster',
+            'Inge-Muster',
+            'Max-Muster',
+            'Birgit-Muster',
+            'Inge-Muster',
+            'Max-Muster',
+            'Xaver-Muster',
+            'Ernst-Muster',
             'Heinz-Muster',
-            'Samuel-Muster',
-            'Marco-Paul-Muster',
-            'Walter-Muster',
-            'Lukas-Muster',
+            'Max-Muster',
+            'Ella-Muster',
+            'Leo-Muster',
+            'Thomas-Muster',
             'Hugo-Muster',
-        ]
-
-        female_first_name = proposals[1]
-        assert 'Frau' in female_first_name
-        assert '(?P<Vorname_' in female_first_name
-        assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in female_first_name
-        assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in female_first_name
-        assert '(?P<Nachname_' in female_first_name
-        assert '>[A-ZÄÖÜ][a-zäöüß]+)' in female_first_name
-        textcorpus = ''.join([doc.text for doc in self.prj.documents])
-        results_female = regex_matches(textcorpus, female_first_name, filtered_group=first_names.name)
-        assert [result['value'] for result in results_female] == [
             'Heike-Muster',
-            'Cordula-Muster',
-            'Valerie-Muster',
-            'Franziska-Muster',
-            'Dorothee-Muster',
-            'Cedrica-Muster',
-            'Sara-Muster',
+            'Frank-Muster',
+            'Berta-Muster',
+            'Sparda-Bank',
+            'Bruno-Muster',
+            'Sparda-Bank',
+            'Inge-Muster',
+            'Hugo-Muster',
+            'Leo-Muster',
+            'Lydia-Muster',
+            'Karl-Muster',
+            'Rita-Muster',
+            'Marie-Muster',
         ]
 
     def test_wage_regex(self):
@@ -668,36 +612,49 @@ class TestRegexGenerator(unittest.TestCase):
         regex = tax.find_regex(category=category)[0]
         assert '(?P<Label_860_N_' in regex
 
-    @unittest.skip('We do not support multiple Annotations in one offset for now')
+    # @unittest.skip('We do not support multiple Annotations in one offset for now')
     def test_regex_second_annotation_in_row(self):
         """Delete the last character of the regex solution as only for some runs it will contain a line break."""
         last_names = self.prj.get_label_by_name('Vorname')
         category = self.prj.get_category_by_id(63)
-        assert len(last_names.find_regex(categories=[category])) == 1
-        last_name_regex = last_names.find_regex(categories=[category])[0]
-        assert '(?P<Vorname_' in last_name_regex
+        assert len(last_names.find_regex(category=category)) == 1
+        last_name_regex = last_names.find_regex(category=category)[0]
+        assert '(?P<Label_865_' in last_name_regex
         # assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in last_name_regex
         assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in last_name_regex
-        assert '(?P<Nachname_' in last_name_regex
+        assert '(?P<Label_866_' in last_name_regex
         assert '>[A-ZÄÖÜ][a-zäöüß]+)' in last_name_regex
         textcorpus = ''.join([doc.text for doc in self.prj.documents])
-        results = regex_matches(textcorpus, last_name_regex, filtered_group=last_names.name)
+        results = regex_matches(textcorpus, last_name_regex, filtered_group='Label_866')
         assert [result['value'] for result in results] == [
-            'Förster',
-            'Wissen',
-            'Kork',
-            'Morgen',
-            'Brand',
-            'Dekano',
-            'Abend',
-            'Tilly',
-            'Rimmel',
-            'Wallenstein',
-            'Lichter',
+            'Eiermann',
+            'Droschkenmann',
+            'Schmidt',
+            'Schlosser',
+            'Meier',
+            'Schmidt',
+            'Schlosser',
+            'Xoxmann',
+            'Egelmann',
+            'Wichtig',
+            'Schlosser',
+            'Sorglos',
+            'Leichtsinn',
+            'Lau',
             'Huber',
-            'Garten',
-            'Trimmer',
-            'Mustermann',
+            'Förster',
+            'Lämmer',
+            'Bauch',
+            'Nürnberg',
+            'Bauch',
+            'Nürnberg',
+            'Meier',
+            'Baltus',
+            'Winzig',
+            'Waldmeister',
+            'Sinner',
+            'Sinnvoll',
+            'Wald',
         ]
 
 

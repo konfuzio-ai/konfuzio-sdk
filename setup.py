@@ -41,7 +41,7 @@ else:
     version = f"{version_number}"
 
 CURRENT_PYTHON = sys.version_info[:2]
-REQUIRED_PYTHON = (3, 6)
+REQUIRED_PYTHON = (3, 7)
 
 if CURRENT_PYTHON < REQUIRED_PYTHON:
     sys.stderr.write(
@@ -74,19 +74,19 @@ setuptools.setup(
     include_package_data=True,
     entry_points={'console_scripts': ['konfuzio_sdk=konfuzio_sdk.cli:main']},
     install_requires=[
-        'cloudpickle==2.0.0',
+        'cloudpickle==2.0.0',  # Used to pickle objects
         'filetype==1.0.7',  # Used to check that files are in the correct format
         'dill==0.3.2',  # Used to pickle objects
         'keras==2.9.0',
         'Keras-Preprocessing==1.1.2',
         'nltk',
-        'numpy==1.22.2',
-        'pandas',  # todo add ==1.1.5, which causes conflict konfuzio-sdk[dev] 0.2.3 depends on pandas==1.1.5 / 1.0.5
-        'Pillow==9.2.0',
+        'numpy>=1.21.6',
+        'pandas>=1.3.5',
+        'Pillow>=7.1.2',
         'python-dateutil',
         'python-decouple',  # todo add ==3.3 ?
         'requests',  # todo add ==2.24.0 ?
-        'regex==2020.6.8',  # re module but better
+        'regex>=2020.6.8',  # re module but better
         'tabulate==0.8.7',  # Used to pretty print DataFrames
         'tensorflow==2.9.1',
         'torch==1.12.1',
@@ -94,8 +94,8 @@ setuptools.setup(
         'tqdm',
         'opencv-python==4.6.0.66',
         'pathos==0.2.6',
-        'pympler==0.9',  # Use to get pickle file size.
-        'scikit-learn==0.23.1',
+        'pympler==1.0.1',  # Use to get pickle file size.
+        'scikit-learn==1.0.2',
     ],
     extras_require={
         'dev': [
@@ -110,6 +110,7 @@ setuptools.setup(
             'm2r2==0.3.2',
             'sphinx-sitemap==2.2.0',
             'sphinx-rtd-theme==1.0.0',
+            'sphinxcontrib-mermaid==0.7.1',
         ]
     },
 )

@@ -1,11 +1,12 @@
 """Calculate the accuracy on any level in a  Document."""
-from typing import Tuple, List, Optional
+from typing import Tuple, List, Optional, Union
 
 import pandas
+import numpy
 from sklearn.utils.extmath import weighted_mode
 
 from konfuzio_sdk.utils import sdk_isinstance
-from konfuzio_sdk.data import Document
+from konfuzio_sdk.data import Document, Category
 
 RELEVANT_FOR_EVALUATION = [
     "is_matched",  # needed to group spans in Annotations
@@ -25,6 +26,7 @@ RELEVANT_FOR_EVALUATION = [
     "document_id_local",
     "category_id",  # Identify the Category to be able to run an evaluation across categories
     # "id__predicted", we don't care of the id_ see "id_"
+    "id_local_predicted",
     "confidence_predicted",  # we care about the confidence of the prediction
     "start_offset_predicted",
     "end_offset_predicted",
@@ -40,6 +42,8 @@ RELEVANT_FOR_EVALUATION = [
     "is_correct_label_set",
     "is_correct_annotation_set_id",
     "is_correct_id_",
+    "duplicated",
+    "duplicated_predicted",
 ]
 
 
@@ -93,8 +97,12 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
         spans["end_offset_predicted"] = spans['end_offset']  # start and end offset are identical
 
         spans["above_predicted_threshold"] = spans["confidence_predicted"] >= spans["label_threshold_predicted"]
+
         spans["is_correct_label"] = spans["label_id"] == spans["label_id_predicted"]
         spans["is_correct_label_set"] = spans["label_set_id"] == spans["label_set_id_predicted"]
+        spans['duplicated'] = False
+        spans['duplicated_predicted'] = False
+
         # add check to evaluate multiline Annotations
         spans = spans.groupby("id_local", dropna=False).apply(lambda group: grouped(group, "id_"))
         # add check to evaluate Annotation Sets
@@ -113,6 +121,11 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
         spans["is_correct_label_set"] = True
         spans["label_id_predicted"] = spans["label_id"]
         spans["label_set_id_predicted"] = spans["label_set_id"]
+
+        spans = spans.sort_values(by='is_matched', ascending=False)
+        spans['duplicated'] = spans.duplicated(subset=['id_local'], keep='first')
+        spans['duplicated_predicted'] = spans.duplicated(subset=['id_local_predicted'], keep='first')
+        spans = spans.drop(spans[(spans['duplicated']) & (spans['duplicated_predicted'])].index)
         # add check to evaluate multiline Annotations
         spans = spans.groupby("id_local", dropna=False).apply(lambda group: grouped(group, "id_"))
         # add check to evaluate Annotation Sets
@@ -123,11 +136,54 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
 
     assert not spans.empty  # this function must be able to evaluate any two docs even without annotations
 
+    spans["tokenizer_true_positive"] = (
+        (spans["is_correct"])
+        & (spans["is_matched"])
+        & (spans["start_offset_predicted"] == spans['start_offset'])
+        & (spans["end_offset_predicted"] == spans['end_offset'])
+        & (spans["document_id_local_predicted"].notna())
+    )
+
+    spans["tokenizer_false_negative"] = (
+        (spans["is_correct"]) & (spans["is_matched"]) & (spans["document_id_local_predicted"].isna())
+    )
+
+    spans["tokenizer_false_positive"] = (
+        (~spans["tokenizer_false_negative"])
+        & (~spans["tokenizer_true_positive"])
+        & (spans["document_id_local_predicted"].notna())
+        & (spans["end_offset"] != 0)  # ignore placeholder
+    )
+
+    spans["clf_true_positive"] = (
+        (spans["is_correct"])
+        & (spans["is_matched"])
+        & (spans["document_id_local_predicted"].notna())
+        & (spans["above_predicted_threshold"])
+        & (spans["is_correct_label"])
+    )
+
+    spans["clf_false_negative"] = (
+        (spans["is_correct"])
+        & (spans["is_matched"])
+        & (spans["document_id_local_predicted"].notna())
+        & (~spans["above_predicted_threshold"])
+        & (spans["is_correct_label"])
+    )
+
+    spans["clf_false_positive"] = (
+        (spans["is_correct"])
+        & (spans["is_matched"])
+        & (spans["document_id_local_predicted"].notna())
+        & (~spans["is_correct_label"])
+    )
+
     # Evaluate which **spans** are TN, TP, FP and keep RELEVANT_FOR_MAPPING to allow grouping of confidence measures
-    spans["true_positive"] = 1 * (
+    spans["true_positive"] = (
         (spans["is_matched"])
         & (spans["is_correct"])
         & (spans["above_predicted_threshold"])
+        & (~spans["duplicated"])
         & (  # Everything is correct
             (spans["is_correct_label"])
             & (spans["is_correct_label_set"])
@@ -136,29 +192,26 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
         )
     )
 
-    spans["false_negative"] = 1 * (
-        (spans["is_correct"]) & ((~spans["is_matched"]) | (~spans["above_predicted_threshold"]))
+    spans["false_negative"] = (
+        (spans["is_correct"])
+        & (~spans["duplicated"])
+        & ((~spans["is_matched"]) | (~spans["above_predicted_threshold"]) | (spans["label_id_predicted"].isna()))
     )
 
-    spans["false_positive"] = 1 * (  # commented out on purpose (spans["is_correct"]) &
+    spans["false_positive"] = (  # commented out on purpose (spans["is_correct"]) &
         (spans["above_predicted_threshold"])
         & (~spans["false_negative"])
         & (~spans["true_positive"])
+        & (~spans["duplicated_predicted"])
         & (  # Something is wrong
             (~spans["is_correct_label"])
             | (~spans["is_correct_label_set"])
             | (~spans["is_correct_annotation_set_id"])
             | (~spans["is_correct_id_"])
+            | (~spans["is_matched"])
         )
     )
-
-    spans["is_found_by_tokenizer"] = 1 * (
-        (spans["start_offset"] == spans["start_offset_predicted"])
-        & (spans["end_offset"] == spans["end_offset_predicted"])
-        & (spans["is_correct"])
-        & (spans["document_id_local_predicted"].notna())
-    )
-
+    spans = spans.replace({numpy.nan: None})
     # one Span must not be defined as TP or FP or FN more than once
     quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) <= 1).all()
     assert quality
@@ -211,7 +264,7 @@ class EvaluationCalculator:
     @property
     def f1(self) -> Optional[float]:
         """Apply F1-score formula. Returns None if precision and recall are both None."""
-        return None if (self.tp + self.fp + self.fn == 0) else self.tp / (self.tp + 0.5 * (self.fp + self.fn))
+        return None if (self.tp + 0.5 * (self.fp + self.fn) == 0) else self.tp / (self.tp + 0.5 * (self.fp + self.fn))
 
 
 class Evaluation:
@@ -231,7 +284,7 @@ class Evaluation:
         self.calculate()
 
     def calculate(self):
-        """Calculate and update the data stored within this Evolution."""
+        """Calculate and update the data stored within this Evaluation."""
         evaluations = []  # start anew, the configuration of the Evaluation might have changed.
         for ground_truth, predicted in self.documents:
             evaluation = compare(
@@ -281,9 +334,29 @@ class Evaluation:
             len(self._query(search=search)) - self.tp(search=search) - self.fn(search=search) - self.fp(search=search)
         )
 
-    def tokenizer(self, search=None) -> int:
-        """Return the of all Spans that are found by the Tokenizer."""
-        return self._query(search=search)["is_found_by_tokenizer"].sum()
+    def tokenizer_tp(self, search=None) -> int:
+        """Return the tokenizer True Positives of all Spans."""
+        return self._query(search=search)["tokenizer_true_positive"].sum()
+
+    def tokenizer_fp(self, search=None) -> int:
+        """Return the tokenizer False Positives of all Spans."""
+        return self._query(search=search)["tokenizer_false_positive"].sum()
+
+    def tokenizer_fn(self, search=None) -> int:
+        """Return the tokenizer False Negatives of all Spans."""
+        return self._query(search=search)["tokenizer_false_negative"].sum()
+
+    def clf_tp(self, search=None) -> int:
+        """Return the Label classifier True Positives of all Spans."""
+        return self._query(search=search)["clf_true_positive"].sum()
+
+    def clf_fp(self, search=None) -> int:
+        """Return the Label classifier False Positives of all Spans."""
+        return self._query(search=search)["clf_false_positive"].sum()
+
+    def clf_fn(self, search=None) -> int:
+        """Return the Label classifier False Negatives of all Spans."""
+        return self._query(search=search)["clf_false_negative"].sum()
 
     def get_evaluation_data(self, search, allow_zero: bool = True) -> EvaluationCalculator:
         """Get precision, recall, f1, based on TP, FP, FN."""
@@ -291,15 +364,15 @@ class Evaluation:
             tp=self.tp(search), fp=self.fp(search), fn=self.fn(search), tn=self.tn(search), allow_zero=allow_zero
         )
 
-    def precision(self, search) -> Optional[float]:
+    def precision(self, search=None) -> Optional[float]:
         """Calculate the Precision and see f1 to calculate imbalanced classes."""
         return EvaluationCalculator(tp=self.tp(search=search), fp=self.fp(search=search)).precision
 
-    def recall(self, search) -> Optional[float]:
+    def recall(self, search=None) -> Optional[float]:
         """Calculate the Recall and see f1 to calculate imbalanced classes."""
         return EvaluationCalculator(tp=self.tp(search=search), fn=self.fn(search=search)).recall
 
-    def f1(self, search) -> Optional[float]:
+    def f1(self, search=None) -> Optional[float]:
         """Calculate the F1 Score of one class.
 
         Please note: As suggested by Opitz et al. (2021) use the arithmetic mean over individual F1 scores.
@@ -320,3 +393,264 @@ class Evaluation:
 
         """
         return EvaluationCalculator(tp=self.tp(search=search), fp=self.fp(search=search), fn=self.fn(search=search)).f1
+
+    def tokenizer_f1(self, search=None) -> Optional[float]:
+        """
+        Calculate the F1 Score of one the tokenizer.
+
+        :param search: Parameter used to calculate the value for one Data object.
+        """
+        return EvaluationCalculator(
+            tp=self.tokenizer_tp(search=search),
+            fp=self.tokenizer_fp(search=search),
+            fn=self.tokenizer_fn(search=search),
+        ).f1
+
+    def clf_f1(self, search=None) -> Optional[float]:
+        """
+        Calculate the F1 Score of one the Label classifier.
+
+        :param search: Parameter used to calculate the value for one Data object.
+        """
+        return EvaluationCalculator(
+            tp=self.clf_tp(search=search),
+            fp=self.clf_fp(search=search),
+            fn=self.clf_fn(search=search),
+        ).f1
+
+    def _apply(self, group, issue_name):
+        """Vertical merge error methods helper method."""
+        if len(group) < 2:
+            group[issue_name] = False
+            return group
+        if len(set(group['id_local'])) > 1 or len(set(group['id_local_predicted'])) > 1:
+            group[issue_name] = True
+        return True
+
+    def get_missing_vertical_merge(self):
+        """Return Spans that should have been merged."""
+        self.data.groupby('id_local').apply(lambda group: self._apply(group, 'missing_merge'))
+
+        return self.data[self.data['missing_merge']]
+
+    def get_wrong_vertical_merge(self):
+        """Return Spans that were wrongly merged vertically."""
+        self.data.groupby('id_local_predicted').apply(lambda group: self._apply(group, 'wrong_merge'))
+        return self.data[self.data['wrong_merge']]
+
+
+class FileSplittingEvaluation:
+    """Evaluate the quality of the filesplitting logic."""
+
+    def __init__(self, documents: List[Tuple[Document, Document]], allow_zero: bool = False):
+        """
+        Initialize and run the metrics calculation.
+
+        :param documents: A list of Document pairs – first one is ground truth, second is the prediction.
+        :type documents: list
+        :param allow_zero: If true, will calculate None for precision and recall when the straightforward application
+        of the formula would otherwise result in 0/0. Raises ZeroDivisionError otherwise.
+        :type allow_zero: bool
+        """
+        self.documents = documents
+        self.allow_zero = allow_zero
+        self.calculate()
+        self.calculate_metrics_by_category()
+
+    def calculate(self):
+        """Calculate metrics for the filesplitting logic."""
+        tp = 0
+        fp = 0
+        fn = 0
+        tn = 0
+        for ground_truth, prediction in self.documents:
+            for page_gt, page_pr in zip(ground_truth.pages(), prediction.pages()):
+                if page_gt.is_first_page and page_pr.is_first_page:
+                    tp += 1
+                elif not page_gt.is_first_page and page_pr.is_first_page:
+                    fp += 1
+                elif page_gt.is_first_page and not page_pr.is_first_page:
+                    fn += 1
+                elif not page_gt.is_first_page and not page_pr.is_first_page:
+                    tn += 1
+        if tp + fp != 0:
+            precision = tp / (tp + fp)
+        else:
+            if self.allow_zero:
+                precision = None
+            else:
+                raise ZeroDivisionError(
+                    "TP and FP are zero, please specify allow_zero=True if you want precision to be None."
+                )
+        if tp + fn != 0:
+            recall = tp / (tp + fn)
+        else:
+            if self.allow_zero:
+                recall = None
+            else:
+                raise ZeroDivisionError(
+                    "TP and FN are zero, please specify allow_zero=True if you want recall to be None."
+                )
+        if precision + recall != 0:
+            f1 = 2 * precision * recall / (precision + recall)
+        else:
+            if self.allow_zero:
+                f1 = None
+            else:
+                raise ZeroDivisionError("FP and FN are zero, please specify allow_zero=True if you want F1 to be None.")
+        self.project = self.documents[0][0].project
+        self.evaluation_results = {
+            'tp': tp,
+            'fp': fp,
+            'fn': fn,
+            'tn': tn,
+            'precision': precision,
+            'recall': recall,
+            'f1': f1,
+        }
+
+    def calculate_metrics_by_category(self):
+        """Calculate metrics by Category independently."""
+        categories = list(set([doc_pair[0].category for doc_pair in self.documents]))
+        self.evaluation_results_by_category = {
+            'tp': {},
+            'fp': {},
+            'fn': {},
+            'tn': {},
+            'precision': {},
+            'recall': {},
+            'f1': {},
+        }
+        for category in categories:
+            tp = 0
+            fp = 0
+            fn = 0
+            tn = 0
+            for ground_truth, prediction in [
+                [document_1, document_2]
+                for document_1, document_2 in self.documents
+                if document_1.category and document_1.category.id_ == category.id_
+            ]:
+                for page_gt, page_pr in zip(ground_truth.pages(), prediction.pages()):
+                    if page_gt.is_first_page and page_pr.is_first_page:
+                        tp += 1
+                    elif not page_gt.is_first_page and page_pr.is_first_page:
+                        fp += 1
+                    elif page_gt.is_first_page and not page_pr.is_first_page:
+                        fn += 1
+                    elif not page_gt.is_first_page and not page_pr.is_first_page:
+                        tn += 1
+            if tp + fp != 0:
+                precision = tp / (tp + fp)
+            else:
+                if self.allow_zero:
+                    precision = None
+                else:
+                    raise ZeroDivisionError(
+                        "TP and FP are zero, please specify allow_zero=True if you want precision to be None."
+                    )
+            if tp + fn != 0:
+                recall = tp / (tp + fn)
+            else:
+                if self.allow_zero:
+                    recall = None
+                else:
+                    raise ZeroDivisionError(
+                        "TP and FN are zero, please specify allow_zero=True if you want recall to be None."
+                    )
+            if precision + recall != 0:
+                f1 = 2 * precision * recall / (precision + recall)
+            else:
+                if self.allow_zero:
+                    f1 = None
+                else:
+                    raise ZeroDivisionError(
+                        "FP and FN are zero, please specify allow_zero=True if you want F1 to be None."
+                    )
+            self.evaluation_results_by_category['tp'][category.id_] = tp
+            self.evaluation_results_by_category['fp'][category.id_] = fp
+            self.evaluation_results_by_category['fn'][category.id_] = fn
+            self.evaluation_results_by_category['tn'][category.id_] = tn
+            self.evaluation_results_by_category['precision'][category.id_] = precision
+            self.evaluation_results_by_category['recall'][category.id_] = recall
+            self.evaluation_results_by_category['f1'][category.id_] = f1
+
+    def _query(self, metric: str, search: Category = None) -> Union[int, float, None]:
+        if search:
+            if search.id_ not in self.evaluation_results_by_category[metric]:
+                raise KeyError(
+                    f'{search} is not present in {self.project}. Only Categories within a Project can be used for '
+                    f'viewing metrics.'
+                )
+            return self.evaluation_results_by_category[metric][search.id_]
+        return self.evaluation_results[metric]
+
+    def tp(self, search: Category = None) -> int:
+        """
+        Return correctly predicted first Pages.
+
+        :param search: display true positives within a certain Category.
+        :type search: Category
+        :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
+        """
+        return self._query('tp', search)
+
+    def fp(self, search: Category = None) -> int:
+        """
+        Return non-first Pages incorrectly predicted as first.
+
+        :param search: display false positives within a certain Category.
+        :type search: Category
+        :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
+        """
+        return self._query('fp', search)
+
+    def fn(self, search: Category = None) -> int:
+        """
+        Return first Pages incorrectly predicted as non-first.
+
+        :param search: display false negatives within a certain Category.
+        :type search: Category
+        :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
+        """
+        return self._query('fn', search)
+
+    def tn(self, search: Category = None) -> int:
+        """
+        Return non-first Pages predicted as non-first.
+
+        :param search: display true negatives within a certain Category.
+        :type search: Category
+        :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
+        """
+        return self._query('tn', search)
+
+    def precision(self, search: Category = None) -> float:
+        """
+        Return precision.
+
+        :param search: display precision within a certain Category.
+        :type search: Category
+        :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
+        """
+        return self._query('precision', search)
+
+    def recall(self, search: Category = None) -> float:
+        """
+        Return recall.
+
+        :param search: display recall within a certain Category.
+        :type search: Category
+        :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
+        """
+        return self._query('recall', search)
+
+    def f1(self, search: Category = None) -> float:
+        """
+        Return F1-measure.
+
+        :param search: display F1 measure within a certain Category.
+        :type search: Category
+        :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
+        """
+        return self._query('f1', search)
