@@ -7,7 +7,6 @@ import konfuzio_sdk
 import logging
 import os
 import pathlib
-import pickle
 import shutil
 import sys
 import torch
@@ -19,12 +18,11 @@ from copy import deepcopy
 from keras.applications.vgg19 import preprocess_input
 from keras.layers import Dense, Conv2D, MaxPool2D, Flatten, Input, concatenate
 from keras.models import Model
-from pathlib import Path
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, img_to_array
 from transformers import BertTokenizer, AutoModel, AutoConfig
 from typing import List, Union
 
-from konfuzio_sdk.data import Document, Page, Project
+from konfuzio_sdk.data import Document, Page
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
 from konfuzio_sdk.trainer.information_extraction import load_model
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
@@ -151,27 +149,33 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         return page
 
 
-class FileSplittingModel:
-    """Train a fusion model for correct splitting of files which contain multiple Documents.
+class FusionModel(AbstractFileSplittingModel):
+    """
+    Split a multi-Document file into a list of shorter documents based on model's prediction.
 
-    A model consists of two separate inputs for visual and textual data combined in a Multi-Layered
-    Perceptron (MLP). Visual part is represented by VGG16 architecture and is trained on a first share of split training
-    dataset. Textual part is represented by LegalBERT which is used without any training.
-    Embeddings received from two of he models are squashed and the resulting vectors are fed as inputs to the MLP.
+    We use an approach suggested by Guha et al.(2022) that incorporates steps for accepting separate visual and textual
+    inputs and processing them independently via the VGG16 architecture and LegalBERT model which is essentially
+    a BERT-type architecture trained on domain-specific data, and passing the resulting outputs together to
+    a Multi-Layered Perceptron.
 
-    The resulting trained model is saved in pickle, roughly 1.5 Gb in size.
+    Guha, A., Alahmadi, A., Samanta, D., Khan, M. Z., & Alahmadi, A. H. (2022).
+    A Multi-Modal Approach to Digital Document Stream Segmentation for Title Insurance Domain.
+    https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=9684474
     """
 
-    def __init__(self, project_id: int):
-        """
-        Initialize Project, training and testing data.
-
-        :param project_id: ID of the Project used for training the model.
-        :type project_id: int
-        """
-        self.project = Project(id_=project_id)
+    def __init__(self, *args, **kwargs):
+        """Initialize the Fusion filesplitting model."""
         self.train_data = None
         self.test_data = None
+        self.train_txt_data = []
+        self.train_img_data = None
+        self.test_txt_data = []
+        self.test_img_data = None
+        self.train_labels = None
+        self.test_labels = None
+        self.categories = None
+        self.input_shape = None
+        self.model = None
         configuration = AutoConfig.from_pretrained('nlpaueb/legal-bert-base-uncased')
         configuration.num_labels = 2
         configuration.output_hidden_states = True
@@ -179,7 +183,6 @@ class FileSplittingModel:
         self.bert_tokenizer = BertTokenizer.from_pretrained(
             'nlpaueb/legal-bert-base-uncased', do_lower_case=True, max_length=10000, padding="max_length", truncate=True
         )
-        self.page_classifier = None
 
     def _preprocess_documents(self, data: List[Document]) -> (List[str], List[str], List[int]):
         pages = []
@@ -189,13 +192,13 @@ class FileSplittingModel:
             for page in doc.pages():
                 pages.append(page.image_path)
                 texts.append(page.text)
-                if page.number == 1:
+                if page.is_first_page:
                     labels.append(1)
                 else:
                     labels.append(0)
         return pages, texts, labels
 
-    def _otsu_binarization(self, pages: List[str]):
+    def _otsu_binarization(self, pages: List[str]) -> List:
         images = []
         for img in pages:
             image = cv2.imread(img)
@@ -206,48 +209,41 @@ class FileSplittingModel:
             images.append(image)
         return images
 
-    def _prepare_visual_textual_data(self, train_data: List[Document], test_data: List[Document]):
-        for doc in train_data + test_data:
+    def fit(self, *args, **kwargs):
+        """Process the train and test data, initialize and fit the model."""
+        for doc in self.train_data + self.test_data:
             doc.get_images()
-        train_pages, train_texts, train_labels = self._preprocess_documents(train_data)
-        test_pages, test_texts, test_labels = self._preprocess_documents(test_data)
+        train_pages, train_texts, train_labels = self._preprocess_documents(self.train_data)
+        test_pages, test_texts, test_labels = self._preprocess_documents(self.test_data)
         train_images = self._otsu_binarization(train_pages)
         test_images = self._otsu_binarization(test_pages)
-        train_labels = tf.cast(np.asarray(train_labels).reshape((-1, 1)), tf.float32)
-        test_labels = tf.cast(np.asarray(test_labels).reshape((-1, 1)), tf.float32)
+        self.train_labels = tf.cast(np.asarray(train_labels).reshape((-1, 1)), tf.float32)
+        self.test_labels = tf.cast(np.asarray(test_labels).reshape((-1, 1)), tf.float32)
         image_data_generator = ImageDataGenerator()
         train_data_generator = image_data_generator.flow(x=np.squeeze(train_images, axis=1), y=train_labels)
-        train_img_data = np.concatenate([train_data_generator.next()[0] for i in range(train_data_generator.__len__())])
+        self.train_img_data = np.concatenate(
+            [train_data_generator.next()[0] for i in range(train_data_generator.__len__())]
+        )
         test_data_generator = image_data_generator.flow(x=np.squeeze(test_images, axis=1), y=test_labels)
-        test_img_data = np.concatenate([test_data_generator.next()[0] for i in range(test_data_generator.__len__())])
-        train_txt_data = []
+        self.test_img_data = np.concatenate(
+            [test_data_generator.next()[0] for i in range(test_data_generator.__len__())]
+        )
         for text in train_texts:
             inputs = self.bert_tokenizer(text, truncation=True, return_tensors='pt')
             with torch.no_grad():
                 output = self.bert_model(**inputs)
-            train_txt_data.append(output.pooler_output)
-        train_txt_data = [np.asarray(x).astype('float32') for x in train_txt_data]
-        train_txt_data = np.asarray(train_txt_data)
-        test_txt_data = []
+            self.train_txt_data.append(output.pooler_output)
+        self.train_txt_data = [np.asarray(x).astype('float32') for x in self.train_txt_data]
+        self.train_txt_data = np.asarray(self.train_txt_data)
         for text in test_texts:
             inputs = self.bert_tokenizer(text, truncation=True, return_tensors='pt')
             with torch.no_grad():
                 output = self.bert_model(**inputs)
-            test_txt_data.append(output.pooler_output)
-        txt_input_shape = test_txt_data[0].shape
-        test_txt_data = [np.asarray(x).astype('float32') for x in test_txt_data]
-        test_txt_data = np.asarray(test_txt_data)
-        return train_img_data, train_txt_data, test_img_data, test_txt_data, train_labels, test_labels, txt_input_shape
-
-    def init_model(self, input_shape):
-        """
-        Initialize the fusion model.
-
-        :param input_shape: Input shape for the textual part of the model.
-        :type input_shape: tuple
-        :return: A compiled fusion model.
-        """
-        txt_input = Input(shape=input_shape, name='text')
+            self.test_txt_data.append(output.pooler_output)
+        self.input_shape = self.test_txt_data[0].shape
+        self.test_txt_data = [np.asarray(x).astype('float32') for x in self.test_txt_data]
+        self.test_txt_data = np.asarray(self.test_txt_data)
+        txt_input = Input(shape=self.input_shape, name='text')
         txt_x = Dense(units=768, activation="relu")(txt_input)
         txt_x = Flatten()(txt_x)
         txt_x = Dense(units=4096, activation="relu")(txt_x)
@@ -280,81 +276,48 @@ class FileSplittingModel:
         x = Dense(50, activation='elu')(x)
         x = Dense(50, activation='elu')(x)
         output = Dense(1, activation='sigmoid')(x)
-        model = Model(inputs=[img_input, txt_input], outputs=output)
-        model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-        return model
+        self.model = Model(inputs=[img_input, txt_input], outputs=output)
+        self.model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+        self.model.fit([self.train_img_data, self.train_txt_data], train_labels, epochs=10, verbose=1)
 
-    def _predict_label(self, img_input, txt_input, model) -> int:
-        pred = model.predict([img_input.reshape((1, 224, 224, 3)), txt_input.reshape((1, 1, 768))], verbose=0)
-        return round(pred[0, 0])
-
-    def calculate_metrics(self, model, img_inputs, txt_inputs, labels: List) -> (float, float, float):
+    def save(self, model_path=""):
         """
-        Calculate precision, recall, and F1 measure for the trained model.
+        Save a trained instance of the model.
 
-        :param model: The trained model.
-        :param img_inputs: Processed visual inputs from the test dataset.
-        :param txt_inputs: Processed textual inputs from the test dataset.
-        :param labels: Labels from the test dataset.
-        :type labels: list
-        :return: Calculated precision, recall, and F1 measure.
+        :param model_path: A path to save the model to.
+        :type model_path: str
         """
-        true_positive = 0
-        false_positive = 0
-        false_negative = 0
-        for img, txt, label in zip(img_inputs, txt_inputs, labels):
-            pred = self._predict_label(img, txt, model)
-            if label == 1 and pred == 1:
-                true_positive += 1
-            elif label == 1 and pred == 0:
-                false_negative += 1
-            elif label == 0 and pred == 1:
-                false_positive += 1
-        if true_positive + false_positive != 0:
-            precision = true_positive / (true_positive + false_positive)
-        else:
-            precision = 0
-        if true_positive + false_negative != 0:
-            recall = true_positive / (true_positive + false_negative)
-        else:
-            recall = 0
-        if precision + recall != 0:
-            f1 = 2 * precision * recall / (precision + recall)
-        else:
-            f1 = 0
-        return precision, recall, f1
+        pass
 
-    def train(self):
+    def predict(self, page: Page) -> Page:
         """
-        Training or loading the trained model.
+        Run prediction with the trained model.
 
-        :return: A trained fusion model.
+        :param page: A Page to be predicted as first or non-first.
+        :type page: Page
+        :return: A Page with possible changes in is_first_page attribute value.
         """
-        if Path(self.project.model_folder + '/fusion.pickle').exists():
-            unpickler = open(self.project.model_folder + '/fusion.pickle', 'rb')
-            model = pickle.load(unpickler)
-            unpickler.close()
+        inputs = self.bert_tokenizer(page.text, truncation=True, return_tensors='pt')
+        with torch.no_grad():
+            output = self.bert_model(**inputs)
+        txt_data = [output.pooler_output]
+        txt_data = [np.asarray(x).astype('float32') for x in txt_data]
+        txt_data = np.asarray(txt_data)
+        image = cv2.imread(page.image_path)
+        image = cv2.resize(image, (224, 224), interpolation=cv2.INTER_AREA)
+        image = img_to_array(image)
+        image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
+        image = preprocess_input(image)
+        image_data_generator = ImageDataGenerator()
+        data_generator = image_data_generator.flow(x=np.squeeze([image], axis=1))
+        img_data = np.concatenate([data_generator.next()[0] for i in range(data_generator.__len__())])
+        preprocessed = [img_data.reshape((1, 224, 224, 3)), txt_data.reshape((1, 1, 768))]
+        pred = round(self.model.predict(preprocessed, verbose=0)[0, 0])
+        if pred == 1:
+            page.is_first_page = True
         else:
-            (
-                train_img_data,
-                train_txt_data,
-                test_img_data,
-                test_txt_data,
-                train_labels,
-                test_labels,
-                input_shape,
-            ) = self._prepare_visual_textual_data(self.train_data, self.test_data)
-            model = self.init_model(input_shape)
-            model.fit([train_img_data, train_txt_data], train_labels, epochs=10, verbose=1)
-            self.page_classifier = model
-            pickler = open(self.project.model_folder + '/fusion.pickle', "wb")
-            pickle.dump(model, pickler)
-            pickler.close()
-            loss, acc = model.evaluate([test_img_data, test_txt_data], test_labels, verbose=0)
-            logging.info('Accuracy: {}'.format(acc * 100))
-            precision, recall, f1 = self.calculate_metrics(model, test_img_data, test_txt_data, test_labels)
-            logging.info('\n Precision: {} \n Recall: {} \n F1-score: {}'.format(precision, recall, f1))
-        return model
+            page.is_first_page = False
+        return page
 
 
 class SplittingAI:
