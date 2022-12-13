@@ -5,7 +5,7 @@ import json
 import logging
 import os
 import pathlib
-import re
+import regex as re
 import shutil
 import time
 import zipfile
