@@ -815,7 +815,11 @@ class Label(Data):
                             ]
                             before_regex += suggest_regex_for_string(to_rep_offset_string, replace_characters=True)
                         else:
-                            before_regex += before_span.annotation.label.base_regex(category)
+                            base_before_regex = before_span.annotation.label.base_regex(category)
+                            stripped_base_before_regex = re.sub(
+                                regex_to_remove_groupnames_full, r'\1', base_before_regex
+                            )
+                            before_regex += stripped_base_before_regex
                     before_reg_dict[spacer] = before_regex
 
                     after_regex = ''
