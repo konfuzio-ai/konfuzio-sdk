@@ -30,6 +30,7 @@ from tests.variables import (
     TEST_RECEIPTS_CATEGORY_ID,
 )
 
+from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer
 from konfuzio_sdk.samples import LocalTextProject
 
 logger = logging.getLogger(__name__)
@@ -525,7 +526,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         """Define fallback threshold for a Label."""
         project = Project(id_=None)
         label = Label(project=project, text='Third Offline Label')
-        assert label.threshold == 0.0
+        assert label.threshold == 0.1
 
     def test_to_add_label_to_project(self):
         """Add one Label to a Project."""
@@ -1025,7 +1026,7 @@ class TestOfflineDataSetup(unittest.TestCase):
             spans=[span],
         )
 
-        assert annotation in annotation_set.annotations
+        assert annotation in annotation_set.annotations()
 
     def test_create_document_with_page_object(self):
         """Create a Document with pages information from a Page object."""
@@ -1218,6 +1219,53 @@ class TestOfflineDataSetup(unittest.TestCase):
         Annotation(document=document, spans=[first_span], label_set=self.label_set, label=self.label)
         Annotation(document=document, spans=[first_span, second_span], label_set=self.label_set, label=self.label)
         assert len(document.annotations(use_correct=False)) == 2
+
+    def test_merge_vertical_1(self):
+        """Test the vertical merging of spans into a single Annotation."""
+        project = LocalTextProject()
+
+        document = project.no_status_documents[1]
+
+        assert len(document.spans()) == 4
+        assert len(document.annotations(use_correct=False)) == 4
+
+        document.merge_vertical()
+
+        label = document.annotations(use_correct=False)[0].label
+        category = project.get_category_by_id(1)
+        assert label.has_multiline_annotations(categories=[category]) is False
+        assert document.bboxes_available is True
+
+        train_document = Document(project=project, category=category, text='p1\np2', dataset_status=2)
+        train_span1 = Span(start_offset=0, end_offset=2)
+        train_span2 = Span(start_offset=3, end_offset=5)
+        _ = Annotation(
+            document=train_document,
+            is_correct=True,
+            label=label,
+            label_set=project.no_label_set,
+            spans=[train_span1, train_span2],
+        )
+
+        assert label.has_multiline_annotations(categories=[category]) is True
+
+        document.merge_vertical()
+
+        assert len(document.spans()) == 4
+        assert len(document.annotations(use_correct=False)) == 2
+
+    def test_merge_vertical_2(self):
+        """Test the vertical merging of Spans into a single Annotation."""
+        project = LocalTextProject()
+
+        document = project.no_status_documents[2]
+
+        assert len(document.annotations(use_correct=False)) == 6
+
+        document.merge_vertical(only_multiline_labels=False)
+
+        assert len(document.annotations(use_correct=False)) == 4
+        assert len(document.annotations(use_correct=False)[1].spans) == 3
 
     def test_lose_weight(self):
         """Lose weight should remove session and documents."""
@@ -1631,7 +1679,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         for document in prj.documents:
             document.text
         after = _getsize(prj)
-        assert 1.7 < after / before < 1.8
+        assert 1.6 < after / before < 1.8
 
         # strings in prj take slightly less space than in a list
         assert _getsize([doc.text for doc in prj.documents]) + before < after + 500
@@ -2057,7 +2105,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         """Check regex build for empty Labels."""
         category = self.prj.get_category_by_id(63)
         label = next(x for x in self.prj.labels if len(x.annotations(categories=[category])) == 0)
-        automated_regex_for_label = label.regex(categories=[category])
+        automated_regex_for_label = label.regex(categories=[category])[category.id_]
         # There is no regex available.
         assert len(automated_regex_for_label) == 0
 
@@ -2174,8 +2222,54 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
         project = LocalTextProject()
         document = project.test_documents[-1]
         annotations = document.view_annotations()
-        assert len(annotations) == 4
-        assert sorted([ann.id_ for ann in annotations]) == [16, 18, 19, 24]
+        assert len(annotations) == 5  # 4 if top_annotations filter is used
+        assert sorted([ann.id_ for ann in annotations]) == [16, 17, 18, 19, 24]  # [16, 18, 19, 24]
+
+    def test_annotationset_annotations(self):
+        """Test AnnotationSet.annotations method."""
+        project = LocalTextProject()
+        document = project.test_documents[-1]
+
+        annotation_set = document.annotation_sets()[0]
+
+        assert len(annotation_set.annotations()) == 1
+        assert len(annotation_set.annotations(use_correct=False)) == 10
+        assert len(annotation_set.annotations(use_correct=False, ignore_below_threshold=True)) == 9
+
+    def test_label_spans_not_found_by_tokenizer(self):
+        """Test Label spans_not_found_by_tokenizer method."""
+        project = LocalTextProject()
+
+        whitespace_tokenizer = WhitespaceTokenizer()
+        al_tokenizer = RegexTokenizer('al')
+
+        category = project.get_category_by_id(1)
+        label = project.get_label_by_id(4)
+        label_span = label.annotations(categories=[category])[0].spans[0]
+
+        whitespace_spans = label.spans_not_found_by_tokenizer(whitespace_tokenizer, categories=[category])
+        assert len(whitespace_spans) == 1
+        assert whitespace_spans not in label_span.regex_matching
+
+        al_spans = label.spans_not_found_by_tokenizer(al_tokenizer, categories=[category])
+        assert len(al_spans) == 0
+        assert al_tokenizer in label_span.regex_matching
+
+    def test_offline_project_creates_no_files(self):
+        """Test that an offline Project does not create any files, even if documents have IDs."""
+        virtual_project = Project(id_=None)
+        virtual_project.set_offline()
+        assert not os.path.isdir(virtual_project.project_folder)
+
+        virtual_category = Category(project=virtual_project)
+        virtual_document = Document(
+            project=virtual_project,
+            id_=999999999,
+            category=virtual_category,
+            dataset_status=2,
+            copy_of_id=999999999,
+        )
+        assert not os.path.isdir(virtual_document.document_folder)
 
 
 class TestFillOperation(unittest.TestCase):

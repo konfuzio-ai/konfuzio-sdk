@@ -20,6 +20,7 @@ from konfuzio_sdk.utils import (
     get_missing_offsets,
     iter_before_and_after,
     get_bbox,
+    normalize_memory,
 )
 
 TEST_STRING = "sample string"
@@ -300,6 +301,27 @@ def test_get_bbox():
     """Test to raise Value Error if character cannot provide a bbox."""
     with pytest.raises(ValueError):
         get_bbox(bbox={}, start_offset=1, end_offset=5)
+
+
+@pytest.mark.parametrize(
+    'memory, expected',
+    [
+        (None, None),
+        (50, 50),
+        ('50MB', 50000000),
+        ('50mb', 50000000),
+        ('5GB', 5000000000),
+        ('5gb', 5000000000),
+        ('5KB', 5000),
+        ('5kb', 5000),
+        ('5gib', 5368709120),
+        ('5mib', 5242880),
+        ('5kib', 5120),
+    ],
+)
+def test_normalize_memory(memory, expected):
+    """Test the memory normalization method."""
+    assert normalize_memory(memory) == expected
 
 
 # @pytest.mark.skip('Need implementation of Line and Paragraph first.')

@@ -17,7 +17,7 @@ def merge_regex(regex_tokens: List[str]):
 
 def harmonize_whitespaces(text):
     """Convert multiple whitespaces to one."""
-    single_whitespace_replaced = re.sub(r'(?<! ) (?! )', r'[ ]+', text)
+    single_whitespace_replaced = re.sub(r'(?<! ) (?! )', r'[ ]{1,2}', text)
     suggestion = re.sub(r' {2,}', r'[ ]{2,}', single_whitespace_replaced)
     return suggestion
 
@@ -121,7 +121,7 @@ def get_best_regex(evaluations: List, log_stats: bool = True) -> List:
         ascending=[0, 0, 0, 0, 1],
     ).reset_index(drop=True)
 
-    df['correct_findings_id'] = df['correct_findings'].apply(lambda x: set(y.id_ for y in x))
+    df['correct_findings_id'] = df['correct_findings'].apply(lambda x: set(y.id_local for y in x))
     df['all_matches_id'] = [set.union(*df.loc[0:i, 'correct_findings_id']) for i in range(len(df.index))]
     df['new_matches_id'] = df.all_matches_id - df.all_matches_id.shift(1)
     null_mask = df['new_matches_id'].isnull()
@@ -131,7 +131,7 @@ def get_best_regex(evaluations: List, log_stats: bool = True) -> List:
 
     # iterate over sorted df, mark any row if it adds no matching value compared to regex above, we used max windowsize
     # matched_document = df.filter(regex=r'document_\d+').rolling(min_periods=1, window=100000000).max()
-    # any regex witch matches more Documents that the regex before, is a good regex
+    # any regex which matches more Documents that the regex before, is a good regex
     # relevant_regex = matched_document.sum(axis=1).diff()
     # df['matched_annotations_total'] = matched_document.sum(axis=1)
     # df['matched_annotations_additional'] = relevant_regex
