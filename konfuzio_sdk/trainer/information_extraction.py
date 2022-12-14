@@ -2158,7 +2158,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         self.tokenizer.tokenize(inference_document)
         if not inference_document.spans():
             logger.error(f'{self.tokenizer} does not provide Spans for {document}')
-            raise NotImplementedError('No error handling when Spans are missing.')
+            return inference_document
 
         # 3. preprocessing
         df, _feature_names, _raw_errors = self.features(inference_document)
