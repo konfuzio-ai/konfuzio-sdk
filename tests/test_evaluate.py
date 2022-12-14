@@ -1327,7 +1327,7 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         """Test evaluate_full method of SplittingAI."""
         splitting_ai = SplittingAI(self.file_splitting_model)
         splitting_ai.evaluate_full()
-        assert splitting_ai.full_evaluation.evaluation_results['tp'] == 5
+        assert splitting_ai.full_evaluation.evaluation_results['tp'] == 6
         assert splitting_ai.full_evaluation.evaluation_results['fp'] == 0
         assert splitting_ai.full_evaluation.evaluation_results['fn'] == 0
         assert splitting_ai.full_evaluation.evaluation_results['fn'] == 0
