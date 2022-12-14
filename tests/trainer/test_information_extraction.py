@@ -226,11 +226,15 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
     def test_04_save_model(self):
         """Save the model."""
         with pytest.raises(MemoryError):
-            self.pipeline.pipeline_path = self.pipeline.save(include_konfuzio=False, max_ram="5MB")
+            self.pipeline.pipeline_path = self.pipeline.save(
+                include_konfuzio=False, reduce_weight=False, keep_documents=True, max_ram="5MB"
+            )
 
         self.project._max_ram = "5MB"
         with pytest.raises(MemoryError):
-            self.pipeline.pipeline_path = self.pipeline.save(include_konfuzio=False)
+            self.pipeline.pipeline_path = self.pipeline.save(
+                include_konfuzio=False, reduce_weight=False, keep_documents=True
+            )
         self.project._max_ram = None
 
         test_documents = self.pipeline.test_documents
@@ -392,11 +396,15 @@ class TestRegexRFExtractionAI(unittest.TestCase):
     def test_04_save_model(self):
         """Save the model."""
         with pytest.raises(MemoryError):
-            self.pipeline.pipeline_path = self.pipeline.save(include_konfuzio=False, max_ram="5MB")
+            self.pipeline.pipeline_path = self.pipeline.save(
+                include_konfuzio=False, max_ram="5MB", keep_documents=True, reduce_weight=False
+            )
 
         self.project._max_ram = "5MB"
         with pytest.raises(MemoryError):
-            self.pipeline.pipeline_path = self.pipeline.save(include_konfuzio=False)
+            self.pipeline.pipeline_path = self.pipeline.save(
+                include_konfuzio=False, keep_documents=True, reduce_weight=False
+            )
         self.project._max_ram = None
 
         test_documents = self.pipeline.test_documents

@@ -1465,7 +1465,9 @@ class Trainer:
 
         return merge is not None
 
-    def save(self, output_dir: str = None, include_konfuzio=True, reduce_weight=False, max_ram=None):
+    def save(
+        self, output_dir: str = None, include_konfuzio=True, reduce_weight=True, keep_documents=False, max_ram=None
+    ):
         """
         Save the label model as bz2 compressed pickle object to the release directory.
 
@@ -1488,7 +1490,9 @@ class Trainer:
         logger.info('Saving model')
         logger.info(f'{include_konfuzio=}')
         logger.info(f'{reduce_weight=}')
+        logger.info(f'{keep_documents=}')
         logger.info(f'{max_ram=}')
+
         # Keep Documents of the Category so that we can restore them later
 
         # TODO: add Document.lose_weight in SDK - remove NO_LABEL Annotations from the Documents
@@ -1497,6 +1501,7 @@ class Trainer:
         #     clean_annotations = list(set(document.annotations()) - set(no_label_annotations))
         #     document._annotations = clean_annotations
 
+        # if no argument passed, get project max_ram
         if not max_ram and self.category is not None:
             max_ram = self.category.project.max_ram
 
@@ -1506,18 +1511,16 @@ class Trainer:
         temp_pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower()}.cloudpickle')
         pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower()}.pkl')
 
-        self.df_train = None
         if reduce_weight:
-            # category_documents = self.category.documents() + self.category.test_documents()
-            # self.lose_weight()  # todo: review and test (#9461)
+            self.df_train = None
             self.category.project.lose_weight()
-            self.documents = []
-            self.test_documents = []
             self.tokenizer.lose_weight()
 
-        logger.info(f'Model size: {asizeof.asizeof(self) / 1_000_000} MB')
+        if not keep_documents:
+            self.documents = []
+            self.test_documents = []
 
-        # if no argument passed, get project max_ram
+        logger.info(f'Model size: {asizeof.asizeof(self) / 1_000_000} MB')
 
         max_ram = normalize_memory(max_ram)
 
