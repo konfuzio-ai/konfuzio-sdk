@@ -376,7 +376,7 @@ class AnnotationSet(Data):
         if use_correct:
             annotations = [ann for ann in self._annotations if ann.is_correct]
         elif ignore_below_threshold:
-            annotations = [ann for ann in self._annotations if ann.is_correct or ann.confidence > ann.label.threshold]
+            annotations = [ann for ann in self._annotations if ann.is_correct or ann.confidence >= ann.label.threshold]
         else:
             annotations = self._annotations
         return annotations
@@ -2511,12 +2511,13 @@ class Document(Data):
 class Project(Data):
     """Access the information of a Project."""
 
-    def __init__(self, id_: Union[int, None], project_folder=None, update=False, **kwargs):
+    def __init__(self, id_: Union[int, None], project_folder=None, update=False, max_ram=None, **kwargs):
         """
         Set up the Data using the Konfuzio Host.
 
         :param id_: ID of the Project
         :param project_folder: Set a Project root folder, if empty "data_<id_>" will be used.
+        :param max_ram: Maximum RAM used by AI models trained on this Project.
         """
         self.id_local = next(Data.id_iter)
         self.id_ = id_  # A Project with None ID is not retrieved from the HOST
@@ -2526,6 +2527,7 @@ class Project(Data):
         self._labels: List[Label] = []
         self._documents: List[Document] = []
         self._meta_data = []
+        self._max_ram = max_ram
 
         # paths
         self.meta_file_path = os.path.join(self.project_folder, "documents_meta.json5")
@@ -2598,6 +2600,11 @@ class Project(Data):
     def model_folder(self) -> str:
         """Calculate the model folder of the Project."""
         return os.path.join(self.project_folder, "models")
+
+    @property
+    def max_ram(self):
+        """Return maximum memory used by AI models."""
+        return self._max_ram
 
     def write_project_files(self):
         """Overwrite files with Project, Label, Label Set information."""
