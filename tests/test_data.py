@@ -110,6 +110,7 @@ class TestOnlineProject(unittest.TestCase):
         """Test to download page files."""
         doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         assert len(doc.pages()) == 1
+        assert doc.pages()[0].category == doc.category
 
     def test_load_image_in_memory(self):
         """Test to download page files."""
@@ -467,6 +468,8 @@ class TestOfflineDataSetup(unittest.TestCase):
     def test_category_of_document(self):
         """Test if setup worked."""
         assert self.document.category == self.category
+        for page in self.document.pages():
+            assert page.category == self.category
 
     @unittest.skip(reason='Span validation.')
     def test_span_negative_offset(self):
@@ -1038,6 +1041,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert page.image is None
         assert page.number == 1
         assert page.width == 595.2
+        assert page.category == self.category
 
     def test_create_new_annotation_set_in_document(self):
         """Add new annotation set to a document."""
@@ -1464,6 +1468,8 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert len(category_documents) == 25
         for document in category_documents:
             assert document.category == category
+            for page in document.pages():
+                assert page.category == category
 
     def test_category_test_documents(self):
         """Test category of Test Documents associated to a Category."""
@@ -1473,6 +1479,8 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert len(category_test_documents) == 3
         for document in category_test_documents:
             assert document.category == category
+            for page in document.pages():
+                assert page.category == category
 
     def test_category_annotations_by_label(self):
         """Test getting Annotations of a Category by Labels."""
@@ -1482,6 +1490,8 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         for annotation in label.annotations(categories=[category]):
             if annotation.document.category is not None:
                 assert annotation.document.category == category
+                for page in annotation.document.pages():
+                    assert page.category == category
 
     def test_category_annotations_by_document(self):
         """Test getting Annotations of a Category by Documents."""

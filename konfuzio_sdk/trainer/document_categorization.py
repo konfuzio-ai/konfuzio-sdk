@@ -22,7 +22,7 @@ import tqdm
 from PIL import Image
 from torch.utils.data import DataLoader
 
-from konfuzio_sdk.data import Project, Document
+from konfuzio_sdk.data import Project, Document, Page
 from konfuzio_sdk.evaluate import CategorizationEvaluation
 from konfuzio_sdk.trainer.data_loader import (
     build_document_classifier_iterators,
@@ -73,10 +73,20 @@ class FallbackCategorizationModel:
             f'{self} uses a fallback logic for categorizing documents, this will not save model to disk.'
         )
 
-    def evaluate(self) -> CategorizationEvaluation:
-        """Evaluate the full Categorization pipeline on the pipeline's Test Documents."""
+    def evaluate(self, use_training_docs: bool = False) -> CategorizationEvaluation:
+        """
+        Evaluate the full Categorization pipeline on the pipeline's Test Documents.
+
+        :param use_training_docs: Bool for whether to evaluate on the training documents instead of testing documents.
+        :return: Evaluation object.
+        """
         eval_list = []
-        for document in self.test_documents:
+        if not use_training_docs:
+            eval_docs = self.test_documents
+        else:
+            eval_docs = self.documents
+
+        for document in eval_docs:
             predicted_doc = self.categorize(document=document, recategorize=True)
             eval_list.append((document, predicted_doc))
 
@@ -84,8 +94,36 @@ class FallbackCategorizationModel:
 
         return self.evaluation
 
+    @staticmethod
+    def _categorize_from_pages(document: Document) -> Document:
+        """Decide the Category of a Document by whether all pages have the same Category (assign None otherwise).
+
+        :param document: Input document
+        :returns: The input Document with added categorization information
+        """
+        all_pages_have_same_category = len(set([page.category for page in document.pages()])) == 1
+        if all_pages_have_same_category:
+            document.category = document.pages()[0].category
+        else:
+            document.category = None
+        return document
+
+    def _categorize_page(self, page: Page) -> Page:
+        """Run categorization on a Page.
+
+        :param page: Input Page
+        :returns: The input Page with added categorization information
+        """
+        for training_category in self.categories:
+            if training_category.fallback_name in page.text.lower():
+                page.category = training_category
+                break
+        if page.category is None:
+            logger.warning(f'{self} could not find the category of {page} by using the fallback categorization logic.')
+        return page
+
     def categorize(self, document: Document, recategorize: bool = False, inplace: bool = False) -> Document:
-        """Run categorization.
+        """Run categorization on a Document.
 
         :param document: Input document
         :param recategorize: If the input document is already categorized, the already present category is used unless
@@ -106,24 +144,18 @@ class FallbackCategorizationModel:
             return virtual_doc
         elif recategorize:
             virtual_doc.category = None
+            for page in virtual_doc.pages():
+                page.category = None
 
-        relevant_categories = [training_category.fallback_name for training_category in self.categories]
-        found_category_name = None
-        doc_text = virtual_doc.text.lower()
-        for candidate_category_name in relevant_categories:
-            if candidate_category_name in doc_text:
-                found_category_name = candidate_category_name
-                break
+        # Categorize each Page of the Document.
+        for page in virtual_doc.pages():
+            self._categorize_page(page)
 
-        if found_category_name is None:
-            logger.warning(
-                f'{self} could not find the category of {document} by using the fallback logic '
-                f'with pre-defined common categories.'
-            )
-            return virtual_doc
-        found_category = [category for category in self.categories if category.fallback_name in found_category_name][0]
-        virtual_doc.category = found_category
-        return virtual_doc
+        # Try to assign a Category to the Document itself.
+        # If the Pages are differently categorized, the Document won't be assigned a Category at this stage.
+        # The Document will have to be split at a later stage to find a consistent Category for each sub-Document.
+        # Otherwise, the Category for each sub-Document (if any) will be corrected by the user.
+        return self._categorize_from_pages(virtual_doc)
 
 
 class ClassificationModule(nn.Module):
@@ -1384,38 +1416,24 @@ class CategorizationModel(FallbackCategorizationModel):
 
         return (predicted_label, predicted_confidence), predictions_df
 
-    def categorize(self, document: Document, recategorize: bool = False, inplace: bool = False) -> Document:
-        """Run categorization."""
-        if inplace:
-            virtual_doc = document
-        else:
-            virtual_doc = deepcopy(document)
-        if (document.category is not None) and (not recategorize):
-            logger.info(
-                f'In {document}, the category was already specified as {document.category}, so it wasn\'t categorized '
-                f'again. Please use recategorize=True to force running the Categorization AI again on this document.'
-            )
-            return virtual_doc
-        elif recategorize:
-            virtual_doc.category = None
+    def _categorize_page(self, page: Page) -> Page:
+        """Run categorization on a Page.
 
-        page_path = document.pages()[0].image_path
-        img_data = Image.open(page_path)
+        :param page: Input Page
+        :returns: The input Page with added categorization information
+        """
+        img_data = Image.open(page.image_path)
         buf = BytesIO()
         img_data.save(buf, format='PNG')
         docs_data_images = [buf]
 
-        docs_text = document.text
-
-        (predicted_category, predicted_confidence), _ = self.extract(page_images=docs_data_images, text=docs_text)
+        (predicted_category, predicted_confidence), _ = self.extract(page_images=docs_data_images, text=page.text)
 
         if predicted_category == -1:
-            raise ValueError(
-                f'{self} could not find the category of {document} by using the trained CategorizationModel.'
-            )
+            raise ValueError(f'{self} could not find the category of {page} by using the trained CategorizationModel.')
 
-        virtual_doc.category = self.project.get_category_by_id(predicted_category)
-        return virtual_doc
+        page.category = self.project.get_category_by_id(predicted_category)
+        return page
 
 
 class CustomCategorizationModel(CategorizationModel):
