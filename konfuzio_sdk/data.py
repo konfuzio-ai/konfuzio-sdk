@@ -1987,6 +1987,8 @@ class Document(Data):
                 continue
             if not annotation.is_correct and annotation.revised:  # if marked as incorrect by user
                 continue
+            if annotation.label is self.project.no_label:
+                continue
             spans_num = 0
             for span in annotation.spans:
                 for i in range(span.start_offset, span.end_offset):
@@ -2006,6 +2008,19 @@ class Document(Data):
                 no_label_duplicates.add(annotation.label.id_)
 
         return sorted(annotations)
+
+    def lose_weight(self):
+        """Remove NO_LABEL, wrong and below threshold Annotations."""
+        super().lose_weight()
+        for annotation in self.annotations(use_correct=False, ignore_below_threshold=False):
+            if annotation.label is self.project.no_label:
+                logger.info("no_label")
+                annotation.delete()
+            elif not annotation.is_correct and (
+                not annotation.confidence or annotation.label.threshold > annotation.confidence or annotation.revised
+            ):
+                logger.info(annotation.confidence)
+                annotation.delete()
 
     @property
     def document_folder(self):
