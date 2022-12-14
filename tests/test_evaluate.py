@@ -1269,17 +1269,6 @@ class TestEvaluationFileSplitting(unittest.TestCase):
     def test_metrics_calculation(self):
         """Test Evaluation class for ContextAwareFileSplitting."""
         self.file_splitting_model.first_page_spans = self.file_splitting_model.fit()
-        non_first_page_spans = {}
-        for category in self.file_splitting_model.categories:
-            cur_non_first_page_spans = []
-            for doc in category.documents():
-                for page in doc.pages():
-                    if page.number > 1:
-                        cur_non_first_page_spans.append({span.offset_string for span in page.spans()})
-            if not cur_non_first_page_spans:
-                cur_non_first_page_spans.append(set())
-            true_non_first_page_spans = set.intersection(*cur_non_first_page_spans)
-            non_first_page_spans[category.id_] = true_non_first_page_spans
         splitting_ai = SplittingAI(self.file_splitting_model)
         ground_truth = self.test_document
         for page in ground_truth.pages():

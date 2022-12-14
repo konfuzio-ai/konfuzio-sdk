@@ -48,11 +48,6 @@ class TestFileSplittingModel(unittest.TestCase):
             for span in self.file_splitting_model.first_page_spans[category.id_]:
                 assert span not in non_first_page_spans[category.id_]
 
-    # def test_save_context_aware_splitting_model(self):
-    #     """Test saving of the first-page Spans."""
-    #     self.file_splitting_model.save(self.project.model_folder)
-    #     assert glob.glob(self.project.model_folder + '/*.pkl')
-
     def test_predict_context_aware_splitting_model(self):
         """Test correct first Page prediction."""
         test_document = self.file_splitting_model.tokenizer.tokenize(
@@ -94,3 +89,28 @@ class TestFileSplittingModel(unittest.TestCase):
         for item in self.project.model_folder:
             if item.endswith('.pkl'):
                 os.remove(os.path.join(self.project.model_folder, item))
+
+    def test_splitting_ai_evaluate_full_on_training(self):
+        """Test SplittingAI's evaluate_full on training Documents."""
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        splitting_ai.evaluate_full(use_training_docs=True)
+        assert splitting_ai.full_evaluation.tp() == 3
+        assert splitting_ai.full_evaluation.fp() == 0
+        assert splitting_ai.full_evaluation.fn() == 0
+        assert splitting_ai.full_evaluation.tn() == 3
+        assert splitting_ai.full_evaluation.precision() == 1.0
+        assert splitting_ai.full_evaluation.recall() == 1.0
+        assert splitting_ai.full_evaluation.f1() == 1.0
+
+    def test_splitting_ai_evaluate_full_on_testing(self):
+        """Test SplittingAI's evaluate_full on testing Documents."""
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        splitting_ai.evaluate_full()
+        print(splitting_ai.full_evaluation.evaluation_results)
+        assert splitting_ai.full_evaluation.tp() == 9
+        assert splitting_ai.full_evaluation.fp() == 0
+        assert splitting_ai.full_evaluation.fn() == 0
+        assert splitting_ai.full_evaluation.tn() == 7
+        assert splitting_ai.full_evaluation.precision() == 1.0
+        assert splitting_ai.full_evaluation.recall() == 1.0
+        assert splitting_ai.full_evaluation.f1() == 1.0

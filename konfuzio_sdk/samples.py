@@ -311,6 +311,7 @@ uncertain
             end_offset=21,
             number=1,
         )
+        _.is_first_page = True
 
         _ = Page(
             id_=None,
@@ -329,6 +330,7 @@ uncertain
             end_offset=66,
             number=3,
         )
+        _.is_first_page = True
 
         _ = Page(
             id_=None,
@@ -347,6 +349,7 @@ uncertain
             end_offset=97,
             number=5,
         )
+        _.is_first_page = True
 
         text_4 = "Morning,\nI like bread.\n\fI hope to get everything done soon."
         document_4 = Document(id_=None, project=self, category=category_3, text=text_4, dataset_status=2)
@@ -427,22 +430,26 @@ uncertain
             number=2,
         )
 
-        text_8 = (
-            "Hi all,\nI like bread.\n\fWhat are your plans for today?\n\fEvening,\nI like it.\n\fHow was your week?"
-        )
+        text_8 = "Hi all,\nI like bread.\nWhat are your plans for today?\nEvening,\nI like it.\nHow was your week?"
         document_8 = Document(id_=None, project=self, category=category_3, text=text_8, dataset_status=3)
         _ = Page(id_=None, original_size=(320, 240), document=document_8, start_offset=0, end_offset=21, number=1)
         _ = Page(id_=None, original_size=(320, 240), document=document_8, start_offset=22, end_offset=53, number=2)
         _ = Page(id_=None, original_size=(320, 240), document=document_8, start_offset=54, end_offset=74, number=3)
+        _.is_first_page = True
         _ = Page(id_=None, original_size=(320, 240), document=document_8, start_offset=75, end_offset=93, number=4)
 
-        text_9 = text_8 + "\n\fEvening,"
+        text_9 = (
+            "Hi all,\nI like bread.\nWhat are your plans for today?\nEvening,\nI like it.\nHow was your week? \n"
+            "Evening,"
+        )
         document_9 = Document(id_=None, project=self, category=category_4, text=text_9, dataset_status=3)
         _ = Page(id_=None, original_size=(320, 240), document=document_9, start_offset=0, end_offset=21, number=1)
         _ = Page(id_=None, original_size=(320, 240), document=document_9, start_offset=22, end_offset=53, number=2)
         _ = Page(id_=None, original_size=(320, 240), document=document_9, start_offset=54, end_offset=74, number=3)
+        _.is_first_page = True
         _ = Page(id_=None, original_size=(320, 240), document=document_9, start_offset=75, end_offset=93, number=4)
-        _ = Page(id_=None, original_size=(320, 240), document=document_9, start_offset=94, end_offset=102, number=5)
+        _ = Page(id_=None, original_size=(320, 240), document=document_9, start_offset=95, end_offset=103, number=5)
+        _.is_first_page = True
 
         ##########
         # Documents to test vertical merging logic
