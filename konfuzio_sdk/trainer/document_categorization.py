@@ -22,15 +22,9 @@ import tqdm
 from PIL import Image
 from torch.utils.data import DataLoader
 
-from konfuzio_sdk.data import Project, Document, Page
+from konfuzio_sdk.data import Document, Page, Category
 from konfuzio_sdk.evaluate import CategorizationEvaluation
-from konfuzio_sdk.trainer.data_loader import (
-    build_document_classifier_iterators,
-    build_document_template_classifier_iterators,
-)
-from konfuzio_sdk.trainer.tokenization import (
-    Vocab,
-)
+from konfuzio_sdk.trainer.data_loader import build_document_template_classifier_iterators
 from konfuzio_sdk.trainer.image import ImagePreProcessing, ImageDataAugmentation
 from konfuzio_sdk.utils import get_timestamp
 
@@ -45,18 +39,11 @@ class FallbackCategorizationModel:
     This can be an effective fallback logic to categorize documents when no categorization AI is available.
     """
 
-    def __init__(self, project: Union[int, Project], *args, **kwargs):
+    def __init__(self, categories: List[Category], *args, **kwargs):
         """Initialize FallbackCategorizationModel."""
         # Go through keyword arguments, and either save their values to our
         # instance, or raise an error.
-        if isinstance(project, int):
-            self.project = Project(id_=project)
-        elif isinstance(project, Project):
-            self.project = project
-        else:
-            raise NotImplementedError
-
-        self.categories = None
+        self.categories = categories
         self.name = self.__class__.__name__
 
         self.evaluation = None
@@ -90,7 +77,7 @@ class FallbackCategorizationModel:
             predicted_doc = self.categorize(document=document, recategorize=True)
             eval_list.append((document, predicted_doc))
 
-        self.evaluation = CategorizationEvaluation(self.project, eval_list)
+        self.evaluation = CategorizationEvaluation(self.categories, eval_list)
 
         return self.evaluation
 
@@ -859,7 +846,7 @@ def get_document_classifier(
         assert text_module is None
         document_classifier = DocumentImageClassifier(image_module, **config)
     else:
-        raise ValueError("You did not pass an image or text module to your CategorizationModel's config!")
+        raise ValueError("You did not pass an image or text module to your CategorizationAI's config!")
 
     # need to ensure classifier starts in evaluation mode
     document_classifier.eval()
@@ -888,25 +875,18 @@ def get_optimizer(classifier: DocumentClassifier, config: dict) -> torch.optim.O
         return optimizer
 
 
-class CategorizationModel(FallbackCategorizationModel):
+class CategorizationAI(FallbackCategorizationModel):
     """A trainable model that predicts a category for a given document."""
 
     def __init__(
         self,
-        project: Union[int, Project],
+        categories: List[Category],
         image_preprocessing: Union[None, dict] = {'target_size': (1000, 1000), 'grayscale': True},
         image_augmentation: Union[None, dict] = {'rotate': 5},
         use_cuda: bool = False,
     ):
-        """Initialize a CategorizationModel."""
-        if isinstance(project, int):
-            self.project = Project(id_=project)
-        elif isinstance(project, Project):
-            self.project = project
-        else:
-            raise NotImplementedError
-
-        self.projects = [self.project]
+        """Initialize a CategorizationAI."""
+        self.categories = categories
         self.tokenizer = None
 
         self.documents = None
@@ -998,7 +978,7 @@ class CategorizationModel(FallbackCategorizationModel):
 
         self.device = torch.device('cuda' if (torch.cuda.is_available() and use_cuda) else 'cpu')
 
-    def save(self, path: Union[None, str] = None, model_type: str = 'CategorizationModel') -> str:
+    def save(self, path: Union[None, str] = None, model_type: str = 'CategorizationAI') -> str:
         """
         Save only the necessary parts of the model for extraction/inference.
 
@@ -1007,7 +987,7 @@ class CategorizationModel(FallbackCategorizationModel):
         - transforms (to ensure we transform/pre-process images in the same way as training)
         - vocabs (to ensure the tokens/labels are mapped to the same integers as training)
         - configs (to ensure we load the same models used in training)
-        - state_dicts (the classifier parameters achived through training)
+        - state_dicts (the classifier parameters achieved through training)
         """
         # create dictionary to save all necessary model data
         data_to_save = {
@@ -1016,15 +996,16 @@ class CategorizationModel(FallbackCategorizationModel):
             'image_augmentation': self.image_augmentation,
             'text_vocab': self.text_vocab,
             'category_vocab': self.category_vocab,
-            'document_classifier_config': self.document_classifier_config,
-            'document_classifier_state_dict': self.classifier.state_dict(),
+            'classifier': self.classifier,
             'model_type': model_type,
         }
 
         # Save only the necessary parts of the model for extraction/inference.
         # if no path is given then we use a default path and filename
         if path is None:
-            path = os.path.join(self.projects[0].project_folder, 'models', f'{get_timestamp()}_{model_type}.pt')
+            path = os.path.join(
+                self.categories[0].project.project_folder, 'models', f'{get_timestamp()}_{model_type}.pt'
+            )
 
         logger.info(f'Saving model of type {model_type} in {path}')
 
@@ -1032,7 +1013,7 @@ class CategorizationModel(FallbackCategorizationModel):
         torch.save(data_to_save, path)
         return path
 
-    def get_accuracy(self, predictions: torch.FloatTensor, labels: torch.FloatTensor) -> torch.FloatTensor:
+    def _get_accuracy(self, predictions: torch.FloatTensor, labels: torch.FloatTensor) -> torch.FloatTensor:
         """Calculate accuracy of predictions."""
         # predictions = [batch size, n classes]
         # labels = [batch size]
@@ -1060,7 +1041,7 @@ class CategorizationModel(FallbackCategorizationModel):
         for batch in tqdm.tqdm(examples, desc='Training'):
             predictions = classifier(batch)['prediction']
             loss = loss_fn(predictions, batch['label'])
-            acc = self.get_accuracy(predictions, batch['label'])
+            acc = self._get_accuracy(predictions, batch['label'])
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -1079,16 +1060,14 @@ class CategorizationModel(FallbackCategorizationModel):
         for batch in tqdm.tqdm(examples, desc='Evaluating'):
             predictions = classifier(batch)['prediction']
             loss = loss_fn(predictions, batch['label'])
-            acc = self.get_accuracy(predictions, batch['label'])
+            acc = self._get_accuracy(predictions, batch['label'])
             losses.append(loss.item())
             accs.append(acc.item())
         return losses, accs
 
-    def fit_classifier(
+    def _fit_classifier(
         self,
         train_examples: DataLoader,
-        valid_examples: DataLoader,
-        test_examples: DataLoader,
         classifier: DocumentClassifier,
         n_epochs: int = 25,
         patience: int = 3,
@@ -1104,7 +1083,6 @@ class CategorizationModel(FallbackCategorizationModel):
         validation loss decrease), whichever comes first.
         """
         train_losses, train_accs = [], []
-        valid_losses, valid_accs = [], []
         patience_counter = 0
         loss_fn = torch.nn.CrossEntropyLoss()
         optimizer = get_optimizer(classifier, optimizer)
@@ -1115,22 +1093,18 @@ class CategorizationModel(FallbackCategorizationModel):
         best_valid_loss = float('inf')
         for epoch in range(n_epochs):
             train_loss, train_acc = self._train(train_examples, classifier, loss_fn, optimizer)  # train epoch
-            valid_loss, valid_acc = self._evaluate(valid_examples, classifier, loss_fn)  # validation epoch
             train_losses.extend(train_loss)  # keep track of all the losses/accs
             train_accs.extend(train_acc)
-            valid_losses.extend(valid_loss)
-            valid_accs.extend(valid_acc)
             logger.info(f'epoch: {epoch}')
             logger.info(f'train_loss: {np.mean(train_loss):.3f}, train_acc: {np.nanmean(train_acc):.3f}')
-            logger.info(f'valid_loss: {np.mean(valid_loss):.3f}, valid_acc: {np.nanmean(valid_acc):.3f}')
             # use scheduler to reduce the lr
-            scheduler.step(np.mean(valid_loss))
+            scheduler.step(np.mean(train_loss))
             # if we get the best validation loss so far
             # reset the patience counter, update the best loss value
             # and save the model parameters
-            if np.mean(valid_loss) < best_valid_loss:
+            if np.mean(train_loss) < best_valid_loss:
                 patience_counter = 0
-                best_valid_loss = np.mean(valid_loss)
+                best_valid_loss = np.mean(train_loss)
                 torch.save(classifier.state_dict(), temp_filename)
             # if we don't get the best validation loss so far
             # increase the patience counter
@@ -1145,88 +1119,17 @@ class CategorizationModel(FallbackCategorizationModel):
         classifier.load_state_dict(torch.load(temp_filename))
         os.remove(temp_filename)
         # evaluate model over the test data
-        test_losses, test_accs = self._evaluate(test_examples, classifier, loss_fn)
-        logger.info(f'test_loss: {np.mean(test_losses):.3f}, test_acc: {np.nanmean(test_accs):.3f}')
+        logger.info(f'test_loss: {np.mean(train_losses):.3f}, test_acc: {np.nanmean(train_loss):.3f}')
 
-        # bundle all the metrics together
-        metrics = {
+        training_metrics = {
             'train_losses': train_losses,
             'train_accs': train_accs,
-            'valid_losses': valid_losses,
-            'valid_accs': valid_accs,
-            'test_losses': test_losses,
-            'test_accs': test_accs,
         }
 
-        return classifier, metrics
+        return classifier, training_metrics
 
-    @torch.no_grad()
-    def predict(self, examples: DataLoader, classifier: DocumentClassifier) -> Tuple[List[float], List[float]]:
-        """Get predictions and true values of the input examples."""
-        classifier.eval()
-        predicted_classes = []
-        actual_classes = []
-
-        for batch in tqdm.tqdm(examples, desc='Evaluating'):
-            predictions = classifier(batch)['prediction']
-            predicted_classes.extend(predictions.argmax(dim=-1).cpu().numpy())
-            actual_classes.extend(batch['label'].cpu().numpy())
-        return predicted_classes, actual_classes
-
-    def evaluate_classifier(self, test_examples, classifier, prediction_vocab):
-        """Get the predicted and actual classes over the test set."""
-        predicted_classes, actual_classes = self.predict(test_examples, classifier)
-
-    @torch.no_grad()
-    def predict_documents(
-        self, examples: DataLoader, classifier: DocumentClassifier
-    ) -> Tuple[List[float], List[float]]:
-        """Get predictions and true values of the input examples."""
-        classifier.eval()
-        actual_classes = []
-        doc_ids = []
-        raw_predictions = []
-
-        for batch in tqdm.tqdm(examples, desc='Evaluating'):
-            predictions = classifier(batch)['prediction']
-            raw_predictions.extend(predictions)
-            actual_classes.extend(batch['label'].cpu().numpy())
-            doc_ids.extend(batch['doc_id'].cpu().numpy())
-        return raw_predictions, actual_classes, doc_ids
-
-    def evaluate_classifier_per_document(
-        self, test_examples: List, classifier: DocumentClassifier, prediction_vocab: Vocab
-    ):
-        """Get the predicted and actual classes over the test set."""
-        predictions, actual_classes, doc_ids = self.predict_documents(test_examples, classifier)
-
-        document_id_predictions = dict()
-        document_id_actual = dict()
-
-        for pred, actual, doc_id in zip(predictions, actual_classes, doc_ids):
-            if str(doc_id) in document_id_predictions.keys():
-                document_id_predictions[str(doc_id)].append(pred)
-                document_id_actual[str(doc_id)] = actual
-            else:
-                document_id_predictions[str(doc_id)] = [pred]
-                document_id_actual[str(doc_id)] = actual
-
-        predicted_classes = []
-        actual_classes = []
-
-        for doc_id, actual in document_id_actual.items():
-            page_predictions = torch.stack(document_id_predictions[doc_id])
-            page_predictions = torch.softmax(page_predictions, dim=-1)  # [n pages, n classes]
-            mean_page_prediction = page_predictions.mean(dim=0).cpu().numpy()
-            predicted_class = mean_page_prediction.argmax()
-
-            predicted_classes.append(predicted_class)
-            actual_classes.append(actual)
-
-        logger.info('\nResults per document\n')
-
-    def build(self, document_training_config: dict = {}, **kwargs) -> Dict[str, List[float]]:
-        """Trains the document classifier."""
+    def fit(self, document_training_config: dict = {}, **kwargs) -> Dict[str, List[float]]:
+        """Fit the CategorizationAI classifier."""
         logger.info('getting document classifier iterators')
 
         # figure out if we need images and/or text depending on if the classifier
@@ -1240,7 +1143,7 @@ class CategorizationModel(FallbackCategorizationModel):
         assert self.documents is not None, "Training documents need to be specified"
         assert self.test_documents is not None, "Test documents need to be specified"
         # get document classifier example iterators
-        examples = build_document_classifier_iterators(
+        examples = build_document_template_classifier_iterators(
             self.documents,
             self.test_documents,
             self.tokenizer,
@@ -1254,7 +1157,7 @@ class CategorizationModel(FallbackCategorizationModel):
             device=self.device,
         )
 
-        train_examples, valid_examples, test_examples = examples
+        train_examples, test_examples = examples
 
         # place document classifier on device
         self.classifier = self.classifier.to(self.device)
@@ -1262,31 +1165,24 @@ class CategorizationModel(FallbackCategorizationModel):
         logger.info('training label classifier')
 
         # fit the document classifier
-        self.classifier, metrics = self.fit_classifier(
-            train_examples, valid_examples, test_examples, self.classifier, **document_training_config
+        self.classifier, training_metrics = self._fit_classifier(
+            train_examples, self.classifier, **document_training_config
         )
-
-        self.evaluate_classifier(test_examples, self.classifier, self.category_vocab)
-        self.evaluate_classifier_per_document(test_examples, self.classifier, self.category_vocab)
 
         # put document classifier back on cpu to free up GPU memory
         self.classifier = self.classifier.to('cpu')
 
-        return metrics
-
-    def fit(self, document_training_config: dict = {}, **kwargs) -> None:
-        """Fit the CategorizationModel classifier."""
-        self.build(document_training_config=document_training_config)
+        return training_metrics
 
     @torch.no_grad()
-    def extract(self, page_images, text, batch_size=2, *args, **kwargs) -> Tuple[Tuple[str, float], pd.DataFrame]:
+    def _predict(self, page_images, text, batch_size=2, *args, **kwargs) -> Tuple[Tuple[int, float], pd.DataFrame]:
         """
         Get the predicted category for a document.
 
         The document model can have as input the pages text and/or pages images.
 
         The output is a two element Tuple. The first elements contains the category
-        (category template id or project id)
+        (category id or project id)
         with maximum confidence predicted by the model and the respective value of confidence (as a Tuple).
         The second element is a dataframe with all the categories and the respective confidence values.
 
@@ -1295,8 +1191,7 @@ class CategorizationModel(FallbackCategorizationModel):
            B     |     y
 
         In case the model wasn't trained to predict 'NO_LABEL' we can still have it in the output if
-        the document falls
-        in any of the following situations.
+        the document falls in any of the following situations.
 
         The output prediction is 'NO_LABEL' if:
 
@@ -1309,9 +1204,9 @@ class CategorizationModel(FallbackCategorizationModel):
         - the model itself predicts it
         E.g.: document different from the training data
 
-        page_images: images of the document pages
-        text: document text
-        batch_size: number of samples for each prediction
+        :param page_images: images of the document pages
+        :param text: document text
+        :param batch_size: number of samples for each prediction
         :return: tuple of (1) tuple of predicted category and respective confidence nad (2) predictions dataframe
         """
         # get device and place classifier on device
@@ -1427,66 +1322,106 @@ class CategorizationModel(FallbackCategorizationModel):
         img_data.save(buf, format='PNG')
         docs_data_images = [buf]
 
-        (predicted_category, predicted_confidence), _ = self.extract(page_images=docs_data_images, text=page.text)
+        (predicted_category_id, predicted_confidence), _ = self._predict(page_images=docs_data_images, text=page.text)
 
-        if predicted_category == -1:
-            raise ValueError(f'{self} could not find the category of {page} by using the trained CategorizationModel.')
+        if predicted_category_id == -1:
+            # todo ensure that this never happens, then remove
+            raise ValueError(f'{self} could not find the category of {page} by using the trained CategorizationAI.')
 
-        page.category = self.project.get_category_by_id(predicted_category)
+        for category in self.categories:
+            if category.id_ == predicted_category_id:
+                page.category = category
+                break
         return page
 
 
-class CustomCategorizationModel(CategorizationModel):
-    """A model that predicts a category for a given document trained with the category template."""
+# existent model classes
+MODEL_CLASSES = {'CategorizationAI': CategorizationAI}
 
-    def build(self, document_training_config: dict = {}) -> Dict[str, List[float]]:
-        """Trains the document classifier."""
-        logger.info('getting document classifier iterators')
+COMMON_PARAMETERS = ['tokenizer', 'text_vocab', 'model_type']
 
-        # figure out if we need images and/or text depending on if the classifier
-        # has an image and/or text module
-        use_image = hasattr(self.classifier, 'image_module')
-        use_text = hasattr(self.classifier, 'text_module')
+document_components = ['image_preprocessing', 'image_augmentation', 'category_vocab', 'classifier']
 
-        if hasattr(self.classifier, 'text_module') and isinstance(self.classifier.text_module, BERT):
-            document_training_config['max_len'] = self.classifier.text_module.get_max_length()
+document_components.extend(COMMON_PARAMETERS)
 
-        assert self.documents is not None, "Training documents need to be specified"
-        assert self.test_documents is not None, "Test documents need to be specified"
-        # get document classifier example iterators
-        examples = build_document_template_classifier_iterators(
-            self.documents,
-            self.test_documents,
-            self.tokenizer,
-            self.eval_transforms,
-            self.train_transforms,
-            self.text_vocab,
-            self.category_vocab,
-            use_image,
-            use_text,
-            **document_training_config,
-            device=self.device,
-        )
+# parameters that need to be saved with the model accordingly with the model type
+MODEL_PARAMETERS_TO_SAVE = {'CategorizationAI': document_components}
 
-        train_examples, valid_examples, test_examples = examples
 
-        # place document classifier on device
-        self.classifier = self.classifier.to(self.device)
+def _load_categorization_model(path: str):
+    """Load a Categorization model."""
+    logger.info('loading model')
 
-        logger.info('training label classifier')
+    # load model dict
+    loaded_data = torch.load(path)
 
-        # fit the document classifier
-        self.classifier, metrics = self.fit_classifier(
-            train_examples, valid_examples, test_examples, self.classifier, **document_training_config
-        )
+    if 'model_type' not in loaded_data.keys():
+        model_type = path.split('_')[-1].split('.')[0]
+    else:
+        model_type = loaded_data['model_type']
 
-        self.evaluate_classifier(test_examples, self.classifier, self.category_vocab)
-        self.evaluate_classifier_per_document(test_examples, self.classifier, self.category_vocab)
+    model_class = MODEL_CLASSES[model_type]
+    model_args = MODEL_PARAMETERS_TO_SAVE[model_type]
 
-        # put document classifier back on cpu to free up GPU memory
-        self.classifier = self.classifier.to('cpu')
+    # Verify if loaded data has all necessary components
+    if not all([arg in model_args for arg in loaded_data.keys()]):
+        raise TypeError(f"Incomplete model parameters. Expected: {model_args}, Received: {list(loaded_data.keys())}")
 
-        return metrics
+    # create instance of the model class
+    model = model_class(
+        categories=None,
+        image_preprocessing=loaded_data['image_preprocessing'],
+        image_augmentation=loaded_data['image_augmentation'],
+    )
+    model.tokenizer = loaded_data['tokenizer']
+    model.text_vocab = loaded_data['text_vocab']
+    model.category_vocab = loaded_data['category_vocab']
+    model.classifier = loaded_data['classifier']
+    # need to ensure classifiers start in evaluation mode
+    model.classifier.eval()
+
+    return model
+
+
+def load_categorization_model(pt_path: str, device: Optional[str] = 'cpu'):
+    """
+    Load a .pt (pytorch) file.
+
+    :param pt_path: Path to the pytorch file.
+    :param device: Device index or string to select. It’s a no-op if this argument is a negative integer or None.
+    :raises FileNotFoundError: If the path is invalid.
+    :raises OSError: When the data is corrupted or invalid and cannot be loaded.
+    :raises TypeError: When the loaded pt file isn't recognized as a Konfuzio AI model.
+    :return: Categorization AI model.
+    """
+    import dill
+
+    # https://stackoverflow.com/a/43006034/5344492
+    dill._dill._reverse_typemap['ClassType'] = type
+
+    if device is None:
+        if torch.cuda.is_available():
+            device = 'cuda'
+        else:
+            device = 'cpu'
+
+    with open(pt_path, 'rb') as f:  # todo check if we need to open 'rb' at all
+        file_data = torch.load(pt_path, map_location=torch.device(device))
+
+    if isinstance(file_data, dict):
+        # verification of str in path can be removed after all models being updated with the model_type
+        possible_names = list(MODEL_CLASSES.keys())
+        if ('model_type' in file_data.keys() and file_data['model_type'] in possible_names) or any(
+            [n in pt_path for n in possible_names]
+        ):
+            file_data = _load_categorization_model(pt_path)
+        else:
+            raise TypeError(f"Categorization Model type not recognized: {file_data['model_type']}")
+    else:
+        with open(pt_path, 'rb') as f:
+            file_data = torch.load(f, map_location=torch.device(device))
+
+    return file_data
 
 
 #

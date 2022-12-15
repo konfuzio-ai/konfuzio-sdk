@@ -7,7 +7,7 @@ import spacy
 from spacy.matcher import PhraseMatcher
 from spacy.language import Language
 
-from konfuzio_sdk.data import Project
+from konfuzio_sdk.data import Category
 import transformers
 
 logger = logging.getLogger(__name__)
@@ -199,15 +199,17 @@ def build_vocab_from_iterator(iterator: List[Union[List[str], str]], tokenizer: 
     return vocab
 
 
-def build_text_vocab(projects: List[Project], tokenizer: Tokenizer, min_freq: int = 1, max_size: int = None) -> Vocab:
+def build_text_vocab(
+    categories: List[Category], tokenizer: Tokenizer, min_freq: int = 1, max_size: int = None
+) -> Vocab:
     """Build a vocabulary over the document text."""
     logger.info('building text vocab')
 
     counter = collections.Counter()
 
     # loop over projects and documents updating counter using the tokens in each document
-    for project in projects:
-        for document in project.documents:
+    for category in categories:
+        for document in category.documents():
             tokens = tokenizer.get_tokens(document.text)
             counter.update(tokens)
 
@@ -219,19 +221,13 @@ def build_text_vocab(projects: List[Project], tokenizer: Tokenizer, min_freq: in
     return text_vocab
 
 
-def build_template_category_vocab(projects: List[Project]) -> Vocab:
+def build_template_category_vocab(categories: List[Category]) -> Vocab:
     """Build a vocabulary over the categories of each annotation."""
     logger.info('building category vocab')
 
-    counter = collections.Counter()
+    counter = collections.Counter(NO_LABEL=0)
 
-    # loop over projects, getting the id and name for each one
-    for project in projects:
-        prj_meta = project.meta_data
-        temp = [
-            str(met['category_template']) if met['category_template'] is not None else 'NO_LABEL' for met in prj_meta
-        ]
-        counter.update(temp)
+    counter.update([str(category.id_) for category in categories])
 
     template_vocab = Vocab(
         counter, min_freq=1, max_size=None, unk_token=None, pad_token=None, special_tokens=['NO_LABEL']
@@ -338,14 +334,12 @@ class SpacyTokenizer(Tokenizer):
 class PhraseMatcherTokenizer(SpacyTokenizer):
     """Tokenizes text using a spaCy phrase matcher."""
 
-    def __init__(self, projects: List[Project], spacy_model_name: str = 'de_core_news_sm'):
+    def __init__(self, categories: List[Category], spacy_model_name: str = 'de_core_news_sm'):
         """Get the spacy model and trains the phrase matcher."""
-        if not isinstance(projects, list):
-            projects = [projects]
         self.spacy_model = get_spacy_model(spacy_model_name)
-        self.phrase_matcher = self._train_phrase_matcher(projects, self.spacy_model)
+        self.phrase_matcher = self._train_phrase_matcher(categories, self.spacy_model)
 
-    def _train_phrase_matcher(self, projects: List[Project], spacy_model: Language) -> PhraseMatcher:
+    def _train_phrase_matcher(self, categories: List[Category], spacy_model: Language) -> PhraseMatcher:
         """
         Train a spaCy phrase matcher.
 
@@ -359,10 +353,8 @@ class PhraseMatcherTokenizer(SpacyTokenizer):
         # collect all examples of each label within the training set - used to train the phrase matcher
         train_dataset = collections.defaultdict(set)
 
-        for project in projects:
-            for document in project.documents:
-                if document.category is None:
-                    continue
+        for category in categories:
+            for document in category.documents():
                 annotations = document.annotations()
                 for annotation in annotations:
                     for span in annotation.spans:
@@ -441,18 +433,14 @@ def get_spacy_model(spacy_model_name: str) -> Language:
     return spacy_model
 
 
-def get_tokenizer(tokenizer_name: str, project: Project, *args, **kwargs) -> Tokenizer:
+def get_tokenizer(tokenizer_name: str, categories: List[Category], *args, **kwargs) -> Tokenizer:
     """Get a Tokenizer based on a string. Some Tokenizers need a list of projects to build themselves."""
-    projects = [project]
     if tokenizer_name == 'phrasematcher':
-        assert (
-            projects[0] is not None
-        ), 'If using PhraseMatcher must pass a Project or List[Project] to `get_tokenizer`.'
-        tokenizer = PhraseMatcherTokenizer(projects)
+        tokenizer = PhraseMatcherTokenizer(categories)
     else:
         try:  # try and get a bpe tokenizer from huggingface
             tokenizer = BPETokenizer(tokenizer_name)
         except OSError:
-            raise ValueError(f'{tokenizer_name} is not a valid tokenizer!')
+            raise ValueError(f'{tokenizer_name} is not a valid BPE tokenizer!')
 
     return tokenizer

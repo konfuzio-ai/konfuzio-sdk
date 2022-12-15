@@ -16,53 +16,6 @@ from torch.utils.data import DataLoader
 logger = logging.getLogger(__name__)
 
 
-def get_document_classifier_data(
-    documents: List[Document],
-    tokenizer: Tokenizer,
-    text_vocab: Vocab,
-    category_vocab: Vocab,
-    use_image: bool,
-    use_text: bool,
-    shuffle: bool,
-    split_ratio: float,
-    max_len: int,
-):
-    """
-    Prepare the data necessary for the document classifier.
-
-    For each document we split into pages and from each page we take:
-      - the path to an image of the page
-      - the tokenized and numericalized text on the page
-      - the label (category) of the page
-      - the id of the document
-      - the page number
-    """
-    assert use_image or use_text, 'One of either `use_image` or `use_text` needs to be `True`!'
-
-    data = []
-
-    for document in documents:
-        project_id = str(document.project.id_)
-        doc_info = get_document_classifier_examples(
-            document, project_id, tokenizer, text_vocab, category_vocab, max_len, use_image, use_text
-        )
-        data.extend(zip(*doc_info))
-
-    # shuffles the data
-    if shuffle:
-        random.shuffle(data)
-
-    # creates a split if necessary
-    n_split_examples = int(len(data) * split_ratio)
-    # if we wanted at least some examples in the split, ensure we always have at least 1
-    if split_ratio > 0.0:
-        n_split_examples = max(1, n_split_examples)
-    split_data = data[:n_split_examples]
-    _data = data[n_split_examples:]
-
-    return _data, split_data
-
-
 def build_document_classifier_iterator(
     data: List,
     transforms: torchvision.transforms,
@@ -108,83 +61,6 @@ def build_document_classifier_iterator(
     iterator = DataLoader(data, batch_size=batch_size, shuffle=shuffle, collate_fn=data_collate)
 
     return iterator
-
-
-def build_document_classifier_iterators(
-    train_documents: List[Document],
-    test_documents: List[Document],
-    tokenizer: Tokenizer,
-    eval_transforms: torchvision.transforms,
-    train_transforms: torchvision.transforms,
-    text_vocab: Vocab,
-    category_vocab: Vocab,
-    use_image: bool,
-    use_text: bool,
-    valid_ratio: float = 0.2,
-    batch_size: int = 16,
-    max_len: int = 50,
-    device: torch.device = 'cpu',
-    **kwargs,
-) -> Tuple[DataLoader, DataLoader, DataLoader]:
-    """Build the iterators for the document classifier."""
-    assert use_image or use_text, 'One of either `use_image` or `use_text` needs to be `True`!'
-
-    logger.info('building document classifier iterators')
-
-    # get data (list of examples) from Documents
-    train_data, valid_data = get_document_classifier_data(
-        train_documents,
-        tokenizer,
-        text_vocab,
-        category_vocab,
-        use_image,
-        use_text,
-        shuffle=True,
-        split_ratio=valid_ratio,
-        max_len=max_len,
-    )
-
-    test_data, _ = get_document_classifier_data(
-        test_documents,
-        tokenizer,
-        text_vocab,
-        category_vocab,
-        use_image,
-        use_text,
-        shuffle=False,
-        split_ratio=0,
-        max_len=max_len,
-    )
-
-    logger.info(f'{len(train_data)} training examples')
-    logger.info(f'{len(valid_data)} validation examples')
-    logger.info(f'{len(test_data)} testing examples')
-
-    train_iterator = build_document_classifier_iterator(
-        train_data,
-        train_transforms,
-        text_vocab,
-        use_image,
-        use_text,
-        shuffle=True,
-        batch_size=batch_size,
-        device=device,
-    )
-    valid_iterator = build_document_classifier_iterator(
-        valid_data,
-        eval_transforms,
-        text_vocab,
-        use_image,
-        use_text,
-        shuffle=False,
-        batch_size=batch_size,
-        device=device,
-    )
-    test_iterator = build_document_classifier_iterator(
-        test_data, eval_transforms, text_vocab, use_image, use_text, shuffle=False, batch_size=batch_size, device=device
-    )
-
-    return train_iterator, valid_iterator, test_iterator
 
 
 def get_document_classifier_examples(
@@ -328,8 +204,8 @@ def build_document_template_classifier_iterators(
         category_vocab,
         use_image,
         use_text,
-        shuffle=True,
-        split_ratio=valid_ratio,
+        shuffle=False,
+        split_ratio=0,
         max_len=max_len,
     )
 
@@ -346,7 +222,7 @@ def build_document_template_classifier_iterators(
     )
 
     logger.info(f'{len(train_data)} training examples')
-    logger.info(f'{len(valid_data)} validation examples')
+    # logger.info(f'{len(valid_data)} validation examples')
     logger.info(f'{len(test_data)} testing examples')
 
     train_iterator = build_document_classifier_iterator(
@@ -359,18 +235,18 @@ def build_document_template_classifier_iterators(
         batch_size=batch_size,
         device=device,
     )
-    valid_iterator = build_document_classifier_iterator(
-        valid_data,
-        eval_transforms,
-        text_vocab,
-        use_image,
-        use_text,
-        shuffle=False,
-        batch_size=batch_size,
-        device=device,
-    )
+    # valid_iterator = build_document_classifier_iterator(
+    #     valid_data,
+    #     eval_transforms,
+    #     text_vocab,
+    #     use_image,
+    #     use_text,
+    #     shuffle=False,
+    #     batch_size=batch_size,
+    #     device=device,
+    # )
     test_iterator = build_document_classifier_iterator(
         test_data, eval_transforms, text_vocab, use_image, use_text, shuffle=False, batch_size=batch_size, device=device
     )
 
-    return train_iterator, valid_iterator, test_iterator
+    return train_iterator, test_iterator

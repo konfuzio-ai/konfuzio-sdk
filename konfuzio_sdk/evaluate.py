@@ -13,7 +13,7 @@ from sklearn.metrics import (
 from sklearn.utils.extmath import weighted_mode
 
 from konfuzio_sdk.utils import sdk_isinstance
-from konfuzio_sdk.data import Project, Category, Document
+from konfuzio_sdk.data import Category, Document
 
 
 RELEVANT_FOR_EVALUATION = [
@@ -450,14 +450,14 @@ class ExtractionEvaluation:
 class CategorizationEvaluation:
     """Calculated evaluation measures for the classification task of Document categorization."""
 
-    def __init__(self, project: Project, documents: List[Tuple[Document, Document]]):
+    def __init__(self, categories: List[Category], documents: List[Tuple[Document, Document]]):
         """
         Relate to the two document instances.
 
         :param project: The project containing the Documents and Categories to be evaluated.
         :param documents: A list of tuple Documents that should be compared.
         """
-        self.project = project
+        self.categories = categories
         self.documents = documents
         self.evaluation_results = None
         self._clf_report = None
@@ -466,12 +466,12 @@ class CategorizationEvaluation:
     @property
     def labels(self) -> List[int]:
         """List of category ids as class labels."""
-        return [category.id_ for category in self.project.categories]
+        return [category.id_ for category in self.categories]
 
     @property
     def labels_names(self) -> List[str]:
         """List of category names as class names."""
-        return [category.name for category in self.project.categories]
+        return [category.name for category in self.categories]
 
     @property
     def actual_classes(self) -> List[int]:
