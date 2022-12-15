@@ -51,13 +51,13 @@ module.exports = {
 
 ##### HTML
 
-In the html we should load the script we created with the webpack and customise the variables we want. Please note that customising the variables is optional and that, as previously mentioned, any variable in the `.env` will have priority from the variables defined in the `index.html`.
+In the HTML we should load the script we created with webpack and customise the variables we want. Please note that customising the variables is optional and that, as previously mentioned, any variable in the `.env` will have priority from the variables defined in the `index.html`.
 
-The following example includes the custom variables (Document id, Category id, User Token, Locale), but it is not necessary to add these.
+The following example includes the custom variables (Document ID, User Token, Locale), but it is not mandatory to add these, which should still be added to the `.env` file.
 
 ```
  <div id="app">
-    <App document="DOCUMENT_ID" category="CATEGORY_ID" user_token:”USER_TOKEN” locale="LOCALE"></App>
+    <App document="DOCUMENT_ID" user_token:”USER_TOKEN” locale="LOCALE"></App>
   </div>
 
   <script src="/server/bundle/capture_vue.js"></script>
@@ -111,13 +111,13 @@ You can find a full example on using the Document Validation UI in a React appli
 
 #### Run in Angular
 
-In [this link](https://www.ais.com/using-a-vue-component-in-an-angular-app/) you will see a step by step on how to use the Document Validation UI in an Angular application.
+At [this link](https://www.ais.com/using-a-vue-component-in-an-angular-app/) you will see a step by step on how to use the Document Validation UI in an Angular application.
 
 ### Iframe integration
 
 #### HTML iframe as Public Document
 
-You can mark your Documents as public. Marking Documents as public will generate a read-only, publicly accessible view that does not require authentication. This allows you to share a link to the Document and its extracted data, or embed it in another website. See [Read Only mode](./modes.md/#read-only-mode) for reference.
+You can mark your Documents as public. Marking Documents as public will generate a read-only, publicly accessible URL that does not require authentication. This allows you to share a link to the Document and its extracted data, or embed it in another website. See [Read Only mode](./modes.md/#read-only-mode) for reference.
 
 ##### Share a Document with a link
 
@@ -127,7 +127,7 @@ This lightweight version contains an image version of the PDF pages, and its cur
 
 Currently this public view is not allowed to be indexed by search engines.
 
-If you need to programmatically generate public links, you can use the format `https://app.konfuzio.com/d/<id>/`. You can retrieve the id of a Document from your Konfuzio dashboard or the API. Document ids which don’t exist or are not public will return a 404 error.
+If you need to programmatically generate public links, you can use the format `https://app.konfuzio.com/d/<id>/`. You can retrieve the ID of a Document from your Konfuzio dashboard or the API. Document ids which don’t exist or are not public will return a 404 error.
 
 #### Embed a Konfuzio Document on another website
 

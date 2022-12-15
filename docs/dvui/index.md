@@ -25,7 +25,7 @@ This is a simple component that loads the Document images and displays them in a
 
 ![document_page.svg](./images/document_page.svg)
 
-This component is responsible for drawing the Document and handling any interaction with it. The main thing is that it uses [Konva JS](https://konvajs.org/docs/vue/index.html) to render a canvas element that has the Document image as background and shapes on top. Most of the shapes are Annotations from the Konfuzio API.
+This component is responsible for drawing the Document and handling any interaction with it. It uses [Konva JS](https://konvajs.org/docs/vue/index.html) to render a canvas element that has the Document image as background and shapes on top. Most of the shapes are Annotations from the Konfuzio API.
 
 ### Document Annotations
 
@@ -37,4 +37,4 @@ This component is responsible for creating a list to interact with each Annotati
 
 ![documents_list.png](./images/documents_list.png)
 
-This is an optional component that is only loaded if a [Category](https://help.konfuzio.com/modules/categories/index.html) id is provided under the environment file. You also need to add an Authentication Token. Is responsible for loading the Documents list for a given Category and that are assigned to the currently authenticated user. You can then select which Document will appear on the dashboard.
+This is an optional component that is only loaded if a [Category](https://help.konfuzio.com/modules/categories/index.html) ID is provided under the environment file. You also need to add an Authentication Token. This component is responsible for loading the Documents list for a given Category and that are assigned to the currently authenticated user. You can then select which Document will appear on the dashboard.
