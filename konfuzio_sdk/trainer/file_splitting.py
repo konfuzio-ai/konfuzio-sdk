@@ -1,12 +1,6 @@
 """Find similarities between Documents or Pages via comparison between their texts."""
 import abc
-import bz2
-import cloudpickle
-import konfuzio_sdk
 import logging
-import os
-import pathlib
-import shutil
 import sys
 
 from copy import deepcopy
@@ -14,14 +8,13 @@ from typing import List, Union
 
 from konfuzio_sdk.data import Document, Page
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
-from konfuzio_sdk.trainer.information_extraction import load_model
+from konfuzio_sdk.trainer.information_extraction import load_model, BaseModel
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
-from konfuzio_sdk.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
 
 
-class AbstractFileSplittingModel(metaclass=abc.ABCMeta):
+class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
     """Abstract class for the filesplitting model."""
 
     @abc.abstractmethod
@@ -31,15 +24,6 @@ class AbstractFileSplittingModel(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def fit(self, *args, **kwargs):
         """Fit the custom model on the training Documents."""
-
-    @abc.abstractmethod
-    def save(self, model_path=""):
-        """
-        Save the trained model.
-
-        :param model_path: Path to save the model to.
-        :type model_path: str
-        """
 
     @abc.abstractmethod
     def predict(self, page: Page) -> Page:
@@ -104,21 +88,10 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         https://github.com/cloudpipe/cloudpickle#overriding-pickles-serialization-mechanism-for-importable-constructs).
         :type include_konfuzio: bool
         """
-        if include_konfuzio:
-            cloudpickle.register_pickle_by_value(konfuzio_sdk)
-        pathlib.Path(model_path).mkdir(parents=True, exist_ok=True)
-        temp_pkl_file_path = os.path.join(model_path, f'{get_timestamp()}_first_page_spans_tmp.cloudpickle')
-        pkl_file_path = os.path.join(model_path, f'{get_timestamp()}_first_page_spans.pkl')
-        logger.info('Saving model with cloudpickle')
-        with open(temp_pkl_file_path, 'wb') as f:
-            cloudpickle.dump(self.first_page_spans, f)
-        logger.info('Compressing model with bz2')
-        with open(temp_pkl_file_path, 'rb') as input_f:
-            with bz2.open(pkl_file_path, 'wb') as output_f:
-                shutil.copyfileobj(input_f, output_f)
-        logger.info('Deleting cloudpickle file')
-        os.remove(temp_pkl_file_path)
-        return pkl_file_path
+        path = super(AbstractFileSplittingModel, self).save(
+            model_type="file_splitting", output_dir=model_path, include_konfuzio=include_konfuzio
+        )
+        return path
 
     def predict(self, page: Page) -> Page:
         """
