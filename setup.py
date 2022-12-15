@@ -75,9 +75,13 @@ setuptools.setup(
     entry_points={'console_scripts': ['konfuzio_sdk=konfuzio_sdk.cli:main']},
     install_requires=[
         'cloudpickle==2.0.0',  # Used to pickle objects
+        'dill==0.3.2',  # Used to pickle objects
+        'keras==2.9.0',
+        'Keras-Preprocessing==1.1.2',
         'filetype==1.0.7',  # Used to check that files are in the correct format
         'nltk',
         'numpy>=1.21.6',
+        'opencv-python==4.6.0.66',
         'pandas>=1.3.5',
         'Pillow>=7.1.2',
         'python-dateutil',
@@ -85,6 +89,9 @@ setuptools.setup(
         'requests',  # todo add ==2.24.0 ?
         'regex>=2020.6.8',  # re module but better
         'tabulate==0.8.7',  # Used to pretty print DataFrames
+        'tensorflow==2.9.1',
+        'torch==1.12.1',
+        'transformers==4.21.2',
         'tqdm',
         'pathos==0.2.6',
         'pympler==1.0.1',  # Use to get pickle file size.
