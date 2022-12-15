@@ -170,35 +170,6 @@ class Vocab:
         return list(self._stoi.values())
 
 
-def build_vocab_from_iterator(iterator: List[Union[List[str], str]], tokenizer: Tokenizer = None, **kwargs) -> Vocab:
-    """
-    Build a Vocab object from an iterator.
-
-    The iterator must either be a list of a list of strings, i.e. it has already been tokenized, e.g.:
-        iterator = [['example', 'one'], ['example', 'two'], ['example', 'three']]
-    or a list of strings, i.e. the examples in ther iterator have not been tokenized, e.g.:
-        iterator = ['example one', 'example two', 'example three']
-    In the second case, a Tokenizer must be passed to tokenize the examples before they are used to create the
-    vocabulary.
-    """
-    assert isinstance(iterator, list), f'iterator should be a list, got {type(iterator)}'
-    assert tokenizer is None or isinstance(tokenizer, Tokenizer), 'tokenizer should be None or Tokenizer'
-
-    counter = collections.Counter()
-
-    for item in iterator:
-        if isinstance(item, list):
-            counter.update(item)
-        else:
-            assert isinstance(item, str)
-            assert tokenizer is not None, 'If passing a list of strings, need to also pass a tokenizer!'
-            counter.update(tokenizer.get_tokens(item))
-
-    vocab = Vocab(counter, **kwargs)
-
-    return vocab
-
-
 def build_text_vocab(
     categories: List[Category], tokenizer: Tokenizer, min_freq: int = 1, max_size: int = None
 ) -> Vocab:
@@ -225,18 +196,18 @@ def build_template_category_vocab(categories: List[Category]) -> Vocab:
     """Build a vocabulary over the categories of each annotation."""
     logger.info('building category vocab')
 
-    counter = collections.Counter(NO_LABEL=0)
+    counter = collections.Counter(NO_CATEGORY=0)
 
     counter.update([str(category.id_) for category in categories])
 
     template_vocab = Vocab(
-        counter, min_freq=1, max_size=None, unk_token=None, pad_token=None, special_tokens=['NO_LABEL']
+        counter, min_freq=1, max_size=None, unk_token=None, pad_token=None, special_tokens=['NO_CATEGORY']
     )
 
     assert len(template_vocab) > 0, 'Did not find any categories when building the category vocab!'
 
-    # NO_LABEL should be label zero so we can avoid calculating accuracy over it later
-    assert template_vocab.stoi('NO_LABEL') == 0
+    # NO_CATEGORY should be label zero so we can avoid calculating accuracy over it later
+    assert template_vocab.stoi('NO_CATEGORY') == 0
 
     return template_vocab
 
@@ -298,7 +269,20 @@ class SpacyTokenizer(Tokenizer):
 
     def __init__(self, spacy_model_name: str = 'de_core_news_sm'):
         """Load a spacy model."""
-        self.spacy_model = get_spacy_model(spacy_model_name)
+        self.spacy_model = self._get_spacy_model(spacy_model_name)
+
+    @staticmethod
+    def _get_spacy_model(spacy_model_name: str) -> Language:
+        """
+        Load a spacy model given a string, throw an IO error if not installed/does not exist.
+
+        Returns a spacy language model.
+        """
+        try:
+            spacy_model = spacy.load(spacy_model_name)
+        except IOError:
+            raise IOError(f'Model not found, please install it with `python -m spacy download {spacy_model_name}`')
+        return spacy_model
 
     def get_entities(self, text: str) -> List[Dict[str, Union[str, int]]]:
         """
@@ -336,10 +320,10 @@ class PhraseMatcherTokenizer(SpacyTokenizer):
 
     def __init__(self, categories: List[Category], spacy_model_name: str = 'de_core_news_sm'):
         """Get the spacy model and trains the phrase matcher."""
-        self.spacy_model = get_spacy_model(spacy_model_name)
-        self.phrase_matcher = self._train_phrase_matcher(categories, self.spacy_model)
+        self.spacy_model = self._get_spacy_model(spacy_model_name)
+        self.phrase_matcher = self._train_phrase_matcher(categories)
 
-    def _train_phrase_matcher(self, categories: List[Category], spacy_model: Language) -> PhraseMatcher:
+    def _train_phrase_matcher(self, categories: List[Category]) -> PhraseMatcher:
         """
         Train a spaCy phrase matcher.
 
@@ -355,26 +339,21 @@ class PhraseMatcherTokenizer(SpacyTokenizer):
 
         for category in categories:
             for document in category.documents():
-                annotations = document.annotations()
-                for annotation in annotations:
-                    for span in annotation.spans:
-                        train_dataset[annotation.label.name].add(span.offset_string)
+                for span in document.spans():
+                    train_dataset[span.annotation.label.name].add(span.offset_string)
 
         logger.info('Creating phrase matcher')
-
         # create instance of a phrase matcher
-        phrase_matcher = PhraseMatcher(spacy_model.vocab, attr='shape')  # create phrase matcher
+        phrase_matcher = PhraseMatcher(self.spacy_model.vocab, attr='shape')
 
         logger.info('Training phrase matcher')
-
         for label in train_dataset.keys():
-
             # get examples to train phrase matcher
             examples = train_dataset[label]
-
             # build label-attr-phrase-matcher
-            phrase_matcher.add(label, list(spacy_model.tokenizer.pipe(examples)))
+            phrase_matcher.add(label, list(self.spacy_model.tokenizer.pipe(examples)))
 
+        self.phrase_matcher = phrase_matcher
         return phrase_matcher
 
     def get_entities(self, text: str) -> List[Dict[str, Union[str, int]]]:
@@ -420,27 +399,14 @@ class PhraseMatcherTokenizer(SpacyTokenizer):
         return tokens
 
 
-def get_spacy_model(spacy_model_name: str) -> Language:
-    """
-    Load a spacy model given a string, throw an IO error if not installed/does not exist.
-
-    Returns a spacy language model.
-    """
-    try:
-        spacy_model = spacy.load(spacy_model_name)
-    except IOError:
-        raise IOError(f'Model not found, please install it with `python -m spacy download {spacy_model_name}`')
-    return spacy_model
-
-
-def get_tokenizer(tokenizer_name: str, categories: List[Category], *args, **kwargs) -> Tokenizer:
-    """Get a Tokenizer based on a string. Some Tokenizers need a list of projects to build themselves."""
-    if tokenizer_name == 'phrasematcher':
-        tokenizer = PhraseMatcherTokenizer(categories)
-    else:
-        try:  # try and get a bpe tokenizer from huggingface
-            tokenizer = BPETokenizer(tokenizer_name)
-        except OSError:
-            raise ValueError(f'{tokenizer_name} is not a valid BPE tokenizer!')
-
-    return tokenizer
+# def get_tokenizer(tokenizer_name: str, categories: List[Category], *args, **kwargs) -> Tokenizer:
+#     """Get a Tokenizer based on a string. Some Tokenizers need a list of projects to build themselves."""
+#     if tokenizer_name == 'phrasematcher':
+#         tokenizer = PhraseMatcherTokenizer(categories)
+#     else:
+#         try:  # try and get a bpe tokenizer from huggingface
+#             tokenizer = BPETokenizer(tokenizer_name)
+#         except OSError:
+#             raise ValueError(f'{tokenizer_name} is not a valid BPE tokenizer!')
+#
+#     return tokenizer

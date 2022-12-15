@@ -153,7 +153,7 @@ def get_document_template_classifier_data(
         meta_data = document.project.meta_data
         template_id = [m['category_template'] for m in meta_data if m['id'] == document.id_]
         assert len(template_id) == 1
-        template_id = str(template_id[0]) if template_id[0] else 'NO_LABEL'
+        template_id = str(template_id[0]) if template_id[0] else 'NO_CATEGORY'
 
         doc_info = get_document_classifier_examples(
             document, template_id, tokenizer, text_vocab, category_vocab, max_len, use_image, use_text
@@ -190,7 +190,7 @@ def build_document_template_classifier_iterators(
     max_len: int = 50,
     device: torch.device = 'cpu',
     **kwargs,
-) -> Tuple[DataLoader, DataLoader, DataLoader]:
+) -> Tuple[DataLoader, DataLoader]:
     """Build the iterators for the document classifier."""
     assert use_image or use_text, 'One of either `use_image` or `use_text` needs to be `True`!'
 

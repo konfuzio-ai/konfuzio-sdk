@@ -7,7 +7,7 @@ import pytest
 from copy import deepcopy
 
 from konfuzio_sdk.data import Project, Document, Category, Page
-from konfuzio_sdk.trainer.tokenization import get_tokenizer, build_template_category_vocab, build_text_vocab
+from konfuzio_sdk.trainer.tokenization import build_template_category_vocab, build_text_vocab, PhraseMatcherTokenizer
 
 from konfuzio_sdk.trainer.document_categorization import (
     FallbackCategorizationModel,
@@ -288,9 +288,10 @@ class TestCategorizationAI(unittest.TestCase):
 
     def test_1_configure_pipeline(self) -> None:
         """Test configure categories, with training and test docs for the Document Model."""
-        tokenizer = get_tokenizer('phrasematcher', categories=self.categorization_pipeline.categories)
-        self.categorization_pipeline.tokenizer = tokenizer
-        self.categorization_pipeline.text_vocab = build_text_vocab(self.categorization_pipeline.categories, tokenizer)
+        self.categorization_pipeline.tokenizer = PhraseMatcherTokenizer(self.categorization_pipeline.categories)
+        self.categorization_pipeline.text_vocab = build_text_vocab(
+            self.categorization_pipeline.categories, self.categorization_pipeline.tokenizer
+        )
 
         self.categorization_pipeline.category_vocab = build_template_category_vocab(
             self.categorization_pipeline.categories

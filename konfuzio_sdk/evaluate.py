@@ -624,25 +624,25 @@ class CategorizationEvaluation:
     def update_names_and_indexes(self, names: Union[List[str], None] = None, indexes: Union[List[str], None] = None):
         """Update the lists of labels names and classes indexes to consider a None prediction."""
         if names is not None and indexes is not None:
-            # if we already have the names and indexes, we check for 'NO_LABEL'
-            if 'NO_LABEL' not in names:
-                # if 'NO_LABEL' not in the names, we add it and also the index 0
+            # if we already have the names and indexes, we check for 'NO_CATEGORY'
+            if 'NO_CATEGORY' not in names:
+                # if 'NO_CATEGORY' not in the names, we add it and also the index 0
                 if 0 in indexes:
-                    # if classes_indexes already has a 0, we cannot add NO_LABEL
-                    print('A prediction is NoneType and not possible to add NO_LABEL.')
+                    # if classes_indexes already has a 0, we cannot add NO_CATEGORY
+                    print('A prediction is NoneType and not possible to add NO_CATEGORY.')
                     return None
 
-                names.append('NO_LABEL')
+                names.append('NO_CATEGORY')
                 indexes.append(0)
 
-            if names.index('NO_LABEL') != indexes.index(0):
-                print('Index of "NO_LABEL" is not 0.')
+            if names.index('NO_CATEGORY') != indexes.index(0):
+                print('Index of "NO_CATEGORY" is not 0.')
                 return None
 
         elif names is not None and indexes is None:
-            # if we only have labels_names, we add 'NO_LABEL'
-            if 'NO_LABEL' not in names:
-                names.append('NO_LABEL')
+            # if we only have labels_names, we add 'NO_CATEGORY'
+            if 'NO_CATEGORY' not in names:
+                names.append('NO_CATEGORY')
 
         elif names is None and indexes is not None:
             if 0 in indexes:
@@ -745,9 +745,9 @@ class CategorizationEvaluation:
         if labels_names is None:
             labels_names = [str(i) for i in set(actual_classes + predicted_classes)]
 
-        # if 'NO_LABEL' in labels_names:
-        #    if labels_names.index('NO_LABEL') not in actual_classes:
-        #        labels_names.remove('NO_LABEL')
+        # if 'NO_CATEGORY' in labels_names:
+        #    if labels_names.index('NO_CATEGORY') not in actual_classes:
+        #        labels_names.remove('NO_CATEGORY')
 
         if classes_indexes is None:
             classes_indexes = [int(i) for i in set(actual_classes + predicted_classes)]

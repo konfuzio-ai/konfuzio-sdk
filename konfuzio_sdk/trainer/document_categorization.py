@@ -887,11 +887,15 @@ class CategorizationAI(FallbackCategorizationModel):
     ):
         """Initialize a CategorizationAI."""
         self.categories = categories
-        self.tokenizer = None
-
         self.documents = None
         self.test_documents = None
 
+        self.tokenizer = None
+        self.text_vocab = None
+        self.category_vocab = None
+        self.classifier = None
+
+        # todo do not hardcode the config
         document_classifier_config: dict = {
             'image_module': {'name': 'efficientnet_b0'},
             'text_module': {'name': 'nbowselfattention'},
@@ -923,58 +927,6 @@ class CategorizationAI(FallbackCategorizationModel):
             self.image_augmentation = None
             self.eval_transforms = None
             self.train_transforms = None
-
-        # logger.info('setting up vocabs')
-
-        # # only build a text vocabulary if the classifier has a text module
-        # if 'text_module' in document_classifier_config:
-        #     # ensure we have a tokenizer
-        #     assert self.tokenizer is not None, 'If using a text module you must pass a Tokenizer!'
-        #
-        #     if isinstance(self.tokenizer, str):
-        #         self.tokenizer = get_tokenizer(tokenizer_name=self.tokenizer, projects=self.projects)
-        #
-        #     if hasattr(tokenizer, 'vocab'):
-        #         # some tokenizers already have a vocab so if they do we use that instead of building one
-        #         self.text_vocab = tokenizer.vocab
-        #         logger.info('Using tokenizer\'s vocab')
-        #     elif text_vocab is None:
-        #         # if our classifier has a text module we have a tokenizer that doesn't have a vocab
-        #         # then we have to build a vocab from our projects using our tokenizer
-        #         self.text_vocab = build_text_vocab(self.projects, self.tokenizer)
-        #     else:
-        #         self.text_vocab = text_vocab
-        #         logger.info('Using provided text vocab')
-        #     logger.info(f'Text vocab length: {len(self.text_vocab)}')
-        # else:
-        #     # if the classifier doesn't have a text module then we shouldn't have a tokenizer
-        #     # and the text vocab should be None
-        #     assert tokenizer is None, 'If not using a text module then you should not pass a Tokenizer!'
-        #     self.text_vocab = None
-
-        # if we do not pass a category vocab then build one
-        # if category_vocab is None:
-        #     self.category_vocab = build_category_vocab(self.projects)
-        # else:
-        #     self.category_vocab = category_vocab
-        #     logger.info('Using provided vocab')
-
-        # logger.info(f'Category vocab length: {len(self.category_vocab)}')
-        # logger.info(f'Category vocab counts: {self.category_vocab.counter}')
-        #
-        # logger.info('setting up document classifier')
-
-        # set-up the document classifier
-        # need to explicitly add input_dim and output_dim as they are calculated from the data
-        # if 'text_module' in document_classifier_config:
-        #     document_classifier_config['text_module']['input_dim'] = len(self.text_vocab)
-        # document_classifier_config['output_dim'] = len(self.category_vocab)
-
-        # store the classifier config file
-        self.document_classifier_config = document_classifier_config
-
-        # create document classifier from config
-        # self.classifier = get_document_classifier(document_classifier_config)
 
         self.device = torch.device('cuda' if (torch.cuda.is_available() and use_cuda) else 'cpu')
 
@@ -1013,68 +965,33 @@ class CategorizationAI(FallbackCategorizationModel):
         torch.save(data_to_save, path)
         return path
 
-    def _get_accuracy(self, predictions: torch.FloatTensor, labels: torch.FloatTensor) -> torch.FloatTensor:
-        """Calculate accuracy of predictions."""
-        # predictions = [batch size, n classes]
-        # labels = [batch size]
-        batch_size, n_classes = predictions.shape
-        # which class had the highest probability?
-        top_predictions = predictions.argmax(dim=1)
-        # top_predictions = [batch size]
-        # how many of the highest probability predictions match the label?
-        correct = top_predictions.eq(labels).sum()
-        # divide by the batch size to get accuracy per batch
-        accuracy = correct.float() / batch_size
-        return accuracy
-
     def _train(
         self,
         examples: DataLoader,
-        classifier: DocumentClassifier,
         loss_fn: torch.nn.Module,
         optimizer: torch.optim.Optimizer,
-    ) -> Tuple[List[float], List[float]]:
+    ) -> List[float]:
         """Perform one epoch of training."""
-        classifier.train()
+        self.classifier.train()
         losses = []
-        accs = []
         for batch in tqdm.tqdm(examples, desc='Training'):
-            predictions = classifier(batch)['prediction']
+            predictions = self.classifier(batch)['prediction']
             loss = loss_fn(predictions, batch['label'])
-            acc = self._get_accuracy(predictions, batch['label'])
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
             losses.append(loss.item())
-            accs.append(acc.item())
-        return losses, accs
-
-    @torch.no_grad()
-    def _evaluate(
-        self, examples: DataLoader, classifier: DocumentClassifier, loss_fn: torch.nn.Module
-    ) -> Tuple[List[float], List[float]]:
-        """Evaluate the model, i.e. get loss and accuracy but do not update the model parameters."""
-        classifier.eval()
-        losses = []
-        accs = []
-        for batch in tqdm.tqdm(examples, desc='Evaluating'):
-            predictions = classifier(batch)['prediction']
-            loss = loss_fn(predictions, batch['label'])
-            acc = self._get_accuracy(predictions, batch['label'])
-            losses.append(loss.item())
-            accs.append(acc.item())
-        return losses, accs
+        return losses
 
     def _fit_classifier(
         self,
         train_examples: DataLoader,
-        classifier: DocumentClassifier,
         n_epochs: int = 25,
         patience: int = 3,
-        optimizer: dict = {'name': 'Adam'},
+        optimizer=None,
         lr_decay: float = 0.999,
         **kwargs,
-    ) -> Dict[str, float]:
+    ) -> Tuple[DocumentClassifier, Dict[str, List[float]]]:
         """
         Fits a classifier on given `train_examples` and evaluates on given `test_examples`.
 
@@ -1082,21 +999,23 @@ class CategorizationAI(FallbackCategorizationModel):
         Trains a model for n_epochs or until it runs out of patience (goes `patience` epochs without seeing the
         validation loss decrease), whichever comes first.
         """
-        train_losses, train_accs = [], []
+        if optimizer is None:
+            optimizer = {'name': 'Adam'}
+        train_losses = []
         patience_counter = 0
         loss_fn = torch.nn.CrossEntropyLoss()
-        optimizer = get_optimizer(classifier, optimizer)
+        optimizer = get_optimizer(self.classifier, optimizer)
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=0, factor=lr_decay)
         temp_dir = tempfile.gettempdir()
         temp_filename = os.path.join(temp_dir, f'temp_{uuid.uuid4().hex}.pt')
         logger.info('begin fitting')
         best_valid_loss = float('inf')
+        train_loss = float('inf')
         for epoch in range(n_epochs):
-            train_loss, train_acc = self._train(train_examples, classifier, loss_fn, optimizer)  # train epoch
+            train_loss = self._train(train_examples, loss_fn, optimizer)  # train epoch
             train_losses.extend(train_loss)  # keep track of all the losses/accs
-            train_accs.extend(train_acc)
             logger.info(f'epoch: {epoch}')
-            logger.info(f'train_loss: {np.mean(train_loss):.3f}, train_acc: {np.nanmean(train_acc):.3f}')
+            logger.info(f'train_loss: {np.mean(train_loss):.3f}')
             # use scheduler to reduce the lr
             scheduler.step(np.mean(train_loss))
             # if we get the best validation loss so far
@@ -1105,7 +1024,7 @@ class CategorizationAI(FallbackCategorizationModel):
             if np.mean(train_loss) < best_valid_loss:
                 patience_counter = 0
                 best_valid_loss = np.mean(train_loss)
-                torch.save(classifier.state_dict(), temp_filename)
+                torch.save(self.classifier.state_dict(), temp_filename)
             # if we don't get the best validation loss so far
             # increase the patience counter
             else:
@@ -1116,20 +1035,21 @@ class CategorizationAI(FallbackCategorizationModel):
                 break
         logger.info('training finished, begin testing')
         # load parameters that got us the best validation loss
-        classifier.load_state_dict(torch.load(temp_filename))
+        self.classifier.load_state_dict(torch.load(temp_filename))
         os.remove(temp_filename)
         # evaluate model over the test data
         logger.info(f'test_loss: {np.mean(train_losses):.3f}, test_acc: {np.nanmean(train_loss):.3f}')
 
         training_metrics = {
             'train_losses': train_losses,
-            'train_accs': train_accs,
         }
 
-        return classifier, training_metrics
+        return self.classifier, training_metrics
 
-    def fit(self, document_training_config: dict = {}, **kwargs) -> Dict[str, List[float]]:
+    def fit(self, document_training_config=None, **kwargs) -> Dict[str, List[float]]:
         """Fit the CategorizationAI classifier."""
+        if document_training_config is None:
+            document_training_config = {}
         logger.info('getting document classifier iterators')
 
         # figure out if we need images and/or text depending on if the classifier
@@ -1165,9 +1085,7 @@ class CategorizationAI(FallbackCategorizationModel):
         logger.info('training label classifier')
 
         # fit the document classifier
-        self.classifier, training_metrics = self._fit_classifier(
-            train_examples, self.classifier, **document_training_config
-        )
+        self.classifier, training_metrics = self._fit_classifier(train_examples, **document_training_config)
 
         # put document classifier back on cpu to free up GPU memory
         self.classifier = self.classifier.to('cpu')
@@ -1190,10 +1108,10 @@ class CategorizationAI(FallbackCategorizationModel):
            A     |     x
            B     |     y
 
-        In case the model wasn't trained to predict 'NO_LABEL' we can still have it in the output if
+        In case the model wasn't trained to predict 'NO_CATEGORY' we can still have it in the output if
         the document falls in any of the following situations.
 
-        The output prediction is 'NO_LABEL' if:
+        The output prediction is 'NO_CATEGORY' if:
 
         - the number of images do not match the number pages text
         E.g.: document with 3 pages, 3 images and only 2 pages of text
@@ -1214,8 +1132,8 @@ class CategorizationAI(FallbackCategorizationModel):
         self.classifier = self.classifier.to(device)
 
         temp_categories = self.category_vocab.get_tokens()
-        if 'NO_LABEL' in temp_categories:
-            temp_categories.remove('NO_LABEL')
+        if 'NO_CATEGORY' in temp_categories:
+            temp_categories.remove('NO_CATEGORY')
         _ = int(temp_categories[0])
         categories = self.category_vocab.get_tokens()
 
@@ -1244,7 +1162,7 @@ class CategorizationAI(FallbackCategorizationModel):
                     max_length = None
                 tok = self.tokenizer.get_tokens(txt)[:max_length]
                 # assert we have a valid token (e.g '\n\n\n' results in tok = [])
-                if len(tok) <= 0:
+                if not tok:
                     logger.info(f'[WARNING] The token resultant from page {i} is empty. Page text: {txt}.')
 
                 idx = [self.text_vocab.stoi(t) for t in tok]
@@ -1322,6 +1240,7 @@ class CategorizationAI(FallbackCategorizationModel):
         img_data.save(buf, format='PNG')
         docs_data_images = [buf]
 
+        # todo optimize for gpu? self._predict can accept a batch of images/texts
         (predicted_category_id, predicted_confidence), _ = self._predict(page_images=docs_data_images, text=page.text)
 
         if predicted_category_id == -1:
