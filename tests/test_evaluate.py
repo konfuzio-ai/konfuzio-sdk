@@ -948,14 +948,11 @@ class TestEvaluation(unittest.TestCase):
     def test_true_negatives(self):
         """Count zero false negatives from two Training Documents (correctly, nothing is predicted under threshold)."""
         project = LocalTextProject()
-        documents_without_category_for_filesplitting = (
+        # only those of Categories 1 and 2, because the rest are intended to be used for FileSplitting testing & eval
+        documents_test_evaluation = (
             project.get_category_by_id(1).documents() + project.get_category_by_id(2).documents()
         )
-        evaluation = Evaluation(
-            documents=list(
-                zip(documents_without_category_for_filesplitting, documents_without_category_for_filesplitting)
-            )
-        )
+        evaluation = Evaluation(documents=list(zip(documents_test_evaluation, documents_test_evaluation)))
         assert evaluation.tn() == 0
 
     def test_f1(self):
@@ -1272,17 +1269,6 @@ class TestEvaluationFileSplitting(unittest.TestCase):
     def test_metrics_calculation(self):
         """Test Evaluation class for ContextAwareFileSplitting."""
         self.file_splitting_model.first_page_spans = self.file_splitting_model.fit()
-        non_first_page_spans = {}
-        for category in self.file_splitting_model.categories:
-            cur_non_first_page_spans = []
-            for doc in category.documents():
-                for page in doc.pages():
-                    if page.number > 1:
-                        cur_non_first_page_spans.append({span.offset_string for span in page.spans()})
-            if not cur_non_first_page_spans:
-                cur_non_first_page_spans.append(set())
-            true_non_first_page_spans = set.intersection(*cur_non_first_page_spans)
-            non_first_page_spans[category.id_] = true_non_first_page_spans
         splitting_ai = SplittingAI(self.file_splitting_model)
         ground_truth = self.test_document
         for page in ground_truth.pages():
@@ -1341,7 +1327,7 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         """Test evaluate_full method of SplittingAI."""
         splitting_ai = SplittingAI(self.file_splitting_model)
         splitting_ai.evaluate_full()
-        assert splitting_ai.full_evaluation.evaluation_results['tp'] == 5
+        assert splitting_ai.full_evaluation.evaluation_results['tp'] == 6
         assert splitting_ai.full_evaluation.evaluation_results['fp'] == 0
         assert splitting_ai.full_evaluation.evaluation_results['fn'] == 0
         assert splitting_ai.full_evaluation.evaluation_results['fn'] == 0

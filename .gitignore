@@ -11,5 +11,4 @@ settings.py
 *.tar.gz
 *data_*
 .ipynb_checkpoints
-draft.ipynb
-testing_class/
+*.ipynb
