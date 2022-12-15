@@ -1254,7 +1254,7 @@ class TestCategoryEvaluation(unittest.TestCase):
         cls.cat2_doca = cls.project.categories[1].documents()[0]
         cls.cat2_docb = cls.project.categories[1].test_documents()[0]
         cls.cat_eval = CategorizationEvaluation(
-            cls.project,
+            cls.project.categories,
             documents=[
                 (cls.cat1_doca, cls.cat1_docb),
                 (cls.cat2_doca, cls.cat2_docb),

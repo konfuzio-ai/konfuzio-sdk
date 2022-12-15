@@ -95,7 +95,7 @@ class FallbackCategorizationModel:
             document.category = None
         return document
 
-    def _categorize_page(self, page: Page) -> Page:
+    def _categorize_page(self, orig_page: Page, page: Page) -> Page:
         """Run categorization on a Page.
 
         :param page: Input Page
@@ -135,8 +135,8 @@ class FallbackCategorizationModel:
                 page.category = None
 
         # Categorize each Page of the Document.
-        for page in virtual_doc.pages():
-            self._categorize_page(page)
+        for original_page, virtual_page in zip(document.pages(), virtual_doc.pages()):
+            self._categorize_page(original_page, virtual_page)
 
         # Try to assign a Category to the Document itself.
         # If the Pages are differently categorized, the Document won't be assigned a Category at this stage.
@@ -1229,13 +1229,16 @@ class CategorizationAI(FallbackCategorizationModel):
 
         return (predicted_label, predicted_confidence), predictions_df
 
-    def _categorize_page(self, page: Page) -> Page:
+    def _categorize_page(self, orig_page: Page, page: Optional[Page] = None) -> Page:
         """Run categorization on a Page.
 
         :param page: Input Page
         :returns: The input Page with added categorization information
         """
-        img_data = Image.open(page.image_path)
+        # todo track original page in data.py
+        if page is None:
+            page = orig_page
+        img_data = Image.open(orig_page.image_path)
         buf = BytesIO()
         img_data.save(buf, format='PNG')
         docs_data_images = [buf]

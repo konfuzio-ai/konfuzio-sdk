@@ -2008,7 +2008,7 @@ class Document(Data):
     @property
     def document_folder(self):
         """Get the path to the folder where all the Document information is cached locally."""
-        return os.path.join(self.project.documents_folder, str(self.id_ or self.copy_of_id))
+        return os.path.join(self.project.documents_folder, str(self.id_))
 
     def get_file(self, ocr_version: bool = True, update: bool = False):
         """
