@@ -22,20 +22,29 @@ logger = logging.getLogger(__name__)
 
 
 class TestFallbackCategorizationModel(unittest.TestCase):
-    """Test fallback logic for Categorization."""
+    """Test New SDK fallback logic for Categorization."""
 
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the Data and Categorization Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-        cls.categorization_pipeline = FallbackCategorizationModel(cls.project)
-        cls.categorization_pipeline.categories = cls.project.categories
+        cls.categorization_pipeline = FallbackCategorizationModel(cls.project.categories)
         cls.payslips_category = cls.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID)
         cls.receipts_category = cls.project.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID)
 
     def test_1_configure_pipeline(self) -> None:
         """No pipeline to configure for the fallback logic."""
         assert self.categorization_pipeline.categories is not None
+
+        payslips_training_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).documents()
+        receipts_training_documents = self.project.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID).documents()
+        self.categorization_pipeline.documents = payslips_training_documents + receipts_training_documents
+        assert all(doc.category is not None for doc in self.categorization_pipeline.documents)
+
+        payslips_test_documents = self.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).test_documents()
+        receipts_test_documents = self.project.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID).test_documents()
+        self.categorization_pipeline.test_documents = payslips_test_documents + receipts_test_documents
+        assert all(doc.category is not None for doc in self.categorization_pipeline.test_documents)
 
     def test_2_fit(self) -> None:
         """Start to train the Model."""
@@ -56,10 +65,22 @@ class TestFallbackCategorizationModel(unittest.TestCase):
         """Upload the model."""
         assert os.path.isfile(self.categorization_pipeline.pipeline_path)
 
+        # try:
+        #    upload_ai_model(ai_model_path=self.categorization_pipeline.pipeline_path,
+        #    category_ids=[self.categorization_pipeline.category.id_])
+        # except HTTPError as e:
+        #    assert '403' in str(e)
+
     def test_5_evaluate(self):
         """Evaluate FallbackCategorizationModel."""
-        with self.assertRaises(NotImplementedError):
-            self.categorization_pipeline.evaluate()
+        categorization_evaluation = self.categorization_pipeline.evaluate()
+        # can't categorize any of the 3 payslips docs since they don't contain the word "lohnabrechnung"
+        assert categorization_evaluation.f1(self.categorization_pipeline.categories[0]) == 0.0
+        # can categorize 1 out of 2 receipts docs since one contains the word "quittung"
+        # therefore recall == 1/2 and precision == 1.0, implying f1 == 2/3
+        assert categorization_evaluation.f1(self.categorization_pipeline.categories[1]) == 2 / 3
+        # global f1 score
+        assert categorization_evaluation.f1(None) == 0.26666666666666666
 
     def test_6_categorize_test_document(self):
         """Test extract category for a selected Test Document with the category name contained within its text."""

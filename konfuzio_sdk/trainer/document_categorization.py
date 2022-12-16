@@ -2,10 +2,11 @@
 
 import logging
 from copy import deepcopy
-from typing import Union
+from typing import List
 from warnings import warn
 
-from konfuzio_sdk.data import Project, Document
+from konfuzio_sdk.data import Document, Category, Page
+from konfuzio_sdk.evaluate import CategorizationEvaluation
 
 logger = logging.getLogger(__name__)
 
@@ -18,19 +19,14 @@ class FallbackCategorizationModel:
     This can be an effective fallback logic to categorize documents when no categorization AI is available.
     """
 
-    def __init__(self, project: Union[int, Project], *args, **kwargs):
+    def __init__(self, categories: List[Category], *args, **kwargs):
         """Initialize FallbackCategorizationModel."""
         # Go through keyword arguments, and either save their values to our
         # instance, or raise an error.
-        if isinstance(project, int):
-            self.project = Project(id_=project)
-        elif isinstance(project, Project):
-            self.project = project
-        else:
-            raise NotImplementedError
-
-        self.categories = None
+        self.categories = categories
         self.name = self.__class__.__name__
+
+        self.evaluation = None
 
     def fit(self) -> None:
         """Use as placeholder Function."""
@@ -44,12 +40,26 @@ class FallbackCategorizationModel:
             f'{self} uses a fallback logic for categorizing documents, this will not save model to disk.'
         )
 
-    def evaluate(self):
-        """Use as placeholder Function."""
-        raise NotImplementedError(
-            f'{self} uses a fallback logic for categorizing documents, without using Training or Test documents for '
-            f'evaluation.'
-        )
+    def evaluate(self, use_training_docs: bool = False) -> CategorizationEvaluation:
+        """
+        Evaluate the full Categorization pipeline on the pipeline's Test Documents.
+
+        :param use_training_docs: Bool for whether to evaluate on the training documents instead of testing documents.
+        :return: Evaluation object.
+        """
+        eval_list = []
+        if not use_training_docs:
+            eval_docs = self.test_documents
+        else:
+            eval_docs = self.documents
+
+        for document in eval_docs:
+            predicted_doc = self.categorize(document=document, recategorize=True)
+            eval_list.append((document, predicted_doc))
+
+        self.evaluation = CategorizationEvaluation(self.categories, eval_list)
+
+        return self.evaluation
 
     @staticmethod
     def _categorize_from_pages(document: Document) -> Document:
@@ -64,6 +74,20 @@ class FallbackCategorizationModel:
         else:
             document.category = None
         return document
+
+    def _categorize_page(self, page: Page) -> Page:
+        """Run categorization on a Page.
+
+        :param page: Input Page
+        :returns: The input Page with added categorization information
+        """
+        for training_category in self.categories:
+            if training_category.fallback_name in page.text.lower():
+                page.category = training_category
+                break
+        if page.category is None:
+            logger.warning(f'{self} could not find the category of {page} by using the fallback categorization logic.')
+        return page
 
     def categorize(self, document: Document, recategorize: bool = False, inplace: bool = False) -> Document:
         """Run categorization on a Document.
@@ -90,16 +114,12 @@ class FallbackCategorizationModel:
             for page in virtual_doc.pages():
                 page.category = None
 
+        # Categorize each Page of the Document.
         for page in virtual_doc.pages():
-            for training_category in self.categories:
-                if training_category.fallback_name in page.text.lower():
-                    page.category = training_category
-                    break
+            self._categorize_page(page)
 
-            if page.category is None:
-                logger.warning(
-                    f'{self} could not find the category of {page} by using the fallback categorization logic.'
-                )
-                continue
-
+        # Try to assign a Category to the Document itself.
+        # If the Pages are differently categorized, the Document won't be assigned a Category at this stage.
+        # The Document will have to be split at a later stage to find a consistent Category for each sub-Document.
+        # Otherwise, the Category for each sub-Document (if any) will be corrected by the user.
         return self._categorize_from_pages(virtual_doc)

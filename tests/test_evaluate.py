@@ -6,7 +6,7 @@ import pytest
 from pandas import DataFrame
 
 from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span, LabelSet, Label, Category
-from konfuzio_sdk.evaluate import compare, grouped, Evaluation, EvaluationCalculator
+from konfuzio_sdk.evaluate import compare, grouped, Evaluation, EvaluationCalculator, CategorizationEvaluation
 
 from konfuzio_sdk.samples import LocalTextProject
 from tests.variables import TEST_DOCUMENT_ID
@@ -1191,6 +1191,119 @@ class TestEvaluationSecondLabelDocumentBDocumentA(unittest.TestCase):
     def test_true_negatives(self):
         """Evaluate that that nothing is correctly predicted below threshold."""
         assert self.evaluation.tn(search=self.label) == 0
+
+
+class TestCategorizationEvaluation(unittest.TestCase):
+    """Test the calculation two Documents with overlapping Spans and multiple Labels."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Test evaluation when changing filtered Label and Documents."""
+        cls.project = LocalTextProject()
+        cls.cat1_doca = cls.project.categories[0].documents()[0]
+        cls.cat1_docb = cls.project.categories[0].test_documents()[0]
+        cls.cat2_doca = cls.project.categories[1].documents()[0]
+        cls.cat2_docb = cls.project.categories[1].test_documents()[0]
+        cls.cat_eval = CategorizationEvaluation(
+            cls.project.categories,
+            documents=[
+                (cls.cat1_doca, cls.cat1_docb),
+                (cls.cat2_doca, cls.cat2_docb),
+                (cls.cat1_doca, cls.cat2_docb),
+                (cls.cat1_doca, cls.cat2_docb),
+            ],
+        )
+
+    def test_get_tp_tn_fp_fn_per_label(self):
+        """Test get results per label for categorization problem."""
+        results_per_label = self.cat_eval._get_tp_tn_fp_fn_per_label()
+        assert results_per_label[1] == {'tp': 1, 'fp': 0, 'fn': 2, 'tn': 1}
+        assert results_per_label[2] == {'tp': 1, 'fp': 2, 'fn': 0, 'tn': 1}
+
+    def test_get_metrics_per_label(self):
+        """Test get metrics per label for categorization problem."""
+        results_labels = self.cat_eval.get_metrics_per_label()
+
+        assert len(results_labels) == len(self.cat_eval.labels_names)
+
+        for ind, result in enumerate(results_labels):
+            tp = result['tp']
+            fp = result['fp']
+            tn = result['tn']
+            fn = result['fn']
+
+            accuracy = (tp + tn) / (tp + tn + fp + fn)
+            precision = tp / (tp + fp + 1e-10)
+            recall = tp / (tp + fn + 1e-10)
+            specificity = tn / (tn + fp + 1e-10)
+            balanced_accuracy = (recall + specificity) / 2
+            f1_score = (2 * recall * precision) / (recall + precision + 1e-10)
+
+            assert result['accuracy'] == accuracy
+            assert round(result['balanced accuracy'], 6) == round(balanced_accuracy, 6)
+            assert round(result['f1-score'], 6) == round(f1_score, 6)
+            assert round(result['precision'], 6) == round(precision, 6)
+            assert round(result['recall'], 6) == round(recall, 6)
+
+    def test_get_general_metrics(self):
+        """Test get general metrics for a categorization problem."""
+        results_labels = self.cat_eval.get_metrics_per_label()
+
+        results = self.cat_eval.get_general_metrics()
+
+        df = DataFrame(data=results_labels)
+
+        # weighted metrics
+        precision = 0
+        recall = 0
+        f1_score = 0
+        for _, row in df.iterrows():
+            precision += row['precision'] * row['support']
+            recall += row['recall'] * row['support']
+            f1_score += row['f1-score'] * row['support']
+
+        precision = precision / len(self.cat_eval.actual_classes)
+        recall = recall / len(self.cat_eval.actual_classes)
+        f1_score = f1_score / len(self.cat_eval.actual_classes)
+
+        assert results['tp'] == 2
+        assert results['fp'] == 2
+        assert results['accuracy'] == 0.5
+        assert round(results['f1-score'], 6) == round(f1_score, 6)
+        assert round(results['precision'], 6) == round(precision, 6)
+        assert round(results['recall'], 6) == round(recall, 6)
+        assert results['support'] == len(self.cat_eval.actual_classes)
+
+    def test_global_metrics(self):
+        """Test metrics for a categorization problem."""
+        assert self.cat_eval.tp(None) == 2
+        assert self.cat_eval.fp(None) == 2
+        assert self.cat_eval.fn(None) == 2
+        assert self.cat_eval.tn(None) == 2
+
+        assert self.cat_eval.precision(None) == 5 / 6
+        assert self.cat_eval.recall(None) == 0.5
+        assert self.cat_eval.f1(None) == 0.5
+
+    def test_filtered_metrics(self):
+        """Test metrics for a categorization problem while filtering for categories."""
+        assert self.cat_eval.tp(category=self.project.categories[0]) == 1
+        assert self.cat_eval.fp(category=self.project.categories[0]) == 0
+        assert self.cat_eval.fn(category=self.project.categories[0]) == 2
+        assert self.cat_eval.tn(category=self.project.categories[0]) == 1
+
+        assert self.cat_eval.precision(category=self.project.categories[0]) == 1.0
+        assert self.cat_eval.recall(category=self.project.categories[0]) == 1 / 3
+        assert self.cat_eval.f1(category=self.project.categories[0]) == 0.5
+
+        assert self.cat_eval.tp(category=self.project.categories[1]) == 1
+        assert self.cat_eval.fp(category=self.project.categories[1]) == 2
+        assert self.cat_eval.fn(category=self.project.categories[1]) == 0
+        assert self.cat_eval.tn(category=self.project.categories[1]) == 1
+
+        assert self.cat_eval.precision(category=self.project.categories[1]) == 1 / 3
+        assert self.cat_eval.recall(category=self.project.categories[1]) == 1.0
+        assert self.cat_eval.f1(category=self.project.categories[1]) == 0.5
 
 
 class TestEvaluationCalculator(unittest.TestCase):
