@@ -1351,8 +1351,8 @@ class BaseModel:
             # todo register all dependencies?
         pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
         if model_type == "file_splitting":
-            temp_pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_first_page_spans_tmp.cloudpickle')
-            pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_first_page_spans.pkl')
+            temp_pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_file_splitting_model.cloudpickle')
+            pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_file_splitting_model.pkl')
         elif model_type == "extraction_ai":
             logger.info(f'{reduce_weight=}')
             logger.info(f'{max_ram=}')
