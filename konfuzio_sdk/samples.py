@@ -295,6 +295,15 @@ uncertain
             spans=[Span(start_offset=68, end_offset=72)],
         )
 
+        _ = Annotation(
+            id_=25,
+            document=document,
+            is_correct=False,
+            label=self.no_label,
+            label_set=self.no_label_set,
+            spans=[Span(start_offset=67, end_offset=71)],
+        )
+
         ##########
         # Documents to test vertical merging logic
 
