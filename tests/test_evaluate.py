@@ -1220,60 +1220,6 @@ class TestCategorizationEvaluation(unittest.TestCase):
         assert results_per_label[1] == {'tp': 1, 'fp': 0, 'fn': 2, 'tn': 1}
         assert results_per_label[2] == {'tp': 1, 'fp': 2, 'fn': 0, 'tn': 1}
 
-    def test_get_metrics_per_label(self):
-        """Test get metrics per label for categorization problem."""
-        results_labels = self.cat_eval.get_metrics_per_label()
-
-        assert len(results_labels) == len(self.cat_eval.labels_names)
-
-        for ind, result in enumerate(results_labels):
-            tp = result['tp']
-            fp = result['fp']
-            tn = result['tn']
-            fn = result['fn']
-
-            accuracy = (tp + tn) / (tp + tn + fp + fn)
-            precision = tp / (tp + fp + 1e-10)
-            recall = tp / (tp + fn + 1e-10)
-            specificity = tn / (tn + fp + 1e-10)
-            balanced_accuracy = (recall + specificity) / 2
-            f1_score = (2 * recall * precision) / (recall + precision + 1e-10)
-
-            assert result['accuracy'] == accuracy
-            assert round(result['balanced accuracy'], 6) == round(balanced_accuracy, 6)
-            assert round(result['f1-score'], 6) == round(f1_score, 6)
-            assert round(result['precision'], 6) == round(precision, 6)
-            assert round(result['recall'], 6) == round(recall, 6)
-
-    def test_get_general_metrics(self):
-        """Test get general metrics for a categorization problem."""
-        results_labels = self.cat_eval.get_metrics_per_label()
-
-        results = self.cat_eval.get_general_metrics()
-
-        df = DataFrame(data=results_labels)
-
-        # weighted metrics
-        precision = 0
-        recall = 0
-        f1_score = 0
-        for _, row in df.iterrows():
-            precision += row['precision'] * row['support']
-            recall += row['recall'] * row['support']
-            f1_score += row['f1-score'] * row['support']
-
-        precision = precision / len(self.cat_eval.actual_classes)
-        recall = recall / len(self.cat_eval.actual_classes)
-        f1_score = f1_score / len(self.cat_eval.actual_classes)
-
-        assert results['tp'] == 2
-        assert results['fp'] == 2
-        assert results['accuracy'] == 0.5
-        assert round(results['f1-score'], 6) == round(f1_score, 6)
-        assert round(results['precision'], 6) == round(precision, 6)
-        assert round(results['recall'], 6) == round(recall, 6)
-        assert results['support'] == len(self.cat_eval.actual_classes)
-
     def test_global_metrics(self):
         """Test metrics for a categorization problem."""
         assert self.cat_eval.tp(None) == 2
