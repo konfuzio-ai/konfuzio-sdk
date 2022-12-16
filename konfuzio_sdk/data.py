@@ -356,11 +356,6 @@ class AnnotationSet(Data):
         """Return string representation of the Annotation Set."""
         return f"{self.__class__.__name__}({self.id_}) of {self.label_set} in {self.document}."
 
-    def lose_weight(self):
-        """Delete data of the instance."""
-        self.label_set = None
-        self.document = None
-
     def annotations(self, use_correct: bool = True, ignore_below_threshold: bool = False):
         """All Annotations currently in this Annotation Set."""
         if not self._annotations:
@@ -617,7 +612,6 @@ class Label(Data):
         self._regex = {}  # : List[str] = []
         # self._combined_tokens = None
         self.regex_file_path = os.path.join(self.project.regex_folder, f'{self.name_clean}.json5')
-        self._correct_annotations = []
         self._evaluations = {}  # used to do the duplicate check on Annotation level
 
     def __repr__(self):
@@ -932,6 +926,13 @@ class Label(Data):
                 if not tokenizer.span_match(span):
                     spans_not_found.append(span)
         return spans_not_found
+
+    def lose_weight(self):
+        """Delete data of the instance."""
+        super().lose_weight()
+        self._evaluations = {}
+        self._tokens = {}
+        self._regex = {}
 
     # def save(self) -> bool:
     #     """
@@ -1605,6 +1606,11 @@ class Annotation(Data):
         """Return default entry to get all Spans of the Annotation."""
         return sorted(self._spans)
 
+    def lose_weight(self):
+        """Delete data of the instance."""
+        super().lose_weight()
+        self._tokens = []
+
 
 class Document(Data):
     """Access the information about one document, which is available online."""
@@ -1989,6 +1995,8 @@ class Document(Data):
                 continue
             if not annotation.is_correct and annotation.revised:  # if marked as incorrect by user
                 continue
+            if annotation.label is self.project.no_label:
+                continue
             spans_num = 0
             for span in annotation.spans:
                 for i in range(span.start_offset, span.end_offset):
@@ -2008,6 +2016,19 @@ class Document(Data):
                 no_label_duplicates.add(annotation.label.id_)
 
         return sorted(annotations)
+
+    def lose_weight(self):
+        """Remove NO_LABEL, wrong and below threshold Annotations."""
+        super().lose_weight()
+        for annotation in self.annotations(use_correct=False, ignore_below_threshold=False):
+            if annotation.label is self.project.no_label:
+                logger.info("no_label")
+                annotation.delete()
+            elif not annotation.is_correct and (
+                not annotation.confidence or annotation.label.threshold > annotation.confidence or annotation.revised
+            ):
+                logger.info(annotation.confidence)
+                annotation.delete()
 
     @property
     def document_folder(self):
@@ -2858,7 +2879,6 @@ class Project(Data):
         for label in self.labels:
             label.lose_weight()
         self._documents = []
-        self._test_documents = []
         return self
 
 
