@@ -1198,7 +1198,7 @@ class TestCategorizationEvaluation(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        """Test evaluation when changing filtered Label and Documents."""
+        """Test evaluation when changing filtered Category and Documents."""
         cls.project = LocalTextProject()
         cls.cat1_doca = cls.project.categories[0].documents()[0]
         cls.cat1_docb = cls.project.categories[0].test_documents()[0]
@@ -1214,11 +1214,11 @@ class TestCategorizationEvaluation(unittest.TestCase):
             ],
         )
 
-    def test_get_tp_tn_fp_fn_per_label(self):
-        """Test get results per label for categorization problem."""
-        results_per_label = self.cat_eval._get_tp_tn_fp_fn_per_label()
-        assert results_per_label[1] == {'tp': 1, 'fp': 0, 'fn': 2, 'tn': 1}
-        assert results_per_label[2] == {'tp': 1, 'fp': 2, 'fn': 0, 'tn': 1}
+    def test_get_tp_tn_fp_fn_per_category(self):
+        """Test get results per Category for categorization problem."""
+        results_per_category = self.cat_eval._get_tp_tn_fp_fn_per_category()
+        assert results_per_category[1] == {'tp': 1, 'fp': 0, 'fn': 2, 'tn': 1}
+        assert results_per_category[2] == {'tp': 1, 'fp': 2, 'fn': 0, 'tn': 1}
 
     def test_global_metrics(self):
         """Test metrics for a categorization problem."""

@@ -450,7 +450,7 @@ class CategorizationEvaluation:
         """
         Relate to the two document instances.
 
-        :param project: The project containing the Documents and Categories to be evaluated.
+        :param categories: The Categories to be evaluated.
         :param documents: A list of tuple Documents that should be compared.
         """
         self.categories = categories
@@ -460,12 +460,12 @@ class CategorizationEvaluation:
         self.calculate()
 
     @property
-    def labels(self) -> List[int]:
+    def category_ids(self) -> List[int]:
         """List of category ids as class labels."""
         return [category.id_ for category in self.categories]
 
     @property
-    def labels_names(self) -> List[str]:
+    def category_names(self) -> List[str]:
         """List of category names as class names."""
         return [category.name for category in self.categories]
 
@@ -484,17 +484,17 @@ class CategorizationEvaluation:
 
     def confusion_matrix(self) -> pandas.DataFrame:
         """Confusion matrix."""
-        return confusion_matrix(self.actual_classes, self.predicted_classes, labels=self.labels + [-1])
+        return confusion_matrix(self.actual_classes, self.predicted_classes, labels=self.category_ids + [-1])
 
-    def _get_tp_tn_fp_fn_per_label(self) -> Dict:
+    def _get_tp_tn_fp_fn_per_category(self) -> Dict:
         """
-        Get the tp, fp, tn and fn for each label.
+        Get the tp, fp, tn and fn for each Category.
 
-        The label for which the evaluation is being done is considered the positive class. All others are considered as
-        negative class.
+        The Category for which the evaluation is being done is considered the positive class. All others are considered
+        as negative class.
 
         Follows the logic:
-        tpi = cii (value in the diagonal of the cm for the respective label)
+        tpi = cii (value in the diagonal of the cm for the respective Category)
         fpi = ∑nl=1 cli − tpi (sum of the column of the cm - except tp)
         fni = ∑nl=1 cil − tpi (sum of the row of the cm - except tp)
         tni = ∑nl=1 ∑nk=1 clk − tpi − fpi − fni (all other values not considered above)
@@ -503,13 +503,13 @@ class CategorizationEvaluation:
             [0, 2, 1],
             [1, 2, 3]]
 
-        For label '1':
+        For Category '1':
         tp = 2
         fp = 1 + 2 = 3
         fn = 1 + 0 = 1
         tn = 11 - 2 - 3 - 1 = 5
 
-        :return: dictionary with the results per label
+        :return: dictionary with the results per Category
         """
         confusion_matrix = self.confusion_matrix()
         sum_columns = np.sum(confusion_matrix, axis=0)
@@ -518,7 +518,7 @@ class CategorizationEvaluation:
 
         results = {}
 
-        for ind, category_id in enumerate(self.labels):
+        for ind, category_id in enumerate(self.category_ids):
             tp = confusion_matrix[ind, ind]
             fp = sum_columns[ind] - tp
             fn = sum_rows[ind] - tp
@@ -530,12 +530,12 @@ class CategorizationEvaluation:
 
     def calculate(self):
         """Calculate and update the data stored within this Evolution."""
-        self.evaluation_results = self._get_tp_tn_fp_fn_per_label()
+        self.evaluation_results = self._get_tp_tn_fp_fn_per_category()
         self._clf_report = classification_report(
             y_true=self.actual_classes,
             y_pred=self.predicted_classes,
-            labels=self.labels,
-            target_names=self.labels_names,
+            labels=self.category_ids,
+            target_names=self.category_names,
             output_dict=True,
         )
 
