@@ -5,7 +5,7 @@ import json
 import logging
 import os
 import pathlib
-import re
+import regex as re
 import shutil
 import time
 import zipfile
@@ -783,7 +783,8 @@ class Label(Data):
         label_regex_token = self.base_regex(category=category, annotations=all_annotations)
 
         search = [1, 3, 5]
-        regex_to_remove_groupnames = re.compile('<.*?>')
+        regex_to_remove_groupnames = re.compile(r'<.*?>')
+        regex_to_remove_groupnames_full = re.compile(r'\(\?:\(\?P<[^>]+>([^\)]+)\)\)')
 
         naive_proposal = label_regex_token
         regex_made = []
@@ -808,7 +809,11 @@ class Label(Data):
                             ]
                             before_regex += suggest_regex_for_string(to_rep_offset_string, replace_characters=True)
                         else:
-                            before_regex += before_span.annotation.label.base_regex(category)
+                            base_before_regex = before_span.annotation.label.base_regex(category)
+                            stripped_base_before_regex = re.sub(
+                                regex_to_remove_groupnames_full, r'\1', base_before_regex
+                            )
+                            before_regex += stripped_base_before_regex
                     before_reg_dict[spacer] = before_regex
 
                     after_regex = ''
@@ -822,7 +827,10 @@ class Label(Data):
                             ]
                             after_regex += suggest_regex_for_string(to_rep_offset_string, replace_characters=True)
                         else:
-                            after_regex += after_span.annotation.label.base_regex(category)
+                            base_after_regex = after_span.annotation.label.base_regex(category)
+                            stripped_base_after_regex = re.sub(regex_to_remove_groupnames_full, r'\1', base_after_regex)
+                            after_regex += stripped_base_after_regex
+
                     after_reg_dict[spacer] = after_regex
 
                     spacer_proposals = [
