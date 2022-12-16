@@ -169,13 +169,13 @@ project files. As we didn’t upload any documents to our project yet, the total
 documents later on, the flag <code class="docutils literal notranslate"><span class="pre">update=True</span></code> ensures that the SDK downloads them in your local data folder.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Test your setup with the following code:</span>
 
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="k">import</span> <span class="n">Project</span>
 
 <span class="c1"># Initialize the project:</span>
 <span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="c1"># Receive the total number of training documents in the project:</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of training documents in the project: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">my_project</span><span class="o">.</span><span class="n">documents</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Number of training documents in the project: {len(my_project.documents)}.&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <a class="reference external image-reference" href="../_static/img/pycharm_test_setup.png"><img alt="pycharm_test_setup" src="../_images/pycharm_test_setup.png" /></a>

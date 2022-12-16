@@ -130,7 +130,7 @@
 <span class="n">label_classifier_config</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;dropout_rate&#39;</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span>
                            <span class="s1">&#39;text_module&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;lstm&#39;</span><span class="p">,</span>
                                            <span class="s1">&#39;n_layers&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-                                           <span class="s1">&#39;bidirectional&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}}</span>
+                                           <span class="s1">&#39;bidirectional&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">}}</span>
 
 <span class="c1"># configuation dict for the section classifier</span>
 <span class="n">section_classifier_config</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;dropout_rate&#39;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
@@ -204,7 +204,7 @@
 <span class="n">label_classifier_config</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;dropout_rate&#39;</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span>
                            <span class="s1">&#39;text_module&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;lstm&#39;</span><span class="p">,</span>
                                            <span class="s1">&#39;n_layers&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-                                           <span class="s1">&#39;bidirectional&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}}</span>
+                                           <span class="s1">&#39;bidirectional&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">}}</span>
 
 <span class="c1"># configuation dict for the section classifier</span>
 <span class="n">section_classifier_config</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;dropout_rate&#39;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
@@ -373,14 +373,14 @@
 
 <span class="c1"># specify how images should be preprocessed</span>
 <span class="n">image_preprocessing</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;target_size&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span>
-                       <span class="s1">&#39;grayscale&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+                       <span class="s1">&#39;grayscale&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">}</span>
 
 <span class="c1"># specify how images should be augmented during training</span>
 <span class="n">image_augmentation</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;rotate&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">}</span>
 
 <span class="c1"># configuration dict for the document classifier</span>
 <span class="n">document_classifier_config</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;image_module&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;efficientnet_b0&#39;</span><span class="p">,</span>
-                                               <span class="s1">&#39;freeze&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+                                               <span class="s1">&#39;freeze&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">},</span>
                               <span class="s1">&#39;text_module&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;lstm&#39;</span><span class="p">,</span>
                                               <span class="s1">&#39;n_layers&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span>
                               <span class="s1">&#39;multimodal_module&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;concatenate&#39;</span><span class="p">,</span>
@@ -412,11 +412,11 @@
 <span class="n">projects</span> <span class="o">=</span> <span class="p">[</span><span class="n">get_project</span><span class="p">(</span><span class="n">project_id</span><span class="p">)</span> <span class="k">for</span> <span class="n">project_id</span> <span class="ow">in</span> <span class="n">project_ids</span><span class="p">]</span>
 
 <span class="c1"># needs to ensure we do not use a tokenizer as we are not using a text_module</span>
-<span class="n">tokenizer</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="bp">None</span>
 
 <span class="c1"># specify how images should be preprocessed</span>
 <span class="n">image_preprocessing</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;target_size&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span>
-                       <span class="s1">&#39;grayscale&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+                       <span class="s1">&#39;grayscale&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">}</span>
 
 <span class="c1"># specify how images should be augmented during training</span>
 <span class="n">image_augmentation</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;rotate&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">}</span>
@@ -424,7 +424,7 @@
 <span class="c1"># configuration dict for the document classifier</span>
 <span class="c1"># no text_module AND no multimodal_module</span>
 <span class="n">document_classifier_config</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;image_module&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;efficientnet_b0&#39;</span><span class="p">,</span>
-                                               <span class="s1">&#39;freeze&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}}</span>
+                                               <span class="s1">&#39;freeze&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">}}</span>
 
 <span class="c1"># create document model with chosen tokenizer and classifier configs</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">DocumentModel</span><span class="p">(</span><span class="n">projects</span><span class="p">,</span>
@@ -454,8 +454,8 @@
 <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">BPETokenizer</span><span class="p">()</span>
 
 <span class="c1"># both should be None when not using an image_module</span>
-<span class="n">image_preprocessing</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="n">image_augmentation</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">image_preprocessing</span> <span class="o">=</span> <span class="bp">None</span>
+<span class="n">image_augmentation</span> <span class="o">=</span> <span class="bp">None</span>
 
 <span class="c1"># configuration dict for the document classifier</span>
 <span class="c1"># no image_module AND no multimodal_module</span>
@@ -857,7 +857,7 @@ We only need a <code class="docutils literal notranslate"><span class="pre">mult
 <span class="n">label_classifier_config</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;dropout_rate&#39;</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span>
                            <span class="s1">&#39;text_module&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;lstm&#39;</span><span class="p">,</span>
                                            <span class="s1">&#39;n_layers&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-                                           <span class="s1">&#39;bidirectional&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                                           <span class="s1">&#39;bidirectional&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
                                            <span class="s1">&#39;load&#39;</span><span class="p">:</span> <span class="s1">&#39;saved_modules/label_text_module.pt&#39;</span><span class="p">}}</span>
 
 <span class="c1"># load a saved state dict from a path</span>
