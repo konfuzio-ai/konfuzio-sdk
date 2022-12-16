@@ -5,7 +5,7 @@ import itertools
 import logging
 import operator
 import os
-import re
+import regex as re
 import unicodedata
 import zipfile
 from contextlib import contextmanager
@@ -80,6 +80,43 @@ def is_file(file_path, raise_exception=True, maximum_size=100000000, allow_empty
             raise FileNotFoundError(f'File expected but not found at: {file_path}')
         else:
             return False
+
+
+def normalize_memory(memory: Union[None, str]) -> Union[int, None]:
+    """
+    Return memory size in human readable form to int of number of bytes.
+
+    :param memory: Memory size in human readable form (e.g. "50MB").
+    :return: int of bytes if valid, else None
+    """
+    if memory is not None:
+        if type(memory) is int or memory.isdigit():
+            memory = int(memory)
+        else:
+            # Check if the first part of the string (before the unit) is numeric
+            if not memory[:-3].isdigit() and not memory[:-2].isdigit():
+                logger.error(f"memory value {memory} invalid.")
+                return None
+            else:
+                mem_val = int(memory[:-3] if memory[-3:].isalpha() else memory[:-2])
+
+            # Check the unit and convert to bytes
+            if memory[-2:].lower() == 'gb':
+                memory = mem_val * 1e9
+            elif memory[-2:].lower() == 'mb':
+                memory = mem_val * 1e6
+            elif memory[-2:].lower() == 'kb':
+                memory = mem_val * 1e3
+            elif memory[-3:].lower() == 'gib':
+                memory = mem_val * 2**30
+            elif memory[-3:].lower() == 'mib':
+                memory = mem_val * 2**20
+            elif memory[-3:].lower() == 'kib':
+                memory = mem_val * 2**10
+            else:
+                logger.error(f"memory value {memory} invalid.")
+                return None
+    return memory
 
 
 def get_timestamp(konfuzio_format='%Y-%m-%d-%H-%M-%S') -> str:

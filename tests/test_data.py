@@ -1278,6 +1278,9 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert project.categories[0].session is None
         assert project.label_sets[0].session is None
         assert project.labels[0].session is None
+        assert project.labels[0]._evaluations == {}
+        assert project.labels[0]._tokens == {}
+        assert project.labels[0]._regex == {}
         assert project.virtual_documents == []
         assert project.documents == []
         assert project.test_documents == []
@@ -1679,7 +1682,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         for document in prj.documents:
             document.text
         after = _getsize(prj)
-        assert 1.7 < after / before < 1.8
+        assert 1.6 < after / before < 1.8
 
         # strings in prj take slightly less space than in a list
         assert _getsize([doc.text for doc in prj.documents]) + before < after + 500
@@ -2224,6 +2227,17 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
         annotations = document.view_annotations()
         assert len(annotations) == 5  # 4 if top_annotations filter is used
         assert sorted([ann.id_ for ann in annotations]) == [16, 17, 18, 19, 24]  # [16, 18, 19, 24]
+
+    def test_document_lose_weight(self):
+        """Test that Document.lose_weight() removes all the right annotations."""
+        project = LocalTextProject()
+        document = project.test_documents[-1]
+
+        assert len(document.annotations(use_correct=False, ignore_below_threshold=False)) == 11
+
+        document.lose_weight()
+
+        assert len(document.annotations(use_correct=False, ignore_below_threshold=False)) == 8
 
     def test_annotationset_annotations(self):
         """Test AnnotationSet.annotations method."""
