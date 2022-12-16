@@ -479,9 +479,26 @@ class TestInformationExtraction(unittest.TestCase):
         with pytest.raises(AttributeError, match='does not provide a Label Classifier'):
             pipeline.extract(document)
 
-    def test_extraction_with_empty_document(self):
+    def test_extraction_with_no_span_document(self):
         """Test empty extraction when no spans detected."""
         document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        pipeline = RFExtractionAI()
+        pipeline.tokenizer = RegexTokenizer(r"qwerty")
+
+        pipeline.clf = RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1)
+        X, y = make_classification(
+            n_samples=1000, n_features=4, n_informative=2, n_redundant=0, random_state=0, shuffle=False
+        )
+        pipeline.clf.fit(X, y)
+
+        virt_doc = pipeline.extract(document)
+
+        assert virt_doc.annotations(use_correct=False) == []
+
+    def test_extraction_with_empty_document(self):
+        """Test extraction with completely empty document."""
+        category = self.project.get_category_by_id(63)
+        document = Document(text="", project=self.project, category=category)
         pipeline = RFExtractionAI()
         pipeline.tokenizer = RegexTokenizer(r"qwerty")
 
