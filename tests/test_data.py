@@ -428,6 +428,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         cls.project = Project(id_=None)
         cls.label = Label(project=cls.project, text='First Offline Label')
         cls.category = Category(project=cls.project, id_=1)
+        cls.category2 = Category(project=cls.project, id_=2)
         cls.document = Document(project=cls.project, category=cls.category)
         cls.label_set = LabelSet(project=cls.project, categories=[cls.category], id_=421)
         cls.label_set.add_label(cls.label)
@@ -437,7 +438,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 47
+        assert len(cls.project.virtual_documents) == 52
 
     # def test_document_only_needs_project(self):
     #     """Test that a Document can be created without category"""
@@ -470,6 +471,64 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert self.document.category == self.category
         for page in self.document.pages():
             assert page.category == self.category
+
+    def test_categorize_when_all_pages_have_same_category(self):
+        """Test categorizing a Document when all pages have the same Category."""
+        document = Document(project=self.project, text="hello")
+        for i in range(2):
+            _ = Page(
+                id_=None,
+                document=document,
+                start_offset=0,
+                end_offset=0,
+                number=i + 1,
+                original_size=(0, 0),
+                category=self.category,
+            )
+        assert document.category == self.category
+
+    def test_categorize_when_all_pages_have_no_category(self):
+        """Test categorizing a Document when all pages have no Category."""
+        document = Document(project=self.project, text="hello")
+        for i in range(2):
+            _ = Page(id_=None, document=document, start_offset=0, end_offset=0, number=i + 1, original_size=(0, 0))
+        assert document.category is None
+
+    def test_categorize_when_pages_have_different_categories(self):
+        """Test categorizing a Document when pages have different Category."""
+        document = Document(project=self.project, text="hello")
+        for i in range(2):
+            _ = Page(
+                id_=None,
+                document=document,
+                start_offset=0,
+                end_offset=0,
+                number=i + 1,
+                original_size=(0, 0),
+                category=self.category if i else self.category2,
+            )
+        assert document.category is None
+
+    def test_categorize_when_pages_have_mixed_categories_or_no_category(self):
+        """Test categorizing a Document when pages have different Category or no Category."""
+        document = Document(project=self.project, text="hello")
+        for i in range(3):
+            _ = Page(
+                id_=None,
+                document=document,
+                start_offset=0,
+                end_offset=0,
+                number=i + 1,
+                original_size=(0, 0),
+                category=[self.category, self.category2, None][i],
+            )
+        assert document.category is None
+
+    def test_categorize_with_no_pages(self):
+        """Test categorizing a Document with no pages."""
+        document = Document(project=self.project, text="hello")
+        assert document.category is None
+        assert document.pages() == []
 
     @unittest.skip(reason='Span validation.')
     def test_span_negative_offset(self):

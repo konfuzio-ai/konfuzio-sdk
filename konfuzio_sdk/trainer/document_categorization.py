@@ -61,20 +61,6 @@ class FallbackCategorizationModel:
 
         return self.evaluation
 
-    @staticmethod
-    def _categorize_from_pages(document: Document) -> Document:
-        """Decide the Category of a Document by whether all pages have the same Category (assign None otherwise).
-
-        :param document: Input document
-        :returns: The input Document with added categorization information
-        """
-        all_pages_have_same_category = len(set([page.category for page in document.pages()])) == 1
-        if all_pages_have_same_category:
-            document.category = document.pages()[0].category
-        else:
-            document.category = None
-        return document
-
     def _categorize_page(self, page: Page) -> Page:
         """Run categorization on a Page.
 
@@ -110,7 +96,7 @@ class FallbackCategorizationModel:
             )
             return virtual_doc
         elif recategorize:
-            virtual_doc.category = None
+            virtual_doc._category = None
             for page in virtual_doc.pages():
                 page.category = None
 
@@ -118,8 +104,4 @@ class FallbackCategorizationModel:
         for page in virtual_doc.pages():
             self._categorize_page(page)
 
-        # Try to assign a Category to the Document itself.
-        # If the Pages are differently categorized, the Document won't be assigned a Category at this stage.
-        # The Document will have to be split at a later stage to find a consistent Category for each sub-Document.
-        # Otherwise, the Category for each sub-Document (if any) will be corrected by the user.
-        return self._categorize_from_pages(virtual_doc)
+        return virtual_doc

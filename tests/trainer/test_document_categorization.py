@@ -5,7 +5,7 @@ import logging
 import unittest
 from copy import deepcopy
 
-from konfuzio_sdk.data import Project, Document, Category, Page
+from konfuzio_sdk.data import Project, Document
 
 from tests.variables import (
     OFFLINE_PROJECT,
@@ -86,9 +86,7 @@ class TestFallbackCategorizationModel(unittest.TestCase):
         """Test extract category for a selected Test Document with the category name contained within its text."""
         test_receipt_document = deepcopy(self.project.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID))
         # reset the category attribute to test that it can be categorized successfully
-        test_receipt_document.category = None
-        for page in test_receipt_document.pages():
-            page.category = None
+        test_receipt_document.set_category(None)
         result = self.categorization_pipeline.categorize(document=test_receipt_document)
         assert isinstance(result, Document)
         assert result.category == self.receipts_category
@@ -116,9 +114,7 @@ class TestFallbackCategorizationModel(unittest.TestCase):
         """Test cannot extract category for two Test Document if their texts don't contain the category name."""
         test_receipt_document = self.project.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID).test_documents()[0]
         # reset the category attribute to test that it can't be categorized successfully
-        test_receipt_document.category = None
-        for page in test_receipt_document.pages():
-            page.category = None
+        test_receipt_document.set_category(None)
         result = self.categorization_pipeline.categorize(document=test_receipt_document)
         assert isinstance(result, Document)
         assert result.category is None
@@ -127,9 +123,7 @@ class TestFallbackCategorizationModel(unittest.TestCase):
 
         test_payslip_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         # reset the category attribute to test that it can't be categorized successfully
-        test_payslip_document.category = None
-        for page in test_payslip_document.pages():
-            page.category = None
+        test_payslip_document.set_category(None)
         result = self.categorization_pipeline.categorize(document=test_payslip_document)
         assert isinstance(result, Document)
         assert result.category is None
@@ -160,9 +154,7 @@ class TestFallbackCategorizationModel(unittest.TestCase):
         """Test in-place re-extract category for a selected Test Document that already contains a category attribute."""
         # this document can be recategorized successfully because its text contains the word "quittung" (receipt) in it
         test_receipt_document = self.project.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID)
-        test_receipt_document.category = None
-        for page in test_receipt_document.pages():
-            page.category = None
+        test_receipt_document.set_category(None)
         self.categorization_pipeline.categorize(document=test_receipt_document, inplace=True)
         assert test_receipt_document.category == self.receipts_category
         for page in test_receipt_document.pages():
@@ -180,84 +172,8 @@ class TestFallbackCategorizationModel(unittest.TestCase):
         """Test cannot re-extract category for a selected Test Document that already contain a category attribute."""
         # this document can be recategorized successfully because its text contains the word "quittung" (receipt) in it
         test_receipt_document = self.project.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID)
-        test_receipt_document.category = None
-        for page in test_receipt_document.pages():
-            page.category = None
+        test_receipt_document.set_category(None)
         self.categorization_pipeline.categorize(document=test_receipt_document)
         assert test_receipt_document.category is None
         for page in test_receipt_document.pages():
             assert page.category is None
-
-
-class TestCategorizeFromPagesFallback(unittest.TestCase):
-    """Test categorizing a Document according to whether all pages have the same Category (assigning None otherwise)."""
-
-    @classmethod
-    def setUpClass(cls) -> None:
-        """Initialize the test Project."""
-        cls.project = Project(id_=None)
-        cls.category1 = Category(project=cls.project, id_=1)
-        cls.category2 = Category(project=cls.project, id_=2)
-
-    def test_categorize_when_all_pages_have_same_category(self):
-        """Test categorizing a Document when all pages have the same Category."""
-        document = Document(project=self.project, text="hello")
-        for i in range(2):
-            _ = Page(
-                id_=None,
-                document=document,
-                start_offset=0,
-                end_offset=0,
-                number=i + 1,
-                original_size=(0, 0),
-                category=self.category1,
-            )
-        FallbackCategorizationModel._categorize_from_pages(document)
-        assert document.category == self.category1
-
-    def test_categorize_when_all_pages_have_no_category(self):
-        """Test categorizing a Document when all pages have no Category."""
-        document = Document(project=self.project, text="hello")
-        for i in range(2):
-            _ = Page(id_=None, document=document, start_offset=0, end_offset=0, number=i + 1, original_size=(0, 0))
-        FallbackCategorizationModel._categorize_from_pages(document)
-        assert document.category is None
-
-    def test_categorize_when_pages_have_different_categories(self):
-        """Test categorizing a Document when pages have different Category."""
-        document = Document(project=self.project, text="hello")
-        for i in range(2):
-            _ = Page(
-                id_=None,
-                document=document,
-                start_offset=0,
-                end_offset=0,
-                number=i + 1,
-                original_size=(0, 0),
-                category=self.category1 if i else self.category2,
-            )
-        FallbackCategorizationModel._categorize_from_pages(document)
-        assert document.category is None
-
-    def test_categorize_when_pages_have_mixed_categories_or_no_category(self):
-        """Test categorizing a Document when pages have different Category or no Category."""
-        document = Document(project=self.project, text="hello")
-        for i in range(3):
-            _ = Page(
-                id_=None,
-                document=document,
-                start_offset=0,
-                end_offset=0,
-                number=i + 1,
-                original_size=(0, 0),
-                category=[self.category1, self.category2, None][i],
-            )
-        FallbackCategorizationModel._categorize_from_pages(document)
-        assert document.category is None
-
-    def test_categorize_with_no_pages(self):
-        """Test categorizing a Document with no pages."""
-        document = Document(project=self.project, text="hello")
-        FallbackCategorizationModel._categorize_from_pages(document)
-        assert document.category is None
-        assert document.pages() == []

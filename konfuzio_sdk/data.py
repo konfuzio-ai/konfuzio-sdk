@@ -111,7 +111,7 @@ class Page(Data):
         self.image_path = os.path.join(self.document.document_folder, f'page_{self.number}.png')
         self.category = category
         if self.category is None:
-            self.category = self.document.category
+            self.category = self.document._category
 
         check_page = True
         if self.index is None:
@@ -1662,11 +1662,11 @@ class Document(Data):
         self.copy_of_id = copy_of_id
 
         if project and category_template:
-            self.category = project.get_category_by_id(category_template)
+            self._category = project.get_category_by_id(category_template)
         elif category:
-            self.category = category
+            self._category = category
         else:
-            self.category = None
+            self._category = None
 
         if updated_at:
             self.updated_at = dateutil.parser.isoparse(updated_at)
@@ -1716,6 +1716,30 @@ class Document(Data):
     def file_path(self):
         """Return path to file."""
         return os.path.join(self.document_folder, amend_file_name(self.name))
+
+    @property
+    def category(self) -> Category:
+        """
+        Return the Category of the Document.
+
+        The Category of a Document is only defined as long as all Pages have the same Category. Otherwise, the Document
+        should probably be split into multiple Documents with a consistent Category assignment within their Pages, or
+        the Category for each Page should be manually revised.
+        """
+        if not self.pages():
+            return self._category
+        all_pages_have_same_category = len(set([page.category for page in self.pages()])) == 1
+        if all_pages_have_same_category:
+            self._category = self.pages()[0].category
+        else:
+            self._category = None
+        return self._category
+
+    def set_category(self, category: Category) -> None:
+        """Set the Category of the Document and the Category of all of its Pages."""
+        for page in self.pages():
+            page.category = category
+        self._category = category
 
     @property
     def ocr_file_path(self):
