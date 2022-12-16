@@ -1555,7 +1555,7 @@ class Trainer:
 
         logger.info('Deleting cloudpickle file')
         # then delete cloudpickle file
-        # os.remove(temp_pkl_file_path)
+        os.remove(temp_pkl_file_path)
 
         size_string = f'{os.path.getsize(pkl_file_path) / 1_000_000} MB'
         logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
