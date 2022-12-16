@@ -13,7 +13,7 @@ from konfuzio_sdk.regex import (
 from konfuzio_sdk.utils import does_not_raise
 
 import logging
-import re
+import regex as re
 import unittest
 
 import pytest
