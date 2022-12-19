@@ -1,5 +1,4 @@
 """Test the evaluation."""
-import os
 import unittest
 from statistics import mean
 
@@ -1257,23 +1256,23 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         """Initialize the tested class."""
         cls.project = LocalTextProject()
         cls.file_splitting_model = ContextAwareFileSplittingModel()
-        cls.file_splitting_model.categories = cls.project.categories
-        cls.file_splitting_model.train_data = [
+        cls.file_splitting_model.categories = [cls.project.get_category_by_id(3), cls.project.get_category_by_id(4)]
+        cls.file_splitting_model.documents = [
             document for category in cls.file_splitting_model.categories for document in category.documents()
         ]
-        cls.file_splitting_model.test_data = cls.project.get_category_by_id(3).test_documents()
+        cls.file_splitting_model.test_documents = [
+            document for category in cls.file_splitting_model.categories for document in category.test_documents()
+        ][:-1]
         cls.file_splitting_model.tokenizer = ConnectedTextTokenizer()
         cls.file_splitting_model.first_page_spans = None
         cls.test_document = cls.project.get_category_by_id(3).test_documents()[0]
+        cls.wrong_test_document = cls.project.get_category_by_id(4).test_documents()[-1]
 
     def test_metrics_calculation(self):
         """Test Evaluation class for ContextAwareFileSplitting."""
         self.file_splitting_model.first_page_spans = self.file_splitting_model.fit()
         splitting_ai = SplittingAI(self.file_splitting_model)
         ground_truth = self.test_document
-        for page in ground_truth.pages():
-            if page.number in (1, 3, 5):
-                page.is_first_page = True
         pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)
         documents = [[ground_truth, pred]]
         evaluation = FileSplittingEvaluation(documents)
@@ -1289,9 +1288,6 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         """Test Evaluation by Category."""
         splitting_ai = SplittingAI(self.file_splitting_model)
         ground_truth = self.test_document
-        for page in ground_truth.pages():
-            if page.number in (1, 3, 5):
-                page.is_first_page = True
         pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)
         documents = [[ground_truth, pred]]
         evaluation = FileSplittingEvaluation(documents)
@@ -1303,13 +1299,25 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         assert evaluation.recall(search=ground_truth.category) == 1.0
         assert evaluation.f1(search=ground_truth.category) == 1.0
 
+    def test_wrong_metrics_calculation(self):
+        """Test Evaluation on a file that does not return all-100% metrics."""
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        ground_truth = self.wrong_test_document
+        pred = splitting_ai.propose_split_documents(self.wrong_test_document, return_pages=True)
+        documents = [[ground_truth, pred]]
+        evaluation = FileSplittingEvaluation(documents)
+        assert evaluation.tp() == 1
+        assert evaluation.fp() == 1
+        assert evaluation.fn() == 0
+        assert evaluation.tn() == 0
+        assert evaluation.precision() == 0.5
+        assert evaluation.recall() == 1
+        assert evaluation.f1() == 0.6666666666666666
+
     def test_wrong_category_search(self):
         """Test filtering by wrongly input Category."""
         splitting_ai = SplittingAI(self.file_splitting_model)
         ground_truth = self.test_document
-        for page in ground_truth.pages():
-            if page.number in (1, 3, 5):
-                page.is_first_page = True
         pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)
         documents = [[ground_truth, pred]]
         evaluation = FileSplittingEvaluation(documents)
@@ -1327,13 +1335,40 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         """Test evaluate_full method of SplittingAI."""
         splitting_ai = SplittingAI(self.file_splitting_model)
         splitting_ai.evaluate_full()
-        assert splitting_ai.full_evaluation.evaluation_results['tp'] == 6
+        assert splitting_ai.full_evaluation.evaluation_results['tp'] == 9
         assert splitting_ai.full_evaluation.evaluation_results['fp'] == 0
         assert splitting_ai.full_evaluation.evaluation_results['fn'] == 0
-        assert splitting_ai.full_evaluation.evaluation_results['fn'] == 0
+        assert splitting_ai.full_evaluation.evaluation_results['tn'] == 7
         assert splitting_ai.full_evaluation.evaluation_results['precision'] == 1.0
         assert splitting_ai.full_evaluation.evaluation_results['recall'] == 1.0
         assert splitting_ai.full_evaluation.evaluation_results['f1'] == 1.0
-        for item in self.project.model_folder:
-            if item.endswith('.pkl'):
-                os.remove(os.path.join(self.project.model_folder, item))
+
+    def test_metrics_get_evaluation_data_no_category(self):
+        """Test get_evaluation_data method of the Evaluation class."""
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        ground_truth = self.test_document
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)
+        documents = [[ground_truth, pred]]
+        evaluation = FileSplittingEvaluation(documents).get_evaluation_data()
+        assert evaluation.tp == 3
+        assert evaluation.fp == 0
+        assert evaluation.fn == 0
+        assert evaluation.tn == 2
+        assert evaluation.precision == 1.0
+        assert evaluation.recall == 1.0
+        assert evaluation.f1 == 1.0
+
+    def test_metrics_get_evaluation_data_by_category(self):
+        """Test get_evaluation_data method of the Evaluation class within the specified Category."""
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        ground_truth = self.test_document
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)
+        documents = [[ground_truth, pred]]
+        evaluation = FileSplittingEvaluation(documents).get_evaluation_data(search=ground_truth.category)
+        assert evaluation.tp == 3
+        assert evaluation.fp == 0
+        assert evaluation.fn == 0
+        assert evaluation.tn == 2
+        assert evaluation.precision == 1.0
+        assert evaluation.recall == 1.0
+        assert evaluation.f1 == 1.0

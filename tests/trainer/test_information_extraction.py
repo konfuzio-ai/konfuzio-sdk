@@ -1374,7 +1374,7 @@ def test_num(test_input, expected, document_id):
 #
 #     Existing test cases:
 #
-#     test_data.TestAPIDataSetup.test_separate_labels
+#     test_documents.TestAPIDataSetup.test_separate_labels
 #     => Tests training and the number of labels after separation using project 46
 #
 #     Missing test:

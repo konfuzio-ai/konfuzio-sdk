@@ -451,6 +451,11 @@ uncertain
         _ = Page(id_=None, original_size=(320, 240), document=document_9, start_offset=95, end_offset=103, number=5)
         _.is_first_page = True
 
+        text_10 = "Hi all,\nI like bread.\nEvening,\nI like fish."
+        document_10 = Document(id_=None, project=self, category=category_4, text=text_10, dataset_status=3)
+        _ = Page(id_=None, original_size=(320, 240), document=document_10, start_offset=0, end_offset=21, number=1)
+        _ = Page(id_=None, original_size=(320, 240), document=document_10, start_offset=22, end_offset=43, number=2)
+
         ##########
         # Documents to test vertical merging logic
 

@@ -1,5 +1,4 @@
 """Test SplittingAI and the model's training, saving and prediction."""
-import os
 import unittest
 
 from copy import deepcopy
@@ -18,10 +17,10 @@ class TestFileSplittingModel(unittest.TestCase):
         cls.project = LocalTextProject()
         cls.file_splitting_model = ContextAwareFileSplittingModel()
         cls.file_splitting_model.categories = [cls.project.get_category_by_id(3), cls.project.get_category_by_id(4)]
-        cls.file_splitting_model.train_data = [
+        cls.file_splitting_model.documents = [
             document for document in cls.project.documents if document.category in cls.file_splitting_model.categories
         ]
-        cls.file_splitting_model.test_data = [
+        cls.file_splitting_model.test_documents = [
             document
             for document in cls.project.test_documents
             if document.category in cls.file_splitting_model.categories
@@ -80,15 +79,15 @@ class TestFileSplittingModel(unittest.TestCase):
     def test_suggest_first_pages(self):
         """Test SplittingAI's suggesting first Pages."""
         splitting_ai = SplittingAI(self.file_splitting_model)
-        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)
+        test_document = self.file_splitting_model.tokenizer.tokenize(
+            deepcopy(self.project.get_category_by_id(3).test_documents()[0])
+        )
+        pred = splitting_ai.propose_split_documents(test_document, return_pages=True)
         for page in pred.pages():
             if page.number in (1, 3, 5):
                 assert page.is_first_page
             else:
                 assert not page.is_first_page
-        for item in self.project.model_folder:
-            if item.endswith('.pkl'):
-                os.remove(os.path.join(self.project.model_folder, item))
 
     def test_splitting_ai_evaluate_full_on_training(self):
         """Test SplittingAI's evaluate_full on training Documents."""
