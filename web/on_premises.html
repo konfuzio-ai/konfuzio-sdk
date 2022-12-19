@@ -140,6 +140,10 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#django-silk-integration">Django-silk integration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#profiling-with-django-silk">Profiling with Django silk</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="changelog_app.html">Changelog</a></li>
@@ -1348,6 +1352,32 @@ More on Celery workflows can be found here: <a class="reference external" href="
 </table>
 </section>
 </section>
+</section>
+</section>
+<section id="django-silk-integration">
+<h2>Django-silk integration<a class="headerlink" href="#django-silk-integration" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://github.com/jazzband/django-silk">Django-silk</a> is an integration into our server which offers a detailed
+overview of time spend in the database or within the internal code. When trying to troubleshoot performance issues,
+wanting to understand where queries are made, or needing to cooperate with our support on technical problems, it may be
+useful to use the Django-silk profiling to analyze performance.</p>
+<p>By default, the package is installed but turned off, you can enable the package by setting the following variable:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">SILK_PROFILING:</span> <span class="pre">True</span></code></p></li>
+</ul>
+<p>By default, only 15% of requests are being profiled, this can be changed to any number between 0 and 100:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">SILKY_INTERCEPT_PERCENT:</span> <span class="pre">15</span></code></p></li>
+</ul>
+<p>To avoid the database from filling up, only the past 10k requests are being kept, this can be changed to any value:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">SILKY_MAX_RECORDED_REQUESTS:</span> <span class="pre">10000</span></code></p></li>
+</ul>
+<section id="profiling-with-django-silk">
+<h3>Profiling with Django silk<a class="headerlink" href="#profiling-with-django-silk" title="Permalink to this headline">¶</a></h3>
+<p>After enabling Django silk, the dashboard will become available on <code class="docutils literal notranslate"><span class="pre">http://localhost:8000/silk</span></code> for users who are
+logged in as superuser. The database can also be cleared by navigating to <code class="docutils literal notranslate"><span class="pre">http://localhost:8000/silk/cleardb/</span></code>. Do keep
+in mind that this package does add some overhead querying to each request. So unless there are active problems, it
+may be best to keep it turned off or at a low <code class="docutils literal notranslate"><span class="pre">SILKY_INTERCEPT_PERCENT</span></code> percentage.</p>
 </section>
 </section>
 </section>
