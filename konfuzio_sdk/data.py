@@ -533,7 +533,7 @@ class Category(Data):
 
     @property
     def fallback_name(self) -> str:
-        """Turn the category name to lowercase, remove parentheses along with their contents, and trim spaces."""
+        """Turn the Category name to lowercase, remove parentheses along with their contents, and trim spaces."""
         parentheses_removed = re.sub(r'\([^)]*\)', '', self.name.lower()).strip()
         single_spaces = parentheses_removed.replace("  ", " ")
         return single_spaces

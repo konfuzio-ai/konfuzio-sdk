@@ -14,9 +14,11 @@ warn('This module is WIP: https://gitlab.com/konfuzio/objectives/-/issues/9481',
 
 
 class FallbackCategorizationModel:
-    """A non-trainable model that predicts a category for a given document based on predefined rules.
+    """A simple, non-trainable model that predicts a Category for a given Document based on a predefined rule.
 
-    This can be an effective fallback logic to categorize documents when no categorization AI is available.
+    It checks for whether the name of the Category is present in the input Document (case insensitive; also see
+    Category.fallback_name). This can be an effective fallback logic to categorize Documents when no Categorization AI
+    is available.
     """
 
     def __init__(self, categories: List[Category], *args, **kwargs):
@@ -44,7 +46,7 @@ class FallbackCategorizationModel:
         """
         Evaluate the full Categorization pipeline on the pipeline's Test Documents.
 
-        :param use_training_docs: Bool for whether to evaluate on the training documents instead of testing documents.
+        :param use_training_docs: Bool for whether to evaluate on the training Documents instead of test Documents.
         :return: Evaluation object.
         """
         eval_list = []
@@ -65,7 +67,7 @@ class FallbackCategorizationModel:
         """Run categorization on a Page.
 
         :param page: Input Page
-        :returns: The input Page with added categorization information
+        :returns: The input Page with added Category information
         """
         for training_category in self.categories:
             if training_category.fallback_name in page.text.lower():
@@ -79,11 +81,11 @@ class FallbackCategorizationModel:
         """Run categorization on a Document.
 
         :param document: Input document
-        :param recategorize: If the input document is already categorized, the already present category is used unless
+        :param recategorize: If the input Document is already categorized, the already present Category is used unless
         this flag is True
 
-        :param inplace: Option to categorize the provided document in place, which would assign the category attribute
-        :returns: Copy of the input document with added categorization information
+        :param inplace: Option to categorize the provided Document in place, which would assign the Category attribute
+        :returns: Copy of the input Document with added categorization information
         """
         if inplace:
             virtual_doc = document
