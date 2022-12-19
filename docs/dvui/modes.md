@@ -17,12 +17,16 @@ You will also need a [Document uploaded](https://app.konfuzio.com/v3/swagger/#/d
 
 ![docid.png](./images/docid.png)
 
-To complete the setup, create an environment variables file `.env` on the root of the repository based on the [`.env.example`](https://github.com/konfuzio-ai/konfuzio-capture-vue/blob/main/.env.example) for specifying:
+To complete the setup, create an environment variables file `.env` on the root of the repository based on the [`.env.example`](https://github.com/konfuzio-ai/konfuzio-capture-vue/blob/main/.env.example) for specifying the following values:
+
+- The user Token
+- The Document ID
+
+Some other optional variables you can include are:
 
 - The API URL
 - The images URL
-- The user Token
-- The Document ID
 - The default language of the app
+- The Category ID
 
 Please be aware that any variable in the `.env` will have priority from the variables defined in the `index.html`.
