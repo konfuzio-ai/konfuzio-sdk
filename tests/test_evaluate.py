@@ -922,7 +922,7 @@ class TestEvaluation(unittest.TestCase):
         """Test that data has not changed."""
         project = LocalTextProject()
         assert len(project.documents) == 5
-        assert len(project.test_documents) == 8
+        assert len(project.test_documents) == 9
 
     def test_not_strict(self):
         """Test that evaluation can be initialized with strict mode disabled."""
