@@ -935,6 +935,8 @@ class TestEvaluation(unittest.TestCase):
         project = LocalTextProject()
         evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
         assert evaluation.tp() == sum([len(doc.spans()) for doc in project.documents])
+        evaluation_data = evaluation.get_evaluation_data(search=None)
+        assert evaluation_data.tp == sum([len(doc.spans()) for doc in project.documents])
 
     def test_false_positive(self):
         """Count 3 false positives from one Training Document."""
@@ -943,6 +945,8 @@ class TestEvaluation(unittest.TestCase):
         predicted_document = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
         evaluation = Evaluation(documents=list(zip([true_document], [predicted_document])))
         assert evaluation.fp() == 3  # A4, A5, A6
+        evaluation_data = evaluation.get_evaluation_data(search=None)
+        assert evaluation_data.fp == 3
 
     def test_true_negatives(self):
         """Count zero false negatives from two Training Documents (correctly, nothing is predicted under threshold)."""
@@ -953,6 +957,8 @@ class TestEvaluation(unittest.TestCase):
         )
         evaluation = Evaluation(documents=list(zip(documents_test_evaluation, documents_test_evaluation)))
         assert evaluation.tn() == 0
+        evaluation_data = evaluation.get_evaluation_data(search=None)
+        assert evaluation_data.tn == 0
 
     def test_f1(self):
         """Test to calculate F1 Score."""
@@ -966,6 +972,8 @@ class TestEvaluation(unittest.TestCase):
                 if f1 is not None:
                     scores.append(f1)
         assert mean(scores) == 1.0
+        evaluation_data = evaluation.get_evaluation_data(search=None)
+        assert evaluation_data.f1 == 1.0
 
     def test_precision(self):
         """Test to calculate Precision."""
@@ -979,6 +987,8 @@ class TestEvaluation(unittest.TestCase):
                 if precision is not None:
                     scores.append(evaluation.precision(search=label))
         assert mean(scores) == 1.0
+        evaluation_data = evaluation.get_evaluation_data(search=None)
+        assert evaluation_data.precision == 1.0
 
     def test_recall(self):
         """Test to calculate Recall."""
@@ -992,6 +1002,8 @@ class TestEvaluation(unittest.TestCase):
                 if recall is not None:
                     scores.append(evaluation.recall(search=label))
         assert mean(scores) == 1.0
+        evaluation_data = evaluation.get_evaluation_data(search=None)
+        assert evaluation_data.recall == 1.0
 
     def test_false_negatives(self):
         """Count zero Annotations from two Training Documents."""
@@ -1003,6 +1015,8 @@ class TestEvaluation(unittest.TestCase):
         assert evaluation.fp() == 3  # A1, A2, A3
         assert evaluation.fn() == 2  # A4, A6
         assert evaluation.tn() == 0  # nothing to predict under threshold
+        evaluation_data = evaluation.get_evaluation_data(search=None)
+        assert evaluation_data.fn == 2
 
     def test_true_positive_label(self):
         """Count two Annotations from two Training Documents and filter by one Label."""
