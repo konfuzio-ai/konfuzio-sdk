@@ -5,7 +5,7 @@
 Not all multipage files that we process are always neatly scanned and organized. Sometimes we can have more than one actual 
 Document in a stream pf pages; such files need to be properly processed and split into several independent Documents
 
-![multi-file Document example](image.png)
+.. image:: /_static/img/multi_file_document_example.png
 
 _Multi-file Document Example_
 
