@@ -147,8 +147,8 @@ Evaluation
 
 `[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/evaluate.py>`__
 
-Evaluation
----------------------
+Extraction AI Evaluation
+=====================
 .. autoclass:: konfuzio_sdk.evaluate.Evaluation
    :members:
    :noindex:
@@ -156,6 +156,12 @@ Evaluation
 compare
 ---------------------
 .. autofunction:: konfuzio_sdk.evaluate.compare
+   :noindex:
+
+Categorization AI Evaluation
+=====================
+.. autoclass:: konfuzio_sdk.evaluate.CategorizationEvaluation
+   :members:
    :noindex:
 
 
