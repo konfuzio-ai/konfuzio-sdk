@@ -43,6 +43,7 @@ These changes are for the tokenizers/new SDK branch.
 
 ### Added
 - The Document list for Superusers shows the AI loading time ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9787)).
+- Add the option to show a warning when a User edits a Document he is not assigned to ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9466)).
 
 ### Fixed
 - Show a message that informs a user if his account was deactivated ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10119)).
