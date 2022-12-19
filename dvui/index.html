@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document Validation UI &mdash; Konfuzio  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/full_green_square.png"/>
+    <link rel="canonical" href="https://dev.konfuzio.com/dvui/index.html" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+        <script>mermaid.initialize({startOnLoad:true});</script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Managing users in the Document Validation UI" href="users.html" />
+    <link rel="prev" title="Changelog" href="../web/changelog_app.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Konfuzio
+            <img src="../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/home/index.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/configuration_reference.html">Install SDK</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/sourcecode.html">Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/sourcecode.html#tokenizers">Tokenizers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/sourcecode.html#extraction-ai">Extraction AI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/sourcecode.html#evaluation">Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/sourcecode.html#document-categorization">Document Categorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/examples/examples.html">Code Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/contribution.html">Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/coordinates_system.html">Coordinates System</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../merge/merge.html">Merging Logic</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../web/api.html">REST API v2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api-v3.html">REST API v3</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/on_premises.html">On-Premises Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/changelog_app.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Document Validation UI</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Document Validation UI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#components">Components</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#document-thumbnails">Document Thumbnails</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#document-page">Document Page</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#document-annotations">Document Annotations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#documents-list">Documents List</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="users.html">Managing users in the Document Validation UI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modes.html">Read Only Mode vs Full Mode</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides.html">Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sourcecode.html">Source Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Konfuzio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Document Validation UI</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/dvui/index.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="document-validation-ui">
+<h1>Document Validation UI<a class="headerlink" href="#document-validation-ui" title="Permalink to this headline">¶</a></h1>
+<p>The Document Validation UI is a collection of open source components, developed with <a class="reference external" href="https://v2.vuejs.org/">Vue.js</a>, that lets you preview and interact with Documents uploaded to <a class="reference external" href="https://konfuzio.com/">Konfuzio Server</a>.</p>
+<a class="reference external image-reference" href="./images/dvui.png"><img alt="dvui.png" src="../_images/dvui.png" /></a>
+<p>Chrome (from version 51), Firefox (from version 54), Edge (from version 15) and Safari (from version 10) are supported in the latest version.</p>
+<p>If you want to read the full user guide visit <a class="reference external" href="https://help.konfuzio.com/document-validation-ui/index.html">this link</a>.</p>
+<section id="components">
+<h2>Components<a class="headerlink" href="#components" title="Permalink to this headline">¶</a></h2>
+<p>The app has four main components:</p>
+<section id="document-thumbnails">
+<h3>Document Thumbnails<a class="headerlink" href="#document-thumbnails" title="Permalink to this headline">¶</a></h3>
+<a class="reference external image-reference" href="./images/document_thumbnails.svg"><img alt="document_thumbnails.svg" src="../_images/document_thumbnails.svg" /></a>
+<p>This is a simple component that loads the Document images and displays them in a vertical list to act as a thumbnail selector. It is fully clickable and it updates its state automatically.</p>
+</section>
+<section id="document-page">
+<h3>Document Page<a class="headerlink" href="#document-page" title="Permalink to this headline">¶</a></h3>
+<a class="reference external image-reference" href="./images/document_page.svg"><img alt="document_page.svg" src="../_images/document_page.svg" /></a>
+<p>This component is responsible for drawing the Document and handling any interaction with it. It uses <a class="reference external" href="https://konvajs.org/docs/vue/index.html">Konva JS</a> to render a canvas element that has the Document image as background and shapes on top. Most of the shapes are Annotations from the Konfuzio API.</p>
+</section>
+<section id="document-annotations">
+<h3>Document Annotations<a class="headerlink" href="#document-annotations" title="Permalink to this headline">¶</a></h3>
+<a class="reference external image-reference" href="./images/document_annotations.svg"><img alt="document_annotations.svg" src="../_images/document_annotations.svg" /></a>
+<p>This component is responsible for creating a list to interact with each Annotation on the Document. You can accept, decline or edit the Annotation, edit empty Labels and change the Annotation bounding box, among other things.</p>
+</section>
+<section id="documents-list">
+<h3>Documents List<a class="headerlink" href="#documents-list" title="Permalink to this headline">¶</a></h3>
+<a class="reference external image-reference" href="./images/documents_list.png"><img alt="documents_list.png" src="../_images/documents_list.png" /></a>
+<p>This is an optional component that is only loaded if a <a class="reference external" href="https://help.konfuzio.com/modules/categories/index.html">Category</a> ID is provided under the environment file. You also need to add an Authentication Token. This component is responsible for loading the Documents list for a given Category and that are assigned to the currently authenticated user. You can then select which Document will appear on the dashboard.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../web/changelog_app.html" class="btn btn-neutral float-left" title="Changelog" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="users.html" class="btn btn-neutral float-right" title="Managing users in the Document Validation UI" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Helm und Nagel GmbH.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-D02B3QF8Z3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-D02B3QF8Z3');
+</script>
+<script src="https://cmp.osano.com/16CVyMSbk3Iar1G3f/97ee6223-b0cb-4f8c-abd6-a25a0d6f6507/osano.js"></script>
+
+
+</body>
+</html>

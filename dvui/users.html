@@ -2,15 +2,14 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<meta content="All notable changes in the Konfuzio Trainer." name="description" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Changelog &mdash; Konfuzio  documentation</title>
+  <title>Managing users in the Document Validation UI &mdash; Konfuzio  documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../_static/full_green_square.png"/>
-    <link rel="canonical" href="https://dev.konfuzio.com/training/changelog.html" />
+    <link rel="canonical" href="https://dev.konfuzio.com/dvui/users.html" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -23,7 +22,9 @@
         <script>mermaid.initialize({startOnLoad:true});</script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" /> 
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Read Only Mode vs Full Mode" href="modes.html" />
+    <link rel="prev" title="Document Validation UI" href="index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -64,13 +65,13 @@
 <li class="toctree-l1"><a class="reference internal" href="../web/changelog_app.html">Changelog</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Document Validation UI</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../dvui/index.html">Document Validation UI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../dvui/users.html">Managing users in the Document Validation UI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../dvui/modes.html">Read Only Mode vs Full Mode</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../dvui/guides.html">Guides</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../dvui/sourcecode.html">Source Code</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../dvui/changelog.html">Changelog</a></li>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Document Validation UI</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Managing users in the Document Validation UI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modes.html">Read Only Mode vs Full Mode</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides.html">Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sourcecode.html">Source Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
 </ul>
 
         </div>
@@ -87,9 +88,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Changelog</li>
+      <li>Managing users in the Document Validation UI</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/training/changelog.md.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/dvui/users.md.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -97,53 +98,22 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="changelog">
-<h1>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline">¶</a></h1>
-<p>All notable changes in the Konfuzio Trainer.</p>
-<p>The format is based on <a class="reference external" href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>,
-and this project adheres to <a class="reference external" href="https://calver.org/overview.html">Calendar Versioning</a>.</p>
-<section id="v-0-3-8">
-<h2>v.0.3.8<a class="headerlink" href="#v-0-3-8" title="Permalink to this headline">¶</a></h2>
-<section id="changed">
-<h3>Changed<a class="headerlink" href="#changed" title="Permalink to this headline">¶</a></h3>
+  <section id="managing-users-in-the-document-validation-ui">
+<h1>Managing users in the Document Validation UI<a class="headerlink" href="#managing-users-in-the-document-validation-ui" title="Permalink to this headline">¶</a></h1>
+<p>There are two options to manage users in the Document Validation UI:</p>
 <ul class="simple">
-<li><p>Update of python dependencies</p></li>
+<li><p>The first option is to <a class="reference external" href="https://app.konfuzio.com/accounts/signup/">create a single user</a> with limited permissions (i.e. with the <a class="reference external" href="https://help.konfuzio.com/modules/superuserroles/index.html">Reader role</a>) and <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/auth/auth_create">user token</a>, that anyone who interacts with the user interface can use in a project. Since the token will be public, this option is best suited for a read-only view.</p></li>
+<li><p>The second one is to create as many users as needed, each with their own token. This is best suited for projects that use <a class="reference external" href="https://dev.konfuzio.com/web/api-v3.html#single-sign-on-sso-authentication">single sign-on authentication</a> and/or where users will be interacting with the Documents (annotating and revising), since it allows for fine-grained control over who can access what and it allows the application to keep a record of the different actions performed by them.</p></li>
 </ul>
-</section>
-</section>
-<section id="v-0-3-3">
-<h2>v.0.3.3<a class="headerlink" href="#v-0-3-3" title="Permalink to this headline">¶</a></h2>
-<section id="added">
-<h3>Added<a class="headerlink" href="#added" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li><p>Allow to customize output folder for model training.</p></li>
-</ul>
-</section>
-</section>
-<section id="v-0-3-1">
-<h2>v.0.3.1<a class="headerlink" href="#v-0-3-1" title="Permalink to this headline">¶</a></h2>
-<section id="id1">
-<h3>Changed<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li><p>Improve the detection model “Paragraph”</p></li>
-</ul>
-</section>
-</section>
-<section id="v-0-3-0">
-<h2>v.0.3.0<a class="headerlink" href="#v-0-3-0" title="Permalink to this headline">¶</a></h2>
-<section id="id2">
-<h3>Added<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li><p>Start public changelog for Konfuzio Trainer</p></li>
-</ul>
-</section>
-</section>
 </section>
 
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Document Validation UI" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="modes.html" class="btn btn-neutral float-right" title="Read Only Mode vs Full Mode" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 
