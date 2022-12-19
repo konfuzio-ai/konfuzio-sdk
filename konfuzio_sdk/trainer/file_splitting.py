@@ -185,18 +185,18 @@ class FusionModel(AbstractFileSplittingModel):
         )
 
     def _preprocess_documents(self, data: List[Document]) -> (List[str], List[str], List[int]):
-        pages = []
+        page_image_paths = []
         texts = []
         labels = []
         for doc in data:
             for page in doc.pages():
-                pages.append(page.image_path)
+                page_image_paths.append(page.image_path)
                 texts.append(page.text)
                 if page.is_first_page:
                     labels.append(1)
                 else:
                     labels.append(0)
-        return pages, texts, labels
+        return page_image_paths, texts, labels
 
     def _otsu_binarization(self, pages: List[str]) -> List:
         images = []
@@ -213,10 +213,10 @@ class FusionModel(AbstractFileSplittingModel):
         """Process the train and test data, initialize and fit the model."""
         for doc in self.train_data + self.test_data:
             doc.get_images()
-        train_pages, train_texts, train_labels = self._preprocess_documents(self.train_data)
-        test_pages, test_texts, test_labels = self._preprocess_documents(self.test_data)
-        train_images = self._otsu_binarization(train_pages)
-        test_images = self._otsu_binarization(test_pages)
+        train_image_paths, train_texts, train_labels = self._preprocess_documents(self.train_data)
+        test_image_paths, test_texts, test_labels = self._preprocess_documents(self.test_data)
+        train_images = self._otsu_binarization(train_image_paths)
+        test_images = self._otsu_binarization(test_image_paths)
         self.train_labels = tf.cast(np.asarray(train_labels).reshape((-1, 1)), tf.float32)
         self.test_labels = tf.cast(np.asarray(test_labels).reshape((-1, 1)), tf.float32)
         image_data_generator = ImageDataGenerator()
