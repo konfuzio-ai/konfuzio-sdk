@@ -33,10 +33,12 @@ from warnings import warn
 import numpy
 import pandas
 import cloudpickle
+from pympler import asizeof
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.validation import check_is_fitted
 from tabulate import tabulate
 
+import konfuzio_sdk
 from konfuzio_sdk.data import Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span
 from konfuzio_sdk.normalize import (
     normalize_to_float,
@@ -45,7 +47,7 @@ from konfuzio_sdk.normalize import (
     normalize_to_positive_float,
 )
 from konfuzio_sdk.regex import regex_matches
-from konfuzio_sdk.utils import get_timestamp, get_bbox
+from konfuzio_sdk.utils import get_timestamp, get_bbox, normalize_memory
 from konfuzio_sdk.evaluate import Evaluation
 
 logger = logging.getLogger(__name__)
@@ -56,7 +58,7 @@ CANDIDATES_CACHE_SIZE = 100
 warn('This module is WIP: https://gitlab.com/konfuzio/objectives/-/issues/9311', FutureWarning, stacklevel=2)
 
 
-def load_model(pickle_path: str):
+def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     """
     Load a pkl file.
 
@@ -84,6 +86,10 @@ def load_model(pickle_path: str):
         if "unsupported pickle protocol: 5" in str(err) and '3.7' in sys.version:
             raise ValueError("Pickle saved with incompatible Python version.") from err
         raise
+
+    max_ram = normalize_memory(max_ram)
+    if max_ram and asizeof.asizeof(model) > max_ram:
+        logger.error(f"Loaded model's memory use ({asizeof.asizeof(model)}) is greater than max_ram ({max_ram})")
 
     if not hasattr(model, "name"):
         raise TypeError("Saved model file needs to be a Konfuzio Trainer instance.")
@@ -744,131 +750,6 @@ def plot_label_distribution(df_list: list, df_name_list=None) -> None:
     )
 
 
-# def evaluate_split_quality(df_train: pandas.DataFrame, df_val: pandas.DataFrame, percentage: Optional[float] = None):
-#     """Evaluate if the split method used produces satisfactory results."""
-#     # check if df_train or df_val is empty
-#     if df_train.empty:
-#         logger.error('df_train is empty.')
-#         return None
-#     if df_val.empty:
-#         logger.error('df_val is empty.')
-#         return None
-#     logger.info('Start split quality tests.')
-#     n_train_examples = df_train.shape[0]
-#     n_val_examples = df_val.shape[0]
-#     n_total_examples = n_train_examples + n_val_examples
-#
-#     # check if the splits in total numbers is ok
-#     if percentage and n_total_examples > 100:
-#         if abs(n_train_examples / (n_total_examples * percentage) - 1) > 0.05:
-#             logger.error(
-#                 f'Splits differ from split percentage significantly. Percentage: {percentage}. '
-#                 + f'Real Percentage: {n_train_examples / n_total_examples}'
-#             )
-#
-#     train_dict = df_train['label_text'].value_counts().to_dict()
-#     val_dict = df_val['label_text'].value_counts().to_dict()
-#     total_dict = pandas.concat([df_train['label_text'], df_val['label_text']]).value_counts().to_dict()
-#
-#     train_dict_rel = df_train['label_text'].value_counts(normalize=True).to_dict()
-#     val_dict_rel = df_val['label_text'].value_counts(normalize=True).to_dict()
-#     total_dict_rel = (
-#         pandas.concat([df_train['label_text'], df_val['label_text']]).value_counts(normalize=True).to_dict()
-#     )
-#
-#     # checks the balance of the labels per split (and if there is at least one)
-#     for key, value in total_dict_rel.items():
-#         if key not in train_dict.keys():
-#             logger.error('No sample of label "' + key + '" found in training dataset.')
-#         elif total_dict[key] > 30 and abs(train_dict_rel[key] - value) > 0.05 * max(total_dict_rel[key], 0.01):
-#             logger.error('Unbalanced distribution of label "' + key + '" (Significant deviation in training set)')
-#         else:
-#             logger.info('Balanced distribution of label "' + key + '" in training set')
-#
-#         if key not in val_dict.keys():
-#             logger.error('No sample of label "' + key + '" found in validation dataset.')
-#         elif total_dict[key] > 30 and abs(val_dict_rel[key] - value) > 0.05 * max(total_dict_rel[key], 0.01):
-#             logger.warning('Unbalanced distribution of label "' + key + '" (Significant deviation in validation set)')
-#         else:
-#             logger.info('Balanced distribution of label "' + key + '" in validation set')
-#
-#     logger.info('Split quality test completed.')
-
-
-# def split_in_two_by_document_df(
-#     data: pandas.DataFrame, percentage: float, check_imbalances=False
-# ) -> Tuple[pandas.DataFrame, pandas.DataFrame]:
-#     """
-#     Split the input df in two (by document) and return two dataframes of about the right size.
-#
-#     The first item in the return tuple is of the percentage size.
-#     """
-#     logger.info('Split into test and training.')
-#     if data['document_id'].isnull().values.any():
-#         raise Exception('To split by document_id every annotation needs a non-NaN document_id!')
-#
-#     df_list = [df_doc for k, df_doc in data.groupby('document_id')]
-#
-#     return split_in_two_by_document_df_list(data_list=df_list, percentage=percentage,
-#     check_imbalances=check_imbalances)
-
-
-# def split_in_two_by_document_df_list(
-#     data_list: List[pandas.DataFrame], percentage: float, check_imbalances=False
-# ) -> Tuple[pandas.DataFrame, pandas.DataFrame]:
-#     """
-#     Split a list of document df in to two concatenated df according to the percentage.
-#
-#     The first item in the return tuple is of the percentage size.
-#     """
-#     logger.info('Split into test and training.')
-#     df_list = data_list
-#     total_sample_num = sum([len(df.index) for df in data_list])
-#     select_amount = int(total_sample_num * percentage)
-#
-#     selected_count = 0
-#     selected_df = pandas.DataFrame()
-#     rest_df = pandas.DataFrame()
-#
-#     random.Random(1).shuffle(df_list)
-#
-#     # TODO: check for maximum deviation from the percentage specified
-#     for i, df_doc in enumerate(df_list):
-#         # Add first document to selected_df to avoid empty df
-#         if i == 0:
-#             selected_df = pandas.concat([selected_df, df_doc])
-#             selected_count += len(df_doc.index)
-#
-#         # Add second document to rest_df to avoid empty df
-#         if i == 1 and percentage < 1.0:
-#             rest_df = pandas.concat([rest_df, df_doc])
-#             continue
-#
-#         # Add further documents according to required percentage.
-#         if selected_count <= select_amount or percentage == 1.0:
-#             selected_df = pandas.concat([selected_df, df_doc])
-#             selected_count += len(df_doc.index)
-#         else:
-#             rest_df = pandas.concat([rest_df, df_doc])
-#
-#     if selected_df.empty:
-#         raise Exception('Not enough data to train an AI model.')
-#
-#     selected_df.reset_index(drop=True, inplace=True)
-#     rest_df.reset_index(drop=True, inplace=True)  # get labels used in each df
-#
-#     if check_imbalances:
-#         selected_classes = set(selected_df['label_text'].unique())
-#         rest_classes = set(rest_df['label_text'].unique())
-#         # find labels that do not appear in both dfs
-#         non_overlapping_classes = selected_classes ^ rest_classes
-#         # remove non-overlapping examples
-#         selected_df = selected_df[~selected_df['label_text'].isin(non_overlapping_classes)]
-#         rest_df = rest_df[~rest_df['label_text'].isin(non_overlapping_classes)]
-#         logger.info(f'The following classes could not be split and have been removed: {non_overlapping_classes}')
-#     return selected_df, rest_df
-
-
 def get_first_candidate(document_text, document_bbox, line_list):
     """Get the first candidate in a document."""
     # todo allow to have mult tokenizers?
@@ -1331,17 +1212,8 @@ class Trainer:
         self.name = self.__class__.__name__
         self.label_feature_list = None  # will be set later
 
-        self.df_data = None
-        self.df_valid = None
         self.df_train = None
         self.df_test = None
-
-        self.X_train = None
-        self.y_train = None
-        self.X_valid = None
-        self.y_valid = None
-        self.X_test = None
-        self.y_test = None
 
         self.evaluation = None
 
@@ -1425,15 +1297,14 @@ class Trainer:
         logger.warning(f'{self} does not extract.')
         pass
 
-    @staticmethod
-    def extraction_result_to_document(document: Document, extraction_result: dict) -> Document:
+    def extraction_result_to_document(self, document: Document, extraction_result: dict) -> Document:
         """Return a virtual Document annotated with AI Model output."""
         virtual_doc = deepcopy(document)
-        virtual_annotation_set_id = 0  # counter for across mult. Annotation Set groups of a Label Set
+        virtual_annotation_set_id = 1  # counter for across mult. Annotation Set groups of a Label Set
 
         # define Annotation Set for the Category Label Set: todo: this is unclear from API side
         # default Annotation Set will be always added even if there are no predictions for it
-        category_label_set = document.category.project.get_label_set_by_id(document.category.id_)
+        category_label_set = self.category.project.get_label_set_by_id(self.category.id_)
         virtual_default_annotation_set = AnnotationSet(
             document=virtual_doc, label_set=category_label_set, id_=virtual_annotation_set_id
         )
@@ -1441,7 +1312,7 @@ class Trainer:
         for label_or_label_set_name, information in extraction_result.items():
             if isinstance(information, pandas.DataFrame) and not information.empty:
                 # annotations belong to the default Annotation Set
-                label = document.category.project.get_label_by_name(label_or_label_set_name)
+                label = self.category.project.get_label_by_name(label_or_label_set_name)
                 add_extractions_as_annotations(
                     document=virtual_doc,
                     extractions=information,
@@ -1452,7 +1323,7 @@ class Trainer:
 
             elif isinstance(information, list) or isinstance(information, dict):
                 # process multi Annotation Sets that are not part of the category Label Set
-                label_set = document.category.project.get_label_set_by_name(label_or_label_set_name)
+                label_set = self.category.project.get_label_set_by_name(label_or_label_set_name)
 
                 if not isinstance(information, list):
                     information = [information]
@@ -1464,7 +1335,7 @@ class Trainer:
                     )
 
                     for label_name, extractions in entry.items():
-                        label = document.category.project.get_label_by_name(label_name)
+                        label = self.category.project.get_label_by_name(label_name)
                         add_extractions_as_annotations(
                             document=virtual_doc,
                             extractions=extractions,
@@ -1594,7 +1465,9 @@ class Trainer:
 
         return merge is not None
 
-    def save(self, output_dir: str, include_konfuzio=True):
+    def save(
+        self, output_dir: str = None, include_konfuzio=True, reduce_weight=True, keep_documents=False, max_ram=None
+    ):
         """
         Save the label model as bz2 compressed pickle object to the release directory.
 
@@ -1607,10 +1480,20 @@ class Trainer:
 
         Finally, we delete the cloudpickle file and are left with the bz2 file which has a .pkl extension.
 
-        :return: Path of the saved model file
+        :param output_dir: Folder to save AI model in.
+        :param include_konfuzio: Boolean whether to include konfuzio_sdk package in pickle file.
+        :param reduce_weight: Remove all non-strictly necessary parameters before saving.
+        :param max_ram: Specify maximum memory usage condition to save model.
+        :raises MemoryError: When the size of the model in memory is greater than the maximum value.
+        :return: Path of the saved model file.
         """
+        logger.info('Saving model')
+        logger.info(f'{include_konfuzio=}')
+        logger.info(f'{reduce_weight=}')
+        logger.info(f'{keep_documents=}')
+        logger.info(f'{max_ram=}')
+
         # Keep Documents of the Category so that we can restore them later
-        category_documents = self.category.documents() + self.category.test_documents()
 
         # TODO: add Document.lose_weight in SDK - remove NO_LABEL Annotations from the Documents
         # for document in category_documents:
@@ -1618,29 +1501,45 @@ class Trainer:
         #     clean_annotations = list(set(document.annotations()) - set(no_label_annotations))
         #     document._annotations = clean_annotations
 
-        # self.lose_weight() # todo make this optional: otherwise evaluate will not work on self
+        # if no argument passed, get project max_ram
+        if not max_ram and self.category is not None:
+            max_ram = self.category.project.max_ram
 
-        from pympler import asizeof
+        if not output_dir:
+            output_dir = self.category.project.model_folder
 
-        logger.info(f'Saving model - {asizeof.asizeof(self) / 1_000_000} MB')
+        temp_pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower()}.cloudpickle')
+        pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower()}.pkl')
 
-        sys.setrecursionlimit(99999999)
+        if reduce_weight:
+            self.df_train = None
+            self.category.project.lose_weight()
+            self.tokenizer.lose_weight()
+
+        if not keep_documents:
+            self.documents = []
+            self.test_documents = []
+
+        logger.info(f'Model size: {asizeof.asizeof(self) / 1_000_000} MB')
+
+        max_ram = normalize_memory(max_ram)
+
+        if max_ram and asizeof.asizeof(self) > max_ram:
+            raise MemoryError(f"AI model memory use ({asizeof.asizeof(self)}) exceeds maximum ({max_ram=}).")
+
+        sys.setrecursionlimit(999999)  # ?
 
         logger.info('Getting save paths')
-        import konfuzio_sdk
 
         if include_konfuzio:
             cloudpickle.register_pickle_by_value(konfuzio_sdk)
             # todo register all dependencies?
 
-        # output_dir = self.category.project.model_folder
-        # file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower())}')
+        if not output_dir:
+            output_dir = self.category.project.model_folder
 
         # make sure output dir exists
         pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
-
-        temp_pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower()}.cloudpickle')
-        pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower()}.pkl')
 
         logger.info('Saving model with cloudpickle')
         # first save with cloudpickle
@@ -1662,7 +1561,7 @@ class Trainer:
         logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
 
         # restore Documents of the Category so that we can run the evaluation later
-        self.category.project._documents = category_documents
+        # self.category.project._documents = category_documents
 
         return pkl_file_path
 
@@ -1685,7 +1584,22 @@ class GroupAnnotationSets:
         :return:
         """
         # Only train template clf is there are non default templates
-        self.label_sets = self.category.label_sets
+
+        LabelSetInfo = collections.namedtuple(
+            'LabelSetInfo', ['is_default', 'name', 'has_multiple_annotation_sets', 'target_names']
+        )
+        self.label_sets_info = [
+            LabelSetInfo(
+                **dict(
+                    is_default=label_set.is_default,
+                    name=label_set.name,
+                    has_multiple_annotation_sets=label_set.has_multiple_annotation_sets,
+                    target_names=label_set.get_target_names(self.use_separate_labels),
+                )
+            )
+            for label_set in self.category.label_sets
+        ]
+
         if not [lset for lset in self.category.label_sets if not lset.is_default]:
             # todo see https://gitlab.com/konfuzio/objectives/-/issues/2247
             # todo check for NO_LABEL_SET if we should keep it
@@ -1693,7 +1607,6 @@ class GroupAnnotationSets:
         logger.info('Start training of Multi-class Label Set Classifier.')
         # ignores the section count as it actually worsens results
         # todo check if no category labels should be ignored
-        # self.template_feature_list = [label.name for label in self.category.project.labels]
         self.template_feature_list = list(self.clf.classes_)  # list of label classifier targets
         # logger.warning("template_feature_list:", self.template_feature_list)
         n_nearest = self.n_nearest_template  # if hasattr(self, 'n_nearest_template') else 0
@@ -1707,14 +1620,6 @@ class GroupAnnotationSets:
         df_train_ground_truth_list = []
         for document_id, df_doc in df_train_label_list:
             document = self.category.project.get_document_by_id(document_id)
-            # Train classifier only on documents with a matching document template.
-            # if (
-            #     hasattr(self, 'default_section_label')
-            #     and self.default_section_label
-            #     and self.default_section_label != document.category_template
-            # ):
-            #     logger.info(f'Skip document {document} because its template does not match.')
-            #     continue
             df_train_template_list.append(self.convert_label_features_to_template_features(df_doc, document.text))
             df_train_ground_truth_list.append(self.build_document_template_feature(document))
 
@@ -1922,7 +1827,7 @@ class GroupAnnotationSets:
         text_replaced = text.replace('\f', '\n')
 
         # Add extractions from non-default sections.
-        for label_set in [x for x in self.label_sets if not x.is_default]:
+        for label_set in [x for x in self.label_sets_info if not x.is_default]:
             # Add Extraction from SectionLabels with multiple sections (as list).
             if label_set.has_multiple_annotation_sets:
                 new_res_dict[label_set.name] = []
@@ -1935,7 +1840,7 @@ class GroupAnnotationSets:
                     for line_number, section_name in detected_sections.iterrows():
                         section_dict = {}
                         # we try to find the labels that match that section
-                        for target_label_name in label_set.get_target_names(self.use_separate_labels):
+                        for target_label_name in label_set.target_names:
                             if target_label_name in res_dict.keys():
 
                                 label_df = res_dict[target_label_name]
@@ -1967,7 +1872,7 @@ class GroupAnnotationSets:
             # Add Extraction from SectionLabels with single section (as dict).
             else:
                 _dict = {}
-                for target_label_name in label_set.get_target_names(self.use_separate_labels):
+                for target_label_name in label_set.target_names:
                     if target_label_name in res_dict.keys():
                         _dict[target_label_name] = res_dict[target_label_name]
                         del res_dict[target_label_name]  # ?
@@ -1976,8 +1881,8 @@ class GroupAnnotationSets:
                 continue
 
         # Finally add remaining extractions to default section (if they are allowed to be there).
-        for label_set in [x for x in self.label_sets if x.is_default]:
-            for target_label_name in label_set.get_target_names(self.use_separate_labels):
+        for label_set in [x for x in self.label_sets_info if x.is_default]:
+            for target_label_name in label_set.target_names:
                 if target_label_name in res_dict.keys():
                     new_res_dict[target_label_name] = res_dict[target_label_name]
                     del res_dict[target_label_name]  # ?
@@ -2135,7 +2040,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         self.tokenizer.tokenize(inference_document)
         if not inference_document.spans():
             logger.error(f'{self.tokenizer} does not provide Spans for {document}')
-            raise NotImplementedError('No error handling when Spans are missing.')
+            return inference_document
 
         # 3. preprocessing
         df, _feature_names, _raw_errors = self.features(inference_document)
@@ -2460,7 +2365,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
                         annotation_set=virt_document.no_label_annotation_set,
                         label=ann.label,
                         label_set=virt_document.project.no_label_set,
-                        category=virt_document.category,
+                        category=self.category,
                         spans=new_spans,
                     )
                     new_ann.label_set = ann.label_set

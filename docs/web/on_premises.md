@@ -7,9 +7,114 @@
 
 On-premises, also known as self-hosted, is a setup that allows Konfuzio to be implemented 100% on your own infrastructure. In practice, it means that you know where your data is stored, how it's handled and who gets hold of it. This is because you keep the data on your own servers.
 
-A common way to operate a production-ready and scalabe Konfuzio installation is via Kuberneteens. An alternative and more light-weight deployment option is the [Single VM setup via Docker](/web/on_premises.html#alternative-deployment-options). We recommend to use the option which is more familiar to you.
+A common way to operate a production-ready and scalabe Konfuzio installation is via Kubernetens. An alternative deployment option is the [Single VM setup via Docker](/web/on_premises.html#alternative-deployment-options). We recommend to use the option which is more familiar to you. In general
 
 On-Premise Konfuzio installations allow to create Superuser accounts which can access all [Documents](https://help.konfuzio.com/modules/superuserdocuments/index.html), [Projects](https://help.konfuzio.com/modules/superuserprojects/index.html) and [AIs](https://help.konfuzio.com/modules/superuserais/index.html) via a dedicated view as well as creating custom [Roles](https://help.konfuzio.com/modules/superuserroles/index.html)
+
+## Architectural Overview
+
+The diagram illustrates the components of a Konfuzio Server deployment. Optional components are represented by dashed lines. The numbers in brackets represent the minimal and maximal container count per component.
+
+.. mermaid::
+
+   graph TD
+      classDef client fill:#D5E8D4,stroke:#82B366,color:#000000;
+      classDef old_optional fill:#E1D5E7,stroke:#9673A6,color:#000000;
+      classDef optional fill:#DAE8FC,stroke:#6C8EBF,color:#000000,stroke-dasharray: 3 3;
+      
+      ip("Loadbalancer / Public IP")
+      smtp("SMTP Mailbox")
+      a("Database")
+      b("Task Queue")
+      c("File Storage")
+      worker("Generic Worker (1:n)")
+      web("Web & API (1:n)")
+      beats("Beats Worker (1:n)")
+      mail("Mail-Scan (0:1)")
+      
+      %% Outside references
+      smtp <-- Poll emails --> mail
+      ip <--> web
+      
+      %% Optional Containers
+      ocr("OCR (0:n)")
+      segmentation("Segmentation (0:n)")
+      summarization("Summarization (0:n)")
+      flower("Flower (0:1)")
+      
+      %% Server / Cluster
+      h0("Server 1")
+      h1("Server 2")
+      h2("Server 3")
+      h3("Server 4")
+      h4("Server 5")
+      i("...")
+      j("Server with GPU")
+
+      subgraph all["Private Network"]
+      subgraph databases["Persistent Container / Services"]
+      a
+      c
+      b
+      end
+      subgraph containers["Stateless Containers"]
+      mail
+      web
+      flower
+      worker
+      beats
+      subgraph optional["Optional Containers"]
+      ocr
+      segmentation
+      summarization
+      end
+      end
+      subgraph servers["Server / Cluster"]
+      h0
+      h1
+      h2
+      h3
+      h4
+      i
+      j
+      end    
+      worker <--> databases
+      worker -- Can delegate tasks--> optional
+      worker -- "Can process tasks"--> worker
+      web <--> databases
+      web <--> flower
+      flower <--> b
+      mail <--> databases
+      beats <--> databases
+      containers -- "Operated on"--> servers
+      databases -- "Can be operated on"--> servers
+      end
+      
+      click flower "/web/on_premises.html#optional-6-use-flower-to-monitor-tasks"
+      click web "/web/on_premises.html#start-the-container"
+      click worker "/web/on_premises.html#start-the-container"
+      click ocr "/web/on_premises.html#optional-7-use-azure-read-api-on-premise"
+      click segmentation "/web/on_premises.html#optional-8-install-document-segmentation-container"
+      click summarization "/web/on_premises.html#optional-9-install-document-summarization-container" 
+      
+      class flower optional
+      class ocr optional
+      class mail optional
+      class ocr optional
+      class segmentation optional
+      class summarization optional
+      class h1 optional
+      class h2 optional
+      class h3 optional
+      class h4 optional
+      class i optional
+      class j optional  
+
+## Billing and License
+
+A Konfuzio Server self-hosted license can be purchased [online](https://konfuzio.com/en/price/). After your order has been placed, we will provide you with credentials to [download the Konfuzio Docker Images](https://dev.konfuzio.com/web/on_premises.html#download-docker-image) and a BILLING_API_KEY which needs to be set as [environment variable](/web/on_premises.html#environment-variables-for-konfuzio-server). The Konfuzio Container reports the usage once a day to our billing server (i.e. https://app.konfuzio.com). Konfuzio containers don't send customer data, such as the image or text that's being analyzed, to the billing server.
+
+If you operate Konfuzio Server in an air-gapped environment, the Konfuzio Docker images are licensed to operate for one year (based on the release date) without being connected to the billing server.
 
 ## Kubernetes
 
@@ -79,8 +184,10 @@ expose Konfuzio services using name-based virtual servers configured with `Ingre
 objects. You'll need to specify a domain which will contain records to resolve the
 domain to the appropriate IP.
 
-`--set ingress.enabled=True`  
-`--set ingress.HOST_NAME=konfuzio.example.com`  
+```
+--set ingress.enabled=True
+--set ingress.HOST_NAME=konfuzio.example.com
+```
 
 <!-- 
 ###### IPs
@@ -95,7 +202,9 @@ For example if you choose `example.com` and you have a static IP of `10.10.10.10
 
 _Include these options in your Helm install command:_
 
-`--set global.hosts.externalIP=10.10.10.`
+```
+--set global.hosts.externalIP=10.10.10.
+```
 -->
 
 ##### Persistence
@@ -118,8 +227,10 @@ specify an email address to register your TLS certificates.
 
 _Include these options in your Helm install command:_
 
-`--set letsencrypt.enabled=True`  
-`--set letsencrypt.email=me@example.com`
+```
+--set letsencrypt.enabled=True
+--set letsencrypt.email=me@example.com
+```
 
 ##### PostgreSQL
 
@@ -136,10 +247,12 @@ be configured to use it as shown below.
 
 _Include these options in your Helm install command:_
 
-`--set postgresql.install=false`  
-`--set global.psql.host=production.postgress.hostname.local`  
-`--set global.psql.password.secret=kubernetes_secret_name`  
-`--set global.psql.password.key=key_that_contains_postgres_password`  
+```
+--set postgresql.install=false
+--set global.psql.host=production.postgress.hostname.local
+--set global.psql.password.secret=kubernetes_secret_name
+--set global.psql.password.key=key_that_contains_postgres_password
+```
 
 ##### Redis
 
@@ -176,9 +289,11 @@ into a smaller cluster. Konfuzio can work without a GPU. The GPU is used to trai
 Once you have all of your configuration options collected, we can get any dependencies
 and run Helm. In this example, we've named our Helm release `konfuzio`.
 
-`helm repo add konfuzio-repo https://git.konfuzio.com/api/v4/projects/106/packages/helm/stable`  
-`helm repo update`  
-`helm upgrade --install konfuzio konfuzio-repo/konfuzio-chart --values my_values.yaml`  
+```
+helm repo add konfuzio-repo https://git.konfuzio.com/api/v4/projects/106/packages/helm/stable
+helm repo update
+helm upgrade --install konfuzio konfuzio-repo/konfuzio-chart --values my_values.yaml
+```
 
 Please create a my_values.yaml file for your Konfuzio configuration. Useful default values can be found in the values.yaml in the chart repository. See Helm docs for information on how your values file will override the defaults. Alternativ you can specify you configuration using `--set option.name=value`. 
 
@@ -197,9 +312,11 @@ The Konfuzio Server deployments can be scaled dynamically using a [Horizontal Po
 You can access the Konfuzio instance by visiting the domain specified during
 installation. In order to create an initial superuser, please to connect to a running pod.
 
-`kubectl get pod`  
-`kubectl exec --stdin --tty my-konfuzio-* --  bash`  
-`python manage.py createsuperuser`  
+```
+kubectl get pod
+kubectl exec --stdin --tty my-konfuzio-* --  bash
+python manage.py createsuperuser
+```
 
 <!--
 #### Initial login
@@ -286,8 +403,10 @@ Registry URL: {PROVIDED_BY_KONFUZIO}
 Username: {PROVIDED_BY_KONFUZIO}  
 Password: {PROVIDED_BY_KONFUZIO}  
 
-`> docker login REGISTRY_URL`  
-`> docker pull REGISTRY_URL/konfuzio/text-annotation/master:latest`  
+```
+docker login REGISTRY_URL
+docker pull REGISTRY_URL/konfuzio/text-annotation/master:latest
+```
 
 The Tag "latest" should be replaced with an actual version. A list of available tags can be found here: https://dev.konfuzio.com/web/changelog_app.html.
 
@@ -305,49 +424,67 @@ The container needs to be able to access IP addresses and hostnames used in the 
 
 docker run -it --add-host=10.0.0.1 --env-file /konfuzio-vm/text-annotation.env --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data REGISTRY_URL/konfuzio/text-annotation/master:latest bash
 
-`python manage.py migrate`  
-`python manage.py createsuperuser`  
-`python manage.py init_email_templates`  
-`python manage.py init_user_permissions`  
+```
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py init_email_templates
+python manage.py init_user_permissions
+```
 
 After completing these steps you can exit and remove the container.
 
 Note: The username used during the createsuperuser dialog must have the format of a valid e-mail in order to be able to login later.
 
 #### 5. Start the container
-In this example we start three containers, the first one to serve the Konfuzio web application. The second and third are used to process tasks in the background without blocking the web application.
+In this example we start four containers. The first one to serve the Konfuzio web application. 
 
-`docker run -p 80:8000 --name web -d --add-host=host:10.0.0.1 \`  
-`--env-file /konfuzio-vm/text-annotation.env \`  
-`--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \`  
-`REGISTRY_URL/konfuzio/text-annotation/master:latest`
+```
+docker run -p 80:8000 --name web -d --add-host=host:10.0.0.1 \
+  --env-file /konfuzio-vm/text-annotation.env \
+  --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \
+  REGISTRY_URL/konfuzio/text-annotation/master:latest
+```
 
-`docker run --name worker1 -d --add-host=host:10.0.0.1 \`  
-`--env-file /konfuzio-vm/text-annotation.env \`  
-`--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \`  
-`REGISTRY_URL/konfuzio/text-annotation/master:latest \`  
-`celery -A app worker -l INFO --concurrency 1 -Q celery,priority_ocr,ocr,\`  
-`priority_extract,extract,processing,priority_local_ocr,local_ocr,\`  
-`training,finalize,training_heavy,categorize`  
+The second and third are used to process tasks in the background without blocking the web application. Depending on our load scenario, you might to start a large number of worker containers.
 
-`docker run --name worker2 -d --add-host=host:10.0.0.1 \`  
-`--env-file /konfuzio-vm/text-annotation.env \`  
-`--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \`  
-`REGISTRY_URL/konfuzio/text-annotation/master:latest \`  
-`celery -A app worker -l INFO --concurrency 1 -Q celery,priority_ocr,ocr,\`  
-`priority_extract,extract,processing,priority_local_ocr,local_ocr,\`  
-`training,finalize,training_heavy,categorize`
+```
+docker run --name worker1 -d --add-host=host:10.0.0.1 \  
+  --env-file /konfuzio-vm/text-annotation.env \  
+  --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \  
+  REGISTRY_URL/konfuzio/text-annotation/master:latest \  
+  celery -A app worker -l INFO --concurrency 1 -Q celery,priority_ocr,ocr,\  
+  priority_extract,extract,processing,priority_local_ocr,local_ocr,\
+  training,finalize,training_heavy,categorize  
+
+docker run --name worker2 -d --add-host=host:10.0.0.1 \
+  --env-file /konfuzio-vm/text-annotation.env \  
+  --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \
+  REGISTRY_URL/konfuzio/text-annotation/master:latest \
+  celery -A app worker -l INFO --concurrency 1 -Q celery,priority_ocr,ocr,\
+  priority_extract,extract,processing,priority_local_ocr,local_ocr,\
+  training,finalize,training_heavy,categorize
+```
+
+The fourth container is a Beats-Worker that takes care of sceduled tasks (e.g. auto-deleted documents).
+
+```
+docker run --name beats -d --add-host=host:10.0.0.1 \  
+  --env-file /konfuzio-vm/text-annotation.env \  
+  --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \  
+  REGISTRY_URL/konfuzio/text-annotation/master:latest \  
+  celery -A app beat -l INFO -s /tmp/celerybeat-schedule
+```
 
 #### [Optional] 6. Use Flower to monitor tasks
 
 [Flower](https://flower.readthedocs.io/en/latest/screenshots.html) can be used a task monitoring tool. Flower will be only accessible for Konfuzio superusers and is part of the Konfuzio Server Docker Image.
 
 ```
-`docker run --name flower -d --add-host=host:10.0.0.1 \`  
-`--env-file /konfuzio-vm/text-annotation.env \`  
-`--mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \`  
-`REGISTRY_URL/konfuzio/text-annotation/master:latest \`  
-`celery -A app flower --url_prefix=flower --address=0.0.0.0 --port=5555` 
+docker run --name flower -d --add-host=host:10.0.0.1 \  
+  --env-file /konfuzio-vm/text-annotation.env \  
+  --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \
+  REGISTRY_URL/konfuzio/text-annotation/master:latest \  
+  celery -A app flower --url_prefix=flower --address=0.0.0.0 --port=5555
 ```
 
 The Konfuzio Server application acts as a reverse proxy an servers the flower application. Therefore, django needs to know the flower url. `FLOWER_URL=http://host:5555/flower`.
@@ -364,18 +501,39 @@ end
 ```
 Please ensure that the Flower container is not exposed externally, as it does not handle authentication and authorization itself.  
 
-#### [Optional] 7. Use Azure Read API on-premise
+#### [Optional] 7. Run Container for Email Integration
+
+The ability to [upload documents via email](https://help.konfuzio.com/integrations/upload-by-email/index.html) can be achieved by starting a dedicated container with the respective environment variables.
+
+```
+SCAN_EMAIL_HOST = imap.example.com
+SCAN_EMAIL_HOST_USER = user@example.com
+SCAN_EMAIL_RECIPIENT = automation@example.com
+SCAN_EMAIL_HOST_PASSWORD = xxxxxxxxxxxxxxxxxx
+```
+
+```
+docker run --name flower -d --add-host=host:10.0.0.1 \  
+  --env-file /konfuzio-vm/text-annotation.env \  
+  --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \
+  REGISTRY_URL/konfuzio/text-annotation/master:latest \  
+  python manage.py scan_email
+```
+
+#### [Optional] 8. Use Azure Read API on-premise
 The [Azure Read API](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2) can be installed on-premise and used togehter with Konfuzio.
 
 Please install the Read API Container according to the current [manual](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2)
 
 Once the Azure Read API container is running you need to set the following variables in the .env file. This for example look like the following:
 
-`AZURE_OCR_KEY=123456789 # The Azure OCR API key`  
-`AZURE_OCR_BASE_URL=http://host:5000 # The URL of the READ API`  
-`AZURE_OCR_VERSION=v3.2 # The version of the READ API`
+```
+AZURE_OCR_KEY=123456789 # The Azure OCR API key  
+AZURE_OCR_BASE_URL=http://host:5000 # The URL of the READ API  
+AZURE_OCR_VERSION=v3.2 # The version of the READ API
+```
 
-#### [Optional] 8. Install document segmentation container
+#### [Optional] 9. Install document segmentation container
 
 Download the container with the credentials provided by Konfuzio
 
@@ -383,28 +541,51 @@ Registry URL: {PROVIDED_BY_KONFUZIO}
 Username: {PROVIDED_BY_KONFUZIO}  
 Password: {PROVIDED_BY_KONFUZIO}  
 
-`> docker login REGISTRY_URL`  
-`> docker pull REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28`  
-`> docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28 bash -c "export LC_ALL=C.UTF-8; export LANG=C.UTF-8; ./run_celery.sh"`
+```
+docker login REGISTRY_URL  
+docker pull REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28
+docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28 bash -c "export LC_ALL=C.UTF-8; export LANG=C.UTF-8;./run_celery.sh
+```
 
 The segmentation container needs to be started with the following environment variables which you can enter into your .env file
 ```
 GPU=True  # If GPU is present
 C_FORCE_ROOT=True
-BROKER_URL=  # See the konfuzio container
-RESULT_BACKEND=  # See the konfuzio container
-SENTRY_ENVIRONMENT=  # Optional
-SENTRY_RELEASE=  # Optional
-SENTRY_DSN=  # Optional
+BROKER_URL=  # Set this to an unused redis database
+RESULT_BACKEND=  # Set this to an unused redis database
 ```
 
-#### 9a. Upgrade to newer Konfuzio Version
+#### [Optional] 10. Install document summarization container
+
+Download the container with the credentials provided by Konfuzio
+
+Registry URL: {PROVIDED_BY_KONFUZIO}  
+Username: {PROVIDED_BY_KONFUZIO}  
+Password: {PROVIDED_BY_KONFUZIO}  
+
+```
+docker login REGISTRY_URL
+docker pull REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28
+docker run --env-file /path_to_env_file.env REGISTRY_URL/konfuzio/detectron2:2022-01-30_20-56-28 bash -c "export LC_ALL=C.UTF-8; export LANG=C.UTF-8;./run_celery.sh"`
+```
+
+The segmentation container needs to be started with the following environment variables which you can enter into your .env file
+```
+GPU=True  # If GPU is present
+TASK_ALWAYS_EAGER=False
+C_FORCE_ROOT=True
+BROKER_URL=  # Set this to an unused redis database
+RESULT_BACKEND=  # Set this to an unised redis database
+
+```
+
+#### 11a. Upgrade to newer Konfuzio Version
 
 Konfuzio upgrades are performed by replacing the Docker Tag to the [desired version](https://dev.konfuzio.com/web/changelog_app.html)
 After starting the new Containers Database migrations need to be applied by `python manage.py migrate` (see 4.).
 In case additional migration steps are needed, they will be mentioned in the release notes.
 
-#### 9b. Downgrade to older Konfuzio Version
+#### 11b. Downgrade to older Konfuzio Version
 
 Konfuzio downgrades are performed by creating a fresh Konfuzio installation in which existing Projects can be imported.
 The following steps need to be undertaken:
@@ -412,6 +593,7 @@ The following steps need to be undertaken:
 - Create a new Postgres Database and a new Folder/Bucket for file storage which will be used for the downgraded version
 - Install the desired Konfuzio Server version by starting with 1.)
 - Import the projects using ["python manage.py project_import"]([konfuzio_sdk](https://help.konfuzio.com/integrations/migration-between-konfuzio-server-instances/index.html#migrate-projects-between-konfuzio-server-instances)
+
 
 ## Alternative deployment options
 
@@ -552,12 +734,6 @@ Konfuzio Server will create a total of 43 tables and use the following data type
 
 <!-- This table was created by running select data_type, count(*) from information_schema.columns where table_schema = 'public'  group by data_type ; -->
 
-## Billing and License
-
-A Konfuzio Server self-hosted license can be purchased [online](https://konfuzio.com/en/price/). After your order has been placed, we will provide you with credentials to [download the Konfuzio Docker Images](https://dev.konfuzio.com/web/on_premises.html#download-docker-image) and a BILLING_API_KEY which needs to be set as [environment variable](/web/on_premises.html#environment-variables-for-konfuzio-server). The Konfuzio Container reports the usage once a day to our billing server (i.e. https://app.konfuzio.com). Konfuzio containers don't send customer data, such as the image or text that's being analyzed, to the billing server.
-
-If you operate Konfuzio Server in an air-gapped environment, the Konfuzio Docker images are licensed to operate for one year (based on the release date) without being connected to the billing server.
-
 ## Environment Variables
 
 ### Environment Variables for Konfuzio Server
@@ -682,6 +858,12 @@ CSRF_COOKIE_SECURE=True
 NEW_RELIC_LICENSE_KEY=
 NEW_RELIC_APP_NAME=
 NEW_RELIC_ENVIRONMENT=
+
+# Email integration (optional).
+SCAN_EMAIL_HOST=
+SCAN_EMAIL_HOST_USER=
+SCAN_EMAIL_RECIPIENT=
+SCAN_EMAIL_HOST_PASSWORD=
 
 # Directory to cache files during the AI training process and when running AI models (optional).
 KONFUZIO_CACHE_DIR =   # e.g. '/cache', uses tempdir if not set

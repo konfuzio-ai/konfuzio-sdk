@@ -5,7 +5,7 @@ import json
 import logging
 import os
 import pathlib
-import re
+import regex as re
 import shutil
 import time
 import zipfile
@@ -52,7 +52,7 @@ class Data:
             # Compare to virtual instances
             return self.id_local == other.id_local
         else:
-            return self.id_ and other and other.id_ and self.id_ == other.id_
+            return self.id_ is not None and other is not None and other.id_ is not None and self.id_ == other.id_
 
     def __hash__(self):
         """Make any online or local concept hashable. See https://stackoverflow.com/a/7152650."""
@@ -356,11 +356,6 @@ class AnnotationSet(Data):
         """Return string representation of the Annotation Set."""
         return f"{self.__class__.__name__}({self.id_}) of {self.label_set} in {self.document}."
 
-    def lose_weight(self):
-        """Delete data of the instance."""
-        self.label_set = None
-        self.document = None
-
     def annotations(self, use_correct: bool = True, ignore_below_threshold: bool = False):
         """All Annotations currently in this Annotation Set."""
         if not self._annotations:
@@ -372,7 +367,9 @@ class AnnotationSet(Data):
         if use_correct:
             annotations = [ann for ann in self._annotations if ann.is_correct]
         elif ignore_below_threshold:
-            annotations = [ann for ann in self._annotations if ann.is_correct or ann.confidence > ann.label.threshold]
+            annotations = [ann for ann in self._annotations if ann.is_correct or ann.confidence >= ann.label.threshold]
+        else:
+            annotations = self._annotations
         return annotations
 
     @property
@@ -615,7 +612,6 @@ class Label(Data):
         self._regex = {}  # : List[str] = []
         # self._combined_tokens = None
         self.regex_file_path = os.path.join(self.project.regex_folder, f'{self.name_clean}.json5')
-        self._correct_annotations = []
         self._evaluations = {}  # used to do the duplicate check on Annotation level
 
     def __repr__(self):
@@ -630,7 +626,9 @@ class Label(Data):
             logger.error(f'Cannot sort {self} and {other}.')
             return False
 
-    def annotations(self, categories: List[Category], use_correct=True, ignore_below_threshold=False):
+    def annotations(
+        self, categories: List[Category], use_correct=True, ignore_below_threshold=False
+    ) -> List['Annotation']:
         """Return related Annotations. Consider that one Label can be used across Label Sets in multiple Categories."""
         annotations = []
         for category in categories:
@@ -644,6 +642,15 @@ class Label(Data):
             logger.warning(f'{self} has no correct annotations.')
 
         return annotations
+
+    def has_multiline_annotations(self, categories: List[Category]) -> bool:
+        """Return if any Label annotations are multi-line."""
+        for category in categories:
+            for document in category.documents():
+                for annotation in document.annotations(label=self):
+                    if len(annotation.spans) > 1:
+                        return True
+        return False
 
     def add_label_set(self, label_set: "LabelSet"):
         """
@@ -776,7 +783,8 @@ class Label(Data):
         label_regex_token = self.base_regex(category=category, annotations=all_annotations)
 
         search = [1, 3, 5]
-        regex_to_remove_groupnames = re.compile('<.*?>')
+        regex_to_remove_groupnames = re.compile(r'<.*?>')
+        regex_to_remove_groupnames_full = re.compile(r'\(\?:\(\?P<[^>]+>([^\)]+)\)\)')
 
         naive_proposal = label_regex_token
         regex_made = []
@@ -801,7 +809,11 @@ class Label(Data):
                             ]
                             before_regex += suggest_regex_for_string(to_rep_offset_string, replace_characters=True)
                         else:
-                            before_regex += before_span.annotation.label.base_regex(category)
+                            base_before_regex = before_span.annotation.label.base_regex(category)
+                            stripped_base_before_regex = re.sub(
+                                regex_to_remove_groupnames_full, r'\1', base_before_regex
+                            )
+                            before_regex += stripped_base_before_regex
                     before_reg_dict[spacer] = before_regex
 
                     after_regex = ''
@@ -815,7 +827,10 @@ class Label(Data):
                             ]
                             after_regex += suggest_regex_for_string(to_rep_offset_string, replace_characters=True)
                         else:
-                            after_regex += after_span.annotation.label.base_regex(category)
+                            base_after_regex = after_span.annotation.label.base_regex(category)
+                            stripped_base_after_regex = re.sub(regex_to_remove_groupnames_full, r'\1', base_after_regex)
+                            after_regex += stripped_base_after_regex
+
                     after_reg_dict[spacer] = after_regex
 
                     spacer_proposals = [
@@ -912,6 +927,13 @@ class Label(Data):
                     spans_not_found.append(span)
         return spans_not_found
 
+    def lose_weight(self):
+        """Delete data of the instance."""
+        super().lose_weight()
+        self._evaluations = {}
+        self._tokens = {}
+        self._regex = {}
+
     # def save(self) -> bool:
     #     """
     #     Save Label online.
@@ -998,7 +1020,7 @@ class Span(Data):
         """Return index of the line of the Span."""
         self._valid()
         if self.annotation.document.text and self._line_index is None:
-            line_number = len(self.annotation.document.text[: self.start_offset].split('\n'))
+            line_number = len(self.annotation.document.text[: self.start_offset].replace('\f', '\n').split('\n'))
             self._line_index = line_number - 1
 
         return self._line_index
@@ -1584,6 +1606,11 @@ class Annotation(Data):
         """Return default entry to get all Spans of the Annotation."""
         return sorted(self._spans)
 
+    def lose_weight(self):
+        """Delete data of the instance."""
+        super().lose_weight()
+        self._tokens = []
+
 
 class Document(Data):
     """Access the information about one document, which is available online."""
@@ -1968,6 +1995,8 @@ class Document(Data):
                 continue
             if not annotation.is_correct and annotation.revised:  # if marked as incorrect by user
                 continue
+            if annotation.label is self.project.no_label:
+                continue
             spans_num = 0
             for span in annotation.spans:
                 for i in range(span.start_offset, span.end_offset):
@@ -1987,6 +2016,19 @@ class Document(Data):
                 no_label_duplicates.add(annotation.label.id_)
 
         return sorted(annotations)
+
+    def lose_weight(self):
+        """Remove NO_LABEL, wrong and below threshold Annotations."""
+        super().lose_weight()
+        for annotation in self.annotations(use_correct=False, ignore_below_threshold=False):
+            if annotation.label is self.project.no_label:
+                logger.info("no_label")
+                annotation.delete()
+            elif not annotation.is_correct and (
+                not annotation.confidence or annotation.label.threshold > annotation.confidence or annotation.revised
+            ):
+                logger.info(annotation.confidence)
+                annotation.delete()
 
     @property
     def document_folder(self):
@@ -2226,6 +2268,16 @@ class Document(Data):
             self._characters = boxes
         return self._characters
 
+    def set_bboxes(self, characters: Dict[int, Bbox]):
+        """Set character Bbox dictionary."""
+        characters = {int(key): bbox for key, bbox in characters.items()}
+
+        for key, bbox in characters.items():
+            bbox._valid(self._strict_bbox_validation)
+
+        self._characters = characters
+        self.bboxes_available = True
+
     @property
     def text(self):
         """Get Document text. Once loaded stored in memory."""
@@ -2321,20 +2373,65 @@ class Document(Data):
         self._annotations = None
         self._annotation_sets = None
 
-    def merge_vertical(self):
-        """Merge Annotations with the same Label."""
+    def merge_vertical(self, only_multiline_labels=True):
+        """
+        Merge Annotations with the same Label.
+
+        :param only_multiline_labels: Only merge if multiline Label Annotation in category training set
+        """
         labels_dict = {}
         for label in self.project.labels:
-            labels_dict[label.id_] = []
+            if not only_multiline_labels or label.has_multiline_annotations(categories=[self.category]):
+                labels_dict[label.id_local] = []
 
         for annotation in self.annotations(use_correct=False, ignore_below_threshold=True):
-            labels_dict[annotation.label.id_].append(annotation)
+            if annotation.label.id_local in labels_dict:
+                labels_dict[annotation.label.id_local].append(annotation)
 
         for label_id in labels_dict:
             buffer = []
             for annotation in labels_dict[label_id]:
                 for span in annotation.spans:
-                    pass
+                    # remove all spans in buffer more than 1 line apart
+                    while buffer and span.line_index > buffer[0].line_index + 1:
+                        buffer.pop(0)
+
+                    if buffer and buffer[-1].page != span.page:
+                        buffer = [span]
+                        continue
+
+                    # Do not merge new Span if Annotation part of AnnotationSet with more than 1 Annotation
+                    # (except default annotationSet)
+                    if (
+                        span.annotation.annotation_set
+                        and not span.annotation.annotation_set.label_set.is_default
+                        and len(
+                            span.annotation.annotation_set.annotations(use_correct=False, ignore_below_threshold=True)
+                        )
+                        > 1
+                    ):
+                        buffer.append(span)
+                        continue
+                    if len(annotation.spans) > 1:
+                        buffer.append(span)
+                        continue
+
+                    for candidate in buffer:
+                        # only looking for elements in line above
+                        if candidate.line_index == span.line_index:
+                            break
+                        # overlap in x
+                        # or next line
+                        if (
+                            not (span.bbox().x0 > candidate.bbox().x1 or span.bbox().x1 < candidate.bbox().x0)
+                        ) or self.text[candidate.end_offset : span.start_offset].replace(' ', '').replace(
+                            '\n', ''
+                        ) == '':
+                            span.annotation.delete()
+                            span.annotation = None
+                            candidate.annotation.add_span(span)
+                            buffer.remove(candidate)
+                    buffer.append(span)
 
     def evaluate_regex(self, regex, label: Label, annotations: List['Annotation'] = None):
         """Evaluate a regex based on the Document."""
@@ -2439,12 +2536,13 @@ class Document(Data):
 class Project(Data):
     """Access the information of a Project."""
 
-    def __init__(self, id_: Union[int, None], project_folder=None, update=False, **kwargs):
+    def __init__(self, id_: Union[int, None], project_folder=None, update=False, max_ram=None, **kwargs):
         """
         Set up the Data using the Konfuzio Host.
 
         :param id_: ID of the Project
         :param project_folder: Set a Project root folder, if empty "data_<id_>" will be used.
+        :param max_ram: Maximum RAM used by AI models trained on this Project.
         """
         self.id_local = next(Data.id_iter)
         self.id_ = id_  # A Project with None ID is not retrieved from the HOST
@@ -2454,6 +2552,7 @@ class Project(Data):
         self._labels: List[Label] = []
         self._documents: List[Document] = []
         self._meta_data = []
+        self._max_ram = max_ram
 
         # paths
         self.meta_file_path = os.path.join(self.project_folder, "documents_meta.json5")
@@ -2526,6 +2625,11 @@ class Project(Data):
     def model_folder(self) -> str:
         """Calculate the model folder of the Project."""
         return os.path.join(self.project_folder, "models")
+
+    @property
+    def max_ram(self):
+        """Return maximum memory used by AI models."""
+        return self._max_ram
 
     def write_project_files(self):
         """Overwrite files with Project, Label, Label Set information."""
@@ -2775,7 +2879,6 @@ class Project(Data):
         for label in self.labels:
             label.lose_weight()
         self._documents = []
-        self._test_documents = []
         return self
 
 

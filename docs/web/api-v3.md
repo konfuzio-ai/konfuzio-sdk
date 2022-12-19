@@ -330,12 +330,14 @@ The following content limits apply to Konfuzio SaaS.
 | Content limit                                                | Default Value                   |
 | ------------------------------------------------------------ | ------------------------------- |
 | Maximum image resolution (limit does not apply to PDF files) | megapixels not limited per page |
+| Maximum PDF dimension (limit does not apply to images)       | 17 x 17 inches                  |
 | Maximum file size per request                                | not limited                     |
 | Maximum number of Pages per Document (synchronous requests)  | 250 pages                       |
 | Maximum number of Pages (batch/asynchronous requests)        | 250 pages                       |
 | Concurrent processor version training requests               | one per Category                |
 | Concurrent files processing per Project (Batch / Parallel)   | not limited                     |
 | Requests per minute                                          | not limited                     |
+| Maximum number of objects per API Call                       | 1000                            |
 | Synchronous requests process requests per minute             | not limited                     |
 | Asynchronous requests process requests per minute            | not limited                     |
 | Number of pages in active processing                         | not limited                     |
