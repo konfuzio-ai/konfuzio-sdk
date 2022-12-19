@@ -24,7 +24,7 @@ class TestFileSplittingModel(unittest.TestCase):
             document
             for document in cls.project.test_documents
             if document.category in cls.file_splitting_model.categories
-        ]
+        ][:-1]
         cls.file_splitting_model.tokenizer = ConnectedTextTokenizer()
         cls.file_splitting_model.first_page_spans = None
         cls.test_document = cls.project.get_category_by_id(3).test_documents()[0]
