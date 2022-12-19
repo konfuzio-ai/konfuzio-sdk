@@ -7,7 +7,7 @@
 
 On-premises, also known as self-hosted, is a setup that allows Konfuzio to be implemented 100% on your own infrastructure. In practice, it means that you know where your data is stored, how it's handled and who gets hold of it. This is because you keep the data on your own servers.
 
-A common way to operate a production-ready and scalabe Konfuzio installation is via Kuberneteens. An alternative and more light-weight deployment option is the [Single VM setup via Docker](/web/on_premises.html#alternative-deployment-options). We recommend to use the option which is more familiar to you.
+A common way to operate a production-ready and scalabe Konfuzio installation is via Kubernetens. An alternative deployment option is the [Single VM setup via Docker](/web/on_premises.html#alternative-deployment-options). We recommend to use the option which is more familiar to you. In general
 
 On-Premise Konfuzio installations allow to create Superuser accounts which can access all [Documents](https://help.konfuzio.com/modules/superuserdocuments/index.html), [Projects](https://help.konfuzio.com/modules/superuserprojects/index.html) and [AIs](https://help.konfuzio.com/modules/superuserais/index.html) via a dedicated view as well as creating custom [Roles](https://help.konfuzio.com/modules/superuserroles/index.html)
 
@@ -23,11 +23,17 @@ The diagram illustrates the components of a Konfuzio Server deployment. Optional
       classDef optional fill:#DAE8FC,stroke:#6C8EBF,color:#000000,stroke-dasharray: 3 3;
       
       ip("Loadbalancer / Public IP")
+      smtp("SMTP Mailbox")
       a("Database")
       b("Task Queue")
       c("File Storage")
       worker("Generic Worker (1:n)")
       web("Web & API (1:n)")
+      beats("Beats Worker (1:n)")
+      mail("Mail-Scan (0:1)")
+      
+      %% Outside references
+      smtp <-- Poll emails --> mail
       ip <--> web
       
       %% Optional Containers
@@ -52,9 +58,11 @@ The diagram illustrates the components of a Konfuzio Server deployment. Optional
       b
       end
       subgraph containers["Stateless Containers"]
+      mail
       web
       flower
       worker
+      beats
       subgraph optional["Optional Containers"]
       ocr
       segmentation
@@ -76,6 +84,8 @@ The diagram illustrates the components of a Konfuzio Server deployment. Optional
       web <--> databases
       web <--> flower
       flower <--> b
+      mail <--> databases
+      beats <--> databases
       containers -- "Operated on"--> servers
       databases -- "Can be operated on"--> servers
       end
@@ -88,6 +98,8 @@ The diagram illustrates the components of a Konfuzio Server deployment. Optional
       click summarization "/web/on_premises.html#optional-9-install-document-summarization-container" 
       
       class flower optional
+      class ocr optional
+      class mail optional
       class ocr optional
       class segmentation optional
       class summarization optional
@@ -424,7 +436,7 @@ After completing these steps you can exit and remove the container.
 Note: The username used during the createsuperuser dialog must have the format of a valid e-mail in order to be able to login later.
 
 #### 5. Start the container
-In this example we start three containers, the first one to serve the Konfuzio web application. The second and third are used to process tasks in the background without blocking the web application.
+In this example we start four containers. The first one to serve the Konfuzio web application. 
 
 ```
 docker run -p 80:8000 --name web -d --add-host=host:10.0.0.1 \
@@ -432,6 +444,8 @@ docker run -p 80:8000 --name web -d --add-host=host:10.0.0.1 \
   --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \
   REGISTRY_URL/konfuzio/text-annotation/master:latest
 ```
+
+The second and third are used to process tasks in the background without blocking the web application. Depending on our load scenario, you might to start a large number of worker containers.
 
 ```
 docker run --name worker1 -d --add-host=host:10.0.0.1 \  
@@ -449,6 +463,16 @@ docker run --name worker2 -d --add-host=host:10.0.0.1 \
   celery -A app worker -l INFO --concurrency 1 -Q celery,priority_ocr,ocr,\
   priority_extract,extract,processing,priority_local_ocr,local_ocr,\
   training,finalize,training_heavy,categorize
+```
+
+The fourth container is a Beats-Worker that takes care of sceduled tasks (e.g. auto-deleted documents).
+
+```
+docker run --name beats -d --add-host=host:10.0.0.1 \  
+  --env-file /konfuzio-vm/text-annotation.env \  
+  --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \  
+  REGISTRY_URL/konfuzio/text-annotation/master:latest \  
+  celery -A app beat -l INFO -s /tmp/celerybeat-schedule
 ```
 
 #### [Optional] 6. Use Flower to monitor tasks
@@ -477,7 +501,26 @@ end
 ```
 Please ensure that the Flower container is not exposed externally, as it does not handle authentication and authorization itself.  
 
-#### [Optional] 7. Use Azure Read API on-premise
+#### [Optional] 7. Run Container for Email Integration
+
+The ability to [upload documents via email](https://help.konfuzio.com/integrations/upload-by-email/index.html) can be achieved by starting a dedicated container with the respective environment variables.
+
+```
+SCAN_EMAIL_HOST = imap.example.com
+SCAN_EMAIL_HOST_USER = user@example.com
+SCAN_EMAIL_RECIPIENT = automation@example.com
+SCAN_EMAIL_HOST_PASSWORD = xxxxxxxxxxxxxxxxxx
+```
+
+```
+docker run --name flower -d --add-host=host:10.0.0.1 \  
+  --env-file /konfuzio-vm/text-annotation.env \  
+  --mount type=bind,source=/konfuzio-vm/text-annotation/data,target=/data \
+  REGISTRY_URL/konfuzio/text-annotation/master:latest \  
+  python manage.py scan_email
+```
+
+#### [Optional] 8. Use Azure Read API on-premise
 The [Azure Read API](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2) can be installed on-premise and used togehter with Konfuzio.
 
 Please install the Read API Container according to the current [manual](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2)
@@ -490,7 +533,7 @@ AZURE_OCR_BASE_URL=http://host:5000 # The URL of the READ API
 AZURE_OCR_VERSION=v3.2 # The version of the READ API
 ```
 
-#### [Optional] 8. Install document segmentation container
+#### [Optional] 9. Install document segmentation container
 
 Download the container with the credentials provided by Konfuzio
 
@@ -512,7 +555,7 @@ BROKER_URL=  # Set this to an unused redis database
 RESULT_BACKEND=  # Set this to an unused redis database
 ```
 
-#### [Optional] 9. Install document summarization container
+#### [Optional] 10. Install document summarization container
 
 Download the container with the credentials provided by Konfuzio
 
@@ -536,13 +579,13 @@ RESULT_BACKEND=  # Set this to an unised redis database
 
 ```
 
-#### 10a. Upgrade to newer Konfuzio Version
+#### 11a. Upgrade to newer Konfuzio Version
 
 Konfuzio upgrades are performed by replacing the Docker Tag to the [desired version](https://dev.konfuzio.com/web/changelog_app.html)
 After starting the new Containers Database migrations need to be applied by `python manage.py migrate` (see 4.).
 In case additional migration steps are needed, they will be mentioned in the release notes.
 
-#### 10b. Downgrade to older Konfuzio Version
+#### 11b. Downgrade to older Konfuzio Version
 
 Konfuzio downgrades are performed by creating a fresh Konfuzio installation in which existing Projects can be imported.
 The following steps need to be undertaken:
@@ -815,6 +858,12 @@ CSRF_COOKIE_SECURE=True
 NEW_RELIC_LICENSE_KEY=
 NEW_RELIC_APP_NAME=
 NEW_RELIC_ENVIRONMENT=
+
+# Email integration (optional).
+SCAN_EMAIL_HOST=
+SCAN_EMAIL_HOST_USER=
+SCAN_EMAIL_RECIPIENT=
+SCAN_EMAIL_HOST_PASSWORD=
 
 # Directory to cache files during the AI training process and when running AI models (optional).
 KONFUZIO_CACHE_DIR =   # e.g. '/cache', uses tempdir if not set

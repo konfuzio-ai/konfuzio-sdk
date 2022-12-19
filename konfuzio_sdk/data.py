@@ -5,7 +5,7 @@ import json
 import logging
 import os
 import pathlib
-import re
+import regex as re
 import shutil
 import time
 import zipfile
@@ -356,11 +356,6 @@ class AnnotationSet(Data):
         """Return string representation of the Annotation Set."""
         return f"{self.__class__.__name__}({self.id_}) of {self.label_set} in {self.document}."
 
-    def lose_weight(self):
-        """Delete data of the instance."""
-        self.label_set = None
-        self.document = None
-
     def annotations(self, use_correct: bool = True, ignore_below_threshold: bool = False):
         """All Annotations currently in this Annotation Set."""
         if not self._annotations:
@@ -372,7 +367,7 @@ class AnnotationSet(Data):
         if use_correct:
             annotations = [ann for ann in self._annotations if ann.is_correct]
         elif ignore_below_threshold:
-            annotations = [ann for ann in self._annotations if ann.is_correct or ann.confidence > ann.label.threshold]
+            annotations = [ann for ann in self._annotations if ann.is_correct or ann.confidence >= ann.label.threshold]
         else:
             annotations = self._annotations
         return annotations
@@ -617,7 +612,6 @@ class Label(Data):
         self._regex = {}  # : List[str] = []
         # self._combined_tokens = None
         self.regex_file_path = os.path.join(self.project.regex_folder, f'{self.name_clean}.json5')
-        self._correct_annotations = []
         self._evaluations = {}  # used to do the duplicate check on Annotation level
 
     def __repr__(self):
@@ -789,7 +783,8 @@ class Label(Data):
         label_regex_token = self.base_regex(category=category, annotations=all_annotations)
 
         search = [1, 3, 5]
-        regex_to_remove_groupnames = re.compile('<.*?>')
+        regex_to_remove_groupnames = re.compile(r'<.*?>')
+        regex_to_remove_groupnames_full = re.compile(r'\(\?:\(\?P<[^>]+>([^\)]+)\)\)')
 
         naive_proposal = label_regex_token
         regex_made = []
@@ -814,7 +809,11 @@ class Label(Data):
                             ]
                             before_regex += suggest_regex_for_string(to_rep_offset_string, replace_characters=True)
                         else:
-                            before_regex += before_span.annotation.label.base_regex(category)
+                            base_before_regex = before_span.annotation.label.base_regex(category)
+                            stripped_base_before_regex = re.sub(
+                                regex_to_remove_groupnames_full, r'\1', base_before_regex
+                            )
+                            before_regex += stripped_base_before_regex
                     before_reg_dict[spacer] = before_regex
 
                     after_regex = ''
@@ -828,7 +827,10 @@ class Label(Data):
                             ]
                             after_regex += suggest_regex_for_string(to_rep_offset_string, replace_characters=True)
                         else:
-                            after_regex += after_span.annotation.label.base_regex(category)
+                            base_after_regex = after_span.annotation.label.base_regex(category)
+                            stripped_base_after_regex = re.sub(regex_to_remove_groupnames_full, r'\1', base_after_regex)
+                            after_regex += stripped_base_after_regex
+
                     after_reg_dict[spacer] = after_regex
 
                     spacer_proposals = [
@@ -924,6 +926,13 @@ class Label(Data):
                 if not tokenizer.span_match(span):
                     spans_not_found.append(span)
         return spans_not_found
+
+    def lose_weight(self):
+        """Delete data of the instance."""
+        super().lose_weight()
+        self._evaluations = {}
+        self._tokens = {}
+        self._regex = {}
 
     # def save(self) -> bool:
     #     """
@@ -1597,6 +1606,11 @@ class Annotation(Data):
         """Return default entry to get all Spans of the Annotation."""
         return sorted(self._spans)
 
+    def lose_weight(self):
+        """Delete data of the instance."""
+        super().lose_weight()
+        self._tokens = []
+
 
 class Document(Data):
     """Access the information about one document, which is available online."""
@@ -1981,6 +1995,8 @@ class Document(Data):
                 continue
             if not annotation.is_correct and annotation.revised:  # if marked as incorrect by user
                 continue
+            if annotation.label is self.project.no_label:
+                continue
             spans_num = 0
             for span in annotation.spans:
                 for i in range(span.start_offset, span.end_offset):
@@ -2000,6 +2016,19 @@ class Document(Data):
                 no_label_duplicates.add(annotation.label.id_)
 
         return sorted(annotations)
+
+    def lose_weight(self):
+        """Remove NO_LABEL, wrong and below threshold Annotations."""
+        super().lose_weight()
+        for annotation in self.annotations(use_correct=False, ignore_below_threshold=False):
+            if annotation.label is self.project.no_label:
+                logger.info("no_label")
+                annotation.delete()
+            elif not annotation.is_correct and (
+                not annotation.confidence or annotation.label.threshold > annotation.confidence or annotation.revised
+            ):
+                logger.info(annotation.confidence)
+                annotation.delete()
 
     @property
     def document_folder(self):
@@ -2850,7 +2879,6 @@ class Project(Data):
         for label in self.labels:
             label.lose_weight()
         self._documents = []
-        self._test_documents = []
         return self
 
 

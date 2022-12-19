@@ -5,7 +5,7 @@ import itertools
 import logging
 import operator
 import os
-import re
+import regex as re
 import unicodedata
 import zipfile
 from contextlib import contextmanager
