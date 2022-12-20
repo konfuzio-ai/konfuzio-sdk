@@ -29,7 +29,6 @@ You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server
 - Delta Training, Partial Fit an exisiting classifier, so that training documents used previously can be deleted ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9251)).
 - Allow administrators of Konfuzio on-premise installations to run a speedtest ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9870)).
 - Start automatic AI retraining after user confirms that he has finished a annotation review ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9166)).
-- [Show a warning if a user works on a Document that is not assigned to him](https://help.konfuzio.com/modules/documents/index.html#assignee) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9466)).
 
 <!---
 These changes are for the tokenizers/new SDK branch.
@@ -39,17 +38,23 @@ These changes are for the tokenizers/new SDK branch.
 - A bug during the extraction post-processing steps, which was causing the first line items of each page to be skipped ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9561))
 -->
 
-## Next Release (estimated release date: 19th December 2022)
+## Next Release (estimated release date: 9th January 2023)
+
+### Fixed
+- Re-running the categorization now also re-runs the extraction ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10355)).
+
+## 2022-12-20_11-23-04
 
 This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Capture Vue in version [0.0.11-pre-release-5](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
 
 ### Added
-- The Document list for Superusers shows the AI loading time ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9787)).
+- [The Document list for Superusers shows the AI loading time](https://help.konfuzio.com/modules/superuserdocuments/index.html#time-and-timing) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9787)).
 - Add the option to show a warning when a User edits a Document he is not assigned to ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9466)).
 
 ### Fixed
 - Show a message that informs a user if his account was deactivated ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10119)).
 - Failed login attemps have not been shown in the web interface ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9992)).
+- Missing German translation on the Member list page ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10306)).
 
 ## released-2022-12-05_19-18-47
 
