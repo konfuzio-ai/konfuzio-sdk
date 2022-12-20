@@ -40,7 +40,8 @@ These changes are for the tokenizers/new SDK branch.
 
 ## Next Release (estimated release date: 9th January 2023)
 
-Upcoming...
+### Fixed
+- Re-running the categorization now also re-runs the extraction ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10355)).
 
 ## 2022-12-20_11-23-04
 
