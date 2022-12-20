@@ -39,12 +39,16 @@ These changes are for the tokenizers/new SDK branch.
 - A bug during the extraction post-processing steps, which was causing the first line items of each page to be skipped ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9561))
 -->
 
-## Next Release (estimated release date: 19th December 2022)
+## Next Release (estimated release date: 9th January 2023)
+
+Upcoming...
+
+## 2022-12-20_11-23-04
 
 This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Capture Vue in version [0.0.11-pre-release-5](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
 
 ### Added
-- The Document list for Superusers shows the AI loading time ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9787)).
+- [The Document list for Superusers shows the AI loading time](https://help.konfuzio.com/modules/superuserdocuments/index.html#time-and-timing) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9787)).
 - Add the option to show a warning when a User edits a Document he is not assigned to ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9466)).
 
 ### Fixed
