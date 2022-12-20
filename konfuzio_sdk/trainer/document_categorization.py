@@ -33,20 +33,20 @@ class FallbackCategorizationModel:
     def fit(self) -> None:
         """Use as placeholder Function."""
         raise NotImplementedError(
-            f'{self} uses a fallback logic for categorizing documents, and does not train a classifier.'
+            f'{self} uses a fallback logic for categorizing Documents, and does not train a classifier.'
         )
 
     def save(self, output_dir: str, include_konfuzio=True):
         """Use as placeholder Function."""
         raise NotImplementedError(
-            f'{self} uses a fallback logic for categorizing documents, this will not save model to disk.'
+            f'{self} uses a fallback logic for categorizing Documents, this will not save model to disk.'
         )
 
     def evaluate(self, use_training_docs: bool = False) -> CategorizationEvaluation:
         """
         Evaluate the full Categorization pipeline on the pipeline's Test Documents.
 
-        :param use_training_docs: Bool for whether to evaluate on the training Documents instead of test Documents.
+        :param use_training_docs: Bool for whether to evaluate on the Training Documents instead of Test Documents.
         :return: Evaluation object.
         """
         eval_list = []
@@ -74,13 +74,13 @@ class FallbackCategorizationModel:
                 page.category = training_category
                 break
         if page.category is None:
-            logger.warning(f'{self} could not find the category of {page} by using the fallback categorization logic.')
+            logger.warning(f'{self} could not find the Category of {page} by using the fallback categorization logic.')
         return page
 
     def categorize(self, document: Document, recategorize: bool = False, inplace: bool = False) -> Document:
         """Run categorization on a Document.
 
-        :param document: Input document
+        :param document: Input Document
         :param recategorize: If the input Document is already categorized, the already present Category is used unless
         this flag is True
 
@@ -93,8 +93,8 @@ class FallbackCategorizationModel:
             virtual_doc = deepcopy(document)
         if (document.category is not None) and (not recategorize):
             logger.info(
-                f'In {document}, the category was already specified as {document.category}, so it wasn\'t categorized '
-                f'again. Please use recategorize=True to force running the Categorization AI again on this document.'
+                f'In {document}, the Category was already specified as {document.category}, so it wasn\'t categorized '
+                f'again. Please use recategorize=True to force running the Categorization AI again on this Document.'
             )
             return virtual_doc
         elif recategorize:

@@ -47,7 +47,7 @@ class Data:
     _force_offline = False
 
     def __eq__(self, other) -> bool:
-        """Compare any point of data with their ID, overwrite if needed."""
+        """Compare any point of Data with their ID, overwrite if needed."""
         if self.id_ is None and other and other.id_ is None:
             # Compare to virtual instances
             return self.id_local == other.id_local
@@ -78,13 +78,13 @@ class Data:
         return self
 
     def set_offline(self):
-        """Force data into offline mode."""
+        """Force Data into offline mode."""
         self._force_offline = True
         self._update = False
 
 
 class Page(Data):
-    """Access the information about one Page of a document."""
+    """Access the information about one Page of a Document."""
 
     def __init__(
         self,
@@ -149,7 +149,7 @@ class Page(Data):
         return self.image
 
     def get_annotations_image(self, image: Image = None):
-        """Get Document Page as PNG with annotations shown."""
+        """Get Document Page as PNG with Annotations shown."""
         if image is None and self.document.id_ is not None:
             image = self.get_image()
         elif image is None and self.document.copy_of_id is not None:
@@ -298,7 +298,7 @@ class Bbox:
             else:
                 # todo add link to documentation page relating to feature calculation for the RandomForest ExtractionAI
                 logger.error(
-                    f'{self} has no width in {self.page}. Some of our AIs use the area of bboxes as a feature'
+                    f'{self} has no width in {self.page}. Some of our AIs use the area of bboxes as a feature '
                     f'during training and prediction, which will be zero.'
                 )
 
@@ -311,7 +311,7 @@ class Bbox:
             else:
                 # todo add link to documentation page relating to feature calculation for the RandomForest ExtractionAI
                 logger.error(
-                    f'{self} has no height in {self.page}. Some of our AIs use the area of bboxes as a feature'
+                    f'{self} has no height in {self.page}. Some of our AIs use the area of bboxes as a feature '
                     f'during training and prediction, which will be zero.'
                 )
 
@@ -393,7 +393,7 @@ class AnnotationSet(Data):
 
 
 class LabelSet(Data):
-    """A Label Set is a group of labels."""
+    """A Label Set is a group of Labels."""
 
     def __init__(
         self,
@@ -521,7 +521,7 @@ class Category(Data):
 
     @property
     def labels(self):
-        """Return the Labels that belong to the Category and it's Label Sets."""
+        """Return the Labels that belong to the Category and its Label Sets."""
         labels = []
         # for label in self.project.labels:
         #     if self in label.label_sets:
@@ -587,12 +587,12 @@ class Label(Data):
         Create a named Label.
 
         :param project: Project where the Label belongs
-        :param id_: ID of the label
-        :param text: Name of the label
-        :param get_data_type_display: Data type of the label
-        :param text_clean: Normalized name of the label
-        :param description: Description of the label
-        :param label_sets: Label sets that use this label
+        :param id_: ID of the Label
+        :param text: Name of the Label
+        :param get_data_type_display: Data type of the Label
+        :param text_clean: Normalized name of the Label
+        :param description: Description of the Label
+        :param label_sets: Label Sets that use this Label
         """
         self.id_local = next(Data.id_iter)
         self.id_ = id_
@@ -660,7 +660,7 @@ class Label(Data):
         """
         Add Label Set to label, if it does not exist.
 
-        :param label_set: Label set to add
+        :param label_set: Label Set to add
         """
         if label_set not in self.label_sets:
             self.label_sets.append(label_set)
@@ -865,7 +865,7 @@ class Label(Data):
                     regex_found.add(new_regex)
 
         logger.info(
-            f'For Label {self.name} we found {len(regex_made)} regex proposals for {len(all_annotations)} annotations.'
+            f'For Label {self.name} we found {len(regex_made)} regex proposals for {len(all_annotations)} Annotations.'
         )
 
         # todo replace by compare
@@ -1030,7 +1030,7 @@ class Span(Data):
         return self._line_index
 
     def __eq__(self, other) -> bool:
-        """Compare any point of data with their position is equal."""
+        """Twp Spans are equal if their start_offset and end_offset are both equal."""
         return (
             type(self) == type(other)
             and self.start_offset == other.start_offset
@@ -1263,11 +1263,11 @@ class Annotation(Data):
         self.id_ = id_  # Annotations can have None id_, if they are not saved online and are only available locally
         self._spans: List[Span] = []
 
-        if accuracy is not None:  # its a confidence
+        if accuracy is not None:  # it's a confidence
             self.confidence = accuracy
         elif confidence is not None:
             self.confidence = confidence
-        elif self.id_ is not None and accuracy is None:  # hotfix: it's an online annotation crated by a human
+        elif self.id_ is not None and accuracy is None:  # hotfix: it's an online Annotation crated by a human
             self.confidence = 1
         elif accuracy is None and confidence is None:
             self.confidence = None
@@ -1298,8 +1298,8 @@ class Annotation(Data):
         if isinstance(annotation_set_id, int):
             self.annotation_set: AnnotationSet = self.document.get_annotation_set_by_id(annotation_set_id)
         elif sdk_isinstance(annotation_set, AnnotationSet):
-            # it's a save way to look up the annotation set first. Otherwise users can add annotation sets which
-            # do not relate to the document
+            # it's a safe way to look up the Annotation Set first. Otherwise users can add Annotation Sets which
+            # do not relate to the Document
             self.annotation_set: AnnotationSet = self.document.get_annotation_set_by_id(annotation_set.id_)
         else:
             self.annotation_set = None
@@ -1508,7 +1508,7 @@ class Annotation(Data):
             elif response.status_code == 403:
                 logger.error(response.text)
                 try:
-                    if "In one project you cannot label the same text twice." in response.text:
+                    if "In one Project you cannot label the same text twice." in response.text:
                         if document_annotations is None:
                             # get the Annotation
                             self.document.update()
@@ -1534,7 +1534,7 @@ class Annotation(Data):
                     else:
                         logger.exception(f"Unknown issue to create Annotation {self} in {self.document}")
                 except KeyError:
-                    logger.error(f"Not able to save annotation online: {response}")
+                    logger.error(f"Not able to save Annotation online: {response}")
         return new_annotation_added
 
     def regex_annotation_generator(self, regex_list) -> List[Span]:
@@ -1591,7 +1591,7 @@ class Annotation(Data):
 
     # todo can we circumvent the combined tokens
     def regex(self):
-        """Return regex of this annotation."""
+        """Return regex of this Annotation."""
         return self.label.combined_tokens(categories=[self.document.category])
 
     def delete(self, delete_online: bool = True) -> None:
@@ -1617,7 +1617,7 @@ class Annotation(Data):
 
 
 class Document(Data):
-    """Access the information about one document, which is available online."""
+    """Access the information about one Document, which is available online."""
 
     def __init__(
         self,
@@ -1646,11 +1646,11 @@ class Document(Data):
 
         :param id_: ID of the Document
         :param project: Project where the Document belongs to
-        :param file_url: URL of the document
-        :param status: Status of the document
-        :param data_file_name: File name of the document
+        :param file_url: URL of the Document
+        :param status: Status of the Document
+        :param data_file_name: File name of the Document
         :param is_dataset: Is dataset or not. (bool)
-        :param dataset_status: Dataset status of the Document (e.g. training)
+        :param dataset_status: Dataset status of the Document (e.g. Training)
         :param updated_at: Updated information
         :param assignee: Assignee of the Document
         :param bbox: Bounding box information per character in the PDF (dict)
@@ -1688,7 +1688,7 @@ class Document(Data):
             self.updated_at = None
 
         self.name = data_file_name
-        self.status = status  # status of document online
+        self.status = status  # status of Document online
         self.project = project
         self._force_offline = project._force_offline
         project.add_document(self)  # check for duplicates by ID before adding the Document to the project
@@ -1705,7 +1705,7 @@ class Document(Data):
         self._pages: List[Page] = []
         self._n_pages = None
 
-        # prepare local setup for document
+        # prepare local setup for Document
         if self.is_online:
             pathlib.Path(self.document_folder).mkdir(parents=True, exist_ok=True)
         self.annotation_file_path = os.path.join(self.document_folder, "annotations.json5")
@@ -1717,7 +1717,7 @@ class Document(Data):
         self.bio_scheme_file_path = os.path.join(self.document_folder, "bio_scheme.txt")
 
         if pages:
-            self.pages()  # create page instances
+            self.pages()  # create Page instances
 
     def __repr__(self):
         """Return the name of the Document incl. the ID."""
@@ -1762,7 +1762,7 @@ class Document(Data):
 
     @property
     def number_of_pages(self) -> int:
-        """Calculate the number of pages."""
+        """Calculate the number of Pages."""
         if self._n_pages is None:
             self._n_pages = len(self.text.split('\f'))
         return self._n_pages
@@ -1808,7 +1808,7 @@ class Document(Data):
                     spans.append(span)
 
         # if self.spans() == list(set(self.spans())):
-        #     # todo deduplicate Spans. One text offset in a document can ber referenced by many Spans of Annotations
+        #     # todo deduplicate Spans. One text offset in a Document can ber referenced by many Spans of Annotations
         #     raise NotImplementedError
 
         return sorted(spans)
@@ -1827,17 +1827,17 @@ class Document(Data):
 
     def check_bbox(self) -> None:
         """
-        Run validation checks on the document text and bboxes.
+        Run validation checks on the Document text and bboxes.
 
-        This is run when the document is initialized, and usually it's not needed to be run again because a document's
+        This is run when the Document is initialized, and usually it's not needed to be run again because a Document's
         text and bboxes are not expected to change within the Konfuzio Server.
 
         You can run this manually instead if your pipeline allows changing the text or the bbox during the lifetime of
         a document. Will raise ValueError if the bboxes don't match with the text of the document, or if bboxes have
         invalid coordinates (outside page borders) or invalid size (negative width or height).
 
-        This check is usually slow, and it can be made faster by calling document.set_text_bbox_hashes() right after
-        initializing the document, which will enable running a hash comparison during this check.
+        This check is usually slow, and it can be made faster by calling Document.set_text_bbox_hashes() right after
+        initializing the Document, which will enable running a hash comparison during this check.
         """
         warn('WIP: Modifications before the next stable release expected.', FutureWarning, stacklevel=2)
         if self._check_text_or_bbox_modified():
@@ -1927,8 +1927,8 @@ class Document(Data):
         Filter available annotations.
 
         :param label: Label for which to filter the Annotations.
-        :param use_correct: If to filter by correct annotations.
-        :param ignore_below_threshold: To filter out annotations with confidence below Label prediction threshold.
+        :param use_correct: If to filter by correct Annotations.
+        :param ignore_below_threshold: To filter out Annotations with confidence below Label prediction threshold.
         :return: Annotations in the document.
         """
         self.get_annotations()
@@ -1948,7 +1948,7 @@ class Document(Data):
                 if (use_correct and annotation.is_correct) or not use_correct:
                     # todo: add option to filter for overruled Annotations where mult.=F
                     # todo: add option to filter for overlapping Annotations, `add_annotation` just checks for identical
-                    # filter by start and end offset, include annotations that extend into the offset
+                    # filter by start and end offset, include Annotations that extend into the offset
                     if start_offset is not None and end_offset is not None:  # if the start and end offset are specified
                         latest_start = max(span.start_offset, start_offset)
                         earliest_end = min(span.end_offset, end_offset)
@@ -1956,7 +1956,7 @@ class Document(Data):
                     else:
                         is_overlapping = True
 
-                    if label is not None:  # filter by label
+                    if label is not None:  # filter by Label
                         if label == annotation.label and is_overlapping:
                             add = True
                     elif is_overlapping:
@@ -2017,7 +2017,7 @@ class Document(Data):
             ),
         )
 
-        no_label_duplicates = set()  # for top annotation filter
+        no_label_duplicates = set()  # for top Annotation filter
         for annotation in priority_annotations:
             if annotation.confidence is not None and annotation.label.threshold > annotation.confidence:
                 continue
@@ -2093,7 +2093,7 @@ class Document(Data):
         return [page.get_image(update=update) for page in self.pages()]
 
     def download_document_details(self):
-        """Retrieve data from a Document online in case documented has finished processing."""
+        """Retrieve data from a Document online in case Document has finished processing."""
         if self.is_online and self.status and self.status[0] == 2:
             data = get_document_details(document_id=self.id_, project_id=self.project.id_, session=self.session)
 
@@ -2115,10 +2115,10 @@ class Document(Data):
         return self
 
     def add_annotation(self, annotation: Annotation):
-        """Add an annotation to a document.
+        """Add an Annotation to a Document.
 
-        :param annotation: Annotation to add in the document
-        :return: Input annotation.
+        :param annotation: Annotation to add in the Document
+        :return: Input Annotation.
         """
         if self._annotations is None:
             self.annotations()
@@ -2134,14 +2134,14 @@ class Document(Data):
                         else:
                             raise ValueError(
                                 f'We cannot add {annotation} related to {annotation.label_set.categories} to {self} '
-                                f'as the document has {self.category}'
+                                f'as the Document has {self.category}'
                             )
                     else:
                         raise ValueError(f'{annotation} uses Label Set without Category, cannot be added to {self}.')
                 else:
                     raise ValueError(f'{annotation} has no Label Set, which cannot be added to {self}.')
             else:
-                raise ValueError(f'We cannot add {annotation} to {self} where the category is {self.category}')
+                raise ValueError(f'We cannot add {annotation} to {self} where the Category is {self.category}')
         else:
             duplicated = [x for x in self._annotations if x == annotation]
             raise ValueError(f'In {self} the {annotation} is a duplicate of {duplicated} and will not be added.')
@@ -2150,7 +2150,7 @@ class Document(Data):
 
     def get_annotation_by_id(self, annotation_id: int) -> Annotation:
         """
-        Return an Annotation by ID, searching within the document.
+        Return an Annotation by ID, searching within the Document.
 
         :param id_: ID of the Annotation to get.
         """
@@ -2167,9 +2167,9 @@ class Document(Data):
             raise IndexError(f"Annotation {annotation_id} is not part of {self}.")
 
     def add_annotation_set(self, annotation_set: AnnotationSet):
-        """Add the Annotation Sets to the document."""
+        """Add the Annotation Sets to the Document."""
         if annotation_set.document and annotation_set.document != self:
-            raise ValueError('One Annotation Set must only belong to one document.')
+            raise ValueError('One Annotation Set must only belong to one Document.')
         if self._annotation_sets is None:
             self._annotation_sets = []
         if annotation_set not in self._annotation_sets:
@@ -2226,7 +2226,7 @@ class Document(Data):
         """
         Get bbox information per character of file. We don't store bbox as an attribute to save memory.
 
-        :return: Bounding box information per character in the document.
+        :return: Bounding box information per character in the Document.
         """
         if self._bbox_json:
             bbox = self._bbox_json
@@ -2259,12 +2259,12 @@ class Document(Data):
         return frozenset(self._characters) if self._characters is not None else None
 
     def set_text_bbox_hashes(self) -> None:
-        """Update hashes of document text and bboxes. Can be used for checking later on if any changes happened."""
+        """Update hashes of Document text and bboxes. Can be used for checking later on if any changes happened."""
         self._text_hash = hash(self._text)
         self._bbox_hash = hash(self._hashable_characters)
 
     def _check_text_or_bbox_modified(self) -> bool:
-        """Check if either the document text or its bboxes have been modified in memory."""
+        """Check if either the Document text or its bboxes have been modified in memory."""
         text_modified = self._text_hash != hash(self._text)
         bbox_modified = self._bbox_hash != hash(self._hashable_characters)
         return text_modified or bbox_modified
@@ -2287,7 +2287,7 @@ class Document(Data):
                 document_character = self.text[int(character_index)]
                 if box_character not in [' ', '\f', '\n'] and box_character != document_character:
                     raise ValueError(
-                        f'{self} Bbox provides Character "{box_character}" document text refers to '
+                        f'{self} Bbox provides Character "{box_character}" Document text refers to '
                         f'"{document_character}" with ID "{character_index}".'
                     )
                 boxes[int(character_index)] = Bbox(
@@ -2386,13 +2386,13 @@ class Document(Data):
         return self._hocr
 
     def update(self):
-        """Update document information."""
+        """Update Document information."""
         self.delete()
         self.download_document_details()
         return self
 
     def delete(self):
-        """Delete all local information for the document."""
+        """Delete all local information for the Document."""
         try:
             shutil.rmtree(self.document_folder)
         except FileNotFoundError:
@@ -2405,7 +2405,7 @@ class Document(Data):
         """
         Merge Annotations with the same Label.
 
-        :param only_multiline_labels: Only merge if multiline Label Annotation in category training set
+        :param only_multiline_labels: Only merge if a multiline Label Annotation is in the Category Training set
         """
         labels_dict = {}
         for label in self.project.labels:
@@ -2428,8 +2428,8 @@ class Document(Data):
                         buffer = [span]
                         continue
 
-                    # Do not merge new Span if Annotation part of AnnotationSet with more than 1 Annotation
-                    # (except default annotationSet)
+                    # Do not merge new Span if Annotation is part of an AnnotationSet with more than 1 Annotation
+                    # (except default AnnotationSet)
                     if (
                         span.annotation.annotation_set
                         and not span.annotation.annotation_set.label_set.is_default
@@ -2469,7 +2469,7 @@ class Document(Data):
             regex=regex,
             keep_full_match=False,
             filtered_group=f'Label_{label.id_}'
-            # filter by name of label: one regex can match multiple labels
+            # filter by name of Label: one regex can match multiple Labels
         )
         processing_time = time.time() - start_time
         correct_findings = []
@@ -2761,10 +2761,10 @@ class Project(Data):
         """Load Categories for all Label Sets in the Project."""
         for label_set in self.label_sets:
             if label_set.is_default:
-                # the _default_of_label_set_ids are the label sets used by the category
+                # the _default_of_label_set_ids are the Label Sets used by the Category
                 pass
             else:
-                # the _default_of_label_set_ids are the categories the label set is used in
+                # the _default_of_label_set_ids are the Categories the Label Set is used in
                 for label_set_id in label_set._default_of_label_set_ids:
                     category = self.get_category_by_id(label_set_id)
                     label_set.add_category(category)  # The Label Set is linked to a Category it created
@@ -2802,7 +2802,7 @@ class Project(Data):
                 labels_data = json.load(f)
             self._labels = []  # clean up Labels to not create duplicates
             for label_data in labels_data:
-                # Remove the project from label_data
+                # Remove the Project from label_data
                 label_data.pop("project", None)
                 Label(project=self, id_=label_data['id'], **label_data)
 
@@ -2912,7 +2912,7 @@ class Project(Data):
 
 def download_training_and_test_data(id_: int):
     """
-    Migrate your project to another HOST.
+    Migrate your Project to another HOST.
 
     See https://help.konfuzio.com/integrations/migration-between-konfuzio-server-instances/index.html
         #migrate-projects-between-konfuzio-server-instances
