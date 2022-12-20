@@ -1,5 +1,5 @@
 """Implements a Categorization Model."""
-
+import functools
 import os
 import math
 import logging
@@ -24,7 +24,6 @@ from torch.utils.data import DataLoader
 
 from konfuzio_sdk.data import Document, Page, Category
 from konfuzio_sdk.evaluate import CategorizationEvaluation
-from konfuzio_sdk.trainer.data_loader import build_document_template_classifier_iterators
 from konfuzio_sdk.trainer.image import ImagePreProcessing, ImageDataAugmentation
 from konfuzio_sdk.utils import get_timestamp
 
@@ -881,12 +880,15 @@ class CategorizationAI(FallbackCategorizationModel):
     def __init__(
         self,
         categories: List[Category],
-        image_preprocessing: Union[None, dict] = {'target_size': (1000, 1000), 'grayscale': True},
-        image_augmentation: Union[None, dict] = {'rotate': 5},
+        image_preprocessing=None,
+        image_augmentation=None,
         use_cuda: bool = False,
+        *args,
+        **kwargs,
     ):
         """Initialize a CategorizationAI."""
-        self.categories = categories
+        super().__init__(categories, *args, **kwargs)
+        self.pipeline_path = None
         self.documents = None
         self.test_documents = None
 
@@ -895,7 +897,11 @@ class CategorizationAI(FallbackCategorizationModel):
         self.category_vocab = None
         self.classifier = None
 
-        # todo do not hardcode the config
+        # @TODO do not hardcode the config
+        if image_augmentation is None:
+            image_augmentation = {'rotate': 5}
+        if image_preprocessing is None:
+            image_preprocessing = {'target_size': (1000, 1000), 'grayscale': True}
         document_classifier_config: dict = {
             'image_module': {'name': 'efficientnet_b0'},
             'text_module': {'name': 'nbowselfattention'},
@@ -964,6 +970,73 @@ class CategorizationAI(FallbackCategorizationModel):
         # save all necessary model data
         torch.save(data_to_save, path)
         return path
+
+    def build_document_classifier_iterator(
+        self,
+        documents,
+        transforms: torchvision.transforms,
+        use_image: bool,
+        use_text: bool,
+        shuffle: bool,
+        batch_size: int,
+        max_len: int,
+        device: torch.device = 'cpu',
+    ) -> DataLoader:
+        """
+        Prepare the data necessary for the document classifier, and build the iterators for the data list.
+
+        For each document we split into pages and from each page we take:
+          - the path to an image of the page
+          - the tokenized and numericalized text on the page
+          - the label (category) of the page
+          - the id of the document
+          - the page number
+        """
+        logger.debug("build_document_classifier_iterator")
+
+        # todo move this validation to the Categorization AI config
+        assert use_image or use_text, 'One of either `use_image` or `use_text` needs to be `True`!'
+
+        # get data (list of examples) from Documents
+        data = []
+        for document in documents:
+            doc_info = document.get_document_classifier_examples(
+                self.tokenizer, self.text_vocab, self.category_vocab, max_len, use_image, use_text
+            )
+            data.extend(zip(*doc_info))
+
+        def collate(batch, transforms) -> Dict[str, torch.LongTensor]:
+            image_path, text, label, doc_id, page_num = zip(*batch)
+            if use_image:
+                # if we are using images, open as PIL images, apply transforms and place on GPU
+                image = [Image.open(path) for path in image_path]
+                image = torch.stack([transforms(img) for img in image], dim=0).to(device)
+                image = image.to(device)
+            else:
+                # if not using images then just set to None
+                image = None
+            if use_text:
+                # if we are using text, batch and pad the already tokenized and numericalized text and place on GPU
+                text = torch.nn.utils.rnn.pad_sequence(text, batch_first=True, padding_value=self.text_vocab.pad_idx)
+                text = text.to(device)
+            else:
+                text = None
+            # also place label on GPU
+            # doc_id and page_num do not need to be placed on GPU
+            label = torch.cat(label).to(device)
+            doc_id = torch.cat(doc_id)
+            page_num = torch.cat(page_num)
+            # pack everything up in a batch dictionary
+            batch = {'image': image, 'text': text, 'label': label, 'doc_id': doc_id, 'page_num': page_num}
+            return batch
+
+        # get the collate functions with the appropriate transforms
+        data_collate = functools.partial(collate, transforms=transforms)
+
+        # build the iterators
+        iterator = DataLoader(data, batch_size=batch_size, shuffle=shuffle, collate_fn=data_collate)
+
+        return iterator
 
     def _train(
         self,
@@ -1060,34 +1133,47 @@ class CategorizationAI(FallbackCategorizationModel):
         if hasattr(self.classifier, 'text_module') and isinstance(self.classifier.text_module, BERT):
             document_training_config['max_len'] = self.classifier.text_module.get_max_length()
 
+        # @TODO move this validation to the Categorization AI configure step
         assert self.documents is not None, "Training documents need to be specified"
         assert self.test_documents is not None, "Test documents need to be specified"
         # get document classifier example iterators
-        examples = build_document_template_classifier_iterators(
+        train_iterator = self.build_document_classifier_iterator(
             self.documents,
-            self.test_documents,
-            self.tokenizer,
-            self.eval_transforms,
             self.train_transforms,
-            self.text_vocab,
-            self.category_vocab,
             use_image,
             use_text,
-            **document_training_config,
+            shuffle=True,
+            batch_size=document_training_config['batch_size'],
+            max_len=document_training_config['max_len'],
             device=self.device,
         )
+        # test_examples = build_document_classifier_iterator
+        # examples = build_document_template_classifier_iterators(
+        #     self.documents,
+        #     self.test_documents,
+        #     self.tokenizer,
+        #     self.eval_transforms,
+        #     self.train_transforms,
+        #     self.text_vocab,
+        #     self.category_vocab,
+        #     use_image,
+        #     use_text,
+        #     **document_training_config,
+        #     device=self.device,
+        # )
 
-        train_examples, test_examples = examples
+        logger.info(f'{len(train_iterator)} training examples')
+        # logger.info(f'{len(test_iterator)} testing examples')
 
-        # place document classifier on device
+        # place document classifier on device (this is a no-op if CPU was selected)
         self.classifier = self.classifier.to(self.device)
 
         logger.info('training label classifier')
 
         # fit the document classifier
-        self.classifier, training_metrics = self._fit_classifier(train_examples, **document_training_config)
+        self.classifier, training_metrics = self._fit_classifier(train_iterator, **document_training_config)
 
-        # put document classifier back on cpu to free up GPU memory
+        # put document classifier back on cpu to free up GPU memory (this is a no-op if CPU was already selected)
         self.classifier = self.classifier.to('cpu')
 
         return training_metrics

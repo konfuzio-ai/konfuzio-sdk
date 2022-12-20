@@ -44,9 +44,11 @@ class Vocab:
         max_size: int = None,
         unk_token: str = '<unk>',
         pad_token: str = '<pad>',
-        special_tokens: List[str] = [],
+        special_tokens=None,
     ):
         """Initialize the Vocab object and builds the vocabulary mappings."""
+        if special_tokens is None:
+            special_tokens = []
         assert min_freq >= 1
 
         self.counter = counter
