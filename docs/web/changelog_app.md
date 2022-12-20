@@ -29,7 +29,6 @@ You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server
 - Delta Training, Partial Fit an exisiting classifier, so that training documents used previously can be deleted ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9251)).
 - Allow administrators of Konfuzio on-premise installations to run a speedtest ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9870)).
 - Start automatic AI retraining after user confirms that he has finished a annotation review ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9166)).
-- [Show a warning if a user works on a Document that is not assigned to him](https://help.konfuzio.com/modules/documents/index.html#assignee) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9466)).
 
 <!---
 These changes are for the tokenizers/new SDK branch.
