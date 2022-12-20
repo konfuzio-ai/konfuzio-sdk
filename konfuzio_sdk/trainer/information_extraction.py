@@ -47,6 +47,7 @@ from konfuzio_sdk.normalize import (
     normalize_to_positive_float,
 )
 from konfuzio_sdk.regex import regex_matches
+from konfuzio_sdk.trainer.file_splitting import AbstractFileSplittingModel
 from konfuzio_sdk.utils import get_timestamp, get_bbox, normalize_memory
 from konfuzio_sdk.evaluate import Evaluation
 
@@ -1328,7 +1329,7 @@ def add_extractions_as_annotations(
 class BaseModel:
     """Base model to define a save() method for child classes."""
 
-    def save(self, model_type: str, output_dir="", include_konfuzio=True, reduce_weight=False, max_ram=None) -> str:
+    def save(self, output_dir="", include_konfuzio=True, reduce_weight=False, max_ram=None) -> str:
         """
         Save a pickled instance of the class.
 
@@ -1337,8 +1338,6 @@ class BaseModel:
         :param include_konfuzio: Enables pickle serialization as a value, not as a reference (for more info, read
         https://github.com/cloudpipe/cloudpickle#overriding-pickles-serialization-mechanism-for-importable-constructs).
         :type include_konfuzio: bool
-        :param model_type: file_splitting or extraction_ai.
-        :type model_type: str
         :param reduce_weight: Remove all non-strictly necessary parameters before saving.
         :param max_ram: Specify maximum memory usage condition to save model.
         :raises MemoryError: When the size of the model in memory is greater than the maximum value.
@@ -1350,10 +1349,10 @@ class BaseModel:
             cloudpickle.register_pickle_by_value(konfuzio_sdk)
             # todo register all dependencies?
         pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
-        if model_type == "file_splitting":
+        if issubclass(self, AbstractFileSplittingModel):
             temp_pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_file_splitting_model.cloudpickle')
             pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_file_splitting_model.pkl')
-        elif model_type == "extraction_ai":
+        else:
             logger.info(f'{reduce_weight=}')
             logger.info(f'{max_ram=}')
             # Keep Documents of the Category so that we can restore them later
@@ -1409,7 +1408,7 @@ class BaseModel:
         size_string = f'{os.path.getsize(pkl_file_path) / 1_000_000} MB'
         logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
 
-        if model_type == "extraction_ai":
+        if not issubclass(self, AbstractFileSplittingModel):
             # restore Documents of the Category so that we can run the evaluation later
             self.category.project._documents = category_documents
         return pkl_file_path
