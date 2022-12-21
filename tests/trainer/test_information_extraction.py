@@ -529,7 +529,7 @@ class TestInformationExtraction(unittest.TestCase):
     def test_extraction_with_no_span_document(self):
         """Test empty extraction when no spans detected."""
         document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-        pipeline = RFExtractionAI()
+        pipeline = RFExtractionAI(category=document.category)
         pipeline.tokenizer = RegexTokenizer(r"qwerty")
 
         pipeline.clf = RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1)
@@ -546,7 +546,7 @@ class TestInformationExtraction(unittest.TestCase):
         """Test extraction with completely empty document."""
         category = self.project.get_category_by_id(63)
         document = Document(text="", project=self.project, category=category)
-        pipeline = RFExtractionAI()
+        pipeline = RFExtractionAI(category=category)
         pipeline.tokenizer = RegexTokenizer(r"qwerty")
 
         pipeline.clf = RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1)
@@ -582,7 +582,7 @@ class TestInformationExtraction(unittest.TestCase):
     def test_extract_with_fitted_clf(self):
         """Test to extract a Document."""
         document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-        pipeline = RFExtractionAI()
+        pipeline = RFExtractionAI(category=document.category)
         pipeline.tokenizer = WhitespaceTokenizer()
         pipeline.clf = RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1)
         X, y = make_classification(

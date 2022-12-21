@@ -1211,7 +1211,6 @@ class Trainer:
         logger.info(f"{self.category=}")
 
         self.clf = None
-        self.category = None
         self.name = self.__class__.__name__
         self.label_feature_list = None  # will be set later
 
@@ -1888,7 +1887,6 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         no_label_limit: Union[int, float, None] = None,
         n_nearest_across_lines: bool = False,
         use_separate_labels: bool = False,
-        category: Category = None,
         tokenizer=None,
         *args,
         **kwargs,
