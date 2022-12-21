@@ -49,7 +49,7 @@ This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK 
 
 ### Added
 - [The Document list for Superusers shows the AI loading time](https://help.konfuzio.com/modules/superuserdocuments/index.html#time-and-timing) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9787)).
-- Add the option to show a warning when a User edits a Document he is not assigned to ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9466)).
+- [Add the option to show a warning when a User edits a Document he is not assigned to](https://help.konfuzio.com/modules/projects/index.html#wrong-editing-user-warnings) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9466)).
 
 ### Fixed
 - Show a message that informs a user if his account was deactivated ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10119)).
