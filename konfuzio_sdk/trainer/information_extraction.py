@@ -1225,11 +1225,6 @@ class Trainer:
         logger.warning(f'{self} does not train a classifier.')
         pass
 
-    def fit_label_set_clf(self):
-        """Use as placeholder Function."""
-        logger.warning(f'{self} does not train a label set classifier.')
-        pass
-
     def evaluate(self):
         """Use as placeholder Function."""
         logger.warning(f'{self} does not evaluate results.')

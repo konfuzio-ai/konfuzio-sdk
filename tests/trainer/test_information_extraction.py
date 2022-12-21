@@ -143,7 +143,7 @@ separate_labels_clf_classes = [
     'Verdiensibescheinigung__Steuer-Brutto',
 ]
 
-template_clf_classes = ['Brutto-Bezug', 'Lohnabrechnung', 'Netto-Bezug', 'No', 'Steuer', 'Verdiensibescheinigung']
+label_set_clf_classes = ['Brutto-Bezug', 'Lohnabrechnung', 'Netto-Bezug', 'No', 'Steuer', 'Verdiensibescheinigung']
 
 
 @parameterized.parameterized_class(
@@ -221,7 +221,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
             assert len(self.pipeline.clf.classes_) == 18
             assert list(self.pipeline.clf.classes_) == clf_classes
 
-        assert list(self.pipeline.template_clf.classes_) == template_clf_classes
+        assert list(self.pipeline.label_set_clf.classes_) == label_set_clf_classes
 
     def test_04_save_model(self):
         """Save the model."""
@@ -391,7 +391,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
             assert len(self.pipeline.clf.classes_) == 18
             assert list(self.pipeline.clf.classes_) == clf_classes
 
-        assert list(self.pipeline.template_clf.classes_) == template_clf_classes
+        assert list(self.pipeline.label_set_clf.classes_) == label_set_clf_classes
 
     def test_04_save_model(self):
         """Save the model."""
