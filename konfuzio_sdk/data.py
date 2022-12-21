@@ -2379,6 +2379,7 @@ class Document(Data):
 
         :param only_multiline_labels: Only merge if multiline Label Annotation in category training set
         """
+        logger.info("Vertical merging Annotations.")
         labels_dict = {}
         for label in self.project.labels:
             if not only_multiline_labels or label.has_multiline_annotations(categories=[self.category]):

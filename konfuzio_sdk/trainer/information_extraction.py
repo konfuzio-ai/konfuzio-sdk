@@ -1217,46 +1217,9 @@ class Trainer:
 
         self.evaluation = None
 
-    def build(self, **kwargs):
-        """Build an ExtractionModel using train valid split."""
-        self.create_candidates_dataset()
-        self.train_valid_split()
-        self.fit()
-        self.evaluate()
-        self.lose_weight()
-        return self
-
     def name_lower(self):
         """Convert class name to machine readable name."""
         return f'{self.name.lower().strip()}'
-
-    def lose_weight(self):
-        """Delete everything that is not necessary for extraction."""
-        self.df_valid = None
-        self.df_train = None
-        self.df_test = None
-
-        self.X_train = None
-        self.y_train = None
-        self.X_valid = None
-        self.y_valid = None
-        self.X_test = None
-        self.y_test = None
-
-        # TODO what is this?
-        self.valid_data = None
-        self.training_data = None
-        self.test_data = None
-
-        self.df_data_list = None
-
-        for label in self.category.project.labels:
-            label.lose_weight()
-
-        for label_set in self.category.label_sets or []:
-            label_set.lose_weight()
-
-        logger.info(f'Lose weight was executed on {self.name}')
 
     # def get_ai_model(self):
     #     """Try to load the latest pickled model."""
@@ -1264,16 +1227,6 @@ class Trainer:
     #         return load_pickle(get_latest_document_model(f'*_{self.name_lower()}.pkl'))
     #     except FileNotFoundError:
     #         return None
-
-    def create_candidates_dataset(self):
-        """Use as placeholder Function."""
-        logger.warning(f'{self} does not train a classifier.')
-        pass
-
-    def train_valid_split(self):
-        """Use as placeholder Function."""
-        logger.warning(f'{self} does not use a valid and train data split.')
-        pass
 
     def fit(self):
         """Use as placeholder Function."""
@@ -1290,10 +1243,8 @@ class Trainer:
         logger.warning(f'{self} does not evaluate results.')
         pass
 
-    def extract(self, *args, **kwargs):
+    def extract(self):
         """Use as placeholder Function."""
-        # todo: extract should return a Document
-        #  see https://github.com/konfuzio-ai/konfuzio-sdk/blob/64fd8792/konfuzio_sdk/data.py#L1182
         logger.warning(f'{self} does not extract.')
         pass
 
@@ -1491,6 +1442,7 @@ class Trainer:
 
         self.check_is_ready_for_extraction()
 
+        logger.info(f'{output_dir=}')
         logger.info(f'{include_konfuzio=}')
         logger.info(f'{reduce_weight=}')
         logger.info(f'{keep_documents=}')
@@ -1499,19 +1451,25 @@ class Trainer:
         # if no argument passed, get project max_ram
         if not max_ram and self.category is not None:
             max_ram = self.category.project.max_ram
+            logger.info(f'project {max_ram=}')
 
         if not output_dir:
             output_dir = self.category.project.model_folder
+            logger.info(f'new {output_dir=}')
 
         temp_pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower()}.cloudpickle')
         pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower()}.pkl')
 
         if reduce_weight:
+            logger.info('reducing weight before save')
             self.df_train = None
             self.category.project.lose_weight()
             self.tokenizer.lose_weight()
 
         if not keep_documents:
+            logger.info('removing documents before save')
+            restore_documents = self.documents
+            restore_test_documents = self.test_documents
             self.documents = []
             self.test_documents = []
 
@@ -1529,9 +1487,6 @@ class Trainer:
         if include_konfuzio:
             cloudpickle.register_pickle_by_value(konfuzio_sdk)
             # todo register all dependencies?
-
-        if not output_dir:
-            output_dir = self.category.project.model_folder
 
         # make sure output dir exists
         pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
@@ -1556,7 +1511,8 @@ class Trainer:
         logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
 
         # restore Documents of the Category so that we can run the evaluation later
-        # self.category.project._documents = category_documents
+        self.documents = restore_documents
+        self.test_documents = restore_test_documents
 
         return pkl_file_path
 
