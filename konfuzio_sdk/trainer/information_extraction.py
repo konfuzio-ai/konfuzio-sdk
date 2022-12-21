@@ -1207,6 +1207,9 @@ class Trainer:
         """Initialize ExtractionModel."""
         # Go through keyword arguments, and either save their values to our
         # instance, or raise an error.
+        self.category: Category = kwargs.get('category', None)
+        logger.info(f"{self.category=}")
+
         self.clf = None
         self.category = None
         self.name = self.__class__.__name__
@@ -1900,9 +1903,6 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         self.use_separate_labels = use_separate_labels
         logger.info(f"{use_separate_labels=}")
 
-        self.category: Category = category
-        logger.info(f"{category=}")
-
         self.n_nearest = n_nearest
         logger.info(f"{n_nearest=}")
 
@@ -1960,6 +1960,9 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             raise AttributeError(f'{self} does not provide a Label Classifier. Please add it.')
         else:
             check_is_fitted(self.clf)
+
+        if not self.category:
+            raise AttributeError(f'{self} requires a Category.')
 
         if self.label_set_clf is None:
             logger.warning('{self} does not provide a LabelSet Classfier.')
