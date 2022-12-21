@@ -1213,20 +1213,12 @@ class Trainer:
         self.label_feature_list = None  # will be set later
 
         self.df_train = None
-        self.df_test = None
 
         self.evaluation = None
 
     def name_lower(self):
         """Convert class name to machine readable name."""
         return f'{self.name.lower().strip()}'
-
-    # def get_ai_model(self):
-    #     """Try to load the latest pickled model."""
-    #     try:
-    #         return load_pickle(get_latest_document_model(f'*_{self.name_lower()}.pkl'))
-    #     except FileNotFoundError:
-    #         return None
 
     def fit(self):
         """Use as placeholder Function."""
@@ -1527,9 +1519,9 @@ class GroupAnnotationSets:
         self.n_nearest_template = 5
         self.max_depth = 100
         self.n_estimators = 100
-        self.template_clf = None
+        self.label_set_clf = None
 
-    def fit_template_clf(self) -> Tuple[Optional[object], Optional[List['str']]]:
+    def fit_label_set_clf(self) -> Tuple[Optional[object], Optional[List['str']]]:
         """
         Fit classifier to predict start lines of Sections.
 
@@ -1604,11 +1596,13 @@ class GroupAnnotationSets:
             )
             return None, None
 
-        clf = RandomForestClassifier(n_estimators=self.n_estimators, max_depth=self.max_depth, random_state=420)
-        clf.fit(x_train, y_train)
+        label_set_clf = RandomForestClassifier(
+            n_estimators=self.n_estimators, max_depth=self.max_depth, random_state=420
+        )
+        label_set_clf.fit(x_train, y_train)
 
-        self.template_clf = clf
-        return self.template_clf, self.template_feature_list
+        self.label_set_clf = label_set_clf
+        return self.label_set_clf, self.template_feature_list
 
     def generate_relative_line_features(self, n_nearest: int, df_features: pandas.DataFrame) -> pandas.DataFrame:
         """Add the features of the n_nearest previous and next lines."""
@@ -1649,7 +1643,7 @@ class GroupAnnotationSets:
         self, feature_df_label: pandas.DataFrame, document_text
     ) -> pandas.DataFrame:
         """
-        Convert the feature_df for the label_clf to a feature_df for the template_clf.
+        Convert the feature_df for the label_clf to a feature_df for the label_set_clf.
 
         The input is the Feature-Dataframe and text for one document.
         """
@@ -1770,7 +1764,7 @@ class GroupAnnotationSets:
         feature_df = feature_df.reindex(columns=self.template_feature_list).fillna(0)
         feature_df = self.generate_relative_line_features(n_nearest, feature_df)
 
-        res_series = self.template_clf.predict(feature_df)
+        res_series = self.label_set_clf.predict(feature_df)
         res_templates = pandas.DataFrame(res_series)
         # res_templates['text'] = text.replace('\f', '\n').split('\n')  # Debug code.
 
@@ -1972,7 +1966,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         else:
             check_is_fitted(self.clf)
 
-        if self.template_clf is None:
+        if self.label_set_clf is None:
             logger.warning('{self} does not provide a LabelSet Classfier.')
 
     def extract(self, document: Document) -> Document:
@@ -2068,7 +2062,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         res_dict = self.merge_horizontal(res_dict, inference_document.text)
 
         # Try to calculate sections based on template classifier.
-        if self.template_clf is not None:  # todo smarter handling of multiple clf
+        if self.label_set_clf is not None:  # todo smarter handling of multiple clf
             res_dict = self.extract_template_with_clf(inference_document.text, res_dict)
             res_dict[self.no_label_set_name] = no_label_res_dict
 
@@ -2398,7 +2392,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         self.clf.fit(self.df_train[self.label_feature_list], self.df_train['target'])
 
-        self.fit_template_clf()
+        self.fit_label_set_clf()
 
         return self.clf
 
@@ -2469,12 +2463,12 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         return clf_evaluation
 
-    def evaluate_template_clf(self, use_training_docs: bool = False) -> Evaluation:
+    def evaluate_label_set_clf(self, use_training_docs: bool = False) -> Evaluation:
         """Evaluate the LabelSet classifier."""
-        if self.template_clf is None:
+        if self.label_set_clf is None:
             raise AttributeError(f'{self} does not provide a LabelSet Classifier.')
         else:
-            check_is_fitted(self.template_clf)
+            check_is_fitted(self.label_set_clf)
 
         eval_list = []
         if not use_training_docs:
@@ -2504,6 +2498,6 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
             eval_list.append((document, predicted_doc))
 
-        template_clf_evaluation = Evaluation(eval_list)
+        label_set_clf_evaluation = Evaluation(eval_list)
 
-        return template_clf_evaluation
+        return label_set_clf_evaluation

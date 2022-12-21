@@ -287,9 +287,9 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         evaluation = self.pipeline.evaluate_clf()
         assert evaluation.clf_f1(None) == self.clf_quality_result
 
-    def test_10_template_clf_quality(self):
+    def test_10_label_set_clf_quality(self):
         """Evaluate the LabelSet classifier quality."""
-        evaluation = self.pipeline.evaluate_template_clf()
+        evaluation = self.pipeline.evaluate_label_set_clf()
 
         assert evaluation.f1(None) == 0.9552238805970149
 
@@ -457,9 +457,9 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         evaluation = self.pipeline.evaluate_clf()
         assert evaluation.clf_f1(None) == 1.0
 
-    def test_10_template_clf_quality(self):
+    def test_10_label_set_clf_quality(self):
         """Evaluate the LabelSet classifier quality."""
-        evaluation = self.pipeline.evaluate_template_clf()
+        evaluation = self.pipeline.evaluate_label_set_clf()
         assert evaluation.f1(None) == 0.9552238805970149
 
     def test_11_extract_test_document(self):
