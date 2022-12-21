@@ -1513,6 +1513,8 @@ class Trainer:
         # restore Documents of the Category so that we can run the evaluation later
         self.documents = restore_documents
         self.test_documents = restore_test_documents
+        if reduce_weight:
+            self.category.project.init_or_update_document()
 
         return pkl_file_path
 

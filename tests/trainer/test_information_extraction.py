@@ -247,14 +247,10 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         )
         assert os.path.isfile(self.pipeline.pipeline_path)
 
-        assert self.pipeline.documents == []
-        assert self.pipeline.test_documents == []
+        assert self.pipeline.documents == documents
+        assert self.pipeline.test_documents == test_documents
         assert self.pipeline.df_train is None
         assert self.pipeline.tokenizer.processing_steps == []
-
-        self.pipeline.test_documents = test_documents
-        self.pipeline.documents = documents
-        self.pipeline.category.project._documents = test_documents + documents
 
         assert previous_size > asizeof.asizeof(self.pipeline)
 
@@ -317,6 +313,10 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
     def test_13_load_ai_model(self):
         """Test loading of trained model."""
         self.pipeline = load_model(self.pipeline.pipeline_path)
+
+        assert self.pipeline.documents == []
+        assert self.pipeline.test_documents == []
+
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         self.pipeline.category = test_document.category
 
@@ -417,14 +417,10 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         )
         assert os.path.isfile(self.pipeline.pipeline_path)
 
-        assert self.pipeline.documents == []
-        assert self.pipeline.test_documents == []
+        assert self.pipeline.documents == documents
+        assert self.pipeline.test_documents == test_documents
         assert self.pipeline.df_train is None
         assert self.pipeline.tokenizer.processing_steps == []
-
-        self.pipeline.test_documents = test_documents
-        self.pipeline.documents = documents
-        self.pipeline.category.project._documents = test_documents + documents
 
         assert previous_size > asizeof.asizeof(self.pipeline)
 
@@ -486,6 +482,10 @@ class TestRegexRFExtractionAI(unittest.TestCase):
     def test_13_load_ai_model(self):
         """Test loading of trained model."""
         self.pipeline = load_model(self.pipeline.pipeline_path)
+
+        assert self.pipeline.documents == []
+        assert self.pipeline.test_documents == []
+
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
         assert len(res_doc.view_annotations()) == 19
