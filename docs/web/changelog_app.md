@@ -43,7 +43,7 @@ These changes are for the tokenizers/new SDK branch.
 ### Fixed
 - Re-running the categorization now also re-runs the extraction ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10355)).
 
-## 2022-12-20_11-23-04
+## released-2022-12-20_11-23-04
 
 This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Capture Vue in version [0.0.11-pre-release-5](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
 
