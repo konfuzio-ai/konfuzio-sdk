@@ -1,5 +1,6 @@
 """Find similarities between Documents or Pages via comparison between their texts."""
 import abc
+import json
 import logging
 import sys
 
@@ -10,6 +11,7 @@ from konfuzio_sdk.data import Document, Page
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
 from konfuzio_sdk.trainer.information_extraction import load_model, BaseModel
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
+from konfuzio_sdk.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +22,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def __init__(self, *args, **kwargs):
         """Initialize the class."""
+        self.model_type = 'file_splitting'
 
     @abc.abstractmethod
     def fit(self, *args, **kwargs):
@@ -41,6 +44,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
 
     def __init__(self, *args, **kwargs):
         """Initialize the ContextAwareFileSplittingModel."""
+        super().__init__()
         self.train_data = None
         self.test_data = None
         self.categories = None
@@ -74,23 +78,30 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
                 cur_non_first_page_spans.append(set())
             true_not_first_page_spans = set.intersection(*cur_non_first_page_spans)
             true_first_page_spans = true_first_page_spans - true_not_first_page_spans
-            first_page_spans[category.id_] = true_first_page_spans
+            first_page_spans[category.id_] = list(true_first_page_spans)
         self.first_page_spans = first_page_spans
         return first_page_spans
 
-    def save(self, model_path="", include_konfuzio=True) -> str:
+    def save(self, model_path="", save_json=True, include_konfuzio=True) -> str:
         """
         Save the resulting set of first-page Spans by Category.
 
         :param model_path: Path to save the set to.
         :type model_path: str
+        :param save_json: Whether to save JSON of first_page_spans or a pickle of the whole class.
+        :type save_json: bool
         :param include_konfuzio: Enables pickle serialization as a value, not as a reference (for more info, read
         https://github.com/cloudpipe/cloudpickle#overriding-pickles-serialization-mechanism-for-importable-constructs).
         :type include_konfuzio: bool
         """
-        path = super(AbstractFileSplittingModel, self).save(
-            model_type="file_splitting", output_dir=model_path, include_konfuzio=include_konfuzio
-        )
+        if save_json:
+            path = model_path + f'/{get_timestamp()}_first_page_spans.json'
+            with open(path, 'w') as f:
+                json.dump(self.first_page_spans, f)
+        else:
+            path = super(AbstractFileSplittingModel, self).save(
+                output_dir=model_path, include_konfuzio=include_konfuzio
+            )
         return path
 
     def predict(self, page: Page) -> Page:

@@ -71,6 +71,16 @@ class TestFileSplittingModel(unittest.TestCase):
                 assert intersections == [{'Morning,'}]
                 assert page.is_first_page
 
+    def test_save_json_model(self):
+        """Test saving first_page_spans as JSON."""
+        path = self.file_splitting_model.save(model_path=self.project.model_folder, save_json=True)
+        assert os.path.isfile(path)
+
+    def test_save_pickle_model(self):
+        """Test saving ContextAwareFileSplittingModel to pickle."""
+        self.file_splitting_model.save(model_path=self.project.model_folder, save_json=False)
+        # assert os.path.isfile(path)
+
     def test_splitting_ai_predict(self):
         """Test SplittingAI's Document-splitting method."""
         splitting_ai = SplittingAI(self.file_splitting_model)

@@ -47,7 +47,6 @@ from konfuzio_sdk.normalize import (
     normalize_to_positive_float,
 )
 from konfuzio_sdk.regex import regex_matches
-from konfuzio_sdk.trainer.file_splitting import AbstractFileSplittingModel
 from konfuzio_sdk.utils import get_timestamp, get_bbox, normalize_memory
 from konfuzio_sdk.evaluate import Evaluation
 
@@ -1329,6 +1328,10 @@ def add_extractions_as_annotations(
 class BaseModel:
     """Base model to define a save() method for child classes."""
 
+    def __init__(self):
+        """Initialize a BaseModel class."""
+        self.model_type = None
+
     def save(self, output_dir="", include_konfuzio=True, reduce_weight=False, max_ram=None) -> str:
         """
         Save a pickled instance of the class.
@@ -1349,7 +1352,7 @@ class BaseModel:
             cloudpickle.register_pickle_by_value(konfuzio_sdk)
             # todo register all dependencies?
         pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
-        if issubclass(self, AbstractFileSplittingModel):
+        if self.model_type == 'file_splitting':
             temp_pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_file_splitting_model.cloudpickle')
             pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_file_splitting_model.pkl')
         else:
@@ -1408,7 +1411,7 @@ class BaseModel:
         size_string = f'{os.path.getsize(pkl_file_path) / 1_000_000} MB'
         logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
 
-        if not issubclass(self, AbstractFileSplittingModel):
+        if not self.model_type == 'file_splitting':
             # restore Documents of the Category so that we can run the evaluation later
             self.category.project._documents = category_documents
         return pkl_file_path
@@ -2104,6 +2107,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         self.no_label_set_name = None
         self.no_label_name = None
+
+        self.model_type = 'extraction_ai'
 
     def features(self, document: Document):
         """Calculate features using the best working default values that can be overwritten with self values."""
