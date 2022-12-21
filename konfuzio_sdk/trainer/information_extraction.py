@@ -1488,18 +1488,13 @@ class Trainer:
         :return: Path of the saved model file.
         """
         logger.info('Saving model')
+
+        self.check_is_ready_for_extraction()
+
         logger.info(f'{include_konfuzio=}')
         logger.info(f'{reduce_weight=}')
         logger.info(f'{keep_documents=}')
         logger.info(f'{max_ram=}')
-
-        # Keep Documents of the Category so that we can restore them later
-
-        # TODO: add Document.lose_weight in SDK - remove NO_LABEL Annotations from the Documents
-        # for document in category_documents:
-        #     no_label_annotations = document.annotations(label=self.category.project.no_label)
-        #     clean_annotations = list(set(document.annotations()) - set(no_label_annotations))
-        #     document._annotations = clean_annotations
 
         # if no argument passed, get project max_ram
         if not max_ram and self.category is not None:
@@ -2009,6 +2004,19 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             df['target'] = df['label_name']
         return df, _feature_list, _temp_df_raw_errors
 
+    def check_is_ready_for_extraction(self):
+        """Check if tokenizer is set and the classifiers set and trained."""
+        if self.tokenizer is None:
+            raise AttributeError(f'{self} missing Tokenizer.')
+
+        if self.clf is None:
+            raise AttributeError(f'{self} does not provide a Label Classifier. Please add it.')
+        else:
+            check_is_fitted(self.clf)
+
+        if self.template_clf is None:
+            logger.warning('{self} does not provide a LabelSet Classfier.')
+
     def extract(self, document: Document) -> Document:
         """
         Infer information from a given Document.
@@ -2022,16 +2030,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         """
         logger.info(f"Starting extraction of {document}.")
-        if self.tokenizer is None:
-            raise AttributeError(f'{self} missing Tokenizer.')
 
-        if self.clf is None:
-            raise AttributeError(f'{self} does not provide a Label Classifier. Please add it.')
-        else:
-            check_is_fitted(self.clf)
-
-        if self.template_clf is None:
-            logger.warning('{self} does not provide a LabelSet Classfier.')
+        self.check_is_ready_for_extraction()
 
         # Main Logic -------------------------
         # 1. start inference with new document
