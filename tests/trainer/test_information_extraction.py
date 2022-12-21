@@ -165,14 +165,24 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Set up the Data and Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-        tokenizer = WhitespaceTokenizer()
-        cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_separate_labels, tokenizer=tokenizer)
+        cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_separate_labels, tokenizer=None)
 
         cls.tests_annotations_spans = list()
 
     def test_01_configure_pipeline(self):
         """Make sure the Data and Pipeline is configured."""
+        with pytest.raises(AttributeError, match="missing Tokenizer"):
+            self.pipeline.check_is_ready_for_extraction()
+
+        self.pipeline.tokenizer = WhitespaceTokenizer()
+
+        with pytest.raises(AttributeError, match="requires a Category"):
+            self.pipeline.check_is_ready_for_extraction()
+
         self.pipeline.category = self.project.get_category_by_id(id_=63)
+
+        with pytest.raises(AttributeError, match="not provide a Label Classifier"):
+            self.pipeline.check_is_ready_for_extraction()
 
         if not TEST_WITH_FULL_DATASET:
             train_doc_ids = [44823, 44834, 44839, 44840, 44841]
@@ -518,10 +528,18 @@ class TestInformationExtraction(unittest.TestCase):
             pipeline.extract(document)
         assert 'missing Tokenizer' in str(einfo.value)
 
+    def test_extraction_without_category(self):
+        """Test extraction without Category."""
+        document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        pipeline = RFExtractionAI()
+        pipeline.tokenizer = WhitespaceTokenizer()
+        with pytest.raises(AttributeError, match='requires a Category'):
+            pipeline.extract(document)
+
     def test_extraction_without_clf(self):
         """Test extraction without classifier."""
         document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-        pipeline = RFExtractionAI()
+        pipeline = RFExtractionAI(category=document.category)
         pipeline.tokenizer = WhitespaceTokenizer()
         with pytest.raises(AttributeError, match='does not provide a Label Classifier'):
             pipeline.extract(document)
@@ -573,7 +591,7 @@ class TestInformationExtraction(unittest.TestCase):
     def test_extract_with_unfitted_clf(self):
         """Test to extract a Document."""
         document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-        pipeline = RFExtractionAI()
+        pipeline = RFExtractionAI(category=document.category)
         pipeline.tokenizer = WhitespaceTokenizer()
         pipeline.clf = RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1)
         with pytest.raises(AttributeError, match='instance is not fitted yet'):

@@ -1954,13 +1954,13 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         if self.tokenizer is None:
             raise AttributeError(f'{self} missing Tokenizer.')
 
+        if not self.category:
+            raise AttributeError(f'{self} requires a Category.')
+
         if self.clf is None:
             raise AttributeError(f'{self} does not provide a Label Classifier. Please add it.')
         else:
             check_is_fitted(self.clf)
-
-        if not self.category:
-            raise AttributeError(f'{self} requires a Category.')
 
         if self.label_set_clf is None:
             logger.warning('{self} does not provide a LabelSet Classfier.')
