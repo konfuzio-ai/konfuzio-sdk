@@ -2880,6 +2880,7 @@ class Project(Data):
         for label in self.labels:
             label.lose_weight()
         self._documents = []
+        self._meta_data = []
         return self
 
 
