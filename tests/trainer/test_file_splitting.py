@@ -76,10 +76,15 @@ class TestFileSplittingModel(unittest.TestCase):
         path = self.file_splitting_model.save(model_path=self.project.model_folder, save_json=True)
         assert os.path.isfile(path)
         self.file_splitting_model.load_json(path)
-        assert self.file_splitting_model.first_page_spans == {
-            3: ["I like bread.", "Morning,"],
-            4: ["Evening,", "I like fish."],
-        }
+        assert 3 in self.file_splitting_model.first_page_spans
+        assert 4 in self.file_splitting_model.first_page_spans
+        assert "Morning," in self.file_splitting_model.first_page_spans[3]
+        assert "I like bread." in self.file_splitting_model.first_page_spans[3]
+        assert "Evening," in self.file_splitting_model.first_page_spans[4]
+        assert "I like fish." in self.file_splitting_model.first_page_spans[4]
+        assert len(self.file_splitting_model.first_page_spans) == 2
+        assert len(self.file_splitting_model.first_page_spans[3]) == 2
+        assert len(self.file_splitting_model.first_page_spans[4]) == 2
 
     def test_pickle_model_save(self):
         """Test saving ContextAwareFileSplittingModel to pickle."""
