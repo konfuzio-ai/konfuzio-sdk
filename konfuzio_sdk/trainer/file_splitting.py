@@ -96,7 +96,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         """
         if save_json:
             path = model_path + f'/{get_timestamp()}_first_page_spans.json'
-            with open(path, 'w') as f:
+            with open(path, 'w+') as f:
                 json.dump(self.first_page_spans, f)
         else:
             path = super().save(output_dir=model_path, include_konfuzio=include_konfuzio)
