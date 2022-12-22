@@ -74,13 +74,13 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
 
     def test_splitting_ai_predict(self):
         """Test SplittingAI's Document-splitting method."""
-        splitting_ai = SplittingAI(self.file_splitting_model, use_fallback_logic=True)
+        splitting_ai = SplittingAI(self.file_splitting_model, use_context_aware_logic=True)
         pred = splitting_ai.propose_split_documents(self.test_document)
         assert len(pred) == 3
 
     def test_suggest_first_pages(self):
         """Test SplittingAI's suggesting first Pages."""
-        splitting_ai = SplittingAI(self.file_splitting_model, use_fallback_logic=True)
+        splitting_ai = SplittingAI(self.file_splitting_model, use_context_aware_logic=True)
         pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)
         for page in pred.pages():
             if page.number in (1, 3, 5):

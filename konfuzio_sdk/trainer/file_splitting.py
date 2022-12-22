@@ -165,6 +165,7 @@ class FusionModel(AbstractFileSplittingModel):
 
     def __init__(self, *args, **kwargs):
         """Initialize the Fusion filesplitting model."""
+        logging.info('Initializing FusionModel.')
         self.train_data = None
         self.test_data = None
         self.train_txt_data = []
@@ -176,6 +177,7 @@ class FusionModel(AbstractFileSplittingModel):
         self.categories = None
         self.input_shape = None
         self.model = None
+        logger.info('Initializing BERT components of the FusionModel.')
         configuration = AutoConfig.from_pretrained('nlpaueb/legal-bert-base-uncased')
         configuration.num_labels = 2
         configuration.output_hidden_states = True
@@ -211,10 +213,12 @@ class FusionModel(AbstractFileSplittingModel):
 
     def fit(self, *args, **kwargs):
         """Process the train and test data, initialize and fit the model."""
+        logger.info('Fitting FusionModel.')
         for doc in self.train_data + self.test_data:
             doc.get_images()
         train_image_paths, train_texts, train_labels = self._preprocess_documents(self.train_data)
         test_image_paths, test_texts, test_labels = self._preprocess_documents(self.test_data)
+        logger.info('Document preprocessing finished.')
         train_images = self._otsu_binarization(train_image_paths)
         test_images = self._otsu_binarization(test_image_paths)
         self.train_labels = tf.cast(np.asarray(train_labels).reshape((-1, 1)), tf.float32)
@@ -228,6 +232,7 @@ class FusionModel(AbstractFileSplittingModel):
         self.test_img_data = np.concatenate(
             [test_data_generator.next()[0] for i in range(test_data_generator.__len__())]
         )
+        logger.info('Image data preprocessing finished')
         for text in train_texts:
             inputs = self.bert_tokenizer(text, truncation=True, return_tensors='pt')
             with torch.no_grad():
@@ -243,6 +248,8 @@ class FusionModel(AbstractFileSplittingModel):
         self.input_shape = self.test_txt_data[0].shape
         self.test_txt_data = [np.asarray(x).astype('float32') for x in self.test_txt_data]
         self.test_txt_data = np.asarray(self.test_txt_data)
+        logger.info('Text data preprocessing finished.')
+        logger.info('FusionModel compiling started.')
         txt_input = Input(shape=self.input_shape, name='text')
         txt_x = Dense(units=768, activation="relu")(txt_input)
         txt_x = Flatten()(txt_x)
@@ -278,7 +285,9 @@ class FusionModel(AbstractFileSplittingModel):
         output = Dense(1, activation='sigmoid')(x)
         self.model = Model(inputs=[img_input, txt_input], outputs=output)
         self.model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+        logger.info('FusionModel compiling finished.')
         self.model.fit([self.train_img_data, self.train_txt_data], self.train_labels, epochs=10, verbose=1)
+        logger.info('FusionModel fitting finished.')
         return self.model
 
     def save(self, model_path=""):
@@ -324,18 +333,18 @@ class FusionModel(AbstractFileSplittingModel):
 class SplittingAI:
     """Split a given Document and return a list of resulting shorter Documents."""
 
-    def __init__(self, model="", use_fallback_logic=True):
+    def __init__(self, model="", use_context_aware_logic=True):
         """
         Initialize the class.
 
         :param model: A path to an existing .cloudpickle model or to a previously trained instance of the model.
-        :param use_fallback_logic: Whether to use fallback logic or a fusion model.
-        :type use_fallback_logic: bool
+        :param use_context_aware_logic: Whether to use a context-aware file-splitting logic or a fusion model.
+        :type use_context_aware_logic: bool
         """
-        if use_fallback_logic:
+        if use_context_aware_logic:
             self.tokenizer = ConnectedTextTokenizer()
         if model is str:
-            if use_fallback_logic:
+            if use_context_aware_logic:
                 self.model = ContextAwareFileSplittingModel()
                 self.model.first_page_spans = load_model(model)
             else:
