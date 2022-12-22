@@ -4,7 +4,7 @@
 Get Started
 =============
 
-.. mdinclude:: configuration_reference.md
+.. mdinclude:: ../configuration_reference.md
 
 .. mdinclude:: intro.md
 
@@ -12,6 +12,9 @@ Get Started
 
 Tutorials
 =============
+
+*Tutorials are lessons that take the reader by the hand through a series of steps to complete a project of some kind.*
+*Tutorials are learning-oriented.*
 
 .. mdinclude:: document_categorization.md
 

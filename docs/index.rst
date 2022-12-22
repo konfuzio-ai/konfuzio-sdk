@@ -35,8 +35,8 @@ use further integrations, see `help.konfuzio.com <https://help.konfuzio.com/inte
    :caption: Konfuzio SDK
 
    sdk/index.md
-   sdk/examples/index.md
-   sdk/guides.md
+   sdk/examples/examples.md
+   sdk/explanations.md
    sdk/sourcecode.rst
    sdk/releases.md
    sdk/contribution.md

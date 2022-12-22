@@ -1,5 +1,7 @@
 ## Create Regex-based Annotations
 
+**Pro Tip**: Read our technical blog post [Automated Regex](https://helm-nagel.com/Automated-Regex-Generation-based-on-examples) to find out how we use Regex to detect outliers in our annotated data.
+
 Let's see a simple example of how can we use the `konfuzio_sdk` package to get information on a project and to post annotations.
 
 You can follow the example below to post annotations of a certain word or expression in the first document uploaded.
