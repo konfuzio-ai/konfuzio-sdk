@@ -1,12 +1,9 @@
 """Calculate the accuracy on any level in a  Document."""
-from typing import Dict, Tuple, List, Optional, Union
+from typing import Dict, Tuple, List, Optional
 
 import pandas
 import numpy as np
 from sklearn.metrics import (
-    accuracy_score,
-    balanced_accuracy_score,
-    precision_recall_fscore_support,
     confusion_matrix,
     classification_report,
 )
@@ -14,7 +11,6 @@ from sklearn.utils.extmath import weighted_mode
 
 from konfuzio_sdk.utils import sdk_isinstance
 from konfuzio_sdk.data import Category, Document
-
 
 RELEVANT_FOR_EVALUATION = [
     "is_matched",  # needed to group spans in Annotations
@@ -454,7 +450,7 @@ class CategorizationEvaluation:
         """
         Relate to the two document instances.
 
-        :param project: The project containing the Documents and Categories to be evaluated.
+        :param categories: The Categories to be evaluated.
         :param documents: A list of tuple Documents that should be compared.
         """
         self.categories = categories
@@ -464,12 +460,12 @@ class CategorizationEvaluation:
         self.calculate()
 
     @property
-    def labels(self) -> List[int]:
+    def category_ids(self) -> List[int]:
         """List of category ids as class labels."""
         return [category.id_ for category in self.categories]
 
     @property
-    def labels_names(self) -> List[str]:
+    def category_names(self) -> List[str]:
         """List of category names as class names."""
         return [category.name for category in self.categories]
 
@@ -488,17 +484,17 @@ class CategorizationEvaluation:
 
     def confusion_matrix(self) -> pandas.DataFrame:
         """Confusion matrix."""
-        return confusion_matrix(self.actual_classes, self.predicted_classes, labels=self.labels + [-1])
+        return confusion_matrix(self.actual_classes, self.predicted_classes, labels=self.category_ids + [-1])
 
-    def _get_tp_tn_fp_fn_per_label(self) -> Dict:
+    def _get_tp_tn_fp_fn_per_category(self) -> Dict:
         """
-        Get the tp, fp, tn and fn for each label.
+        Get the tp, fp, tn and fn for each Category.
 
-        The label for which the evaluation is being done is considered the positive class. All others are considered as
-        negative class.
+        The Category for which the evaluation is being done is considered the positive class. All others are considered
+        as negative class.
 
         Follows the logic:
-        tpi = cii (value in the diagonal of the cm for the respective label)
+        tpi = cii (value in the diagonal of the cm for the respective Category)
         fpi = ∑nl=1 cli − tpi (sum of the column of the cm - except tp)
         fni = ∑nl=1 cil − tpi (sum of the row of the cm - except tp)
         tni = ∑nl=1 ∑nk=1 clk − tpi − fpi − fni (all other values not considered above)
@@ -507,13 +503,13 @@ class CategorizationEvaluation:
             [0, 2, 1],
             [1, 2, 3]]
 
-        For label '1':
+        For Category '1':
         tp = 2
         fp = 1 + 2 = 3
         fn = 1 + 0 = 1
         tn = 11 - 2 - 3 - 1 = 5
 
-        :return: dictionary with the results per label
+        :return: dictionary with the results per Category
         """
         confusion_matrix = self.confusion_matrix()
         sum_columns = np.sum(confusion_matrix, axis=0)
@@ -522,7 +518,7 @@ class CategorizationEvaluation:
 
         results = {}
 
-        for ind, category_id in enumerate(self.labels):
+        for ind, category_id in enumerate(self.category_ids):
             tp = confusion_matrix[ind, ind]
             fp = sum_columns[ind] - tp
             fn = sum_rows[ind] - tp
@@ -534,12 +530,12 @@ class CategorizationEvaluation:
 
     def calculate(self):
         """Calculate and update the data stored within this Evolution."""
-        self.evaluation_results = self._get_tp_tn_fp_fn_per_label()
+        self.evaluation_results = self._get_tp_tn_fp_fn_per_category()
         self._clf_report = classification_report(
             y_true=self.actual_classes,
             y_pred=self.predicted_classes,
-            labels=self.labels,
-            target_names=self.labels_names,
+            labels=self.category_ids,
+            target_names=self.category_names,
             output_dict=True,
         )
 
@@ -620,172 +616,3 @@ class CategorizationEvaluation:
             return EvaluationCalculator(
                 tp=self.tp(category=category), fp=self.fp(category=category), fn=self.fn(category=category)
             ).f1
-
-    def update_names_and_indexes(self, names: Union[List[str], None] = None, indexes: Union[List[str], None] = None):
-        """Update the lists of labels names and classes indexes to consider a None prediction."""
-        if names is not None and indexes is not None:
-            # if we already have the names and indexes, we check for 'NO_CATEGORY'
-            if 'NO_CATEGORY' not in names:
-                # if 'NO_CATEGORY' not in the names, we add it and also the index 0
-                if 0 in indexes:
-                    # if classes_indexes already has a 0, we cannot add NO_CATEGORY
-                    print('A prediction is NoneType and not possible to add NO_CATEGORY.')
-                    return None
-
-                names.append('NO_CATEGORY')
-                indexes.append(0)
-
-            if names.index('NO_CATEGORY') != indexes.index(0):
-                print('Index of "NO_CATEGORY" is not 0.')
-                return None
-
-        elif names is not None and indexes is None:
-            # if we only have labels_names, we add 'NO_CATEGORY'
-            if 'NO_CATEGORY' not in names:
-                names.append('NO_CATEGORY')
-
-        elif names is None and indexes is not None:
-            if 0 in indexes:
-                print('Using 0 as class index for None prediction.')
-            else:
-                indexes.append(0)
-
-        return names, indexes
-
-    def get_metrics_per_label(self) -> List[dict]:
-        """
-        Get metrics per label.
-
-        These metrics are obtained directly from sklearn:
-
-        - precision - the ability of the classifier not to label as positive a sample that is negative.
-            tp / (tp + fp)
-
-        - recall - the ability of the classifier to find all the positive samples
-            tp / (tp + fn)
-
-        - f score - weighted harmonic mean of the precision and recall
-            beta = 1.0 (default value)
-            beta2 = beta ** 2
-            denom = beta2 * precision + recall
-            f_score = (1 + beta2) * precision * recall / denom
-
-        - support - number of occurrences of each class in actual_classes
-
-        These metrics are calculated based on the results (tp, fp, tn, fn) per label
-        - accuracy - measures how often the algorithm classifies a data point correctly
-             (tp + tn) / (tp + tn + fp + fn)
-
-        - balanced accuracy - avoids inflated performance estimates on imbalanced datasets. For balanced datasets, the
-        score is equal to accuracy. (formula from from
-        https://scikit-learn.org/stable/modules/model_evaluation.html#balanced-accuracy-score)
-            (recall + specificity) / 2
-
-        :return: metrics per label
-        """
-        predicted_classes = self.predicted_classes
-        labels_names = self.labels_names
-        classes_indexes = self.labels
-        actual_classes = self.actual_classes
-
-        if classes_indexes is None:
-            classes_indexes = [int(i) for i in set(actual_classes + predicted_classes)]
-
-        result_per_label = self._get_tp_tn_fp_fn_per_label()
-
-        precision, recall, fscore, support = precision_recall_fscore_support(
-            actual_classes, predicted_classes, labels=classes_indexes
-        )
-
-        # store results for each label
-        results_labels = []
-
-        for i, label in enumerate(labels_names):
-            r_label = result_per_label[i + 1]
-
-            tp = r_label['tp']
-            fp = r_label['fp']
-            tn = r_label['tn']
-            fn = r_label['fn']
-
-            specificity = tn / (tn + fp + 1e-10)
-
-            results = {
-                'label': label,
-                'tp': tp,
-                'fp': fp,
-                'tn': tn,
-                'fn': fn,
-                'accuracy': (tp + tn) / (tp + tn + fp + fn),
-                'balanced accuracy': (recall[i] + specificity) / 2,
-                'f1-score': fscore[i],
-                'precision': precision[i],
-                'recall': recall[i],
-                'support': support[i],
-            }
-
-            results_labels.append(results)
-
-        return results_labels
-
-    def get_general_metrics(self) -> Dict[str, float]:
-        """
-        Get general metrics.
-
-        The classification report from sklearn returns macro averaged metrics and weighted averaged metrics.
-        We are returning the weighted averaged metrics which result from averaging the support-weighted mean per label.
-
-        Gets general accuracy, balanced accuracy and f1-score over all labels.
-        """
-        predicted_classes = self.predicted_classes
-        labels_names = self.labels_names
-        classes_indexes = self.labels
-        actual_classes = self.actual_classes
-
-        if labels_names is None:
-            labels_names = [str(i) for i in set(actual_classes + predicted_classes)]
-
-        # if 'NO_CATEGORY' in labels_names:
-        #    if labels_names.index('NO_CATEGORY') not in actual_classes:
-        #        labels_names.remove('NO_CATEGORY')
-
-        if classes_indexes is None:
-            classes_indexes = [int(i) for i in set(actual_classes + predicted_classes)]
-
-        try:
-            clf_report = classification_report(
-                y_true=actual_classes,
-                y_pred=predicted_classes,
-                labels=classes_indexes,
-                target_names=labels_names,
-                output_dict=True,
-            )
-            f1_score = clf_report['weighted avg']['f1-score']
-            precision = clf_report['weighted avg']['precision']
-            recall = clf_report['weighted avg']['recall']
-            support = clf_report['weighted avg']['support']
-        except Exception:
-            f1_score = None
-            precision = None
-            recall = None
-            support = None
-
-        try:
-            cm = confusion_matrix(actual_classes, predicted_classes, labels=classes_indexes)
-            tp = np.sum(cm.diagonal())
-        except Exception:
-            tp = 0
-
-        results_general = {
-            'label': 'general/all annotations',
-            'tp': tp,
-            'fp': len(actual_classes) - tp,
-            'accuracy': accuracy_score(actual_classes, predicted_classes),
-            'balanced accuracy': balanced_accuracy_score(actual_classes, predicted_classes),
-            'f1-score': f1_score,
-            'precision': precision,
-            'recall': recall,
-            'support': support,
-        }
-
-        return results_general

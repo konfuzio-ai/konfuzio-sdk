@@ -36,9 +36,11 @@ warn('This module is WIP: https://gitlab.com/konfuzio/objectives/-/issues/9481',
 
 
 class FallbackCategorizationModel:
-    """A non-trainable model that predicts a category for a given document based on predefined rules.
+    """A simple, non-trainable model that predicts a Category for a given Document based on a predefined rule.
 
-    This can be an effective fallback logic to categorize documents when no categorization AI is available.
+    It checks for whether the name of the Category is present in the input Document (case insensitive; also see
+    Category.fallback_name). This can be an effective fallback logic to categorize Documents when no Categorization AI
+    is available.
     """
 
     def __init__(self, categories: List[Category], *args, **kwargs):
@@ -54,7 +56,7 @@ class FallbackCategorizationModel:
     def fit(self) -> None:
         """Use as placeholder Function."""
         raise NotImplementedError(
-            f'{self} uses a fallback logic for categorizing documents, and does not train a classifier.'
+            f'{self} uses a fallback logic for categorizing Documents, and does not train a classifier.'
         )
 
     def save(self, output_dir: str, include_konfuzio=True):
@@ -67,7 +69,7 @@ class FallbackCategorizationModel:
         """
         Evaluate the full Categorization pipeline on the pipeline's Test Documents.
 
-        :param use_training_docs: Bool for whether to evaluate on the training documents instead of testing documents.
+        :param use_training_docs: Bool for whether to evaluate on the Training Documents instead of Test Documents.
         :return: Evaluation object.
         """
         eval_list = []
@@ -84,43 +86,29 @@ class FallbackCategorizationModel:
 
         return self.evaluation
 
-    @staticmethod
-    def _categorize_from_pages(document: Document) -> Document:
-        """Decide the Category of a Document by whether all pages have the same Category (assign None otherwise).
-
-        :param document: Input document
-        :returns: The input Document with added categorization information
-        """
-        all_pages_have_same_category = len(set([page.category for page in document.pages()])) == 1
-        if all_pages_have_same_category:
-            document.category = document.pages()[0].category
-        else:
-            document.category = None
-        return document
-
     def _categorize_page(self, page: Page) -> Page:
         """Run categorization on a Page.
 
         :param page: Input Page
-        :returns: The input Page with added categorization information
+        :returns: The input Page with added Category information
         """
         for training_category in self.categories:
             if training_category.fallback_name in page.text.lower():
                 page.category = training_category
                 break
         if page.category is None:
-            logger.warning(f'{self} could not find the category of {page} by using the fallback categorization logic.')
+            logger.warning(f'{self} could not find the Category of {page} by using the fallback categorization logic.')
         return page
 
     def categorize(self, document: Document, recategorize: bool = False, inplace: bool = False) -> Document:
         """Run categorization on a Document.
 
-        :param document: Input document
-        :param recategorize: If the input document is already categorized, the already present category is used unless
+        :param document: Input Document
+        :param recategorize: If the input Document is already categorized, the already present Category is used unless
         this flag is True
 
-        :param inplace: Option to categorize the provided document in place, which would assign the category attribute
-        :returns: Copy of the input document with added categorization information
+        :param inplace: Option to categorize the provided Document in place, which would assign the Category attribute
+        :returns: Copy of the input Document with added categorization information
         """
         virtual_doc = deepcopy(document)
         if inplace:
@@ -129,12 +117,12 @@ class FallbackCategorizationModel:
             target_doc = virtual_doc
         if (document.category is not None) and (not recategorize):
             logger.info(
-                f'In {document}, the category was already specified as {document.category}, so it wasn\'t categorized '
-                f'again. Please use recategorize=True to force running the Categorization AI again on this document.'
+                f'In {document}, the Category was already specified as {document.category}, so it wasn\'t categorized '
+                f'again. Please use recategorize=True to force running the Categorization AI again on this Document.'
             )
             return target_doc
         elif recategorize:
-            virtual_doc.category = None
+            virtual_doc._category = None
             for page in virtual_doc.pages():
                 page.category = None
 
@@ -147,8 +135,8 @@ class FallbackCategorizationModel:
         # If the Pages are differently categorized, the Document won't be assigned a Category at this stage.
         # The Document will have to be split at a later stage to find a consistent Category for each sub-Document.
         # Otherwise, the Category for each sub-Document (if any) will be corrected by the user.
-        virtual_doc = self._categorize_from_pages(virtual_doc)
-        target_doc.category = virtual_doc.category
+        # virtual_doc = self._categorize_from_pages(virtual_doc)
+        target_doc._category = virtual_doc._category
         for tpage, vpage in zip(target_doc.pages(), virtual_doc.pages()):
             tpage.category = vpage.category
         return target_doc

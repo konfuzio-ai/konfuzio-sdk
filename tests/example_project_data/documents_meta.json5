@@ -984,7 +984,7 @@
     "data_file": "https://obs.eu-de.otc.t-systems.com/app/mcdonalds-20200216_005_ocr_qVKYoDp.pdf?AWSAccessKeyId=ER3JWRLNLY90VPRHOJZP&Signature=f6BTyTwy2gDBGCxuyQIXzvAx%2F90%3D&Expires=1663344333",
     "data_file_name": "mcdonalds-20200216_005_ocr.pdf",
     "data_file_producer": null,
-    "dataset_status": 2,
+    "dataset_status": 3,
     "extraction_time": 1.98163414001465,
     "file_url": "/doc/show/141437/",
     "id": 141437,
