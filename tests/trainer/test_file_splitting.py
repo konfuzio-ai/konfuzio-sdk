@@ -116,3 +116,17 @@ class TestFileSplittingModel(unittest.TestCase):
         assert splitting_ai.full_evaluation.precision() == 1.0
         assert splitting_ai.full_evaluation.recall() == 1.0
         assert splitting_ai.full_evaluation.f1() == 1.0
+
+    def test_splitting_with_inplace(self):
+        """Test ContextAwareFileSplittingModel's predict method with inplace=True."""
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        test_document = self.file_splitting_model.tokenizer.tokenize(
+            self.project.get_category_by_id(3).test_documents()[0]
+        )
+        pred = splitting_ai.propose_split_documents(test_document, return_pages=True, inplace=True)
+        for page in pred.pages():
+            if page.number in (1, 3, 5):
+                assert page.is_first_page
+            else:
+                assert not page.is_first_page
+        assert pred == test_document
