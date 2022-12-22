@@ -1,7 +1,6 @@
 """Tokenizers that use byte pair encoding or spaCy NLP package, and various utility functions for Tokenizers."""
 import collections
 import logging
-import time
 from typing import List
 
 import spacy
@@ -9,9 +8,9 @@ import transformers
 from spacy.matcher import PhraseMatcher as SpacyPhraseMatcher
 from spacy.language import Language as SpacyLanguage
 
-from konfuzio_sdk.data import Category, Span, Document, Annotation
+from konfuzio_sdk.data import Category, Span, Document
 
-from konfuzio_sdk.tokenizer.base import AbstractTokenizer, ProcessingStep, Vocab
+from konfuzio_sdk.tokenizer.base import AbstractTokenizer, Vocab
 from konfuzio_sdk.utils import sdk_isinstance
 
 logger = logging.getLogger(__name__)
@@ -42,10 +41,13 @@ class Tokenizer(AbstractTokenizer):
         assert sdk_isinstance(category, Category)
         return self
 
-    def tokenize(self, document: Document):
-        """Create Annotations with 1 Span based on the result of the Tokenizer."""
-        assert sdk_isinstance(document, Document)
-        return document
+    def _tokenize(self, document: Document) -> List[Span]:
+        """
+        Given a Document use the tokenizer to tokenize the text of the Document.
+
+        Returns the Spans as a list.
+        """
+        return []
 
     def found_spans(self, document: Document) -> List[Span]:
         """
@@ -83,19 +85,12 @@ class BPETokenizer(Tokenizer):
         vocab = Vocab(stoi, unk_token=unk_token, pad_token=pad_token, special_tokens=special_tokens)
         return vocab
 
-    def tokenize(self, document: Document) -> Document:
+    def _tokenize(self, document: Document) -> List[Span]:
         """
         Given a Document use the BPE tokenizer to tokenize the text of the Document.
 
-        Returns the entities and their start and end offsets as a sorted (by start_offset) list of dictionaries.
+        Returns the Spans as a list.
         """
-        assert sdk_isinstance(document, Document)
-        if document.text is None:
-            raise NotImplementedError(f'{document} cannot be tokenized when text is None.')
-
-        before_none = len(document.annotations(use_correct=False, label=document.project.no_label))
-
-        t0 = time.monotonic()
         spans = []
         text = document.text
 
@@ -109,39 +104,7 @@ class BPETokenizer(Tokenizer):
             if span not in spans:  # do not use duplicated spans  # todo add test
                 spans.append(span)
 
-        # Create a revised = False and is_correct = False (defaults) Annotation
-        document_spans = {(span.start_offset, span.end_offset): span for span in document.spans()}
-        for span in spans:
-            span_key = (span.start_offset, span.end_offset)
-            if span_key not in document_spans:  # (use_correct=False):
-                document_spans[span_key] = span
-                # todo this hides the fact, that Tokenizers of different quality can create the same Span
-                # todo we create an overlapping Annotation in case the Tokenizer finds a correct match
-                annotation = Annotation(
-                    document=document,
-                    annotation_set=document.no_label_annotation_set,
-                    label=document.project.no_label,  # track which tokenizer created the span by using a Label
-                    label_set=document.project.no_label_set,
-                    category=document.category,
-                    spans=[span],
-                )
-                for span in annotation.spans:
-                    try:
-                        span.bbox()  # check that the bbox can be calculated  # todo add test
-                    except ValueError as e:
-                        logger.error(f'Regex made {span} "{span.offset_string}" that has no valid bbox: {repr(e)}')
-                        # annotation.delete()  # todo we should skip Annotations that have no valide bbox
-                    # except TypeError as e:
-                    #   logger.error(f'Typeerror Bbox of {span} "{span.offset_string}": {repr(e)} - {span.eval_dict()}')
-                    #   # annotation.delete()  # todo we should skip Annotations that have no valide bbox
-            else:
-                logger.warning(f'{document} contains {span} already. It will not be added by the Tokenizer.')
-        after_none = len(document.annotations(use_correct=False, label=document.project.no_label))
-        logger.info(f'{after_none - before_none} new Annotations in {document} by {repr(self)}.')
-
-        self.processing_steps.append(ProcessingStep(self, document, time.monotonic() - t0))
-
-        return document
+        return spans
 
 
 class SpacyTokenizer(Tokenizer):
@@ -165,19 +128,12 @@ class SpacyTokenizer(Tokenizer):
             raise IOError(f'Model not found, please install it with `python -m spacy download {spacy_model_name}`')
         return spacy_model
 
-    def tokenize(self, document: Document) -> Document:
+    def _tokenize(self, document: Document) -> List[Span]:
         """
         Given a Document use the spacy model to tokenize the text of the Document.
 
-        Returns the entities and their start and end offsets as a sorted (by start_offset) list of dictionaries.
+        Returns the Spans as a list.
         """
-        assert sdk_isinstance(document, Document)
-        if document.text is None:
-            raise NotImplementedError(f'{document} cannot be tokenized when text is None.')
-
-        before_none = len(document.annotations(use_correct=False, label=document.project.no_label))
-
-        t0 = time.monotonic()
         spans = []
         text = document.text
         spacy_doc = self.spacy_model(text)
@@ -192,39 +148,7 @@ class SpacyTokenizer(Tokenizer):
             if span not in spans:  # do not use duplicated spans  # todo add test
                 spans.append(span)
 
-        # Create a revised = False and is_correct = False (defaults) Annotation
-        document_spans = {(span.start_offset, span.end_offset): span for span in document.spans()}
-        for span in spans:
-            span_key = (span.start_offset, span.end_offset)
-            if span_key not in document_spans:  # (use_correct=False):
-                document_spans[span_key] = span
-                # todo this hides the fact, that Tokenizers of different quality can create the same Span
-                # todo we create an overlapping Annotation in case the Tokenizer finds a correct match
-                annotation = Annotation(
-                    document=document,
-                    annotation_set=document.no_label_annotation_set,
-                    label=document.project.no_label,  # track which tokenizer created the span by using a Label
-                    label_set=document.project.no_label_set,
-                    category=document.category,
-                    spans=[span],
-                )
-                for span in annotation.spans:
-                    try:
-                        span.bbox()  # check that the bbox can be calculated  # todo add test
-                    except ValueError as e:
-                        logger.error(f'Regex made {span} "{span.offset_string}" that has no valid bbox: {repr(e)}')
-                        # annotation.delete()  # todo we should skip Annotations that have no valide bbox
-                    # except TypeError as e:
-                    #   logger.error(f'Typeerror Bbox of {span} "{span.offset_string}": {repr(e)} - {span.eval_dict()}')
-                    #   # annotation.delete()  # todo we should skip Annotations that have no valide bbox
-            else:
-                logger.warning(f'{document} contains {span} already. It will not be added by the Tokenizer.')
-        after_none = len(document.annotations(use_correct=False, label=document.project.no_label))
-        logger.info(f'{after_none - before_none} new Annotations in {document} by {repr(self)}.')
-
-        self.processing_steps.append(ProcessingStep(self, document, time.monotonic() - t0))
-
-        return document
+        return spans
 
 
 class PhraseMatcherTokenizer(SpacyTokenizer):
@@ -267,19 +191,12 @@ class PhraseMatcherTokenizer(SpacyTokenizer):
         self.phrase_matcher = phrase_matcher
         return phrase_matcher
 
-    def tokenize(self, document: Document) -> Document:
+    def _tokenize(self, document: Document) -> List[Span]:
         """
         Given a Document use the phrase matcher and spacy model to tokenize the text of the Document.
 
-        Returns the entities and their start and end offsets as a sorted (by start_offset) list of dictionaries.
+        Returns the Spans as a list.
         """
-        assert sdk_isinstance(document, Document)
-        if document.text is None:
-            raise NotImplementedError(f'{document} cannot be tokenized when text is None.')
-
-        before_none = len(document.annotations(use_correct=False, label=document.project.no_label))
-
-        t0 = time.monotonic()
         spans = []
         text = document.text
         spacy_doc = self.spacy_model(text)
@@ -309,36 +226,4 @@ class PhraseMatcherTokenizer(SpacyTokenizer):
             if span not in spans:  # do not use duplicated spans  # todo add test
                 spans.append(span)
 
-        # Create a revised = False and is_correct = False (defaults) Annotation
-        document_spans = {(span.start_offset, span.end_offset): span for span in document.spans()}
-        for span in spans:
-            span_key = (span.start_offset, span.end_offset)
-            if span_key not in document_spans:  # (use_correct=False):
-                document_spans[span_key] = span
-                # todo this hides the fact, that Tokenizers of different quality can create the same Span
-                # todo we create an overlapping Annotation in case the Tokenizer finds a correct match
-                annotation = Annotation(
-                    document=document,
-                    annotation_set=document.no_label_annotation_set,
-                    label=document.project.no_label,  # track which tokenizer created the span by using a Label
-                    label_set=document.project.no_label_set,
-                    category=document.category,
-                    spans=[span],
-                )
-                for span in annotation.spans:
-                    try:
-                        span.bbox()  # check that the bbox can be calculated  # todo add test
-                    except ValueError as e:
-                        logger.error(f'Regex made {span} "{span.offset_string}" that has no valid bbox: {repr(e)}')
-                        # annotation.delete()  # todo we should skip Annotations that have no valide bbox
-                    # except TypeError as e:
-                    #   logger.error(f'Typeerror Bbox of {span} "{span.offset_string}": {repr(e)} - {span.eval_dict()}')
-                    #   # annotation.delete()  # todo we should skip Annotations that have no valide bbox
-            else:
-                logger.warning(f'{document} contains {span} already. It will not be added by the Tokenizer.')
-        after_none = len(document.annotations(use_correct=False, label=document.project.no_label))
-        logger.info(f'{after_none - before_none} new Annotations in {document} by {repr(self)}.')
-
-        self.processing_steps.append(ProcessingStep(self, document, time.monotonic() - t0))
-
-        return document
+        return spans

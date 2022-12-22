@@ -1,10 +1,9 @@
 """Test base tokenizers."""
 import logging
 import unittest
+from typing import List
 
 import pandas as pd
-import time
-
 import pytest
 
 from konfuzio_sdk.data import Project, Annotation, Document, Label, AnnotationSet, LabelSet, Span, Category
@@ -49,11 +48,8 @@ class TestAbstractTokenizer(unittest.TestCase):
                 assert isinstance(category, Category)
                 pass
 
-            def tokenize(self, document: Document):
-                assert isinstance(document, Document)
-                t0 = time.monotonic()
-                self.processing_steps.append(ProcessingStep(self.__repr__(), document, time.monotonic() - t0))
-                pass
+            def _tokenize(self, document: Document) -> List[Span]:
+                return []
 
             def found_spans(self, document: Document):
                 pass
@@ -150,7 +146,7 @@ class TestAbstractTokenizer(unittest.TestCase):
         assert processing.shape[0] == 1
         assert processing.tokenizer_name[0] == self.tokenizer.__repr__()
         self.assertIsNone(processing.document_id[0])
-        assert processing.runtime[0] < 1e-4
+        assert processing.runtime[0] < 1e-3
 
     def test_evaluate_output_results_with_document(self):
         """Test output for the evaluate method with a Document with 1 Span."""
@@ -167,7 +163,7 @@ class TestAbstractTokenizer(unittest.TestCase):
         assert processing.shape[0] == 1
         assert processing.tokenizer_name[0] == str(self.tokenizer)
         self.assertIsNone(processing.document_id[0])
-        assert processing.runtime[0] < 1e-4
+        assert processing.runtime[0] < 1e-3
 
     def test_evaluate_output_offsets_with_document(self):
         """Test offsets in output for the evaluate method with a Document with 1 Span."""

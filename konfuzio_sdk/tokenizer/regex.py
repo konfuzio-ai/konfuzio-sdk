@@ -1,12 +1,11 @@
 """Regex tokenizers."""
 import logging
-import time
 from typing import List
 
 
-from konfuzio_sdk.data import Annotation, Document, Category, Span
+from konfuzio_sdk.data import Document, Category, Span
 from konfuzio_sdk.regex import regex_matches
-from konfuzio_sdk.tokenizer.base import AbstractTokenizer, ProcessingStep
+from konfuzio_sdk.tokenizer.base import AbstractTokenizer
 from konfuzio_sdk.utils import sdk_isinstance
 
 logger = logging.getLogger(__name__)
@@ -37,20 +36,12 @@ class RegexTokenizer(AbstractTokenizer):
         assert sdk_isinstance(category, Category)
         return self
 
-    def tokenize(self, document: Document) -> Document:
+    def _tokenize(self, document: Document) -> List[Span]:
         """
-        Create Annotations with 1 Span based on the result of the Tokenizer.
+        Given a Document use the regex to tokenize the text of the Document.
 
-        :param document: Document to tokenize, can have been tokenized before
-        :return: Document with Spans created by the Tokenizer.
+        Returns the Spans as a sorted (by start_offset) list.
         """
-        assert sdk_isinstance(document, Document)
-        if document.text is None:
-            raise NotImplementedError(f'{document} cannot be tokenized when text is None.')
-
-        before_none = len(document.annotations(use_correct=False, label=document.project.no_label))
-
-        t0 = time.monotonic()
         spans = []
         # do not keep the full regex match as we will see many matches whitespaces as pre or suffix
         for span_info in regex_matches(document.text, self.regex, keep_full_match=False):
@@ -58,42 +49,7 @@ class RegexTokenizer(AbstractTokenizer):
             span.regex_matching.append(self)
             if span not in spans:  # do not use duplicated spans  # todo add test
                 spans.append(span)
-
-        # Create a revised = False and is_correct = False (defaults) Annotation
-        document_spans = {(span.start_offset, span.end_offset): span for span in document.spans()}
-        for span in spans:
-            span_key = (span.start_offset, span.end_offset)
-            if span_key not in document_spans:  # (use_correct=False):
-                document_spans[span_key] = span
-                # todo this hides the fact, that Tokenizers of different quality can create the same Span
-                # todo we create an overlapping Annotation in case the Tokenizer finds a correct match
-                annotation = Annotation(
-                    document=document,
-                    annotation_set=document.no_label_annotation_set,
-                    label=document.project.no_label,  # track which tokenizer created the span by using a Label
-                    label_set=document.project.no_label_set,
-                    category=document.category,
-                    spans=[span],
-                )
-                for span in annotation.spans:
-                    try:
-                        span.bbox()  # check that the bbox can be calculated  # todo add test
-                    except ValueError as e:
-                        logger.error(f'Regex made {span} "{span.offset_string}" that has no valid bbox: {repr(e)}')
-                        # annotation.delete()  # todo we should skip Annotations that have no valide bbox
-                    # except TypeError as e:
-                    #   logger.error(f'Typeerror Bbox of {span} "{span.offset_string}": {repr(e)} - {span.eval_dict()}')
-                    #   # annotation.delete()  # todo we should skip Annotations that have no valide bbox
-            else:
-                if self not in document_spans[span_key].regex_matching:
-                    document_spans[span_key].regex_matching.append(self)  # add tokenizer to Span.regex_matches:
-                logger.warning(f'{document} contains {span} already. It will not be added by the Tokenizer.')
-        after_none = len(document.annotations(use_correct=False, label=document.project.no_label))
-        logger.info(f'{after_none - before_none} new Annotations in {document} by {repr(self)}.')
-
-        self.processing_steps.append(ProcessingStep(self, document, time.monotonic() - t0))
-
-        return document
+        return spans
 
     def span_match(self, span: 'Span') -> bool:
         """Check if Span is detected by Tokenizer."""
