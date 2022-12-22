@@ -85,6 +85,8 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     except ValueError as err:
         if "unsupported pickle protocol: 5" in str(err) and '3.7' in sys.version:
             raise ValueError("Pickle saved with incompatible Python version.") from err
+        elif not issubclass(BaseModel, model):
+            raise ValueError("Loaded model is not inheriting from the BaseModel class.")
         raise
 
     max_ram = normalize_memory(max_ram)
@@ -1409,10 +1411,10 @@ class BaseModel:
         os.remove(temp_pkl_file_path)
 
         size_string = f'{os.path.getsize(pkl_file_path) / 1_000_000} MB'
-        logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
 
         if not self.model_type == 'file_splitting':
             # restore Documents of the Category so that we can run the evaluation later
+            logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
             self.category.project._documents = category_documents
         return pkl_file_path
 

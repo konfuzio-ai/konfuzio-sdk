@@ -82,7 +82,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         self.first_page_spans = first_page_spans
         return first_page_spans
 
-    def save(self, model_path="", save_json=True, include_konfuzio=True) -> str:
+    def save(self, model_path="", save_json=True, include_konfuzio=False) -> str:
         """
         Save the resulting set of first-page Spans by Category.
 
@@ -99,10 +99,20 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
             with open(path, 'w') as f:
                 json.dump(self.first_page_spans, f)
         else:
-            path = super(AbstractFileSplittingModel, self).save(
-                output_dir=model_path, include_konfuzio=include_konfuzio
-            )
+            path = super().save(output_dir=model_path, include_konfuzio=include_konfuzio)
         return path
+
+    def load_json(self, model_path=""):
+        """
+        Load JSON with previously gathered first_page_spans.
+
+        :param model_path: Path for the JSON.
+        :type model_path: str
+        """
+        with open(model_path, 'r') as f:
+            spans = json.load(f)
+        spans = {int(k): v for k, v in spans.items()}
+        self.first_page_spans = spans
 
     def predict(self, page: Page) -> Page:
         """
