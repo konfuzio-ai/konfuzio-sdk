@@ -55,6 +55,7 @@ This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK 
 - Show a message that informs a user if his account was deactivated ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10119)).
 - Failed login attemps have not been shown in the web interface ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9992)).
 - Missing German translation on the Member list page ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10306)).
+- Improve performance of Document List Endpoint in API V3 by excluding large Document attributes ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10248)).
 
 ## released-2022-12-05_19-18-47
 
