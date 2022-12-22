@@ -31,12 +31,12 @@ Deploy AI models       | :heavy_multiplication_x:                  |  :heavy_che
 |-----------------------------------------------------------------------------------------------|---------------------------------------------------------------|
 | :ledger: [Docs](https://dev.konfuzio.com)                                                     | Read the docs                                                 |
 | :floppy_disk: [Installation](https://github.com/konfuzio-ai/konfuzio-sdk#installation)        | How to install the Konfuzio SDK                               |
-| :mortar_board: [Tutorials](https://dev.konfuzio.com/sdk/examples/examples.html#tutorials)     | See what the Konfuzio SDK can do with our Notebooks & Scripts |
+| :mortar_board: [Tutorials](https://dev.konfuzio.com/sdk/tutorials.html)             | See what the Konfuzio SDK can do with our Notebooks & Scripts |
 | :beginner: [Explanations](https://dev.konfuzio.com/sdk/explanations.html)                     | Here are links to teaching material about the Konfuzio SDK.   |
 | :gear: [API Reference](https://dev.konfuzio.com/sdk/sourcecode.html)                          | Python classes, methods, and functions                        |
 | :heart: [Contributing](https://dev.konfuzio.com/sdk/contribution.html)                        | Learn how to contribute!                                      |
 | :bug: [Issue Tracker](https://github.com/konfuzio-ai/konfuzio-sdk/issues)                     | Report and monitor Konfuzio SDK issues                        |
-| :telescope: [Releases](https://github.com/konfuzio-ai/konfuzio-sdk/releases)                  | Review the release notes                                      |
+| :telescope: [Changelog](https://github.com/konfuzio-ai/konfuzio-sdk/releases)                 | Review the release notes                                      |
 | :newspaper: [MIT License](https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/LICENSE.md) | Review the license                                            |
 
 ## Installation
@@ -95,4 +95,4 @@ label.annotations(categories=[cat])
 my_project.update()
 ```
 
-Find more explanations in the [Tutorials](https://dev.konfuzio.com/sdk/examples/index.html#tutorials).
+Find more examples in the [Tutorials](https://dev.konfuzio.com/sdk/tutorials.html).

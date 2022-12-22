@@ -35,11 +35,12 @@ use further integrations, see `help.konfuzio.com <https://help.konfuzio.com/inte
    :caption: Konfuzio SDK
 
    sdk/index.md
-   sdk/examples/examples.md
+   sdk/get_started.md
+   sdk/tutorials.md
    sdk/explanations.md
    sdk/sourcecode.rst
-   sdk/releases.md
    sdk/contribution.md
+   sdk/changelog.md
 
 .. toctree::
    :caption: Konfuzio Server
