@@ -77,7 +77,6 @@ def create_transformations_dict(possible_transforms, args=None):
         for transform in possible_transforms:
             if args[transform] is not None:
                 input_dict[transform] = args[transform]
-
     else:
         for transform in possible_transforms:
             if args.__dict__[transform] is not None:

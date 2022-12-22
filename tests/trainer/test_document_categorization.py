@@ -7,7 +7,7 @@ import pytest
 from copy import deepcopy
 
 from konfuzio_sdk.data import Project, Document, Category, Page
-from konfuzio_sdk.trainer.tokenization import build_template_category_vocab, build_text_vocab, PhraseMatcherTokenizer
+from konfuzio_sdk.trainer.tokenization import PhraseMatcherTokenizer
 
 from konfuzio_sdk.trainer.document_categorization import (
     FallbackCategorizationModel,
@@ -288,14 +288,19 @@ class TestCategorizationAI(unittest.TestCase):
 
     def test_1_configure_pipeline(self) -> None:
         """Test configure categories, with training and test docs for the Document Model."""
-        self.categorization_pipeline.tokenizer = PhraseMatcherTokenizer(self.categorization_pipeline.categories)
-        self.categorization_pipeline.text_vocab = build_text_vocab(
-            self.categorization_pipeline.categories, self.categorization_pipeline.tokenizer
-        )
+        payslips_training_documents = self.training_prj.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).documents()[:4]
+        receipts_training_documents = self.training_prj.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID).documents()[:4]
+        self.categorization_pipeline.documents = payslips_training_documents + receipts_training_documents
+        assert all(doc.category is not None for doc in self.categorization_pipeline.documents)
 
-        self.categorization_pipeline.category_vocab = build_template_category_vocab(
-            self.categorization_pipeline.categories
-        )
+        payslips_test_documents = self.training_prj.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).test_documents()[:1]
+        receipts_test_documents = self.training_prj.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID).test_documents()[:1]
+        self.categorization_pipeline.test_documents = payslips_test_documents + receipts_test_documents
+        assert all(doc.category is not None for doc in self.categorization_pipeline.test_documents)
+
+        self.categorization_pipeline.tokenizer = PhraseMatcherTokenizer(self.categorization_pipeline.documents)
+        self.categorization_pipeline.text_vocab = self.categorization_pipeline.build_text_vocab()
+        self.categorization_pipeline.category_vocab = self.categorization_pipeline.build_template_category_vocab()
 
         image_module = EfficientNet()
         text_module = NBOWSelfAttention(
@@ -314,16 +319,6 @@ class TestCategorizationAI(unittest.TestCase):
         )
         # need to ensure classifier starts in evaluation mode
         self.categorization_pipeline.classifier.eval()  # todo why?
-
-        payslips_training_documents = self.training_prj.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).documents()[:4]
-        receipts_training_documents = self.training_prj.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID).documents()[:4]
-        self.categorization_pipeline.documents = payslips_training_documents + receipts_training_documents
-        assert all(doc.category is not None for doc in self.categorization_pipeline.documents)
-
-        payslips_test_documents = self.training_prj.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID).test_documents()[:1]
-        receipts_test_documents = self.training_prj.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID).test_documents()[:1]
-        self.categorization_pipeline.test_documents = payslips_test_documents + receipts_test_documents
-        assert all(doc.category is not None for doc in self.categorization_pipeline.test_documents)
 
     def test_2_fit(self) -> None:
         """Start to train the Model."""
@@ -373,6 +368,8 @@ class TestCategorizationAI(unittest.TestCase):
         assert result.category == self.training_prj.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID)
         for page in result.pages():
             assert page.category == self.training_prj.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID)
+        # restore category attribute to not interfere with next tests
+        test_receipt_document.category = result.category
 
     def test_7_categorize_page(self) -> None:
         """Test categorize a page."""

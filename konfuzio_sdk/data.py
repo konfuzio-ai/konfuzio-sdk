@@ -105,11 +105,17 @@ class Page(Data):
         document.add_page(self)
         self.start_offset = start_offset
         self.end_offset = end_offset
+        self.text_encoded: List[int] = None
         self.image = None
         self._original_size = original_size
         self.width = self._original_size[0]
         self.height = self._original_size[1]
-        self.image_path = os.path.join(self.document.document_folder, f'page_{self.number}.png')
+        document_folder = (
+            self.document.document_folder
+            if self.id_
+            else self.document.project.get_document_by_id(self.document.copy_of_id).document_folder
+        )
+        self.image_path = os.path.join(document_folder, f'page_{self.number}.png')
         self.category = category
         if self.category is None:
             self.category = self.document.category
@@ -1686,11 +1692,12 @@ class Document(Data):
         self._characters: Dict[int, Bbox] = None
         self._bbox_hash = None
         self._bbox_json = bbox
-        self.bboxes_available: bool = True if (self.is_online or self._bbox_json) else False
+        self.bboxes_available: bool = bool(self.is_online or self._bbox_json)
         self._strict_bbox_validation = strict_bbox_validation
         self._hocr = None
         self._pages: List[Page] = []
         self._n_pages = None
+        self.text_encoded: List[int] = None
 
         # prepare local setup for document
         if self.is_online:
@@ -2074,10 +2081,10 @@ class Document(Data):
             # Hotfix Text Annotation Server:
             #  Annotation belongs to a Label / Label Set that does not relate to the Category of the Document.
             # todo: add test that the Label and Label Set of an Annotation belong to the Category of the Document
-            if self.category is not None:
+            if (self.category is not None) or (annotation.label.name == 'NO_LABEL'):
                 if annotation.label_set is not None:
                     if annotation.label_set.categories:
-                        if self.category in annotation.label_set.categories:
+                        if (self.category in annotation.label_set.categories) or (annotation.label.name == 'NO_LABEL'):
                             self._annotations.append(annotation)
                         else:
                             raise ValueError(
@@ -2467,8 +2474,8 @@ class Document(Data):
 
     def get_annotations(self) -> List[Annotation]:
         """Get Annotations of the Document."""
-        if self.category is None:
-            raise ValueError(f'Document {self} without Category must not have Annotations')
+        # if self.category is None:
+        #    raise ValueError(f'Document {self} without Category must not have Annotations')
 
         annotation_file_exists = is_file(self.annotation_file_path, raise_exception=False)
         annotation_set_file_exists = is_file(self.annotation_set_file_path, raise_exception=False)
@@ -2508,7 +2515,7 @@ class Document(Data):
 
         return self._annotations
 
-    def get_document_classifier_examples(self, tokenizer, text_vocab, category_vocab, max_len, use_image, use_text):
+    def get_document_classifier_examples(self, text_vocab, category_vocab, max_len, use_image, use_text):
         """Get the per document examples for the document classifier."""
         document_image_paths = []
         document_tokens = []
@@ -2538,18 +2545,22 @@ class Document(Data):
             page_texts
         ), f'No. of images ({len(image_paths)}) != No. of pages {len(page_texts)} for document {self.id_}'
 
-        for page_index, (image_path, page_text) in enumerate(zip(image_paths, page_texts)):
+        for page in self.pages():
             if use_image:
                 # if using an image module, store the path to the image
-                document_image_paths.append(image_path)
+                document_image_paths.append(page.image_path)
             else:
                 # if not using image module then don't need the image paths
                 # so we just have a list of None to keep the lists the same length
                 document_image_paths.append(None)
             if use_text:
                 # if using a text module, tokenize the page, trim to max length and then numericalize
-                page_tokens = tokenizer.get_tokens(page_text)[:max_len]
-                document_tokens.append(torch.LongTensor([text_vocab.stoi(t) for t in page_tokens]))
+                # REPLACE page_tokens = tokenizer.get_tokens(page_text)[:max_len]
+                # page_encoded = [text_vocab.stoi(span.offset_string) for span in
+                # self.spans(start_offset=page.start_offset, end_offset=page.end_offset)]
+                # document_tokens.append(torch.LongTensor(page_encoded))
+                text_vocab.encode(page)
+                document_tokens.append(torch.LongTensor(page.text_encoded))
             else:
                 # if not using text module then don't need the tokens
                 # so we just have a list of None to keep the lists the same length
@@ -2558,8 +2569,9 @@ class Document(Data):
             category_id = str(self.category.id_) if self.category is not None else 'NO_CATEGORY'
             # append the classification (category), the document's id number and the page number of each page
             document_labels.append(torch.LongTensor([category_vocab.stoi(category_id)]))
-            document_ids.append(torch.LongTensor([self.id_]))
-            document_page_numbers.append(torch.LongTensor([page_index]))
+            doc_id = self.id_ or self.copy_of_id
+            document_ids.append(torch.LongTensor([doc_id]))
+            document_page_numbers.append(torch.LongTensor([page.index]))
 
         return document_image_paths, document_tokens, document_labels, document_ids, document_page_numbers
 

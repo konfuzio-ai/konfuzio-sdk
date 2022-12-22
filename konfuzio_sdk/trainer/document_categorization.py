@@ -1,4 +1,5 @@
 """Implements a Categorization Model."""
+import collections
 import functools
 import os
 import math
@@ -24,7 +25,9 @@ from torch.utils.data import DataLoader
 
 from konfuzio_sdk.data import Document, Page, Category
 from konfuzio_sdk.evaluate import CategorizationEvaluation
+from konfuzio_sdk.tokenizer.base import Vocab
 from konfuzio_sdk.trainer.image import ImagePreProcessing, ImageDataAugmentation
+from konfuzio_sdk.trainer.tokenization import Tokenizer
 from konfuzio_sdk.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
@@ -45,6 +48,7 @@ class FallbackCategorizationModel:
         self.categories = categories
         self.name = self.__class__.__name__
 
+        self.tokenizer = Tokenizer("dummy-tokenizer")
         self.evaluation = None
 
     def fit(self) -> None:
@@ -94,7 +98,7 @@ class FallbackCategorizationModel:
             document.category = None
         return document
 
-    def _categorize_page(self, orig_page: Page, page: Page) -> Page:
+    def _categorize_page(self, page: Page) -> Page:
         """Run categorization on a Page.
 
         :param page: Input Page
@@ -118,30 +122,36 @@ class FallbackCategorizationModel:
         :param inplace: Option to categorize the provided document in place, which would assign the category attribute
         :returns: Copy of the input document with added categorization information
         """
+        virtual_doc = deepcopy(document)
         if inplace:
-            virtual_doc = document
+            target_doc = document
         else:
-            virtual_doc = deepcopy(document)
+            target_doc = virtual_doc
         if (document.category is not None) and (not recategorize):
             logger.info(
                 f'In {document}, the category was already specified as {document.category}, so it wasn\'t categorized '
                 f'again. Please use recategorize=True to force running the Categorization AI again on this document.'
             )
-            return virtual_doc
+            return target_doc
         elif recategorize:
             virtual_doc.category = None
             for page in virtual_doc.pages():
                 page.category = None
 
         # Categorize each Page of the Document.
-        for original_page, virtual_page in zip(document.pages(), virtual_doc.pages()):
-            self._categorize_page(original_page, virtual_page)
+        virtual_doc = self.tokenizer.tokenize(virtual_doc)
+        for page in virtual_doc.pages():
+            self._categorize_page(page)
 
         # Try to assign a Category to the Document itself.
         # If the Pages are differently categorized, the Document won't be assigned a Category at this stage.
         # The Document will have to be split at a later stage to find a consistent Category for each sub-Document.
         # Otherwise, the Category for each sub-Document (if any) will be corrected by the user.
-        return self._categorize_from_pages(virtual_doc)
+        virtual_doc = self._categorize_from_pages(virtual_doc)
+        target_doc.category = virtual_doc.category
+        for tpage, vpage in zip(target_doc.pages(), virtual_doc.pages()):
+            tpage.category = vpage.category
+        return target_doc
 
 
 class ClassificationModule(nn.Module):
@@ -971,6 +981,39 @@ class CategorizationAI(FallbackCategorizationModel):
         torch.save(data_to_save, path)
         return path
 
+    def build_template_category_vocab(self) -> Vocab:
+        """Build a vocabulary over the Categories."""
+        logger.info('building category vocab')
+
+        counter = collections.Counter(NO_CATEGORY=0)
+
+        counter.update([str(category.id_) for category in self.categories])
+
+        template_vocab = Vocab(
+            counter, min_freq=1, max_size=None, unk_token=None, pad_token=None, special_tokens=['NO_CATEGORY']
+        )
+
+        return template_vocab
+
+    def build_text_vocab(self, min_freq: int = 1, max_size: int = None) -> Vocab:
+        """Build a vocabulary over the document text."""
+        logger.info('building text vocab')
+
+        counter = collections.Counter()
+
+        # loop over documents updating counter using the tokens in each document
+        for document in self.documents:
+            tokenized_document = self.tokenizer.tokenize(deepcopy(document))
+            tokens = [span.offset_string for span in tokenized_document.spans()]
+            counter.update(tokens)
+
+        assert len(counter) > 0, 'Did not find any tokens when building the text vocab!'
+
+        # create the vocab
+        text_vocab = Vocab(counter, min_freq, max_size)
+
+        return text_vocab
+
     def build_document_classifier_iterator(
         self,
         documents,
@@ -1000,8 +1043,10 @@ class CategorizationAI(FallbackCategorizationModel):
         # get data (list of examples) from Documents
         data = []
         for document in documents:
-            doc_info = document.get_document_classifier_examples(
-                self.tokenizer, self.text_vocab, self.category_vocab, max_len, use_image, use_text
+            tokenized_doc = self.tokenizer.tokenize(deepcopy(document))
+            tokenized_doc.status = document.status  # to allow to retrieve images from the original pages
+            doc_info = tokenized_doc.get_document_classifier_examples(
+                self.text_vocab, self.category_vocab, max_len, use_image, use_text
             )
             data.extend(zip(*doc_info))
 
@@ -1211,20 +1256,16 @@ class CategorizationAI(FallbackCategorizationModel):
         :param page_images: images of the document pages
         :param text: document text
         :param batch_size: number of samples for each prediction
-        :return: tuple of (1) tuple of predicted category and respective confidence nad (2) predictions dataframe
+        :return: tuple of (1) tuple of predicted category and respective confidence and (2) predictions dataframe
         """
         # get device and place classifier on device
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.classifier = self.classifier.to(device)
 
-        temp_categories = self.category_vocab.get_tokens()
-        if 'NO_CATEGORY' in temp_categories:
-            temp_categories.remove('NO_CATEGORY')
-        _ = int(temp_categories[0])
         categories = self.category_vocab.get_tokens()
 
         # split text into pages
-        page_text = text.split('\f')
+        page_text = text
 
         # does our classifier use text and images?
         use_image = hasattr(self.classifier, 'image_module')
@@ -1242,17 +1283,7 @@ class CategorizationAI(FallbackCategorizationModel):
                 batch_image.append(img)
             if use_text:
                 # if we are using text, tokenize and numericalize the text
-                if isinstance(self.classifier.text_module, BERT):
-                    max_length = self.classifier.text_module.get_max_length()
-                else:
-                    max_length = None
-                tok = self.tokenizer.get_tokens(txt)[:max_length]
-                # assert we have a valid token (e.g '\n\n\n' results in tok = [])
-                if not tok:
-                    logger.info(f'[WARNING] The token resultant from page {i} is empty. Page text: {txt}.')
-
-                idx = [self.text_vocab.stoi(t) for t in tok]
-                txt_coded = torch.LongTensor(idx)
+                txt_coded = txt
                 batch_text.append(txt_coded)
             # need to use an `or` here as we might not be using one of images or text
             if len(batch_image) >= batch_size or len(batch_text) >= batch_size or i == (len(page_images) - 1):
@@ -1315,22 +1346,26 @@ class CategorizationAI(FallbackCategorizationModel):
 
         return (predicted_label, predicted_confidence), predictions_df
 
-    def _categorize_page(self, orig_page: Page, page: Optional[Page] = None) -> Page:
+    def _categorize_page(self, page: Page) -> Page:
         """Run categorization on a Page.
 
         :param page: Input Page
         :returns: The input Page with added categorization information
         """
-        # todo track original page in data.py
-        if page is None:
-            page = orig_page
-        img_data = Image.open(orig_page.image_path)
+        img_data = Image.open(page.image_path)
         buf = BytesIO()
         img_data.save(buf, format='PNG')
         docs_data_images = [buf]
 
+        if isinstance(self.classifier.text_module, BERT):
+            max_length = self.classifier.text_module.get_max_length()
+        else:
+            max_length = None
+        self.text_vocab.encode(page, max_length)
+        text_coded = [torch.LongTensor(page.text_encoded)]
+
         # todo optimize for gpu? self._predict can accept a batch of images/texts
-        (predicted_category_id, predicted_confidence), _ = self._predict(page_images=docs_data_images, text=page.text)
+        (predicted_category_id, predicted_confidence), _ = self._predict(page_images=docs_data_images, text=text_coded)
 
         if predicted_category_id == -1:
             # todo ensure that this never happens, then remove
