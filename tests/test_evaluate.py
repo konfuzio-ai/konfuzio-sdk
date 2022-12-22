@@ -1,5 +1,4 @@
 """Test the evaluation."""
-import os
 import unittest
 from statistics import mean
 
@@ -1334,6 +1333,3 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         assert splitting_ai.full_evaluation.evaluation_results['precision'] == 1.0
         assert splitting_ai.full_evaluation.evaluation_results['recall'] == 1.0
         assert splitting_ai.full_evaluation.evaluation_results['f1'] == 1.0
-        for item in self.project.model_folder:
-            if item.endswith('.pkl'):
-                os.remove(os.path.join(self.project.model_folder, item))
