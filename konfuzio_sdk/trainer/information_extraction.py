@@ -85,7 +85,9 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     except ValueError as err:
         if "unsupported pickle protocol: 5" in str(err) and '3.7' in sys.version:
             raise ValueError("Pickle saved with incompatible Python version.") from err
-        elif not issubclass(BaseModel, model):
+        raise
+    except TypeError:
+        if not issubclass(BaseModel, model):
             raise ValueError("Loaded model is not inheriting from the BaseModel class.")
         raise
 

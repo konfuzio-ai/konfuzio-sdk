@@ -111,6 +111,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         """
         with open(model_path, 'r') as f:
             spans = json.load(f)
+        # converting str category.id_ values to back int because JSON converts them to str
         spans = {int(k): v for k, v in spans.items()}
         self.first_page_spans = spans
 
