@@ -2,7 +2,7 @@
 
 ### Categorization Fallback Logic
 
-Use the name of the category as an effective fallback logic to categorize documents when no categorization AI is available:
+Use the name of the Category as an effective fallback logic to categorize Documents when no Categorization AI is available:
 
 ```python
 from konfuzio_sdk.data import Project

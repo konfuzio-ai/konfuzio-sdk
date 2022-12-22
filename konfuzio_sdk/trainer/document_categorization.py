@@ -393,28 +393,6 @@ class BERT(TextClassificationModule):
         return [text_features, attention]
 
 
-def get_text_module(config: dict) -> TextClassificationModule:
-    """Get the text module accordingly with the specifications."""
-    assert 'name' in config, 'text_module config needs a `name`'
-    assert 'input_dim' in config, 'text_module config needs an `input_dim`'
-    module_name = config['name']
-    if module_name == 'nbow':
-        text_module = NBOW(**config)
-    elif module_name == 'nbowselfattention':
-        text_module = NBOWSelfAttention(**config)
-    elif module_name == 'lstm':
-        text_module = LSTM(**config)
-    else:
-        try:  # try and get a BERT-type model from the Transformers library
-            if 'finbert' in module_name:  # ability to use `finbert` as an alias for `ProsusAI/finbert`
-                config['name'] = 'ProsusAI/finbert'
-            text_module = BERT(**config)
-        except OSError:
-            raise ValueError(f'{module_name} is not a valid text module!')
-
-    return text_module
-
-
 class DocumentClassifier(nn.Module):
     """Container for document classifiers."""
 
@@ -585,19 +563,6 @@ class EfficientNet(ImageClassificationModule):
         return image_features
 
 
-def get_image_module(config: dict) -> ImageClassificationModule:
-    """Get the image module accordingly with the specifications."""
-    module_name = config['name']
-    if module_name.startswith('vgg'):
-        image_module = VGG(**config)
-    elif module_name.startswith('efficientnet'):
-        image_module = EfficientNet(**config)
-    else:
-        raise ValueError(f'{module_name} not a valid image module!')
-
-    return image_module
-
-
 class DocumentImageClassifier(DocumentClassifier):
     """Classifies a document based on the image of the pages only."""
 
@@ -766,89 +731,6 @@ class DocumentMultimodalClassifier(DocumentClassifier):
         if 'attention' in encoded_text:
             output['attention'] = encoded_text['attention']
         return output
-
-
-def get_multimodal_module(config: dict) -> MultimodalClassificationModule:
-    """Get the multimodal module accordingly with the specifications."""
-    module_name = config['name']
-    if module_name == 'concatenate':
-        multimodal_module = MultimodalConcatenate(**config)
-    else:
-        raise ValueError(f'{module_name} is not a valid multimodal module!')
-
-    return multimodal_module
-
-
-def get_document_classifier(
-    config: dict,
-) -> DocumentClassifier:
-    """
-    Get a DocumentClassifier (and encapsulated module(s)) from a config dict.
-
-    If the config only has a image or text module, then the appropriate DocumentClassifier is returned,
-    i.e. either a DocumentImageClassifier or DocumentTextClassifier. If the config has both modules then
-    a DocumentMultimodalClassifier is returned.
-
-    We also do some assertions to make sure no unnecessary modules are in the config dict, i.e if you want
-    a DocumentTextClassifier then you should NOT have an `image_module` in your config dict.
-    """
-    # default assumption is that they are all none
-    text_module = None
-    image_module = None
-    multimodal_module = None
-
-    if 'image_module' in config and 'text_module' in config:
-        assert (
-            'multimodal_module' in config
-        ), 'If you have both an image and text module then you also need a multimodal module!'
-
-    assert 'output_dim' in config, 'No `output_dim` found in the document classifier\'s config!'
-
-    # get text module if in config
-    if 'text_module' in config:
-        assert 'input_dim' in config['text_module'], 'Document classifier\'s `text_module` needs an `input_dim`!'
-        text_module_config = config['text_module']
-        text_module = get_text_module(text_module_config)
-        config = deepcopy(config)
-        del config['text_module']
-
-    # get image module if in config
-    if 'image_module' in config:
-        image_module_config = config['image_module']
-        image_module = get_image_module(image_module_config)
-        config = deepcopy(config)
-        del config['image_module']
-
-    # get multimodal module if in config
-    if 'multimodal_module' in config:
-        # only get multimodal module if we have both an image and text module
-        assert image_module is not None and text_module is not None
-        multimodal_module_config = config['multimodal_module']
-        multimodal_module_config['n_image_features'] = image_module.n_features
-        multimodal_module_config['n_text_features'] = text_module.n_features
-        multimodal_module = get_multimodal_module(multimodal_module_config)
-        config = deepcopy(config)
-        del config['multimodal_module']
-
-    # if we have a text, image and multimodal module then we get a DocumentMultimodalClassifier
-    # if not, then we get eiter a DocumentTextClassifier (if we only have an text module) or a DocumentImageClassifier
-    # (if we only have an image module), we assert the modules not required are not in the config
-
-    if text_module is not None and image_module is not None:
-        document_classifier = DocumentMultimodalClassifier(image_module, text_module, multimodal_module, **config)
-    elif text_module is not None:
-        assert image_module is None
-        document_classifier = DocumentTextClassifier(text_module, **config)
-    elif image_module is not None:
-        assert text_module is None
-        document_classifier = DocumentImageClassifier(image_module, **config)
-    else:
-        raise ValueError("You did not pass an image or text module to your CategorizationAI's config!")
-
-    # need to ensure classifier starts in evaluation mode
-    document_classifier.eval()
-
-    return document_classifier
 
 
 def get_optimizer(classifier: DocumentClassifier, config: dict) -> torch.optim.Optimizer:
@@ -1453,89 +1335,3 @@ def load_categorization_model(pt_path: str, device: Optional[str] = 'cpu'):
             file_data = torch.load(f, map_location=torch.device(device))
 
     return file_data
-
-
-#
-# def build_category_document_model(
-#     project,
-#     train_docs,
-#     test_docs,
-#     category_model=None,
-#     document_classifier_config: Union[None, dict] = None,
-#     document_training_config: Union[None, dict] = None,
-#     img_args: Union[None, dict] = None,
-#     tokenizer_name: Union[None, str] = 'phrasematcher',
-#     output_dir=None,
-#     return_model=False,
-#     *args,
-#     **kwargs,
-# ):
-#     """Build the document category classification model."""
-#     from konfuzio_sdk.trainer.tokenization import get_tokenizer
-#
-#     projects = [project]
-#     category_model = category_model if category_model else CustomCategorizationModel
-#
-#     # Image transformations available
-#     possible_transformations_pre_processing = ['invert', 'target_size', 'grayscale']
-#     possible_transformations_data_augmentation = ['rotate']
-#
-#     if document_classifier_config is None:
-#         # default model combines image and text features
-#         document_classifier_config = {
-#             'image_module': {'name': 'efficientnet_b0', 'pretrained': True, 'freeze': True},
-#             'text_module': {'name': 'nbowselfattention', 'emb_dim': 104},
-#             'multimodal_module': {'name': 'concatenate', 'hid_dim': 250},
-#         }
-#
-#     pre_processing_transforms = None
-#     data_augmentation_transforms = None
-#
-#     if 'image_module' in document_classifier_config.keys():
-#         # we only need the args for the image transformations if we are using image features
-#         if img_args is None:
-#             img_args = {'invert': False, 'target_size': (1000, 1000), 'grayscale': True, 'rotate': 5}
-#
-#         pre_processing_transforms = create_transformations_dict(possible_transformations_pre_processing, img_args)
-#         data_augmentation_transforms = create_transformations_dict(
-#         possible_transformations_data_augmentation, img_args)
-#
-#     tokenizer = None
-#
-#     if 'text_module' in document_classifier_config.keys():
-#         # we only need the tokenizer if we are using text features
-#         tokenizer = get_tokenizer(tokenizer_name, project=project)
-#
-#     category_vocab = build_template_category_vocab(projects)
-#
-#     model = category_model(
-#         projects,
-#         tokenizer=tokenizer,
-#         image_preprocessing=pre_processing_transforms,
-#         image_augmentation=data_augmentation_transforms,
-#         document_classifier_config=document_classifier_config,
-#         category_vocab=category_vocab,
-#         *args,
-#         **kwargs,
-#     )
-#     model.documents = train_docs
-#     model.test_documents = test_docs
-#
-#     if document_training_config is None:
-#         document_training_config = {
-#             'valid_ratio': 0.2,
-#             'batch_size': 6,
-#             'max_len': None,
-#             'n_epochs': 100,
-#             'patience': 3,
-#             'optimizer': {'name': 'Adam'},
-#         }
-#
-#     model.build(document_training_config=document_training_config)
-#
-#     model_type = 'CategorizationModel'
-#     path = os.path.join(output_dir, f'{get_timestamp()}_{model_type}.pt')
-#     model_path = model.save(path=path)
-#     if return_model:
-#         return model_path, model
-#     return model_path

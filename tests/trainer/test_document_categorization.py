@@ -7,6 +7,7 @@ import pytest
 from copy import deepcopy
 
 from konfuzio_sdk.data import Project, Document, Page
+from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer
 from konfuzio_sdk.trainer.tokenization import PhraseMatcherTokenizer
 
 from konfuzio_sdk.trainer.document_categorization import (
@@ -275,18 +276,19 @@ class TestCategorizationAI(unittest.TestCase):
         """Test categorize a test document."""
         test_receipt_document = self.training_prj.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID)
         # reset the category attribute to test that it can be categorized successfully
-        test_receipt_document.category = None
+        test_receipt_document.set_category(None)
         result = self.categorization_pipeline.categorize(document=test_receipt_document)
         assert isinstance(result, Document)
         assert result.category == self.training_prj.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID)
         for page in result.pages():
             assert page.category == self.training_prj.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID)
         # restore category attribute to not interfere with next tests
-        test_receipt_document.category = result.category
+        test_receipt_document.set_category(result.category)
 
     def test_7_categorize_page(self) -> None:
         """Test categorize a page."""
-        test_page = self.training_prj.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID).pages()[0]
+        test_doc = self.training_prj.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID)
+        test_page = WhitespaceTokenizer().tokenize(deepcopy(test_doc)).pages()[0]
         # reset the category attribute to test that it can be categorized successfully
         test_page.category = None
         result = self.categorization_pipeline._categorize_page(test_page)
@@ -298,7 +300,7 @@ class TestCategorizationAI(unittest.TestCase):
         self.pipeline = load_categorization_model(self.categorization_pipeline.pipeline_path)
         test_receipt_document = self.training_prj.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID)
         # reset the category attribute to test that it can be categorized successfully
-        test_receipt_document.category = None
+        test_receipt_document.set_category(None)
         result = self.categorization_pipeline.categorize(document=test_receipt_document)
         assert isinstance(result, Document)
         assert result.category == self.training_prj.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID)
