@@ -97,6 +97,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         """
         if save_json:
             path = model_path + f'/{get_timestamp()}_first_page_spans.json'
+            pathlib.Path(model_path).mkdir(parents=True, exist_ok=True)
             with open(path, 'w+') as f:
                 json.dump(self.first_page_spans, f)
         else:
