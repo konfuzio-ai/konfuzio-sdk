@@ -22,7 +22,7 @@ You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server
 - Train custom Page-based Categorization AI via [SDK](https://github.com/konfuzio-ai/konfuzio-sdk/) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9481)).
 - First stable release of Capture Vue in version ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9958)).
 - Suggest page breaks if one file contains multiple Documents ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/7671)).
-- Perfomance improvement of the Konfuzio Server interface ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9750)).
+- Perfomance improvement of the Konfuzio Server interface ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10274)).
 - Redirect https://app.konfuzio.com/api/ to stable API Version 3 ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9692)).
 - Make all List Views sortable by click on column ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9470)).
 - Sort Labels in Label-Sets to allow users to customize the UI per Category ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/8932)).
