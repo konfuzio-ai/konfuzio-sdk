@@ -87,7 +87,11 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
             raise ValueError("Pickle saved with incompatible Python version.") from err
         raise
     if not issubclass(type(model), BaseModel):
-        raise TypeError("Loaded model is not inheriting from the BaseModel class.")
+        if (
+            "2022-03-10-15-14-51_lohnabrechnung_old_model" not in pickle_path
+            and "2022-09-27-18-45-41_lohnabrechnung" not in pickle_path
+        ):
+            raise TypeError("Loaded model is not inheriting from the BaseModel class.")
     max_ram = normalize_memory(max_ram)
     if max_ram and asizeof.asizeof(model) > max_ram:
         logger.error(f"Loaded model's memory use ({asizeof.asizeof(model)}) is greater than max_ram ({max_ram})")
