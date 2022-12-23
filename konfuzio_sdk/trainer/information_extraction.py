@@ -99,7 +99,7 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
         logger.error(f"Loaded model's memory use ({asizeof.asizeof(model)}) is greater than max_ram ({max_ram})")
 
     if not hasattr(model, "name"):
-        if not model.model_type == "file_splitting":
+        if hasattr(model, "model_type") and not model.model_type == "file_splitting":
             raise TypeError("Saved model file needs to be a Konfuzio Trainer instance.")
     elif model.name in {
         "DocumentAnnotationMultiClassModel",
