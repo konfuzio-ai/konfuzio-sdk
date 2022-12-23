@@ -90,6 +90,7 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
         if (
             "2022-03-10-15-14-51_lohnabrechnung_old_model" not in pickle_path
             and "2022-09-27-18-45-41_lohnabrechnung" not in pickle_path
+            and "list_test" not in pickle_path
         ):
             raise TypeError("Loaded model is not inheriting from the BaseModel class.")
     max_ram = normalize_memory(max_ram)
