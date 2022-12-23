@@ -83,12 +83,10 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         self.first_page_spans = first_page_spans
         return first_page_spans
 
-    def save(self, model_path="", save_json=True, include_konfuzio=False) -> str:
+    def save(self, save_json=True, include_konfuzio=False) -> str:
         """
         Save the resulting set of first-page Spans by Category.
 
-        :param model_path: Path to save the set to.
-        :type model_path: str
         :param save_json: Whether to save JSON of first_page_spans or a pickle of the whole class.
         :type save_json: bool
         :param include_konfuzio: Enables pickle serialization as a value, not as a reference (for more info, read
@@ -96,12 +94,12 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         :type include_konfuzio: bool
         """
         if save_json:
-            path = model_path + f'/{get_timestamp()}_first_page_spans.json'
-            pathlib.Path(model_path).mkdir(parents=True, exist_ok=True)
+            path = self.output_dir + f'/{get_timestamp()}_first_page_spans.json'
+            pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
             with open(path, 'w+') as f:
                 json.dump(self.first_page_spans, f)
         else:
-            path = super().save(output_dir=model_path, include_konfuzio=include_konfuzio)
+            path = super().save(include_konfuzio=include_konfuzio)
         return path
 
     def load_json(self, model_path=""):

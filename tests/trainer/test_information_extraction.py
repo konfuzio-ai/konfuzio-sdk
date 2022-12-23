@@ -170,7 +170,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
         tokenizer = WhitespaceTokenizer()
         cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_separate_labels, tokenizer=tokenizer)
-
+        cls.pipeline.output_dir = cls.project.model_folder
         cls.tests_annotations_spans = list()
 
     def test_01_configure_pipeline(self):
@@ -236,7 +236,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
             self.pipeline.pipeline_path = self.pipeline.save(include_konfuzio=False)
         self.project._max_ram = None
 
-        self.pipeline.pipeline_path = self.pipeline.save(output_dir=self.project.model_folder, include_konfuzio=False)
+        self.pipeline.pipeline_path = self.pipeline.save(include_konfuzio=False)
         assert os.path.isfile(self.pipeline.pipeline_path)
 
     def test_05_upload_ai_model(self):
@@ -324,7 +324,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         """Set up the Data and Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
         cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_separate_labels)
-
+        cls.pipeline.output_dir = cls.project.model_folder
         cls.tests_annotations_spans = list()
 
     def test_01_configure_pipeline(self):

@@ -22,6 +22,7 @@ import logging
 import konfuzio_sdk
 import os
 import pathlib
+import pkg_resources
 import shutil
 import sys
 import time
@@ -1337,13 +1338,12 @@ class BaseModel:
     def __init__(self):
         """Initialize a BaseModel class."""
         self.model_type = None
+        self.output_dir = None
 
-    def save(self, output_dir="", include_konfuzio=True, reduce_weight=False, max_ram=None) -> str:
+    def save(self, include_konfuzio=True, reduce_weight=False, max_ram=None) -> str:
         """
         Save a pickled instance of the class.
 
-        :param output_dir: Path to save the set to.
-        :type output_dir: str
         :param include_konfuzio: Enables pickle serialization as a value, not as a reference (for more info, read
         https://github.com/cloudpipe/cloudpickle#overriding-pickles-serialization-mechanism-for-importable-constructs).
         :type include_konfuzio: bool
@@ -1354,13 +1354,15 @@ class BaseModel:
         """
         logger.info('Saving model')
         logger.info(f'{include_konfuzio=}')
+        version = pkg_resources.get_distribution("konfuzio-sdk").version
+        logger.info(f'{version=}')
         if include_konfuzio:
             cloudpickle.register_pickle_by_value(konfuzio_sdk)
             # todo register all dependencies?
-        pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
+        pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
         if self.model_type == 'file_splitting':
-            temp_pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_file_splitting_model.cloudpickle')
-            pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_file_splitting_model.pkl')
+            temp_pkl_file_path = os.path.join(self.output_dir, f'{get_timestamp()}_file_splitting_model.cloudpickle')
+            pkl_file_path = os.path.join(self.output_dir, f'{get_timestamp()}_file_splitting_model.pkl')
         else:
             logger.info(f'{reduce_weight=}')
             logger.info(f'{max_ram=}')
@@ -1392,11 +1394,13 @@ class BaseModel:
 
             logger.info('Getting save paths')
 
-            if not output_dir:
-                output_dir = self.category.project.model_folder
+            if not self.output_dir:
+                self.output_dir = self.category.project.model_folder
 
-            temp_pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower()}.cloudpickle')
-            pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower()}.pkl')
+            temp_pkl_file_path = os.path.join(
+                self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}.cloudpickle'
+            )
+            pkl_file_path = os.path.join(self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}.pkl')
 
         logger.info('Saving model with cloudpickle')
         # first save with cloudpickle
@@ -1430,6 +1434,7 @@ class Trainer(BaseModel):
         """Initialize ExtractionModel."""
         # Go through keyword arguments, and either save their values to our
         # instance, or raise an error.
+        super().__init__()
         self.clf = None
         self.category = None
         self.name = self.__class__.__name__

@@ -73,7 +73,8 @@ class TestFileSplittingModel(unittest.TestCase):
 
     def test_json_model_save_and_load(self):
         """Test saving and loading first_page_spans as JSON."""
-        path = self.file_splitting_model.save(model_path=self.project.model_folder, save_json=True)
+        self.file_splitting_model.output_dir = self.project.model_folder
+        path = self.file_splitting_model.save(save_json=True)
         assert os.path.isfile(path)
         self.file_splitting_model.load_json(path)
         assert 3 in self.file_splitting_model.first_page_spans
@@ -88,7 +89,8 @@ class TestFileSplittingModel(unittest.TestCase):
 
     def test_pickle_model_save(self):
         """Test saving ContextAwareFileSplittingModel to pickle."""
-        path = self.file_splitting_model.save(model_path=self.project.model_folder, save_json=False)
+        self.file_splitting_model.output_dir = self.project.model_folder
+        path = self.file_splitting_model.save(save_json=False)
         assert os.path.isfile(path)
 
     def test_splitting_ai_predict(self):
