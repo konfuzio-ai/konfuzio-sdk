@@ -98,7 +98,7 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     if max_ram and asizeof.asizeof(model) > max_ram:
         logger.error(f"Loaded model's memory use ({asizeof.asizeof(model)}) is greater than max_ram ({max_ram})")
 
-    if not model.model_type == 'file_splitting':
+    if not hasattr(model, 'model_type'):
         if not hasattr(model, "name"):
             raise TypeError("Saved model file needs to be a Konfuzio Trainer instance.")
         elif model.name in {
@@ -1357,6 +1357,11 @@ class BaseModel:
         logger.info(f'{include_konfuzio=}')
         version = pkg_resources.get_distribution("konfuzio-sdk").version
         logger.info(f'{version=}')
+        if not self.output_dir:
+            if self.model_type == "file_splitting":
+                self.output_dir = self.train_data[0].project.model_folder
+            else:
+                self.output_dir = self.category.project.model_folder
         if include_konfuzio:
             cloudpickle.register_pickle_by_value(konfuzio_sdk)
             # todo register all dependencies?
@@ -1369,7 +1374,6 @@ class BaseModel:
             logger.info(f'{max_ram=}')
             # Keep Documents of the Category so that we can restore them later
             category_documents = self.category.documents() + self.category.test_documents()
-
             # TODO: add Document.lose_weight in SDK - remove NO_LABEL Annotations from the Documents
             # for document in category_documents:
             #     no_label_annotations = document.annotations(label=self.category.project.no_label)
@@ -1394,9 +1398,6 @@ class BaseModel:
             sys.setrecursionlimit(99999999)  # ?
 
             logger.info('Getting save paths')
-
-            if not self.output_dir:
-                self.output_dir = self.category.project.model_folder
 
             temp_pkl_file_path = os.path.join(
                 self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}_tmp.pkl'
