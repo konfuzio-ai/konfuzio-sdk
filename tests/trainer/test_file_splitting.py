@@ -7,6 +7,7 @@ from copy import deepcopy
 from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI
+from konfuzio_sdk.trainer.information_extraction import load_model
 
 
 class TestFileSplittingModel(unittest.TestCase):
@@ -87,11 +88,13 @@ class TestFileSplittingModel(unittest.TestCase):
         assert len(self.file_splitting_model.first_page_spans[3]) == 2
         assert len(self.file_splitting_model.first_page_spans[4]) == 2
 
-    def test_pickle_model_save(self):
+    def test_pickle_model_save_load(self):
         """Test saving ContextAwareFileSplittingModel to pickle."""
         self.file_splitting_model.output_dir = self.project.model_folder
         path = self.file_splitting_model.save(save_json=False)
         assert os.path.isfile(path)
+        model = load_model(path)
+        assert model.first_page_spans == self.file_splitting_model.first_page_spans
 
     def test_splitting_ai_predict(self):
         """Test SplittingAI's Document-splitting method."""
