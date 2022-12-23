@@ -98,18 +98,18 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     if max_ram and asizeof.asizeof(model) > max_ram:
         logger.error(f"Loaded model's memory use ({asizeof.asizeof(model)}) is greater than max_ram ({max_ram})")
 
-    if not hasattr(model, "name"):
-        if not hasattr(model, "model_type") and not model.model_type == "file_splitting":
+    if not model.model_type == 'file_splitting':
+        if not hasattr(model, "name"):
             raise TypeError("Saved model file needs to be a Konfuzio Trainer instance.")
-    elif model.name in {
-        "DocumentAnnotationMultiClassModel",
-        "DocumentEntityMulticlassModel",
-        "SeparateLabelsAnnotationMultiClassModel",
-        "SeparateLabelsEntityMultiClassModel",
-    }:
-        logger.warning(f"Loading legacy {model.name} AI model.")
-    else:
-        logger.info(f"Loading {model.name} AI model.")
+        elif model.name in {
+            "DocumentAnnotationMultiClassModel",
+            "DocumentEntityMulticlassModel",
+            "SeparateLabelsAnnotationMultiClassModel",
+            "SeparateLabelsEntityMultiClassModel",
+        }:
+            logger.warning(f"Loading legacy {model.name} AI model.")
+        else:
+            logger.info(f"Loading {model.name} AI model.")
 
     return model
 
