@@ -1887,7 +1887,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         max_depth: int = 100,
         no_label_limit: Union[int, float, None] = None,
         n_nearest_across_lines: bool = False,
-        use_separate_labels: bool = False,
+        use_separate_labels: bool = True,
         tokenizer=None,
         *args,
         **kwargs,
