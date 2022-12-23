@@ -2612,7 +2612,7 @@ class Document(Data):
                 # page_encoded = [text_vocab.stoi(span.offset_string) for span in
                 # self.spans(start_offset=page.start_offset, end_offset=page.end_offset)]
                 # document_tokens.append(torch.LongTensor(page_encoded))
-                text_vocab.encode(page)
+                text_vocab.numericalize(page)
                 document_tokens.append(torch.LongTensor(page.text_encoded))
             else:
                 # if not using text module then don't need the tokens

@@ -1231,7 +1231,7 @@ class CategorizationAI(FallbackCategorizationModel):
             max_length = self.classifier.text_module.get_max_length()
         else:
             max_length = None
-        self.text_vocab.encode(page, max_length)
+        self.text_vocab.numericalize(page, max_length)
         text_coded = [torch.LongTensor(page.text_encoded)]
 
         # todo optimize for gpu? self._predict can accept a batch of images/texts

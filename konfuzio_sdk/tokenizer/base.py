@@ -156,8 +156,8 @@ class Vocab:
         """Return the list of indexes (int) in the vocab."""
         return list(self._stoi.values())
 
-    def encode(
-        self, page_or_document: Union[Page, Document], max_length: Optional[int] = None
+    def numericalize(
+        self, page_or_document: Union[Page, Document], max_length: Optional[int] = None, pad: bool = True
     ) -> Union[Page, Document]:
         """Convert each Span of the Document or Page into its corresponding integer value from the vocabulary."""
         # todo assert we have a valid token (e.g '\n\n\n' results in tok = [])
@@ -172,6 +172,8 @@ class Vocab:
             page.text_encoded = [self.stoi(span.offset_string) for span in page.spans()][:max_length]
         else:
             raise NotImplementedError
+        if pad and not page_or_document.text_encoded:
+            page_or_document.text_encoded = [self.pad_idx]
         return page_or_document
 
 
