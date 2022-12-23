@@ -99,7 +99,7 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
         logger.error(f"Loaded model's memory use ({asizeof.asizeof(model)}) is greater than max_ram ({max_ram})")
 
     if not hasattr(model, "name"):
-        if hasattr(model, "model_type") and not model.model_type == "file_splitting":
+        if not hasattr(model, "model_type") and not model.model_type == "file_splitting":
             raise TypeError("Saved model file needs to be a Konfuzio Trainer instance.")
     elif model.name in {
         "DocumentAnnotationMultiClassModel",
@@ -1362,8 +1362,8 @@ class BaseModel:
             # todo register all dependencies?
         pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
         if self.model_type == 'file_splitting':
-            temp_pkl_file_path = os.path.join(self.output_dir, f'{get_timestamp()}_file_splitting_model_tmp.pkl')
-            pkl_file_path = os.path.join(self.output_dir, f'{get_timestamp()}_file_splitting_model.pkl')
+            temp_pkl_file_path = os.path.join(self.output_dir, f'{get_timestamp()}_{self.__class__.__name__}_tmp.pkl')
+            pkl_file_path = os.path.join(self.output_dir, f'{get_timestamp()}_{self.__class__.__name__}.pkl')
         else:
             logger.info(f'{reduce_weight=}')
             logger.info(f'{max_ram=}')
