@@ -1724,13 +1724,14 @@ class GroupAnnotationSets:
         # and runtime (default treshold.
 
         # df = df[df['confidence'] >= 0.1]  # df['OptimalThreshold']]
-        for i, line in enumerate(text.replace('\f', '\n').split('\n')):
+        lines = text.replace('\f', '\n').split('\n')
+        for i, line in enumerate(lines):
             new_char_count = char_count + len(line)
             assert line == text[char_count:new_char_count]
             line_df = df[(char_count <= df['start_offset']) & (df['end_offset'] <= new_char_count)]
             spans = [row for index, row in line_df.iterrows()]
             spans_dict = dict((x['result_name'], True) for x in spans)
-            counter_dict = {}  # why?
+            # counter_dict = {}  # why?
             # annotations_accuracy_dict = defaultdict(lambda: 0)
             # for annotation in annotations:
             # annotations_accuracy_dict[f'{annotation["label"]}_accuracy'] += annotation['confidence']
@@ -1745,10 +1746,10 @@ class GroupAnnotationSets:
             #             counter_dict[label_set.name] += 1
             #         else:
             #             counter_dict[label_set.name] = 1
-            tmp_df = pandas.DataFrame([{**spans_dict, **counter_dict}])
+            tmp_df = pandas.DataFrame([spans_dict])  # ([{**spans_dict, **counter_dict}])
             global_df = pandas.concat([global_df, tmp_df], ignore_index=True)
             char_count = new_char_count + 1
-        global_df['text'] = text.replace('\f', '\n').split('\n')
+        global_df['text'] = lines
         return global_df.fillna(0)
 
     def extract_template_with_clf(self, text, res_dict):
