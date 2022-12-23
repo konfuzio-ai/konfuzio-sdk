@@ -1207,9 +1207,6 @@ class Trainer:
         """Initialize ExtractionModel."""
         # Go through keyword arguments, and either save their values to our
         # instance, or raise an error.
-        self.category: Category = kwargs.get('category', None)
-        logger.info(f"{self.category=}")
-
         self.clf = None
         self.name = self.__class__.__name__
         self.label_feature_list = None  # will be set later
@@ -1887,6 +1884,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         no_label_limit: Union[int, float, None] = None,
         n_nearest_across_lines: bool = False,
         use_separate_labels: bool = False,
+        category: Category = None,
         tokenizer=None,
         *args,
         **kwargs,
@@ -1900,6 +1898,9 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         self.use_separate_labels = use_separate_labels
         logger.info(f"{use_separate_labels=}")
+
+        self.category = category
+        logger.info(f"{self.category=}")
 
         self.n_nearest = n_nearest
         logger.info(f"{n_nearest=}")
