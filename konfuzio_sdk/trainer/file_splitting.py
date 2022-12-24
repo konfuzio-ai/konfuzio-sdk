@@ -109,7 +109,6 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         :param model_path: Path for the JSON.
         :type model_path: str
         """
-        pathlib.Path('/'.join(model_path.split('/')[:-1])).mkdir(parents=True, exist_ok=True)
         with open(model_path, 'r') as f:
             spans = json.load(f)
         # converting str category.id_ values to back int because JSON converts them to str
