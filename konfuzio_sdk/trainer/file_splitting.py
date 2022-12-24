@@ -46,8 +46,8 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
     def __init__(self, *args, **kwargs):
         """Initialize the ContextAwareFileSplittingModel."""
         super().__init__()
-        self.train_data = None
-        self.test_data = None
+        self.documents = None
+        self.test_documents = None
         self.categories = None
         self.tokenizer = None
         self.first_page_spans = None
@@ -130,6 +130,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
             )
             if len(intersection) > 0:
                 page.is_first_page = True
+                break
         return page
 
 
@@ -144,7 +145,7 @@ class SplittingAI:
         ContextAwareFileSplittingModel().
         """
         self.tokenizer = ConnectedTextTokenizer()
-        if model is str:
+        if isinstance(model, str):
             self.model = ContextAwareFileSplittingModel()
             self.model.first_page_spans = load_model(model)
         else:
@@ -165,8 +166,11 @@ class SplittingAI:
                 )
         return new_doc
 
-    def _suggest_first_pages(self, document: Document) -> Document:
-        new_doc = self.tokenizer.tokenize(deepcopy(document))
+    def _suggest_first_pages(self, document: Document, inplace: bool = False) -> Document:
+        if inplace:
+            new_doc = self.tokenizer.tokenize(document)
+        else:
+            new_doc = self.tokenizer.tokenize(deepcopy(document))
         for page in new_doc.pages():
             self.model.predict(page)
         return new_doc
@@ -192,12 +196,16 @@ class SplittingAI:
                 split_docs.append(self._create_doc_from_page_interval(document, suggested_splits[page_i - 1], split_i))
         return split_docs
 
-    def propose_split_documents(self, document: Document, return_pages: bool = False) -> Union[Document, List]:
+    def propose_split_documents(
+        self, document: Document, return_pages: bool = False, inplace: bool = False
+    ) -> Union[Document, List]:
         """
         Propose a set of resulting documents from a single Documents.
 
         :param document: An input Document to be split.
         :type document: Document
+        :param inplace: Whether changes are applied to an initially passed Document, changing it, or to its deepcopy.
+        :type inplace: bool
         :param return_pages: A flag to enable returning a copy of an old Document with Pages marked .is_first_page on
         splitting points instead of a set of sub-Documents.
         :type return_pages: bool
@@ -205,7 +213,7 @@ class SplittingAI:
         with Pages marked .is_first_page on splitting points.
         """
         if return_pages:
-            processed = self._suggest_first_pages(document)
+            processed = self._suggest_first_pages(document, inplace)
         else:
             processed = self._suggest_page_split(document)
         return processed
@@ -221,15 +229,11 @@ class SplittingAI:
         """
         evaluation_list = []
         if not use_training_docs:
-            evaluation_docs = self.model.test_data
+            evaluation_docs = self.model.test_documents
         else:
-            evaluation_docs = self.model.train_data
+            evaluation_docs = self.model.documents
         for doc in evaluation_docs:
-            doc.pages()[0].is_first_page = True
-            pred = self.tokenizer.tokenize(deepcopy(doc))
-            for page in pred.pages():
-                if self.model.predict(page).is_first_page:
-                    page.is_first_page = True
+            pred = self.propose_split_documents(doc, return_pages=True)
             evaluation_list.append((doc, pred))
         self.full_evaluation = FileSplittingEvaluation(evaluation_list)
         return self.full_evaluation

@@ -10,5 +10,4 @@ settings.py
 *.pkl
 *.tar.gz
 *data_*
-.ipynb_checkpoints
-*.ipynb
+*.ipynb*

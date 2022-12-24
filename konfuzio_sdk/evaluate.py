@@ -442,18 +442,14 @@ class Evaluation:
 class FileSplittingEvaluation:
     """Evaluate the quality of the filesplitting logic."""
 
-    def __init__(self, documents: List[Tuple[Document, Document]], allow_zero: bool = False):
+    def __init__(self, documents: List[Tuple[Document, Document]]):
         """
         Initialize and run the metrics calculation.
 
         :param documents: A list of Document pairs – first one is ground truth, second is the prediction.
         :type documents: list
-        :param allow_zero: If true, will calculate None for precision and recall when the straightforward application
-        of the formula would otherwise result in 0/0. Raises ZeroDivisionError otherwise.
-        :type allow_zero: bool
         """
         self.documents = documents
-        self.allow_zero = allow_zero
         self.calculate()
         self.calculate_metrics_by_category()
 
@@ -476,28 +472,15 @@ class FileSplittingEvaluation:
         if tp + fp != 0:
             precision = tp / (tp + fp)
         else:
-            if self.allow_zero:
-                precision = None
-            else:
-                raise ZeroDivisionError(
-                    "TP and FP are zero, please specify allow_zero=True if you want precision to be None."
-                )
+            raise ZeroDivisionError("TP and FP are zero.")
         if tp + fn != 0:
             recall = tp / (tp + fn)
         else:
-            if self.allow_zero:
-                recall = None
-            else:
-                raise ZeroDivisionError(
-                    "TP and FN are zero, please specify allow_zero=True if you want recall to be None."
-                )
+            raise ZeroDivisionError("TP and FN are zero.")
         if precision + recall != 0:
             f1 = 2 * precision * recall / (precision + recall)
         else:
-            if self.allow_zero:
-                f1 = None
-            else:
-                raise ZeroDivisionError("FP and FN are zero, please specify allow_zero=True if you want F1 to be None.")
+            raise ZeroDivisionError("FP and FN are zero.")
         self.project = self.documents[0][0].project
         self.evaluation_results = {
             'tp': tp,
@@ -543,30 +526,15 @@ class FileSplittingEvaluation:
             if tp + fp != 0:
                 precision = tp / (tp + fp)
             else:
-                if self.allow_zero:
-                    precision = None
-                else:
-                    raise ZeroDivisionError(
-                        "TP and FP are zero, please specify allow_zero=True if you want precision to be None."
-                    )
+                raise ZeroDivisionError("TP and FP are zero.")
             if tp + fn != 0:
                 recall = tp / (tp + fn)
             else:
-                if self.allow_zero:
-                    recall = None
-                else:
-                    raise ZeroDivisionError(
-                        "TP and FN are zero, please specify allow_zero=True if you want recall to be None."
-                    )
+                raise ZeroDivisionError("TP and FN are zero.")
             if precision + recall != 0:
                 f1 = 2 * precision * recall / (precision + recall)
             else:
-                if self.allow_zero:
-                    f1 = None
-                else:
-                    raise ZeroDivisionError(
-                        "FP and FN are zero, please specify allow_zero=True if you want F1 to be None."
-                    )
+                raise ZeroDivisionError("FP and FN are zero.")
             self.evaluation_results_by_category['tp'][category.id_] = tp
             self.evaluation_results_by_category['fp'][category.id_] = fp
             self.evaluation_results_by_category['fn'][category.id_] = fn
@@ -584,6 +552,20 @@ class FileSplittingEvaluation:
                 )
             return self.evaluation_results_by_category[metric][search.id_]
         return self.evaluation_results[metric]
+
+    def get_evaluation_data(self, search: Category = None, allow_zero: bool = True) -> EvaluationCalculator:
+        """
+        Get precision, recall, f1, based on TP, TN, FP, FN.
+
+        :param search: display true positives within a certain Category.
+        :type search: Category
+        :param allow_zero: If true, will calculate None for precision and recall when the straightforward application
+        of the formula would otherwise result in 0/0. Raises ZeroDivisionError otherwise.
+        :type allow_zero: bool
+        """
+        return EvaluationCalculator(
+            tp=self.tp(search), fp=self.fp(search), fn=self.fn(search), tn=self.tn(search), allow_zero=allow_zero
+        )
 
     def tp(self, search: Category = None) -> int:
         """

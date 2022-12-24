@@ -4,7 +4,6 @@ Let's see how to use the `konfuzio_sdk` to automatically split documents consist
 several files. We will be using a pre-built class SplittingAI. The class implements a context-aware rule-based logic 
 that requires no training.
 
-
 ```python
 from konfuzio_sdk.data import Project
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
@@ -19,14 +18,14 @@ test_document = project.get_document_by_id(YOUR_DOCUMENT_ID)
 
 file_splitting_model = ContextAwareFileSplittingModel()
 file_splitting_model.categories = project.categories
-file_splitting_model.train_data = [document 
-                                   for category in file_splitting_model.categories 
-                                   for document in category.documents()
-                                   ]
-file_splitting_model.test_data = [document 
-                                   for category in file_splitting_model.categories 
-                                   for document in category.test_documents()
-                                   ]
+file_splitting_model.documents = [document
+                                  for category in file_splitting_model.categories
+                                  for document in category.documents()
+                                  ]
+file_splitting_model.test_documents = [document
+                                       for category in file_splitting_model.categories
+                                       for document in category.test_documents()
+                                       ]
 file_splitting_model.tokenizer = ConnectedTextTokenizer()
 
 # gather Spans unique for the first Pages of the Documents 
