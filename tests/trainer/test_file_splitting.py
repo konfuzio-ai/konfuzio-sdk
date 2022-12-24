@@ -1,5 +1,6 @@
 """Test SplittingAI and the model's training, saving and prediction."""
 import os
+import pathlib
 import unittest
 
 from copy import deepcopy
@@ -90,6 +91,7 @@ class TestFileSplittingModel(unittest.TestCase):
         assert len(self.file_splitting_model.first_page_spans) == 2
         assert len(self.file_splitting_model.first_page_spans[3]) == 2
         assert len(self.file_splitting_model.first_page_spans[4]) == 2
+        pathlib.Path(path).unlink()
 
     def test_pickle_model_save_load(self):
         """Test saving ContextAwareFileSplittingModel to pickle."""
@@ -98,6 +100,7 @@ class TestFileSplittingModel(unittest.TestCase):
         assert os.path.isfile(path)
         model = load_model(path)
         assert model.first_page_spans == self.file_splitting_model.first_page_spans
+        pathlib.Path(path).unlink()
 
     def test_splitting_ai_predict(self):
         """Test SplittingAI's Document-splitting method."""

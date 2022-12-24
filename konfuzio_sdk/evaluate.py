@@ -5,7 +5,7 @@ import pandas
 import numpy
 from sklearn.utils.extmath import weighted_mode
 
-from konfuzio_sdk.utils import sdk_isinstance
+from konfuzio_sdk.utils import sdk_isinstance, get_timestamp
 from konfuzio_sdk.data import Document, Category
 
 RELEVANT_FOR_EVALUATION = [
@@ -265,6 +265,22 @@ class EvaluationCalculator:
     def f1(self) -> Optional[float]:
         """Apply F1-score formula. Returns None if precision and recall are both None."""
         return None if (self.tp + 0.5 * (self.fp + self.fn) == 0) else self.tp / (self.tp + 0.5 * (self.fp + self.fn))
+
+    def metrics_markdown_table_generator(self, output_dir: str = ""):
+        """
+        Create a Markdown file with metrics.
+
+        :param output_dir: A path to save the resulting Markdown file to.
+        :type output_dir: str
+        :returns: A path to the saved metrics report.
+        """
+        header = """| TP | TN | FP | FN | precision | recall | F1 |\n|----|----|----|----|----|----|----|\n"""
+        metrics = f'|{self.tp}|{self.fn}|{self.fp}|{self.fn}|{self.precision}|{self.recall}|{self.f1}|'
+        path = output_dir + f'metrics_{get_timestamp()}.md'
+        with open(path, 'w') as f:
+            f.write(header)
+            f.write(metrics)
+        return path
 
 
 class Evaluation:
