@@ -1350,6 +1350,10 @@ class BaseModel(metaclass=abc.ABCMeta):
         """Convert class name to machine-readable name."""
         return f'{self.name.lower().strip()}'
 
+    @abc.abstractmethod
+    def reduce_model_weight(self, *args, **kwargs):
+        """Remove all non-strictly necessary parameters before saving."""
+
     def save(self, include_konfuzio=True, reduce_weight=False, max_ram=None) -> str:
         """
         Save a pickled instance of the class.
@@ -1372,9 +1376,9 @@ class BaseModel(metaclass=abc.ABCMeta):
         pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
         logger.info('Getting save paths')
         temp_pkl_file_path, pkl_file_path = self.generate_pickle_output_paths()
+        logger.info(f'{reduce_weight=}')
+        logger.info(f'{max_ram=}')
         if self.model_type != 'file_splitting':
-            logger.info(f'{reduce_weight=}')
-            logger.info(f'{max_ram=}')
             # Keep Documents of the Category so that we can restore them later
             category_documents = self.category.documents() + self.category.test_documents()
             # TODO: add Document.lose_weight in SDK - remove NO_LABEL Annotations from the Documents
@@ -1384,11 +1388,12 @@ class BaseModel(metaclass=abc.ABCMeta):
             #     document._annotations = clean_annotations
 
             self.df_train = None
-            if reduce_weight:
-                self.lose_weight()  # todo: review and test (#9461)
+        if reduce_weight:
+            self.reduce_model_weight()  # todo: review and test (#9461)
 
-            logger.info(f'Model size: {asizeof.asizeof(self) / 1_000_000} MB')
+        logger.info(f'Model size: {asizeof.asizeof(self) / 1_000_000} MB')
 
+        if self.model_type != 'file_splitting':
             # if no argument passed, get project max_ram
             if not max_ram:
                 max_ram = self.category.project.max_ram
@@ -2688,3 +2693,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         temp_pkl_file_path = os.path.join(self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}_tmp.pkl')
         pkl_file_path = os.path.join(self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}.pkl')
         return temp_pkl_file_path, pkl_file_path
+
+    def reduce_model_weight(self, *args, **kwargs):
+        """Remove all non-strictly necessary parameters before saving."""
+        self.lose_weight()

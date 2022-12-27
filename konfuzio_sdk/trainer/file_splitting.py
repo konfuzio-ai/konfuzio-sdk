@@ -26,6 +26,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
     def __init__(self, *args, **kwargs):
         """Initialize the class."""
         self.model_type = 'file_splitting'
+        self.output_dir = None
 
     @abc.abstractmethod
     def fit(self, *args, **kwargs):
@@ -50,6 +51,15 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
             self.output_dir, f'{get_timestamp()}_{self.name_lower()}_{self.documents[0].project.id_}.pkl'
         )
         return temp_pkl_file_path, pkl_file_path
+
+    def lose_weight(self, *args, **kwargs):
+        """Remove all data not necessary for prediction."""
+        self.documents = None
+        self.test_documents = None
+
+    def reduce_model_weight(self, *args, **kwargs):
+        """Remove all non-strictly necessary parameters before saving."""
+        self.lose_weight()
 
 
 class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
@@ -96,7 +106,13 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         self.first_page_spans = first_page_spans
         return first_page_spans
 
-    def save(self, save_json=True, include_konfuzio=False) -> str:
+    def save(
+        self,
+        save_json=True,
+        include_konfuzio=False,
+        max_ram=None,
+        reduce_weight: bool = False,
+    ) -> str:
         """
         Save the resulting set of first-page Spans by Category.
 
@@ -105,6 +121,10 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         :param include_konfuzio: Enables pickle serialization as a value, not as a reference (for more info, read
         https://github.com/cloudpipe/cloudpickle#overriding-pickles-serialization-mechanism-for-importable-constructs).
         :type include_konfuzio: bool
+        :param max_ram: Specify maximum memory usage condition to save model.
+        :raises MemoryError: When the size of the model in memory is greater than the maximum value.
+        :param reduce_weight: Remove all non-strictly necessary parameters before saving.
+        :type reduce_weight: bool
         """
         if save_json:
             self.path = self.output_dir + f'/{get_timestamp()}_first_page_spans.json'
@@ -112,7 +132,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
             with open(self.path, 'w+') as f:
                 json.dump(self.first_page_spans, f)
         else:
-            self.path = super().save(include_konfuzio=include_konfuzio)
+            self.path = super().save(include_konfuzio=include_konfuzio, max_ram=max_ram, reduce_weight=reduce_weight)
         return self.path
 
     def load_json(self, model_path=""):
