@@ -298,6 +298,15 @@ uncertain
             label_set=label_set,
             spans=[Span(start_offset=68, end_offset=72)],
         )
+        _ = Annotation(
+            id_=25,
+            document=document,
+            is_correct=False,
+            label=self.no_label,
+            label_set=self.no_label_set,
+            spans=[Span(start_offset=67, end_offset=71)],
+        )
+
 
         # Documents with sub-Documents in them
 
@@ -456,7 +465,7 @@ uncertain
         _ = Page(id_=None, original_size=(320, 240), document=document_10, start_offset=0, end_offset=21, number=1)
         _ = Page(id_=None, original_size=(320, 240), document=document_10, start_offset=22, end_offset=43, number=2)
 
-        ##########
+
         # Documents to test vertical merging logic
 
         vert_document = Document(project=self, category=category, text='p1 ra\np2 ra\fra p3\np4 ra', dataset_status=0)
