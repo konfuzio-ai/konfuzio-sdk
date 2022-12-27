@@ -2300,7 +2300,7 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
     def test_document_lose_weight(self):
         """Test that Document.lose_weight() removes all the right annotations."""
         project = LocalTextProject()
-        document = project.test_documents[-1]
+        document = project.test_documents[-6]
 
         assert len(document.annotations(use_correct=False, ignore_below_threshold=False)) == 11
 
