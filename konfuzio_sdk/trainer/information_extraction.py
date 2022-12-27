@@ -1346,9 +1346,9 @@ class BaseModel(metaclass=abc.ABCMeta):
         """Convert class name to a machine-readable name."""
         return f'{self.name.lower().strip()}'
 
-    @abc.abstractmethod
-    def restore_operations(self, *args, **kwargs):
-        """Restore Documents of the Category so that we can run the evaluation later."""
+    # @abc.abstractmethod
+    # def restore_operations(self, *args, **kwargs):
+    #     """Restore Documents of the Category so that we can run the evaluation later."""
 
     @abc.abstractmethod
     def reduce_model_weight(self, *args, **kwargs):
