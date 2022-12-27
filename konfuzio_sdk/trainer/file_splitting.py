@@ -2,19 +2,17 @@
 import abc
 import json
 import logging
-import os
 import pathlib
 import sys
 
 from copy import deepcopy
-from pympler import asizeof
 from typing import List, Union
 
 from konfuzio_sdk.data import Document, Page
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
 from konfuzio_sdk.trainer.information_extraction import load_model, BaseModel
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
-from konfuzio_sdk.utils import get_timestamp, normalize_memory
+from konfuzio_sdk.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +23,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def __init__(self, *args, **kwargs):
         """Initialize the class."""
+        self.model_type = 'file_splitting'
         self.output_dir = None
 
     @abc.abstractmethod
@@ -41,33 +40,6 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         :return: A Page with or without is_first_page label.
         """
 
-    def restore_operations(self, *args, **kwargs):
-        """Run a placeholder for an inherited method that is not needed for this child class."""
-        return
-
-    def reduce_model_weight(self, max_ram, *args, **kwargs):
-        """Remove all non-strictly necessary parameters before saving."""
-        self.lose_weight()
-
-        # if no argument passed, get project max_ram
-        max_ram = self.documents[0].project.max_ram
-
-        max_ram = normalize_memory(max_ram)
-        sys.setrecursionlimit(99999999)  # ?
-
-        if max_ram and asizeof.asizeof(self) > max_ram:
-            raise MemoryError(f"AI model memory use ({asizeof.asizeof(self)}) exceeds maximum ({max_ram=}).")
-
-    def generate_pickle_output_paths(self, *args, **kwargs):
-        """Generate paths for temporary and resulting pickle files."""
-        temp_pkl_file_path = os.path.join(
-            self.output_dir, f'{get_timestamp()}_{self.name_lower()}_{self.documents[0].project.id_}_tmp.pkl'
-        )
-        pkl_file_path = os.path.join(
-            self.output_dir, f'{get_timestamp()}_{self.name_lower()}_{self.documents[0].project.id_}.pkl'
-        )
-        return temp_pkl_file_path, pkl_file_path
-
 
 class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
     """Fallback definition of a File Splitting Model."""
@@ -75,13 +47,13 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
     def __init__(self, *args, **kwargs):
         """Initialize the ContextAwareFileSplittingModel."""
         super().__init__()
-        self.name = self.__class__.__name__
         self.documents = None
         self.test_documents = None
         self.categories = None
         self.tokenizer = None
         self.first_page_spans = None
         self.path = None
+        sys.setrecursionlimit(99999999)
 
     def fit(self, *args, **kwargs) -> dict:
         """
@@ -113,13 +85,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         self.first_page_spans = first_page_spans
         return first_page_spans
 
-    def save(
-        self,
-        save_json=True,
-        include_konfuzio=False,
-        max_ram=None,
-        reduce_weight: bool = False,
-    ) -> str:
+    def save(self, save_json=True, include_konfuzio=False) -> str:
         """
         Save the resulting set of first-page Spans by Category.
 
@@ -128,10 +94,6 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         :param include_konfuzio: Enables pickle serialization as a value, not as a reference (for more info, read
         https://github.com/cloudpipe/cloudpickle#overriding-pickles-serialization-mechanism-for-importable-constructs).
         :type include_konfuzio: bool
-        :param max_ram: Specify maximum memory usage condition to save model.
-        :raises MemoryError: When the size of the model in memory is greater than the maximum value.
-        :param reduce_weight: Remove all non-strictly necessary parameters before saving.
-        :type reduce_weight: bool
         """
         if save_json:
             self.path = self.output_dir + f'/{get_timestamp()}_first_page_spans.json'
@@ -139,7 +101,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
             with open(self.path, 'w+') as f:
                 json.dump(self.first_page_spans, f)
         else:
-            self.path = super().save(include_konfuzio=include_konfuzio, max_ram=max_ram, reduce_weight=reduce_weight)
+            self.path = super().save(include_konfuzio=include_konfuzio)
         return self.path
 
     def load_json(self, model_path=""):

@@ -14,7 +14,6 @@ replacing the end-to-end pipeline into two parts.
 Sun, H., Kuang, Z., Yue, X., Lin, C., & Zhang, W. (2021). Spatial Dual-Modality Graph Reasoning for Key Information
 Extraction. arXiv. https://doi.org/10.48550/ARXIV.2103.14470
 """
-import abc
 import bz2
 import collections
 import difflib
@@ -1334,28 +1333,13 @@ def add_extractions_as_annotations(
                 )
 
 
-class BaseModel(metaclass=abc.ABCMeta):
+class BaseModel:
     """Base model to define common methods for child classes."""
 
     def __init__(self):
         """Initialize a BaseModel class."""
-        self.name = None
-
-    def name_lower(self):
-        """Convert class name to machine readable name."""
-        return f'{self.name.lower().strip()}'
-
-    @abc.abstractmethod
-    def restore_operations(self, *args, **kwargs):
-        """Restore Documents of the Category so that we can run the evaluation later."""
-
-    @abc.abstractmethod
-    def reduce_model_weight(self, *args, **kwargs):
-        """Remove all non-strictly necessary parameters before saving."""
-
-    @abc.abstractmethod
-    def generate_pickle_output_paths(self, *args, **kwargs):
-        """Generate paths for temporary and resulting pickle files."""
+        self.model_type = None
+        self.output_dir = None
 
     def save(self, include_konfuzio=True, reduce_weight=False, max_ram=None) -> str:
         """
@@ -1373,21 +1357,56 @@ class BaseModel(metaclass=abc.ABCMeta):
         logger.info(f'{include_konfuzio=}')
         version = pkg_resources.get_distribution("konfuzio-sdk").version
         logger.info(f'{version=}')
-        logger.info(f'{reduce_weight=}')
-        logger.info(f'{max_ram=}')
+        if not self.output_dir:
+            if self.model_type == "file_splitting":
+                self.output_dir = self.documents[0].project.model_folder
+            else:
+                self.output_dir = self.category.project.model_folder
         if include_konfuzio:
             cloudpickle.register_pickle_by_value(konfuzio_sdk)
             # todo register all dependencies?
         pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
+        if self.model_type == 'file_splitting':
+            temp_pkl_file_path = os.path.join(
+                self.output_dir, f'{get_timestamp()}_{self.__class__.__name__}_{self.documents[0].project.id_}_tmp.pkl'
+            )
+            pkl_file_path = os.path.join(
+                self.output_dir, f'{get_timestamp()}_{self.__class__.__name__}_{self.documents[0].project.id_}.pkl'
+            )
+        else:
+            logger.info(f'{reduce_weight=}')
+            logger.info(f'{max_ram=}')
+            # Keep Documents of the Category so that we can restore them later
+            category_documents = self.category.documents() + self.category.test_documents()
+            # TODO: add Document.lose_weight in SDK - remove NO_LABEL Annotations from the Documents
+            # for document in category_documents:
+            #     no_label_annotations = document.annotations(label=self.category.project.no_label)
+            #     clean_annotations = list(set(document.annotations()) - set(no_label_annotations))
+            #     document._annotations = clean_annotations
 
-        if reduce_weight:
-            self.reduce_model_weight(max_ram)  # todo: review and test (#9461)
+            self.df_train = None
+            if reduce_weight:
+                self.lose_weight()  # todo: review and test (#9461)
 
-        logger.info(f'Model size: {asizeof.asizeof(self) / 1_000_000} MB')
+            logger.info(f'Model size: {asizeof.asizeof(self) / 1_000_000} MB')
 
-        logger.info('Getting save paths')
+            # if no argument passed, get project max_ram
+            if not max_ram:
+                max_ram = self.category.project.max_ram
 
-        temp_pkl_file_path, pkl_file_path = self.generate_pickle_output_paths()
+            max_ram = normalize_memory(max_ram)
+
+            if max_ram and asizeof.asizeof(self) > max_ram:
+                raise MemoryError(f"AI model memory use ({asizeof.asizeof(self)}) exceeds maximum ({max_ram=}).")
+
+            sys.setrecursionlimit(99999999)  # ?
+
+            logger.info('Getting save paths')
+
+            temp_pkl_file_path = os.path.join(
+                self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}_tmp.pkl'
+            )
+            pkl_file_path = os.path.join(self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}.pkl')
 
         logger.info('Saving model with cloudpickle')
         # first save with cloudpickle
@@ -1404,9 +1423,13 @@ class BaseModel(metaclass=abc.ABCMeta):
         logger.info('Deleting cloudpickle file')
         # then delete cloudpickle file
         os.remove(temp_pkl_file_path)
+
         size_string = f'{os.path.getsize(pkl_file_path) / 1_000_000} MB'
-        logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
-        self.restore_operations()
+
+        if self.model_type != 'file_splitting':
+            # restore Documents of the Category so that we can run the evaluation later
+            logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
+            self.category.project._documents = category_documents
         return pkl_file_path
 
 
@@ -1422,7 +1445,6 @@ class Trainer(BaseModel):
         self.category = None
         self.name = self.__class__.__name__
         self.label_feature_list = None  # will be set later
-        self.project = None
 
         self.df_data = None
         self.df_valid = None
@@ -1446,6 +1468,10 @@ class Trainer(BaseModel):
         self.evaluate()
         self.lose_weight()
         return self
+
+    def name_lower(self):
+        """Convert class name to machine readable name."""
+        return f'{self.name.lower().strip()}'
 
     def lose_weight(self):
         """Delete everything that is not necessary for extraction."""
@@ -2099,6 +2125,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         self.no_label_set_name = None
         self.no_label_name = None
 
+        self.model_type = 'extraction_ai'
         self.output_dir = None
 
     def features(self, document: Document):
@@ -2663,39 +2690,3 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         template_clf_evaluation = Evaluation(eval_list)
 
         return template_clf_evaluation
-
-    def restore_operations(self, *args, **kwargs):
-        """Restore Documents of the Category so that we can run the evaluation later."""
-        category_documents = self.category.documents() + self.category.test_documents()
-        # TODO: add Document.lose_weight in SDK - remove NO_LABEL Annotations from the Documents
-        # for document in category_documents:
-        #     no_label_annotations = document.annotations(label=self.category.project.no_label)
-        #     clean_annotations = list(set(document.annotations()) - set(no_label_annotations))
-        #     document._annotations = clean_annotations
-        self.df_train = None
-        self.category.project._documents = category_documents
-
-    def reduce_model_weight(self, max_ram, *args, **kwargs):
-        """
-        Remove all non-strictly necessary parameters before saving.
-
-        :param max_ram: Specify maximum memory usage condition to save model.
-        :raises MemoryError: When the size of the model in memory is greater than the maximum value.
-        """
-        self.lose_weight()
-
-        # if no argument passed, get project max_ram
-        if not max_ram:
-            max_ram = self.category.project.max_ram
-
-        max_ram = normalize_memory(max_ram)
-        sys.setrecursionlimit(99999999)  # ?
-
-        if max_ram and asizeof.asizeof(self) > max_ram:
-            raise MemoryError(f"AI model memory use ({asizeof.asizeof(self)}) exceeds maximum ({max_ram=}).")
-
-    def generate_pickle_output_paths(self, *args, **kwargs):
-        """Generate paths for temporary and resulting pickle files."""
-        temp_pkl_file_path = os.path.join(self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}_tmp.pkl')
-        pkl_file_path = os.path.join(self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}.pkl')
-        return temp_pkl_file_path, pkl_file_path
