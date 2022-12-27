@@ -1358,6 +1358,10 @@ class BaseModel(metaclass=abc.ABCMeta):
     def normalize_model_memory_usage(self, *args, **kwargs):
         """Ensure that a model is not exceeding allowed max_ram."""
 
+    @abc.abstractmethod
+    def restore_operations(self, *args, **kwargs):
+        """Restore Documents of the Category so that we can run the evaluation later."""
+
     def save(self, include_konfuzio=True, reduce_weight=False, max_ram=None) -> str:
         """
         Save a pickled instance of the class.
@@ -1382,17 +1386,6 @@ class BaseModel(metaclass=abc.ABCMeta):
         temp_pkl_file_path, pkl_file_path = self.generate_pickle_output_paths()
         logger.info(f'{reduce_weight=}')
         logger.info(f'{max_ram=}')
-        if self.model_type != 'file_splitting':
-            # Keep Documents of the Category so that we can restore them later
-            category_documents = self.category.documents() + self.category.test_documents()
-            # TODO: add Document.lose_weight in SDK - remove NO_LABEL Annotations from the Documents
-            # for document in category_documents:
-            #     no_label_annotations = document.annotations(label=self.category.project.no_label)
-            #     clean_annotations = list(set(document.annotations()) - set(no_label_annotations))
-            #     document._annotations = clean_annotations
-
-            self.df_train = None
-
         if reduce_weight:
             self.reduce_model_weight()  # todo: review and test (#9461)
         logger.info(f'Model size: {asizeof.asizeof(self) / 1_000_000} MB')
@@ -1401,24 +1394,17 @@ class BaseModel(metaclass=abc.ABCMeta):
         # first save with cloudpickle
         with open(temp_pkl_file_path, 'wb') as f:  # see: https://stackoverflow.com/a/9519016/5344492
             cloudpickle.dump(self, f)
-
         logger.info('Compressing model with bz2')
-
         # then save to bz2 in chunks
         with open(temp_pkl_file_path, 'rb') as input_f:
             with bz2.open(pkl_file_path, 'wb') as output_f:
                 shutil.copyfileobj(input_f, output_f)
-
         logger.info('Deleting cloudpickle file')
         # then delete cloudpickle file
         os.remove(temp_pkl_file_path)
-
         size_string = f'{os.path.getsize(pkl_file_path) / 1_000_000} MB'
-
-        if self.model_type != 'file_splitting':
-            # restore Documents of the Category so that we can run the evaluation later
-            logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
-            self.category.project._documents = category_documents
+        self.restore_operations()
+        logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
         return pkl_file_path
 
 
@@ -2688,6 +2674,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
     def reduce_model_weight(self, *args, **kwargs):
         """Remove all non-strictly necessary parameters before saving."""
+        self.df_train = None
         self.lose_weight()
 
     def normalize_model_memory_usage(self, max_ram, *args, **kwargs):
@@ -2702,3 +2689,13 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             raise MemoryError(f"AI model memory use ({asizeof.asizeof(self)}) exceeds maximum ({max_ram=}).")
 
         sys.setrecursionlimit(99999999)
+
+    def restore_operations(self, *args, **kwargs):
+        """Restore Documents of the Category so that we can run the evaluation later."""
+        category_documents = self.category.documents() + self.category.test_documents()
+        # TODO: add Document.lose_weight in SDK - remove NO_LABEL Annotations from the Documents
+        # for document in category_documents:
+        #     no_label_annotations = document.annotations(label=self.category.project.no_label)
+        #     clean_annotations = list(set(document.annotations()) - set(no_label_annotations))
+        #     document._annotations = clean_annotations
+        self.category.project._documents = category_documents

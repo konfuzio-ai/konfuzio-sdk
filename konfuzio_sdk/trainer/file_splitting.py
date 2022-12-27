@@ -73,6 +73,10 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
 
         sys.setrecursionlimit(99999999)
 
+    def restore_operations(self, *args, **kwargs):
+        """Run a placeholder for an inherited method that is not needed for this child class."""
+        return
+
 
 class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
     """Fallback definition of a File Splitting Model."""
