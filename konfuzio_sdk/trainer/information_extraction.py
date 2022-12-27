@@ -1340,19 +1340,7 @@ class BaseModel(metaclass=abc.ABCMeta):
     def __init__(self):
         """Initialize a BaseModel class."""
         self.model_type = None
-        self.name = None
-
-    def name_lower(self):
-        """Convert class name to a machine-readable name."""
-        return f'{self.name.lower().strip()}'
-
-    # @abc.abstractmethod
-    # def restore_operations(self, *args, **kwargs):
-    #     """Restore Documents of the Category so that we can run the evaluation later."""
-
-    @abc.abstractmethod
-    def reduce_model_weight(self, *args, **kwargs):
-        """Remove all non-strictly necessary parameters before saving."""
+        self.output_dir = None
 
     @abc.abstractmethod
     def generate_pickle_output_paths(self, *args, **kwargs):
@@ -1374,19 +1362,15 @@ class BaseModel(metaclass=abc.ABCMeta):
         logger.info(f'{include_konfuzio=}')
         version = pkg_resources.get_distribution("konfuzio-sdk").version
         logger.info(f'{version=}')
-        logger.info(f'{reduce_weight=}')
-        logger.info(f'{max_ram=}')
         if include_konfuzio:
             cloudpickle.register_pickle_by_value(konfuzio_sdk)
             # todo register all dependencies?
         pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
         logger.info('Getting save paths')
         temp_pkl_file_path, pkl_file_path = self.generate_pickle_output_paths()
-        if reduce_weight:
-            self.reduce_model_weight(max_ram)  # todo: review and test (#9461)
-        logger.info(f'Model size: {asizeof.asizeof(self) / 1_000_000} MB')
-
         if self.model_type != 'file_splitting':
+            logger.info(f'{reduce_weight=}')
+            logger.info(f'{max_ram=}')
             # Keep Documents of the Category so that we can restore them later
             category_documents = self.category.documents() + self.category.test_documents()
             # TODO: add Document.lose_weight in SDK - remove NO_LABEL Annotations from the Documents
@@ -1396,6 +1380,21 @@ class BaseModel(metaclass=abc.ABCMeta):
             #     document._annotations = clean_annotations
 
             self.df_train = None
+            if reduce_weight:
+                self.lose_weight()  # todo: review and test (#9461)
+
+            logger.info(f'Model size: {asizeof.asizeof(self) / 1_000_000} MB')
+
+            # if no argument passed, get project max_ram
+            if not max_ram:
+                max_ram = self.category.project.max_ram
+
+            max_ram = normalize_memory(max_ram)
+
+            if max_ram and asizeof.asizeof(self) > max_ram:
+                raise MemoryError(f"AI model memory use ({asizeof.asizeof(self)}) exceeds maximum ({max_ram=}).")
+
+            sys.setrecursionlimit(99999999)  # ?
 
         logger.info('Saving model with cloudpickle')
         # first save with cloudpickle
@@ -2679,25 +2678,6 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         template_clf_evaluation = Evaluation(eval_list)
 
         return template_clf_evaluation
-
-    def reduce_model_weight(self, max_ram, *args, **kwargs):
-        """
-        Remove all non-strictly necessary parameters before saving.
-
-        :param max_ram: Specify maximum memory usage condition to save model.
-        :raises MemoryError: When the size of the model in memory is greater than the maximum value.
-        """
-        self.lose_weight()
-
-        # if no argument passed, get project max_ram
-        if not max_ram:
-            max_ram = self.category.project.max_ram
-
-        max_ram = normalize_memory(max_ram)
-        sys.setrecursionlimit(99999999)  # ?
-
-        if max_ram and asizeof.asizeof(self) > max_ram:
-            raise MemoryError(f"AI model memory use ({asizeof.asizeof(self)}) exceeds maximum ({max_ram=}).")
 
     def generate_pickle_output_paths(self, *args, **kwargs):
         """Generate paths for temporary and resulting pickle files."""
