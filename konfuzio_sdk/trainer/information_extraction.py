@@ -1354,6 +1354,10 @@ class BaseModel(metaclass=abc.ABCMeta):
     def reduce_model_weight(self, *args, **kwargs):
         """Remove all non-strictly necessary parameters before saving."""
 
+    @abc.abstractmethod
+    def normalize_model_memory_usage(self, *args, **kwargs):
+        """Ensure that a model is not exceeding allowed max_ram."""
+
     def save(self, include_konfuzio=True, reduce_weight=False, max_ram=None) -> str:
         """
         Save a pickled instance of the class.
@@ -1388,23 +1392,11 @@ class BaseModel(metaclass=abc.ABCMeta):
             #     document._annotations = clean_annotations
 
             self.df_train = None
+
         if reduce_weight:
             self.reduce_model_weight()  # todo: review and test (#9461)
-
         logger.info(f'Model size: {asizeof.asizeof(self) / 1_000_000} MB')
-
-        if self.model_type != 'file_splitting':
-            # if no argument passed, get project max_ram
-            if not max_ram:
-                max_ram = self.category.project.max_ram
-
-            max_ram = normalize_memory(max_ram)
-
-            if max_ram and asizeof.asizeof(self) > max_ram:
-                raise MemoryError(f"AI model memory use ({asizeof.asizeof(self)}) exceeds maximum ({max_ram=}).")
-
-            sys.setrecursionlimit(99999999)  # ?
-
+        self.normalize_model_memory_usage(max_ram)
         logger.info('Saving model with cloudpickle')
         # first save with cloudpickle
         with open(temp_pkl_file_path, 'wb') as f:  # see: https://stackoverflow.com/a/9519016/5344492
@@ -2697,3 +2689,16 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
     def reduce_model_weight(self, *args, **kwargs):
         """Remove all non-strictly necessary parameters before saving."""
         self.lose_weight()
+
+    def normalize_model_memory_usage(self, max_ram, *args, **kwargs):
+        """Ensure that a model is not exceeding allowed max_ram."""
+        # if no argument passed, get project max_ram
+        if not max_ram:
+            max_ram = self.category.project.max_ram
+
+        max_ram = normalize_memory(max_ram)
+
+        if max_ram and asizeof.asizeof(self) > max_ram:
+            raise MemoryError(f"AI model memory use ({asizeof.asizeof(self)}) exceeds maximum ({max_ram=}).")
+
+        sys.setrecursionlimit(99999999)

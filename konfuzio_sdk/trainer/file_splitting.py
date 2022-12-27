@@ -4,17 +4,17 @@ import json
 import logging
 import os
 import pathlib
-
-# import sys
+import sys
 
 from copy import deepcopy
+from pympler import asizeof
 from typing import List, Union
 
 from konfuzio_sdk.data import Document, Page
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
 from konfuzio_sdk.trainer.information_extraction import load_model, BaseModel
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
-from konfuzio_sdk.utils import get_timestamp
+from konfuzio_sdk.utils import get_timestamp, normalize_memory
 
 logger = logging.getLogger(__name__)
 
@@ -57,9 +57,18 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         self.documents = None
         self.test_documents = None
 
-    def reduce_model_weight(self, *args, **kwargs):
-        """Remove all non-strictly necessary parameters before saving."""
-        self.lose_weight()
+    def normalize_model_memory_usage(self, max_ram, *args, **kwargs):
+        """Ensure that a model is not exceeding allowed max_ram."""
+        # if no argument passed, get project max_ram
+        if not max_ram:
+            max_ram = self.documents[0].project.max_ram
+
+        max_ram = normalize_memory(max_ram)
+
+        if max_ram and asizeof.asizeof(self) > max_ram:
+            raise MemoryError(f"AI model memory use ({asizeof.asizeof(self)}) exceeds maximum ({max_ram=}).")
+
+        sys.setrecursionlimit(99999999)
 
 
 class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
