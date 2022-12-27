@@ -179,11 +179,11 @@ class LocalTextProject(Project):
         # Document with overlapping Annotations to test view_annotation filtering
 
         doc_3_text = """anno1
-date1:08/12/2001   span1
-date2: 08/12/2001   span2
-uncertain
- last x
-"""
+        date1:08/12/2001   span1
+        date2: 08/12/2001   span2
+        uncertain
+         last x
+        """
         document = Document(project=self, category=category, text=doc_3_text, dataset_status=3)
         label_set_2 = LabelSet(id_=4, project=self, categories=[category])
         view_label = Label(id_=8, text='ViewLabelName', project=self, label_sets=[label_set_2])
@@ -298,6 +298,7 @@ uncertain
             label_set=label_set,
             spans=[Span(start_offset=68, end_offset=72)],
         )
+
         _ = Annotation(
             id_=25,
             document=document,
@@ -307,6 +308,193 @@ uncertain
             spans=[Span(start_offset=67, end_offset=71)],
         )
 
+        ##########
+        # Documents to test vertical merging logic
+
+        vert_document = Document(project=self, category=category, text='p1 ra\np2 ra\fra p3\np4 ra', dataset_status=0)
+        page1 = Page(id_=None, document=vert_document, start_offset=0, end_offset=8, number=1, original_size=(12, 6))
+        page2 = Page(id_=None, document=vert_document, start_offset=9, end_offset=23, number=2, original_size=(12, 6))
+
+        document_bbox = {
+            # page 1
+            # line 1
+            0: Bbox(x0=0, x1=1, y0=0, y1=2, page=page1),
+            1: Bbox(x0=2, x1=3, y0=0, y1=2, page=page1),
+            2: Bbox(x0=4, x1=5, y0=0, y1=2, page=page1),
+            3: Bbox(x0=5, x1=6, y0=0, y1=2, page=page1),
+            4: Bbox(x0=7, x1=8, y0=0, y1=2, page=page1),
+            # line 2
+            6: Bbox(x0=2, x1=3, y0=3, y1=5, page=page1),
+            7: Bbox(x0=5, x1=6, y0=3, y1=5, page=page1),
+            8: Bbox(x0=7, x1=8, y0=3, y1=5, page=page1),
+            9: Bbox(x0=8, x1=9, y0=3, y1=5, page=page1),
+            10: Bbox(x0=10, x1=11, y0=3, y1=5, page=page1),
+            # page 2
+            # line 1
+            12: Bbox(x0=0, x1=1, y0=0, y1=2, page=page2),
+            13: Bbox(x0=2, x1=3, y0=0, y1=2, page=page2),
+            15: Bbox(x0=4, x1=5, y0=0, y1=2, page=page2),
+            16: Bbox(x0=5, x1=6, y0=0, y1=2, page=page2),
+            # line 2
+            18: Bbox(x0=7, x1=8, y0=3, y1=5, page=page2),
+            19: Bbox(x0=2, x1=3, y0=3, y1=5, page=page2),
+            21: Bbox(x0=5, x1=6, y0=3, y1=5, page=page2),
+            22: Bbox(x0=7, x1=8, y0=3, y1=5, page=page2),
+        }
+
+        vert_document.set_bboxes(document_bbox)
+
+        span1 = Span(start_offset=0, end_offset=2)
+        span2 = Span(start_offset=6, end_offset=8)
+        span3 = Span(start_offset=15, end_offset=17)
+        span4 = Span(start_offset=18, end_offset=20)
+
+        _ = Annotation(
+            document=vert_document,
+            is_correct=False,
+            label=default_label,
+            label_set=self.no_label_set,
+            spans=[span1],
+            confidence=0.4,
+        )
+        _ = Annotation(
+            document=vert_document,
+            is_correct=False,
+            label=default_label,
+            label_set=self.no_label_set,
+            spans=[span2],
+            confidence=0.2,
+        )
+        _ = Annotation(
+            document=vert_document,
+            is_correct=False,
+            label=default_label,
+            label_set=self.no_label_set,
+            spans=[span3],
+            confidence=0.6,
+        )
+        _ = Annotation(
+            document=vert_document,
+            is_correct=False,
+            label=default_label,
+            label_set=self.no_label_set,
+            spans=[span4],
+            confidence=0.8,
+        )
+
+        vert_document_2_text = """a1  s1
+            s2
+            s3
+        a2  s4
+        """
+        vert_document_2 = Document(project=self, category=category, text=vert_document_2_text, dataset_status=0)
+
+        page1 = Page(
+            id_=None, document=vert_document_2, start_offset=0, end_offset=27, number=1, original_size=(14, 14)
+        )
+
+        document_bbox_2 = {
+            # line 1
+            0: Bbox(x0=0, x1=1, y0=0, y1=2, page=page1),
+            1: Bbox(x0=1, x1=2, y0=0, y1=2, page=page1),
+            2: Bbox(x0=3, x1=4, y0=0, y1=2, page=page1),
+            3: Bbox(x0=4, x1=5, y0=0, y1=2, page=page1),
+            4: Bbox(x0=6, x1=7, y0=0, y1=2, page=page1),
+            5: Bbox(x0=7, x1=8, y0=0, y1=2, page=page1),
+            # line 2
+            7: Bbox(x0=0, x1=1, y0=3, y1=5, page=page1),
+            8: Bbox(x0=1, x1=2, y0=3, y1=5, page=page1),
+            9: Bbox(x0=3, x1=4, y0=3, y1=5, page=page1),
+            10: Bbox(x0=4, x1=5, y0=3, y1=5, page=page1),
+            11: Bbox(x0=6, x1=7, y0=3, y1=5, page=page1),
+            12: Bbox(x0=7, x1=8, y0=3, y1=5, page=page1),
+            # line 3
+            14: Bbox(x0=0, x1=1, y0=6, y1=8, page=page1),
+            15: Bbox(x0=1, x1=2, y0=6, y1=8, page=page1),
+            16: Bbox(x0=3, x1=4, y0=6, y1=8, page=page1),
+            17: Bbox(x0=4, x1=5, y0=6, y1=8, page=page1),
+            18: Bbox(x0=6, x1=7, y0=6, y1=8, page=page1),
+            19: Bbox(x0=7, x1=8, y0=6, y1=8, page=page1),
+            # line 4
+            21: Bbox(x0=0, x1=1, y0=10, y1=12, page=page1),
+            23: Bbox(x0=1, x1=2, y0=10, y1=12, page=page1),
+            24: Bbox(x0=3, x1=4, y0=10, y1=12, page=page1),
+            25: Bbox(x0=4, x1=5, y0=10, y1=12, page=page1),
+            26: Bbox(x0=6, x1=7, y0=10, y1=12, page=page1),
+            27: Bbox(x0=7, x1=8, y0=10, y1=12, page=page1),
+        }
+
+        vert_document_2.set_bboxes(document_bbox_2)
+
+        vert_label_set = LabelSet(id_=24, project=self, categories=[category])
+        vert_label = Label(id_=20, text='VertLabelName', project=self, label_sets=[vert_label_set])
+        vert_label_2 = Label(id_=21, text='VertLabelName 2', project=self, label_sets=[vert_label_set])
+
+        vert_annotation_set_1 = AnnotationSet(id_=15, document=vert_document_2, label_set=vert_label_set)
+        vert_annotation_set_2 = AnnotationSet(id_=16, document=vert_document_2, label_set=vert_label_set)
+        vert_annotation_set_3 = AnnotationSet(id_=17, document=vert_document_2, label_set=vert_label_set)
+        vert_annotation_set_4 = AnnotationSet(id_=18, document=vert_document_2, label_set=vert_label_set)
+
+        _ = Annotation(
+            id_=43,
+            document=vert_document_2,
+            is_correct=False,
+            annotation_set=vert_annotation_set_1,
+            confidence=0.92,
+            label=vert_label,
+            label_set=vert_label_set,
+            spans=[Span(start_offset=0, end_offset=2)],
+        )
+
+        _ = Annotation(
+            id_=44,
+            document=vert_document_2,
+            confidence=0.5,
+            annotation_set=vert_annotation_set_1,
+            label=vert_label_2,
+            label_set=vert_label_set,
+            spans=[Span(start_offset=4, end_offset=6)],
+        )
+        _ = Annotation(
+            id_=45,
+            document=vert_document_2,
+            is_correct=False,
+            annotation_set=vert_annotation_set_2,
+            confidence=0.3,
+            label=vert_label_2,
+            label_set=vert_label_set,
+            spans=[Span(start_offset=11, end_offset=13)],
+        )
+        _ = Annotation(
+            id_=46,
+            document=vert_document_2,
+            is_correct=False,
+            annotation_set=vert_annotation_set_3,
+            confidence=0.4,
+            label=vert_label_2,
+            label_set=vert_label_set,
+            spans=[Span(start_offset=18, end_offset=20)],
+        )
+        _ = Annotation(
+            id_=47,
+            document=vert_document_2,
+            is_correct=False,
+            annotation_set=vert_annotation_set_4,
+            confidence=0.4,
+            label=vert_label,
+            label_set=vert_label_set,
+            spans=[Span(start_offset=21, end_offset=23)],
+        )
+        _ = Annotation(
+            id_=48,
+            document=vert_document_2,
+            is_correct=False,
+            annotation_set=vert_annotation_set_4,
+            confidence=0.9,
+            label=vert_label_2,
+            label_set=vert_label_set,
+            spans=[Span(start_offset=25, end_offset=27)],
+        )
 
         # Documents with sub-Documents in them
 
@@ -464,191 +652,3 @@ uncertain
         document_10 = Document(id_=None, project=self, category=category_4, text=text_10, dataset_status=3)
         _ = Page(id_=None, original_size=(320, 240), document=document_10, start_offset=0, end_offset=21, number=1)
         _ = Page(id_=None, original_size=(320, 240), document=document_10, start_offset=22, end_offset=43, number=2)
-
-
-        # Documents to test vertical merging logic
-
-        vert_document = Document(project=self, category=category, text='p1 ra\np2 ra\fra p3\np4 ra', dataset_status=0)
-        page1 = Page(id_=None, document=vert_document, start_offset=0, end_offset=8, number=1, original_size=(12, 6))
-        page2 = Page(id_=None, document=vert_document, start_offset=9, end_offset=23, number=2, original_size=(12, 6))
-
-        document_bbox = {
-            # page 1
-            # line 1
-            0: Bbox(x0=0, x1=1, y0=0, y1=2, page=page1),
-            1: Bbox(x0=2, x1=3, y0=0, y1=2, page=page1),
-            2: Bbox(x0=4, x1=5, y0=0, y1=2, page=page1),
-            3: Bbox(x0=5, x1=6, y0=0, y1=2, page=page1),
-            4: Bbox(x0=7, x1=8, y0=0, y1=2, page=page1),
-            # line 2
-            6: Bbox(x0=2, x1=3, y0=3, y1=5, page=page1),
-            7: Bbox(x0=5, x1=6, y0=3, y1=5, page=page1),
-            8: Bbox(x0=7, x1=8, y0=3, y1=5, page=page1),
-            9: Bbox(x0=8, x1=9, y0=3, y1=5, page=page1),
-            10: Bbox(x0=10, x1=11, y0=3, y1=5, page=page1),
-            # page 2
-            # line 1
-            12: Bbox(x0=0, x1=1, y0=0, y1=2, page=page2),
-            13: Bbox(x0=2, x1=3, y0=0, y1=2, page=page2),
-            15: Bbox(x0=4, x1=5, y0=0, y1=2, page=page2),
-            16: Bbox(x0=5, x1=6, y0=0, y1=2, page=page2),
-            # line 2
-            18: Bbox(x0=7, x1=8, y0=3, y1=5, page=page2),
-            19: Bbox(x0=2, x1=3, y0=3, y1=5, page=page2),
-            21: Bbox(x0=5, x1=6, y0=3, y1=5, page=page2),
-            22: Bbox(x0=7, x1=8, y0=3, y1=5, page=page2),
-        }
-
-        vert_document.set_bboxes(document_bbox)
-
-        span1 = Span(start_offset=0, end_offset=2)
-        span2 = Span(start_offset=6, end_offset=8)
-        span3 = Span(start_offset=15, end_offset=17)
-        span4 = Span(start_offset=18, end_offset=20)
-
-        _ = Annotation(
-            document=vert_document,
-            is_correct=False,
-            label=default_label,
-            label_set=self.no_label_set,
-            spans=[span1],
-            confidence=0.4,
-        )
-        _ = Annotation(
-            document=vert_document,
-            is_correct=False,
-            label=default_label,
-            label_set=self.no_label_set,
-            spans=[span2],
-            confidence=0.2,
-        )
-        _ = Annotation(
-            document=vert_document,
-            is_correct=False,
-            label=default_label,
-            label_set=self.no_label_set,
-            spans=[span3],
-            confidence=0.6,
-        )
-        _ = Annotation(
-            document=vert_document,
-            is_correct=False,
-            label=default_label,
-            label_set=self.no_label_set,
-            spans=[span4],
-            confidence=0.8,
-        )
-
-        vert_document_2_text = """a1  s1
-    s2
-    s3
-a2  s4
-"""
-        vert_document_2 = Document(project=self, category=category, text=vert_document_2_text, dataset_status=0)
-
-        page1 = Page(
-            id_=None, document=vert_document_2, start_offset=0, end_offset=27, number=1, original_size=(14, 14)
-        )
-
-        document_bbox_2 = {
-            # line 1
-            0: Bbox(x0=0, x1=1, y0=0, y1=2, page=page1),
-            1: Bbox(x0=1, x1=2, y0=0, y1=2, page=page1),
-            2: Bbox(x0=3, x1=4, y0=0, y1=2, page=page1),
-            3: Bbox(x0=4, x1=5, y0=0, y1=2, page=page1),
-            4: Bbox(x0=6, x1=7, y0=0, y1=2, page=page1),
-            5: Bbox(x0=7, x1=8, y0=0, y1=2, page=page1),
-            # line 2
-            7: Bbox(x0=0, x1=1, y0=3, y1=5, page=page1),
-            8: Bbox(x0=1, x1=2, y0=3, y1=5, page=page1),
-            9: Bbox(x0=3, x1=4, y0=3, y1=5, page=page1),
-            10: Bbox(x0=4, x1=5, y0=3, y1=5, page=page1),
-            11: Bbox(x0=6, x1=7, y0=3, y1=5, page=page1),
-            12: Bbox(x0=7, x1=8, y0=3, y1=5, page=page1),
-            # line 3
-            14: Bbox(x0=0, x1=1, y0=6, y1=8, page=page1),
-            15: Bbox(x0=1, x1=2, y0=6, y1=8, page=page1),
-            16: Bbox(x0=3, x1=4, y0=6, y1=8, page=page1),
-            17: Bbox(x0=4, x1=5, y0=6, y1=8, page=page1),
-            18: Bbox(x0=6, x1=7, y0=6, y1=8, page=page1),
-            19: Bbox(x0=7, x1=8, y0=6, y1=8, page=page1),
-            # line 4
-            21: Bbox(x0=0, x1=1, y0=10, y1=12, page=page1),
-            23: Bbox(x0=1, x1=2, y0=10, y1=12, page=page1),
-            24: Bbox(x0=3, x1=4, y0=10, y1=12, page=page1),
-            25: Bbox(x0=4, x1=5, y0=10, y1=12, page=page1),
-            26: Bbox(x0=6, x1=7, y0=10, y1=12, page=page1),
-            27: Bbox(x0=7, x1=8, y0=10, y1=12, page=page1),
-        }
-
-        vert_document_2.set_bboxes(document_bbox_2)
-
-        vert_label_set = LabelSet(id_=24, project=self, categories=[category])
-        vert_label = Label(id_=20, text='VertLabelName', project=self, label_sets=[vert_label_set])
-        vert_label_2 = Label(id_=21, text='VertLabelName 2', project=self, label_sets=[vert_label_set])
-
-        vert_annotation_set_1 = AnnotationSet(id_=15, document=vert_document_2, label_set=vert_label_set)
-        vert_annotation_set_2 = AnnotationSet(id_=16, document=vert_document_2, label_set=vert_label_set)
-        vert_annotation_set_3 = AnnotationSet(id_=17, document=vert_document_2, label_set=vert_label_set)
-        vert_annotation_set_4 = AnnotationSet(id_=18, document=vert_document_2, label_set=vert_label_set)
-
-        _ = Annotation(
-            id_=43,
-            document=vert_document_2,
-            is_correct=False,
-            annotation_set=vert_annotation_set_1,
-            confidence=0.92,
-            label=vert_label,
-            label_set=vert_label_set,
-            spans=[Span(start_offset=0, end_offset=2)],
-        )
-
-        _ = Annotation(
-            id_=44,
-            document=vert_document_2,
-            confidence=0.5,
-            annotation_set=vert_annotation_set_1,
-            label=vert_label_2,
-            label_set=vert_label_set,
-            spans=[Span(start_offset=4, end_offset=6)],
-        )
-        _ = Annotation(
-            id_=45,
-            document=vert_document_2,
-            is_correct=False,
-            annotation_set=vert_annotation_set_2,
-            confidence=0.3,
-            label=vert_label_2,
-            label_set=vert_label_set,
-            spans=[Span(start_offset=11, end_offset=13)],
-        )
-        _ = Annotation(
-            id_=46,
-            document=vert_document_2,
-            is_correct=False,
-            annotation_set=vert_annotation_set_3,
-            confidence=0.4,
-            label=vert_label_2,
-            label_set=vert_label_set,
-            spans=[Span(start_offset=18, end_offset=20)],
-        )
-        _ = Annotation(
-            id_=47,
-            document=vert_document_2,
-            is_correct=False,
-            annotation_set=vert_annotation_set_4,
-            confidence=0.4,
-            label=vert_label,
-            label_set=vert_label_set,
-            spans=[Span(start_offset=21, end_offset=23)],
-        )
-        _ = Annotation(
-            id_=48,
-            document=vert_document_2,
-            is_correct=False,
-            annotation_set=vert_annotation_set_4,
-            confidence=0.9,
-            label=vert_label_2,
-            label_set=vert_label_set,
-            spans=[Span(start_offset=25, end_offset=27)],
-        )
