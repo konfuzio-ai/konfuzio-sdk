@@ -1357,11 +1357,6 @@ class BaseModel:
         logger.info(f'{include_konfuzio=}')
         version = pkg_resources.get_distribution("konfuzio-sdk").version
         logger.info(f'{version=}')
-        if not self.output_dir:
-            if self.model_type == "file_splitting":
-                self.output_dir = self.documents[0].project.model_folder
-            else:
-                self.output_dir = self.category.project.model_folder
         if include_konfuzio:
             cloudpickle.register_pickle_by_value(konfuzio_sdk)
             # todo register all dependencies?
