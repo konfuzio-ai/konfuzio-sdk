@@ -79,9 +79,9 @@ class TestFileSplittingModel(unittest.TestCase):
     def test_json_model_save_and_load(self):
         """Test saving and loading first_page_spans as JSON."""
         self.file_splitting_model.output_dir = self.project.model_folder
-        path = self.file_splitting_model.save(save_json=True)
-        assert os.path.isfile(path)
-        self.file_splitting_model.load_json(path)
+        self.file_splitting_model.path = self.file_splitting_model.save(save_json=True)
+        assert os.path.isfile(self.file_splitting_model.path)
+        self.file_splitting_model.load_json(self.file_splitting_model.path)
         assert 3 in self.file_splitting_model.first_page_spans
         assert 4 in self.file_splitting_model.first_page_spans
         assert "Morning," in self.file_splitting_model.first_page_spans[3]
@@ -91,16 +91,16 @@ class TestFileSplittingModel(unittest.TestCase):
         assert len(self.file_splitting_model.first_page_spans) == 2
         assert len(self.file_splitting_model.first_page_spans[3]) == 2
         assert len(self.file_splitting_model.first_page_spans[4]) == 2
-        pathlib.Path(path).unlink()
+        pathlib.Path(self.file_splitting_model.path).unlink()
 
     def test_pickle_model_save_load(self):
         """Test saving ContextAwareFileSplittingModel to pickle."""
         self.file_splitting_model.output_dir = self.project.model_folder
-        path = self.file_splitting_model.save(save_json=False)
-        assert os.path.isfile(path)
-        model = load_model(path)
+        self.file_splitting_model.path = self.file_splitting_model.save(save_json=False)
+        assert os.path.isfile(self.file_splitting_model.path)
+        model = load_model(self.file_splitting_model.path)
         assert model.first_page_spans == self.file_splitting_model.first_page_spans
-        pathlib.Path(path).unlink()
+        pathlib.Path(self.file_splitting_model.path).unlink()
 
     def test_splitting_ai_predict(self):
         """Test SplittingAI's Document-splitting method."""

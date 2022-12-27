@@ -51,6 +51,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         self.categories = None
         self.tokenizer = None
         self.first_page_spans = None
+        self.path = None
         sys.setrecursionlimit(99999999)
 
     def fit(self, *args, **kwargs) -> dict:
@@ -94,13 +95,13 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         :type include_konfuzio: bool
         """
         if save_json:
-            path = self.output_dir + f'/{get_timestamp()}_first_page_spans.json'
+            self.path = self.output_dir + f'/{get_timestamp()}_first_page_spans.json'
             pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
-            with open(path, 'w+') as f:
+            with open(self.path, 'w+') as f:
                 json.dump(self.first_page_spans, f)
         else:
-            path = super().save(include_konfuzio=include_konfuzio)
-        return path
+            self.path = super().save(include_konfuzio=include_konfuzio)
+        return self.path
 
     def load_json(self, model_path=""):
         """

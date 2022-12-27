@@ -1334,7 +1334,7 @@ def add_extractions_as_annotations(
 
 
 class BaseModel:
-    """Base model to define a save() method for child classes."""
+    """Base model to define common methods for child classes."""
 
     def __init__(self):
         """Initialize a BaseModel class."""
@@ -1359,7 +1359,7 @@ class BaseModel:
         logger.info(f'{version=}')
         if not self.output_dir:
             if self.model_type == "file_splitting":
-                self.output_dir = self.train_data[0].project.model_folder
+                self.output_dir = self.documents[0].project.model_folder
             else:
                 self.output_dir = self.category.project.model_folder
         if include_konfuzio:
@@ -1367,8 +1367,12 @@ class BaseModel:
             # todo register all dependencies?
         pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
         if self.model_type == 'file_splitting':
-            temp_pkl_file_path = os.path.join(self.output_dir, f'{get_timestamp()}_{self.__class__.__name__}_tmp.pkl')
-            pkl_file_path = os.path.join(self.output_dir, f'{get_timestamp()}_{self.__class__.__name__}.pkl')
+            temp_pkl_file_path = os.path.join(
+                self.output_dir, f'{get_timestamp()}_{self.__class__.__name__}_{self.documents[0].project.id_}_tmp.pkl'
+            )
+            pkl_file_path = os.path.join(
+                self.output_dir, f'{get_timestamp()}_{self.__class__.__name__}_{self.documents[0].project.id_}.pkl'
+            )
         else:
             logger.info(f'{reduce_weight=}')
             logger.info(f'{max_ram=}')
@@ -1422,7 +1426,7 @@ class BaseModel:
 
         size_string = f'{os.path.getsize(pkl_file_path) / 1_000_000} MB'
 
-        if not self.model_type == 'file_splitting':
+        if self.model_type != 'file_splitting':
             # restore Documents of the Category so that we can run the evaluation later
             logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
             self.category.project._documents = category_documents

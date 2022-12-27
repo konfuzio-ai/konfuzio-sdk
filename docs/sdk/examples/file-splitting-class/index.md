@@ -3,7 +3,7 @@
 ### Intro
 
 Not all multipage files that we process are always neatly scanned and organized. Sometimes we can have more than one actual 
-Document in a stream pf pages; such files need to be properly processed and split into several independent Documents
+Document in a stream of pages; such files need to be properly processed and split into several independent Documents
 
 .. image:: /_static/img/multi_file_document_example.png
 
@@ -67,7 +67,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         
 ```
 The class inherits from `AbstractFileSplittingModel`, so we run `super().__init__()` for proper inheritance of the 
-attributes. Attributes are set to `None` to be assigned explicitly upon usage later. `train_data` and `test_data` will be 
+attributes. Attributes are set to `None` to be assigned explicitly upon usage later. `documents` and `test_documents` will be 
 used for "training" (gathering unique first-page Spans from the Documents) and testing respectively; `categories` will 
 define groups of Documents within which the "training" will take place; `first_page_spans` will be defined with the 
 result of `fit()` method running; `tokenizer` will be used for going through the Document's text and separating it into 
@@ -230,6 +230,19 @@ splitting_ai = SplittingAI(model)
 # "is_first_page". The flag "return_pages" has to be True for the latter; let's use it
 new_document = splitting_ai.propose_split_documents(test_document, return_pages=True)
 ```
+Note that any custom FileSplittingAI (derived from `AbstractFileSplittingModel` class) requires having the following 
+methods implemented:
+- `__init__` to initialize key variables required by the custom AI;
+- `fit` to define architecture and training that the model undergoes, i.e. a certain NN architecture or a custom 
+- hardcoded logic
+- `predict` to define how the model classifies Pages as first or non-first. **NB:** the classification needs to be ran on 
+the Page level, not the Document level – the result of classification is reflected in `is_first_page` attribute value, which
+is unique to the Page class and is not present in Document class. Pages with `is_first_page = True` become splitting 
+points, thus, each new sub-Document has a Page predicted as first as its starting point.
+- `save` is optional, as one way of saving that is readable by Konfuzio Server (pickling) is already defined in the 
+parent class. It is not necessary to override it, unless there is the need to define a particular different saving 
+strategy (i.e. JSON, like it is done here). In such case, the new implementation should include calling `super()`, so
+that the pickling saving option is not lost.
 
 Full code:
 
