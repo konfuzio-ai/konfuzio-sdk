@@ -58,12 +58,15 @@ from konfuzio_sdk.utils import get_timestamp
 class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
 
         def __init__(self, *args, **kwargs):
-        super().__init__()
-        self.documents = None
-        self.test_documents = None
-        self.categories = None
-        self.tokenizer = None
-        self.first_page_spans = None
+        """Initialize the ContextAwareFileSplittingModel."""
+            super().__init__()
+            self.name = self.__class__.__name__
+            self.documents = None
+            self.test_documents = None
+            self.categories = None
+            self.tokenizer = None
+            self.first_page_spans = None
+            self.path = None
         
 ```
 The class inherits from `AbstractFileSplittingModel`, so we run `super().__init__()` for proper inheritance of the 
@@ -74,7 +77,7 @@ result of `fit()` method running; `tokenizer` will be used for going through the
 Spans. We will use it to process training and testing Documents, as well as any Document that will undergo splitting. 
 This is done to ensure that texts in all of the Documents are split using the same logic (particularly tokenization by 
 separating on `\n` whitespaces by ConnectedTextTokenizer, which is used in the example in the end of the page) and it 
-will be possible to find common Spans. 
+will be possible to find common Spans. `path` is a full path of the model-to-be-saved.
 
 An example of how ConnectedTextTokenizer works:
 ```python
@@ -144,17 +147,24 @@ Secondly, we define `save()` method. For saving, it is possible to choose one of
 `first_page_spans` as JSON (`save_json` has to be set to True) or to save a whole instance of the class as a pickle, 
 using parent class's `save()` method (`save_json` has to be set to False). A flag `include_konfuzio` enables pickle serialization as a value, not as a reference (for more info, read 
 [this](https://github.com/cloudpipe/cloudpickle#overriding-pickles-serialization-mechanism-for-importable-constructs)).
-
+`max_ram` is used to define the maximum memory usage condition to save model; `reduce_weight` allows for removing 
+everything that is not needed for running prediction before a model is saved.
 ```python
-    def save(self, save_json=True, include_konfuzio=False) -> str:
+    def save(
+        self,
+        save_json=True,
+        include_konfuzio=False,
+        max_ram=None,
+        reduce_weight: bool = False,
+    ) -> str:
         if save_json:
-            path = self.output_dir + f'/{get_timestamp()}_first_page_spans.json'
+            self.path = self.output_dir + f'/{get_timestamp()}_first_page_spans.json'
             pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
-            with open(path, 'w+') as f:
+            with open(self.path, 'w+') as f:
                 json.dump(self.first_page_spans, f)
         else:
-            path = super().save(include_konfuzio=include_konfuzio)
-        return path
+            self.path = super().save(include_konfuzio=include_konfuzio, max_ram=max_ram, reduce_weight=reduce_weight)
+        return self.path
 ```
 
 Then we define `load_json()` method for loading previosuly saved `first_page_spans` from a chosen `model_path`:
@@ -208,6 +218,7 @@ file_splitting_model.tokenizer = ConnectedTextTokenizer()
 file_splitting_model.first_page_spans = file_splitting_model.fit()
 
 # save the gathered Spans
+file_splitting_model.output_dir = project.model_folder
 file_splitting_model.save(save_json=True)
 
 # run the prediction
@@ -373,6 +384,7 @@ file_splitting_model.tokenizer = ConnectedTextTokenizer()
 file_splitting_model.first_page_spans = file_splitting_model.fit()
 
 # save the gathered Spans
+file_splitting_model.output_dir = project.model_folder
 file_splitting_model.save(save_json=True)
 
 # run the prediction

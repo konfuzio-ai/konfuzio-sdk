@@ -30,10 +30,11 @@ file_splitting_model.tokenizer = ConnectedTextTokenizer()
 
 # gather Spans unique for the first Pages of the Documents 
 # the gathered Spans are saved to later be reused in the SplittingAI
-file_splitting_model.fit()
+file_splitting_model.first_page_spans = file_splitting_model.fit()
 
 # save the gathered Spans
-file_splitting_model.save(project.model_folder)
+file_splitting_model.output_dir = project.model_folder
+file_splitting_model.save(save_json=True)
 
 # usage with the SplittingAI – you can load a pre-saved model or pass an initialized instance as the input
 # in this example, we load a previously saved one
@@ -44,6 +45,6 @@ splitting_ai = SplittingAI(model)
 
 # SplittingAI can be ran in two modes: returning a list of sub-Documents as the result of the input Document
 # splitting or returning a copy of the input Document with Pages predicted as first having an attribute
-# "is_first_page". The flag "return_pages" has to be True for the latter; let's use it.
-new_document = splitting_ai.predict(test_document, return_pages=True)
+# "is_first_page". The flag "return_pages" has to be True for the latter; let's use it
+new_document = splitting_ai.propose_split_documents(test_document, return_pages=True)
 ```
