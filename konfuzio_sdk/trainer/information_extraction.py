@@ -1346,6 +1346,10 @@ class BaseModel(metaclass=abc.ABCMeta):
     def generate_pickle_output_paths(self, *args, **kwargs):
         """Generate paths for temporary and resulting pickle files."""
 
+    def name_lower(self):
+        """Convert class name to machine-readable name."""
+        return f'{self.name.lower().strip()}'
+
     def save(self, include_konfuzio=True, reduce_weight=False, max_ram=None) -> str:
         """
         Save a pickled instance of the class.
