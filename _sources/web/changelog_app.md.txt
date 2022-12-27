@@ -39,7 +39,8 @@ These changes are for the tokenizers/new SDK branch.
 
 ## Next Release (estimated release date: 9th January 2023)
 
-Upcoming..
+### Fixed
+-  Restrict the maximum auto-deletion time of a Document to a maximum of 5 years ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10229)).
 
 ## released-2022-12-22_11-03-21
 
