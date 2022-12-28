@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """Test to train an Extraction AI."""
 from copy import deepcopy
+import bz2
+import cloudpickle
 import linecache
 import logging
 import math
@@ -9,6 +11,7 @@ from pympler import asizeof
 import unittest
 import parameterized
 import os
+import shutil
 from requests import HTTPError
 
 import pytest
@@ -39,6 +42,7 @@ from konfuzio_sdk.trainer.information_extraction import (
 from konfuzio_sdk.api import upload_ai_model
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer
 from konfuzio_sdk.tokenizer.base import ListTokenizer
+from konfuzio_sdk.trainer.document_categorization import FallbackCategorizationModel
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 from konfuzio_sdk.samples import LocalTextProject
 
@@ -167,7 +171,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
         tokenizer = WhitespaceTokenizer()
         cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_separate_labels, tokenizer=tokenizer)
-
+        cls.pipeline.output_dir = cls.project.model_folder
         cls.tests_annotations_spans = list()
 
     def test_01_configure_pipeline(self):
@@ -242,9 +246,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
         previous_size = asizeof.asizeof(self.pipeline)
 
-        self.pipeline.pipeline_path = self.pipeline.save(
-            output_dir=self.project.model_folder, include_konfuzio=False, reduce_weight=True, max_ram="5MB"
-        )
+        self.pipeline.pipeline_path = self.pipeline.save(include_konfuzio=False, reduce_weight=True, max_ram="5MB")
         assert os.path.isfile(self.pipeline.pipeline_path)
 
         assert self.pipeline.documents == []
@@ -345,7 +347,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         """Set up the Data and Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
         cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_separate_labels)
-
+        cls.pipeline.output_dir = cls.project.model_folder
         cls.tests_annotations_spans = list()
 
     def test_01_configure_pipeline(self):
@@ -412,9 +414,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
         previous_size = asizeof.asizeof(self.pipeline)
 
-        self.pipeline.pipeline_path = self.pipeline.save(
-            output_dir=self.project.model_folder, include_konfuzio=False, reduce_weight=True, max_ram="5MB"
-        )
+        self.pipeline.pipeline_path = self.pipeline.save(include_konfuzio=False, reduce_weight=True, max_ram="5MB")
         assert os.path.isfile(self.pipeline.pipeline_path)
 
         assert self.pipeline.documents == []
@@ -1140,6 +1140,21 @@ def test_load_old_ai_model():
     pipeline = load_model(path)
 
     assert pipeline.name == 'DocumentAnnotationMultiClassModel'
+
+
+def test_load_model_wrong_parent_class():
+    """Test load_model of a class that is not child of BaseModel."""
+    wrong_class = FallbackCategorizationModel(LocalTextProject())
+    tmp_path = "wrong_class.cloudpickle"
+    path = "wrong_class.pkl"
+    with open(tmp_path, 'wb') as f:
+        cloudpickle.dump(wrong_class, f)
+    with open(tmp_path, 'rb') as input_f:
+        with bz2.open(path, 'wb') as output_f:
+            shutil.copyfileobj(input_f, output_f)
+    os.remove(tmp_path)
+    with pytest.raises(TypeError, match="is not inheriting from the BaseModel class"):
+        load_model(path)
 
 
 def test_feat_num_count():

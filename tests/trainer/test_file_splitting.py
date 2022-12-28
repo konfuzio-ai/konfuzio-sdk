@@ -1,4 +1,6 @@
 """Test SplittingAI and the model's training, saving and prediction."""
+import os
+import pathlib
 import unittest
 
 from copy import deepcopy
@@ -6,6 +8,7 @@ from copy import deepcopy
 from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI
+from konfuzio_sdk.trainer.information_extraction import load_model
 
 
 class TestFileSplittingModel(unittest.TestCase):
@@ -72,6 +75,34 @@ class TestFileSplittingModel(unittest.TestCase):
             if page.number in (3, 5):
                 assert intersections == [{'Morning,'}]
                 assert page.is_first_page
+
+    def test_json_model_save_and_load(self):
+        """Test saving and loading first_page_spans as JSON."""
+        self.file_splitting_model.output_dir = self.project.model_folder
+        self.file_splitting_model.path = self.file_splitting_model.save(save_json=True)
+        assert os.path.isfile(self.file_splitting_model.path)
+        self.file_splitting_model.load_json(self.file_splitting_model.path)
+        assert 3 in self.file_splitting_model.first_page_spans
+        assert 4 in self.file_splitting_model.first_page_spans
+        assert "Morning," in self.file_splitting_model.first_page_spans[3]
+        assert "I like bread." in self.file_splitting_model.first_page_spans[3]
+        assert "Evening," in self.file_splitting_model.first_page_spans[4]
+        assert "I like fish." in self.file_splitting_model.first_page_spans[4]
+        assert len(self.file_splitting_model.first_page_spans) == 2
+        assert len(self.file_splitting_model.first_page_spans[3]) == 2
+        assert len(self.file_splitting_model.first_page_spans[4]) == 2
+        pathlib.Path(self.file_splitting_model.path).unlink()
+
+    def test_pickle_model_save_load(self):
+        """Test saving ContextAwareFileSplittingModel to pickle."""
+        self.file_splitting_model.output_dir = self.project.model_folder
+        self.file_splitting_model.path = self.file_splitting_model.save(
+            save_json=False, keep_documents=True, max_ram='5MB'
+        )
+        assert os.path.isfile(self.file_splitting_model.path)
+        model = load_model(self.file_splitting_model.path)
+        assert model.first_page_spans == self.file_splitting_model.first_page_spans
+        pathlib.Path(self.file_splitting_model.path).unlink()
 
     def test_splitting_ai_predict(self):
         """Test SplittingAI's Document-splitting method."""

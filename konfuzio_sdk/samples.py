@@ -383,10 +383,10 @@ class LocalTextProject(Project):
         )
 
         vert_document_2_text = """a1  s1
-            s2
-            s3
-        a2  s4
-        """
+    s2
+    s3
+a2  s4
+"""
         vert_document_2 = Document(project=self, category=category, text=vert_document_2_text, dataset_status=0)
 
         page1 = Page(

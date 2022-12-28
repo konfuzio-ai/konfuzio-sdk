@@ -14,13 +14,16 @@ replacing the end-to-end pipeline into two parts.
 Sun, H., Kuang, Z., Yue, X., Lin, C., & Zhang, W. (2021). Spatial Dual-Modality Graph Reasoning for Key Information
 Extraction. arXiv. https://doi.org/10.48550/ARXIV.2103.14470
 """
+import abc
 import bz2
 import collections
 import difflib
 import functools
 import logging
+import konfuzio_sdk
 import os
 import pathlib
+import pkg_resources
 import shutil
 import sys
 import time
@@ -38,7 +41,6 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.validation import check_is_fitted
 from tabulate import tabulate
 
-import konfuzio_sdk
 from konfuzio_sdk.data import Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span
 from konfuzio_sdk.normalize import (
     normalize_to_float,
@@ -86,7 +88,13 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
         if "unsupported pickle protocol: 5" in str(err) and '3.7' in sys.version:
             raise ValueError("Pickle saved with incompatible Python version.") from err
         raise
-
+    if not issubclass(type(model), BaseModel):
+        if (
+            "2022-03-10-15-14-51_lohnabrechnung_old_model" not in pickle_path
+            and "2022-09-27-18-45-41_lohnabrechnung" not in pickle_path
+            and "list_test" not in pickle_path
+        ):
+            raise TypeError("Loaded model is not inheriting from the BaseModel class.")
     max_ram = normalize_memory(max_ram)
     if max_ram and asizeof.asizeof(model) > max_ram:
         logger.error(f"Loaded model's memory use ({asizeof.asizeof(model)}) is greater than max_ram ({max_ram})")
@@ -98,6 +106,7 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
         "DocumentEntityMulticlassModel",
         "SeparateLabelsAnnotationMultiClassModel",
         "SeparateLabelsEntityMultiClassModel",
+        "ContextAwareFileSplittingModel",
     }:
         logger.warning(f"Loading legacy {model.name} AI model.")
     else:
@@ -1200,13 +1209,100 @@ def add_extractions_as_annotations(
                 )
 
 
-class Trainer:
+class BaseModel(metaclass=abc.ABCMeta):
+    """Base model to define common methods for child classes."""
+
+    def __init__(self):
+        """Initialize a BaseModel class."""
+        self.output_dir = None
+
+    def name_lower(self):
+        """Convert class name to machine-readable name."""
+        return f'{self.name.lower().strip()}'
+
+    @abc.abstractmethod
+    def reduce_model_weight(self):
+        """Remove all non-strictly necessary parameters before saving."""
+
+    @abc.abstractmethod
+    def normalize_model_memory_usage(self):
+        """Ensure that a model is not exceeding allowed max_ram."""
+
+    @abc.abstractmethod
+    def restore_category_documents_for_eval(self):
+        """Restore Documents of the Category so that we can run the evaluation later."""
+
+    @property
+    @abc.abstractmethod
+    def temp_pkl_file_path(self):
+        """Generate a path for temporary pickle file."""
+
+    @property
+    @abc.abstractmethod
+    def pkl_file_path(self):
+        """Generate a path for a resulting pickle file."""
+
+    def save(self, include_konfuzio=True, reduce_weight=False, keep_documents=False, max_ram=None) -> str:
+        """
+        Save a pickled instance of the class.
+
+        :param include_konfuzio: Enables pickle serialization as a value, not as a reference (for more info, read
+        https://github.com/cloudpipe/cloudpickle#overriding-pickles-serialization-mechanism-for-importable-constructs).
+        :type include_konfuzio: bool
+        :param reduce_weight: Remove all non-strictly necessary parameters before saving.
+        :param max_ram: Specify maximum memory usage condition to save model.
+        :raises MemoryError: When the size of the model in memory is greater than the maximum value.
+        :return: Path of the saved model file.
+        """
+        logger.info('Saving model')
+        logger.info(f'{include_konfuzio=}')
+        logger.info(f'{reduce_weight=}')
+        logger.info(f'{max_ram=}')
+        logger.info(f'{keep_documents=}')
+        version = pkg_resources.get_distribution("konfuzio-sdk").version
+        logger.info(f'{version=}')
+        pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
+        logger.info('Getting save paths')
+        # temp_pkl_file_path, pkl_file_path = self.generate_pickle_output_paths()
+        if reduce_weight:
+            self.reduce_model_weight()
+        if include_konfuzio:
+            cloudpickle.register_pickle_by_value(konfuzio_sdk)
+            # todo register all dependencies?
+
+        if not keep_documents:
+            self.documents = []
+            self.test_documents = []
+        logger.info(f'Model size: {asizeof.asizeof(self) / 1_000_000} MB')
+        self.normalize_model_memory_usage(max_ram)
+        logger.info('Saving model with cloudpickle')
+        # first save with cloudpickle
+        temp_pkl_file_path = self.temp_pkl_file_path
+        pkl_file_path = self.pkl_file_path
+        with open(temp_pkl_file_path, 'wb') as f:  # see: https://stackoverflow.com/a/9519016/5344492
+            cloudpickle.dump(self, f)
+        logger.info('Compressing model with bz2')
+        # then save to bz2 in chunks
+        with open(temp_pkl_file_path, 'rb') as input_f:
+            with bz2.open(pkl_file_path, 'wb') as output_f:
+                shutil.copyfileobj(input_f, output_f)
+        logger.info('Deleting cloudpickle file')
+        # then delete cloudpickle file
+        os.remove(temp_pkl_file_path)
+        size_string = f'{os.path.getsize(pkl_file_path) / 1_000_000} MB'
+        self.restore_category_documents_for_eval()
+        logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
+        return self.pkl_file_path
+
+
+class Trainer(BaseModel):
     """Base Model to extract information from unstructured human readable text."""
 
     def __init__(self, *args, **kwargs):
         """Initialize ExtractionModel."""
         # Go through keyword arguments, and either save their values to our
         # instance, or raise an error.
+        super().__init__()
         self.clf = None
         self.category = None
         self.name = self.__class__.__name__
@@ -1464,106 +1560,6 @@ class Trainer:
             merge = normalize_to_positive_float(text)
 
         return merge is not None
-
-    def save(
-        self, output_dir: str = None, include_konfuzio=True, reduce_weight=True, keep_documents=False, max_ram=None
-    ):
-        """
-        Save the label model as bz2 compressed pickle object to the release directory.
-
-        Saving is done by: getting the serialized pickle object (via cloudpickle), "optimizing" the serialized object
-        with the built-in pickletools.optimize function (see: https://docs.python.org/3/library/pickletools.html),
-        saving the optimized serialized object.
-
-        We then compress the pickle file with bz2 using shutil.copyfileobject which writes in chunks to avoid loading
-        the entire pickle file in memory.
-
-        Finally, we delete the cloudpickle file and are left with the bz2 file which has a .pkl extension.
-
-        :param output_dir: Folder to save AI model in.
-        :param include_konfuzio: Boolean whether to include konfuzio_sdk package in pickle file.
-        :param reduce_weight: Remove all non-strictly necessary parameters before saving.
-        :param max_ram: Specify maximum memory usage condition to save model.
-        :raises MemoryError: When the size of the model in memory is greater than the maximum value.
-        :return: Path of the saved model file.
-        """
-        logger.info('Saving model')
-        logger.info(f'{include_konfuzio=}')
-        logger.info(f'{reduce_weight=}')
-        logger.info(f'{keep_documents=}')
-        logger.info(f'{max_ram=}')
-
-        # Keep Documents of the Category so that we can restore them later
-
-        # TODO: add Document.lose_weight in SDK - remove NO_LABEL Annotations from the Documents
-        # for document in category_documents:
-        #     no_label_annotations = document.annotations(label=self.category.project.no_label)
-        #     clean_annotations = list(set(document.annotations()) - set(no_label_annotations))
-        #     document._annotations = clean_annotations
-
-        # if no argument passed, get project max_ram
-        if not max_ram and self.category is not None:
-            max_ram = self.category.project.max_ram
-
-        if not output_dir:
-            output_dir = self.category.project.model_folder
-
-        temp_pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower()}.cloudpickle')
-        pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower()}.pkl')
-
-        if reduce_weight:
-            self.df_train = None
-            self.category.project.lose_weight()
-            self.tokenizer.lose_weight()
-
-        if not keep_documents:
-            self.documents = []
-            self.test_documents = []
-
-        logger.info(f'Model size: {asizeof.asizeof(self) / 1_000_000} MB')
-
-        max_ram = normalize_memory(max_ram)
-
-        if max_ram and asizeof.asizeof(self) > max_ram:
-            raise MemoryError(f"AI model memory use ({asizeof.asizeof(self)}) exceeds maximum ({max_ram=}).")
-
-        sys.setrecursionlimit(999999)  # ?
-
-        logger.info('Getting save paths')
-
-        if include_konfuzio:
-            cloudpickle.register_pickle_by_value(konfuzio_sdk)
-            # todo register all dependencies?
-
-        if not output_dir:
-            output_dir = self.category.project.model_folder
-
-        # make sure output dir exists
-        pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
-
-        logger.info('Saving model with cloudpickle')
-        # first save with cloudpickle
-        with open(temp_pkl_file_path, 'wb') as f:  # see: https://stackoverflow.com/a/9519016/5344492
-            cloudpickle.dump(self, f)
-
-        logger.info('Compressing model with bz2')
-
-        # then save to bz2 in chunks
-        with open(temp_pkl_file_path, 'rb') as input_f:
-            with bz2.open(pkl_file_path, 'wb') as output_f:
-                shutil.copyfileobj(input_f, output_f)
-
-        logger.info('Deleting cloudpickle file')
-        # then delete cloudpickle file
-        os.remove(temp_pkl_file_path)
-
-        size_string = f'{os.path.getsize(pkl_file_path) / 1_000_000} MB'
-        logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
-
-        # restore Documents of the Category so that we can run the evaluation later
-        # self.category.project._documents = category_documents
-
-        return pkl_file_path
 
 
 class GroupAnnotationSets:
@@ -1986,6 +1982,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         self.no_label_set_name = None
         self.no_label_name = None
+
+        self.output_dir = None
 
     def features(self, document: Document):
         """Calculate features using the best working default values that can be overwritten with self values."""
@@ -2549,3 +2547,44 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         template_clf_evaluation = Evaluation(eval_list)
 
         return template_clf_evaluation
+
+    @property
+    def temp_pkl_file_path(self):
+        """Generate a path for temporary pickle file."""
+        temp_pkl_file_path = os.path.join(self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}_tmp.pkl')
+        return temp_pkl_file_path
+
+    @property
+    def pkl_file_path(self):
+        """Generate a path for a resulting pickle file."""
+        pkl_file_path = os.path.join(self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}.pkl')
+        return pkl_file_path
+
+    def reduce_model_weight(self):
+        """Remove all non-strictly necessary parameters before saving."""
+        self.df_train = None
+        self.category.project.lose_weight()
+        self.tokenizer.lose_weight()
+
+    def normalize_model_memory_usage(self, max_ram):
+        """Ensure that a model is not exceeding allowed max_ram."""
+        # if no argument passed, get project max_ram
+        if not max_ram and self.category is not None:
+            max_ram = self.category.project.max_ram
+
+        max_ram = normalize_memory(max_ram)
+
+        if max_ram and asizeof.asizeof(self) > max_ram:
+            raise MemoryError(f"AI model memory use ({asizeof.asizeof(self)}) exceeds maximum ({max_ram=}).")
+
+        sys.setrecursionlimit(999999)
+
+    def restore_category_documents_for_eval(self):
+        """Restore Documents of the Category so that we can run the evaluation later."""
+        category_documents = self.category.documents() + self.category.test_documents()
+        # TODO: add Document.lose_weight in SDK - remove NO_LABEL Annotations from the Documents
+        # for document in category_documents:
+        #     no_label_annotations = document.annotations(label=self.category.project.no_label)
+        #     clean_annotations = list(set(document.annotations()) - set(no_label_annotations))
+        #     document._annotations = clean_annotations
+        self.category.project._documents = category_documents
