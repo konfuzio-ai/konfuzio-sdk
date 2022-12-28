@@ -41,27 +41,33 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         :return: A Page with or without is_first_page label.
         """
 
-    def generate_pickle_output_paths(self, *args, **kwargs):
-        """Generate paths for temporary and resulting pickle files."""
+    @property
+    def temp_pkl_file_path(self):
+        """Generate a path for temporary pickle file."""
         temp_pkl_file_path = os.path.join(
             self.output_dir, f'{get_timestamp()}_{self.name_lower()}_{self.documents[0].project.id_}_tmp.pkl'
         )
+        return temp_pkl_file_path
+
+    @property
+    def pkl_file_path(self):
+        """Generate a path for a resulting pickle file."""
         pkl_file_path = os.path.join(
             self.output_dir, f'{get_timestamp()}_{self.name_lower()}_{self.documents[0].project.id_}.pkl'
         )
-        return temp_pkl_file_path, pkl_file_path
+        return pkl_file_path
 
-    def lose_weight(self, *args, **kwargs):
+    def lose_weight(self):
         """Remove all data not necessary for prediction."""
         self.documents = None
         self.test_documents = None
 
-    def reduce_model_weight(self, *args, **kwargs):
+    def reduce_model_weight(self):
         """Remove all non-strictly necessary parameters before saving."""
         self.lose_weight()
         self.tokenizer.lose_weight()
 
-    def normalize_model_memory_usage(self, max_ram, *args, **kwargs):
+    def normalize_model_memory_usage(self, max_ram):
         """Ensure that a model is not exceeding allowed max_ram."""
         if not max_ram:
             max_ram = self.documents[0].project.max_ram
@@ -73,7 +79,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
 
         sys.setrecursionlimit(99999999)
 
-    def restore_operations(self, *args, **kwargs):
+    def restore_category_documents_for_eval(self):
         """Run a placeholder for an inherited method that is not needed for this child class."""
         return
 

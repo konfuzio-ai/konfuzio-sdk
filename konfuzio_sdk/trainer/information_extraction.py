@@ -1216,25 +1216,31 @@ class BaseModel(metaclass=abc.ABCMeta):
         """Initialize a BaseModel class."""
         self.output_dir = None
 
-    @abc.abstractmethod
-    def generate_pickle_output_paths(self, *args, **kwargs):
-        """Generate paths for temporary and resulting pickle files."""
-
     def name_lower(self):
         """Convert class name to machine-readable name."""
         return f'{self.name.lower().strip()}'
 
     @abc.abstractmethod
-    def reduce_model_weight(self, *args, **kwargs):
+    def reduce_model_weight(self):
         """Remove all non-strictly necessary parameters before saving."""
 
     @abc.abstractmethod
-    def normalize_model_memory_usage(self, *args, **kwargs):
+    def normalize_model_memory_usage(self):
         """Ensure that a model is not exceeding allowed max_ram."""
 
     @abc.abstractmethod
-    def restore_operations(self, *args, **kwargs):
+    def restore_category_documents_for_eval(self):
         """Restore Documents of the Category so that we can run the evaluation later."""
+
+    @property
+    @abc.abstractmethod
+    def temp_pkl_file_path(self):
+        """Generate a path for temporary pickle file."""
+
+    @property
+    @abc.abstractmethod
+    def pkl_file_path(self):
+        """Generate a path for a resulting pickle file."""
 
     def save(self, include_konfuzio=True, reduce_weight=False, keep_documents=False, max_ram=None) -> str:
         """
@@ -1257,7 +1263,7 @@ class BaseModel(metaclass=abc.ABCMeta):
         logger.info(f'{version=}')
         pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
         logger.info('Getting save paths')
-        temp_pkl_file_path, pkl_file_path = self.generate_pickle_output_paths()
+        # temp_pkl_file_path, pkl_file_path = self.generate_pickle_output_paths()
         if reduce_weight:
             self.reduce_model_weight()
         if include_konfuzio:
@@ -1271,20 +1277,20 @@ class BaseModel(metaclass=abc.ABCMeta):
         self.normalize_model_memory_usage(max_ram)
         logger.info('Saving model with cloudpickle')
         # first save with cloudpickle
-        with open(temp_pkl_file_path, 'wb') as f:  # see: https://stackoverflow.com/a/9519016/5344492
+        with open(self.temp_pkl_file_path, 'wb') as f:  # see: https://stackoverflow.com/a/9519016/5344492
             cloudpickle.dump(self, f)
         logger.info('Compressing model with bz2')
         # then save to bz2 in chunks
-        with open(temp_pkl_file_path, 'rb') as input_f:
-            with bz2.open(pkl_file_path, 'wb') as output_f:
+        with open(self.temp_pkl_file_path, 'rb') as input_f:
+            with bz2.open(self.pkl_file_path, 'wb') as output_f:
                 shutil.copyfileobj(input_f, output_f)
         logger.info('Deleting cloudpickle file')
         # then delete cloudpickle file
-        os.remove(temp_pkl_file_path)
-        size_string = f'{os.path.getsize(pkl_file_path) / 1_000_000} MB'
-        self.restore_operations()
-        logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
-        return pkl_file_path
+        os.remove(self.temp_pkl_file_path)
+        size_string = f'{os.path.getsize(self.pkl_file_path) / 1_000_000} MB'
+        self.restore_category_documents_for_eval()
+        logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {self.pkl_file_path}')
+        return self.pkl_file_path
 
 
 class Trainer(BaseModel):
@@ -2540,19 +2546,25 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         return template_clf_evaluation
 
-    def generate_pickle_output_paths(self, *args, **kwargs):
-        """Generate paths for temporary and resulting pickle files."""
+    @property
+    def temp_pkl_file_path(self):
+        """Generate a path for temporary pickle file."""
         temp_pkl_file_path = os.path.join(self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}_tmp.pkl')
-        pkl_file_path = os.path.join(self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}.pkl')
-        return temp_pkl_file_path, pkl_file_path
+        return temp_pkl_file_path
 
-    def reduce_model_weight(self, *args, **kwargs):
+    @property
+    def pkl_file_path(self):
+        """Generate a path for a resulting pickle file."""
+        pkl_file_path = os.path.join(self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}.pkl')
+        return pkl_file_path
+
+    def reduce_model_weight(self):
         """Remove all non-strictly necessary parameters before saving."""
         self.df_train = None
         self.category.project.lose_weight()
         self.tokenizer.lose_weight()
 
-    def normalize_model_memory_usage(self, max_ram, *args, **kwargs):
+    def normalize_model_memory_usage(self, max_ram):
         """Ensure that a model is not exceeding allowed max_ram."""
         # if no argument passed, get project max_ram
         if not max_ram and self.category is not None:
@@ -2565,7 +2577,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         sys.setrecursionlimit(999999)
 
-    def restore_operations(self, *args, **kwargs):
+    def restore_category_documents_for_eval(self):
         """Restore Documents of the Category so that we can run the evaluation later."""
         category_documents = self.category.documents() + self.category.test_documents()
         # TODO: add Document.lose_weight in SDK - remove NO_LABEL Annotations from the Documents
