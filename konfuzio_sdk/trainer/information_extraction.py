@@ -99,18 +99,18 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     if max_ram and asizeof.asizeof(model) > max_ram:
         logger.error(f"Loaded model's memory use ({asizeof.asizeof(model)}) is greater than max_ram ({max_ram})")
 
-    if not hasattr(model, 'model_type'):
-        if not hasattr(model, "name"):
-            raise TypeError("Saved model file needs to be a Konfuzio Trainer instance.")
-        elif model.name in {
-            "DocumentAnnotationMultiClassModel",
-            "DocumentEntityMulticlassModel",
-            "SeparateLabelsAnnotationMultiClassModel",
-            "SeparateLabelsEntityMultiClassModel",
-        }:
-            logger.warning(f"Loading legacy {model.name} AI model.")
-        else:
-            logger.info(f"Loading {model.name} AI model.")
+    if not hasattr(model, "name"):
+        raise TypeError("Saved model file needs to be a Konfuzio Trainer instance.")
+    elif model.name in {
+        "DocumentAnnotationMultiClassModel",
+        "DocumentEntityMulticlassModel",
+        "SeparateLabelsAnnotationMultiClassModel",
+        "SeparateLabelsEntityMultiClassModel",
+        "ContextAwareFileSplittingModel",
+    }:
+        logger.warning(f"Loading legacy {model.name} AI model.")
+    else:
+        logger.info(f"Loading {model.name} AI model.")
 
     return model
 
@@ -1339,7 +1339,6 @@ class BaseModel(metaclass=abc.ABCMeta):
 
     def __init__(self):
         """Initialize a BaseModel class."""
-        self.model_type = None
         self.output_dir = None
 
     @abc.abstractmethod
@@ -2100,7 +2099,6 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         self.no_label_set_name = None
         self.no_label_name = None
 
-        self.model_type = 'extraction_ai'
         self.output_dir = None
 
     def features(self, document: Document):

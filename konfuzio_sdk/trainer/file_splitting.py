@@ -25,7 +25,6 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def __init__(self, *args, **kwargs):
         """Initialize the class."""
-        self.model_type = 'file_splitting'
         self.output_dir = None
 
     @abc.abstractmethod
