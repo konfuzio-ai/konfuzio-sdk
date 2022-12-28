@@ -59,6 +59,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
     def reduce_model_weight(self, *args, **kwargs):
         """Remove all non-strictly necessary parameters before saving."""
         self.lose_weight()
+        self.tokenizer.lose_weight()
 
     def normalize_model_memory_usage(self, max_ram, *args, **kwargs):
         """Ensure that a model is not exceeding allowed max_ram."""
