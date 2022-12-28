@@ -1277,19 +1277,21 @@ class BaseModel(metaclass=abc.ABCMeta):
         self.normalize_model_memory_usage(max_ram)
         logger.info('Saving model with cloudpickle')
         # first save with cloudpickle
-        with open(self.temp_pkl_file_path, 'wb') as f:  # see: https://stackoverflow.com/a/9519016/5344492
+        temp_pkl_file_path = self.temp_pkl_file_path
+        pkl_file_path = self.pkl_file_path
+        with open(temp_pkl_file_path, 'wb') as f:  # see: https://stackoverflow.com/a/9519016/5344492
             cloudpickle.dump(self, f)
         logger.info('Compressing model with bz2')
         # then save to bz2 in chunks
-        with open(self.temp_pkl_file_path, 'rb') as input_f:
-            with bz2.open(self.pkl_file_path, 'wb') as output_f:
+        with open(temp_pkl_file_path, 'rb') as input_f:
+            with bz2.open(pkl_file_path, 'wb') as output_f:
                 shutil.copyfileobj(input_f, output_f)
         logger.info('Deleting cloudpickle file')
         # then delete cloudpickle file
-        os.remove(self.temp_pkl_file_path)
-        size_string = f'{os.path.getsize(self.pkl_file_path) / 1_000_000} MB'
+        os.remove(temp_pkl_file_path)
+        size_string = f'{os.path.getsize(pkl_file_path) / 1_000_000} MB'
         self.restore_category_documents_for_eval()
-        logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {self.pkl_file_path}')
+        logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
         return self.pkl_file_path
 
 
