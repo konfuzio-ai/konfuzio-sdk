@@ -96,7 +96,9 @@ class TestFileSplittingModel(unittest.TestCase):
     def test_pickle_model_save_load(self):
         """Test saving ContextAwareFileSplittingModel to pickle."""
         self.file_splitting_model.output_dir = self.project.model_folder
-        self.file_splitting_model.path = self.file_splitting_model.save(save_json=False)
+        self.file_splitting_model.path = self.file_splitting_model.save(
+            save_json=False, keep_documents=True, max_ram='5MB'
+        )
         assert os.path.isfile(self.file_splitting_model.path)
         model = load_model(self.file_splitting_model.path)
         assert model.first_page_spans == self.file_splitting_model.first_page_spans

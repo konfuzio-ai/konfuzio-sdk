@@ -128,6 +128,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         include_konfuzio=False,
         max_ram=None,
         reduce_weight: bool = False,
+        keep_documents: bool = True,
     ) -> str:
         """
         Save the resulting set of first-page Spans by Category.
@@ -148,7 +149,9 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
             with open(self.path, 'w+') as f:
                 json.dump(self.first_page_spans, f)
         else:
-            self.path = super().save(include_konfuzio=include_konfuzio, max_ram=max_ram, reduce_weight=reduce_weight)
+            self.path = super().save(
+                include_konfuzio=include_konfuzio, max_ram=max_ram, reduce_weight=reduce_weight, keep_documents=True
+            )
         return self.path
 
     def load_json(self, model_path=""):
