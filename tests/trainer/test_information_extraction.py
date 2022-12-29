@@ -520,6 +520,11 @@ class TestInformationExtraction(unittest.TestCase):
         """Set up the Data and Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
 
+    def test_default_separate_labels_setting(self):
+        """Test that RFExtractionAI uses separate labels by default."""
+        pipeline = RFExtractionAI()
+        assert pipeline.use_separate_labels is True
+
     def test_extraction_without_tokenizer(self):
         """Test extraction on a Document."""
         pipeline = RFExtractionAI()
