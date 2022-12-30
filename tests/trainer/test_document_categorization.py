@@ -212,6 +212,7 @@ class TestFallbackCategorizationModel(unittest.TestCase):
         (WhitespaceTokenizer, NBOWSelfAttention, None, None),
         (ConnectedTextTokenizer, NBOW, None, None),
         (PhraseMatcherTokenizer, LSTM, None, None),
+        (ConnectedTextTokenizer, BERT, None, None),
     ],
 )
 @pytest.mark.skip(reason="Slow testcases training a Categorization AI on full dataset with multiple configurations.")

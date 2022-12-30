@@ -1133,7 +1133,7 @@ class CategorizationAI(FallbackCategorizationModel):
         :return: tuple of (1) tuple of predicted category and respective confidence and (2) predictions dataframe
         """
         # get device and place classifier on device
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        device = self.device
         self.classifier = self.classifier.to(device)
 
         categories = self.category_vocab.get_tokens()
