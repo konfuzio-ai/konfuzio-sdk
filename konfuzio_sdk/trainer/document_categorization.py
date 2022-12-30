@@ -127,7 +127,8 @@ class FallbackCategorizationModel:
                 page.category = None
 
         # Categorize each Page of the Document.
-        virtual_doc = self.tokenizer.tokenize(virtual_doc)
+        if self.tokenizer is not None:
+            virtual_doc = self.tokenizer.tokenize(virtual_doc)
         for page in virtual_doc.pages():
             self._categorize_page(page)
 
@@ -352,13 +353,7 @@ class BERT(TextClassificationModule):
 
     def _valid(self) -> None:
         """Check that the specified HuggingFace model has a hidden_size key or a dim key in its configuration dict."""
-        bert_config = self.bert.config.to_dict()
-        if 'hidden_size' in bert_config:
-            self._feature_size = 'hidden_size'
-        if 'dim' in bert_config:
-            self._feature_size = 'dim'
-        else:
-            raise ValueError(f'Cannot find feature dim for model: {self.name}')
+        pass
 
     def _load_architecture(self) -> None:
         """Load NN architecture."""
@@ -366,6 +361,13 @@ class BERT(TextClassificationModule):
         if self.freeze:
             for parameter in self.bert.parameters():
                 parameter.requires_grad = False
+        bert_config = self.bert.config.to_dict()
+        if 'hidden_size' in bert_config:
+            self._feature_size = 'hidden_size'
+        elif 'dim' in bert_config:
+            self._feature_size = 'dim'
+        else:
+            raise ValueError(f'Cannot find feature dim for model: {self.name}')
 
     def _define_features(self) -> None:
         """Define the feature size as the hidden layer size."""
@@ -913,7 +915,9 @@ class CategorizationAI(FallbackCategorizationModel):
         # get data (list of examples) from Documents
         data = []
         for document in documents:
-            tokenized_doc = self.tokenizer.tokenize(deepcopy(document))
+            tokenized_doc = deepcopy(document)
+            if self.tokenizer is not None:
+                tokenized_doc = self.tokenizer.tokenize(tokenized_doc)
             tokenized_doc.status = document.status  # to allow to retrieve images from the original pages
             doc_info = tokenized_doc.get_document_classifier_examples(
                 self.text_vocab, self.category_vocab, max_len, use_image, use_text
@@ -1222,17 +1226,23 @@ class CategorizationAI(FallbackCategorizationModel):
         :param page: Input Page
         :returns: The input Page with added categorization information
         """
-        img_data = Image.open(page.image_path)
-        buf = BytesIO()
-        img_data.save(buf, format='PNG')
-        docs_data_images = [buf]
+        docs_data_images = [None]
+        use_image = hasattr(self.classifier, 'image_module')
+        if use_image:
+            img_data = Image.open(page.image_path)
+            buf = BytesIO()
+            img_data.save(buf, format='PNG')
+            docs_data_images = [buf]
 
-        if isinstance(self.classifier.text_module, BERT):
-            max_length = self.classifier.text_module.get_max_length()
-        else:
-            max_length = None
-        self.text_vocab.numericalize(page, max_length)
-        text_coded = [torch.LongTensor(page.text_encoded)]
+        use_text = hasattr(self.classifier, 'text_module')
+        text_coded = [None]
+        if use_text:
+            if isinstance(self.classifier.text_module, BERT):
+                max_length = self.classifier.text_module.get_max_length()
+            else:
+                max_length = None
+            self.text_vocab.numericalize(page, max_length)
+            text_coded = [torch.LongTensor(page.text_encoded)]
 
         # todo optimize for gpu? self._predict can accept a batch of images/texts
         (predicted_category_id, predicted_confidence), _ = self._predict(page_images=docs_data_images, text=text_coded)
