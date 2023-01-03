@@ -46,7 +46,7 @@ logger = logging.getLogger(__name__)
 
 FEATURE_COUNT = 49
 
-TEST_WITH_FULL_DATASET = False
+TEST_WITH_FULL_DATASET = True
 
 
 def display_top(snapshot, key_type='lineno', limit=30):
@@ -172,13 +172,15 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
     def test_01_configure_pipeline(self):
         """Make sure the Data and Pipeline is configured."""
+        tracemalloc.start()
+
         self.pipeline.category = self.project.get_category_by_id(id_=63)
 
         if not TEST_WITH_FULL_DATASET:
             train_doc_ids = [44823, 44834, 44839, 44840, 44841]
-            self.pipeline.documents = [self.project.get_document_by_id(doc_id) for doc_id in train_doc_ids]
+            self.pipeline.documents = 1 * [self.project.get_document_by_id(doc_id) for doc_id in train_doc_ids]
         else:
-            self.pipeline.documents = self.project.get_category_by_id(63).documents()
+            self.pipeline.documents = 5 * self.project.get_category_by_id(63).documents()
 
         if not TEST_WITH_FULL_DATASET:
             test_doc_ids = [44865]
@@ -209,6 +211,9 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
             documents=self.pipeline.documents, require_revised_annotations=True
         )
+        # display_top(tracemalloc.take_snapshot())
+
+        # logger.info('test')
 
     def test_03_fit(self) -> None:
         """Start to train the Model."""
@@ -328,6 +333,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         """Clear Project files."""
         if os.path.isfile(cls.pipeline.pipeline_path):
             os.remove(cls.pipeline.pipeline_path)  # cleanup
+        display_top(tracemalloc.take_snapshot())
 
 
 @parameterized.parameterized_class(

@@ -2427,6 +2427,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         else:
             raise NotImplementedError  # = pandas.DataFrame()
 
+        logger.info(f"Size of feature dict {asizeof.asizeof(df_real_list)/1000} KB.")
+
         return df_real_list, feature_list
 
     def fit(self) -> RandomForestClassifier:
@@ -2439,6 +2441,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         )
 
         self.clf.fit(self.df_train[self.label_feature_list], self.df_train['target'])
+
+        logger.info(f"Size of Label classifier: {asizeof.asizeof(self.clf)/1000} KB.")
 
         self.fit_template_clf()
 
