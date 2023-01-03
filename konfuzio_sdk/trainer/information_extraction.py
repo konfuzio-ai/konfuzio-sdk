@@ -1890,30 +1890,28 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         **kwargs,
     ):
         """RFExtractionAI."""
-        logging.info("Initializing RFExtractionAI.")
+        logger.info("Initializing RFExtractionAI.")
         super().__init__(*args, **kwargs)
         GroupAnnotationSets.__init__(self)
 
         self.label_feature_list = None
 
-        self.use_separate_labels = use_separate_labels
+        logger.info("RFExtractionAI settings:")
         logger.info(f"{use_separate_labels=}")
-
-        self.category = category
-        logger.info(f"{self.category=}")
-
-        self.n_nearest = n_nearest
+        logger.info(f"{category=}")
         logger.info(f"{n_nearest=}")
-
-        self.first_word = first_word
         logger.info(f"{first_word=}")
-
-        self.max_depth = max_depth
         logger.info(f"{max_depth=}")
-
-        self.n_estimators = n_estimators
         logger.info(f"{n_estimators=}")
+        logger.info(f"{no_label_limit=}")
+        logger.info(f"{n_nearest_across_lines=}")
 
+        self.use_separate_labels = use_separate_labels
+        self.category = category
+        self.n_nearest = n_nearest
+        self.first_word = first_word
+        self.max_depth = max_depth
+        self.n_estimators = n_estimators
         self.no_label_limit = no_label_limit
         self.n_nearest_across_lines = n_nearest_across_lines
 
