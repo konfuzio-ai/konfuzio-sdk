@@ -10,7 +10,7 @@ import unicodedata
 import zipfile
 from contextlib import contextmanager
 from io import BytesIO
-from typing import Union, List, Tuple, Dict, Optional
+from typing import Union, List, Tuple, Dict, Optional, Type
 from warnings import warn
 
 import filetype
@@ -32,6 +32,17 @@ def sdk_isinstance(instance, klass):
     # TODO: Update test cases to use sdk_isinstance
     result = type(instance).__name__ == klass.__name__
     return result
+
+
+def exception_or_error(
+    msg: str, fail_loudly: Optional[bool] = True, exception_type: Optional[Type[Exception]] = ValueError
+) -> None:
+    """Log error or raise an exception. Needed to control the decider in production."""
+    # Raise whatever exception
+    if fail_loudly:
+        raise exception_type(msg)
+    else:
+        logger.error(msg)
 
 
 def get_id(a_string, include_time: bool = False) -> int:
