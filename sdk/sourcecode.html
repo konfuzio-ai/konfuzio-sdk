@@ -1472,25 +1472,13 @@ Extraction. arXiv. <a class="reference external" href="https://doi.org/10.48550/
 <dd><p>Base Model to extract information from unstructured human readable text.</p>
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Build an ExtractionModel using train valid split.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">create_candidates_dataset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Use as placeholder Function.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
 <dd><p>Use as placeholder Function.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">extract</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">extract</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
 <dd><p>Use as placeholder Function.</p>
 </dd></dl>
 
@@ -1503,12 +1491,6 @@ Extraction. arXiv. <a class="reference external" href="https://doi.org/10.48550/
 <dl class="py method">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Use as placeholder Function.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">fit_label_set_clf</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
 <dd><p>Use as placeholder Function.</p>
 </dd></dl>
 
@@ -1552,12 +1534,6 @@ OR the resulting merging create a span normalizable to the same type</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">lose_weight</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Delete everything that is not necessary for extraction.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">merge_horizontal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc_text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span></dt>
 <dd><p>Merge contiguous spans with same predicted label.</p>
 </dd></dl>
@@ -1594,12 +1570,6 @@ the entire pickle file in memory.</p>
 <dd class="field-odd"><p>Path of the saved model file.</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">train_valid_split</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Use as placeholder Function.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1641,6 +1611,12 @@ or to specify the number of Spans created by a WhitespaceTokenizer to consider
 The Label Set classifier groups them into Annotation sets.</p>
 <dl class="py method">
 <dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">check_is_ready_for_extraction</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Check if tokenizer is set and the classifiers set and trained.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">evaluate_clf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_training_docs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.evaluate.Evaluation</span></span></span></dt>
 <dd><p>Evaluate the Label classifier.</p>
 </dd></dl>
@@ -1664,7 +1640,7 @@ The Label Set classifier groups them into Annotation sets.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">evaluate_template_clf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_training_docs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.evaluate.Evaluation</span></span></span></dt>
+<span class="sig-name descname"><span class="pre">evaluate_label_set_clf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_training_docs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.evaluate.Evaluation</span></span></span></dt>
 <dd><p>Evaluate the LabelSet classifier.</p>
 </dd></dl>
 

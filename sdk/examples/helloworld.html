@@ -214,7 +214,7 @@
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Label classifier evaluation F1 score: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">clf_f1</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <span class="c1"># To get the evaluation of the LabelSet given perfect Label classification</span>
-<span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_template_clf</span><span class="p">()</span>
+<span class="n">evaluation</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">evaluate_label_set_clf</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Label Set evaluation F1 score: </span><span class="si">{</span><span class="n">evaluation</span><span class="o">.</span><span class="n">f1</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
