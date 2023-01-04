@@ -15,7 +15,6 @@ Self-hosted Konfuzio Server can be upgraded according to the [documentation](htt
 
 You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server features our team is actively working on. This list covers a planning horizon of 12 weeks. 
 
-- Add self-service customer center to manage contracts and invoices ([Internal Documentation](https://git.konfuzio.com/konfuzio/manual/-/merge_requests/23/diffs), [Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/8235)).
 - Calculate and access Tokenizers via the web interface. The name Tokenizer might be revised. The SDK refers to this concept as Tokenizer. ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9271)).
 - Add a filter to the list of Documents to find Documents that need to be revised by humans. ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9242)).
 - Improved training time of Extraction AIs when using character detection mode (reduced up to 40%) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9271)).
@@ -27,7 +26,11 @@ You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server
 - Sort Labels in Label-Sets to allow users to customize the UI per Category ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/8932)).
 - Delta Training, Partial Fit an exisiting classifier, so that training documents used previously can be deleted ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9251)).
 - Allow administrators of Konfuzio on-premise installations to run a speedtest ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9870)).
+
+<!---
+- Add self-service customer center to manage contracts and invoices ([Internal Documentation](https://git.konfuzio.com/konfuzio/manual/-/merge_requests/23/diffs), [Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/8235)).
 - Start automatic AI retraining after user confirms that he has finished a annotation review ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9166)).
+--->
 
 <!---
 These changes are for the tokenizers/new SDK branch.
