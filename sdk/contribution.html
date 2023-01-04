@@ -467,17 +467,17 @@ content:</p>
 <div class="highlight-dockerfile notranslate"><div class="highlight"><pre><span></span><span class="c"># simple docker file</span>
 <span class="k">FROM</span><span class="w"> </span><span class="s">python:3.8-slim</span>
 
-<span class="k">ADD</span><span class="w"> </span>setup.py /code/setup.py
-<span class="k">ADD</span><span class="w"> </span>konfuzio_sdk /code/konfuzio_sdk
-<span class="k">ADD</span><span class="w"> </span>README.md /code/README.md
+<span class="k">ADD</span><span class="w"> </span>setup.py<span class="w"> </span>/code/setup.py
+<span class="k">ADD</span><span class="w"> </span>konfuzio_sdk<span class="w"> </span>/code/konfuzio_sdk
+<span class="k">ADD</span><span class="w"> </span>README.md<span class="w"> </span>/code/README.md
 
 <span class="k">WORKDIR</span><span class="w"> </span><span class="s">/code/</span>
 
-<span class="k">RUN</span><span class="w"> </span>python3.8 -m venv /opt/venv
-<span class="k">ENV</span><span class="w"> </span><span class="nv">PATH</span><span class="o">=</span><span class="s2">&quot;/opt/venv/bin:</span><span class="nv">$PATH</span><span class="s2">&quot;</span> <span class="nv">VIRTUAL_ENV</span><span class="o">=</span><span class="s2">&quot;/opt/venv&quot;</span>
+<span class="k">RUN</span><span class="w"> </span>python3.8<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>/opt/venv
+<span class="k">ENV</span><span class="w"> </span><span class="nv">PATH</span><span class="o">=</span><span class="s2">&quot;/opt/venv/bin:</span><span class="nv">$PATH</span><span class="s2">&quot;</span><span class="w"> </span><span class="nv">VIRTUAL_ENV</span><span class="o">=</span><span class="s2">&quot;/opt/venv&quot;</span>
 
-<span class="k">RUN</span><span class="w"> </span>pip install -e .
-<span class="k">RUN</span><span class="w"> </span>pip install pytest
+<span class="k">RUN</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+<span class="k">RUN</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>pytest
 </pre></div>
 </div>
 </section>

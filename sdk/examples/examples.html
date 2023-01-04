@@ -735,10 +735,10 @@ temporary cloudpickled object and then compress it using bz2. The temporary obje
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.utils</span> <span class="kn">import</span> <span class="n">get_timestamp</span>
 
 <span class="k">class</span> <span class="nc">ContextAwareFileSplittingModel</span><span class="p">(</span><span class="n">AbstractFileSplittingModel</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Fallback definition of a File Splitting Model.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fallback definition of a File Splitting Model.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Initialize the ContextAwareFileSplittingModel.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the ContextAwareFileSplittingModel.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">train_data</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">test_data</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">categories</span> <span class="o">=</span> <span class="kc">None</span>
@@ -746,7 +746,7 @@ temporary cloudpickled object and then compress it using bz2. The temporary obje
         <span class="bp">self</span><span class="o">.</span><span class="n">first_page_spans</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Gather the Spans unique for first Pages in a given stream of Documents.</span>
 <span class="sd">        :return: Dictionary with unique first-page Span sets by Category ID.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -775,7 +775,7 @@ temporary cloudpickled object and then compress it using bz2. The temporary obje
         <span class="k">return</span> <span class="n">first_page_spans</span>
 
     <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_path</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">include_konfuzio</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Save the resulting set of first-page Spans by Category.</span>
 <span class="sd">        :param model_path: Path to save the set to.</span>
 <span class="sd">        :type model_path: str</span>
@@ -797,7 +797,7 @@ temporary cloudpickled object and then compress it using bz2. The temporary obje
         <span class="k">return</span> <span class="n">pkl_file_path</span>
 
     <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">:</span> <span class="n">Page</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Page</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Take a Page as an input and return 1 for a first Page and 0 for a non-first Page.</span>
 <span class="sd">        :param page: A Page to receive first or non-first label.</span>
 <span class="sd">        :type page: Page</span>
