@@ -253,7 +253,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         previous_size = asizeof.asizeof(self.pipeline)
 
         self.pipeline.pipeline_path = self.pipeline.save(
-            output_dir=self.project.model_folder, include_konfuzio=False, reduce_weight=True, max_ram="5MB"
+            output_dir=self.project.model_folder, include_konfuzio=True, reduce_weight=True, max_ram="5MB"
         )
         assert os.path.isfile(self.pipeline.pipeline_path)
 
@@ -423,7 +423,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         previous_size = asizeof.asizeof(self.pipeline)
 
         self.pipeline.pipeline_path = self.pipeline.save(
-            output_dir=self.project.model_folder, include_konfuzio=False, reduce_weight=True, max_ram="5MB"
+            output_dir=self.project.model_folder, include_konfuzio=True, reduce_weight=True, max_ram="5MB"
         )
         assert os.path.isfile(self.pipeline.pipeline_path)
 

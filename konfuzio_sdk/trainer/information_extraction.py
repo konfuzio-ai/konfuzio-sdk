@@ -18,6 +18,7 @@ import bz2
 import collections
 import difflib
 import functools
+import itertools
 import logging
 import os
 import pathlib
@@ -38,8 +39,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.validation import check_is_fitted
 from tabulate import tabulate
 
-import konfuzio_sdk
-from konfuzio_sdk.data import Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span
+from konfuzio_sdk.data import Data, Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span
 from konfuzio_sdk.normalize import (
     normalize_to_float,
     normalize_to_date,
@@ -70,6 +70,9 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     """
     if not os.path.isfile(pickle_path):
         raise FileNotFoundError("Invalid pickle file path:", pickle_path)
+
+    # The current local id iterator might otherwise be overriden
+    prev_local_id = next(Data.id_iter)
 
     try:
         with bz2.open(pickle_path, 'rb') as file:
@@ -102,6 +105,9 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
         logger.warning(f"Loading legacy {model.name} AI model.")
     else:
         logger.info(f"Loading {model.name} AI model.")
+
+    curr_local_id = next(Data.id_iter)
+    Data.id_iter = itertools.count(max(prev_local_id, curr_local_id))
 
     return model
 
@@ -1471,6 +1477,8 @@ class Trainer:
         logger.info('Getting save paths')
 
         if include_konfuzio:
+            import konfuzio_sdk
+
             cloudpickle.register_pickle_by_value(konfuzio_sdk)
             # todo register all dependencies?
 
