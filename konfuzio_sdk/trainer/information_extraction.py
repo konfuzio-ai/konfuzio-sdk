@@ -18,6 +18,7 @@ import bz2
 import collections
 import difflib
 import functools
+import itertools
 import logging
 import os
 import pathlib
@@ -38,8 +39,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.validation import check_is_fitted
 from tabulate import tabulate
 
-import konfuzio_sdk
-from konfuzio_sdk.data import Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span
+from konfuzio_sdk.data import Data, Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span
 from konfuzio_sdk.normalize import (
     normalize_to_float,
     normalize_to_date,
@@ -70,6 +70,9 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     """
     if not os.path.isfile(pickle_path):
         raise FileNotFoundError("Invalid pickle file path:", pickle_path)
+
+    # The current local id iterator might otherwise be overriden
+    prev_local_id = next(Data.id_iter)
 
     try:
         with bz2.open(pickle_path, 'rb') as file:
@@ -102,6 +105,9 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
         logger.warning(f"Loading legacy {model.name} AI model.")
     else:
         logger.info(f"Loading {model.name} AI model.")
+
+    curr_local_id = next(Data.id_iter)
+    Data.id_iter = itertools.count(max(prev_local_id, curr_local_id))
 
     return model
 
@@ -1063,9 +1069,6 @@ class Trainer:
         """Initialize ExtractionModel."""
         # Go through keyword arguments, and either save their values to our
         # instance, or raise an error.
-        self.category: Category = kwargs.get('category', None)
-        logger.info(f"{self.category=}")
-
         self.clf = None
         self.name = self.__class__.__name__
         self.label_feature_list = None  # will be set later
@@ -1330,6 +1333,8 @@ class Trainer:
         logger.info('Getting save paths')
 
         if include_konfuzio:
+            import konfuzio_sdk
+
             cloudpickle.register_pickle_by_value(konfuzio_sdk)
             # todo register all dependencies?
 
@@ -1744,32 +1749,34 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         no_label_limit: Union[int, float, None] = None,
         n_nearest_across_lines: bool = False,
         use_separate_labels: bool = True,
+        category: Category = None,
         tokenizer=None,
         *args,
         **kwargs,
     ):
         """RFExtractionAI."""
-        logging.info("Initializing RFExtractionAI.")
+        logger.info("Initializing RFExtractionAI.")
         super().__init__(*args, **kwargs)
         GroupAnnotationSets.__init__(self)
 
         self.label_feature_list = None
 
-        self.use_separate_labels = use_separate_labels
+        logger.info("RFExtractionAI settings:")
         logger.info(f"{use_separate_labels=}")
-
-        self.n_nearest = n_nearest
+        logger.info(f"{category=}")
         logger.info(f"{n_nearest=}")
-
-        self.first_word = first_word
         logger.info(f"{first_word=}")
-
-        self.max_depth = max_depth
         logger.info(f"{max_depth=}")
-
-        self.n_estimators = n_estimators
         logger.info(f"{n_estimators=}")
+        logger.info(f"{no_label_limit=}")
+        logger.info(f"{n_nearest_across_lines=}")
 
+        self.use_separate_labels = use_separate_labels
+        self.category = category
+        self.n_nearest = n_nearest
+        self.first_word = first_word
+        self.max_depth = max_depth
+        self.n_estimators = n_estimators
         self.no_label_limit = no_label_limit
         self.n_nearest_across_lines = n_nearest_across_lines
 
