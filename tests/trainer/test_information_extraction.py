@@ -183,6 +183,8 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
         self.pipeline.category = self.project.get_category_by_id(id_=63)
 
+        assert asizeof.asizeof(self.pipeline.category) < 5e5
+
         with pytest.raises(AttributeError, match="not provide a Label Classifier"):
             self.pipeline.check_is_ready_for_extraction()
 
@@ -222,11 +224,13 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
             documents=self.pipeline.documents, require_revised_annotations=True
         )
 
-        assert asizeof.asizeof(self.pipeline.df_train) < 12e6
+        assert 11e6 < asizeof.asizeof(self.pipeline.df_train) < 12e6
 
     def test_03_fit(self) -> None:
         """Start to train the Model."""
         self.pipeline.fit()
+
+        assert asizeof.asizeof(self.pipeline.clf) < 1e5
 
         if self.pipeline.use_separate_labels:
             assert len(self.pipeline.clf.classes_) == 19
@@ -283,10 +287,14 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
         assert evaluation.f1(None) == self.evaluate_full_result
 
+        assert 5e5 < asizeof.asizeof(evaluation.data) < 6e5
+
     def test_07_data_quality(self):
         """Evaluate on training documents."""
         evaluation = self.pipeline.evaluate_full(use_training_docs=True)
         assert evaluation.f1(None) == self.data_quality_result
+
+        assert 22e5 < asizeof.asizeof(evaluation.data) < 23e5
 
     def test_08_tokenizer_quality(self):
         """Evaluate the tokenizer quality."""
@@ -296,16 +304,22 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         assert evaluation.tokenizer_fp() == 289
         assert evaluation.tokenizer_fn() == 5
 
+        assert 5e5 < asizeof.asizeof(evaluation.data) < 6e5
+
     def test_09_clf_quality(self):
         """Evaluate the Label classifier quality."""
         evaluation = self.pipeline.evaluate_clf()
         assert evaluation.clf_f1(None) == self.clf_quality_result
+
+        assert 1e5 < asizeof.asizeof(evaluation.data) < 2e5
 
     def test_10_label_set_clf_quality(self):
         """Evaluate the LabelSet classifier quality."""
         evaluation = self.pipeline.evaluate_label_set_clf()
 
         assert evaluation.f1(None) == 0.9552238805970149
+
+        assert 1e5 < asizeof.asizeof(evaluation.data) < 2e5
 
     def test_11_extract_test_document(self):
         """Extract a randomly selected Test Document."""
