@@ -145,22 +145,29 @@ response = requests.get(url, headers=headers)
 print(response.json())
 ```
 
-#### Query based parameter token authentication
+#### Authenticating with a Token as a Query Parameter
 
-For some endpoints we offer the ability to Authenticate with not just the token in the Header, but also by using the
-token in the request as a query parameter. This is particularly useful when needing to expose an endpoint to a third
-party service (e.g. Google sheets), without the option to specify the headers. In the below example, we have already
-generated the token through the steps above. The token is then used with the query parameter `token`
+Sometimes you might need to use one of our endpoints with a third party service that doesn't allow you to specify
+certain types of information (like authentication tokens) in the request. In these cases, you can use a special method
+to authenticate your request using a token as a query parameter.
+
+To do this, you'll first need to generate an authentication token using the steps we provided earlier. Then, you can
+include the token in your request by adding it as a query parameter at the end of the URL.
+
+Here's an example of what that might look like:
 
 ```html
-http://app.konfuzio.com/api/v3/projects/3/export/all.csv?token=bf20d992c0960876157b53745cdd86fad95e6ff4
+http://app.konfuzio.com/api/v3/projects/3/export/all.csv?token=123456
 
 ```
 
-.. Note:: 
-   This functionality currently is only offered for
-   the [Google-Sheet export](https://help.konfuzio.com/integrations/google-sheet/index.html) of Project Documents
-   annotations
+Just replace 123456 with your own authentication token, and you'll be able to use this method to authenticate your
+request.
+
+.. Note::
+    This functionality is offered as part of the 
+    [Google-Sheet export](https://help.konfuzio.com/integrations/google-sheet/index.html) function, as well as usable on
+    any other csv importable software (SAP, Excel, etc).
 
 ### Response codes
 
