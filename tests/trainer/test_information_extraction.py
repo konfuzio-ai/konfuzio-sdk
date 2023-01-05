@@ -370,9 +370,15 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         self.pipeline.tokenizer = ListTokenizer(tokenizers=[])
         self.pipeline.category = self.project.get_category_by_id(id_=63)
 
+        assert asizeof.asizeof(self.pipeline.category) < 5e5
+
         for label in self.pipeline.category.labels:
             for regex in label.find_regex(category=self.pipeline.category):
                 self.pipeline.tokenizer.tokenizers.append(RegexTokenizer(regex=regex))
+
+        assert 9e6 < asizeof.asizeof(self.pipeline.category) < 10e6
+
+        assert 10e3 < asizeof.asizeof(self.pipeline.tokenizer) < 15e3
 
         if not TEST_WITH_FULL_DATASET:
             train_doc_ids = [44823, 44834, 44839, 44840, 44841]
@@ -397,11 +403,13 @@ class TestRegexRFExtractionAI(unittest.TestCase):
             documents=self.pipeline.documents, retokenize=False, require_revised_annotations=False
         )
 
-        assert asizeof.asizeof(self.pipeline.df_train) < 3e6
+        assert 2e6 < asizeof.asizeof(self.pipeline.df_train) < 3e6
 
     def test_03_fit(self) -> None:
         """Start to train the Model."""
         self.pipeline.fit()
+
+        assert asizeof.asizeof(self.pipeline.clf) < 1e5
 
         if self.pipeline.use_separate_labels:
             assert len(self.pipeline.clf.classes_) == 19
@@ -455,13 +463,16 @@ class TestRegexRFExtractionAI(unittest.TestCase):
     def test_06_evaluate_full(self):
         """Evaluate DocumentEntityMultiClassModel."""
         evaluation = self.pipeline.evaluate_full()
-
         assert evaluation.f1(None) == self.evaluate_full_result
+
+        assert 1e5 < asizeof.asizeof(evaluation.data) < 2e5
 
     def test_07_data_quality(self):
         """Evaluate on training documents."""
         evaluation = self.pipeline.evaluate_full(use_training_docs=True)
         assert evaluation.f1(None) >= 0.94
+
+        assert 4e5 < asizeof.asizeof(evaluation.data) < 5e5
 
     def test_08_tokenizer_quality(self):
         """Evaluate the tokenizer quality."""
@@ -471,10 +482,14 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         assert evaluation.tokenizer_fp() == 26
         assert evaluation.tokenizer_fn() == 1
 
+        assert 1e5 < asizeof.asizeof(evaluation.data) < 2e5
+
     def test_09_clf_quality(self):
         """Evaluate the Label classifier quality."""
         evaluation = self.pipeline.evaluate_clf()
         assert evaluation.clf_f1(None) == 1.0
+
+        assert 1e5 < asizeof.asizeof(evaluation.data) < 2e5
 
     def test_10_label_set_clf_quality(self):
         """Evaluate the LabelSet classifier quality."""
@@ -520,8 +535,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         if os.path.isfile(cls.pipeline.pipeline_path):
             os.remove(cls.pipeline.pipeline_path)  # cleanup
 
-        display_top(tracemalloc.take_snapshot())
-        logger.info('test')
+        # display_top(tracemalloc.take_snapshot())
 
 
 class TestInformationExtraction(unittest.TestCase):

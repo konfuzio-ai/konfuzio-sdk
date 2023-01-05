@@ -1531,6 +1531,7 @@ class GroupAnnotationSets:
         :return:
         """
         # Only train template clf is there are non default templates
+        logger.info('Start training of LabelSet Classifier.')
 
         LabelSetInfo = collections.namedtuple(
             'LabelSetInfo', ['is_default', 'name', 'has_multiple_annotation_sets', 'target_names']
@@ -2400,6 +2401,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         logger.info(f"Size of Label classifier: {asizeof.asizeof(self.clf)/1000} KB.")
 
         self.fit_label_set_clf()
+
+        logger.info(f"Size of LabelSet classifier: {asizeof.asizeof(self.label_set_clf)/1000} KB.")
 
         return self.clf
 
