@@ -250,12 +250,20 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         test_documents = self.pipeline.test_documents
         documents = self.pipeline.documents
 
+        n_project_documents = len(self.project._documents)
+
         previous_size = asizeof.asizeof(self.pipeline)
 
         self.pipeline.pipeline_path = self.pipeline.save(
-            output_dir=self.project.model_folder, include_konfuzio=True, reduce_weight=True, max_ram="5MB"
+            output_dir=self.project.model_folder,
+            include_konfuzio=True,
+            reduce_weight=True,
+            keep_documents=False,
+            max_ram="5MB",
         )
         assert os.path.isfile(self.pipeline.pipeline_path)
+
+        assert n_project_documents == len(self.project._documents)
 
         assert self.pipeline.documents == documents
         assert self.pipeline.test_documents == test_documents
@@ -417,15 +425,23 @@ class TestRegexRFExtractionAI(unittest.TestCase):
             )
         self.project._max_ram = None
 
+        n_project_documents = len(self.project._documents)
+
         test_documents = self.pipeline.test_documents
         documents = self.pipeline.documents
 
         previous_size = asizeof.asizeof(self.pipeline)
 
         self.pipeline.pipeline_path = self.pipeline.save(
-            output_dir=self.project.model_folder, include_konfuzio=True, reduce_weight=True, max_ram="5MB"
+            output_dir=self.project.model_folder,
+            include_konfuzio=True,
+            reduce_weight=True,
+            keep_documents=False,
+            max_ram="5MB",
         )
         assert os.path.isfile(self.pipeline.pipeline_path)
+
+        assert n_project_documents == len(self.project._documents)
 
         assert self.pipeline.documents == documents
         assert self.pipeline.test_documents == test_documents
