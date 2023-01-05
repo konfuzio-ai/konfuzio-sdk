@@ -18,6 +18,7 @@ import bz2
 import collections
 import difflib
 import functools
+import itertools
 import logging
 import os
 import pathlib
@@ -38,8 +39,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.validation import check_is_fitted
 from tabulate import tabulate
 
-import konfuzio_sdk
-from konfuzio_sdk.data import Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span
+from konfuzio_sdk.data import Data, Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span
 from konfuzio_sdk.normalize import (
     normalize_to_float,
     normalize_to_date,
@@ -70,6 +70,9 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     """
     if not os.path.isfile(pickle_path):
         raise FileNotFoundError("Invalid pickle file path:", pickle_path)
+
+    # The current local id iterator might otherwise be overriden
+    prev_local_id = next(Data.id_iter)
 
     try:
         with bz2.open(pickle_path, 'rb') as file:
@@ -102,6 +105,9 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
         logger.warning(f"Loading legacy {model.name} AI model.")
     else:
         logger.info(f"Loading {model.name} AI model.")
+
+    curr_local_id = next(Data.id_iter)
+    Data.id_iter = itertools.count(max(prev_local_id, curr_local_id))
 
     return model
 
@@ -1208,81 +1214,20 @@ class Trainer:
         # Go through keyword arguments, and either save their values to our
         # instance, or raise an error.
         self.clf = None
-        self.category = None
         self.name = self.__class__.__name__
         self.label_feature_list = None  # will be set later
 
         self.df_train = None
-        self.df_test = None
 
         self.evaluation = None
-
-    def build(self, **kwargs):
-        """Build an ExtractionModel using train valid split."""
-        self.create_candidates_dataset()
-        self.train_valid_split()
-        self.fit()
-        self.evaluate()
-        self.lose_weight()
-        return self
 
     def name_lower(self):
         """Convert class name to machine readable name."""
         return f'{self.name.lower().strip()}'
 
-    def lose_weight(self):
-        """Delete everything that is not necessary for extraction."""
-        self.df_valid = None
-        self.df_train = None
-        self.df_test = None
-
-        self.X_train = None
-        self.y_train = None
-        self.X_valid = None
-        self.y_valid = None
-        self.X_test = None
-        self.y_test = None
-
-        # TODO what is this?
-        self.valid_data = None
-        self.training_data = None
-        self.test_data = None
-
-        self.df_data_list = None
-
-        for label in self.category.project.labels:
-            label.lose_weight()
-
-        for label_set in self.category.label_sets or []:
-            label_set.lose_weight()
-
-        logger.info(f'Lose weight was executed on {self.name}')
-
-    # def get_ai_model(self):
-    #     """Try to load the latest pickled model."""
-    #     try:
-    #         return load_pickle(get_latest_document_model(f'*_{self.name_lower()}.pkl'))
-    #     except FileNotFoundError:
-    #         return None
-
-    def create_candidates_dataset(self):
-        """Use as placeholder Function."""
-        logger.warning(f'{self} does not train a classifier.')
-        pass
-
-    def train_valid_split(self):
-        """Use as placeholder Function."""
-        logger.warning(f'{self} does not use a valid and train data split.')
-        pass
-
     def fit(self):
         """Use as placeholder Function."""
         logger.warning(f'{self} does not train a classifier.')
-        pass
-
-    def fit_label_set_clf(self):
-        """Use as placeholder Function."""
-        logger.warning(f'{self} does not train a label set classifier.')
         pass
 
     def evaluate(self):
@@ -1290,10 +1235,8 @@ class Trainer:
         logger.warning(f'{self} does not evaluate results.')
         pass
 
-    def extract(self, *args, **kwargs):
+    def extract(self):
         """Use as placeholder Function."""
-        # todo: extract should return a Document
-        #  see https://github.com/konfuzio-ai/konfuzio-sdk/blob/64fd8792/konfuzio_sdk/data.py#L1182
         logger.warning(f'{self} does not extract.')
         pass
 
@@ -1488,35 +1431,37 @@ class Trainer:
         :return: Path of the saved model file.
         """
         logger.info('Saving model')
+
+        self.check_is_ready_for_extraction()
+
+        logger.info(f'{output_dir=}')
         logger.info(f'{include_konfuzio=}')
         logger.info(f'{reduce_weight=}')
         logger.info(f'{keep_documents=}')
         logger.info(f'{max_ram=}')
 
-        # Keep Documents of the Category so that we can restore them later
-
-        # TODO: add Document.lose_weight in SDK - remove NO_LABEL Annotations from the Documents
-        # for document in category_documents:
-        #     no_label_annotations = document.annotations(label=self.category.project.no_label)
-        #     clean_annotations = list(set(document.annotations()) - set(no_label_annotations))
-        #     document._annotations = clean_annotations
-
         # if no argument passed, get project max_ram
         if not max_ram and self.category is not None:
             max_ram = self.category.project.max_ram
+            logger.info(f'project {max_ram=}')
 
         if not output_dir:
             output_dir = self.category.project.model_folder
+            logger.info(f'new {output_dir=}')
 
         temp_pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower()}.cloudpickle')
         pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower()}.pkl')
 
         if reduce_weight:
+            logger.info('reducing weight before save')
             self.df_train = None
             self.category.project.lose_weight()
             self.tokenizer.lose_weight()
 
         if not keep_documents:
+            logger.info('removing documents before save')
+            restore_documents = self.documents
+            restore_test_documents = self.test_documents
             self.documents = []
             self.test_documents = []
 
@@ -1532,11 +1477,10 @@ class Trainer:
         logger.info('Getting save paths')
 
         if include_konfuzio:
+            import konfuzio_sdk
+
             cloudpickle.register_pickle_by_value(konfuzio_sdk)
             # todo register all dependencies?
-
-        if not output_dir:
-            output_dir = self.category.project.model_folder
 
         # make sure output dir exists
         pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
@@ -1561,7 +1505,10 @@ class Trainer:
         logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
 
         # restore Documents of the Category so that we can run the evaluation later
-        # self.category.project._documents = category_documents
+        self.documents = restore_documents
+        self.test_documents = restore_test_documents
+        if reduce_weight:
+            self.category.project.init_or_update_document()
 
         return pkl_file_path
 
@@ -1574,9 +1521,9 @@ class GroupAnnotationSets:
         self.n_nearest_template = 5
         self.max_depth = 100
         self.n_estimators = 100
-        self.template_clf = None
+        self.label_set_clf = None
 
-    def fit_template_clf(self) -> Tuple[Optional[object], Optional[List['str']]]:
+    def fit_label_set_clf(self) -> Tuple[Optional[object], Optional[List['str']]]:
         """
         Fit classifier to predict start lines of Sections.
 
@@ -1651,11 +1598,13 @@ class GroupAnnotationSets:
             )
             return None, None
 
-        clf = RandomForestClassifier(n_estimators=self.n_estimators, max_depth=self.max_depth, random_state=420)
-        clf.fit(x_train, y_train)
+        label_set_clf = RandomForestClassifier(
+            n_estimators=self.n_estimators, max_depth=self.max_depth, random_state=420
+        )
+        label_set_clf.fit(x_train, y_train)
 
-        self.template_clf = clf
-        return self.template_clf, self.template_feature_list
+        self.label_set_clf = label_set_clf
+        return self.label_set_clf, self.template_feature_list
 
     def generate_relative_line_features(self, n_nearest: int, df_features: pandas.DataFrame) -> pandas.DataFrame:
         """Add the features of the n_nearest previous and next lines."""
@@ -1696,7 +1645,7 @@ class GroupAnnotationSets:
         self, feature_df_label: pandas.DataFrame, document_text
     ) -> pandas.DataFrame:
         """
-        Convert the feature_df for the label_clf to a feature_df for the template_clf.
+        Convert the feature_df for the label_clf to a feature_df for the label_set_clf.
 
         The input is the Feature-Dataframe and text for one document.
         """
@@ -1817,7 +1766,7 @@ class GroupAnnotationSets:
         feature_df = feature_df.reindex(columns=self.template_feature_list).fillna(0)
         feature_df = self.generate_relative_line_features(n_nearest, feature_df)
 
-        res_series = self.template_clf.predict(feature_df)
+        res_series = self.label_set_clf.predict(feature_df)
         res_templates = pandas.DataFrame(res_series)
         # res_templates['text'] = text.replace('\f', '\n').split('\n')  # Debug code.
 
@@ -1949,30 +1898,28 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         **kwargs,
     ):
         """RFExtractionAI."""
-        logging.info("Initializing RFExtractionAI.")
+        logger.info("Initializing RFExtractionAI.")
         super().__init__(*args, **kwargs)
         GroupAnnotationSets.__init__(self)
 
         self.label_feature_list = None
 
-        self.use_separate_labels = use_separate_labels
+        logger.info("RFExtractionAI settings:")
         logger.info(f"{use_separate_labels=}")
-
-        self.category: Category = category
         logger.info(f"{category=}")
-
-        self.n_nearest = n_nearest
         logger.info(f"{n_nearest=}")
-
-        self.first_word = first_word
         logger.info(f"{first_word=}")
-
-        self.max_depth = max_depth
         logger.info(f"{max_depth=}")
-
-        self.n_estimators = n_estimators
         logger.info(f"{n_estimators=}")
+        logger.info(f"{no_label_limit=}")
+        logger.info(f"{n_nearest_across_lines=}")
 
+        self.use_separate_labels = use_separate_labels
+        self.category = category
+        self.n_nearest = n_nearest
+        self.first_word = first_word
+        self.max_depth = max_depth
+        self.n_estimators = n_estimators
         self.no_label_limit = no_label_limit
         self.n_nearest_across_lines = n_nearest_across_lines
 
@@ -2009,6 +1956,22 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             df['target'] = df['label_name']
         return df, _feature_list, _temp_df_raw_errors
 
+    def check_is_ready_for_extraction(self):
+        """Check if tokenizer is set and the classifiers set and trained."""
+        if self.tokenizer is None:
+            raise AttributeError(f'{self} missing Tokenizer.')
+
+        if not self.category:
+            raise AttributeError(f'{self} requires a Category.')
+
+        if self.clf is None:
+            raise AttributeError(f'{self} does not provide a Label Classifier. Please add it.')
+        else:
+            check_is_fitted(self.clf)
+
+        if self.label_set_clf is None:
+            logger.warning('{self} does not provide a LabelSet Classfier.')
+
     def extract(self, document: Document) -> Document:
         """
         Infer information from a given Document.
@@ -2022,16 +1985,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         """
         logger.info(f"Starting extraction of {document}.")
-        if self.tokenizer is None:
-            raise AttributeError(f'{self} missing Tokenizer.')
 
-        if self.clf is None:
-            raise AttributeError(f'{self} does not provide a Label Classifier. Please add it.')
-        else:
-            check_is_fitted(self.clf)
-
-        if self.template_clf is None:
-            logger.warning('{self} does not provide a LabelSet Classfier.')
+        self.check_is_ready_for_extraction()
 
         # Main Logic -------------------------
         # 1. start inference with new document
@@ -2110,7 +2065,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         res_dict = self.merge_horizontal(res_dict, inference_document.text)
 
         # Try to calculate sections based on template classifier.
-        if self.template_clf is not None:  # todo smarter handling of multiple clf
+        if self.label_set_clf is not None:  # todo smarter handling of multiple clf
             res_dict = self.extract_template_with_clf(inference_document.text, res_dict)
             res_dict[self.no_label_set_name] = no_label_res_dict
 
@@ -2444,7 +2399,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         logger.info(f"Size of Label classifier: {asizeof.asizeof(self.clf)/1000} KB.")
 
-        self.fit_template_clf()
+        self.fit_label_set_clf()
 
         return self.clf
 
@@ -2515,12 +2470,12 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         return clf_evaluation
 
-    def evaluate_template_clf(self, use_training_docs: bool = False) -> Evaluation:
+    def evaluate_label_set_clf(self, use_training_docs: bool = False) -> Evaluation:
         """Evaluate the LabelSet classifier."""
-        if self.template_clf is None:
+        if self.label_set_clf is None:
             raise AttributeError(f'{self} does not provide a LabelSet Classifier.')
         else:
-            check_is_fitted(self.template_clf)
+            check_is_fitted(self.label_set_clf)
 
         eval_list = []
         if not use_training_docs:
@@ -2550,6 +2505,6 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
             eval_list.append((document, predicted_doc))
 
-        template_clf_evaluation = Evaluation(eval_list)
+        label_set_clf_evaluation = Evaluation(eval_list)
 
-        return template_clf_evaluation
+        return label_set_clf_evaluation

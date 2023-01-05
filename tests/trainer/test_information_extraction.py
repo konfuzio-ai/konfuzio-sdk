@@ -143,7 +143,7 @@ separate_labels_clf_classes = [
     'Verdiensibescheinigung__Steuer-Brutto',
 ]
 
-template_clf_classes = ['Brutto-Bezug', 'Lohnabrechnung', 'Netto-Bezug', 'No', 'Steuer', 'Verdiensibescheinigung']
+label_set_clf_classes = ['Brutto-Bezug', 'Lohnabrechnung', 'Netto-Bezug', 'No', 'Steuer', 'Verdiensibescheinigung']
 
 
 @parameterized.parameterized_class(
@@ -165,8 +165,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Set up the Data and Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-        tokenizer = WhitespaceTokenizer()
-        cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_separate_labels, tokenizer=tokenizer)
+        cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_separate_labels, tokenizer=None)
 
         cls.tests_annotations_spans = list()
 
@@ -174,7 +173,18 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         """Make sure the Data and Pipeline is configured."""
         # tracemalloc.start()
 
+        with pytest.raises(AttributeError, match="missing Tokenizer"):
+            self.pipeline.check_is_ready_for_extraction()
+
+        self.pipeline.tokenizer = WhitespaceTokenizer()
+
+        with pytest.raises(AttributeError, match="requires a Category"):
+            self.pipeline.check_is_ready_for_extraction()
+
         self.pipeline.category = self.project.get_category_by_id(id_=63)
+
+        with pytest.raises(AttributeError, match="not provide a Label Classifier"):
+            self.pipeline.check_is_ready_for_extraction()
 
         if not TEST_WITH_FULL_DATASET:
             train_doc_ids = [44823, 44834, 44839, 44840, 44841]
@@ -225,7 +235,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
             assert len(self.pipeline.clf.classes_) == 18
             assert list(self.pipeline.clf.classes_) == clf_classes
 
-        assert list(self.pipeline.template_clf.classes_) == template_clf_classes
+        assert list(self.pipeline.label_set_clf.classes_) == label_set_clf_classes
 
     def test_04_save_model(self):
         """Save the model."""
@@ -247,18 +257,14 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         previous_size = asizeof.asizeof(self.pipeline)
 
         self.pipeline.pipeline_path = self.pipeline.save(
-            output_dir=self.project.model_folder, include_konfuzio=False, reduce_weight=True, max_ram="5MB"
+            output_dir=self.project.model_folder, include_konfuzio=True, reduce_weight=True, max_ram="5MB"
         )
         assert os.path.isfile(self.pipeline.pipeline_path)
 
-        assert self.pipeline.documents == []
-        assert self.pipeline.test_documents == []
+        assert self.pipeline.documents == documents
+        assert self.pipeline.test_documents == test_documents
         assert self.pipeline.df_train is None
         assert self.pipeline.tokenizer.processing_steps == []
-
-        self.pipeline.test_documents = test_documents
-        self.pipeline.documents = documents
-        self.pipeline.category.project._documents = test_documents + documents
 
         assert previous_size > asizeof.asizeof(self.pipeline)
 
@@ -295,9 +301,9 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         evaluation = self.pipeline.evaluate_clf()
         assert evaluation.clf_f1(None) == self.clf_quality_result
 
-    def test_10_template_clf_quality(self):
+    def test_10_label_set_clf_quality(self):
         """Evaluate the LabelSet classifier quality."""
-        evaluation = self.pipeline.evaluate_template_clf()
+        evaluation = self.pipeline.evaluate_label_set_clf()
 
         assert evaluation.f1(None) == 0.9552238805970149
 
@@ -321,6 +327,10 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
     def test_13_load_ai_model(self):
         """Test loading of trained model."""
         self.pipeline = load_model(self.pipeline.pipeline_path)
+
+        assert self.pipeline.documents == []
+        assert self.pipeline.test_documents == []
+
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         self.pipeline.category = test_document.category
 
@@ -400,7 +410,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
             assert len(self.pipeline.clf.classes_) == 18
             assert list(self.pipeline.clf.classes_) == clf_classes
 
-        assert list(self.pipeline.template_clf.classes_) == template_clf_classes
+        assert list(self.pipeline.label_set_clf.classes_) == label_set_clf_classes
 
     def test_04_save_model(self):
         """Save the model."""
@@ -422,18 +432,14 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         previous_size = asizeof.asizeof(self.pipeline)
 
         self.pipeline.pipeline_path = self.pipeline.save(
-            output_dir=self.project.model_folder, include_konfuzio=False, reduce_weight=True, max_ram="5MB"
+            output_dir=self.project.model_folder, include_konfuzio=True, reduce_weight=True, max_ram="5MB"
         )
         assert os.path.isfile(self.pipeline.pipeline_path)
 
-        assert self.pipeline.documents == []
-        assert self.pipeline.test_documents == []
+        assert self.pipeline.documents == documents
+        assert self.pipeline.test_documents == test_documents
         assert self.pipeline.df_train is None
         assert self.pipeline.tokenizer.processing_steps == []
-
-        self.pipeline.test_documents = test_documents
-        self.pipeline.documents = documents
-        self.pipeline.category.project._documents = test_documents + documents
 
         assert previous_size > asizeof.asizeof(self.pipeline)
 
@@ -470,9 +476,9 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         evaluation = self.pipeline.evaluate_clf()
         assert evaluation.clf_f1(None) == 1.0
 
-    def test_10_template_clf_quality(self):
+    def test_10_label_set_clf_quality(self):
         """Evaluate the LabelSet classifier quality."""
-        evaluation = self.pipeline.evaluate_template_clf()
+        evaluation = self.pipeline.evaluate_label_set_clf()
         assert evaluation.f1(None) == 0.9552238805970149
 
     def test_11_extract_test_document(self):
@@ -495,6 +501,10 @@ class TestRegexRFExtractionAI(unittest.TestCase):
     def test_13_load_ai_model(self):
         """Test loading of trained model."""
         self.pipeline = load_model(self.pipeline.pipeline_path)
+
+        assert self.pipeline.documents == []
+        assert self.pipeline.test_documents == []
+
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
         assert len(res_doc.view_annotations()) == 19
@@ -530,10 +540,18 @@ class TestInformationExtraction(unittest.TestCase):
             pipeline.extract(document)
         assert 'missing Tokenizer' in str(einfo.value)
 
+    def test_extraction_without_category(self):
+        """Test extraction without Category."""
+        document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+        pipeline = RFExtractionAI()
+        pipeline.tokenizer = WhitespaceTokenizer()
+        with pytest.raises(AttributeError, match='requires a Category'):
+            pipeline.extract(document)
+
     def test_extraction_without_clf(self):
         """Test extraction without classifier."""
         document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-        pipeline = RFExtractionAI()
+        pipeline = RFExtractionAI(category=document.category)
         pipeline.tokenizer = WhitespaceTokenizer()
         with pytest.raises(AttributeError, match='does not provide a Label Classifier'):
             pipeline.extract(document)
@@ -541,7 +559,7 @@ class TestInformationExtraction(unittest.TestCase):
     def test_extraction_with_no_span_document(self):
         """Test empty extraction when no spans detected."""
         document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-        pipeline = RFExtractionAI()
+        pipeline = RFExtractionAI(category=document.category)
         pipeline.tokenizer = RegexTokenizer(r"qwerty")
 
         pipeline.clf = RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1)
@@ -558,7 +576,7 @@ class TestInformationExtraction(unittest.TestCase):
         """Test extraction with completely empty document."""
         category = self.project.get_category_by_id(63)
         document = Document(text="", project=self.project, category=category)
-        pipeline = RFExtractionAI()
+        pipeline = RFExtractionAI(category=category)
         pipeline.tokenizer = RegexTokenizer(r"qwerty")
 
         pipeline.clf = RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1)
@@ -585,7 +603,7 @@ class TestInformationExtraction(unittest.TestCase):
     def test_extract_with_unfitted_clf(self):
         """Test to extract a Document."""
         document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-        pipeline = RFExtractionAI()
+        pipeline = RFExtractionAI(category=document.category)
         pipeline.tokenizer = WhitespaceTokenizer()
         pipeline.clf = RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1)
         with pytest.raises(AttributeError, match='instance is not fitted yet'):
@@ -594,7 +612,7 @@ class TestInformationExtraction(unittest.TestCase):
     def test_extract_with_fitted_clf(self):
         """Test to extract a Document."""
         document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
-        pipeline = RFExtractionAI()
+        pipeline = RFExtractionAI(category=document.category)
         pipeline.tokenizer = WhitespaceTokenizer()
         pipeline.clf = RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1)
         X, y = make_classification(
