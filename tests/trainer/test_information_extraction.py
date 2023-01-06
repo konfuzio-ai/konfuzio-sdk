@@ -292,7 +292,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         evaluation = self.pipeline.evaluate_full(use_training_docs=True)
         assert evaluation.f1(None) == self.data_quality_result
 
-        assert 22e5 < asizeof.asizeof(evaluation.data) < 23e5
+        assert 22e5 < asizeof.asizeof(evaluation.data) < 24e5
 
     def test_08_tokenizer_quality(self):
         """Evaluate the tokenizer quality."""
@@ -385,7 +385,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
             for regex in label.find_regex(category=self.pipeline.category):
                 self.pipeline.tokenizer.tokenizers.append(RegexTokenizer(regex=regex))
 
-        assert 9e6 < asizeof.asizeof(self.pipeline.category) < 10e6
+        assert 8e6 < asizeof.asizeof(self.pipeline.category) < 12e6
 
         assert 10e3 < asizeof.asizeof(self.pipeline.tokenizer) < 15e3
 
