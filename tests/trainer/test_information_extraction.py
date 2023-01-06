@@ -171,8 +171,6 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
     def test_01_configure_pipeline(self):
         """Make sure the Data and Pipeline is configured."""
-        # tracemalloc.start()
-
         with pytest.raises(AttributeError, match="missing Tokenizer"):
             self.pipeline.check_is_ready_for_extraction()
 
@@ -356,7 +354,6 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         """Clear Project files."""
         if os.path.isfile(cls.pipeline.pipeline_path):
             os.remove(cls.pipeline.pipeline_path)  # cleanup
-        # display_top(tracemalloc.take_snapshot())
 
 
 @parameterized.parameterized_class(
@@ -379,8 +376,6 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
     def test_01_configure_pipeline(self):
         """Make sure the Data and Pipeline is configured."""
-        # tracemalloc.start()
-
         self.pipeline.tokenizer = ListTokenizer(tokenizers=[])
         self.pipeline.category = self.project.get_category_by_id(id_=63)
 
@@ -549,7 +544,37 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         if os.path.isfile(cls.pipeline.pipeline_path):
             os.remove(cls.pipeline.pipeline_path)  # cleanup
 
-        # display_top(tracemalloc.take_snapshot())
+
+@unittest.skip(reason='Slow. Only use to debug memory use.')
+def test_tracemalloc_memory():
+    """Set up the Data and Pipeline."""
+    tracemalloc.start()
+
+    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+    pipeline = RFExtractionAI(use_separate_labels=True)
+
+    pipeline.tokenizer = ListTokenizer(tokenizers=[])
+    pipeline.category = project.get_category_by_id(id_=63)
+
+    for label in pipeline.category.labels:
+        for regex in label.find_regex(category=pipeline.category):
+            pipeline.tokenizer.tokenizers.append(RegexTokenizer(regex=regex))
+
+    pipeline.documents = project.get_category_by_id(63).documents()
+
+    pipeline.test_documents = project.get_category_by_id(63).test_documents()
+
+    pipeline.df_train, pipeline.label_feature_list = pipeline.feature_function(
+        documents=pipeline.documents, retokenize=False, require_revised_annotations=False
+    )
+
+    pipeline.fit()
+
+    _ = pipeline.evaluate_full()
+
+    _ = pipeline.evaluate_full(use_training_docs=True)
+
+    display_top(tracemalloc.take_snapshot())
 
 
 class TestInformationExtraction(unittest.TestCase):
