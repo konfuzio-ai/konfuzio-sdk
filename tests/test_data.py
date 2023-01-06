@@ -1323,9 +1323,11 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert project.labels[0]._evaluations == {}
         assert project.labels[0]._tokens == {}
         assert project.labels[0]._regex == {}
+        assert project._documents == []
         assert project.virtual_documents == []
         assert project.documents == []
         assert project.test_documents == []
+        assert project._meta_data == []
 
 
 class TestSeparateLabels(unittest.TestCase):
