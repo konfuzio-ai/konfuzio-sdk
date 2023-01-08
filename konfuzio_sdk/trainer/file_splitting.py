@@ -188,16 +188,21 @@ class SplittingAI:
             else:
                 if self.model.predict(page).is_first_page:
                     suggested_splits.append(page)
-        split_docs = []
-        first_page = document.pages()[0]
-        last_page = document.pages()[-1]
-        for page_i, split_i in enumerate(suggested_splits):
-            if page_i == 0:
-                split_docs.append(self._create_doc_from_page_interval(document, first_page, split_i))
-            elif page_i == len(split_docs):
-                split_docs.append(self._create_doc_from_page_interval(document, split_i, last_page))
-            else:
-                split_docs.append(self._create_doc_from_page_interval(document, suggested_splits[page_i - 1], split_i))
+        if len(suggested_splits) == 1:
+            return [document]
+        else:
+            split_docs = []
+            first_page = document.pages()[0]
+            last_page = document.pages()[-1]
+            for page_i, split_i in enumerate(suggested_splits):
+                if page_i == 0:
+                    split_docs.append(self._create_doc_from_page_interval(document, first_page, split_i))
+                elif page_i == len(split_docs):
+                    split_docs.append(self._create_doc_from_page_interval(document, split_i, last_page))
+                else:
+                    split_docs.append(
+                        self._create_doc_from_page_interval(document, suggested_splits[page_i - 1], split_i)
+                    )
         return split_docs
 
     def propose_split_documents(

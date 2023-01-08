@@ -2292,7 +2292,7 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
     def test_view_annotations(self):
         """Test that Document.view_annotations() gets all the right annotations."""
         project = LocalTextProject()
-        document = project.test_documents[-6]
+        document = project.test_documents[-7]
         annotations = document.view_annotations()
         assert len(annotations) == 5  # 4 if top_annotations filter is used
         assert sorted([ann.id_ for ann in annotations]) == [16, 17, 18, 19, 24]  # [16, 18, 19, 24]
@@ -2300,7 +2300,7 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
     def test_document_lose_weight(self):
         """Test that Document.lose_weight() removes all the right annotations."""
         project = LocalTextProject()
-        document = project.test_documents[-6]
+        document = project.test_documents[-7]
 
         assert len(document.annotations(use_correct=False, ignore_below_threshold=False)) == 11
 
@@ -2311,7 +2311,7 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
     def test_annotationset_annotations(self):
         """Test AnnotationSet.annotations method."""
         project = LocalTextProject()
-        document = project.test_documents[-6]
+        document = project.test_documents[-7]
 
         annotation_set = document.annotation_sets()[0]
 

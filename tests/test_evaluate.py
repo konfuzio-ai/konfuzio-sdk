@@ -922,7 +922,7 @@ class TestEvaluation(unittest.TestCase):
         """Test that data has not changed."""
         project = LocalTextProject()
         assert len(project.documents) == 5
-        assert len(project.test_documents) == 9
+        assert len(project.test_documents) == 10
 
     def test_not_strict(self):
         """Test that evaluation can be initialized with strict mode disabled."""
@@ -1276,11 +1276,11 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         ]
         cls.file_splitting_model.test_documents = [
             document for category in cls.file_splitting_model.categories for document in category.test_documents()
-        ][:-1]
+        ][:-2]
         cls.file_splitting_model.tokenizer = ConnectedTextTokenizer()
         cls.file_splitting_model.first_page_spans = None
         cls.test_document = cls.project.get_category_by_id(3).test_documents()[0]
-        cls.wrong_test_document = cls.project.get_category_by_id(4).test_documents()[-1]
+        cls.wrong_test_document = cls.project.get_category_by_id(4).test_documents()[-2]
 
     def test_metrics_calculation(self):
         """Test Evaluation class for ContextAwareFileSplitting."""

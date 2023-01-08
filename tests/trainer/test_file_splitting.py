@@ -24,7 +24,7 @@ class TestFileSplittingModel(unittest.TestCase):
             document
             for document in cls.project.test_documents
             if document.category in cls.file_splitting_model.categories
-        ][:-1]
+        ][:-2]
         cls.file_splitting_model.tokenizer = ConnectedTextTokenizer()
         cls.file_splitting_model.first_page_spans = None
         cls.test_document = cls.project.get_category_by_id(3).test_documents()[0]
@@ -79,18 +79,13 @@ class TestFileSplittingModel(unittest.TestCase):
         pred = splitting_ai.propose_split_documents(self.test_document)
         assert len(pred) == 3
 
-    def test_suggest_first_pages(self):
-        """Test SplittingAI's suggesting first Pages."""
+    def test_splitting_ai_predict_one_file_document(self):
+        """Test SplittingAI's Document-splitting method on a single-file Document."""
         splitting_ai = SplittingAI(self.file_splitting_model)
-        test_document = self.file_splitting_model.tokenizer.tokenize(
-            deepcopy(self.project.get_category_by_id(3).test_documents()[0])
-        )
-        pred = splitting_ai.propose_split_documents(test_document, return_pages=True)
-        for page in pred.pages():
-            if page.number in (1, 3, 5):
-                assert page.is_first_page
-            else:
-                assert not page.is_first_page
+        test_document = self.project.get_category_by_id(4).test_documents()[-1]
+        pred = splitting_ai.propose_split_documents(test_document)
+        assert len(pred) == 1
+        assert len(pred[0].pages()) == 2
 
     def test_splitting_ai_evaluate_full_on_training(self):
         """Test SplittingAI's evaluate_full on training Documents."""
@@ -130,3 +125,16 @@ class TestFileSplittingModel(unittest.TestCase):
             else:
                 assert not page.is_first_page
         assert pred == test_document
+
+    def test_suggest_first_pages(self):
+        """Test SplittingAI's suggesting first Pages."""
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        test_document = self.file_splitting_model.tokenizer.tokenize(
+            deepcopy(self.project.get_category_by_id(3).test_documents()[0])
+        )
+        pred = splitting_ai.propose_split_documents(test_document, return_pages=True)
+        for page in pred.pages():
+            if page.number in (1, 3, 5):
+                assert page.is_first_page
+            else:
+                assert not page.is_first_page

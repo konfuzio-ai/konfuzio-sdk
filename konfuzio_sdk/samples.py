@@ -383,9 +383,9 @@ class LocalTextProject(Project):
         )
 
         vert_document_2_text = """a1  s1
-            s2
-            s3
-        a2  s4
+    s2
+    s3
+a2  s4
         """
         vert_document_2 = Document(project=self, category=category, text=vert_document_2_text, dataset_status=0)
 
@@ -652,3 +652,8 @@ class LocalTextProject(Project):
         document_10 = Document(id_=None, project=self, category=category_4, text=text_10, dataset_status=3)
         _ = Page(id_=None, original_size=(320, 240), document=document_10, start_offset=0, end_offset=21, number=1)
         _ = Page(id_=None, original_size=(320, 240), document=document_10, start_offset=22, end_offset=43, number=2)
+
+        text_11 = "Hi all,\nI like bread.\nHow was your week?\n "
+        document_11 = Document(id_=None, project=self, category=category_4, text=text_11, dataset_status=3)
+        _ = Page(id_=None, original_size=(320, 240), document=document_11, start_offset=0, end_offset=21, number=1)
+        _ = Page(id_=None, original_size=(320, 240), document=document_11, start_offset=22, end_offset=40, number=2)

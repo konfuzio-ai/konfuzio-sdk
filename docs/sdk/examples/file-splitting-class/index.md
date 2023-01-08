@@ -208,7 +208,7 @@ file_splitting_model.save(project.model_folder)
 # run the prediction
 for page in test_document.pages():
  pred = file_splitting_model.predict(page)
- if pred == 1:
+ if pred.is_first_page:
   print('Page {} is predicted as the first.'.format(page.number))
  else:
   print('Page {} is predicted as the non-first.'.format(page.number))
@@ -232,7 +232,6 @@ Full code:
 import bz2
 import cloudpickle
 import konfuzio_sdk
-import logging
 import pathlib
 import os
 import shutil
@@ -350,7 +349,7 @@ file_splitting_model.save(project.model_folder)
 # run the prediction
 for page in test_document.pages():
     pred = file_splitting_model.predict(page)
-    if pred == 1:
+    if pred.is_first_page:
         print('Page {} is predicted as the first.'.format(page.number))
     else:
         print('Page {} is predicted as the non-first.'.format(page.number))
@@ -362,7 +361,7 @@ model = load_model(project.model_folder)
 # initialize the SplittingAI
 splitting_ai = SplittingAI(model)
 
-# SplittingAI can be ran in two modes: returning a list of sub-Documents as the result of the input Document
+# SplittingAI can be run in two modes: returning a list of sub-Documents as the result of the input Document
 # splitting or returning a copy of the input Document with Pages predicted as first having an attribute
 # "is_first_page". The flag "return_pages" has to be True for the latter; let's use it
 new_document = splitting_ai.propose_split_documents(test_document, return_pages=True)
