@@ -1,4 +1,6 @@
 """Test the evaluation."""
+import os.path
+import pathlib
 import unittest
 from statistics import mean
 
@@ -1260,6 +1262,13 @@ class TestEvaluationCalculator(unittest.TestCase):
         assert no_f1.precision is None
         assert no_f1.recall is None
         assert no_f1.f1 is None
+
+    def test_metrics_markdown_table_generator(self):
+        """Test Markdown metrics report generator."""
+        evaluation_calculator = EvaluationCalculator(tp=3, fp=22, fn=2)
+        path = evaluation_calculator.metrics_markdown_table_generator(output_dir="")
+        assert os.path.isfile(path)
+        pathlib.Path(path).unlink()
 
 
 class TestEvaluationFileSplitting(unittest.TestCase):

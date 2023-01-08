@@ -3,7 +3,7 @@
 ### Intro
 
 Not all multipage files that we process are always neatly scanned and organized. Sometimes we can have more than one actual 
-Document in a stream pf pages; such files need to be properly processed and split into several independent Documents
+Document in a stream of pages; such files need to be properly processed and split into several independent Documents
 
 .. image:: /_static/img/multi_file_document_example.png
 
@@ -42,10 +42,7 @@ find in the full code block in the lower part of this page. A class itself is al
 
 Let's start with making all the necessary imports and initializing the class of `ContextAwareFileSplittingModel`:
 ```python
-import bz2
-import cloudpickle
-import konfuzio_sdk
-import logging
+import json
 import pathlib
 import os
 import shutil
@@ -60,22 +57,27 @@ from konfuzio_sdk.utils import get_timestamp
 
 class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
 
-    def __init__(self, *args, **kwargs):
-        self.train_data = None 
-        self.test_data = None
-        self.categories = None
-        self.first_page_spans = None
-        self.tokenizer = None
+        def __init__(self, *args, **kwargs):
+        """Initialize the ContextAwareFileSplittingModel."""
+            super().__init__()
+            self.name = self.__class__.__name__
+            self.documents = None
+            self.test_documents = None
+            self.categories = None
+            self.tokenizer = None
+            self.first_page_spans = None
+            self.path = None
         
 ```
-The class inherits from `AbstractFileSplittingModel`. Attributes are set to `None` to be assigned explicitly upon usage 
-later. `train_data` and `test_data` will be used for "training" (gathering unique first-page Spans from the Documents) 
-and testing respectively; `categories` will define groups of Documents within which the "training" will take place;
-`first_page_spans` will be defined with the result of `fit()` method running; `tokenizer` will be used for going through 
-the Document's text and separating it into Spans. We will use it to process training and testing Documents, as well as 
-any Document that will undergo splitting. This is done to ensure that texts in all of the Documents are split using the 
-same logic (particularly tokenization by separating on `\n` whitespaces by ConnectedTextTokenizer, which is used in the 
-example in the end of the page) and it will be possible to find common Spans. 
+The class inherits from `AbstractFileSplittingModel`, so we run `super().__init__()` for proper inheritance of the 
+attributes. Attributes are set to `None` to be assigned explicitly upon usage later. `documents` and `test_documents` will be 
+used for "training" (gathering unique first-page Spans from the Documents) and testing respectively; `categories` will 
+define groups of Documents within which the "training" will take place; `first_page_spans` will be defined with the 
+result of `fit()` method running; `tokenizer` will be used for going through the Document's text and separating it into 
+Spans. We will use it to process training and testing Documents, as well as any Document that will undergo splitting. 
+This is done to ensure that texts in all of the Documents are split using the same logic (particularly tokenization by 
+separating on `\n` whitespaces by ConnectedTextTokenizer, which is used in the example in the end of the page) and it 
+will be possible to find common Spans. `path` is a full path of the model-to-be-saved.
 
 An example of how ConnectedTextTokenizer works:
 ```python
@@ -141,39 +143,52 @@ def fit(self, *args, **kwargs) -> dict:
         return first_page_spans
 ```
 
-Secondly, we define `save()` method. For saving, we use cloudpickle utility and compression with bz2. We save a set of 
-unique first-page Spans as the model.
-
-A flag `include_konfuzio` enables pickle serialization as a value, not as a reference (for more info, read [this](https://github.com/cloudpipe/cloudpickle#overriding-pickles-serialization-mechanism-for-importable-constructs)).
-Then, we create the directory provided in `model_path` if it doesn't exist yet. Afterwards, we define filenames, save a 
-temporary cloudpickled object and then compress it using bz2. The temporary object is then removed.
+Secondly, we define `save()` method. For saving, it is possible to choose one of the two options: to save 
+`first_page_spans` as JSON (`save_json` has to be set to True) or to save a whole instance of the class as a pickle, 
+using parent class's `save()` method (`save_json` has to be set to False). A flag `include_konfuzio` enables pickle serialization as a value, not as a reference (for more info, read 
+[this](https://github.com/cloudpipe/cloudpickle#overriding-pickles-serialization-mechanism-for-importable-constructs)).
+`max_ram` is used to define the maximum memory usage condition to save model; `reduce_weight` allows for removing 
+everything that is not needed for running prediction before a model is saved.
 ```python
-def save(self, model_path="", include_konfuzio=True):
-    if include_konfuzio:
-            cloudpickle.register_pickle_by_value(konfuzio_sdk)
-    pathlib.Path(model_path).mkdir(parents=True, exist_ok=True)
-    temp_pkl_file_path = os.path.join(model_path, f'{get_timestamp()}_first_page_spans_tmp.cloudpickle')
-    pkl_file_path = os.path.join(model_path, f'{get_timestamp()}_first_page_spans.pkl')
-    with open(temp_pkl_file_path, 'wb') as f:
-        cloudpickle.dump(self.first_page_spans, f)
-    with open(temp_pkl_file_path, 'rb') as input_f:
-        with bz2.open(pkl_file_path, 'wb') as output_f:
-            shutil.copyfileobj(input_f, output_f)
-    os.remove(temp_pkl_file_path)
-    return pkl_file_path
+    def save(
+        self,
+        save_json=True,
+        include_konfuzio=False,
+        max_ram=None,
+        reduce_weight: bool = False,
+    ) -> str:
+        if save_json:
+            self.path = self.output_dir + f'/{get_timestamp()}_first_page_spans.json'
+            pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
+            with open(self.path, 'w+') as f:
+                json.dump(self.first_page_spans, f)
+        else:
+            self.path = super().save(include_konfuzio=include_konfuzio, max_ram=max_ram, reduce_weight=reduce_weight)
+        return self.path
+```
+
+Then we define `load_json()` method for loading previosuly saved `first_page_spans` from a chosen `model_path`:
+```python
+    def load_json(self, model_path=""):
+        with open(model_path, 'r') as f:
+            spans = json.load(f)
+        # converting str category.id_ values to back int because JSON converts them to str
+        spans = {int(k): v for k, v in spans.items()}
+        self.first_page_spans = spans
 ```
 
 Lastly, we define `predict()` method that uses resulting `first_page_spans` gathered from `fit()`. A Page is accepted as
  an input and its Span set is checked for containing first-page Spans for each of the Categories. If there has been at 
 least one intersection, a Page is predicted to be first; if there's no such intersections, it's predicted non-first.
 ```python
-def predict(self, page: Page) -> Page:
-        for category in self.categories:
+ def predict(self, page: Page) -> Page:
+     for category in self.categories:
             intersection = {span.offset_string for span in page.spans()}.intersection(
                 self.first_page_spans[category.id_]
             )
             if len(intersection) > 0:
                 page.is_first_page = True
+                break
         return page
 ```
 
@@ -203,15 +218,16 @@ file_splitting_model.tokenizer = ConnectedTextTokenizer()
 file_splitting_model.first_page_spans = file_splitting_model.fit()
 
 # save the gathered Spans
-file_splitting_model.save(project.model_folder)
+file_splitting_model.output_dir = project.model_folder
+file_splitting_model.save(save_json=True)
 
 # run the prediction
 for page in test_document.pages():
- pred = file_splitting_model.predict(page)
- if pred.is_first_page:
-  print('Page {} is predicted as the first.'.format(page.number))
- else:
-  print('Page {} is predicted as the non-first.'.format(page.number))
+    pred = file_splitting_model.predict(page)
+    if pred.is_first_page:
+        print('Page {} is predicted as the first.'.format(page.number))
+    else:
+        print('Page {} is predicted as the non-first.'.format(page.number))
 
 # usage with the SplittingAI – you can load a pre-saved model or pass an initialized instance as the input
 # in this example, we load a previously saved one
@@ -225,23 +241,33 @@ splitting_ai = SplittingAI(model)
 # "is_first_page". The flag "return_pages" has to be True for the latter; let's use it
 new_document = splitting_ai.propose_split_documents(test_document, return_pages=True)
 ```
+Note that any custom FileSplittingAI (derived from `AbstractFileSplittingModel` class) requires having the following 
+methods implemented:
+- `__init__` to initialize key variables required by the custom AI;
+- `fit` to define architecture and training that the model undergoes, i.e. a certain NN architecture or a custom 
+- hardcoded logic
+- `predict` to define how the model classifies Pages as first or non-first. **NB:** the classification needs to be ran on 
+the Page level, not the Document level – the result of classification is reflected in `is_first_page` attribute value, which
+is unique to the Page class and is not present in Document class. Pages with `is_first_page = True` become splitting 
+points, thus, each new sub-Document has a Page predicted as first as its starting point.
+- `save` is optional, as one way of saving that is readable by Konfuzio Server (pickling) is already defined in the 
+parent class. It is not necessary to override it, unless there is the need to define a particular different saving 
+strategy (i.e. JSON, like it is done here). In such case, the new implementation should include calling `super()`, so
+that the pickling saving option is not lost.
 
 Full code:
 
 ```python
-import bz2
-import cloudpickle
-import konfuzio_sdk
+import json
 import pathlib
-import os
-import shutil
+import sys
 
 from copy import deepcopy
 
-from konfuzio_sdk.data import Page, Project
+from konfuzio_sdk.data import Document, Page
+from konfuzio_sdk.trainer.information_extraction import load_model, BaseModel
+from konfuzio_sdk.trainer.file_splitting import AbstractFileSplittingModel
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
-from konfuzio_sdk.trainer.file_splitting import AbstractFileSplittingModel, SplittingAI
-from konfuzio_sdk.trainer.information_extraction import load_model
 from konfuzio_sdk.utils import get_timestamp
 
 class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
@@ -249,8 +275,9 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
 
     def __init__(self, *args, **kwargs):
         """Initialize the ContextAwareFileSplittingModel."""
-        self.train_data = None
-        self.test_data = None
+        super().__init__()
+        self.documents = None
+        self.test_documents = None
         self.categories = None
         self.tokenizer = None
         self.first_page_spans = None
@@ -258,6 +285,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
     def fit(self, *args, **kwargs) -> dict:
         """
         Gather the Spans unique for first Pages in a given stream of Documents.
+
         :return: Dictionary with unique first-page Span sets by Category ID.
         """
         first_page_spans = {}
@@ -280,35 +308,46 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
                 cur_non_first_page_spans.append(set())
             true_not_first_page_spans = set.intersection(*cur_non_first_page_spans)
             true_first_page_spans = true_first_page_spans - true_not_first_page_spans
-            first_page_spans[category.id_] = true_first_page_spans
+            first_page_spans[category.id_] = list(true_first_page_spans)
         self.first_page_spans = first_page_spans
         return first_page_spans
 
-    def save(self, model_path="", include_konfuzio=True):
+    def save(self, save_json=True, include_konfuzio=False) -> str:
         """
         Save the resulting set of first-page Spans by Category.
-        :param model_path: Path to save the set to.
-        :type model_path: str
+
+        :param save_json: Whether to save JSON of first_page_spans or a pickle of the whole class.
+        :type save_json: bool
         :param include_konfuzio: Enables pickle serialization as a value, not as a reference (for more info, read
         https://github.com/cloudpipe/cloudpickle#overriding-pickles-serialization-mechanism-for-importable-constructs).
         :type include_konfuzio: bool
         """
-        if include_konfuzio:
-            cloudpickle.register_pickle_by_value(konfuzio_sdk)
-        pathlib.Path(model_path).mkdir(parents=True, exist_ok=True)
-        temp_pkl_file_path = os.path.join(model_path, f'{get_timestamp()}_first_page_spans_tmp.cloudpickle')
-        pkl_file_path = os.path.join(model_path, f'{get_timestamp()}_first_page_spans.pkl')
-        with open(temp_pkl_file_path, 'wb') as f:
-            cloudpickle.dump(self.first_page_spans, f)
-        with open(temp_pkl_file_path, 'rb') as input_f:
-            with bz2.open(pkl_file_path, 'wb') as output_f:
-                shutil.copyfileobj(input_f, output_f)
-        os.remove(temp_pkl_file_path)
-        return pkl_file_path
+        if save_json:
+            path = self.output_dir + f'/{get_timestamp()}_first_page_spans.json'
+            pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
+            with open(path, 'w+') as f:
+                json.dump(self.first_page_spans, f)
+        else:
+            path = super().save(include_konfuzio=include_konfuzio)
+        return path
+
+    def load_json(self, model_path=""):
+        """
+        Load JSON with previously gathered first_page_spans.
+
+        :param model_path: Path for the JSON.
+        :type model_path: str
+        """
+        with open(model_path, 'r') as f:
+            spans = json.load(f)
+        # converting str category.id_ values to back int because JSON converts them to str
+        spans = {int(k): v for k, v in spans.items()}
+        self.first_page_spans = spans
 
     def predict(self, page: Page) -> Page:
         """
         Take a Page as an input and return 1 for a first Page and 0 for a non-first Page.
+
         :param page: A Page to receive first or non-first label.
         :type page: Page
         :return: A Page with or without is_first_page label.
@@ -319,6 +358,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
             )
             if len(intersection) > 0:
                 page.is_first_page = True
+                break
         return page
 
 # initialize a Project and fetch a test Document of your choice
@@ -329,14 +369,14 @@ test_document = project.get_document_by_id(YOUR_DOCUMENT_ID)
 
 file_splitting_model = ContextAwareFileSplittingModel()
 file_splitting_model.categories = project.categories
-file_splitting_model.train_data = [document 
-                                   for category in file_splitting_model.categories 
-                                   for document in category.documents()
-                                   ]
-file_splitting_model.test_data = [document 
-                                   for category in file_splitting_model.categories 
-                                   for document in category.test_documents()
-                                   ]
+file_splitting_model.documents = [document
+                                  for category in file_splitting_model.categories
+                                  for document in category.documents()
+                                  ]
+file_splitting_model.test_documents = [document
+                                       for category in file_splitting_model.categories
+                                       for document in category.test_documents()
+                                       ]
 file_splitting_model.tokenizer = ConnectedTextTokenizer()
 
 # gather Spans unique for the first Pages of the Documents 
@@ -344,7 +384,8 @@ file_splitting_model.tokenizer = ConnectedTextTokenizer()
 file_splitting_model.first_page_spans = file_splitting_model.fit()
 
 # save the gathered Spans
-file_splitting_model.save(project.model_folder)
+file_splitting_model.output_dir = project.model_folder
+file_splitting_model.save(save_json=True)
 
 # run the prediction
 for page in test_document.pages():

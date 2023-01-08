@@ -1330,7 +1330,6 @@ class TestOfflineDataSetup(unittest.TestCase):
         document = project.no_status_documents[2]
 
         assert len(document.annotations(use_correct=False)) == 6
-
         document.merge_vertical(only_multiline_labels=False)
 
         assert len(document.annotations(use_correct=False)) == 4
