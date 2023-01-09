@@ -2372,6 +2372,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
             logger.info(f'Document {document} processed in {time.monotonic() - t0:.1f} seconds.')
 
+            document.lose_weight()  # reduce memory of virtual doc
+
             feature_list += _feature_list
             df_real_list.append(temp_df_real)
             df_raw_errors_list.append(temp_df_raw_errors)
