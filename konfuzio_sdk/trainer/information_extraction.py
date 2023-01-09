@@ -88,13 +88,7 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
         if "unsupported pickle protocol: 5" in str(err) and '3.7' in sys.version:
             raise ValueError("Pickle saved with incompatible Python version.") from err
         raise
-    if not issubclass(type(model), BaseModel):
-        if (
-            "2022-03-10-15-14-51_lohnabrechnung_old_model" not in pickle_path
-            and "2022-09-27-18-45-41_lohnabrechnung" not in pickle_path
-            and "list_test" not in pickle_path
-        ):
-            raise TypeError("Loaded model is not inheriting from the BaseModel class.")
+
     max_ram = normalize_memory(max_ram)
     if max_ram and asizeof.asizeof(model) > max_ram:
         logger.error(f"Loaded model's memory use ({asizeof.asizeof(model)}) is greater than max_ram ({max_ram})")
@@ -107,7 +101,7 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
         "SeparateLabelsAnnotationMultiClassModel",
         "SeparateLabelsEntityMultiClassModel",
         "ContextAwareFileSplittingModel",
-    }:
+    } or not issubclass(type(model), BaseModel):
         logger.warning(f"Loading legacy {model.name} AI model.")
     else:
         logger.info(f"Loading {model.name} AI model.")
@@ -1292,7 +1286,7 @@ class BaseModel(metaclass=abc.ABCMeta):
         size_string = f'{os.path.getsize(pkl_file_path) / 1_000_000} MB'
         self.restore_category_documents_for_eval()
         logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
-        return self.pkl_file_path
+        return pkl_file_path
 
 
 class Trainer(BaseModel):
