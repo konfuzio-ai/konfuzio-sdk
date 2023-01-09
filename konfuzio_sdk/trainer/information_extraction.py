@@ -35,6 +35,7 @@ import numpy
 import pandas
 import cloudpickle
 from pympler import asizeof
+from pkg_resources import get_distribution
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.validation import check_is_fitted
 from tabulate import tabulate
@@ -1220,6 +1221,9 @@ class Trainer:
         self.df_train = None
 
         self.evaluation = None
+
+        self.python_version = '.'.join([str(v) for v in sys.version_info[:3]])
+        self.konfuzio_sdk_version = get_distribution("konfuzio_sdk").version
 
     def name_lower(self):
         """Convert class name to machine readable name."""
