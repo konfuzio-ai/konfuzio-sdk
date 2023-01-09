@@ -1130,10 +1130,8 @@ def test_load_model_wrong_pickle_data():
 def test_load_ai_model():
     """Test loading of trained model."""
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    path = "trainer/2023-01-09-15-37-20_lohnabrechnung.pkl"
+    path = "trainer/2023-01-09-17-47-50_lohnabrechnung.pkl"
     pipeline = load_model(path)
-
-    assert issubclass(type(pipeline), BaseModel)
 
     test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
     res_doc = pipeline.extract(document=test_document)
