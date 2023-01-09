@@ -203,6 +203,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
     def test_02_make_features(self):
         """Make sure the Data and Pipeline is configured."""
         # we have intentional unrevised annotations in the Training set which will block feature calculation
+        assert 2e5 < asizeof.asizeof(self.pipeline.category) < 4e5
         with pytest.raises(ValueError, match="is unrevised in this dataset and can't be used for training"):
             self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
                 documents=self.pipeline.documents, require_revised_annotations=True
@@ -221,6 +222,8 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
             documents=self.pipeline.documents, require_revised_annotations=True
         )
+
+        assert 7e5 < asizeof.asizeof(self.pipeline.category) < 9e5
 
         assert 11e6 < asizeof.asizeof(self.pipeline.df_train) < 12e6
 
@@ -408,10 +411,13 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         # We have intentional unrevised annotations in the Training set which will block feature calculation,
         # unless we set require_revised_annotations=False (which is default), which we are doing here, so we ignore them
         # See TestWhitespaceRFExtractionAI::test_2_make_features for the case with require_revised_annotations=True
+        assert 8e6 < asizeof.asizeof(self.pipeline.category) < 11e6
+
         self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
             documents=self.pipeline.documents, retokenize=False, require_revised_annotations=False
         )
 
+        assert 8e6 < asizeof.asizeof(self.pipeline.category) < 11e6
         assert 2e6 < asizeof.asizeof(self.pipeline.df_train) < 3e6
 
     def test_03_fit(self) -> None:
