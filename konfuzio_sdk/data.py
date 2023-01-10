@@ -2515,7 +2515,7 @@ class Document(Data):
             with open(self.annotation_file_path, 'r') as f:
                 raw_annotations = json.load(f)
 
-            if self.category is None:
+            if self.category is self.project.no_category:
                 raw_annotations = [
                     annotation for annotation in raw_annotations if annotation['label_text'] == 'NO_LABEL'
                 ]
@@ -2535,7 +2535,7 @@ class Document(Data):
                 with open(self.annotation_file_path, 'r') as f:
                     raw_annotations = json.load(f)
 
-                if self.category is None:
+                if self.category is self.project.no_category:
                     raw_annotations = [
                         annotation for annotation in raw_annotations if annotation['label_text'] == 'NO_LABEL'
                     ]
@@ -2587,6 +2587,9 @@ class Project(Data):
             self.get(update=update)
 
         # todo: list of Categories related to NO LABEL SET can be outdated, i.e. if the number of Categories changes
+        self.no_category = Category(project=self)
+        self.no_category.name_clean = "NO_CATEGORY"
+        self.no_category.name = "NO_CATEGORY"
         self.no_label_set = LabelSet(project=self, categories=self.categories)
         self.no_label_set.name_clean = 'NO_LABEL_SET'
         self.no_label_set.name = 'NO_LABEL_SET'
@@ -2597,35 +2600,40 @@ class Project(Data):
         """Return string representation."""
         return f"Project {self.id_}"
 
+    def _assign_category(self, document: Document):
+        if document.category is None:
+            document.category = self.no_category
+        return document
+
     @property
     def documents(self):
         """Return Documents with status training."""
-        return [doc for doc in self._documents if doc.dataset_status == 2]
+        return [self._assign_category(doc) for doc in self._documents if doc.dataset_status == 2]
 
     @property
     def virtual_documents(self):
         """Return Documents created virtually."""
-        return [doc for doc in self._documents if doc.dataset_status is None or doc.id_ is None]
+        return [self._assign_category(doc) for doc in self._documents if doc.dataset_status is None or doc.id_ is None]
 
     @property
     def test_documents(self):
         """Return Documents with status test."""
-        return [doc for doc in self._documents if doc.dataset_status == 3]
+        return [self._assign_category(doc) for doc in self._documents if doc.dataset_status == 3]
 
     @property
     def excluded_documents(self):
         """Return Documents which have been excluded."""
-        return [doc for doc in self._documents if doc.dataset_status == 4]
+        return [self._assign_category(doc) for doc in self._documents if doc.dataset_status == 4]
 
     @property
     def preparation_documents(self):
         """Return Documents with status test."""
-        return [doc for doc in self._documents if doc.dataset_status == 1]
+        return [self._assign_category(doc) for doc in self._documents if doc.dataset_status == 1]
 
     @property
     def no_status_documents(self):
         """Return Documents with status test."""
-        return [doc for doc in self._documents if doc.dataset_status == 0]
+        return [self._assign_category(doc) for doc in self._documents if doc.dataset_status == 0]
 
     @property
     def project_folder(self) -> str:
@@ -2839,7 +2847,7 @@ class Project(Data):
         """Return Document by its ID."""
         for document in self._documents:
             if document.id_ == document_id:
-                return document
+                return self._assign_category(document)
         raise IndexError(f'Document id {document_id} was not found in {self}.')
 
     def get_label_by_name(self, name: str) -> Label:

@@ -246,7 +246,8 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
         previous_size = asizeof.asizeof(self.pipeline)
 
-        self.pipeline.pipeline_path = self.pipeline.save(include_konfuzio=False, reduce_weight=True, max_ram="5MB")
+        pipeline_path = self.pipeline.save(include_konfuzio=False, reduce_weight=True, max_ram="5MB")
+        self.pipeline.pipeline_path = pipeline_path
         assert os.path.isfile(self.pipeline.pipeline_path)
 
         assert self.pipeline.documents == []
@@ -414,7 +415,10 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
         previous_size = asizeof.asizeof(self.pipeline)
 
-        self.pipeline.pipeline_path = self.pipeline.save(include_konfuzio=False, reduce_weight=True, max_ram="5MB")
+        pipeline_path = self.pipeline.save(include_konfuzio=False, reduce_weight=True, max_ram="5MB")
+        self.pipeline.pipeline_path = (
+            pipeline_path  # needed to avoid issues with different paths because of get_timestamp calling
+        )
         assert os.path.isfile(self.pipeline.pipeline_path)
 
         assert self.pipeline.documents == []

@@ -224,7 +224,7 @@ class TestOfflineExampleData(unittest.TestCase):
         """Control the number of Documents created in the Test."""
         assert len(cls.payslips_category.documents()) == 25
         assert len(cls.receipts_category.documents()) == 25
-        assert cls.project.get_document_by_id(44864).category is None
+        assert cls.project.get_document_by_id(44864).category == cls.project.no_category
         assert len(cls.project.documents) == 51
 
     def test_copy(self):
@@ -1447,7 +1447,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_document_with_no_category_has_only_no_label_annotations(self):
         """Test if we skip Annotations except for NO_LABEL in no Category Documents."""
         document = self.prj.get_document_by_id(44864)
-        assert document.category is None
+        assert document.category is self.prj.no_category
         assert document.annotations() == []
 
     def test_number_test_documents(self):
@@ -1521,7 +1521,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_category(self):
         """Test if Category of main Label Set is initialized correctly."""
-        assert len(self.prj.categories) == 2
+        assert len(self.prj.categories) == 3
         assert self.prj.categories[0].id_ == 63
         assert self.prj.label_sets[0].categories[0].id_ == 63
 
@@ -1594,7 +1594,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_categories(self):
         """Test get Labels in the Project."""
-        assert self.prj.categories.__len__() == 2
+        assert self.prj.categories.__len__() == 3
         payslips_category = self.prj.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID)
         assert payslips_category.name == 'Lohnabrechnung'
         # We have 5 Label Sets, Lohnabrechnung is Category and a Label Set as it hold labels, however a Category
@@ -1773,7 +1773,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_category_of_document_without_category(self):
         """Test the Category of a Document without Category."""
         category = Project(id_=None, project_folder=OFFLINE_PROJECT).get_document_by_id(44864).category
-        self.assertIsNone(category)
+        assert category.name == 'NO_CATEGORY'
 
     def test_get_file_with_white_colon_name(self):
         """Test to download a file which includes a whitespace in the name."""
@@ -2287,7 +2287,7 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
     def test_view_annotations(self):
         """Test that Document.view_annotations() gets all the right annotations."""
         project = LocalTextProject()
-        document = project.test_documents[-7]
+        document = project.test_documents[-8]
         annotations = document.view_annotations()
         assert len(annotations) == 5  # 4 if top_annotations filter is used
         assert sorted([ann.id_ for ann in annotations]) == [16, 17, 18, 19, 24]  # [16, 18, 19, 24]
@@ -2295,7 +2295,7 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
     def test_document_lose_weight(self):
         """Test that Document.lose_weight() removes all the right annotations."""
         project = LocalTextProject()
-        document = project.test_documents[-7]
+        document = project.test_documents[-8]
 
         assert len(document.annotations(use_correct=False, ignore_below_threshold=False)) == 11
 
@@ -2306,7 +2306,7 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
     def test_annotationset_annotations(self):
         """Test AnnotationSet.annotations method."""
         project = LocalTextProject()
-        document = project.test_documents[-7]
+        document = project.test_documents[-8]
 
         annotation_set = document.annotation_sets()[0]
 

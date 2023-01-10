@@ -143,12 +143,19 @@ class TestFileSplittingModel(unittest.TestCase):
         assert splitting_ai.full_evaluation.recall() == 1.0
         assert splitting_ai.full_evaluation.f1() == 1.0
 
+    def test_splitting_no_category_document(self):
+        """Test running SplittingAI on a Document with Category == NO_CATEGORY."""
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        test_document = self.project.test_documents[-1]
+        assert test_document.category == self.project.no_category
+        pred = splitting_ai.propose_split_documents(test_document, return_pages=False)
+        assert len(pred) == 1
+        assert pred[0].text == test_document.text
+
     def test_splitting_with_inplace(self):
         """Test ContextAwareFileSplittingModel's predict method with inplace=True."""
         splitting_ai = SplittingAI(self.file_splitting_model)
-        test_document = self.file_splitting_model.tokenizer.tokenize(
-            self.project.get_category_by_id(3).test_documents()[0]
-        )
+        test_document = self.file_splitting_model.tokenizer.tokenize(self.test_document)
         pred = splitting_ai.propose_split_documents(test_document, return_pages=True, inplace=True)
         for page in pred.pages():
             if page.number in (1, 3, 5):
@@ -160,9 +167,7 @@ class TestFileSplittingModel(unittest.TestCase):
     def test_suggest_first_pages(self):
         """Test SplittingAI's suggesting first Pages."""
         splitting_ai = SplittingAI(self.file_splitting_model)
-        test_document = self.file_splitting_model.tokenizer.tokenize(
-            deepcopy(self.project.get_category_by_id(3).test_documents()[0])
-        )
+        test_document = self.file_splitting_model.tokenizer.tokenize(deepcopy(self.test_document))
         pred = splitting_ai.propose_split_documents(test_document, return_pages=True)
         for page in pred.pages():
             if page.number in (1, 3, 5):

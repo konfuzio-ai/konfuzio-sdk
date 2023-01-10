@@ -657,3 +657,7 @@ a2  s4
         document_11 = Document(id_=None, project=self, category=category_4, text=text_11, dataset_status=3)
         _ = Page(id_=None, original_size=(320, 240), document=document_11, start_offset=0, end_offset=21, number=1)
         _ = Page(id_=None, original_size=(320, 240), document=document_11, start_offset=22, end_offset=40, number=2)
+
+        document_12 = Document(id_=None, project=self, text=text_11, dataset_status=3)
+        _ = Page(id_=None, original_size=(320, 240), document=document_12, start_offset=0, end_offset=21, number=1)
+        _ = Page(id_=None, original_size=(320, 240), document=document_12, start_offset=22, end_offset=40, number=2)
