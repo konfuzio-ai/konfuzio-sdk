@@ -827,7 +827,7 @@ class Label(Data):
 
         search = [1, 3, 5]
         regex_to_remove_groupnames = re.compile(r'<.*?>')
-        regex_to_remove_groupnames_full = re.compile(r'\(\?:\(\?P<[^>]+>([^\)]+)\)\)')
+        regex_to_remove_groupnames_full = re.compile(r'\?P<.*?>')
 
         naive_proposal = label_regex_token
         regex_made = []
@@ -853,9 +853,7 @@ class Label(Data):
                             before_regex += suggest_regex_for_string(to_rep_offset_string, replace_characters=True)
                         else:
                             base_before_regex = before_span.annotation.label.base_regex(category)
-                            stripped_base_before_regex = re.sub(
-                                regex_to_remove_groupnames_full, r'\1', base_before_regex
-                            )
+                            stripped_base_before_regex = re.sub(regex_to_remove_groupnames_full, '', base_before_regex)
                             before_regex += stripped_base_before_regex
                     before_reg_dict[spacer] = before_regex
 
@@ -871,7 +869,7 @@ class Label(Data):
                             after_regex += suggest_regex_for_string(to_rep_offset_string, replace_characters=True)
                         else:
                             base_after_regex = after_span.annotation.label.base_regex(category)
-                            stripped_base_after_regex = re.sub(regex_to_remove_groupnames_full, r'\1', base_after_regex)
+                            stripped_base_after_regex = re.sub(regex_to_remove_groupnames_full, '', base_after_regex)
                             after_regex += stripped_base_after_regex
 
                     after_reg_dict[spacer] = after_regex
@@ -2456,6 +2454,7 @@ class Document(Data):
 
         :param only_multiline_labels: Only merge if multiline Label Annotation in category training set
         """
+        logger.info("Vertical merging Annotations.")
         labels_dict = {}
         for label in self.project.labels:
             if not only_multiline_labels or label.has_multiline_annotations(categories=[self.category]):
@@ -2968,6 +2967,7 @@ class Project(Data):
         for label in self.labels:
             label.lose_weight()
         self._documents = []
+        self._meta_data = []
         return self
 
 
