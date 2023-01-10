@@ -8,7 +8,7 @@ import sys
 
 from copy import deepcopy
 from pympler import asizeof
-from typing import List, Union
+from typing import List, Union, Dict
 
 from konfuzio_sdk.data import Document, Page
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
@@ -29,7 +29,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def fit(self, *args, **kwargs):
-        """Fit the custom model on the training Documents."""
+        """Fit the custom model on the training Documents."""  # there is no return
 
     @abc.abstractmethod
     def predict(self, page: Page) -> Page:
@@ -67,7 +67,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         self.lose_weight()
         self.tokenizer.lose_weight()
 
-    def normalize_model_memory_usage(self, max_ram):
+    def ensure_model_memory_usage_within_limit(self, max_ram):
         """Ensure that a model is not exceeding allowed max_ram."""
         if not max_ram:
             max_ram = self.documents[0].project.max_ram
@@ -98,13 +98,13 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         self.first_page_strings = None
         self.path = None
 
-    def fit(self, *args, **kwargs) -> dict:
+    def fit(self, *args, **kwargs) -> Dict[int, List[str]]:
         """
         Gather the Spans unique for first Pages in a given stream of Documents.
 
         :return: Dictionary with unique first-page Span sets by Category ID.
         """
-        first_page_spans = {}
+        first_page_spans = {}  # example: {1: ["Good morning", "How are you"], 2: ["Evening"], 3: []}
         for category in self.categories:
             cur_first_page_spans = []
             cur_non_first_page_spans = []

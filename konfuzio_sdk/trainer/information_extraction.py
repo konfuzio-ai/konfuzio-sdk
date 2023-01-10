@@ -1225,7 +1225,7 @@ class BaseModel(metaclass=abc.ABCMeta):
         """Remove all non-strictly necessary parameters before saving."""
 
     @abc.abstractmethod
-    def normalize_model_memory_usage(self):
+    def ensure_model_memory_usage_within_limit(self):
         """Ensure that a model is not exceeding allowed max_ram."""
 
     @abc.abstractmethod
@@ -1263,7 +1263,7 @@ class BaseModel(metaclass=abc.ABCMeta):
         logger.info(f'{version=}')
         pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
         logger.info('Getting save paths')
-        # temp_pkl_file_path, pkl_file_path = self.generate_pickle_output_paths()
+
         if reduce_weight:
             self.reduce_model_weight()
         if include_konfuzio:
@@ -1274,7 +1274,7 @@ class BaseModel(metaclass=abc.ABCMeta):
             self.documents = []
             self.test_documents = []
         logger.info(f'Model size: {asizeof.asizeof(self) / 1_000_000} MB')
-        self.normalize_model_memory_usage(max_ram)
+        self.ensure_model_memory_usage_within_limit(max_ram)
         logger.info('Saving model with cloudpickle')
         # first save with cloudpickle
         temp_pkl_file_path = self.temp_pkl_file_path
@@ -2566,7 +2566,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         self.category.project.lose_weight()
         self.tokenizer.lose_weight()
 
-    def normalize_model_memory_usage(self, max_ram):
+    def ensure_model_memory_usage_within_limit(self, max_ram):
         """Ensure that a model is not exceeding allowed max_ram."""
         # if no argument passed, get project max_ram
         if not max_ram and self.category is not None:
