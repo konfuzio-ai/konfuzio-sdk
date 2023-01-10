@@ -52,3 +52,16 @@ use further integrations, see `help.konfuzio.com <https://help.konfuzio.com/inte
    web/frontend/index.md
    web/on_premises.md
    web/changelog_app.md
+
+.. toctree::
+   :caption: Document Validation UI
+   :hidden:
+   :maxdepth: 3
+
+   dvui/index.md
+   dvui/users.md
+   dvui/modes.md
+   dvui/guides.md
+   dvui/sourcecode.md
+   dvui/changelog.md
+   

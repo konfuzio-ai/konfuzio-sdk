@@ -1932,6 +1932,22 @@ class TestAutomatedRegexTokenizer(TestTemplateRegexTokenizer):
             result[result.tokenizer_true_positive == 1].end_offset[0] == document.annotations()[0].spans[0].end_offset
         )
 
+    def test_3_lose_weight(self):
+        """Test Label lose_weight after regex search."""
+        label = self.category.project.get_label_by_name('DefaultLabelName')
+
+        _ = label.regex(categories=[self.category])
+
+        assert label._evaluations != {}
+        assert label._tokens != {}
+        assert label._regex != {}
+
+        label.lose_weight()
+
+        assert label._evaluations == {}
+        assert label._tokens == {}
+        assert label._regex == {}
+
 
 class TestMissingSpans(unittest.TestCase):
     """Find all Spans that cannot be detected by a Tokenizer."""

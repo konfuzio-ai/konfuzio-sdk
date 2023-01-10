@@ -436,7 +436,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 47
+        assert len(cls.project.virtual_documents) == 49
 
     # def test_document_only_needs_project(self):
     #     """Test that a Document can be created without category"""
@@ -506,6 +506,48 @@ class TestOfflineDataSetup(unittest.TestCase):
             spans=[span_1],
         )
         assert label.annotations(categories=[category]) == [annotation]
+
+    def test_add_annotation_with_complete_bbox_data(self):
+        """Test to add an Annotation via complete bboxes param."""
+        document = Document(project=self.project, category=self.category, text='hello', strict_bbox_validation=True)
+        page = Page(id_=None, document=document, start_offset=0, end_offset=4, number=1, original_size=(12, 6))
+        document_bbox = {'1': Bbox(x0=0, x1=1, y0=0, y1=1, page=page)}
+        document.set_bboxes(document_bbox)
+        ann_bbox = {
+            'bottom': 1,
+            'end_offset': 2,
+            'line_number': 0,
+            'offset_string': 'he',
+            'offset_string_original': 'he',
+            'page_index': 0,
+            'start_offset': 0,
+            'top': 0,
+            'x0': 0,
+            'x1': 2,
+            'y0': 0,
+            'y1': 1,
+        }
+        annotation = Annotation(
+            document=document,
+            label=self.label,
+            label_set=self.label_set,
+            bboxes=[ann_bbox],
+        )
+        assert annotation.start_offset == ann_bbox['start_offset']
+        assert annotation.end_offset == ann_bbox['end_offset']
+
+    def test_add_annotation_with_incomplete_bbox_data(self):
+        """Test to add an Annotation via bboxes param that is missing offset information."""
+        document = Document(project=self.project, category=self.category, text='hello', strict_bbox_validation=True)
+        page = Page(id_=None, document=document, start_offset=0, end_offset=4, number=1, original_size=(12, 6))
+        document_bbox = {'1': Bbox(x0=0, x1=1, y0=0, y1=1, page=page)}
+        document.set_bboxes(document_bbox)
+        # An Annotation can be created by providing a list of Spans or a list of bboxes.
+        # In the latter case, the minimum information required is the start and end offsets corresponding
+        # to the characters of each bbox.
+        annotation_bboxes = [{'start_offset': 0, 'end_offset': 1}, {'start_offset': 3}]
+        with pytest.raises(ValueError, match='cannot read bbox'):
+            Annotation(document=document, bboxes=annotation_bboxes, label=self.label, label_set=self.label_set)
 
     def test_add_annotation_with_label_set_none(self):
         """Test to add an Annotation to a Document where the LabelSet is None."""
@@ -1278,9 +1320,14 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert project.categories[0].session is None
         assert project.label_sets[0].session is None
         assert project.labels[0].session is None
+        assert project.labels[0]._evaluations == {}
+        assert project.labels[0]._tokens == {}
+        assert project.labels[0]._regex == {}
+        assert project._documents == []
         assert project.virtual_documents == []
         assert project.documents == []
         assert project.test_documents == []
+        assert project._meta_data == []
 
 
 class TestSeparateLabels(unittest.TestCase):
@@ -2224,6 +2271,17 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
         annotations = document.view_annotations()
         assert len(annotations) == 5  # 4 if top_annotations filter is used
         assert sorted([ann.id_ for ann in annotations]) == [16, 17, 18, 19, 24]  # [16, 18, 19, 24]
+
+    def test_document_lose_weight(self):
+        """Test that Document.lose_weight() removes all the right annotations."""
+        project = LocalTextProject()
+        document = project.test_documents[-1]
+
+        assert len(document.annotations(use_correct=False, ignore_below_threshold=False)) == 11
+
+        document.lose_weight()
+
+        assert len(document.annotations(use_correct=False, ignore_below_threshold=False)) == 8
 
     def test_annotationset_annotations(self):
         """Test AnnotationSet.annotations method."""

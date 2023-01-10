@@ -13,7 +13,7 @@ from konfuzio_sdk.regex import (
 from konfuzio_sdk.utils import does_not_raise
 
 import logging
-import re
+import regex as re
 import unittest
 
 import pytest
@@ -553,11 +553,11 @@ class TestRegexGenerator(unittest.TestCase):
 
         assert expected in regex[0]
 
-    # @unittest.skip('We do not support multiple Annotations in one offset for now')
     def test_regex_first_annotation_in_row(self):
         """Add a test if two annotated offsets are connected to each other "please pay <GrossAmount><Currency>."""
         # first name and last name are in one line in the document:
         first_names = self.prj.get_label_by_name('Vorname')
+        last_name = self.prj.get_label_by_name('Nachname')
         category = self.category
         assert len(first_names.annotations(categories=[category])) == 25
         assert len(first_names.regex(categories=[category])) == 1
@@ -567,11 +567,14 @@ class TestRegexGenerator(unittest.TestCase):
 
         first_name_proposal = proposals[0]
 
+        regex_to_remove_groupnames_full = re.compile(r'\?P<.*?>')
+        last_name_base = last_name.base_regex(category=category)
+        last_name_base = re.sub(regex_to_remove_groupnames_full, '', last_name_base)
+
         assert '(?P<Label_865_' in first_name_proposal
         # assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in male_first_name
         assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in first_name_proposal
-        assert '(?P<Label_866_' in first_name_proposal  # Nachname label
-        assert '>[A-ZÄÖÜ][a-zäöüß]+)' in first_name_proposal
+        assert last_name_base in first_name_proposal  # Nachname label
         textcorpus = ''.join([doc.text for doc in self.prj.documents])
         results = regex_matches(textcorpus, first_name_proposal, filtered_group='Label_865')
         assert [result['value'] for result in results] == [
@@ -612,28 +615,45 @@ class TestRegexGenerator(unittest.TestCase):
         regex = tax.find_regex(category=category)[0]
         assert '(?P<Label_860_N_' in regex
 
-    # @unittest.skip('We do not support multiple Annotations in one offset for now')
     def test_regex_second_annotation_in_row(self):
         """Delete the last character of the regex solution as only for some runs it will contain a line break."""
-        last_names = self.prj.get_label_by_name('Vorname')
+        first_names = self.prj.get_label_by_name('Vorname')
+        last_name = self.prj.get_label_by_name('Nachname')
+
         category = self.prj.get_category_by_id(63)
-        assert len(last_names.find_regex(category=category)) == 1
-        last_name_regex = last_names.find_regex(category=category)[0]
-        assert '(?P<Label_865_' in last_name_regex
-        # assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in last_name_regex
-        assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in last_name_regex
+
+        regex_to_remove_groupnames_full = re.compile(r'\?P<.*?>')
+
+        last_name_base = last_name.base_regex(category=category)
+        last_name_base = re.sub(regex_to_remove_groupnames_full, '', last_name_base)
+
+        first_name_base = last_name.base_regex(category=category)
+        first_name_base = re.sub(regex_to_remove_groupnames_full, '', first_name_base)
+
+        assert len(first_names.find_regex(category=category)) == 1
+
+        first_name_regex = first_names.find_regex(category=category)[0]
+
+        assert '(?P<Label_865_' in first_name_regex
+        assert 'Label_866' not in first_name_regex
+
+        assert '>[A-ZÄÖÜ][a-zäöüß]+[-][A-ZÄÖÜ][a-zäöüß]+)' in first_name_regex
+        assert last_name_base in first_name_regex
+
+        assert len(last_name.find_regex(category=category)) == 2
+
+        last_name_regex = last_name.find_regex(category=category)[0]
+
         assert '(?P<Label_866_' in last_name_regex
-        assert '>[A-ZÄÖÜ][a-zäöüß]+)' in last_name_regex
+        assert 'Label_865' not in last_name_regex
+
         textcorpus = ''.join([doc.text for doc in self.prj.documents])
         results = regex_matches(textcorpus, last_name_regex, filtered_group='Label_866')
         assert [result['value'] for result in results] == [
-            'Eiermann',
-            'Droschkenmann',
             'Schmidt',
             'Schlosser',
             'Meier',
-            'Schmidt',
-            'Schlosser',
+            'Schlosser-Azubi',
             'Xoxmann',
             'Egelmann',
             'Wichtig',
@@ -645,9 +665,7 @@ class TestRegexGenerator(unittest.TestCase):
             'Förster',
             'Lämmer',
             'Bauch',
-            'Nürnberg',
             'Bauch',
-            'Nürnberg',
             'Meier',
             'Baltus',
             'Winzig',
