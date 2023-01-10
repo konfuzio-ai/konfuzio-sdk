@@ -1444,13 +1444,11 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         # we calculate the set to avoid double counting the NO_LABEL
         assert len(set(self.prj.categories[0].labels + self.prj.categories[1].labels)) == len(self.prj.labels)
 
-    def test_document_with_no_category_must_have_no_annotations(self):
-        """Test if we skip Annotations in no Category Documents."""
+    def test_document_with_no_category_has_only_no_label_annotations(self):
+        """Test if we skip Annotations except for NO_LABEL in no Category Documents."""
         document = self.prj.get_document_by_id(44864)
         assert document.category is None
-        with self.assertRaises(ValueError) as context:
-            document.annotations()
-            assert 'where the category is None' in context.exception
+        assert document.annotations() == []
 
     def test_number_test_documents(self):
         """Test the number of Documents in data set status test."""
@@ -1692,9 +1690,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         """Test to add a Label Set without Category to a Document with a Category."""
         prj = Project(id_=TEST_PROJECT_ID)  # new init to not add data to self.prj
         doc = prj.get_document_by_id(214414)
-        with self.assertRaises(ValueError) as context:
-            doc.annotations()
-            assert 'Document without Category must not have Annotations' in context.exception
+        assert doc.annotations() == []
 
     def test_get_bbox(self):
         """Test to get BoundingBox of Text offset."""

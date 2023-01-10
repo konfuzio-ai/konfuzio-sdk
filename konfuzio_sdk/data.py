@@ -2498,8 +2498,8 @@ class Document(Data):
 
     def get_annotations(self) -> List[Annotation]:
         """Get Annotations of the Document."""
-        if self.category is None:
-            raise ValueError(f'Document {self} without Category must not have Annotations')
+        # if self.category is None:
+        #     raise ValueError(f'Document {self} without Category must not have Annotations')
 
         annotation_file_exists = is_file(self.annotation_file_path, raise_exception=False)
         annotation_set_file_exists = is_file(self.annotation_set_file_path, raise_exception=False)
@@ -2518,11 +2518,17 @@ class Document(Data):
             with open(self.annotation_file_path, 'r') as f:
                 raw_annotations = json.load(f)
 
-            for raw_annotation in raw_annotations:
-                raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
-                raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
-                _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
-            self._update = None  # Make sure we don't repeat to load once loaded.
+            if self.category is None:
+                raw_annotations = [
+                    annotation for annotation in raw_annotations if annotation['label_text'] == 'NO_LABEL'
+                ]
+
+            if raw_annotations:
+                for raw_annotation in raw_annotations:
+                    raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
+                    raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
+                    _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
+                self._update = None  # Make sure we don't repeat to load once loaded.
 
         if self._annotations is None:
             self.annotation_sets()
@@ -2532,10 +2538,16 @@ class Document(Data):
                 with open(self.annotation_file_path, 'r') as f:
                     raw_annotations = json.load(f)
 
-                for raw_annotation in raw_annotations:
-                    raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
-                    raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
-                    _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
+                if self.category is None:
+                    raw_annotations = [
+                        annotation for annotation in raw_annotations if annotation['label_text'] == 'NO_LABEL'
+                    ]
+
+                if raw_annotations:
+                    for raw_annotation in raw_annotations:
+                        raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
+                        raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
+                        _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
 
         return self._annotations
 
