@@ -230,7 +230,7 @@ class SplittingAI:
             new_doc = self.tokenizer.tokenize(deepcopy(document))
         for page in new_doc.pages():
             self.model.predict(page)
-        return new_doc
+        return [new_doc]
 
     def _suggest_page_split(self, document: Document) -> List[Document]:
         suggested_splits = []
