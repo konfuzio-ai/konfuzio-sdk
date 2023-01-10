@@ -89,22 +89,14 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
             raise ValueError("Pickle saved with incompatible Python version.") from err
         raise
 
+    if not issubclass(type(model), BaseModel):
+        raise TypeError("Loaded model is not inheriting from the BaseModel class.")
+
     max_ram = normalize_memory(max_ram)
     if max_ram and asizeof.asizeof(model) > max_ram:
         logger.error(f"Loaded model's memory use ({asizeof.asizeof(model)}) is greater than max_ram ({max_ram})")
 
-    if not hasattr(model, "name"):
-        raise TypeError("Saved model file needs to be a Konfuzio Trainer instance.")
-    elif model.name in {
-        "DocumentAnnotationMultiClassModel",
-        "DocumentEntityMulticlassModel",
-        "SeparateLabelsAnnotationMultiClassModel",
-        "SeparateLabelsEntityMultiClassModel",
-        "ContextAwareFileSplittingModel",
-    } or not issubclass(type(model), BaseModel):
-        logger.warning(f"Loading legacy {model.name} AI model.")
-    else:
-        logger.info(f"Loading {model.name} AI model.")
+    logger.info(f"Loading {model.name} AI model.")
 
     return model
 
