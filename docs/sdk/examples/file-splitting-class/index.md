@@ -41,6 +41,7 @@ find in the full code block in the lower part of this page. A class itself is al
 `from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel`.
 
 Let's start with making all the necessary imports and initializing the class of `ContextAwareFileSplittingModel`:
+
 ```python
 import json
 import pathlib
@@ -55,19 +56,21 @@ from konfuzio_sdk.trainer.file_splitting import AbstractFileSplittingModel, Spli
 from konfuzio_sdk.trainer.information_extraction import load_model
 from konfuzio_sdk.utils import get_timestamp
 
+
 class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
 
-        def __init__(self, *args, **kwargs):
-        """Initialize the ContextAwareFileSplittingModel."""
-            super().__init__()
-            self.name = self.__class__.__name__
-            self.documents = None
-            self.test_documents = None
-            self.categories = None
-            self.tokenizer = None
-            self.first_page_spans = None
-            self.path = None
-        
+ def __init__(self, *args, **kwargs):
+
+  """Initialize the ContextAwareFileSplittingModel."""
+ super().__init__()
+ self.name = self.__class__.__name__
+ self.documents = None
+ self.test_documents = None
+ self.categories = None
+ self.tokenizer = None
+ self.first_page_strings = None
+ self.path = None
+
 ```
 The class inherits from `AbstractFileSplittingModel`, so we run `super().__init__()` for proper inheritance of the 
 attributes. Attributes are set to `None` to be assigned explicitly upon usage later. `documents` and `test_documents` will be 
@@ -118,29 +121,29 @@ start_offset and end_offset) and thus would not be counted as similar when compa
 
 ```python
 def fit(self, *args, **kwargs) -> dict:
-        first_page_spans = {}
-        for category in self.categories:
-            cur_first_page_spans = []
-            cur_non_first_page_spans = []
-            for doc in category.documents():
-                doc = deepcopy(doc)
-                doc.category = category
-                doc = self.tokenizer.tokenize(doc)
-                for page in doc.pages():
-                    if page.number == 1:
-                        cur_first_page_spans.append({span.offset_string for span in page.spans()})
-                    else:
-                        cur_non_first_page_spans.append({span.offset_string for span in page.spans()})
-            if not cur_first_page_spans:
-                cur_first_page_spans.append(set())
-            true_first_page_spans = set.intersection(*cur_first_page_spans)
-            if not cur_non_first_page_spans:
-                cur_non_first_page_spans.append(set())
-            true_not_first_page_spans = set.intersection(*cur_non_first_page_spans)
-            true_first_page_spans = true_first_page_spans - true_not_first_page_spans
-            first_page_spans[category.id_] = true_first_page_spans
-        self.first_page_spans = first_page_spans
-        return first_page_spans
+ first_page_spans = {}
+ for category in self.categories:
+  cur_first_page_spans = []
+  cur_non_first_page_spans = []
+  for doc in category.documents():
+   doc = deepcopy(doc)
+   doc.category = category
+   doc = self.tokenizer.tokenize(doc)
+   for page in doc.pages():
+    if page.number == 1:
+     cur_first_page_spans.append({span.offset_string for span in page.spans()})
+    else:
+     cur_non_first_page_spans.append({span.offset_string for span in page.spans()})
+  if not cur_first_page_spans:
+   cur_first_page_spans.append(set())
+  true_first_page_spans = set.intersection(*cur_first_page_spans)
+  if not cur_non_first_page_spans:
+   cur_non_first_page_spans.append(set())
+  true_not_first_page_spans = set.intersection(*cur_non_first_page_spans)
+  true_first_page_spans = true_first_page_spans - true_not_first_page_spans
+  first_page_spans[category.id_] = true_first_page_spans
+ self.first_page_strings = first_page_spans
+ return first_page_spans
 ```
 
 Secondly, we define `save()` method. For saving, it is possible to choose one of the two options: to save 
@@ -149,6 +152,7 @@ using parent class's `save()` method (`save_json` has to be set to False). A fla
 [this](https://github.com/cloudpipe/cloudpickle#overriding-pickles-serialization-mechanism-for-importable-constructs)).
 `max_ram` is used to define the maximum memory usage condition to save model; `reduce_weight` allows for removing 
 everything that is not needed for running prediction before a model is saved.
+
 ```python
     def save(
         self,
@@ -156,40 +160,42 @@ everything that is not needed for running prediction before a model is saved.
         include_konfuzio=False,
         max_ram=None,
         reduce_weight: bool = False,
-    ) -> str:
-        if save_json:
-            self.path = self.output_dir + f'/{get_timestamp()}_first_page_spans.json'
-            pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
-            with open(self.path, 'w+') as f:
-                json.dump(self.first_page_spans, f)
-        else:
-            self.path = super().save(include_konfuzio=include_konfuzio, max_ram=max_ram, reduce_weight=reduce_weight)
-        return self.path
+) -> str:
+ if save_json:
+  self.path = self.output_dir + f'/{get_timestamp()}_first_page_spans.json'
+  pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
+  with open(self.path, 'w+') as f:
+   json.dump(self.first_page_strings, f)
+ else:
+  self.path = super().save(include_konfuzio=include_konfuzio, max_ram=max_ram, reduce_weight=reduce_weight)
+ return self.path
 ```
 
 Then we define `load_json()` method for loading previosuly saved `first_page_spans` from a chosen `model_path`:
+
 ```python
     def load_json(self, model_path=""):
-        with open(model_path, 'r') as f:
-            spans = json.load(f)
-        # converting str category.id_ values to back int because JSON converts them to str
-        spans = {int(k): v for k, v in spans.items()}
-        self.first_page_spans = spans
+ with open(model_path, 'r') as f:
+  spans = json.load(f)
+ # converting str category.id_ values to back int because JSON converts them to str
+ spans = {int(k): v for k, v in spans.items()}
+ self.first_page_strings = spans
 ```
 
 Lastly, we define `predict()` method that uses resulting `first_page_spans` gathered from `fit()`. A Page is accepted as
  an input and its Span set is checked for containing first-page Spans for each of the Categories. If there has been at 
 least one intersection, a Page is predicted to be first; if there's no such intersections, it's predicted non-first.
+
 ```python
  def predict(self, page: Page) -> Page:
-     for category in self.categories:
-            intersection = {span.offset_string for span in page.spans()}.intersection(
-                self.first_page_spans[category.id_]
-            )
-            if len(intersection) > 0:
-                page.is_first_page = True
-                break
-        return page
+ for category in self.categories:
+  intersection = {span.offset_string for span in page.spans()}.intersection(
+   self.first_page_strings[category.id_]
+  )
+  if len(intersection) > 0:
+   page.is_first_page = True
+   break
+ return page
 ```
 
 A quick example of the class's usage:
@@ -215,7 +221,7 @@ file_splitting_model.tokenizer = ConnectedTextTokenizer()
 
 # gather Spans unique for the first Pages of the Documents 
 # the gathered Spans are saved to later be reused in the SplittingAI
-file_splitting_model.first_page_spans = file_splitting_model.fit()
+file_splitting_model.first_page_strings = file_splitting_model.fit()
 
 # save the gathered Spans
 file_splitting_model.output_dir = project.model_folder
@@ -223,11 +229,11 @@ file_splitting_model.save(save_json=True)
 
 # run the prediction
 for page in test_document.pages():
-    pred = file_splitting_model.predict(page)
-    if pred.is_first_page:
-        print('Page {} is predicted as the first.'.format(page.number))
-    else:
-        print('Page {} is predicted as the non-first.'.format(page.number))
+ pred = file_splitting_model.predict(page)
+ if pred.is_first_page:
+  print('Page {} is predicted as the first.'.format(page.number))
+ else:
+  print('Page {} is predicted as the non-first.'.format(page.number))
 
 # usage with the SplittingAI – you can load a pre-saved model or pass an initialized instance as the input
 # in this example, we load a previously saved one
@@ -316,7 +322,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         """
         Save the resulting set of first-page Spans by Category.
 
-        :param save_json: Whether to save JSON of first_page_spans or a pickle of the whole class.
+        :param save_json: Whether to save JSON of first_page_strings or a pickle of the whole class.
         :type save_json: bool
         :param include_konfuzio: Enables pickle serialization as a value, not as a reference (for more info, read
         https://github.com/cloudpipe/cloudpickle#overriding-pickles-serialization-mechanism-for-importable-constructs).
@@ -333,7 +339,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
 
     def load_json(self, model_path=""):
         """
-        Load JSON with previously gathered first_page_spans.
+        Load JSON with previously gathered first_page_strings.
 
         :param model_path: Path for the JSON.
         :type model_path: str

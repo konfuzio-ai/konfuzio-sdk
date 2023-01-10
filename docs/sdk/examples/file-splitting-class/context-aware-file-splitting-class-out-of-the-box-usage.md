@@ -30,7 +30,7 @@ file_splitting_model.tokenizer = ConnectedTextTokenizer()
 
 # gather Spans unique for the first Pages of the Documents 
 # the gathered Spans are saved to later be reused in the SplittingAI
-file_splitting_model.first_page_spans = file_splitting_model.fit()
+file_splitting_model.first_page_strings = file_splitting_model.fit()
 
 # save the gathered Spans
 file_splitting_model.output_dir = project.model_folder

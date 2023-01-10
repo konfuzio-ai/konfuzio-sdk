@@ -95,7 +95,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         self.test_documents = None
         self.categories = None
         self.tokenizer = None
-        self.first_page_spans = None
+        self.first_page_strings = None
         self.path = None
 
     def fit(self, *args, **kwargs) -> dict:
@@ -125,7 +125,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
             true_not_first_page_spans = set.intersection(*cur_non_first_page_spans)
             true_first_page_spans = true_first_page_spans - true_not_first_page_spans
             first_page_spans[category.id_] = list(true_first_page_spans)
-        self.first_page_spans = first_page_spans
+        self.first_page_strings = first_page_spans
         return first_page_spans
 
     def save(
@@ -139,7 +139,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         """
         Save the resulting set of first-page Spans by Category.
 
-        :param save_json: Whether to save JSON of first_page_spans or a pickle of the whole class.
+        :param save_json: Whether to save JSON of first_page_strings or a pickle of the whole class.
         :type save_json: bool
         :param include_konfuzio: Enables pickle serialization as a value, not as a reference (for more info, read
         https://github.com/cloudpipe/cloudpickle#overriding-pickles-serialization-mechanism-for-importable-constructs).
@@ -153,7 +153,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
             self.path = self.output_dir + f'/{get_timestamp()}_first_page_spans.json'
             pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
             with open(self.path, 'w+') as f:
-                json.dump(self.first_page_spans, f)
+                json.dump(self.first_page_strings, f)
         else:
             self.path = super().save(
                 include_konfuzio=include_konfuzio, max_ram=max_ram, reduce_weight=reduce_weight, keep_documents=True
@@ -162,7 +162,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
 
     def load_json(self, model_path=""):
         """
-        Load JSON with previously gathered first_page_spans.
+        Load JSON with previously gathered first_page_strings.
 
         :param model_path: Path for the JSON.
         :type model_path: str
@@ -171,7 +171,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
             spans = json.load(f)
         # converting str category.id_ values to back int because JSON converts them to str
         spans = {int(k): v for k, v in spans.items()}
-        self.first_page_spans = spans
+        self.first_page_strings = spans
 
     def predict(self, page: Page) -> Page:
         """
@@ -183,7 +183,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         """
         for category in self.categories:
             intersection = {span.offset_string for span in page.spans()}.intersection(
-                self.first_page_spans[category.id_]
+                self.first_page_strings[category.id_]
             )
             if len(intersection) > 0:
                 page.is_first_page = True
@@ -204,7 +204,7 @@ class SplittingAI:
         self.tokenizer = ConnectedTextTokenizer()
         if isinstance(model, str):
             self.model = ContextAwareFileSplittingModel()
-            self.model.first_page_spans = load_model(model)
+            self.model.first_page_strings = load_model(model)
         else:
             self.model = model
 
@@ -221,7 +221,7 @@ class SplittingAI:
                     end_offset=page.end_offset,
                     number=page.number,
                 )
-        return new_doc
+        return [new_doc]
 
     def _suggest_first_pages(self, document: Document, inplace: bool = False) -> Document:
         if inplace:
@@ -271,7 +271,7 @@ class SplittingAI:
         :param return_pages: A flag to enable returning a copy of an old Document with Pages marked .is_first_page on
         splitting points instead of a set of sub-Documents.
         :type return_pages: bool
-        :return: A list of suggested new sub-Documents built from the original Document or a copy of an old Document
+        :return: A list of suggested new sub-Documents built from the original Document or a list with a Document
         with Pages marked .is_first_page on splitting points.
         """
         if return_pages:
@@ -295,7 +295,7 @@ class SplittingAI:
         else:
             evaluation_docs = self.model.documents
         for doc in evaluation_docs:
-            pred = self.propose_split_documents(doc, return_pages=True)
+            pred = self.propose_split_documents(doc, return_pages=True)[0]
             evaluation_list.append((doc, pred))
         self.full_evaluation = FileSplittingEvaluation(evaluation_list)
         return self.full_evaluation
