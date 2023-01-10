@@ -2390,11 +2390,11 @@ class Document(Data):
         labels_dict = {}
         for label in self.project.labels:
             if not only_multiline_labels or label.has_multiline_annotations(categories=[self.category]):
-                labels_dict[label.id_local] = []
+                labels_dict[label.id_] = []
 
         for annotation in self.annotations(use_correct=False, ignore_below_threshold=True):
-            if annotation.label.id_local in labels_dict:
-                labels_dict[annotation.label.id_local].append(annotation)
+            if annotation.label.id_ in labels_dict:
+                labels_dict[annotation.label.id_].append(annotation)
 
         for label_id in labels_dict:
             buffer = []
