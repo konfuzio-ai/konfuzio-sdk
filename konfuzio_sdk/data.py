@@ -263,6 +263,7 @@ class BboxValidationTypes(Enum):
     This option is available and defaults to False for compatibility reasons since some OCR engines can sometimes
     return character level bboxes with zero width or height. If STRICT, it doesn't allow zero size bboxes. If
     DISABLED, it allows bboxes that have negative size, or coordinates beyond the Page bounds.
+    See https://dev.konfuzio.com/sdk/data_validations.html#bbox-validation-rules.
     """
 
     STRICT = 'strict'
@@ -310,6 +311,7 @@ class Bbox:
         This option is available and defaults to False for compatibility reasons since some OCR engines can sometimes
         return character level bboxes with zero width or height. If STRICT, it doesn't allow zero size bboxes. If
         DISABLED, it allows bboxes that have negative size, or coordinates beyond the Page bounds.
+        See https://dev.konfuzio.com/sdk/data_validations.html#bbox-validation-rules.
         """
         if self.x0 == self.x1:
             exception_or_error(
@@ -1033,7 +1035,7 @@ class Span(Data):
         Validate containted data.
 
         :param strict: If False, it allows Spans to have zero length, or span more than one visual line. For more
-        details see https://dev.konfuzio.com/sdk/data_validation.html.
+        details see https://dev.konfuzio.com/sdk/data_validations.html#span-validation-rules.
         """
         if self.end_offset == self.start_offset == 0:
             logger.error(f'{self} is intentionally left empty.')
@@ -1711,6 +1713,7 @@ class Document(Data):
         This option is available and defaults to False for compatibility reasons since some OCR engines can sometimes
         return character level bboxes with zero width or height. If STRICT, it doesn't allow zero size bboxes. If
         DISABLED, it allows bboxes that have negative size, or coordinates beyond the Page bounds.
+        See https://dev.konfuzio.com/sdk/data_validations.html#bbox-validation-rules.
         :param pages: List of page sizes.
         :param update: Annotations, Annotation Sets will not be loaded by default. True will load it from the API.
                         False from local files
@@ -2150,7 +2153,10 @@ class Document(Data):
         return self
 
     def add_annotation(self, annotation: Annotation):
-        """Add an annotation to a document.
+        """Add an Annotation to a Document.
+
+        The Annotation is only added to the Document if the data validation tests are passing for this Annotation.
+        See https://dev.konfuzio.com/sdk/data_validations.html#annotation-validation-rules.
 
         :param annotation: Annotation to add in the document
         :return: Input annotation.
@@ -2624,7 +2630,7 @@ class Project(Data):
         :param update: Whether to sync local files with the Project online.
         :param max_ram: Maximum RAM used by AI models trained on this Project.
         :param strict_data_validation: Whether to apply strict data validation rules.
-        See https://dev.konfuzio.com/sdk/data_validation.html.
+        See https://dev.konfuzio.com/sdk/data_validations.html.
         """
         self.id_local = next(Data.id_iter)
         self.id_ = id_  # A Project with None ID is not retrieved from the HOST
