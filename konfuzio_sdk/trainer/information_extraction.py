@@ -1767,7 +1767,7 @@ class GroupAnnotationSets:
         :param df:
         :return:
         """
-        if self.category is None:
+        if self.category.name == 'NO_CATEGORY':
             raise AttributeError(f'{self} does not provide a Category.')
 
         global_df = pandas.DataFrame()
