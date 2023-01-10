@@ -1,6 +1,6 @@
-.. \_Server API v3:
+.. \_Server API:
 
-# REST API v3
+# REST API
 
 This document aims to provide developers with a high-level overview of what can be accomplished through the Konfuzio API
 v3. For a more thorough description of the available endpoints and their parameters and response, we invite you to
@@ -250,105 +250,6 @@ There are three concepts related to coordinates and bounding boxes that are used
 If the endpoint you're working with uses a `span` or `bbox` field, refer to its Swagger schema and to the summary above
 to understand which fields it needs.
 
-
-## Supported OCR languages
-
-The default OCR engine for [Konfuzio Server](https://app.konfuzio.com) supports the following languages:
-
-Afrikaans, Albanian, Asturian, Azerbaijani (Latin), Basque, Belarusian (Cyrillic), Belarusian (Latin), Bislama,
-Bosnian (Latin), Breton, Bulgarian, Buryat (Cyrillic), Catalan, Cebuano, Chamorro, Chinese Simplified, Chinese
-Traditional, Cornish, Corsican, Crimean Tatar (Latin), Croatian, Czech, Danish, Dutch, English, Erzya (Cyrillic),
-Estonian, Faroese, Fijian, Filipino, Finnish, French, Friulian, Gagauz (Latin), Galician, German, Gilbertese,
-Greenlandic, Haitian Creole, Hani, Hawaiian, Hmong Daw (Latin), Hungarian, Icelandic, Inari Sami, Indonesian,
-Interlingua, Inuktitut (Latin), Irish, Italian, Japanese, Javanese, K'iche', Kabuverdianu, Kachin (Latin), Kara-Kalpak (
-Latin), Kara-Kalpak (Cyrillic), Karachay-Balkar, Kashubian, Kazakh (Cyrillic), Kazakh (Latin), Khasi, Korean, Koryak,
-Kosraean, Kumyk (Cyrillic), Kurdish (Latin), Kyrgyz (Cyrillic), Lakota, Latin, Lithuanian, Lower Sorbian, Lule Sami,
-Luxembourgish, Malay (Latin), Maltese, Manx, Maori, Mongolian (Cyrillic), Montenegrin (Cyrillic), Montenegrin (Latin),
-Neapolitan, Niuean, Nogay, Northern Sami (Latin), Norwegian, Occitan, Ossetic, Polish, Portuguese, Ripuarian, Romanian,
-Romansh, Russian, Samoan (Latin), Scots, Scottish Gaelic, Serbian (Cyrillic), Serbian (Latin), Skolt Sami, Slovak,
-Slovenian, Southern Sami, Spanish, Swahili (Latin), Swedish, Tajik (Cyrillic), Tatar (Latin), Tetum, Tongan, Turkish,
-Turkmen (Latin), Tuvan, Upper Sorbian, Uzbek (Cyrillic), Uzbek (Latin), Volapük, Walser, Welsh, Western Frisian, Yucatec
-Maya, Zhuang, Zulu.
-
-The detection of handwritten text is supported for the following languages:
-
-English, Chinese Simplified, French, German, Italian, Portuguese, Spanish.
-
-The availability of OCR languages depends on the selected OCR engine and might differ across configurations (e.g.
-on-premise installation).
-
-## Supported File Types
-
-### File Types
-
-Konfuzio supports the following Document types.
-
-For information about file size and page limits, refer to the Content Limits, if you are using Konfuzio SaaS.
-
-| Name                                    | File Extension(s) | [MIME Type](https://www.iana.org/assignments/media-types/media-types.xhtml) |
-| --------------------------------------- | ----------------- | --------------------------------------------------------------------------- |
-| Portable Document Format (PDF)          | `.pdf`            | `application/pdf`                                                           |
-| Tag Image File Format (TIFF)            | `.tiff`, `.tif`   | `image/tiff`                                                                |
-| Joint Photographic Experts Group (JPEG) | `.jpg`, `.jpeg`   | `image/jpeg`                                                                |
-| Portable Network Graphics (PNG)         | `.png`            | `image/png`                                                                 |
-| Excel                                   | `.xls`, `.xlsx`   |  several, see details below                                                 |
-| PowerPoint                              | `.ppt`, `.pptx`   |  several, see details below                                                 |
-| Word                                    | `.doc`, `.docx`   |  several, see details below                                                 |
-
-
-Note that some of these image formats are "lossy" (for example, JPEG). Reducing file sizes for lossy formats may result in a degradation of image quality and accuracy of results from Konfuzio.
-
-##### File extension handling & correction
-
-It is possible to upload files with no (unknown or corrupted) file extension to Konfuzio (e.g. instead of 
-file:`example.pdf`, file: `example.p`, `example`, or even`example.example.example` was uploaded) when this happens, 
-internally  correction logic is run in order to try and guess the correct extension before saving and or extracting 
-the file/document. This correction attempts to guess all supported file types, but success cannot be guaranteed. The 
-maximum file extension for this correction to work should not exceed 99 characters. 
-
-#### PDFs
-
-Konfuzio supports PDF/A-1a, PDF/A-1b, PDF/A-2a, PDF/A-2b, PDF/A-3a, PDF/A-3b, PDF/X-1a, PDF/1.7, PDF/2.0. An attempt
-will be made to repair corrupted PDFs. Konfuzio does not support AcroForms and AEM (Adobe Experience Manager) form
-content.
-
-#### Images
-
-Konfuzio supports JPEG, TIFF and PNG (including support for alpha channel).
-
-#### Office documents
-
-Konfuzio offers limited support for common office documents like Microsoft® Word (.doc, .docx), Excel (.xls, .xlsx),
-PowerPoint (.ppt, .pptx) and Publisher as well as the Open Document Format (ODF). Uploaded office documents are
-converted to PDFs by Konfuzio. Libre Office is used for the PDF conversion. The layout of the converted office document
-may differ from the original. Office files can not be edited after they have been uploaded.
-
-### Content limits
-
-The following content limits apply to Konfuzio SaaS.
-
-| Content limit                                                | Default Value                   |
-| ------------------------------------------------------------ | ------------------------------- |
-| Maximum image resolution (limit does not apply to PDF files) | megapixels not limited per page |
-| Maximum PDF dimension (limit does not apply to images)       | 17 x 17 inches                  |
-| Maximum file size per request                                | not limited                     |
-| Maximum number of Pages per Document (synchronous requests)  | 250 pages                       |
-| Maximum number of Pages (batch/asynchronous requests)        | 250 pages                       |
-| Concurrent processor version training requests               | one per Category                |
-| Concurrent files processing per Project (Batch / Parallel)   | not limited                     |
-| Requests per minute                                          | not limited                     |
-| Maximum number of objects per API Call                       | 1000                            |
-| Synchronous requests process requests per minute             | not limited                     |
-| Asynchronous requests process requests per minute            | not limited                     |
-| Number of pages in active processing                         | not limited                     |
-| Review document requests per minute                          | not limited                     |
-
-
-If you would like to increase your content limits, submit request for your project as a [Support Ticket](https://konfuzio.com/en/support/).
-
-### Document scan resolution
-
-For most accurate OCR results from Konfuzio, document scans should be a minimum of 200 dpi [(dots per inch)](https://en.wikipedia.org/wiki/Dots_per_inch). 300 dpi and higher will generally produce the best results.
 
 ## OCR Processing
 
