@@ -751,8 +751,11 @@ this:
 ```
 curl --request GET \
   --url https://app.konfuzio.com/doc/show/DOCUMENT_ID/ \
-  --header 'Authorization: Token YOUR_TOKEN'
+  --header 'Authorization: Token YOUR_TOKEN' \
+  --remote-name --remote-header-name
 ```
+
+This will save the file in the current directory.
 
 ### Create your own document dashboard
 
