@@ -2551,13 +2551,17 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
     @property
     def temp_pkl_file_path(self):
         """Generate a path for temporary pickle file."""
-        temp_pkl_file_path = os.path.join(self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}_tmp.pkl')
+        temp_pkl_file_path = os.path.join(
+            self.output_dir, f'{get_timestamp(konfuzio_format="%Y-%m-%d-%H-%M")}_{self.category.name.lower()}_tmp.pkl'
+        )
         return temp_pkl_file_path
 
     @property
     def pkl_file_path(self):
         """Generate a path for a resulting pickle file."""
-        pkl_file_path = os.path.join(self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}.pkl')
+        pkl_file_path = os.path.join(
+            self.output_dir, f'{get_timestamp(konfuzio_format="%Y-%m-%d-%H-%M")}_{self.category.name.lower()}.pkl'
+        )
         return pkl_file_path
 
     def reduce_model_weight(self):
