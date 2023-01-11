@@ -1479,6 +1479,8 @@ class Annotation(Data):
         :param document_annotations: Annotations in the Document (list)
         :return: True if new Annotation was created
         """
+        if self.document.category == self.document.project.no_category:
+            raise ValueError(f"You cannot save Annotations of Documents with {self.document.category}.")
         new_annotation_added = False
         if not self.label_set:
             label_set_id = None
