@@ -1225,7 +1225,7 @@ class BaseModel(metaclass=abc.ABCMeta):
         """Remove all non-strictly necessary parameters before saving."""
 
     @abc.abstractmethod
-    def ensure_model_memory_usage_within_limit(self):
+    def ensure_model_memory_usage_within_limit(self, max_ram):
         """Ensure that a model is not exceeding allowed max_ram."""
 
     @abc.abstractmethod

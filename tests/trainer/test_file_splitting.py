@@ -18,23 +18,17 @@ class TestFileSplittingModel(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Initialize the tested class."""
         cls.project = LocalTextProject()
-        cls.file_splitting_model = ContextAwareFileSplittingModel()
-        cls.file_splitting_model.categories = [cls.project.get_category_by_id(3), cls.project.get_category_by_id(4)]
-        cls.file_splitting_model.documents = [
-            document for document in cls.project.documents if document.category in cls.file_splitting_model.categories
-        ]
-        cls.file_splitting_model.test_documents = [
-            document
-            for document in cls.project.test_documents
-            if document.category in cls.file_splitting_model.categories
-        ][:-2]
+        cls.file_splitting_model = ContextAwareFileSplittingModel(
+            categories=[cls.project.get_category_by_id(3), cls.project.get_category_by_id(4)]
+        )
+        cls.file_splitting_model.test_documents = cls.file_splitting_model.test_documents[:-2]
         cls.file_splitting_model.tokenizer = ConnectedTextTokenizer()
         cls.file_splitting_model.first_page_strings = None
         cls.test_document = cls.project.get_category_by_id(3).test_documents()[0]
 
     def test_fit_context_aware_splitting_model(self):
         """Test pseudotraining of the context-aware splitting model."""
-        self.file_splitting_model.first_page_strings = self.file_splitting_model.fit()
+        self.file_splitting_model.fit()
         non_first_page_spans = {}
         for category in self.file_splitting_model.categories:
             cur_non_first_page_spans = []
@@ -79,7 +73,7 @@ class TestFileSplittingModel(unittest.TestCase):
     def test_json_model_save_and_load(self):
         """Test saving and loading first_page_strings as JSON."""
         self.file_splitting_model.output_dir = self.project.model_folder
-        self.file_splitting_model.path = self.file_splitting_model.save(save_json=True)
+        self.file_splitting_model.path = self.file_splitting_model.save_json()
         assert os.path.isfile(self.file_splitting_model.path)
         self.file_splitting_model.load_json(self.file_splitting_model.path)
         assert 3 in self.file_splitting_model.first_page_strings
@@ -97,7 +91,7 @@ class TestFileSplittingModel(unittest.TestCase):
         """Test saving ContextAwareFileSplittingModel to pickle."""
         self.file_splitting_model.output_dir = self.project.model_folder
         self.file_splitting_model.path = self.file_splitting_model.save(
-            save_json=False, keep_documents=True, max_ram='5MB'
+            keep_documents=True, max_ram='5MB', include_konfuzio=False
         )
         assert os.path.isfile(self.file_splitting_model.path)
         model = load_model(self.file_splitting_model.path)

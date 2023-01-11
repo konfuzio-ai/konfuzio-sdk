@@ -2539,13 +2539,23 @@ class Document(Data):
 
         return self._annotations
 
-    def propose_splitting(self, splitting_ai, first_page_spans) -> List:
+    def propose_splitting(self, splitting_ai, first_page_strings) -> List:
         """Propose splitting for a multi-file Document.
 
         :param splitting_ai: An initialized SplittingAI class
         """
-        proposed = splitting_ai.propose_split_documents(self, first_page_spans)
+        proposed = splitting_ai.propose_split_documents(self, first_page_strings)
         return proposed
+
+    def fetch_first_non_first_page_spans(self):
+        """Create sets of Spans for first Page and non-first Pages of the Document."""
+        first_page_spans = []
+        non_first_page_spans = []
+        for page in self.pages():
+            if page.number == 1:
+                first_page_spans.append({span.offset_string for span in page.spans()})
+            else:
+                non_first_page_spans.append({span.offset_string for span in page.spans()})
 
 
 class Project(Data):
