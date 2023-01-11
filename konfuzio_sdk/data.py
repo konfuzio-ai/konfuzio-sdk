@@ -9,6 +9,7 @@ import regex as re
 import shutil
 import time
 import zipfile
+from copy import deepcopy
 from typing import Optional, List, Union, Tuple, Dict
 from warnings import warn
 
@@ -555,6 +556,36 @@ class Category(Data):
             self.label_sets.append(label_set)
         else:
             raise ValueError(f'In {self} the {label_set} is a duplicate and will not be added.')
+
+    def collect_first_page_spans(self):
+        """Collect Spans unique for first Pages of Documents within a Category."""
+        cur_first_page_strings = []
+        cur_non_first_page_strings = []
+        for doc in self.documents():
+            doc = deepcopy(doc)
+            doc.category = self
+            doc = self.tokenizer.tokenize(doc)
+            for page in doc.pages():
+                if page.number == 1:
+                    cur_first_page_strings.append({span.offset_string for span in page.spans()})
+                else:
+                    cur_non_first_page_strings.append({span.offset_string for span in page.spans()})
+        if not cur_first_page_strings:
+            cur_first_page_strings.append(set())
+        true_first_page_strings = set.intersection(*cur_first_page_strings)
+        if not cur_non_first_page_strings:
+            cur_non_first_page_strings.append(set())
+        true_not_first_page_strings = set.intersection(*cur_non_first_page_strings)
+        true_first_page_strings = true_first_page_strings - true_not_first_page_strings
+
+    @property
+    def exclusive_first_page_strings(self):
+        """Return a set of strings exclusive for first Pages of Documents within the Category."""
+        if self._exclusive_first_page_strings is not None:
+            return self._exclusive_first_page_strings
+        else:
+            self.collect_first_page_spans()
+        return self.exclusive_first_page_strings
 
     def __lt__(self, other: 'Category'):
         """Sort Categories by name."""
@@ -2546,16 +2577,6 @@ class Document(Data):
         """
         proposed = splitting_ai.propose_split_documents(self, first_page_strings)
         return proposed
-
-    def fetch_first_non_first_page_spans(self):
-        """Create sets of Spans for first Page and non-first Pages of the Document."""
-        first_page_spans = []
-        non_first_page_spans = []
-        for page in self.pages():
-            if page.number == 1:
-                first_page_spans.append({span.offset_string for span in page.spans()})
-            else:
-                non_first_page_spans.append({span.offset_string for span in page.spans()})
 
 
 class Project(Data):

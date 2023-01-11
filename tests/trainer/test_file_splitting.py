@@ -26,6 +26,8 @@ class TestFileSplittingModel(unittest.TestCase):
         cls.file_splitting_model.first_page_strings = None
         cls.test_document = cls.project.get_category_by_id(3).test_documents()[0]
 
+    # todo add a single document testing of fit() method
+
     def test_fit_context_aware_splitting_model(self):
         """Test pseudotraining of the context-aware splitting model."""
         self.file_splitting_model.fit()

@@ -458,14 +458,14 @@ class Evaluation:
 class FileSplittingEvaluation:
     """Evaluate the quality of the filesplitting logic."""
 
-    def __init__(self, documents: List[Tuple[Document, Document]]):
+    def __init__(self, document_pairs: List[Tuple[Document, Document]]):
         """
         Initialize and run the metrics calculation.
 
-        :param documents: A list of Document pairs – first one is ground truth, second is the prediction.
-        :type documents: list
+        :param document_pairs: A list of Document pairs – first one is ground truth, second is the prediction.
+        :type document_pairs: list
         """
-        self.documents = documents
+        self.document_pairs = document_pairs
         self.calculate()
         self.calculate_metrics_by_category()
 
@@ -475,7 +475,7 @@ class FileSplittingEvaluation:
         fp = 0
         fn = 0
         tn = 0
-        for ground_truth, prediction in self.documents:
+        for ground_truth, prediction in self.document_pairs:
             for page_gt, page_pr in zip(ground_truth.pages(), prediction.pages()):
                 if page_gt.is_first_page and page_pr.is_first_page:
                     tp += 1
@@ -497,7 +497,7 @@ class FileSplittingEvaluation:
             f1 = 2 * precision * recall / (precision + recall)
         else:
             raise ZeroDivisionError("FP and FN are zero.")
-        self.project = self.documents[0][0].project
+        self.project = self.document_pairs[0][0].project
         self.evaluation_results = {
             'tp': tp,
             'fp': fp,
@@ -510,7 +510,7 @@ class FileSplittingEvaluation:
 
     def calculate_metrics_by_category(self):
         """Calculate metrics by Category independently."""
-        categories = list(set([doc_pair[0].category for doc_pair in self.documents]))
+        categories = list(set([doc_pair[0].category for doc_pair in self.document_pairs]))
         self.evaluation_results_by_category = {
             'tp': {},
             'fp': {},
@@ -527,7 +527,7 @@ class FileSplittingEvaluation:
             tn = 0
             for ground_truth, prediction in [
                 [document_1, document_2]
-                for document_1, document_2 in self.documents
+                for document_1, document_2 in self.document_pairs
                 if document_1.category and document_1.category.id_ == category.id_
             ]:
                 for page_gt, page_pr in zip(ground_truth.pages(), prediction.pages()):
