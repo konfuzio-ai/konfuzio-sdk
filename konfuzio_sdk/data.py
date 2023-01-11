@@ -2426,7 +2426,7 @@ class Document(Data):
                         ) or self.text[candidate.end_offset : span.start_offset].replace(' ', '').replace(
                             '\n', ''
                         ) == '':
-                            span.annotation.delete()
+                            span.annotation.delete(delete_online=False)
                             span.annotation = None
                             candidate.annotation.add_span(span)
                             buffer.remove(candidate)
