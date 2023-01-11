@@ -1278,11 +1278,9 @@ class TestEvaluationFileSplitting(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Initialize the tested class."""
         cls.project = LocalTextProject()
-        cls.file_splitting_model = ContextAwareFileSplittingModel()
-        cls.file_splitting_model.categories = [cls.project.get_category_by_id(3), cls.project.get_category_by_id(4)]
-        cls.file_splitting_model.documents = [
-            document for category in cls.file_splitting_model.categories for document in category.documents()
-        ]
+        cls.file_splitting_model = ContextAwareFileSplittingModel(
+            categories=[cls.project.get_category_by_id(3), cls.project.get_category_by_id(4)]
+        )
         cls.file_splitting_model.test_documents = [
             document for category in cls.file_splitting_model.categories for document in category.test_documents()
         ][:-2]
@@ -1293,7 +1291,7 @@ class TestEvaluationFileSplitting(unittest.TestCase):
 
     def test_metrics_calculation(self):
         """Test Evaluation class for ContextAwareFileSplitting."""
-        self.file_splitting_model.first_page_strings = self.file_splitting_model.fit()
+        self.file_splitting_model.fit()
         splitting_ai = SplittingAI(self.file_splitting_model)
         ground_truth = self.test_document
         pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)[0]
