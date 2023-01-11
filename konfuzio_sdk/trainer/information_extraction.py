@@ -1929,6 +1929,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         self.tokenizer = tokenizer
         logger.info(f"{tokenizer=}")
 
+        self.labels_has_multiline_annotation = {}
+
         self.clf = None
 
         self.no_label_set_name = None
@@ -1991,6 +1993,10 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         # Main Logic -------------------------
         # 1. start inference with new document
         inference_document = deepcopy(document)
+
+        # In case document category was changed after RFExtractionAI training
+        inference_document.category = self.category
+
         # 2. tokenize
         self.tokenizer.tokenize(inference_document)
         if not inference_document.spans():
@@ -2077,7 +2083,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         self.tokenizer.found_spans(virtual_doc)
 
         # join document Spans into multi-line Annotation
-        virtual_doc.merge_vertical()
+        virtual_doc.merge_vertical(labels_has_multiline_annotation=self.labels_has_multiline_annotation)
 
         return virtual_doc
 
@@ -2269,6 +2275,11 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         # todo make regex Tokenizer optional as those will be saved by the Server
         # if not hasattr(self, 'regexes'):  # Can be removed for models after 09.10.2020
         #    self.regexes = [regex for label_model in self.labels for regex in label_model.label.regex()]
+
+        for label in self.category.labels:
+            self.labels_has_multiline_annotation[label.name] = label.has_multiline_annotations(
+                categories=[self.category]
+            )
 
         for document in documents:
             # todo check for tokenizer: self.tokenizer.tokenize(document)  # todo: do we need it?

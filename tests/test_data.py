@@ -1271,7 +1271,13 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert len(document.spans()) == 4
         assert len(document.annotations(use_correct=False)) == 4
 
-        document.merge_vertical()
+        labels_has_multiline_annotation = {}
+        for label in document.category.labels:
+            labels_has_multiline_annotation[label.name] = label.has_multiline_annotations(
+                categories=[document.category]
+            )
+
+        document.merge_vertical(labels_has_multiline_annotation)
 
         label = document.annotations(use_correct=False)[0].label
         category = project.get_category_by_id(1)
@@ -1291,7 +1297,13 @@ class TestOfflineDataSetup(unittest.TestCase):
 
         assert label.has_multiline_annotations(categories=[category]) is True
 
-        document.merge_vertical()
+        labels_has_multiline_annotation = {}
+        for label in document.category.labels:
+            labels_has_multiline_annotation[label.name] = label.has_multiline_annotations(
+                categories=[document.category]
+            )
+
+        document.merge_vertical(labels_has_multiline_annotation)
 
         assert len(document.spans()) == 4
         assert len(document.annotations(use_correct=False)) == 2
@@ -1304,7 +1316,7 @@ class TestOfflineDataSetup(unittest.TestCase):
 
         assert len(document.annotations(use_correct=False)) == 6
 
-        document.merge_vertical(only_multiline_labels=False)
+        document.merge_vertical(labels_has_multiline_annotation={}, only_multiline_labels=False)
 
         assert len(document.annotations(use_correct=False)) == 4
         assert len(document.annotations(use_correct=False)[1].spans) == 3

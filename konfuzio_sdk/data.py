@@ -2371,7 +2371,7 @@ class Document(Data):
         self._annotations = None
         self._annotation_sets = None
 
-    def merge_vertical(self, only_multiline_labels=True):
+    def merge_vertical(self, labels_has_multiline_annotation: Dict, only_multiline_labels=True):
         """
         Merge Annotations with the same Label.
 
@@ -2379,13 +2379,13 @@ class Document(Data):
         """
         logger.info("Vertical merging Annotations.")
         labels_dict = {}
-        for label in self.project.labels:
-            if not only_multiline_labels or label.has_multiline_annotations(categories=[self.category]):
-                labels_dict[label.id_local] = []
+        for label in self.category.labels:
+            if not only_multiline_labels or labels_has_multiline_annotation[label.name]:
+                labels_dict[label.name] = []
 
         for annotation in self.annotations(use_correct=False, ignore_below_threshold=True):
-            if annotation.label.id_local in labels_dict:
-                labels_dict[annotation.label.id_local].append(annotation)
+            if annotation.label.name in labels_dict:
+                labels_dict[annotation.label.name].append(annotation)
 
         for label_id in labels_dict:
             buffer = []
