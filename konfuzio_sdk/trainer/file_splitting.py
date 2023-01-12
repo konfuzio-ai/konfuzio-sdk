@@ -44,7 +44,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         """Generate a path for temporary pickle file."""
         temp_pkl_file_path = os.path.join(
             self.output_dir,
-            f'{get_timestamp(konfuzio_format="%Y-%m-%d-%H-%M")}_{self.name_lower()}_{self.project.id_}_' f'tmp.pkl',
+            f'{get_timestamp(konfuzio_format="%Y-%m-%d-%H")}_{self.name_lower()}_{self.project.id_}_' f'tmp.pkl',
         )
         return temp_pkl_file_path
 
@@ -53,7 +53,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         """Generate a path for a resulting pickle file."""
         pkl_file_path = os.path.join(
             self.output_dir,
-            f'{get_timestamp(konfuzio_format="%Y-%m-%d-%H-%M")}_{self.name_lower()}_{self.project.id_}' f'.pkl',
+            f'{get_timestamp(konfuzio_format="%Y-%m-%d-%H")}_{self.name_lower()}_{self.project.id_}' f'.pkl',
         )
         return pkl_file_path
 
