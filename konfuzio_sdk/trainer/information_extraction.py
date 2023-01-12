@@ -1787,8 +1787,6 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         self.tokenizer = tokenizer
         logger.info(f"{tokenizer=}")
 
-        self.labels_has_multiline_annotation = {}
-
         self.clf = None
 
         self.no_label_set_name = None
