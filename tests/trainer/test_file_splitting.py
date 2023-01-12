@@ -75,6 +75,9 @@ class TestFileSplittingModel(unittest.TestCase):
         self.file_splitting_model.path = self.file_splitting_model.save(
             keep_documents=True, max_ram='5MB', include_konfuzio=False
         )
+        print(self.file_splitting_model.path)
+        print(self.file_splitting_model.temp_pkl_file_path)
+        print(self.file_splitting_model.pkl_file_path)
         assert os.path.isfile(self.file_splitting_model.path)
         model = load_model(self.file_splitting_model.path)
         for category_gt, category_load in zip(self.file_splitting_model.categories, model.categories):
@@ -87,6 +90,9 @@ class TestFileSplittingModel(unittest.TestCase):
         self.file_splitting_model.path = self.file_splitting_model.save(
             reduce_weight=True, keep_documents=True, max_ram='5MB', include_konfuzio=False
         )
+        print(self.file_splitting_model.path)
+        print(self.file_splitting_model.temp_pkl_file_path)
+        print(self.file_splitting_model.pkl_file_path)
         assert os.path.isfile(self.file_splitting_model.path)
         model = load_model(self.file_splitting_model.path)
         for category_gt, category_load in zip(self.file_splitting_model.categories, model.categories):
