@@ -27,6 +27,7 @@ from konfuzio_sdk.api import (
     get_page_image,
     delete_document_annotation,
     delete_file_konfuzio_api,
+    upload_file_konfuzio_api,
 )
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
@@ -1721,6 +1722,23 @@ class Document(Data):
         else:
             return f"Document {self.name} ({self.id_})"
 
+    @classmethod
+    def from_file(self, path: Union[str, List[str]], project: 'Project'):
+        """Initialize document from file."""
+        response = upload_file_konfuzio_api(path, project_id=project.id_)
+        if response.status_code != 201:
+            logger.error(f"File upload resulted in response {response.status_code=}")
+
+        new_document_id = json.loads(response.text)['id']
+
+        project.write_meta_of_files()
+        project.get_meta(reload=True)
+        project.init_or_update_document()
+
+        document = project.get_document_by_id(new_document_id)
+
+        return document
+
     @property
     def file_path(self):
         """Return path to file."""
@@ -2801,6 +2819,8 @@ class Project(Data):
     def init_or_update_document(self):
         """Initialize Document to then decide about full, incremental or no update."""
         self._documents = []  # clean up Documents to not create duplicates
+        self.write_meta_of_files()
+        self.get_meta(reload=True)
         for document_data in self.meta_data:
             if document_data['status'][0] == 2:  # NOQA - hotfix for Text Annotation Server # todo add test
                 new_date = document_data["updated_at"]
@@ -2834,11 +2854,12 @@ class Project(Data):
         document = self.get_document_by_id(document_id)
 
         self._documents.remove(document)
-        try:
-            shutil.rmtree(document.document_folder)
-        except FileNotFoundError:
-            pass
+
         if delete_online:
+            try:
+                shutil.rmtree(document.document_folder)
+            except FileNotFoundError:
+                pass
             delete_file_konfuzio_api(document_id)
             self.write_meta_of_files()
             self.get_meta(reload=True)
