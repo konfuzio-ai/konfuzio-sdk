@@ -107,6 +107,7 @@ class TestFileSplittingModel(unittest.TestCase):
 
     def test_splitting_ai_evaluate_full_on_training(self):
         """Test SplittingAI's evaluate_full on training Documents."""
+        self.file_splitting_model.fit()
         splitting_ai = SplittingAI(self.file_splitting_model)
         splitting_ai.evaluate_full(use_training_docs=True)
         assert splitting_ai.full_evaluation.tp() == 3

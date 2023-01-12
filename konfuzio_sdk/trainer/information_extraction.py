@@ -22,6 +22,7 @@ import functools
 import logging
 import konfuzio_sdk
 import os
+import pathlib
 import pkg_resources
 import shutil
 import sys
@@ -1261,8 +1262,10 @@ class BaseModel(metaclass=abc.ABCMeta):
         version = pkg_resources.get_distribution("konfuzio-sdk").version
         logger.info(f'{version=}')
         if self.output_dir is None:
-            raise OSError("Specify output_dir before saving the instance of the class.")
+            raise OSError("Specify output_dir before saving the model.")
+        pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
         logger.info('Getting save paths')
+
         if reduce_weight:
             self.reduce_model_weight()
         if include_konfuzio:
@@ -1276,8 +1279,8 @@ class BaseModel(metaclass=abc.ABCMeta):
         self.ensure_model_memory_usage_within_limit(max_ram)
         logger.info('Saving model with cloudpickle')
         # first save with cloudpickle
-        temp_pkl_file_path = str(self.temp_pkl_file_path)
-        pkl_file_path = str(self.pkl_file_path)
+        temp_pkl_file_path = self.temp_pkl_file_path
+        pkl_file_path = self.pkl_file_path
         with open(temp_pkl_file_path, 'wb') as f:  # see: https://stackoverflow.com/a/9519016/5344492
             cloudpickle.dump(self, f)
         logger.info('Compressing model with bz2')
