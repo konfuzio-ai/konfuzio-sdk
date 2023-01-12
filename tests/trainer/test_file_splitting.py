@@ -75,14 +75,10 @@ class TestFileSplittingModel(unittest.TestCase):
         self.file_splitting_model.path = self.file_splitting_model.save(
             keep_documents=True, max_ram='5MB', include_konfuzio=False
         )
-        print(self.file_splitting_model.path)
-        print(self.file_splitting_model.temp_pkl_file_path)
-        print(self.file_splitting_model.pkl_file_path)
         assert os.path.isfile(self.file_splitting_model.path)
         model = load_model(self.file_splitting_model.path)
         for category_gt, category_load in zip(self.file_splitting_model.categories, model.categories):
             assert category_gt.exclusive_first_page_strings == category_load.exclusive_first_page_strings
-        pathlib.Path(self.file_splitting_model.path).unlink()
 
     def test_pickle_model_save_lose_weight(self):
         """Test saving ContextAwareFileSplittingModel with reduce_weight."""
@@ -90,14 +86,10 @@ class TestFileSplittingModel(unittest.TestCase):
         self.file_splitting_model.path = self.file_splitting_model.save(
             reduce_weight=True, keep_documents=True, max_ram='5MB', include_konfuzio=False
         )
-        print(self.file_splitting_model.path)
-        print(self.file_splitting_model.temp_pkl_file_path)
-        print(self.file_splitting_model.pkl_file_path)
         assert os.path.isfile(self.file_splitting_model.path)
         model = load_model(self.file_splitting_model.path)
         for category_gt, category_load in zip(self.file_splitting_model.categories, model.categories):
             assert category_gt.exclusive_first_page_strings == category_load.exclusive_first_page_strings
-        pathlib.Path(self.file_splitting_model.path).unlink()
 
     def test_splitting_ai_predict(self):
         """Test SplittingAI's Document-splitting method."""
@@ -165,3 +157,4 @@ class TestFileSplittingModel(unittest.TestCase):
                 assert page.is_first_page
             else:
                 assert not page.is_first_page
+        pathlib.Path(self.file_splitting_model.path).unlink()

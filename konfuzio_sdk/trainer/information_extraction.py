@@ -1276,8 +1276,8 @@ class BaseModel(metaclass=abc.ABCMeta):
         self.ensure_model_memory_usage_within_limit(max_ram)
         logger.info('Saving model with cloudpickle')
         # first save with cloudpickle
-        temp_pkl_file_path = self.temp_pkl_file_path
-        pkl_file_path = self.pkl_file_path
+        temp_pkl_file_path = str(self.temp_pkl_file_path)
+        pkl_file_path = str(self.pkl_file_path)
         with open(temp_pkl_file_path, 'wb') as f:  # see: https://stackoverflow.com/a/9519016/5344492
             cloudpickle.dump(self, f)
         logger.info('Compressing model with bz2')
