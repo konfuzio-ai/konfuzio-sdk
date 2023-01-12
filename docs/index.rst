@@ -37,7 +37,7 @@ use further integrations, see `help.konfuzio.com <https://help.konfuzio.com/inte
    sdk/index.md
    sdk/get_started.rst
    sdk/examples/examples.rst
-   sdk/explanations.rst
+   sdk/explanations.md
    sdk/sourcecode.rst
    sdk/contribution.md
    sdk/changelog.md
@@ -47,6 +47,7 @@ use further integrations, see `help.konfuzio.com <https://help.konfuzio.com/inte
    :hidden:
    :maxdepth: 3
 
+   web/explanations.rst
    web/api.md
    web/api-v3.md
    web/frontend/index.md
