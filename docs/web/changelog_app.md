@@ -40,7 +40,11 @@ These changes are for the tokenizers/new SDK branch.
 - A bug during the extraction post-processing steps, which was causing the first line items of each page to be skipped ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9561))
 -->
 
-## Next Release (estimated release date: 9th January 2023)
+## Next Release (estimated release date: 23th January 2023)
+
+Upcoming...
+
+## released-2023-01-12_18-52-56
 
 ### Fixed
 - Restrict the maximum auto-deletion time of a Document to a maximum of 5 years ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10229)).
