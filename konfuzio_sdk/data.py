@@ -2358,22 +2358,25 @@ class Document(Data):
 
     def update(self):
         """Update document information."""
-        self.delete(delete_online=False)
+        self.delete_document_details()
         self.download_document_details()
         return self
 
+    def delete_document_details(self):
+        """Delete all local content information for the document."""
+        try:
+            shutil.rmtree(self.document_folder)
+        except FileNotFoundError:
+            pass
+        pathlib.Path(self.document_folder).mkdir(parents=True, exist_ok=True)
+        self._annotations = None
+        self._annotation_sets = None
+        self._text = None
+        self._pages = []
+
     def delete(self, delete_online: bool = False):
-        """Delete all local information for the document."""
-        if delete_online and self.is_online:
-            self.project.del_document_by_id(self.id_)
-        else:
-            try:
-                shutil.rmtree(self.document_folder)
-            except FileNotFoundError:
-                pass
-            pathlib.Path(self.document_folder).mkdir(parents=True, exist_ok=True)
-            self._annotations = None
-            self._annotation_sets = None
+        """Delete Document."""
+        self.project.del_document_by_id(self.id_, delete_online=delete_online)
 
     def merge_vertical(self, only_multiline_labels=True):
         """
@@ -2828,16 +2831,18 @@ class Project(Data):
 
     def del_document_by_id(self, document_id: int, delete_online: bool = False) -> Document:
         """Delete Document by its ID."""
-        for document in self._documents:
-            if document.id_ == document_id:
-                self._documents.remove(document)
-                document.delete(delete_online=False)  # document.delete calls this method if delete_online is True
-                if delete_online:
-                    delete_file_konfuzio_api(self.id_)
-                    self.write_meta_of_files()
-                    self.get_meta(reload=True)
-                return None
-        raise IndexError(f'Document id {document_id} was not found in {self}.')
+        document = self.get_document_by_id(document_id)
+
+        self._documents.remove(document)
+        try:
+            shutil.rmtree(document.document_folder)
+        except FileNotFoundError:
+            pass
+        if delete_online:
+            delete_file_konfuzio_api(document_id)
+            self.write_meta_of_files()
+            self.get_meta(reload=True)
+        return None
 
     def get_label_by_name(self, name: str) -> Label:
         """Return Label by its name."""
