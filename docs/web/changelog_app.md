@@ -17,7 +17,7 @@ You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server
 
 - Calculate and access Tokenizers via the web interface. The name Tokenizer might be revised. The SDK refers to this concept as Tokenizer. ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9271)).
 - Add a filter to the list of Documents to find Documents that need to be revised by humans. ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9242)).
-- Improved training time of Extraction AIs when using character detection mode (reduced up to 40%) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9271)).
+- Improved training time of Extraction AIs when using word detection mode (reduced up to 50%) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9435)).
 - Train custom Page-based Categorization AI via [SDK](https://github.com/konfuzio-ai/konfuzio-sdk/) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9481)).
 - First stable release of Capture Vue in version ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9958)).
 - Suggest page breaks if one file contains multiple Documents ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/7671)).
@@ -43,7 +43,8 @@ These changes are for the tokenizers/new SDK branch.
 ## Next Release (estimated release date: 9th January 2023)
 
 ### Fixed
--  Restrict the maximum auto-deletion time of a Document to a maximum of 5 years ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10229)).
+- Restrict the maximum auto-deletion time of a Document to a maximum of 5 years ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10229)).
+- The ordering of Annotations Sets in the API V3 ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10197)).
 
 ## released-2022-12-22_11-03-21
 

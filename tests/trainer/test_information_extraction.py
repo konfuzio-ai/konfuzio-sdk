@@ -166,6 +166,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         """Set up the Data and Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
         cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_separate_labels, tokenizer=None)
+        cls.pipeline.pipeline_path_no_konfuzio_sdk = None
 
         cls.tests_annotations_spans = list()
 
@@ -235,6 +236,16 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
     def test_04_save_model(self):
         """Save the model."""
+        previous_size = asizeof.asizeof(self.pipeline)
+
+        self.pipeline.pipeline_path_no_konfuzio_sdk = self.pipeline.save(
+            output_dir=self.project.model_folder,
+            include_konfuzio=False,
+            reduce_weight=True,
+            keep_documents=False,
+            max_ram="5MB",
+        )
+
         with pytest.raises(MemoryError):
             self.pipeline.pipeline_path = self.pipeline.save(
                 include_konfuzio=False, reduce_weight=False, keep_documents=True, max_ram="5MB"
@@ -250,12 +261,18 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         test_documents = self.pipeline.test_documents
         documents = self.pipeline.documents
 
-        previous_size = asizeof.asizeof(self.pipeline)
+        n_project_documents = len(self.project._documents)
 
         self.pipeline.pipeline_path = self.pipeline.save(
-            output_dir=self.project.model_folder, include_konfuzio=True, reduce_weight=True, max_ram="5MB"
+            output_dir=self.project.model_folder,
+            include_konfuzio=True,
+            reduce_weight=True,
+            keep_documents=False,
+            max_ram="5MB",
         )
         assert os.path.isfile(self.pipeline.pipeline_path)
+
+        assert n_project_documents == len(self.project._documents)
 
         assert self.pipeline.documents == documents
         assert self.pipeline.test_documents == test_documents
@@ -333,11 +350,16 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         res_doc = self.pipeline.extract(document=test_document)
         assert len(res_doc.view_annotations()) == 19
 
+        no_konfuzio_sdk_pipeline = load_model(self.pipeline.pipeline_path_no_konfuzio_sdk)
+        res_doc = no_konfuzio_sdk_pipeline.extract(document=test_document)
+        assert len(res_doc.view_annotations()) == 19
+
     @classmethod
     def tearDownClass(cls) -> None:
         """Clear Project files."""
         if os.path.isfile(cls.pipeline.pipeline_path):
             os.remove(cls.pipeline.pipeline_path)  # cleanup
+            os.remove(cls.pipeline.pipeline_path_no_konfuzio_sdk)
 
 
 @parameterized.parameterized_class(
@@ -355,6 +377,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         """Set up the Data and Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
         cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_separate_labels)
+        cls.pipeline.pipeline_path_no_konfuzio_sdk = None
 
         cls.tests_annotations_spans = list()
 
@@ -405,6 +428,16 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
     def test_04_save_model(self):
         """Save the model."""
+        previous_size = asizeof.asizeof(self.pipeline)
+
+        self.pipeline.pipeline_path_no_konfuzio_sdk = self.pipeline.save(
+            output_dir=self.project.model_folder,
+            include_konfuzio=False,
+            reduce_weight=True,
+            keep_documents=False,
+            max_ram="5MB",
+        )
+
         with pytest.raises(MemoryError):
             self.pipeline.pipeline_path = self.pipeline.save(
                 include_konfuzio=False, max_ram="5MB", keep_documents=True, reduce_weight=False
@@ -417,15 +450,21 @@ class TestRegexRFExtractionAI(unittest.TestCase):
             )
         self.project._max_ram = None
 
+        n_project_documents = len(self.project._documents)
+
         test_documents = self.pipeline.test_documents
         documents = self.pipeline.documents
 
-        previous_size = asizeof.asizeof(self.pipeline)
-
         self.pipeline.pipeline_path = self.pipeline.save(
-            output_dir=self.project.model_folder, include_konfuzio=True, reduce_weight=True, max_ram="5MB"
+            output_dir=self.project.model_folder,
+            include_konfuzio=True,
+            reduce_weight=True,
+            keep_documents=False,
+            max_ram="5MB",
         )
         assert os.path.isfile(self.pipeline.pipeline_path)
+
+        assert n_project_documents == len(self.project._documents)
 
         assert self.pipeline.documents == documents
         assert self.pipeline.test_documents == test_documents
@@ -500,6 +539,10 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         res_doc = self.pipeline.extract(document=test_document)
         assert len(res_doc.view_annotations()) == 19
 
+        no_konf_pipeline = load_model(self.pipeline.pipeline_path_no_konfuzio_sdk)
+        res_doc = no_konf_pipeline.extract(document=test_document)
+        assert len(res_doc.view_annotations()) == 19
+
     @classmethod
     def tearDownClass(cls) -> None:
         """Clear Project files."""
@@ -510,6 +553,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
         if os.path.isfile(cls.pipeline.pipeline_path):
             os.remove(cls.pipeline.pipeline_path)  # cleanup
+            os.remove(cls.pipeline.pipeline_path_no_konfuzio_sdk)
 
 
 class TestInformationExtraction(unittest.TestCase):
