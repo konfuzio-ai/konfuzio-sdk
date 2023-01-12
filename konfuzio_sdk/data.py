@@ -26,6 +26,7 @@ from konfuzio_sdk.api import (
     update_document_konfuzio_api,
     get_page_image,
     delete_document_annotation,
+    delete_file_konfuzio_api,
 )
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
@@ -2357,19 +2358,22 @@ class Document(Data):
 
     def update(self):
         """Update document information."""
-        self.delete()
+        self.delete(delete_online=False)
         self.download_document_details()
         return self
 
-    def delete(self):
+    def delete(self, delete_online: bool = False):
         """Delete all local information for the document."""
-        try:
-            shutil.rmtree(self.document_folder)
-        except FileNotFoundError:
-            pass
-        pathlib.Path(self.document_folder).mkdir(parents=True, exist_ok=True)
-        self._annotations = None
-        self._annotation_sets = None
+        if delete_online and self.is_online:
+            self.project.del_document_by_id(self.id_)
+        else:
+            try:
+                shutil.rmtree(self.document_folder)
+            except FileNotFoundError:
+                pass
+            pathlib.Path(self.document_folder).mkdir(parents=True, exist_ok=True)
+            self._annotations = None
+            self._annotation_sets = None
 
     def merge_vertical(self, only_multiline_labels=True):
         """
@@ -2638,10 +2642,15 @@ class Project(Data):
         with open(self.labels_file_path, "w") as f:
             json.dump(data['labels'], f, indent=2, sort_keys=True)
 
+        self.write_meta_of_files()
+
+        return self
+
+    def write_meta_of_files(self):
+        """Overwrite meta-data of Documents in Project."""
         meta_data = get_meta_of_files(project_id=self.id_, session=self.session)
         with open(self.meta_file_path, "w") as f:
             json.dump(meta_data, f, indent=2, sort_keys=True)
-        return self
 
     def get(self, update=False):
         """
@@ -2815,6 +2824,19 @@ class Project(Data):
         for document in self._documents:
             if document.id_ == document_id:
                 return document
+        raise IndexError(f'Document id {document_id} was not found in {self}.')
+
+    def del_document_by_id(self, document_id: int, delete_online: bool = False) -> Document:
+        """Delete Document by its ID."""
+        for document in self._documents:
+            if document.id_ == document_id:
+                self._documents.remove(document)
+                document.delete(delete_online=False)  # document.delete calls this method if delete_online is True
+                if delete_online:
+                    delete_file_konfuzio_api(self.id_)
+                    self.write_meta_of_files()
+                    self.get_meta(reload=True)
+                return None
         raise IndexError(f'Document id {document_id} was not found in {self}.')
 
     def get_label_by_name(self, name: str) -> Label:
