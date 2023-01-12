@@ -46,9 +46,15 @@ Upcoming...
 
 ## released-2023-01-12_18-52-56
 
+This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Capture Vue in version [0.1.0](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
+
+### Added
+- [The csv-export contains now the dataset-status of a Document](https://help.konfuzio.com/integrations/csv/index.html?highlight=csv) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9967)).
+
 ### Fixed
 - Restrict the maximum auto-deletion time of a Document to a maximum of 5 years ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10229)).
 - The ordering of Annotations Sets in the API V3 ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10197)).
+- Restarting the Categorization now triggers the Extraction too ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/1035)).
 
 ## released-2022-12-22_11-03-21
 
