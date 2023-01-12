@@ -23,10 +23,7 @@ class TestFileSplittingModel(unittest.TestCase):
         )
         cls.file_splitting_model.test_documents = cls.file_splitting_model.test_documents[:-2]
         cls.file_splitting_model.tokenizer = ConnectedTextTokenizer()
-        cls.file_splitting_model.first_page_strings = None
         cls.test_document = cls.project.get_category_by_id(3).test_documents()[0]
-
-    # todo add a single document testing of fit() method
 
     def test_fit_context_aware_splitting_model(self):
         """Test pseudotraining of the context-aware splitting model."""
@@ -43,7 +40,7 @@ class TestFileSplittingModel(unittest.TestCase):
             true_non_first_page_spans = set.intersection(*cur_non_first_page_spans)
             non_first_page_spans[category.id_] = true_non_first_page_spans
         for category in self.file_splitting_model.categories:
-            for span in self.file_splitting_model.first_page_strings[category.id_]:
+            for span in category.exclusive_first_page_strings:
                 assert span not in non_first_page_spans[category.id_]
 
     def test_predict_context_aware_splitting_model(self):
@@ -58,7 +55,7 @@ class TestFileSplittingModel(unittest.TestCase):
             intersections = []
             for category in self.file_splitting_model.categories:
                 intersection = {span.offset_string for span in page.spans()}.intersection(
-                    self.file_splitting_model.first_page_strings[category.id_]
+                    category.exclusive_first_page_strings
                 )
                 if intersection:
                     intersections.append(intersection)
@@ -72,23 +69,6 @@ class TestFileSplittingModel(unittest.TestCase):
                 assert intersections == [{'Morning,'}]
                 assert page.is_first_page
 
-    def test_json_model_save_and_load(self):
-        """Test saving and loading first_page_strings as JSON."""
-        self.file_splitting_model.output_dir = self.project.model_folder
-        self.file_splitting_model.path = self.file_splitting_model.save_json()
-        assert os.path.isfile(self.file_splitting_model.path)
-        self.file_splitting_model.load_json(self.file_splitting_model.path)
-        assert 3 in self.file_splitting_model.first_page_strings
-        assert 4 in self.file_splitting_model.first_page_strings
-        assert "Morning," in self.file_splitting_model.first_page_strings[3]
-        assert "I like bread." in self.file_splitting_model.first_page_strings[3]
-        assert "Evening," in self.file_splitting_model.first_page_strings[4]
-        assert "I like fish." in self.file_splitting_model.first_page_strings[4]
-        assert len(self.file_splitting_model.first_page_strings) == 2
-        assert len(self.file_splitting_model.first_page_strings[3]) == 2
-        assert len(self.file_splitting_model.first_page_strings[4]) == 2
-        pathlib.Path(self.file_splitting_model.path).unlink()
-
     def test_pickle_model_save_load(self):
         """Test saving ContextAwareFileSplittingModel to pickle."""
         self.file_splitting_model.output_dir = self.project.model_folder
@@ -97,7 +77,20 @@ class TestFileSplittingModel(unittest.TestCase):
         )
         assert os.path.isfile(self.file_splitting_model.path)
         model = load_model(self.file_splitting_model.path)
-        assert model.first_page_strings == self.file_splitting_model.first_page_strings
+        for category_gt, category_load in zip(self.file_splitting_model.categories, model.categories):
+            assert category_gt.exclusive_first_page_strings == category_load.exclusive_first_page_strings
+        pathlib.Path(self.file_splitting_model.path).unlink()
+
+    def test_pickle_model_save_lose_weight(self):
+        """Test saving ContextAwareFileSplittingModel with reduce_weight."""
+        self.file_splitting_model.output_dir = self.project.model_folder
+        self.file_splitting_model.path = self.file_splitting_model.save(
+            reduce_weight=True, keep_documents=True, max_ram='5MB', include_konfuzio=False
+        )
+        assert os.path.isfile(self.file_splitting_model.path)
+        model = load_model(self.file_splitting_model.path)
+        for category_gt, category_load in zip(self.file_splitting_model.categories, model.categories):
+            assert category_gt.exclusive_first_page_strings == category_load.exclusive_first_page_strings
         pathlib.Path(self.file_splitting_model.path).unlink()
 
     def test_splitting_ai_predict(self):
@@ -128,6 +121,7 @@ class TestFileSplittingModel(unittest.TestCase):
 
     def test_splitting_ai_evaluate_full_on_testing(self):
         """Test SplittingAI's evaluate_full on testing Documents."""
+        self.file_splitting_model.test_documents = self.file_splitting_model.test_documents[:-2]
         splitting_ai = SplittingAI(self.file_splitting_model)
         splitting_ai.evaluate_full()
         print(splitting_ai.full_evaluation.evaluation_results)

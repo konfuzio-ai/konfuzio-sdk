@@ -44,8 +44,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         """Generate a path for temporary pickle file."""
         temp_pkl_file_path = os.path.join(
             self.output_dir,
-            f'{get_timestamp(konfuzio_format="%Y-%m-%d-%H-%M")}_{self.name_lower()}_{self.documents[0].project.id_}_'
-            f'tmp.pkl',
+            f'{get_timestamp(konfuzio_format="%Y-%m-%d-%H-%M")}_{self.name_lower()}_{self.project.id_}_' f'tmp.pkl',
         )
         return temp_pkl_file_path
 
@@ -54,8 +53,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         """Generate a path for a resulting pickle file."""
         pkl_file_path = os.path.join(
             self.output_dir,
-            f'{get_timestamp(konfuzio_format="%Y-%m-%d-%H-%M")}_{self.name_lower()}_{self.documents[0].project.id_}'
-            f'.pkl',
+            f'{get_timestamp(konfuzio_format="%Y-%m-%d-%H-%M")}_{self.name_lower()}_{self.project.id_}' f'.pkl',
         )
         return pkl_file_path
 
@@ -83,7 +81,8 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
 
     def restore_category_documents_for_eval(self):
         """Run a placeholder for an inherited method that is not needed for this child class."""
-        return
+        self.documents = [document for category in self.categories for document in category.documents()]
+        self.test_documents = [document for category in self.categories for document in category.test_documents()]
 
 
 class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
@@ -126,68 +125,54 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         self.documents = [document for category in self.categories for document in category.documents()]
         self.test_documents = [document for category in self.categories for document in category.test_documents()]
         self.tokenizer = None
-        self.first_page_strings = None
         self.path = None
 
-    def fit(self, *args, **kwargs):
-        """
-        Gather the Spans unique for first Pages in a given stream of Documents.
+    def _search_exclusive_first_page_strings_by_category(self, category: Category) -> List[str]:
+        cur_first_page_strings = []
+        cur_non_first_page_strings = []
+        for doc in category.documents():
+            doc = deepcopy(doc)
+            doc = self.tokenizer.tokenize(doc)
+            for page in doc.pages():
+                if page.number == 1:
+                    cur_first_page_strings.append({span.offset_string for span in page.spans()})
+                else:
+                    cur_non_first_page_strings.append({span.offset_string for span in page.spans()})
+        if not cur_first_page_strings:
+            cur_first_page_strings.append(set())
+        true_first_page_strings = set.intersection(*cur_first_page_strings)
+        if not cur_non_first_page_strings:
+            cur_non_first_page_strings.append(set())
+        true_not_first_page_strings = set.intersection(*cur_non_first_page_strings)
+        true_first_page_strings = true_first_page_strings - true_not_first_page_strings
+        return list(true_first_page_strings)
 
-        :return: Dictionary with unique first-page Span sets by Category ID.
+    def fit(self, allow_empty_categories: bool = False, *args, **kwargs):
         """
-        # todo expand docstring with the explanation of unique
+        Gather the strings exclusive for first Pages in a given stream of Documents.
+
+        Exclusive means that each of these strings appear only on first Pages of Documents within a Category.
+
+        :param allow_empty_categories: To allow returning empty list for a Category if no exclusive first-page strings
+        were found during fitting (which means prediction would be impossible for a Category).
+        :type allow_empty_categories: bool
+        """
         try:
             assert self.tokenizer
         except AssertionError:
             raise ValueError("Cannot run fitting without specifying the Tokenizer first.")
-        first_page_strings = {}  # example: {1: ["Good morning", "How are you"], 2: ["Evening"], 3: []}
         for category in self.categories:
-            cur_first_page_strings = []
-            cur_non_first_page_strings = []
-            for doc in category.documents():
-                doc = deepcopy(doc)
-                doc = self.tokenizer.tokenize(doc)
-                for page in doc.pages():
-                    if page.number == 1:
-                        cur_first_page_strings.append({span.offset_string for span in page.spans()})
-                    else:
-                        cur_non_first_page_strings.append({span.offset_string for span in page.spans()})
-            if not cur_first_page_strings:
-                cur_first_page_strings.append(set())
-            true_first_page_strings = set.intersection(*cur_first_page_strings)
-            if not cur_non_first_page_strings:
-                cur_non_first_page_strings.append(set())
-            true_not_first_page_strings = set.intersection(*cur_non_first_page_strings)
-            true_first_page_strings = true_first_page_strings - true_not_first_page_strings
-            first_page_strings[category.id_] = list(true_first_page_strings)
-        self.first_page_strings = first_page_strings
-        # todo less strict? raise a warning/move to fit
-        # raise exception when at least one Category is empty + add a boolean flag to allow user to accept risks
-        # raise ValueError(
-        #     f"Cannot run prediction for {Category} because no unique first-page strings were found during fitting.")
-
-    # def save_json(self):
-    #     """Save the resulting set of first-page Spans by Category."""
-    #     if self.output_dir is None:
-    #         self.output_dir = self.project.model_folder
-    #     self.path = self.output_dir + f'/{get_timestamp()}_first_page_strings.json'
-    #     pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
-    #     with open(self.path, 'w+') as f:
-    #         json.dump(self.first_page_strings, f)
-    #     return self.path
-    #
-    # def load_json(self, model_path=""):
-    #     """
-    #     Load JSON with previously gathered first_page_strings.
-    #
-    #     :param model_path: Path for the JSON.
-    #     :type model_path: str
-    #     """
-    #     with open(model_path, 'r') as f:
-    #         spans = json.load(f)
-    #     # converting str category.id_ values to back int because JSON converts them to str
-    #     spans = {int(k): v for k, v in spans.items()}
-    #     self.first_page_strings = spans
+            category._exclusive_first_page_strings = list(
+                self._search_exclusive_first_page_strings_by_category(category)
+            )
+            if not category.exclusive_first_page_strings:
+                if allow_empty_categories:
+                    logger.warning(
+                        f'No exclusive first-page strings were found for {category}, so it will not be used '
+                        f'at prediction.'
+                    )
+                else:
+                    raise ValueError(f'No exclusive first-page strings were found for {category}.')
 
     def predict(self, page: Page) -> Page:
         """
@@ -198,13 +183,14 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         :return: A Page with or without is_first_page label.
         """
         try:
-            assert self.first_page_strings
+            for category in self.categories:
+                assert category.exclusive_first_page_strings
         except AssertionError:
-            raise ValueError("Cannot run prediction as no model was loaded or fitted.")
+            raise ValueError(f"Cannot run prediction as {category} does not have exclusive_first_page_strings.")
         page.is_first_page = False
         for category in self.categories:
             intersection = {span.offset_string for span in page.spans()}.intersection(
-                self.first_page_strings[category.id_]
+                category.exclusive_first_page_strings
             )
             if len(intersection) > 0:
                 page.is_first_page = True
@@ -224,28 +210,11 @@ class SplittingAI:
         """
         self.tokenizer = ConnectedTextTokenizer()
         if isinstance(model, str):
-            self.model = ContextAwareFileSplittingModel()
-            self.model.first_page_strings = load_model(model)
+            self.model = load_model(model)
         else:
             self.model = model
-        # check that it derives from abstractfilesplittingmodel
-
-    def _create_doc_from_page_interval(
-        self, original_doc: Document, start_page: Page, end_page: Page
-    ) -> List[Document]:
-        pages_text = original_doc.text[start_page.start_offset : end_page.end_offset]
-        new_doc = Document(project=original_doc.project, id_=None, text=pages_text)
-        for page in original_doc.pages():
-            if page.number in range(start_page.number, end_page.number):
-                _ = Page(
-                    id_=None,
-                    original_size=(page.height, page.width),
-                    document=new_doc,
-                    start_offset=page.start_offset,
-                    end_offset=page.end_offset,
-                    number=page.number,
-                )
-        return [new_doc]  # should be a Document method similar to deepcopy
+        if not issubclass(type(self.model), AbstractFileSplittingModel):
+            raise ValueError("The model is not inheriting from AbstractFileSplittingModel class.")
 
     def _suggest_first_pages(self, document: Document, inplace: bool = False) -> List[Document]:
         if inplace:
@@ -273,12 +242,12 @@ class SplittingAI:
             last_page = document.pages()[-1]
             for page_i, split_i in enumerate(suggested_splits):
                 if page_i == 0:
-                    split_docs.append(self._create_doc_from_page_interval(document, first_page, split_i))
+                    split_docs.append(document.create_subdocument_from_page_range(first_page, split_i))
                 elif page_i == len(split_docs):
-                    split_docs.append(self._create_doc_from_page_interval(document, split_i, last_page))
+                    split_docs.append(document.create_subdocument_from_page_range(split_i, last_page))
                 else:
                     split_docs.append(
-                        self._create_doc_from_page_interval(document, suggested_splits[page_i - 1], split_i)
+                        document.create_subdocument_from_page_range(suggested_splits[page_i - 1], split_i)
                     )
         return split_docs
 

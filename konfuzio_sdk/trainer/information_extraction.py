@@ -22,7 +22,6 @@ import functools
 import logging
 import konfuzio_sdk
 import os
-import pathlib
 import pkg_resources
 import shutil
 import sys
@@ -1261,9 +1260,9 @@ class BaseModel(metaclass=abc.ABCMeta):
         logger.info(f'{keep_documents=}')
         version = pkg_resources.get_distribution("konfuzio-sdk").version
         logger.info(f'{version=}')
-        pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
+        if self.output_dir is None:
+            raise OSError("Specify output_dir before saving the instance of the class.")
         logger.info('Getting save paths')
-
         if reduce_weight:
             self.reduce_model_weight()
         if include_konfuzio:
