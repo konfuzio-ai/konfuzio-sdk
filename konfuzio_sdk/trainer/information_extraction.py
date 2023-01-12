@@ -1455,6 +1455,7 @@ class Trainer:
         if reduce_weight:
             logger.info('reducing weight before save')
             self.df_train = None
+            project_docs = self.category.project._documents
             self.category.project.lose_weight()
             self.tokenizer.lose_weight()
 
@@ -1508,7 +1509,7 @@ class Trainer:
         self.documents = restore_documents
         self.test_documents = restore_test_documents
         if reduce_weight:
-            self.category.project.init_or_update_document()
+            self.category.project._documents = project_docs
 
         return pkl_file_path
 
