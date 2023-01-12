@@ -1279,19 +1279,19 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         """Initialize the tested class."""
         cls.project = LocalTextProject()
         cls.file_splitting_model = ContextAwareFileSplittingModel(
-            categories=[cls.project.get_category_by_id(3), cls.project.get_category_by_id(4)]
+            categories=[cls.project.get_category_by_id(3), cls.project.get_category_by_id(4)],
+            tokenizer=ConnectedTextTokenizer(),
         )
         cls.file_splitting_model.test_documents = [
             document for category in cls.file_splitting_model.categories for document in category.test_documents()
         ][:-2]
-        cls.file_splitting_model.tokenizer = ConnectedTextTokenizer()
         cls.file_splitting_model.first_page_strings = None
         cls.test_document = cls.project.get_category_by_id(3).test_documents()[0]
         cls.wrong_test_document = cls.project.get_category_by_id(4).test_documents()[-2]
 
     def test_metrics_calculation(self):
         """Test Evaluation class for ContextAwareFileSplitting."""
-        self.file_splitting_model.fit()
+        self.file_splitting_model.fit(allow_empty_categories=True)
         splitting_ai = SplittingAI(self.file_splitting_model)
         ground_truth = self.test_document
         pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)[0]

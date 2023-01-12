@@ -23,6 +23,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def __init__(self, *args, **kwargs):
         """Initialize the class."""
+        super().__init__()
         self.output_dir = None
 
     @abc.abstractmethod
@@ -32,15 +33,15 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def predict(self, page: Page) -> Page:
         """
-        Take a Page as an input and return 1 for first page and 0 for not first page.
+        Take a Page as an input and reassign is_first_page attribute's value if necessary.
 
         :param page: A Page to label first or non-first.
         :type page: Page
-        :return: A Page with or without is_first_page label.
+        :return: Page.
         """
 
     @property
-    def temp_pkl_file_path(self):
+    def temp_pkl_file_path(self) -> str:
         """Generate a path for temporary pickle file."""
         temp_pkl_file_path = os.path.join(
             self.output_dir,
@@ -49,7 +50,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         return temp_pkl_file_path
 
     @property
-    def pkl_file_path(self):
+    def pkl_file_path(self) -> str:
         """Generate a path for a resulting pickle file."""
         pkl_file_path = os.path.join(
             self.output_dir,
@@ -68,7 +69,11 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         self.tokenizer.lose_weight()
 
     def ensure_model_memory_usage_within_limit(self, max_ram):
-        """Ensure that a model is not exceeding allowed max_ram."""
+        """
+        Ensure that a model is not exceeding allowed max_ram.
+
+        :param max_ram: Specify maximum memory usage condition to save model.
+        """
         if not max_ram:
             max_ram = self.documents[0].project.max_ram
 
@@ -80,7 +85,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         sys.setrecursionlimit(99999999)
 
     def restore_category_documents_for_eval(self):
-        """Run a placeholder for an inherited method that is not needed for this child class."""
+        """Restore Documents deleted when reducing weight in case there's evaluation needed."""
         self.documents = [document for category in self.categories for document in category.documents()]
         self.test_documents = [document for category in self.categories for document in category.test_documents()]
 
@@ -88,64 +93,42 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
 class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
     """Fallback definition of a File Splitting Model."""
 
-    def __init__(self, categories: List[Category], *args, **kwargs):
+    def __init__(self, categories: List[Category], tokenizer, *args, **kwargs):
         """
         Initialize the ContextAwareFileSplittingModel.
 
         :param categories: A list of Categories to run training/prediction of the model on.
         :type categories: List[Category]
+        :param tokenizer: Tokenizer used for processing Documents on fitting when searching for exclusive first-page
+        strings.
+        :raises ValueError: When an empty list of Categories is passed into categories argument.
+        :raises ValueError: When a list passed into categories contains elements other than Categories.
+        :raises ValueError: When a list passed into categories contains at least one Category with no documents or test
+        documents.
+        :raises ValueError: When a list passed into categories contains Categories from different Projects.
         """
         super().__init__()
         self.name = self.__class__.__name__
-        try:
-            assert len(categories) >= 1
-        except AssertionError:
+        if not len(categories):
             raise ValueError("Cannot initialize ContextAwareFileSplittingModel on an empty list.")
         for category in categories:
-            try:
-                assert type(category) == Category
-            except AssertionError:
+            if not type(category) == Category:
                 raise ValueError("All elements of the list have to be Categories.")
-            try:
-                assert len(category.documents()) > 0
-            except AssertionError:
+            if not len(category.documents()):
                 raise ValueError(f'{category} does not have Documents and cannot be used for training.')
-            try:
-                assert len(category.test_documents()) > 0
-            except AssertionError:
+            if not len(category.test_documents()):
                 raise ValueError(f'{category} does not have test Documents.')
         projects = set([category.project for category in categories])
-        try:
-            assert len(projects) == 1
-        except AssertionError:
+        if len(projects) > 1:
             raise ValueError("All Categories have to belong to the same Project.")
         self.categories = categories
         self.project = self.categories[0].project  # we ensured that at least one Category is present
         self.output_dir = self.project.model_folder
         self.documents = [document for category in self.categories for document in category.documents()]
         self.test_documents = [document for category in self.categories for document in category.test_documents()]
-        self.tokenizer = None
+        self.tokenizer = tokenizer
         self.path = None
-
-    def _search_exclusive_first_page_strings_by_category(self, category: Category) -> List[str]:
-        cur_first_page_strings = []
-        cur_non_first_page_strings = []
-        for doc in category.documents():
-            doc = deepcopy(doc)
-            doc = self.tokenizer.tokenize(doc)
-            for page in doc.pages():
-                if page.number == 1:
-                    cur_first_page_strings.append({span.offset_string for span in page.spans()})
-                else:
-                    cur_non_first_page_strings.append({span.offset_string for span in page.spans()})
-        if not cur_first_page_strings:
-            cur_first_page_strings.append(set())
-        true_first_page_strings = set.intersection(*cur_first_page_strings)
-        if not cur_non_first_page_strings:
-            cur_non_first_page_strings.append(set())
-        true_not_first_page_strings = set.intersection(*cur_non_first_page_strings)
-        true_first_page_strings = true_first_page_strings - true_not_first_page_strings
-        return list(true_first_page_strings)
+        self._used_tokenizer = None
 
     def fit(self, allow_empty_categories: bool = False, *args, **kwargs):
         """
@@ -156,16 +139,23 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         :param allow_empty_categories: To allow returning empty list for a Category if no exclusive first-page strings
         were found during fitting (which means prediction would be impossible for a Category).
         :type allow_empty_categories: bool
+        :raises ValueError: When allow_empty_categories is False and no exclusive first-page strings were found for
+        at least one Category.
         """
-        try:
-            assert self.tokenizer
-        except AssertionError:
-            raise ValueError("Cannot run fitting without specifying the Tokenizer first.")
+        if not self._used_tokenizer:
+            self._used_tokenizer = self.tokenizer
+        else:
+            if self.tokenizer != self._used_tokenizer:
+                logger.warning(
+                    "Assigned tokenizer does not correspond to the one previously used within this instance."
+                    "All previously found exclusive first-page strings within each Category will be removed "
+                    "and replaced with the newly generated ones."
+                )
+                for category in self.categories:
+                    category._exclusive_first_page_strings = None
         for category in self.categories:
-            category._exclusive_first_page_strings = list(
-                self._search_exclusive_first_page_strings_by_category(category)
-            )
             if not category.exclusive_first_page_strings:
+                category.collect_exclusive_first_page_strings(self.tokenizer)
                 if allow_empty_categories:
                     logger.warning(
                         f'No exclusive first-page strings were found for {category}, so it will not be used '
@@ -176,17 +166,16 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
 
     def predict(self, page: Page) -> Page:
         """
-        Take a Page as an input and return 1 for a first Page and 0 for a non-first Page.
+        Take a Page as an input and predict it as first or non-first.
 
         :param page: A Page to receive first or non-first label.
         :type page: Page
-        :return: A Page with or without is_first_page label.
+        :raises ValueError: When at least one Category does not have exclusive_first_page_strings.
+        :return: A Page with a newly predicted is_first_page attribute.
         """
-        try:
-            for category in self.categories:
-                assert category.exclusive_first_page_strings
-        except AssertionError:
-            raise ValueError(f"Cannot run prediction as {category} does not have exclusive_first_page_strings.")
+        for category in self.categories:
+            if not category.exclusive_first_page_strings:
+                raise ValueError(f"Cannot run prediction as {category} does not have exclusive_first_page_strings.")
         page.is_first_page = False
         for category in self.categories:
             intersection = {span.offset_string for span in page.spans()}.intersection(
@@ -217,15 +206,32 @@ class SplittingAI:
             raise ValueError("The model is not inheriting from AbstractFileSplittingModel class.")
 
     def _suggest_first_pages(self, document: Document, inplace: bool = False) -> List[Document]:
+        """
+        Run prediction on Document's Pages, predicting them to be first or non-first.
+
+        :param document: A Document to run prediction on.
+        :type document: Document
+        :param inplace: To create a copy of a Document or to run prediction over the original one.
+        :type inplace: bool
+        :returns: A list with a single Document – for the sake of unity across different prediction methods' returns
+        in the class.
+        """
         if inplace:
             new_doc = self.tokenizer.tokenize(document)
         else:
             new_doc = self.tokenizer.tokenize(deepcopy(document))
         for page in new_doc.pages():
             self.model.predict(page)
-        return [new_doc]  # add explanation into the docstring
+        return [new_doc]
 
     def _suggest_page_split(self, document: Document) -> List[Document]:
+        """
+        Create a list of sub-Documents built from the original Document, split.
+
+        :param document: A Document to run prediction on.
+        :type document: Document
+        :returns: A list of sub-Documents built from the original Document, based on model's prediction of first Pages.
+        """
         suggested_splits = []
         document = self.tokenizer.tokenize(deepcopy(document))
         for page in document.pages():

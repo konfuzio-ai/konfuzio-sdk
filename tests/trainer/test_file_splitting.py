@@ -19,15 +19,15 @@ class TestFileSplittingModel(unittest.TestCase):
         """Initialize the tested class."""
         cls.project = LocalTextProject()
         cls.file_splitting_model = ContextAwareFileSplittingModel(
-            categories=[cls.project.get_category_by_id(3), cls.project.get_category_by_id(4)]
+            categories=[cls.project.get_category_by_id(3), cls.project.get_category_by_id(4)],
+            tokenizer=ConnectedTextTokenizer(),
         )
         cls.file_splitting_model.test_documents = cls.file_splitting_model.test_documents[:-2]
-        cls.file_splitting_model.tokenizer = ConnectedTextTokenizer()
         cls.test_document = cls.project.get_category_by_id(3).test_documents()[0]
 
     def test_fit_context_aware_splitting_model(self):
         """Test pseudotraining of the context-aware splitting model."""
-        self.file_splitting_model.fit()
+        self.file_splitting_model.fit(allow_empty_categories=True)
         non_first_page_spans = {}
         for category in self.file_splitting_model.categories:
             cur_non_first_page_spans = []
@@ -107,7 +107,6 @@ class TestFileSplittingModel(unittest.TestCase):
 
     def test_splitting_ai_evaluate_full_on_training(self):
         """Test SplittingAI's evaluate_full on training Documents."""
-        self.file_splitting_model.fit()
         splitting_ai = SplittingAI(self.file_splitting_model)
         splitting_ai.evaluate_full(use_training_docs=True)
         assert splitting_ai.full_evaluation.tp() == 3

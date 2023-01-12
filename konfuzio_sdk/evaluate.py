@@ -465,7 +465,18 @@ class FileSplittingEvaluation:
         :param document_pairs: A list of Document pairs – first one is ground truth, second is the prediction.
         :type document_pairs: list
         """
+        for pair in document_pairs:
+            assert len(pair) == 2
+        for ground_truth, prediction in document_pairs:
+            if ground_truth.id_ != ground_truth.copy_of_id:
+                raise ValueError(
+                    f"Incorrect prediction passed for {ground_truth}. Prediction has to be a copy of a "
+                    f"ground truth Document."
+                )
         self.document_pairs = document_pairs
+        self.project = None
+        self.evaluation_results = None
+        self.evaluation_results_by_category = None
         self.calculate()
         self.calculate_metrics_by_category()
 
@@ -486,15 +497,15 @@ class FileSplittingEvaluation:
                 elif not page_gt.is_first_page and not page_pr.is_first_page:
                     tn += 1
         if tp + fp != 0:
-            precision = tp / (tp + fp)
+            precision = EvaluationCalculator(tp=tp, fp=fp, fn=fn, tn=tn).precision
         else:
             raise ZeroDivisionError("TP and FP are zero.")
         if tp + fn != 0:
-            recall = tp / (tp + fn)
+            recall = EvaluationCalculator(tp=tp, fp=fp, fn=fn, tn=tn).recall
         else:
             raise ZeroDivisionError("TP and FN are zero.")
         if precision + recall != 0:
-            f1 = 2 * precision * recall / (precision + recall)
+            f1 = EvaluationCalculator(tp=tp, fp=fp, fn=fn, tn=tn).f1
         else:
             raise ZeroDivisionError("FP and FN are zero.")
         self.project = self.document_pairs[0][0].project
@@ -511,16 +522,9 @@ class FileSplittingEvaluation:
     def calculate_metrics_by_category(self):
         """Calculate metrics by Category independently."""
         categories = list(set([doc_pair[0].category for doc_pair in self.document_pairs]))
-        self.evaluation_results_by_category = {
-            'tp': {},
-            'fp': {},
-            'fn': {},
-            'tn': {},
-            'precision': {},
-            'recall': {},
-            'f1': {},
-        }
+        self.evaluation_results_by_category = {}
         for category in categories:
+            self.evaluation_results_by_category[category.id_] = {}
             tp = 0
             fp = 0
             fn = 0
@@ -540,33 +544,33 @@ class FileSplittingEvaluation:
                     elif not page_gt.is_first_page and not page_pr.is_first_page:
                         tn += 1
             if tp + fp != 0:
-                precision = tp / (tp + fp)
+                precision = EvaluationCalculator(tp=tp, fp=fp, fn=fn, tn=tn).precision
             else:
                 raise ZeroDivisionError("TP and FP are zero.")
             if tp + fn != 0:
-                recall = tp / (tp + fn)
+                recall = EvaluationCalculator(tp=tp, fp=fp, fn=fn, tn=tn).recall
             else:
                 raise ZeroDivisionError("TP and FN are zero.")
             if precision + recall != 0:
-                f1 = 2 * precision * recall / (precision + recall)
+                f1 = EvaluationCalculator(tp=tp, fp=fp, fn=fn, tn=tn).f1
             else:
                 raise ZeroDivisionError("FP and FN are zero.")
-            self.evaluation_results_by_category['tp'][category.id_] = tp
-            self.evaluation_results_by_category['fp'][category.id_] = fp
-            self.evaluation_results_by_category['fn'][category.id_] = fn
-            self.evaluation_results_by_category['tn'][category.id_] = tn
-            self.evaluation_results_by_category['precision'][category.id_] = precision
-            self.evaluation_results_by_category['recall'][category.id_] = recall
-            self.evaluation_results_by_category['f1'][category.id_] = f1
+            self.evaluation_results_by_category[category.id_]['tp'] = tp
+            self.evaluation_results_by_category[category.id_]['fp'] = fp
+            self.evaluation_results_by_category[category.id_]['fn'] = fn
+            self.evaluation_results_by_category[category.id_]['tn'] = tn
+            self.evaluation_results_by_category[category.id_]['precision'] = precision
+            self.evaluation_results_by_category[category.id_]['recall'] = recall
+            self.evaluation_results_by_category[category.id_]['f1'] = f1
 
     def _query(self, metric: str, search: Category = None) -> Union[int, float, None]:
         if search:
-            if search.id_ not in self.evaluation_results_by_category[metric]:
+            if search.id_ not in self.evaluation_results_by_category:
                 raise KeyError(
                     f'{search} is not present in {self.project}. Only Categories within a Project can be used for '
                     f'viewing metrics.'
                 )
-            return self.evaluation_results_by_category[metric][search.id_]
+            return self.evaluation_results_by_category[search.id_][metric]
         return self.evaluation_results[metric]
 
     def get_evaluation_data(self, search: Category = None, allow_zero: bool = True) -> EvaluationCalculator:

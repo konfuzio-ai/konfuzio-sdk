@@ -1226,7 +1226,12 @@ class BaseModel(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def ensure_model_memory_usage_within_limit(self, max_ram):
-        """Ensure that a model is not exceeding allowed max_ram."""
+        """
+        Ensure that a model is not exceeding allowed max_ram.
+
+        :param max_ram: Specify maximum memory usage condition to save model.
+        :type max_ram: str
+        """
 
     @abc.abstractmethod
     def restore_category_documents_for_eval(self):
@@ -1250,6 +1255,8 @@ class BaseModel(metaclass=abc.ABCMeta):
         https://github.com/cloudpipe/cloudpickle#overriding-pickles-serialization-mechanism-for-importable-constructs).
         :type include_konfuzio: bool
         :param reduce_weight: Remove all non-strictly necessary parameters before saving.
+        :param keep_documents: To allow restoring Documents after reducing model's weight in case evaluation is needed.
+        :type keep_documents: bool
         :param max_ram: Specify maximum memory usage condition to save model.
         :raises MemoryError: When the size of the model in memory is greater than the maximum value.
         :return: Path of the saved model file.
@@ -2551,7 +2558,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         return template_clf_evaluation
 
     @property
-    def temp_pkl_file_path(self):
+    def temp_pkl_file_path(self) -> str:
         """Generate a path for temporary pickle file."""
         temp_pkl_file_path = os.path.join(
             self.output_dir, f'{get_timestamp(konfuzio_format="%Y-%m-%d-%H-%M")}_{self.category.name.lower()}_tmp.pkl'
@@ -2559,7 +2566,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         return temp_pkl_file_path
 
     @property
-    def pkl_file_path(self):
+    def pkl_file_path(self) -> str:
         """Generate a path for a resulting pickle file."""
         pkl_file_path = os.path.join(
             self.output_dir, f'{get_timestamp(konfuzio_format="%Y-%m-%d-%H-%M")}_{self.category.name.lower()}.pkl'
@@ -2573,7 +2580,12 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         self.tokenizer.lose_weight()
 
     def ensure_model_memory_usage_within_limit(self, max_ram):
-        """Ensure that a model is not exceeding allowed max_ram."""
+        """
+        Ensure that a model is not exceeding allowed max_ram.
+
+        :param max_ram: Specify maximum memory usage condition to save model.
+        :type max_ram: str
+        """
         # if no argument passed, get project max_ram
         if not max_ram and self.category is not None:
             max_ram = self.category.project.max_ram
