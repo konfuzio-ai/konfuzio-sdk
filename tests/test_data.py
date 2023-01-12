@@ -1266,21 +1266,22 @@ class TestOfflineDataSetup(unittest.TestCase):
         """Test the vertical merging of spans into a single Annotation."""
         project = LocalTextProject()
 
+        category = project.get_category_by_id(1)
+
         document = project.no_status_documents[1]
+        label = document.annotations(use_correct=False)[0].label
 
         assert len(document.spans()) == 4
         assert len(document.annotations(use_correct=False)) == 4
 
-        labels_has_multiline_annotation = {}
-        for label in document.category.labels:
-            labels_has_multiline_annotation[label.name] = label.has_multiline_annotations(
-                categories=[document.category]
-            )
+        with pytest.raises(TypeError, match="This value has never been computed."):
+            document.merge_vertical()
 
-        document.merge_vertical(labels_has_multiline_annotation)
+        for category_label in category.labels:
+            category_label.has_multiline_annotations(categories=[category])
 
-        label = document.annotations(use_correct=False)[0].label
-        category = project.get_category_by_id(1)
+        document.merge_vertical()
+
         assert label.has_multiline_annotations(categories=[category]) is False
         assert document.bboxes_available is True
 
@@ -1295,15 +1296,11 @@ class TestOfflineDataSetup(unittest.TestCase):
             spans=[train_span1, train_span2],
         )
 
+        assert label.has_multiline_annotations() is False  # Value hasn't been updated yet
         assert label.has_multiline_annotations(categories=[category]) is True
+        assert label.has_multiline_annotations() is True
 
-        labels_has_multiline_annotation = {}
-        for label in document.category.labels:
-            labels_has_multiline_annotation[label.name] = label.has_multiline_annotations(
-                categories=[document.category]
-            )
-
-        document.merge_vertical(labels_has_multiline_annotation)
+        document.merge_vertical()
 
         assert len(document.spans()) == 4
         assert len(document.annotations(use_correct=False)) == 2
@@ -1316,7 +1313,10 @@ class TestOfflineDataSetup(unittest.TestCase):
 
         assert len(document.annotations(use_correct=False)) == 6
 
-        document.merge_vertical(labels_has_multiline_annotation={}, only_multiline_labels=False)
+        with pytest.raises(TypeError, match="This value has never been computed."):
+            document.merge_vertical(only_multiline_labels=True)
+
+        document.merge_vertical(only_multiline_labels=False)
 
         assert len(document.annotations(use_correct=False)) == 4
         assert len(document.annotations(use_correct=False)[1].spans) == 3

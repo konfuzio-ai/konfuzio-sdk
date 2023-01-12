@@ -614,6 +614,8 @@ class Label(Data):
         self.regex_file_path = os.path.join(self.project.regex_folder, f'{self.name_clean}.json5')
         self._evaluations = {}  # used to do the duplicate check on Annotation level
 
+        self._has_multiline_annotations = None
+
     def __repr__(self):
         """Return string representation."""
         return f'Label: {self.name}'
@@ -643,14 +645,24 @@ class Label(Data):
 
         return annotations
 
-    def has_multiline_annotations(self, categories: List[Category]) -> bool:
+    def has_multiline_annotations(self, categories: List[Category] = None) -> bool:
         """Return if any Label annotations are multi-line."""
-        for category in categories:
-            for document in category.documents():
-                for annotation in document.annotations(label=self):
-                    if len(annotation.spans) > 1:
-                        return True
-        return False
+        if categories is None and self._has_multiline_annotations is None:
+            # logger.error("
+            raise TypeError(
+                "This value has never been computed. Please provide a value for keyword argument: 'categories'"
+            )
+            # return False
+        elif type(categories) is list:
+            self._has_multiline_annotations = False
+            for category in categories:
+                for document in category.documents():
+                    for annotation in document.annotations(label=self):
+                        if len(annotation.spans) > 1:
+                            self._has_multiline_annotations = True
+                            return True
+
+        return self._has_multiline_annotations
 
     def add_label_set(self, label_set: "LabelSet"):
         """
@@ -2371,7 +2383,7 @@ class Document(Data):
         self._annotations = None
         self._annotation_sets = None
 
-    def merge_vertical(self, labels_has_multiline_annotation: Dict, only_multiline_labels=True):
+    def merge_vertical(self, only_multiline_labels=True):
         """
         Merge Annotations with the same Label.
 
@@ -2380,7 +2392,7 @@ class Document(Data):
         logger.info("Vertical merging Annotations.")
         labels_dict = {}
         for label in self.category.labels:
-            if not only_multiline_labels or labels_has_multiline_annotation[label.name]:
+            if not only_multiline_labels or label.has_multiline_annotations():
                 labels_dict[label.name] = []
 
         for annotation in self.annotations(use_correct=False, ignore_below_threshold=True):

@@ -2083,7 +2083,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         self.tokenizer.found_spans(virtual_doc)
 
         # join document Spans into multi-line Annotation
-        virtual_doc.merge_vertical(labels_has_multiline_annotation=self.labels_has_multiline_annotation)
+        virtual_doc.merge_vertical()
 
         return virtual_doc
 
@@ -2277,9 +2277,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         #    self.regexes = [regex for label_model in self.labels for regex in label_model.label.regex()]
 
         for label in self.category.labels:
-            self.labels_has_multiline_annotation[label.name] = label.has_multiline_annotations(
-                categories=[self.category]
-            )
+            label.has_multiline_annotations(categories=[self.category])
 
         for document in documents:
             # todo check for tokenizer: self.tokenizer.tokenize(document)  # todo: do we need it?
