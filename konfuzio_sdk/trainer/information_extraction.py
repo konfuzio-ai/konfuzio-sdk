@@ -23,7 +23,6 @@ import logging
 import konfuzio_sdk
 import os
 import pathlib
-import pkg_resources
 import shutil
 import sys
 import time
@@ -49,7 +48,7 @@ from konfuzio_sdk.normalize import (
     normalize_to_positive_float,
 )
 from konfuzio_sdk.regex import regex_matches
-from konfuzio_sdk.utils import get_timestamp, get_bbox, normalize_memory
+from konfuzio_sdk.utils import get_timestamp, get_bbox, normalize_memory, get_sdk_version
 from konfuzio_sdk.evaluate import Evaluation
 
 logger = logging.getLogger(__name__)
@@ -1266,7 +1265,7 @@ class BaseModel(metaclass=abc.ABCMeta):
         logger.info(f'{reduce_weight=}')
         logger.info(f'{max_ram=}')
         logger.info(f'{keep_documents=}')
-        version = pkg_resources.get_distribution("konfuzio-sdk").version
+        version = get_sdk_version()
         logger.info(f'{version=}')
         if self.output_dir is None:
             raise OSError("Specify output_dir before saving the model.")
