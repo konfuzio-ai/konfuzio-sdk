@@ -288,14 +288,14 @@ class SplittingAI:
         :type use_training_docs: bool
         :return: Evaluation information for the filesplitting context-aware logic.
         """
-        evaluation_list = []
+        pred_docs = []
         if not use_training_docs:
-            evaluation_docs = self.model.test_documents
+            original_docs = self.model.test_documents
         else:
-            evaluation_docs = self.model.documents
-        for doc in evaluation_docs:
+            original_docs = self.model.documents
+        for doc in original_docs:
             predictions = self.propose_split_documents(doc, return_pages=True)
             assert len(predictions) == 1
-            evaluation_list.append((doc, predictions[0]))
-        self.full_evaluation = FileSplittingEvaluation(evaluation_list)
+            pred_docs.append(predictions[0])
+        self.full_evaluation = FileSplittingEvaluation(original_docs, pred_docs)
         return self.full_evaluation

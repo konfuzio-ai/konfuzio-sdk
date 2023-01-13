@@ -458,23 +458,41 @@ class Evaluation:
 class FileSplittingEvaluation:
     """Evaluate the quality of the filesplitting logic."""
 
-    def __init__(self, document_pairs: List[Tuple[Document, Document]]):
+    def __init__(self, ground_truth_documents: List[Document], prediction_documents: List[Document]):
         """
         Initialize and run the metrics calculation.
 
-        :param document_pairs: A list of Document pairs – first one is ground truth, second is the prediction.
-        :type document_pairs: list
+        :param ground_truth_documents: A list of original unchanged Documents.
+        :type ground_truth_documents: list
+        :param prediction_documents: A list of Documents with Pages newly predicted to be first or non-first.
+        :type prediction_documents: list
         """
-        for pair in document_pairs:
-            assert len(pair) == 2
-        for ground_truth, prediction in document_pairs:
+        if not len(ground_truth_documents) == len(prediction_documents):
+            raise ValueError("ground_truth_documents and prediction_documents must be same length.")
+        for document in ground_truth_documents:
+            for page in document.pages():
+                if page.is_first_page is None:
+                    raise ValueError(f'Page {page.number} of {document} does not have a value of is_first_page.')
+        for document in prediction_documents:
+            for page in document.pages():
+                if page.is_first_page is None:
+                    raise ValueError(
+                        f'Page {page.number} of prediction of {document.copy_of_id} does not have a value '
+                        f'of is_first_page.'
+                    )
+        for ground_truth, prediction in zip(ground_truth_documents, prediction_documents):
             if ground_truth.id_ != ground_truth.copy_of_id:
                 raise ValueError(
                     f"Incorrect prediction passed for {ground_truth}. Prediction has to be a copy of a "
                     f"ground truth Document."
                 )
-        self.document_pairs = document_pairs
-        self.project = None
+        projects = list(set([document.project for document in ground_truth_documents]))
+        if len(projects) > 1:
+            raise ValueError("All Documents have to belong to the same Project.")
+        self.document_pairs = [
+            [document[0], document[1]] for document in zip(ground_truth_documents, prediction_documents)
+        ]
+        self.project = projects[0]
         self.evaluation_results = None
         self.evaluation_results_by_category = None
         self.calculate()
@@ -508,12 +526,11 @@ class FileSplittingEvaluation:
             f1 = EvaluationCalculator(tp=tp, fp=fp, fn=fn, tn=tn).f1
         else:
             raise ZeroDivisionError("FP and FN are zero.")
-        self.project = self.document_pairs[0][0].project
         self.evaluation_results = {
-            'tp': tp,
-            'fp': fp,
-            'fn': fn,
-            'tn': tn,
+            'true_positives': tp,
+            'false_positives': fp,
+            'false_negatives': fn,
+            'true_negatives': tn,
             'precision': precision,
             'recall': recall,
             'f1': f1,
@@ -555,10 +572,10 @@ class FileSplittingEvaluation:
                 f1 = EvaluationCalculator(tp=tp, fp=fp, fn=fn, tn=tn).f1
             else:
                 raise ZeroDivisionError("FP and FN are zero.")
-            self.evaluation_results_by_category[category.id_]['tp'] = tp
-            self.evaluation_results_by_category[category.id_]['fp'] = fp
-            self.evaluation_results_by_category[category.id_]['fn'] = fn
-            self.evaluation_results_by_category[category.id_]['tn'] = tn
+            self.evaluation_results_by_category[category.id_]['true_positives'] = tp
+            self.evaluation_results_by_category[category.id_]['false_positives'] = fp
+            self.evaluation_results_by_category[category.id_]['false_negatives'] = fn
+            self.evaluation_results_by_category[category.id_]['true_negatives'] = tn
             self.evaluation_results_by_category[category.id_]['precision'] = precision
             self.evaluation_results_by_category[category.id_]['recall'] = recall
             self.evaluation_results_by_category[category.id_]['f1'] = f1
@@ -595,7 +612,7 @@ class FileSplittingEvaluation:
         :type search: Category
         :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
         """
-        return self._query('tp', search)
+        return self._query('true_positives', search)
 
     def fp(self, search: Category = None) -> int:
         """
@@ -605,7 +622,7 @@ class FileSplittingEvaluation:
         :type search: Category
         :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
         """
-        return self._query('fp', search)
+        return self._query('false_positives', search)
 
     def fn(self, search: Category = None) -> int:
         """
@@ -615,7 +632,7 @@ class FileSplittingEvaluation:
         :type search: Category
         :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
         """
-        return self._query('fn', search)
+        return self._query('false_negatives', search)
 
     def tn(self, search: Category = None) -> int:
         """
@@ -625,7 +642,7 @@ class FileSplittingEvaluation:
         :type search: Category
         :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
         """
-        return self._query('tn', search)
+        return self._query('true_negatives', search)
 
     def precision(self, search: Category = None) -> float:
         """

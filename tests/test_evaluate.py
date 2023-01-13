@@ -1295,8 +1295,7 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         splitting_ai = SplittingAI(self.file_splitting_model)
         ground_truth = self.test_document
         pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)[0]
-        documents = [[ground_truth, pred]]
-        evaluation = FileSplittingEvaluation(documents)
+        evaluation = FileSplittingEvaluation([ground_truth], [pred])
         assert evaluation.tp() == 3
         assert evaluation.fp() == 0
         assert evaluation.fn() == 0
@@ -1310,8 +1309,7 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         splitting_ai = SplittingAI(self.file_splitting_model)
         ground_truth = self.test_document
         pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)[0]
-        documents = [[ground_truth, pred]]
-        evaluation = FileSplittingEvaluation(documents)
+        evaluation = FileSplittingEvaluation([ground_truth], [pred])
         assert evaluation.tp(search=ground_truth.category) == 3
         assert evaluation.fp(search=ground_truth.category) == 0
         assert evaluation.fn(search=ground_truth.category) == 0
@@ -1325,8 +1323,7 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         splitting_ai = SplittingAI(self.file_splitting_model)
         ground_truth = self.wrong_test_document
         pred = splitting_ai.propose_split_documents(self.wrong_test_document, return_pages=True)[0]
-        documents = [[ground_truth, pred]]
-        evaluation = FileSplittingEvaluation(documents)
+        evaluation = FileSplittingEvaluation([ground_truth], [pred])
         assert evaluation.tp() == 1
         assert evaluation.fp() == 1
         assert evaluation.fn() == 0
@@ -1340,8 +1337,7 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         splitting_ai = SplittingAI(self.file_splitting_model)
         ground_truth = self.test_document
         pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)[0]
-        documents = [[ground_truth, pred]]
-        evaluation = FileSplittingEvaluation(documents)
+        evaluation = FileSplittingEvaluation([ground_truth], [pred])
         wrong_category = Project(id_=46).categories[0]
         with pytest.raises(KeyError, match="Only Categories within a Project can be used for viewing metrics."):
             evaluation.tp(wrong_category)
@@ -1356,10 +1352,10 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         """Test evaluate_full method of SplittingAI."""
         splitting_ai = SplittingAI(self.file_splitting_model)
         splitting_ai.evaluate_full()
-        assert splitting_ai.full_evaluation.evaluation_results['tp'] == 9
-        assert splitting_ai.full_evaluation.evaluation_results['fp'] == 0
-        assert splitting_ai.full_evaluation.evaluation_results['fn'] == 0
-        assert splitting_ai.full_evaluation.evaluation_results['tn'] == 7
+        assert splitting_ai.full_evaluation.evaluation_results['true_positives'] == 9
+        assert splitting_ai.full_evaluation.evaluation_results['false_positives'] == 0
+        assert splitting_ai.full_evaluation.evaluation_results['false_negatives'] == 0
+        assert splitting_ai.full_evaluation.evaluation_results['true_negatives'] == 7
         assert splitting_ai.full_evaluation.evaluation_results['precision'] == 1.0
         assert splitting_ai.full_evaluation.evaluation_results['recall'] == 1.0
         assert splitting_ai.full_evaluation.evaluation_results['f1'] == 1.0
@@ -1369,8 +1365,7 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         splitting_ai = SplittingAI(self.file_splitting_model)
         ground_truth = self.test_document
         pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)[0]
-        documents = [[ground_truth, pred]]
-        evaluation = FileSplittingEvaluation(documents).get_evaluation_data()
+        evaluation = FileSplittingEvaluation([ground_truth], [pred]).get_evaluation_data()
         assert evaluation.tp == 3
         assert evaluation.fp == 0
         assert evaluation.fn == 0
@@ -1384,8 +1379,7 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         splitting_ai = SplittingAI(self.file_splitting_model)
         ground_truth = self.test_document
         pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)[0]
-        documents = [[ground_truth, pred]]
-        evaluation = FileSplittingEvaluation(documents).get_evaluation_data(search=ground_truth.category)
+        evaluation = FileSplittingEvaluation([ground_truth], [pred]).get_evaluation_data(search=ground_truth.category)
         assert evaluation.tp == 3
         assert evaluation.fp == 0
         assert evaluation.fn == 0

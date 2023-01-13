@@ -89,7 +89,7 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
             raise ValueError("Pickle saved with incompatible Python version.") from err
         raise
     if not issubclass(type(model), BaseModel):
-        if (
+        if (  # a hotfix until the models are not regenerated with the usage of BaseModel
             "2022-03-10-15-14-51_lohnabrechnung_old_model" not in pickle_path
             and "2022-09-27-18-45-41_lohnabrechnung" not in pickle_path
             and "list_test" not in pickle_path
