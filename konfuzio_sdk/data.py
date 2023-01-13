@@ -9,6 +9,7 @@ import regex as re
 import shutil
 import time
 import zipfile
+import asyncio
 from typing import Optional, List, Union, Tuple, Dict
 from warnings import warn
 
@@ -1723,7 +1724,7 @@ class Document(Data):
             return f"Document {self.name} ({self.id_})"
 
     @classmethod
-    def from_file(self, path: Union[str, List[str]], project: 'Project'):
+    def from_file(self, path: Union[str, List[str]], project: 'Project') -> int:
         """Initialize document from file."""
         response = upload_file_konfuzio_api(path, project_id=project.id_)
         if response.status_code != 201:
@@ -1731,13 +1732,38 @@ class Document(Data):
 
         new_document_id = json.loads(response.text)['id']
 
-        project.write_meta_of_files()
-        project.get_meta(reload=True)
-        project.init_or_update_document()
+        async def check_if_ready():
+            for i in range(5):
+                project.write_meta_of_files()
+                project.get_meta(reload=True)
+                logger.info("Trying")
+                for document_data in project.meta_data:
+                    if document_data['id'] == new_document_id:
+                        project.init_or_update_document()
+                        logger.info(f'Document {new_document_id} retrieved.')
+                        return
+                logger.info(f"Failed to retrieve new Document with id {new_document_id}")
+                await asyncio.sleep(2)
 
-        document = project.get_document_by_id(new_document_id)
-
-        return document
+        # loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
+        loop.create_task(check_if_ready())
+        # loop.run_until_complete(task)
+        # loop.run_until_complete(check_if_ready())
+        # await check_if_ready()
+        # document = None
+        # for i in range(3):
+        #     time.sleep(0.1)
+        #     project.write_meta_of_files()
+        #     project.get_meta(reload=True)
+        #     project.init_or_update_document()
+        #     try:
+        #         document = project.get_document_by_id(new_document_id)
+        #     except IndexError:
+        #         logger.info(f"Failed to retrieve new Document with id {new_document_id}")
+        #         time.sleep(1)
+        # logger.warning(f"Failed to retrieve new Document {new_document_id} from server. Try again later.")
+        return new_document_id
 
     @property
     def file_path(self):
@@ -2816,11 +2842,12 @@ class Project(Data):
             self.get_labels()
         return self._labels
 
-    def init_or_update_document(self):
+    def init_or_update_document(self, from_online=False):
         """Initialize Document to then decide about full, incremental or no update."""
         self._documents = []  # clean up Documents to not create duplicates
-        self.write_meta_of_files()
-        self.get_meta(reload=True)
+        if from_online:
+            self.write_meta_of_files()
+            self.get_meta(reload=True)
         for document_data in self.meta_data:
             if document_data['status'][0] == 2:  # NOQA - hotfix for Text Annotation Server # todo add test
                 new_date = document_data["updated_at"]
