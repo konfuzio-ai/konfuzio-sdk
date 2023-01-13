@@ -43,7 +43,8 @@ class TestFileSplittingModel(unittest.TestCase):
             true_non_first_page_spans = set.intersection(*cur_non_first_page_spans)
             non_first_page_spans[category.id_] = true_non_first_page_spans
         for category in self.file_splitting_model.categories:
-            for span in category.exclusive_first_page_strings:
+            cur_exclusive_first_page_strings = category.exclusive_first_page_strings(tokenizer=ConnectedTextTokenizer())
+            for span in cur_exclusive_first_page_strings:
                 assert span not in non_first_page_spans[category.id_]
 
     def test_init_file_splitting_model_empty_list(self):
@@ -97,8 +98,11 @@ class TestFileSplittingModel(unittest.TestCase):
         for page in test_document.pages():
             intersections = []
             for category in self.file_splitting_model.categories:
+                cur_exclusive_first_page_strings = category.exclusive_first_page_strings(
+                    tokenizer=ConnectedTextTokenizer()
+                )
                 intersection = {span.offset_string for span in page.spans()}.intersection(
-                    category.exclusive_first_page_strings
+                    cur_exclusive_first_page_strings
                 )
                 if intersection:
                     intersections.append(intersection)
@@ -121,7 +125,13 @@ class TestFileSplittingModel(unittest.TestCase):
         assert os.path.isfile(self.file_splitting_model.path)
         model = load_model(self.file_splitting_model.path)
         for category_gt, category_load in zip(self.file_splitting_model.categories, model.categories):
-            assert category_gt.exclusive_first_page_strings == category_load.exclusive_first_page_strings
+            gt_exclusive_first_page_strings = category_gt.exclusive_first_page_strings(
+                tokenizer=ConnectedTextTokenizer()
+            )
+            load_exclusive_first_page_strings = category_load.exclusive_first_page_strings(
+                tokenizer=ConnectedTextTokenizer()
+            )
+            assert gt_exclusive_first_page_strings == load_exclusive_first_page_strings
 
     def test_pickle_model_save_lose_weight(self):
         """Test saving ContextAwareFileSplittingModel with reduce_weight."""
@@ -132,7 +142,13 @@ class TestFileSplittingModel(unittest.TestCase):
         assert os.path.isfile(self.file_splitting_model.path)
         model = load_model(self.file_splitting_model.path)
         for category_gt, category_load in zip(self.file_splitting_model.categories, model.categories):
-            assert category_gt.exclusive_first_page_strings == category_load.exclusive_first_page_strings
+            gt_exclusive_first_page_strings = category_gt.exclusive_first_page_strings(
+                tokenizer=ConnectedTextTokenizer()
+            )
+            load_exclusive_first_page_strings = category_load.exclusive_first_page_strings(
+                tokenizer=ConnectedTextTokenizer()
+            )
+            assert gt_exclusive_first_page_strings == load_exclusive_first_page_strings
 
     def test_splitting_ai_predict(self):
         """Test SplittingAI's Document-splitting method."""

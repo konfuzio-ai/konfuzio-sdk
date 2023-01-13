@@ -523,6 +523,7 @@ class Category(Data):
         self.label_sets: List[LabelSet] = []
         self.project.add_category(category=self)
         self._exclusive_first_page_strings = None
+        self._exclusive_span_tokenizer = None
 
     @property
     def labels(self):
@@ -558,7 +559,7 @@ class Category(Data):
         else:
             raise ValueError(f'In {self} the {label_set} is a duplicate and will not be added.')
 
-    def collect_exclusive_first_page_strings(self, tokenizer):
+    def _collect_exclusive_first_page_strings(self, tokenizer):
         """
         Collect exclusive first-page string across the Documents within the Category.
 
@@ -584,11 +585,23 @@ class Category(Data):
         true_first_page_strings = true_first_page_strings - true_not_first_page_strings
         self._exclusive_first_page_strings = list(true_first_page_strings)
 
-    @property
-    def exclusive_first_page_strings(self):
-        """Return a set of strings exclusive for first Pages of Documents within the Category."""
-        if self._exclusive_first_page_strings is not None:
-            return self._exclusive_first_page_strings
+    def exclusive_first_page_strings(self, tokenizer):
+        """
+        Return a set of strings exclusive for first Pages of Documents within the Category.
+
+        :param tokenizer: A tokenizer to process Documents before gathering strings.
+        """
+        if self._exclusive_span_tokenizer is not None:
+            if tokenizer != self._exclusive_span_tokenizer:
+                logger.warning(
+                    "Assigned tokenizer does not correspond to the one previously used within this instance."
+                    "All previously found exclusive first-page strings within each Category will be removed "
+                    "and replaced with the newly generated ones."
+                )
+                self._collect_exclusive_first_page_strings(tokenizer)
+        if not self._exclusive_first_page_strings:
+            self._collect_exclusive_first_page_strings(tokenizer)
+        return self._exclusive_first_page_strings
 
     def __lt__(self, other: 'Category'):
         """Sort Categories by name."""

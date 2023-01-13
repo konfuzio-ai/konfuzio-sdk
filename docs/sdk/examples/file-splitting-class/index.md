@@ -55,38 +55,20 @@ from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 
 class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
     def __init__(self, categories: List[Category], tokenizer, *args, **kwargs):
-        super().__init__()
+        super().__init__(categories=categories)
         self.name = self.__class__.__name__
-        if not len(categories):
-            raise ValueError("Cannot initialize ContextAwareFileSplittingModel on an empty list.")
-        for category in categories:
-            if not type(category) == Category:
-                raise ValueError("All elements of the list have to be Categories.")
-            if not len(category.documents()):
-                raise ValueError(f'{category} does not have Documents and cannot be used for training.')
-            if not len(category.test_documents()):
-                raise ValueError(f'{category} does not have test Documents.')
-        projects = set([category.project for category in categories])
-        if len(projects) > 1:
-            raise ValueError("All Categories have to belong to the same Project.")
-        self.categories = categories
-        self.project = self.categories[0].project  # we ensured that at least one Category is present
         self.output_dir = self.project.model_folder
-        self.documents = [document for category in self.categories for document in category.documents()]
-        self.test_documents = [document for category in self.categories for document in category.test_documents()]
         self.tokenizer = tokenizer
         self.path = None
-        self._used_tokenizer = None
 ```
-The class inherits from `AbstractFileSplittingModel`, so we run `super().__init__()` for proper inheritance of the 
-attributes. Then we conduct checks to ensure that a list of Categories passed into `categories` is fitting all the 
-criteria. Project, output directory, Documents and test Documents are taken from Categories passed earlier. `tokenizer` 
-will be used for going through the Document's text and separating it into Spans. We will use it to process training and 
-testing Documents, as well as any Document that will undergo splitting. This is done to ensure that texts in all the 
-Documents are split using the same logic (particularly tokenization by separating on `\n` whitespaces by 
-ConnectedTextTokenizer, which is used in the example in the end of the page) and it will be possible to find common 
-Spans. `path` is a full path of the model-to-be-saved. Note: if you run fitting with one tokenizer and then reassign it
-within the same instance of a model, all previously gathered strings will be deleted and replaced by new ones. 
+The class inherits from `AbstractFileSplittingModel`, so we run `super().__init__(categories=categories)` for proper 
+inheritance of the attributes. `tokenizer` will be used for going through the Document's text and separating it into 
+Spans. We will use it to process training and testing Documents, as well as any Document that will undergo splitting. 
+This is done to ensure that texts in all the Documents are split using the same logic (particularly tokenization by 
+separating on `\n` whitespaces by ConnectedTextTokenizer, which is used in the example in the end of the page) and it 
+will be possible to find common Spans. `path` is a full path of the model-to-be-saved. Note: if you run fitting with one
+tokenizer and then reassign it within the same instance of a model, all previously gathered strings will be deleted and 
+replaced by new ones. 
 
 An example of how ConnectedTextTokenizer works:
 ```python
@@ -112,27 +94,14 @@ test_document.spans[0].offset_string
 # output: "This is an example text. "
 ```
 
-A first method to define will be `fit()`. In the beginning, we check whether the current tokenizer is the same as the 
-previously used one within the instance – this is needed because if strings gathered within differently tokenized 
-Documents are mixed, it is unlikely that the prediction of the model runs successfully. `allow_empty_categories` allows
-returning empty lists for Categories that haven't had any exclusive first-page strings found across their Documents
-(meaning it would not be used in prediction).
+A first method to define will be `fit()`. For each Category, we call `exclusive_first_page_strings` to gather them.
+`allow_empty_categories` allows returning empty lists for Categories that haven't had any exclusive first-page strings 
+found across their Documents (meaning it would not be used in prediction).
 ```python
     def fit(self, allow_empty_categories: bool = False, *args, **kwargs):
-        if not self._used_tokenizer:
-            self._used_tokenizer = self.tokenizer
-        else:
-            if self.tokenizer != self._used_tokenizer:
-                logger.warning(
-                    "Assigned tokenizer does not correspond to the one previously used within this instance."
-                    "All previously found exclusive first-page strings within each Category will be removed "
-                    "and replaced with the newly generated ones."
-                )
-                for category in self.categories:
-                    category._exclusive_first_page_strings = None
         for category in self.categories:
-            if not category.exclusive_first_page_strings:
-                category.collect_exclusive_first_page_strings(self.tokenizer)
+            cur_first_page_strings = category.exclusive_first_page_strings(tokenizer=self.tokenizer)
+            if not cur_first_page_strings:
                 if allow_empty_categories:
                     logger.warning(
                         f'No exclusive first-page strings were found for {category}, so it will not be used '
@@ -148,13 +117,14 @@ first; if there's no such intersections, it's predicted non-first.
 
 ```python
     def predict(self, page: Page) -> Page:
-        for category in self.categories:
+                for category in self.categories:
             if not category.exclusive_first_page_strings:
                 raise ValueError(f"Cannot run prediction as {category} does not have exclusive_first_page_strings.")
         page.is_first_page = False
         for category in self.categories:
+            cur_first_page_strings = category.exclusive_first_page_strings(tokenizer=self.tokenizer)
             intersection = {span.offset_string for span in page.spans()}.intersection(
-                category.exclusive_first_page_strings
+                cur_first_page_strings
             )
             if len(intersection) > 0:
                 page.is_first_page = True
@@ -207,12 +177,6 @@ methods implemented:
 the Page level, not the Document level – the result of classification is reflected in `is_first_page` attribute value, which
 is unique to the Page class and is not present in Document class. Pages with `is_first_page = True` become splitting 
 points, thus, each new sub-Document has a Page predicted as first as its starting point.
-- `temp_pkl_file_path` and `pkl_file_path` to define temporary and final path for saving a model with compression.
-- `lose_weight` to remove all Documents before saving, used in `reduce_model_weight`.
-- `reduce_model_weight` to make a model smaller during saving.
-- `ensure_model_memory_usage_within_limit` to ensure that a model is not exceeding allowed max_ram.
-- `restore_category_documents_for_eval` to restore Documents previously deleted at reducing weight step, in case 
-evaluation is needed.
 
 Full code:
 
@@ -231,45 +195,18 @@ logger = logging.getLogger(__name__)
 class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
     """Fallback definition of a File Splitting Model."""
 
+    class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
     def __init__(self, categories: List[Category], tokenizer, *args, **kwargs):
-        super().__init__()
+        super().__init__(categories=categories)
         self.name = self.__class__.__name__
-        if not len(categories):
-            raise ValueError("Cannot initialize ContextAwareFileSplittingModel on an empty list.")
-        for category in categories:
-            if not type(category) == Category:
-                raise ValueError("All elements of the list have to be Categories.")
-            if not len(category.documents()):
-                raise ValueError(f'{category} does not have Documents and cannot be used for training.')
-            if not len(category.test_documents()):
-                raise ValueError(f'{category} does not have test Documents.')
-        projects = set([category.project for category in categories])
-        if len(projects) > 1:
-            raise ValueError("All Categories have to belong to the same Project.")
-        self.categories = categories
-        self.project = self.categories[0].project  # we ensured that at least one Category is present
         self.output_dir = self.project.model_folder
-        self.documents = [document for category in self.categories for document in category.documents()]
-        self.test_documents = [document for category in self.categories for document in category.test_documents()]
         self.tokenizer = tokenizer
         self.path = None
-        self._used_tokenizer = None
 
     def fit(self, allow_empty_categories: bool = False, *args, **kwargs):
-        if not self._used_tokenizer:
-            self._used_tokenizer = self.tokenizer
-        else:
-            if self.tokenizer != self._used_tokenizer:
-                logger.warning(
-                    "Assigned tokenizer does not correspond to the one previously used within this instance."
-                    "All previously found exclusive first-page strings within each Category will be removed "
-                    "and replaced with the newly generated ones."
-                )
-                for category in self.categories:
-                    category._exclusive_first_page_strings = None
         for category in self.categories:
-            if not category.exclusive_first_page_strings:
-                category.collect_exclusive_first_page_strings(self.tokenizer)
+            cur_first_page_strings = category.exclusive_first_page_strings(tokenizer=self.tokenizer)
+            if not cur_first_page_strings:
                 if allow_empty_categories:
                     logger.warning(
                         f'No exclusive first-page strings were found for {category}, so it will not be used '
@@ -296,13 +233,12 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
 project = Project(id_=YOUR_PROJECT_ID)
 test_document = project.get_document_by_id(YOUR_DOCUMENT_ID)
 
-# initialize a ContextAwareFileSplittingModel and fit ut
+# initialize a ContextAwareFileSplittingModel and fit it
 
 file_splitting_model = ContextAwareFileSplittingModel(categories=project.categories, tokenizer=ConnectedTextTokenizer())
 file_splitting_model.fit()
 
 # save the model
-file_splitting_model.output_dir = project.model_folder
 file_splitting_model.save()
 
 # run the prediction

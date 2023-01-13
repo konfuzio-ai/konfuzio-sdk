@@ -21,10 +21,31 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
     """Abstract class for the filesplitting model."""
 
     @abc.abstractmethod
-    def __init__(self, *args, **kwargs):
-        """Initialize the class."""
+    def __init__(self, categories: List[Category], *args, **kwargs):
+        """
+        Initialize the class.
+
+        :param categories: A list of Categories to run training/prediction of the model on.
+        :type categories: List[Category]
+        """
         super().__init__()
         self.output_dir = None
+        if not len(categories):
+            raise ValueError("Cannot initialize ContextAwareFileSplittingModel on an empty list.")
+        for category in categories:
+            if not type(category) == Category:
+                raise ValueError("All elements of the list have to be Categories.")
+            if not len(category.documents()):
+                raise ValueError(f'{category} does not have Documents and cannot be used for training.')
+            if not len(category.test_documents()):
+                raise ValueError(f'{category} does not have test Documents.')
+        projects = set([category.project for category in categories])
+        if len(projects) > 1:
+            raise ValueError("All Categories have to belong to the same Project.")
+        self.categories = categories
+        self.project = self.categories[0].project  # we ensured that at least one Category is present
+        self.documents = [document for category in self.categories for document in category.documents()]
+        self.test_documents = [document for category in self.categories for document in category.test_documents()]
 
     @abc.abstractmethod
     def fit(self, *args, **kwargs):
@@ -107,28 +128,11 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         documents.
         :raises ValueError: When a list passed into categories contains Categories from different Projects.
         """
-        super().__init__()
+        super().__init__(categories=categories)
         self.name = self.__class__.__name__
-        if not len(categories):
-            raise ValueError("Cannot initialize ContextAwareFileSplittingModel on an empty list.")
-        for category in categories:
-            if not type(category) == Category:
-                raise ValueError("All elements of the list have to be Categories.")
-            if not len(category.documents()):
-                raise ValueError(f'{category} does not have Documents and cannot be used for training.')
-            if not len(category.test_documents()):
-                raise ValueError(f'{category} does not have test Documents.')
-        projects = set([category.project for category in categories])
-        if len(projects) > 1:
-            raise ValueError("All Categories have to belong to the same Project.")
-        self.categories = categories
-        self.project = self.categories[0].project  # we ensured that at least one Category is present
         self.output_dir = self.project.model_folder
-        self.documents = [document for category in self.categories for document in category.documents()]
-        self.test_documents = [document for category in self.categories for document in category.test_documents()]
         self.tokenizer = tokenizer
         self.path = None
-        self._used_tokenizer = None
 
     def fit(self, allow_empty_categories: bool = False, *args, **kwargs):
         """
@@ -142,20 +146,9 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         :raises ValueError: When allow_empty_categories is False and no exclusive first-page strings were found for
         at least one Category.
         """
-        if not self._used_tokenizer:
-            self._used_tokenizer = self.tokenizer
-        else:
-            if self.tokenizer != self._used_tokenizer:
-                logger.warning(
-                    "Assigned tokenizer does not correspond to the one previously used within this instance."
-                    "All previously found exclusive first-page strings within each Category will be removed "
-                    "and replaced with the newly generated ones."
-                )
-                for category in self.categories:
-                    category._exclusive_first_page_strings = None
         for category in self.categories:
-            if not category.exclusive_first_page_strings:
-                category.collect_exclusive_first_page_strings(self.tokenizer)
+            cur_first_page_strings = category.exclusive_first_page_strings(tokenizer=self.tokenizer)
+            if not cur_first_page_strings:
                 if allow_empty_categories:
                     logger.warning(
                         f'No exclusive first-page strings were found for {category}, so it will not be used '
@@ -178,9 +171,8 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
                 raise ValueError(f"Cannot run prediction as {category} does not have exclusive_first_page_strings.")
         page.is_first_page = False
         for category in self.categories:
-            intersection = {span.offset_string for span in page.spans()}.intersection(
-                category.exclusive_first_page_strings
-            )
+            cur_first_page_strings = category.exclusive_first_page_strings(tokenizer=self.tokenizer)
+            intersection = {span.offset_string for span in page.spans()}.intersection(cur_first_page_strings)
             if len(intersection) > 0:
                 page.is_first_page = True
                 break

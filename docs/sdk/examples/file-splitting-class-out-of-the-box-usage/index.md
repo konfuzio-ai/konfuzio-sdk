@@ -14,7 +14,7 @@ from konfuzio_sdk.trainer.information_extraction import load_model
 project = Project(id_=YOUR_PROJECT_ID)
 test_document = project.get_document_by_id(YOUR_DOCUMENT_ID)
 
-# initialize a ContextAwareFileSplittingModel and fit ut
+# initialize a ContextAwareFileSplittingModel and fit it
 
 file_splitting_model = ContextAwareFileSplittingModel(categories=project.categories, tokenizer=ConnectedTextTokenizer())
 file_splitting_model.fit()
