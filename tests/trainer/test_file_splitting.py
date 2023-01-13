@@ -1,13 +1,16 @@
 """Test SplittingAI and the model's training, saving and prediction."""
 import os
 import pathlib
+import pytest
 import unittest
 
 from copy import deepcopy
 
+from konfuzio_sdk.data import Category, Document, Project
 from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI
+from konfuzio_sdk.trainer.document_categorization import FallbackCategorizationModel
 from konfuzio_sdk.trainer.information_extraction import load_model
 
 
@@ -42,6 +45,46 @@ class TestFileSplittingModel(unittest.TestCase):
         for category in self.file_splitting_model.categories:
             for span in category.exclusive_first_page_strings:
                 assert span not in non_first_page_spans[category.id_]
+
+    def test_init_file_splitting_model_empty_list(self):
+        """Test running ContextAwareFileSplittingModel with an empty Categories list."""
+        with pytest.raises(ValueError, match="an empty list"):
+            ContextAwareFileSplittingModel(categories=[], tokenizer=ConnectedTextTokenizer())
+
+    def test_init_file_splitting_model_not_a_category(self):
+        """Test passing a list with an element that is not a Category as an input."""
+        with pytest.raises(ValueError, match="have to be Categories"):
+            ContextAwareFileSplittingModel(
+                categories=[self.project.get_category_by_id(3), ""], tokenizer=ConnectedTextTokenizer()
+            )
+
+    def test_init_file_splitting_model_category_no_documents(self):
+        """Test passing a Category that does not have Documents."""
+        _ = Category(project=self.project, id_=5, name="CategoryName 5")
+        with pytest.raises(ValueError, match="does not have Documents"):
+            ContextAwareFileSplittingModel(categories=[_], tokenizer=ConnectedTextTokenizer())
+
+    def test_init_file_splitting_model_category_no_test_documents(self):
+        """Test passing a Category that does not have test Documents."""
+        _ = Category(project=self.project, id_=6, name="CategoryName 6")
+        Document(project=self.project, category=_, text="Hi all, I like fish.", dataset_status=2)
+        with pytest.raises(ValueError, match="does not have test Documents"):
+            ContextAwareFileSplittingModel(categories=[_], tokenizer=ConnectedTextTokenizer())
+
+    def test_init_file_splitting_model_categories_different_project(self):
+        """Test passing Categories from different Projects."""
+        project = Project(id_=46)
+        with pytest.raises(ValueError, match="Categories have to belong to the same Project"):
+            ContextAwareFileSplittingModel(
+                categories=[self.file_splitting_model.categories[0], project.get_category_by_id(63)],
+                tokenizer=ConnectedTextTokenizer(),
+            )
+
+    def test_load_model_from_different_class(self):
+        """Test initializing SplittingAI with a model that does not inherit from AbstractFileSplittingModel."""
+        wrong_class = FallbackCategorizationModel(LocalTextProject())
+        with pytest.raises(ValueError, match="model is not inheriting from AbstractFileSplittingModel"):
+            SplittingAI(model=wrong_class)
 
     def test_predict_context_aware_splitting_model(self):
         """Test correct first Page prediction."""
