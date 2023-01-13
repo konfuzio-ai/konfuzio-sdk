@@ -15,45 +15,123 @@ Self-hosted Konfuzio Server can be upgraded according to the [documentation](htt
 
 You can think of the *Planned* section as a *Roadmap* that lists Konfuzio Server features our team is actively working on. This list covers a planning horizon of 12 weeks. 
 
-- Add self-service customer center to manage contracts and invoices ([Internal Documentation](https://git.konfuzio.com/konfuzio/manual/-/merge_requests/23/diffs), [Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/8235)).
 - Calculate and access Tokenizers via the web interface. The name Tokenizer might be revised. The SDK refers to this concept as Tokenizer. ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9271)).
 - Add a filter to the list of Documents to find Documents that need to be revised by humans. ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9242)).
-- Improved training time of Extraction AIs when using character detection mode (reduced up to 40%) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9271)).
+- Improved training time of Extraction AIs when using word detection mode (reduced up to 50%) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9435)).
 - Train custom Page-based Categorization AI via [SDK](https://github.com/konfuzio-ai/konfuzio-sdk/) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9481)).
-- First stable release of Capture Vue in version [0.1.0](#).
+- First stable release of Capture Vue in version ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9958)).
 - Suggest page breaks if one file contains multiple Documents ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/7671)).
-- Perfomance improvement of the Konfuzio Server interface ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9750)).
+- Perfomance improvement of the Konfuzio Server interface ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10274)).
 - Redirect https://app.konfuzio.com/api/ to stable API Version 3 ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9692)).
-- Make all List Views sortable by click on column ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9470)).
 - Sort Labels in Label-Sets to allow users to customize the UI per Category ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/8932)).
-- Delta Training, Partial Fit an exisiting classifier, so that training documents used previously can be deleted ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9251))
-- Allow administrators of Konfuzio on-premise installations to run a speedtest ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9870))
-- Start automatic AI retraining after user confirms that he has finished a annotation review ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9166))
-- [Show a warning if a user works on a Document that is not assigned to him](https://help.konfuzio.com/modules/documents/index.html#assignee) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9466)).
+- Delta Training, Partial Fit an exisiting classifier, so that training documents used previously can be deleted ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9251)).
+- Allow administrators of Konfuzio on-premise installations to run a speedtest ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9870)).
 
 <!---
+- Add self-service customer center to manage contracts and invoices ([Internal Documentation](https://git.konfuzio.com/konfuzio/manual/-/merge_requests/23/diffs), [Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/8235)).
+- Start automatic AI retraining after user confirms that he has finished a annotation review ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9166)).
+--->
+
+<!---
+These changes are for the tokenizers/new SDK branch.
+
 ### Fixed
 - A bug when training with character detection mode, which was tokenizing some labels incorrectly, causing them to be skipped during extraction ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9666))
 - A bug during the extraction post-processing steps, which was causing the first line items of each page to be skipped ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9561))
 -->
 
-## Next Release
+## Next Release (estimated release date: 23th January 2023)
 
-This version uses Konfuzio Trainer in version v.0.3.22, the Konfuzio Python SDK in version v.0.1.15 and Konfuzio Capture Vue in version [0.0.9](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
+Upcoming...
+
+## released-2023-01-12_18-52-56
+
+This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Capture Vue in version [0.1.0](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
 
 ### Added
-- [Allow to invite Members with different Roles to Projects. Available Roles are "Reviewer" and "Manager". All existing Members keep their current Permissions and will become Managers.](https://help.konfuzio.com/modules/members/index.html)
-- [Superusers can define custom Roles for Members: Inviting Users can select from those Roles when inviting new Members to a Project](https://help.konfuzio.com/modules/superuserroles/index.html). ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/7364)).
+- [The csv-export contains now the dataset-status of a Document](https://help.konfuzio.com/integrations/csv/index.html?highlight=csv) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9967)).
+
+### Fixed
+- Restrict the maximum auto-deletion time of a Document to a maximum of 5 years ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10229)).
+- The ordering of Annotations Sets in the API V3 ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10197)).
+
+## released-2022-12-22_11-03-21
+
+This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Capture Vue in version [0.0.11-pre-release-5](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
+
+### Fixed
+- Re-running the categorization now also re-runs the extraction ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10355)).
+
+## released-2022-12-20_11-23-04
+
+This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Capture Vue in version [0.0.11-pre-release-5](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
+
+### Added
+- [The Document list for Superusers shows the AI loading time](https://help.konfuzio.com/modules/superuserdocuments/index.html#time-and-timing) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9787)).
+- [Add the option to show a warning when a User edits a Document he is not assigned to](https://help.konfuzio.com/modules/projects/index.html#wrong-editing-user-warnings) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9466)).
+
+### Fixed
+- Show a message that informs a user if his account was deactivated ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10119)).
+- Failed login attemps have not been shown in the web interface ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9992)).
+- Missing German translation on the Member list page ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10306)).
+- Improve performance of Document List Endpoint in API V3 by excluding large Document attributes ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10248)).
+
+## released-2022-12-05_19-18-47
+
+This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Capture Vue in version [0.0.11-pre-release-1](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
+
+Please note: When you upgrade to this version (or a newer one) we recommend to run "python manage.py init_email_templates" as the email templates have been updated. This needs to be run after the usual update actions.
+
+### Added
+- [Access Service Desk Tickets which have been created via https://konfuzio.com/support](https://help.konfuzio.com/modules/servicedesk/index.html) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9923)).
+- [API v3 endpoint to bulk accept/decline annotations](https://app.konfuzio.com/v3/swagger/#/documents/documents_update_annotations_partial_update) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9726)).
+- [API v3 Document endpoint can now be filtered by assignee](https://app.konfuzio.com/v3/swagger/#/documents/documents_list) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10052)).
+- [Allow to configure a custom timeout for Document deletion Tasks in self-hosted environemnts](https://dev.konfuzio.com/web/on_premises.html#id7) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10044)).
+- [Add 'Reader' as new Role for Project Members](https://help.konfuzio.com/modules/members/index.html#detailed-permissions-of-available-roles) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9868)).
+
+### Changed
+- [Improved Swagger Documentation for API V3](https://app.konfuzio.com/v3/swagger/) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9554)).
+- [In the Label endpoint of API V3, rename "categories" to "label_sets"](https://testing.konfuzio.com/v3/swagger/#/labels) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9972)).
+- [Detectron is now connected via API to uncouple its Python version and dependencies from Konfuzio Server](https://app.konfuzio.com/v2/swagger/#/projects/projects_docs_segmentation_retrieve) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9355)).
+- [The summarization functionality is now connected via API to uncouple its Python version and dependencies from Konfuzio Server](https://app.konfuzio.com/v2/swagger/#/projects/projects_docs_summarization_retrieve) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9347)).
+- [Limit the number of objects returned from the API](https://dev.konfuzio.com/web/api-v3.html#content-limits) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9975)).
+
+### Fixed
+- In a very rare case text embeddings could not be extracted from Documents ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10045)).
+- The error handling for invalid PDF Documents ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9984)).
+- The notification email template for AI trainings was not considering errors in the training process ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9937)).
+- callback_url is now called if re-extraction is triggered on a Document (for example, when the Category changes) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9901)).
+- Fix an issue that prevented the full deletion of on line of text in multiline Annotations ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10049)).
+- Fix a missing placeholder in an email template ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10192)).
+- Improved loading time of the Category list view ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10088)).
+- The assignee filter for the Document List now requires Permissions to view the Members of a Project ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10154)).
+
+## released-2022-11-16_12-13-49
+
+### Fixed
+- Speedup the Document List page for Superuser ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10036)).
+- The Annotation creation on empty areas in a Document is now possible ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10049)).
+
+## released-2022-11-11_13-19-29
+
+This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Capture Vue in version [0.0.10-pre-release-7](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
+
+Please note: When you upgrade to this version (or a newer one) you need to run "python manage.py init_user_permissions". This needs to be run after the usual [update actions](https://dev.konfuzio.com/web/on_premises.html#a-upgrade-to-newer-konfuzio-version).
+
+### Added
+- [Allow to invite Members with different Roles to Projects. Available Roles are "Reviewer" and "Manager". All existing Members keep their current Permissions and will become Managers.](https://help.konfuzio.com/modules/members/index.html) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/7364)).
+- [Superusers can define custom Roles for Members: Inviting Users can select from those Roles when inviting new Members to a Project](https://help.konfuzio.com/modules/superuserroles/index.html) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/7364)).
 - [Add the property 'has_multiple_top_candidates' to the Label API V3](https://app.konfuzio.com/v3/swagger/#/labels) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9687)).
 - [Add the property 'has_multiple_annotation_sets' to the Label Set API V3](https://app.konfuzio.com/v3/swagger/#/labels) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9687)).
 - [Save feedback that there are no Annotations for a Label/Label-Set combination in a document](http://localhost:8000/v3/swagger/#/documents/documents_missing_annotations_list) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9163)).
 - [Add the property 'number' to the Page API V3](https://app.konfuzio.com/v3/swagger/#/documents) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9619)).
 - [Include the Label Set name in the API V3 even when no Label Set is present](https://app.konfuzio.com/v3/swagger/#/documents) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9399)).
-- [API v3 endpoint to sort and split Pages into Documents with different categories contained in one file](https://testing.konfuzio.com/v3/swagger/#/documents/documents_postprocess_create) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9452)).
+- [API v3 endpoint to sort and split Pages into Documents with different categories contained in one file](https://testing.konfuzio.com/v3/swagger/#/documents/documents_postprocess_create) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9452), [Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9727)).
 
 ### Changed
-- [When a user creates a new Project, this user will become the default assignee for new Documents](https://help.konfuzio.com/modules/projects/index.html#default-assignee) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9705))
+- [When a user creates a new Project, this user will become the default assignee for new Documents](https://help.konfuzio.com/modules/projects/index.html#default-assignee) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9705)).
 - [If a user rejects an Annotation, this user is tracked in the 'revised_by' attribute of the Annotation](https://help.konfuzio.com/modules/annotations/index.html#declined) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9479)).
+- The annotations endpoint is now top-level instead of being under the document endpoint. ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9283)).
 
 ### Fixed
 - The numbering of Annotation Sets in the SmartView does not consider deleted Annotation Sets anymore ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9604)).
@@ -62,8 +140,11 @@ This version uses Konfuzio Trainer in version v.0.3.22, the Konfuzio Python SDK 
 - The SmartView did not use rotated pages due to a caching problem ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9830)).
 - The arrow in the Project- and language selector was not clickable ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9714)).
 - On the Annotation list Page the Category filter was not showing all Annotations ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9732)).
+- Fix an issue where the Category- and Document API V3 endpoint did not include all relevant Label-Sets ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9816)).
+- Fix an issue that prevented specific SmartView messages to be dismissed ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9766)).
+- Fix an issue that prevented null values to be passed to the API v3 annotation creation endpoint ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9898)).
 
-## released-2022-10-26_14-48-06
+## released-2022-10-28_07-23-39
 
 ### Added
 - [Allow on-premise users to customize timeouts of backgroud tasks](https://dev.konfuzio.com/web/on_premises.html#environment-variables-for-konfuzio-server) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9812)).
@@ -106,7 +187,7 @@ This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK 
 - Fix an issue which caused the processing time to be shown as negative.
 
 
-## 2022-07-28_15-55-29
+## released-2022-07-28_15-55-29
 
 This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Capture Vue in version [0.0.6](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
 
@@ -117,7 +198,7 @@ This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK 
 - Fix an issue which causes some Extraction AIs to crash on multipage documents. 
 - Fix an issue that prevents the calculation of bounding boxes for small or slightly rotated characters. 
 
-## 2022-07-25_21-20-48
+## released-2022-07-25_21-20-48
 
 ### Added
 - Allow to set a default assignee for uploaded documents
@@ -127,12 +208,12 @@ This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK 
 - Top annotation filter in the SmartView now takes accepted Annotations into account
 - Errors messages in case a document could not be processed are now displayed correctly
 
-## 2022-07-19_16-30-46
+## released-2022-07-19_16-30-46
 
 ### Changed
 - New Extraction AIs are saved in a more efficient way
 
-## 2022-07-05_19-35-21
+## released-2022-07-05_19-35-21
 
 This version uses Konfuzio Trainer in version v.0.3.15, the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15) and Konfuzio Capture Vue in version [0.4.0](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
 
@@ -145,7 +226,7 @@ This version uses Konfuzio Trainer in version v.0.3.15, the Konfuzio Python SDK 
 ### Changed
 - Links to deleted annotation will now redirect to the respective document
 
-## 2022-06-10_15-32-19
+## released-2022-06-10_15-32-19
 
 This version uses Konfuzio Trainer in version v.0.3.15 and the Konfuzio Python SDK in version [v.0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15).
 
@@ -170,18 +251,17 @@ This version uses Konfuzio Trainer in version v.0.3.15 and the Konfuzio Python S
 - An issue where negative annotations where not correctly being deleted (#9127)
 - Rare cases where OCR text included some characters mutiple times
 
-
-## 2022-04-27_14-23-38
+## released-2022-04-27_14-23-38
 
 ### Added
 - Add assignee attribute of a Document to the API
 
-## 2022-03-15_09-14-17
+## released-2022-03-15_09-14-17
 
 ### Changed
 - "Rerun extraction" via the user interface applies new annotations now also to training and test documents
 
-## 2022-02-11_23-12-26
+## released-2022-02-11_23-12-26
 
 ### Added 
 - Add option to filter for related annotation sets
@@ -190,7 +270,7 @@ This version uses Konfuzio Trainer in version v.0.3.15 and the Konfuzio Python S
 - Sorting of annotation sets in the csv export
 - Document API endpoint returning declined annotations
 
-## 2022-01-18_11-08-24
+## released-2022-01-18_11-08-24
 
 ### Added
 - Added api_name to Label API
@@ -200,14 +280,14 @@ This version uses Konfuzio Trainer in version v.0.3.15 and the Konfuzio Python S
 - Missing translation on document list page
 - Evaluation did not complete for AIs with a large amount of training data
 
-## 2021-12-11_14-33-57
+## released-2021-12-11_14-33-57
 
 ### Added
 - For on-premise installations, the OCR method for new projects is choosen based on the available OCR solutions.
 - For on-premise installations, the project import considers now declined annotations
 - For on-premise installations, Superusers can see the Konfuzio Server version and how many pages and documents have been processed.
 
-## 2021-11-21_19-14-19
+## released-2021-11-21_19-14-19
 
 ### Added
 - Text summarization endpoint.
@@ -216,7 +296,7 @@ This version uses Konfuzio Trainer in version v.0.3.15 and the Konfuzio Python S
 ### Fixed
 - An issue where the reload after uploading new documents does not happen
 
-## 2021-11-26_08-11-36
+## released-2021-11-26_08-11-36
 
 This version uses Konfuzio Trainer in version [v.0.3.0](https://dev.konfuzio.com/training/changelog.html). We recommend to use the Konfuzio Python SDK in version [0.1.15](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-15)
 
@@ -226,22 +306,22 @@ This version uses Konfuzio Trainer in version [v.0.3.0](https://dev.konfuzio.com
 ### Fixed
 - An error where an invalid date in the document text stoppped the training process
 
-## 2021-11-23_18-14-28
+## released-2021-11-23_18-14-28
 
 ### Fixed
 - E-mails without an attachment have not been processed.
 
-## 2021-11-16_23-02-22
+## released-2021-11-16_23-02-22
 
 ### Fixed
 - CSV export for [ProRis](https://www.inveos.com/proris-blue) by Inveos
 
-## 2021-11-05_09-55-10
+## released-2021-11-05_09-55-10
 
 ### Added
 - Allow deletion of characters of an annotation without excluding it from the training process
 
-## 2021-11-01_23-19-58
+## released-2021-11-01_23-19-58
 
 ### Added
 - An option to specify the category of a document when uploading it via API (and thereby skipping the categorization)
@@ -249,14 +329,14 @@ This version uses Konfuzio Trainer in version [v.0.3.0](https://dev.konfuzio.com
 ### Changed
 - The GET document API endpoint now returns the annotation displayed in the SmartView (instead of only showing the extraction AI results)
 
-## 2021-10-25_20-12-18
+## released-2021-10-25_20-12-18
 
 This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.konfuzio.com/training/changelog.html#id1). We recommend to use the Konfuzio Python SDK in version [0.1.10](https://dev.konfuzio.com/sdk/changelog.html#v-0-1-10)
 
 ### Added
 - CSV export compatible with [ProRis](https://www.inveos.com/proris-blue) by Inveos
 
-## 2021-10-16_13-20-12
+## released-2021-10-16_13-20-12
 
 ### Added
 - Improve detection of annotations which consist of multiple words
@@ -268,34 +348,34 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 - Dark Mode setting of browser not compatible with Konfuzio Server
 - Some case where the document list was not reloaded automatically
 
-## 2021-10-07_11-42-29
+## released-2021-10-07_11-42-29
 
 ### Added
 - More advanced task priorities and improved worker ressource usage
 - Auto-reload of new uploaded documents
 
-## 2021-09-28_09-29-43
+## released-2021-09-28_09-29-43
 
 ### Fixed
 - Evaluation does not complete if no test documents are specified
 
-## 2021-09-24_13-53-32
+## released-2021-09-24_13-53-32
 
 ### Fixed
 - Incompleted evaluation
 - Formatting of the "Check your browser" page for logged out users.
 
-## 2021-09-16_12-25-23
+## released-2021-09-16_12-25-23
 
 ### Fixed
 - Adding of categories to existing label sets
 
-## 2021-09-08_16-01-46
+## released-2021-09-08_16-01-46
 
 ### Added
 - Migration scripts for user permissions and e-mail templates
 
-## 2021-09-07_12-24-26
+## released-2021-09-07_12-24-26
 
 ### Added
 - Support for SMTP e-Mail backends via environment variables
@@ -303,7 +383,7 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 ### Fixed
 - DOS protection prevents start of Konfuzio server
 
-## 2021-09-05_20-57-31
+## released-2021-09-05_20-57-31
 
 ### Added
 
@@ -321,12 +401,12 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 - Start training per extraction AI
 - Get more insights via the document detail page
 
-## 2021-08-10_17-08-11
+## released-2021-08-10_17-08-11
 
 ### Changed
 - Deactive adoption of template settings according to AI model if not explicitly allowed.
 
-## 2021-08-10_11-19-33
+## released-2021-08-10_11-19-33
 
 ### Added
 - Maximum number of pages per document
@@ -335,23 +415,23 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 - Slow processing of extraction tasks
 - Evaluation when multiple annotations are present
 
-## 2021-07-28_18-53-12
+## released-2021-07-28_18-53-12
 
 ### Changed
 - Make word-based tokenizer the default for new projects
 
-## 2021-07-23_09-33-20
+## released-2021-07-23_09-33-20
 
 ### Fixed
 - Usage of word-base tokenizer
 - Duplicated hints
 
-## 2021-07-20_17-29-23
+## released-2021-07-20_17-29-23
 
 ### Fixed
 - Edited annotation were excluded from the training process
 
-## 2021-07-15_17-29-25
+## released-2021-07-15_17-29-25
 
 ### Added 
 - Support to reuse label sets across categories
@@ -365,12 +445,12 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 - Fixed a bug where the EXIF attribute orientation corrupted the bounding boxes images
 - "accept top annotations" does not update human created annotations
 
-## 2021-07-02_18-13-01
+## released-2021-07-02_18-13-01
 
 ### Changed
 - Rate limits for task system
 
-## 2021-06-29_22-14-33
+## released-2021-06-29_22-14-33
 
 ### Added
 - HTTP codes to API interface
@@ -378,12 +458,12 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 ### Fixed
 - Content type description for some API endpoints
 
-## 2021-06-22_22-45-48
+## released-2021-06-22_22-45-48
 
 ### Added
 - A experimental version of a training health report
 
-## 2021-06-20_15-14-31
+## released-2021-06-20_15-14-31
 
 ### Fixed
 - Failed retraninings for some projects
@@ -391,7 +471,7 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 - Filtering of project invotations according to currently selected project
 - Clarify return types in API documentation
 
-## 2021-05-26_20-16-02
+## released-2021-05-26_20-16-02
 
 ### Added
 - Show confidence for categorization results
@@ -399,13 +479,13 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 - Track version (number of retrainings) for all Ai models
 - Track project and template origin of AiModel
 
-## 2021-05-24_13-42-45
+## released-2021-05-24_13-42-45
 
 ### Changed
 - Use business evaluation implementation from training package
 - Loading time for CSV export evaluation reduced by saving it in the database.
 
-## 2021-05-18_16-37-25
+## released-2021-05-18_16-37-25
 
 ### Added
 - Global project switcher
@@ -428,12 +508,12 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 ### Removed
 - `admin_importer`, `copy_extraction_as_annotation` and related functions have been removed
 
-## 2021-05-04_12-37-16
+## released-2021-05-04_12-37-16
 
 ### Fixed
 - Calculation of true negative when using multiple templates.
 
-## 2021-04-28_12-27-19
+## released-2021-04-28_12-27-19
 
 ### Added
 - Filter for top annotations in SmartView
@@ -441,7 +521,7 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 ### Changed
 - Dont allow training if there are no training documents
 
-## 2021-04-25_20-09-04
+## released-2021-04-25_20-09-04
 
 ### Added
 - Protect signup with captcha
@@ -449,13 +529,13 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 ### Fixed
 - Editing of annotation if there are already declined annotations.
 
-## 2021-04-19_22-32-19
+## released-2021-04-19_22-32-19
 
 ### Added 
 - Add label creation endpoint
 - Token-based authentication for the API
 
-## 2021-04-03_09-46-56
+## released-2021-04-03_09-46-56
 
 ### Added 
 - Show Django sidebar in Smartview and template view.
@@ -469,12 +549,12 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 - Default template dropdown sometimes disabled when creating a Template
 - Rare case where the document list could not be loaded
 
-## 2021-03-15_15-12-04
+## released-2021-03-15_15-12-04
 
 ### Added
 - Add option to accept all annotations.
 
-## 2021-03-07_21-32-41
+## released-2021-03-07_21-32-41
 
 ### Added
 - Option to retrain project categorization model
@@ -489,7 +569,7 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 ### Changed
 - Delete old unrevised annotations when rerunning AiModel.
 
-## 2021-02-25_09-28-07
+## released-2021-02-25_09-28-07
 
 ### Added
 - Option to select tokenizer for training (ProjectAdmin)
@@ -502,7 +582,7 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 ### Fixed
 - Count of annotations on the LabelAdmin
 
-## 2021-02-15_18-56-51
+## released-2021-02-15_18-56-51
 
 ### Changed
 - Show category template as empty when actual empty (instead of displaying the first available template)
@@ -514,8 +594,7 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 - Add status field to the AiModel ("Training", "Failed", "Done")
 - Dont allow new retraining if there is a training in progress AiModel.
 
-
-## 2021-02-13_18-18-52
+## released-2021-02-13_18-18-52
 
 ### Changed
 - Use annotation permalink in LabelAdmin
@@ -525,7 +604,7 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 - Files with misssing fonts could not be processed
 - Creation of small annotations when accepting or declining
 
-## 2021-02-10_13-52-15
+## released-2021-02-10_13-52-15
 
 ### Added
 - Admin action for Microsoft Graph API / Planner API
@@ -534,7 +613,7 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 - SuperUserDocumentAdmin performance
 - OutOfMemory errors in the categorization
 
-## 2021-02-03_17-07-23
+## released-2021-02-03_17-07-23
 
 ### Added
 - Permalink for annotations
@@ -549,17 +628,17 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 - Allow rerun extraction for documents with revised annotations
 - Allow deletion default templates
 
-## 2021-01-26_18-07-11
+## released-2021-01-26_18-07-11
 
 ### Added
 - Add column 'category' to csv export
 
-## 2021-01-20_11-17-24
+## released-2021-01-20_11-17-24
 
 ### Added
 - Show selection bounding boxes for automtic created annotations
 
-## 2021-01-14_22-06-52
+## released-2021-01-14_22-06-52
 
 ### Added
 - Visual annotations: images and area can now be annotate
@@ -567,7 +646,7 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 ### Fixed
 - Loading time for Smartview
 
-## 2021-01-13_23-26-03
+## released-2021-01-13_23-26-03
 
 ### Fixed
 - Retraining now assigns AIModels to templates even if they was no before
@@ -575,25 +654,25 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 ### Added
 - Add Message when doing evaluation which tells the user if test set is empty.
 
-## 2021-01-12_21-13-48
+## released-2021-01-12_21-13-48
 
 ### Fixed
 - Google Analytics integration
 - Empty Textextraction for ParagraphExtractions
 
-## 2021-01-10_18-36-49
+## released-2021-01-10_18-36-49
 
 ### Fixed
 - Disable link formatting by sendgrid.
 
-## 2021-01-08_22-30-10
+## released-2021-01-08_22-30-10
 
 ### Fixed
 - Bbox calculation in ParagraphModel
 - Evaluation sometimes not running
 - Speedup annotation creating
 
-## 2021-01-05_11-53-22
+## released-2021-01-05_11-53-22
 
 ### Changed
 - Two column Annotation selection is now possible
@@ -603,7 +682,7 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 - Option to update the document document text, this is set per project via the SuperUserDocumentAdmin.
 - Document Segmentation API Endpoint
 
-## 2020-12-22_19-04-04
+## released-2020-12-22_19-04-04
 
 ### Changed
 - Email Template are now managed within the application.
@@ -613,7 +692,7 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 - Link to imprint on SignUp
 - Smartview when scrolling horizontally
 
-## 2020-12-16_20-17-30
+## released-2020-12-16_20-17-30
 
 ### Added
 - Search for Smartview
@@ -621,7 +700,7 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 ### Fixed
 - TemplateCreationForm does not allow to select parent template
 
-## 2020-12-16_09-44-30
+## released-2020-12-16_09-44-30
 
 ### Added
 - Searchbar for SuperuserProjectAdmin
@@ -636,7 +715,7 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 - Fix bbox generation fox Paragraph Annotations
 - Fixed Evaluation not triggered for new AiModels
 
-## 2020-12-10_13-15-14
+## released-2020-12-10_13-15-14
 
 ### Added
 - Sentry error reporting for Javascript Frontend (i.e. Smartview)
@@ -649,7 +728,7 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 ### Fixed
 - Allow "None" as confidence for rule-base ExtractionModels
 
-## 2020-12-01_21-08-32
+## released-2020-12-01_21-08-32
 
 ### Added
 - Proof of Concept Microsoft Graph API connection (for logged in users): app.konfuzio.com/graph
@@ -662,7 +741,7 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 - Project Page for "normal" user does not show technical fields like "ocr" and "text_layout" anymore.
 - Dont show file endings like '.pkl' for AiModels
 
-## 2020-11-26_19-43-14
+## released-2020-11-26_19-43-14
 
 ### Fixed
 - Missing bbox attribute in Document API (prevents retraining via training package)
@@ -672,7 +751,7 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 ### Added
 - Slightly better Categorization model.
 
-## 2020-11-20_20-05-47
+## released-2020-11-20_20-05-47
 
 ### Added
 - A public registration page: https://app.konfuzio.com/accounts/signup 
@@ -687,7 +766,7 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 ### Changed
 - Save bbox and entity per page in order to improve performance
 
-## 2020-11-09_18-04-28
+## released-2020-11-09_18-04-28
 
 ### Added
 - Support for more than one default Template in a project
@@ -698,18 +777,18 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 ### Changed
 - AiModel belongs now to DefaultTemplates instead of project
 
-## 2020-10-27_10-37-15
+## released-2020-10-27_10-37-15
 
 ### Changed
 - Documents are now soft-deleted. There is a hard delete option in the SuperuserDocumentAdmin.
 - AiModel are made active automatically for matching DefaultTemplates if the AIMode is better than before.
 
-## 2020-10-21_08-53-42
+## released-2020-10-21_08-53-42
 
 ### Fixed
 - Loading time when updating a project.
 
-## 2020-10-19_22-46-49
+## released-2020-10-19_22-46-49
 
 ### Changed
 - Increase max allowed workflow time from 90 to 180 seconds.
@@ -723,12 +802,12 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 - add hocr fied to document api.
 - add a project option to hide the Smartview and Labeling tool.
 
-## 2020-10-14_11-39-17
+## released-2020-10-14_11-39-17
 
 ### Changed
 - AIModel can be uploaded and evaluted before setting active for a project
 
-## 2020-10-13_15-10-22
+## released-2020-10-13_15-10-22
 
 ### Added
 - Multilanguage Support (DE/EN) in the backend (actuall translation are not included yet)
@@ -742,12 +821,12 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 - Fix upload_ai_model to upload files larger than 2GB
 - Loading speed for SequenceAnnotation Admin
 
-## 2020-10-03_15-18-47
+## released-2020-10-03_15-18-47
 
 ### Fixed
 - Recover tasks in case celery worker crashes
 
-## 2020-10-01_12-02-37
+## released-2020-10-01_12-02-37
 
 ### Fixed
 - Internet Explorer warning badge
@@ -757,7 +836,7 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 - Remove extraction count from AiModel admin.
 - Refactor annotation accept/delete buttons to separate components and SVG
 
-## 2020-09-16_18-19-53
+## released-2020-09-16_18-19-53
 
 ### Added
 - Additional normalization formats
@@ -771,13 +850,13 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 - Creation of Templates
 [- Calculation of width and height dimension when creating sandwich pdf and when using azure](https://gitlab.com/konfuzio/training/-/blob/master/src/konfuzio/image.py#L78)
 
-## 2020-09-11_13-47-51
+## released-2020-09-11_13-47-51
 
 ### Added
 - Add sentry message if project retraining is triggered.
 - Fix cpu minute calculation.
 
-## 2020-09-09_16-12-44
+## released-2020-09-09_16-12-44
 
 ### Added 
 - [Forbid Removing Labels from Temapltes (which still have Annotations)](https://gitlab.com/konfuzio/objectives/-/issues/1629)
@@ -787,14 +866,14 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 - On the dashboard: Dont show section.position column if all extractions have the same. Dont show accuracy column if all extraction does not have one.
 - Dont show retraining webhook url (on the project detail page). Display is with **** like it is password.
 
-## 2020-09-08_22-38-19
+## released-2020-09-08_22-38-19
 
 ### Added
 - Per-project measuring of cpu time.
 - Additional date-formats for normalization.
 - First draft of boolean-formats for normalization.
 
-## 2020-09-08_09-17-00
+## released-2020-09-08_09-17-00
 
 ### Added
 - Document Filter added for 'human feedback required' and '100% machine readable.
@@ -809,7 +888,7 @@ This version uses Konfuzio Trainer in version [2021-10-20_18-29-25](https://dev.
 ### Fixed
 - Dont raise an error if ai_model predict section with a template that does not exist.
 
-## 2020-09-07_17-48-22
+## released-2020-09-07_17-48-22
 
 ### Fixed
 - Filter for 'possibly incorrect' shows wrong number.
