@@ -54,9 +54,10 @@ This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK 
 ### Fixed
 - Restrict the maximum auto-deletion time of a Document to a maximum of 5 years ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10229)).
 - The ordering of Annotations Sets in the API V3 ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10197)).
-- Restarting the run of a Categorization AI now triggers a new Extraction AI run too ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/1035)).
 
 ## released-2022-12-22_11-03-21
+
+This version uses Konfuzio Trainer in version v.0.3.21, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Capture Vue in version [0.0.11-pre-release-5](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
 
 ### Fixed
 - Re-running the categorization now also re-runs the extraction ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10355)).
