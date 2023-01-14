@@ -24,22 +24,17 @@ is the tool for you. You can customize pipelines for automatic document Categori
 .. note::
   Customizing document AI pipelines with the Konfuzio SDK requires a self-hosted installation of the Konfuzio Server.
 
-### General customization process overview
+### Three steps to customize document AI pipelines
 
-The Konfuzio SDK defines abstract Python classes and interfaces for [Categorization](sourcecode.html#document-categorization), [File Splitting](sourcecode.html#file-splitting), and [Extraction](sourcecode.html#extraction-ai) AI pipelines. 
-By implementing the abstract methods, custom behaviours can be defined for each AI pipeline.
+1. The Konfuzio SDK defines abstract Python classes and interfaces for [Categorization](sourcecode.html#document-categorization), [File Splitting](sourcecode.html#file-splitting), and [Extraction](sourcecode.html#extraction-ai) AI pipelines. 
+By implementing the abstract methods in a custom subclass, custom behaviours can be defined for each AI pipeline. Make
+sure to familiarize yourself with the [Data Layer concepts](sourcecode.html#data-layer-concepts) so that you can 
+manipulate data effectively within your custom pipelines.
 
-All AIs inherit from [BaseModel](sourcecode.html#basemodel), which provides `BaseModel.save` to generate a pickle file, 
-which can be directly uploaded to the Konfuzio Server.
+2. All AIs inherit from [BaseModel](sourcecode.html#basemodel), which provides `BaseModel.save` to generate a pickle file, 
+to be directly uploaded to the Konfuzio Server (see [Upload Extraction or Category AI to target instance](../web/on_premises.html#upload-extraction-or-category-ai-to-target-instance)). 
 
-See [Upload Extraction or Category AI to target instance](../web/on_premises.html#upload-extraction-or-category-ai-to-target-instance). 
-Finally, activating the uploaded AI on the web interface will enable the custom pipeline on your self-hosted installation.
-
-<div class="mxgraph" style="max-width:100%;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;toolbar&quot;:&quot;zoom layers tags lightbox&quot;,&quot;edit&quot;:&quot;_blank&quot;,&quot;url&quot;:&quot;https://raw.githubusercontent.com/konfuzio-ai/konfuzio-sdk/9869-dev-documentation/docs/sdk/home/SDK_Server_components.drawio&quot;}"></div>
-<script type="text/javascript" src="https://viewer.diagrams.net/embed2.js?&fetch=https%3A%2F%2Fraw.githubusercontent.com%2Fkonfuzio-ai%2Fkonfuzio-sdk%2F9869-dev-documentation%2Fdocs%2Fsdk%2Fhome%2FSDK_Server_components.drawio"></script>
-
-For more architectural details about how the Konfuzio Server and the Konfuzio SDK are integrated, see 
-[Architecture SDK to Server](explanations.html#architecture-sdk-to-server).
+3. Finally, activating the uploaded AI on the web interface will enable the custom pipeline on your self-hosted installation.
 
 ### Customize Extraction AI
 
@@ -55,10 +50,6 @@ class CustomExtractionAI(Trainer):
     def __init__(self, *args, **kwargs):
         # initialize key variables required by the custom AI
 
-    def feature_function(self, documents: List[Document]):
-        # Create training and test data for the AI out of the Training and Test Documents in the provided Category
-        # This method is allowed to be implemented as a no-op if you create the features in other ways
-
     def fit(self):
         # Define architecture and training that the model undergoes, i.e. a NN architecture or a custom hardcoded logic
         # This method is allowed to be implemented as a no-op if you provide the trained model in other ways
@@ -70,7 +61,8 @@ class CustomExtractionAI(Trainer):
 
 Example usage of your Custom Extraction AI:
 ```python
-from konfuzio_sdk.data import Project
+from konfuzio_sdk.data import Project, Document
+from konfuzio_sdk.trainer.information_extraction import load_model
 
 # Initialize Project and provide the AI training and test data
 project = Project(id_=YOUR_PROJECT_ID)
@@ -80,8 +72,7 @@ extraction_pipeline.category = project.get_category_by_id(id_=YOUR_CATEGORY_ID)
 extraction_pipeline.documents = extraction_pipeline.category.documents()
 extraction_pipeline.test_documents = extraction_pipeline.category.test_documents()
 
-# Calculate features and train the AI
-extraction_pipeline.feature_function(documents=extraction_pipeline.documents)
+# Train the AI
 extraction_pipeline.fit()
 
 # Evaluate the AI
@@ -90,12 +81,15 @@ ai_quality = extraction_pipeline.evaluate_full(use_training_docs=False)
 
 # Extract a Document
 document = self.project.get_document_by_id(YOUR_DOCUMENT_ID)
-extraction_result = extraction_pipeline.extract(document=document)
+extraction_result: Document = extraction_pipeline.extract(document=document)
 
 # Save and load a pickle file for the model
 pickle_model_path = extraction_pipeline.save(output_dir=project.model_folder, include_konfuzio=True)
 extraction_pipeline_loaded = load_model(pickle_model_path)
 ```
+
+For a more in depth tutorial about the usage of Extraction AIs in the SDK see 
+[Train a Konfuzio SDK Model to Extract Information From Payslip Documents](examples/examples.html#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents).
 
 ### Customize Categorization AI
 
@@ -111,10 +105,6 @@ class CustomCategorizationAI(FallbackCategorizationModel):
     def __init__(self, *args, **kwargs):
         # initialize key variables required by the custom AI
 
-    def feature_function(self, documents: List[Document]):
-        # Create training and test data for the AI out of the Training and Test Documents in the provided Categories
-        # This method is allowed to be implemented as a no-op if you create the features in other ways
-
     def fit(self):
         # Define architecture and training that the model undergoes, i.e. a NN architecture or a custom hardcoded logic
         # This method is allowed to be implemented as a no-op if you provide the trained model in other ways
@@ -127,6 +117,7 @@ class CustomCategorizationAI(FallbackCategorizationModel):
 Example usage of your Custom Categorization AI:
 ```python
 from konfuzio_sdk.data import Project
+from konfuzio_sdk.trainer.information_extraction import load_model
 
 # Initialize Project and provide the AI training and test data
 project = Project(id_=YOUR_PROJECT_ID)
@@ -155,27 +146,151 @@ pickle_model_path = categorization_pipeline.save(output_dir=project.model_folder
 categorization_pipeline_loaded = load_model(pickle_model_path)
 ```
 
-### Customize File Splitting AI
+For a more in depth tutorial about the usage of Categorization AIs in the SDK see 
+[Tutorials - Document Categorization](examples/examples.html#document-categorization).
 
-Note that any custom FileSplittingAI (derived from `AbstractFileSplittingModel` class) requires having the following 
-methods implemented:
-- `__init__` to initialize key variables required by the custom AI;
-- `fit` to define architecture and training that the model undergoes, i.e. a certain NN architecture or a custom 
-- hardcoded logic
-- `predict` to define how the model classifies Pages as first or non-first. **NB:** the classification needs to be ran on 
-the Page level, not the Document level – the result of classification is reflected in `is_first_page` attribute value, which
-is unique to the Page class and is not present in Document class. Pages with `is_first_page = True` become splitting 
-points, thus, each new sub-Document has a Page predicted as first as its starting point.
+### Customize File Splitting AI
 
 Any Custom [File Splitting AI](sourcecode.html#file-splitting) (derived from the Konfuzio `AbstractFileSplittingModel` class) 
 should implement the following interface:
 ```python
+from konfuzio_sdk.trainer.file_spltting import AbstractFileSplittingModel
+from konfuzio_sdk.data import Document, Page
+from typing import List
+
+class CustomFileSplittingModel(AbstractFileSplittingModel):
+
+    def __init__(self, *args, **kwargs):
+        # initialize key variables required by the custom AI
+
+    def fit(self):
+        # Define architecture and training that the model undergoes, i.e. a NN architecture or a custom hardcoded logic
+        # This method is allowed to be implemented as a no-op if you provide the trained model in other ways
+
+    def predict(self, page: Page) -> Page:
+        # Define how the model determines a split point for a Page
+        # **NB:** The classification needs to be ran on the Page level, not the Document level – the result of 
+        # classification is reflected in `is_first_page` attribute value, which is unique to the Page class and is not 
+        # present in Document class. Pages with `is_first_page = True` become splitting points, thus, each new 
+        # sub-Document has a Page predicted as first as its starting point.
 ```
 
 Example usage of your Custom File Splitting AI:
 ```python
+from konfuzio_sdk.data import Project
+from konfuzio_sdk.trainer.file_splitting import SplittingAI
+from konfuzio_sdk.trainer.information_extraction import load_model
+
+# Initialize Project and provide the AI training and test data
+project = Project(id_=YOUR_PROJECT_ID)
+
+file_splitting_model = CustomFileSplittingModel(categories=project.categories, *args, *kwargs)
+file_splitting_model.documents = [category.documents for category in categorization_pipeline.categories]
+file_splitting_model.test_documents = [category.test_documents() for category in categorization_pipeline.categories]
+
+# Calculate features and train the AI
+file_splitting_model.fit()
+
+# Initialize the Splitting pipeline by providing the trained model
+file_splitting_pipeline = SplittingAI(file_splitting_model)
+
+# Evaluate the AI
+data_quality = file_splitting_pipeline.evaluate(use_training_docs=True)
+ai_quality = file_splitting_pipeline.evaluate(use_training_docs=False)
+
+# Suggest Page splits for a Document
+document = project.get_document_by_id(YOUR_DOCUMENT_ID)
+splitting_results = file_splitting_pipeline.propose_split_documents(document, return_pages=True)
+for page in splitting_results.pages():
+    if page.is_first_page:
+        print(f'{page} is a suggested split point for {document}')
+
+# Save and load a pickle file for the model
+pickle_model_path = file_splitting_model.save()
+file_splitting_model_loaded = load_model(pickle_model_path)
+file_splitting_pipeline_loaded = SplittingAI(file_splitting_model_loaded)
 ```
 
-### PDF Form Generator
+For a more in depth tutorial about the usage of File Splitting AIs in the SDK see 
+[Splitting for multi-file Documents: Step-by-step guide](examples/examples.html#file-splitting).
 
-TODO
+### Other customizable features
+
+#### PDF Form Generator
+
+##### 1. Upload a PDF Form and create empty annotations where you want to fill in data
+
+.. image:: home/pdf_form_gen_example.png
+   :scale: 40%
+
+##### 2. Use the SDK to fill in values in the PDF
+
+Find a demo at: https://pdf-gen.konfuzio.com/docs 
+
+Example PDF: [click here](https://pdf-gen.konfuzio.com/simple-render/?document_id=394000&project_id=1834&file_name=Teilnahmebestätiung.pdf&Name=Valerie&Startdatum=15.01.2022&Enddatum=30.03.2022&Kursleiter=Marianne&Kursgebuehr=150&Kurseinheitsdauer=50&Kurs=Pilates&Ausstellungsdatum=03.12.2022)
+
+Example implementation:
+```python
+from konfuzio_sdk.data import Project
+from PyPDF2 import PdfFileWriter, PdfFileReader
+import io
+from reportlab.pdfgen import canvas
+from reportlab.lib import colors
+
+
+def render(document_id, project_id, values):
+    my_project = Project(id_=project_id, update=True)
+    document = my_project.get_document_by_id(document_id)
+    original_pdf_path = document.get_file()
+
+    # read your existing PDF
+    existing_pdf = PdfFileReader(open(original_pdf_path, "rb"))
+    output = PdfFileWriter()
+
+    for page_index, page in enumerate(document.pages()):
+        packet = io.BytesIO()
+        my_canvas = canvas.Canvas(packet)
+        my_canvas.setPageSize((page.width, page.height))
+        annotations = document.annotations()
+        for annotation in annotations:
+            if annotation.selection_bbox.get('page_index') == page_index:
+                text_value = values.get(annotation.label.name, '')
+                print(f'{text_value}')
+                textobject = my_canvas.beginText()
+                # Set text location (x, y)
+                textobject.setTextOrigin(annotation.x0, annotation.y0)
+                # Set font face and size
+                # textobject.setFont('Times-Roman', 12)
+                # Change text color
+                textobject.setFillColor(colors.black)
+                # Write red text
+                textobject.textLine(text=text_value)
+                # Write text to the canvas
+                my_canvas.drawText(textobject)
+        my_canvas.save()
+
+        # move to the beginning of the StringIO buffer
+        packet.seek(0)
+
+        # create a new PDF with Reportlab
+        new_pdf = PdfFileReader(packet)
+
+        page = existing_pdf.getPage(page_index)
+        page.mergePage(new_pdf.getPage(0))
+        output.addPage(page)
+
+    return output
+
+
+# Press the green button in the gutter to run the script.
+if __name__ == '__main__':
+    values = {'Name': 'Valerie', 'Startdatum': '15.01.2022', 'Enddatum': '30.03.2022'}
+    document_id = 394000
+    project_id = 1834
+
+    output = render(document_id=document_id, project_id=project_id, values=values)
+    # finally, write "output" to a real file
+    outputStream = open(f"{document_id}.pdf", "wb")
+    output.write(outputStream)
+    outputStream.close()
+```
