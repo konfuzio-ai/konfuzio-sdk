@@ -137,10 +137,6 @@ Extraction AI
 
 .. automodule:: konfuzio_sdk.trainer.information_extraction
 
-.. autoclass:: Trainer
-   :members:
-   :noindex:
-
 .. autoclass:: RFExtractionAI
    :members:
    :noindex:
