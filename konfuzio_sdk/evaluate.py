@@ -475,7 +475,7 @@ class FileSplittingEvaluation:
                         f'of is_first_page.'
                     )
         for ground_truth, prediction in zip(ground_truth_documents, prediction_documents):
-            if ground_truth.id_ != ground_truth.copy_of_id:
+            if ground_truth.id_ != prediction.copy_of_id:
                 raise ValueError(
                     f"Incorrect prediction passed for {ground_truth}. Prediction has to be a copy of a "
                     f"ground truth Document."

@@ -1,5 +1,6 @@
 """Test the evaluation."""
 import unittest
+from copy import deepcopy
 from statistics import mean
 
 import pytest
@@ -1284,6 +1285,45 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         """Test having different lengths of input lists of Documnets."""
         with pytest.raises(ValueError, match='must be same length'):
             FileSplittingEvaluation([1, 2], [1])
+
+    def test_evaluation_input_different_projects(self):
+        """Test passing Documents from different Projects."""
+        self.file_splitting_model.fit(allow_empty_categories=True)
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        ground_truth = self.test_document
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)[0]
+        wrong_project = Project(id_=46)
+        wrong_doc = wrong_project.documents[0]
+        wrong_pred = splitting_ai.propose_split_documents(wrong_doc, return_pages=True)[0]
+        with pytest.raises(ValueError, match='have to belong to the same Project'):
+            FileSplittingEvaluation([ground_truth, wrong_doc], [pred, wrong_pred])
+
+    def test_evaluation_input_no_is_first_page_attr(self):
+        """Test passing a Document with Page that has is_first_page=None."""
+        test_document = deepcopy(self.test_document)
+        for page in test_document.pages():
+            page.is_first_page = None
+        with pytest.raises(ValueError, match='does not have a value of is_first_page'):
+            FileSplittingEvaluation([test_document], [test_document])
+
+    def test_evaluation_input_wrong_document_pair(self):
+        """Test passing a pair of different Documents."""
+        self.file_splitting_model.fit(allow_empty_categories=True)
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)[0]
+        pred.copy_of_id = 9999999
+        with pytest.raises(ValueError, match='Prediction has to be a copy of'):
+            FileSplittingEvaluation([self.test_document], [pred])
+
+    def test_evaluation_pred_input_no_is_first_page_attr(self):
+        """Test passing a prediction of a Document with Page that has is_first_page=None."""
+        self.file_splitting_model.fit(allow_empty_categories=True)
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)[0]
+        for page in pred.pages():
+            page.is_first_page = None
+        with pytest.raises(ValueError, match='does not have a value of is_first_page'):
+            FileSplittingEvaluation([self.test_document], [pred])
 
     def test_metrics_calculation(self):
         """Test Evaluation class for ContextAwareFileSplitting."""

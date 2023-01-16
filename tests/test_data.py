@@ -1353,6 +1353,14 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert project.documents == []
         assert project.test_documents == []
 
+    def test_create_subdocument_from_page_range(self):
+        """Test creating a smaller Document from original one within a Page range."""
+        project = LocalTextProject()
+        test_document = project.get_category_by_id(3).test_documents()[0]
+        new_doc = test_document.create_subdocument_from_page_range(test_document.pages()[0], test_document.pages()[2])
+        assert len(new_doc.pages()) == 2
+        assert new_doc.text == "Hi all,\nI like bread.\nI hope to get everything done soon.\nMorning,"
+
 
 class TestSeparateLabels(unittest.TestCase):
     """Test the feature create separated Labels per Label Set."""
