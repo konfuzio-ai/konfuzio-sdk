@@ -419,6 +419,8 @@ def upload_file_konfuzio_api(
     dataset_status: int = 0,
     session=_konfuzio_session(),
     category_id: Union[None, int] = None,
+    callback_url: str = '',
+    sync: bool = False,
 ):
     """
     Upload Document to Konfuzio API.
@@ -428,6 +430,8 @@ def upload_file_konfuzio_api(
     :param session: Konfuzio session with Retry and Timeout policy
     :param dataset_status: Set data set status of the document.
     :param category_id: Define a Category the Document belongs to
+    :param callback_url: Callback URL receiving POST call once extraction is done
+    :param sync: If True, will run synchronously and only return once the online database is updated
     :return: Response status.
     """
     url = get_upload_document_url()
@@ -437,7 +441,13 @@ def upload_file_konfuzio_api(
         file_data = f.read()
 
     files = {"data_file": (os.path.basename(filepath), file_data, "multipart/form-data")}
-    data = {"project": project_id, "dataset_status": dataset_status, "category_template": category_id}
+    data = {
+        "project": project_id,
+        "dataset_status": dataset_status,
+        "category_template": category_id,
+        "sync": sync,
+        "callback_url": callback_url,
+    }
 
     r = session.post(url=url, files=files, data=data)
     return r
