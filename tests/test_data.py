@@ -31,7 +31,7 @@ from tests.variables import (
     TEST_RECEIPTS_CATEGORY_ID,
 )
 
-from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer
+from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer, ConnectedTextTokenizer
 from konfuzio_sdk.samples import LocalTextProject
 
 logger = logging.getLogger(__name__)
@@ -2360,6 +2360,16 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
             copy_of_id=999999999,
         )
         assert not os.path.isdir(virtual_document.document_folder)
+
+    def test_category_collect_exclusive_first_page_strings(self):
+        """Test collecting exclusive first-page strings within the Documents of a Category."""
+        project = LocalTextProject()
+        category = project.get_category_by_id(3)
+        tokenizer = ConnectedTextTokenizer()
+        first_page_strings = category.exclusive_first_page_strings(tokenizer)
+        assert len(first_page_strings) == 2
+        assert 'I like bread.' in first_page_strings
+        assert 'Morning,' in first_page_strings
 
 
 class TestFillOperation(unittest.TestCase):
