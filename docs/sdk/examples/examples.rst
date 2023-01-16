@@ -8,13 +8,15 @@ Code Examples
 
 .. mdinclude:: helloworld.md
 
-.. mdinclude:: document_categorization.md
+.. mdinclude:: architecture_overview/index.md
 
 .. mdinclude:: file-splitting-class/index.md
 
 .. mdinclude:: file-splitting-class-out-of-the-box-usage/index.md
 
 .. mdinclude:: evaluation/index.md
+
+.. mdinclude:: document_categorization.md
 
 Train a Konfuzio SDK Model to Extract Information From Payslip Documents
 -----------------------------------------------------------

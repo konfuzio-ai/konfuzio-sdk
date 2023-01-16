@@ -1270,6 +1270,7 @@ class TestEvaluationFileSplitting(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Initialize the tested class."""
         cls.project = LocalTextProject()
+        #  Categories 3 and 4 are used because they were specifically created for File Splitting testing
         cls.file_splitting_model = ContextAwareFileSplittingModel(
             categories=[cls.project.get_category_by_id(3), cls.project.get_category_by_id(4)],
             tokenizer=ConnectedTextTokenizer(),
@@ -1277,8 +1278,7 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         cls.file_splitting_model.test_documents = [
             document for category in cls.file_splitting_model.categories for document in category.test_documents()
         ][:-2]
-        cls.file_splitting_model.first_page_strings = None
-        cls.test_document = cls.project.get_category_by_id(3).test_documents()[0]
+        cls.test_document = cls.project.get_category_by_id(3).test_documents()[0]  # a multi-file test Document
         cls.wrong_test_document = cls.project.get_category_by_id(4).test_documents()[-2]
 
     def test_evaluation_input_different_lengths(self):

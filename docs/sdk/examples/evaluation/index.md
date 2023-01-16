@@ -138,8 +138,8 @@ Suppose we ran the evaluation and received high results: only one first Page was
 were predicted first/non-first correctly. The implementation of the Evaluation would look like this:
 ```python
 splitting_ai = SplittingAI(YOUR_MODEL_HERE)
-pred_1 = splitting_ai.propose_split_documents(document_1, return_pages=True)
-pred_2 = splitting_ai.propose_split_documents(document_2, return_pages=True)
+pred_1: Document = splitting_ai.propose_split_documents(document_1, return_pages=True)[0] 
+pred_2: Document = splitting_ai.propose_split_documents(document_2, return_pages=True)[0]
 evaluation = FileSplittingEvaluation(ground_truth_documents=[document_1, document_2], 
                                      prediction_documents=[pred_1, pred_2])
 print(evaluation.tp()) # returns: 3
