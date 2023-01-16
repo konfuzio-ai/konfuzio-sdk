@@ -1,4 +1,7 @@
-.. \_Document Validation UI overview:
+.. meta::
+:description: overview of the Document Validation UI
+
+.. \_Konfuzio Document Validation UI overview:
 
 # What is the Konfuzio Document Validation UI?
 
