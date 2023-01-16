@@ -1716,10 +1716,33 @@ class Document(Data):
 
     def __repr__(self):
         """Return the name of the Document incl. the ID."""
-        if self.copy_of_id:
-            return f"Document {self.name} ({self.copy_of_id})"
+        if self.id_ is None:
+            return f"Virtual Document {self.name} ({self.copy_of_id})"
         else:
             return f"Document {self.name} ({self.id_})"
+
+    def update_meta_data(
+        self,
+        assignee: int = None,
+        category_template: int = None,
+        category: Category = None,
+        data_file_name: str = None,
+        dataset_status: int = None,
+        **kwargs,
+    ):
+        """Update document metadata information."""
+        self.assignee = assignee
+
+        if self.project and category_template:
+            self.category = self.project.get_category_by_id(category_template)
+        elif category:
+            self.category = category
+        else:
+            self.category = None
+
+        self.name = data_file_name
+
+        self.dataset_status = dataset_status
 
     @classmethod
     def from_file(
@@ -1730,7 +1753,7 @@ class Document(Data):
         category_id: Union[None, int] = None,
         callback_url: str = '',
         sync: bool = False,
-    ) -> int:
+    ) -> 'Document':
         """Initialize document from file."""
         response = upload_file_konfuzio_api(
             path,
@@ -1748,8 +1771,13 @@ class Document(Data):
 
         if sync:
             project.init_or_update_document(from_online=True)
+            doc = project.get_document_by_id(new_document_id)
+        else:
+            doc = Document(
+                id_=new_document_id, project=project, category_template=category_id, dataset_status=dataset_status
+            )
 
-        return new_document_id
+        return doc  # new_document_id
 
     @property
     def file_path(self):
@@ -2615,6 +2643,11 @@ class Project(Data):
         return [doc for doc in self._documents if doc.dataset_status == 2]
 
     @property
+    def online_documents_dict(self) -> Dict:
+        """Return a dictionary of online documents using their id as key."""
+        return {doc.id_: doc for doc in self._documents if isinstance(doc.id_, int)}
+
+    @property
     def virtual_documents(self):
         """Return Documents created virtually."""
         return [doc for doc in self._documents if doc.dataset_status is None or doc.id_ is None]
@@ -2691,13 +2724,6 @@ class Project(Data):
 
         :param update: Update the downloaded information even it is already available
         """
-        if is_file(self.meta_file_path, raise_exception=False):
-            logger.debug("Keep your local information about Documents to be able to do a partial update.")
-            with open(self.meta_file_path, "r") as f:
-                self.old_meta_data = json.load(f)
-        else:
-            self.old_meta_data = []
-
         pathlib.Path(self.project_folder).mkdir(parents=True, exist_ok=True)
         pathlib.Path(self.documents_folder).mkdir(parents=True, exist_ok=True)
         pathlib.Path(self.regex_folder).mkdir(parents=True, exist_ok=True)
@@ -2759,8 +2785,11 @@ class Project(Data):
         :return: Information of the Documents in the Project.
         """
         if not self._meta_data or reload:
+            if self._meta_data:
+                self.old_meta_data = self._meta_data
             with open(self.meta_file_path, "r") as f:
                 self._meta_data = json.load(f)
+
         return self._meta_data
 
     @property
@@ -2830,30 +2859,36 @@ class Project(Data):
 
     def init_or_update_document(self, from_online=False):
         """Initialize Document to then decide about full, incremental or no update."""
-        self._documents = []  # clean up Documents to not create duplicates
+        # self._documents = []  # clean up Documents to not create duplicates
+        local_docs_dict = self.online_documents_dict
         if from_online:
             self.write_meta_of_files()
             self.get_meta(reload=True)
+        updated_docs_ids_set = set()  # delete all docs not in the list at the end
         for document_data in self.meta_data:
+            updated_docs_ids_set.add(document_data['id'])
             if document_data['status'][0] == 2:  # NOQA - hotfix for Text Annotation Server # todo add test
+
                 new_date = document_data["updated_at"]
-                new = True
-                updated = None
-                if self.old_meta_data:
-                    new = document_data["id"] not in [doc["id"] for doc in self.old_meta_data]
-                    if not new:
-                        last_date = [d["updated_at"] for d in self.old_meta_data if d['id'] == document_data["id"]][0]
-                        updated = dateutil.parser.isoparse(new_date) > dateutil.parser.isoparse(last_date)
+                updated = False
+                new = document_data["id"] not in local_docs_dict
+                if not new:
+                    last_date = local_docs_dict[document_data['id']].updated_at
+                    updated = dateutil.parser.isoparse(new_date) > last_date if last_date is not None else True
 
                 if updated:
-                    doc = Document(project=self, update=True, id_=document_data['id'], **document_data)
+                    doc = local_docs_dict[document_data['id']]
+                    doc.update_meta_data(**document_data)
                     logger.info(f'{doc} was updated, we will download it again as soon you use it.')
                 elif new:
                     doc = Document(project=self, update=True, id_=document_data['id'], **document_data)
                     logger.info(f'{doc} is not available on your machine, we will download it as soon you use it.')
                 else:
-                    doc = Document(project=self, update=False, id_=document_data['id'], **document_data)
-                    logger.debug(f'Load local version of {doc} from {new_date}.')
+                    logger.debug(f'Unchanged local version of {doc} from {new_date}.')
+
+        to_delete_ids = set(local_docs_dict.keys()) - updated_docs_ids_set
+        for to_del_id in to_delete_ids:
+            local_docs_dict[to_del_id].delete(delete_online=False)
 
     def get_document_by_id(self, document_id: int) -> Document:
         """Return Document by its ID."""
