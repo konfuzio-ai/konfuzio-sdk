@@ -450,6 +450,7 @@ def upload_file_konfuzio_api(
     }
 
     r = session.post(url=url, files=files, data=data)
+    r.raise_for_status()
     return r
 
 
@@ -465,7 +466,7 @@ def delete_file_konfuzio_api(document_id: int, session=_konfuzio_session()):
     data = {'id': document_id}
 
     r = session.delete(url=url, json=data)
-    assert r.status_code == 204
+    r.raise_for_status()
     return True
 
 
