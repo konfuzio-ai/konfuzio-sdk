@@ -6,6 +6,9 @@ import unittest
 import pytest
 from copy import deepcopy
 import parameterized
+from typing import List, Dict
+
+import torch
 
 from konfuzio_sdk.data import Project, Document, Page
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, ConnectedTextTokenizer
@@ -13,6 +16,8 @@ from konfuzio_sdk.trainer.tokenization import PhraseMatcherTokenizer
 
 from konfuzio_sdk.trainer.document_categorization import (
     FallbackCategorizationModel,
+    AbstractClassificationModule,
+    AbstractTextClassificationModule,
     CategorizationAI,
     DocumentMultimodalClassifier,
     DocumentTextClassifier,
@@ -191,6 +196,172 @@ class TestFallbackCategorizationModel(unittest.TestCase):
         assert test_receipt_document.category is None
         for page in test_receipt_document.pages():
             assert page.category is None
+
+
+class TestAbstractClassificationModule(unittest.TestCase):
+    """Test general functionality that uses nn.Module classes for classification."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Initialize the classifier and test setup."""
+        # DummyClassifier definition
+        class DummyClassifier(AbstractClassificationModule):
+            def _valid(self) -> None:
+                """Validate architecture sizes."""
+                pass
+
+            def _load_architecture(self) -> None:
+                """Load NN architecture."""
+                pass
+
+            def _define_features(self) -> None:
+                """Define number of features as self.n_features: int."""
+                self.n_features = 0
+
+        cls.classifier = DummyClassifier()
+
+    def test_create_instance(self):
+        """Test create instance of the AbstractClassificationModule."""
+        with pytest.raises(TypeError, match="Can't instantiate abstract class AbstractClassificationModule"):
+            _ = AbstractClassificationModule()
+
+
+class TestAbstractTextClassificationModule(unittest.TestCase):
+    """Test general functionality that uses nn.Module classes for text classification."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Initialize the classifier and test setup."""
+        # DummyClassifier definition
+        class DummyTextClassifier(AbstractTextClassificationModule):
+            def _valid(self) -> None:
+                """Validate architecture sizes."""
+                pass
+
+            def _load_architecture(self) -> None:
+                """Load NN architecture."""
+                pass
+
+            def _define_features(self) -> None:
+                """Define number of features as self.n_features: int."""
+                self.n_features = self.emb_dim
+
+            def _output(self, text: torch.Tensor) -> List[torch.FloatTensor]:
+                """Define number of features as self.n_features: int."""
+                features = torch.ones([1, self.input_dim, self.emb_dim], dtype=torch.int64)
+                if self.uses_attention:
+                    attention = torch.ones([1, self.input_dim, self.input_dim], dtype=torch.int64)
+                    return [features, attention]
+                else:
+                    return [features]
+
+        cls.classifier = DummyTextClassifier(input_dim=100, emb_dim=64)
+
+    def test_create_instance(self):
+        """Test create instance of the AbstractTextClassificationModule."""
+        with pytest.raises(TypeError, match="Can't instantiate abstract class AbstractTextClassificationModule"):
+            _ = AbstractTextClassificationModule()
+
+    def test_n_features(self):
+        """Test number of features."""
+        assert self.classifier.n_features == 64
+
+    @pytest.mark.parametrize("uses_attention", [True, False])
+    def test_output(self):
+        """Test output shape of the text classifier."""
+        text = torch.ones([1, self.classifier.input_dim], dtype=torch.int64)
+        result: List[torch.FloatTensor] = self.classifier._output(text=text)
+        if self.classifier.uses_attention:
+            # In trainer/document_categorization.py, only NBOWSelfAttention and BERT use attention
+            # (see docstring of the classes for details)
+            assert len(result) == 2
+            assert result[1].shape == (1, self.classifier.input_dim, self.classifier.input_dim)
+        else:
+            assert len(result) == 1
+            assert result[0].shape == (1, self.classifier.input_dim, self.classifier.n_features)
+
+
+@parameterized.parameterized_class(
+    ('text_class', 'input_dim', 'emb_dim', 'n_heads', 'test_name'),
+    [
+        (NBOW, 100, 64, None, 'nbow'),
+        (NBOWSelfAttention, 100, 64, 8, 'nbowselfattention'),
+        (NBOWSelfAttention, 100, 64, 8, 'nbowselfattention-invalid'),
+        (LSTM, 100, 64, None, 'lstm'),
+        (BERT, 100, None, None, 'bert-base-german-cased'),
+        (BERT, 100, None, None, 'bert-base-german-dbmdz-cased'),
+        (BERT, 100, None, None, 'bert-base-german-dbmdz-uncased'),
+        (BERT, 100, None, None, 'distilbert-base-german-cased'),
+    ],
+)
+class TestTextClassifiers(unittest.TestCase):
+    """
+    Test the currently four text modules available (NBOW, NBOWSelfAttention, LSTM, BERT).
+
+    Each module takes a sequence of tokens as input and outputs a sequence of “hidden states”, i.e. one vector per
+    input token. The size of each of the hidden states can be found with the module’s `n_features` parameter.
+    """
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set up the Text Classifier."""
+        cls.text_module = cls.text_class(
+            input_dim=cls.input_dim, emb_dim=cls.emb_dim, n_heads=cls.n_heads, name=cls.test_name
+        )
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """Delete the Text Classifier."""
+        del cls.text_module
+
+    def test_valid(self) -> None:
+        """Test _valid method."""
+        if self.test_name == "nbowselfattention-invalid":
+            with pytest.raises(ValueError, match="must be a multiple of n_heads"):
+                _ = NBOWSelfAttention(input_dim=self.input_dim, emb_dim=self.emb_dim, n_heads=self.n_heads + 1)
+
+    def test_n_features(self) -> None:
+        """Test n_features."""
+        if "bert" in self.test_name:
+            # The transformers library stores the number of features in the config dict so no need to check the value
+            assert self.text_module._feature_size in self.text_module.bert.config.to_dict()
+            return
+        bidirectional = self.text_module.bidirectional
+        n_features = self.text_module.n_features
+        emb_dim = self.text_module.emb_dim
+        if bidirectional is None:
+            # Only trainer/document_categorization.py::LSTM has a bidirectional option
+            # (see docstring of the classes for details)
+            assert n_features == emb_dim
+        else:
+            hid_dim = self.text_module.hid_dim
+            assert n_features == hid_dim * 2 if bidirectional else hid_dim
+
+    def test_output(self) -> None:
+        """Test collect output of NN architecture."""
+        text = torch.ones([1, self.text_module.input_dim], dtype=torch.int64)
+        result: List[torch.FloatTensor] = self.text_module._output(text=text)
+        if self.text_module.uses_attention:
+            # In trainer/document_categorization.py, only NBOWSelfAttention and BERT use attention
+            # (see docstring of the classes for details)
+            assert len(result) == 2
+            assert result[1].shape == (1, self.text_module.input_dim, self.text_module.input_dim)
+        else:
+            assert len(result) == 1
+            assert result[0].shape == (1, self.text_module.input_dim, self.text_module.n_features)
+
+    def test_forward(self) -> None:
+        """Test the computation performed at every call."""
+        text = torch.ones([1, self.text_module.input_dim], dtype=torch.int64)
+        input_ = {'text': text}
+        res: Dict[str, torch.FloatTensor] = self.text_module(input=input_)
+        assert 'features' in res
+        assert res['features'].shape == (1, self.text_module.input_dim, self.text_module.n_features)
+        if self.text_module.uses_attention:
+            # In trainer/document_categorization.py, only NBOWSelfAttention and BERT use attention
+            # (see docstring of the classes for details)
+            assert 'attention' in res
+            assert res['attention'].shape == (1, self.text_module.input_dim, self.text_module.input_dim)
 
 
 @parameterized.parameterized_class(

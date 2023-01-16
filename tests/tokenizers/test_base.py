@@ -91,9 +91,8 @@ class TestAbstractTokenizer(unittest.TestCase):
 
     def test_create_instance(self):
         """Test create instance of the AbstractTokenizer."""
-        with self.assertRaises(TypeError) as context:
+        with pytest.raises(TypeError, match="Can't instantiate abstract class AbstractTokenizer"):
             _ = AbstractTokenizer()
-            assert "Can't instantiate abstract class AbstractTokenizer with abstract methods" in context
 
     def test_string_representation(self):
         """Test string representation."""

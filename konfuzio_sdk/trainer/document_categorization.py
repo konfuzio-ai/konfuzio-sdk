@@ -1,4 +1,5 @@
 """Implements a Categorization Model."""
+import abc
 import collections
 import functools
 import os
@@ -143,21 +144,22 @@ class FallbackCategorizationModel:
         return target_doc
 
 
-class ClassificationModule(nn.Module):
+class AbstractClassificationModule(nn.Module, metaclass=abc.ABCMeta):
     """Define general functionality to work with nn.Module classes used for classification."""
 
+    @abc.abstractmethod
     def _valid(self) -> None:
         """Validate architecture sizes."""
-        raise NotImplementedError
 
+    @abc.abstractmethod
     def _load_architecture(self) -> None:
         """Load NN architecture."""
-        raise NotImplementedError
 
+    @abc.abstractmethod
     def _define_features(self) -> None:
-        """Define number of features as self.n_features: int."""
-        raise NotImplementedError
+        """Define number of features as `self.n_features: int`."""
 
+    # noqa: F821, we use trainer/information_extraction.py::load_model function
     def from_pretrained(self, load: Union[None, str, Dict] = None):
         """Load a module from a pre-trained state."""
         if load is None:
@@ -172,7 +174,7 @@ class ClassificationModule(nn.Module):
             raise ValueError(f'input to from_pretrained should be None, str or dict, got {type(load)}')
 
 
-class TextClassificationModule(ClassificationModule):
+class AbstractTextClassificationModule(AbstractClassificationModule, metaclass=abc.ABCMeta):
     """Define general functionality to work with nn.Module classes used for text classification."""
 
     def __init__(
@@ -185,19 +187,22 @@ class TextClassificationModule(ClassificationModule):
         super().__init__()
 
         self.input_dim = input_dim
+        self.bidirectional = None
+        self.emb_dim = None
 
         for argk, argv in kwargs.items():
             setattr(self, argk, argv)
 
         self._valid()
         self._load_architecture()
+        self.uses_attention = False
         self._define_features()
 
         self.from_pretrained(load)
 
+    @abc.abstractmethod
     def _output(self, text: torch.Tensor) -> List[torch.FloatTensor]:
         """Collect output of NN architecture."""
-        raise NotImplementedError
 
     def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
         """Define the computation performed at every call."""
@@ -212,8 +217,20 @@ class TextClassificationModule(ClassificationModule):
         return output
 
 
-class NBOW(TextClassificationModule):
-    """NBOW classification model."""
+class NBOW(AbstractTextClassificationModule):
+    """
+    The neural bag-of-words (NBOW) model is the simplest of models, it passes each token through an embedding layer.
+
+    As shown in the fastText paper (https://arxiv.org/abs/1607.01759) this model is still able to achieve comparable
+    performance to some deep learning models whilst being considerably faster.
+
+    One downside of this model is that tokens are embedded without regards to the surrounding context in which they
+    appear, e.g. the embedding for “May” in the two sentences “May I speak to you?” and “I am leaving on the 1st of May”
+    are identical, even though they have different semantics.
+
+    :param emb_dim: The dimensions of the embedding vector.
+    :param dropout_rate: The amount of dropout applied to the embedding vectors.
+    """
 
     def __init__(
         self,
@@ -245,8 +262,19 @@ class NBOW(TextClassificationModule):
         return [text_features]
 
 
-class NBOWSelfAttention(TextClassificationModule):
-    """NBOW classification model with multi-headed self attention."""
+class NBOWSelfAttention(AbstractTextClassificationModule):
+    """
+    This is an NBOW model with a multi-headed self-attention layer, which is added after the embedding layer.
+
+    See details at https://arxiv.org/abs/1706.03762.
+    The self-attention layer effectively contextualizes the output as now each hidden state is calculated from the
+    embedding vector of a token and the embedding vector of all other tokens within the sequence.
+
+    :param emb_dim: The dimensions of the embedding vector.
+    :param dropout_rate: The amount of dropout applied to the embedding vectors.
+    :param n_heads: The number of attention heads to use in the multi-headed self-attention layer. Note that `n_heads`
+    must be a factor of `emb_dim`, i.e. `emb_dim % n_heads == 0`.
+    """
 
     def __init__(
         self,
@@ -259,12 +287,12 @@ class NBOWSelfAttention(TextClassificationModule):
     ):
         """Init and set parameters."""
         super().__init__(input_dim=input_dim, emb_dim=emb_dim, n_heads=n_heads, dropout_rate=dropout_rate, load=load)
+        self.uses_attention = True
 
     def _valid(self) -> None:
         """Check that the embedding size is a multiple of the number of heads."""
-        assert (
-            self.emb_dim % self.n_heads == 0
-        ), f'emb_dim ({self.emb_dim}) must be a multiple of n_heads ({self.n_heads})'
+        if self.emb_dim % self.n_heads != 0:
+            raise ValueError(f'emb_dim ({self.emb_dim}) must be a multiple of n_heads ({self.n_heads})')
 
     def _load_architecture(self) -> None:
         """Load NN architecture."""
@@ -284,8 +312,21 @@ class NBOWSelfAttention(TextClassificationModule):
         return [text_features, attention]
 
 
-class LSTM(TextClassificationModule):
-    """A long short-term memory (LSTM) model."""
+class LSTM(AbstractTextClassificationModule):
+    """
+    The LSTM (long short-term memory) is a variant of a RNN (recurrent neural network).
+
+    It feeds the input tokens through an embedding layer and then processes them sequentially with the LSTM, outputting
+    a hidden state for each token. If the LSTM is bi-directional then it trains a forward and backward LSTM per layer
+    and concatenates the forward and backward hidden states for each token.
+
+    :param emb_dim: The dimensions of the embedding vector.
+    :param hid_dim: The dimensions of the hidden states.
+    :param n_layers: How many LSTM layers to use.
+    :param bidirectional: If the LSTM should be bidirectional.
+    :param dropout_rate: The amount of dropout applied to the embedding vectors and between LSTM layers if
+    `n_layers > 1`.
+    """
 
     def __init__(
         self,
@@ -337,8 +378,27 @@ class LSTM(TextClassificationModule):
         return [text_features]
 
 
-class BERT(TextClassificationModule):
-    """Wraps around pre-trained BERT-type models from the HuggingFace library."""
+class BERT(AbstractTextClassificationModule):
+    """
+    Wraps around pre-trained BERT-type models from the HuggingFace library.
+
+    BERT (bi-directional encoder representations from Transformers) is a family of large Transformer models. The
+    available BERT variants are all pre-trained models provided by the transformers library. It is usually infeasible
+    to train a BERT model from scratch due to the significant amount of computation required. However, the pre-trained
+    models can be easily fine-tuned on desired data.
+
+    The BERT variants, i.e. name arguments, that are covered by internal tests are:
+        - `bert-base-german-cased`
+        - `bert-base-german-dbmdz-cased`
+        - `bert-base-german-dbmdz-uncased`
+        - `distilbert-base-german-cased`
+
+    In theory, all variants beginning with `bert-base-*` and `distilbert-*` should work out of the box. Other BERT
+    variants come with no guarantees.
+
+    :param name: The name of the pre-trained BERT variant to use.
+    :param freeze: Should the BERT model be frozen, i.e. the pre-trained parameters are not updated.
+    """
 
     def __init__(
         self,
@@ -350,6 +410,7 @@ class BERT(TextClassificationModule):
     ):
         """Initialize BERT model from the HuggingFace library."""
         super().__init__(input_dim=input_dim, name=name, freeze=freeze, load=load)
+        self.uses_attention = True
 
     def _valid(self) -> None:
         """Check that the specified HuggingFace model has a hidden_size key or a dim key in its configuration dict."""
@@ -406,11 +467,13 @@ class DocumentClassifier(nn.Module):
 class DocumentTextClassifier(DocumentClassifier):
     """Classifies a document based on the text on each page only."""
 
-    def __init__(self, text_module: TextClassificationModule, output_dim: int, dropout_rate: float = 0.0, **kwargs):
+    def __init__(
+        self, text_module: AbstractTextClassificationModule, output_dim: int, dropout_rate: float = 0.0, **kwargs
+    ):
         """Initialize the classifier."""
         super().__init__()
 
-        assert isinstance(text_module, TextClassificationModule)
+        assert isinstance(text_module, AbstractTextClassificationModule)
 
         self.text_module = text_module
         self.output_dim = output_dim
@@ -434,7 +497,7 @@ class DocumentTextClassifier(DocumentClassifier):
         return output
 
 
-class ImageClassificationModule(ClassificationModule):
+class ImageClassificationModule(AbstractClassificationModule, metaclass=abc.ABCMeta):
     """Define general functionality to work with nn.Module classes used for image classification."""
 
     def __init__(
@@ -461,13 +524,13 @@ class ImageClassificationModule(ClassificationModule):
 
         self.from_pretrained(load)
 
+    @abc.abstractmethod
     def _freeze(self) -> None:
         """Define how model weights are frozen."""
-        raise NotImplementedError
 
+    @abc.abstractmethod
     def _output(self, image: torch.Tensor) -> List[torch.FloatTensor]:
         """Collect output of NN architecture."""
-        raise NotImplementedError
 
     def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
         """Define the computation performed at every call."""
@@ -592,7 +655,7 @@ class DocumentImageClassifier(DocumentClassifier):
         return output
 
 
-class MultimodalClassificationModule(ClassificationModule):
+class MultimodalClassificationModule(AbstractClassificationModule, metaclass=abc.ABCMeta):
     """Define general functionality to work with nn.Module classes used for image and text classification."""
 
     def __init__(
@@ -618,9 +681,9 @@ class MultimodalClassificationModule(ClassificationModule):
 
         self.from_pretrained(load)
 
+    @abc.abstractmethod
     def _output(self, image_features: torch.Tensor, text_features: torch.Tensor) -> torch.FloatTensor:
         """Collect output of NN architecture."""
-        raise NotImplementedError
 
     def forward(self, input: Dict[str, torch.Tensor]) -> Dict[str, torch.FloatTensor]:
         """Define the computation performed at every call."""
@@ -694,7 +757,7 @@ class DocumentMultimodalClassifier(DocumentClassifier):
     def __init__(
         self,
         image_module: ImageClassificationModule,
-        text_module: TextClassificationModule,
+        text_module: AbstractTextClassificationModule,
         multimodal_module: MultimodalClassificationModule,
         output_dim: int,
         dropout_rate: float = 0.0,
@@ -703,7 +766,7 @@ class DocumentMultimodalClassifier(DocumentClassifier):
         """Init and set parameters."""
         super().__init__()
 
-        assert isinstance(text_module, TextClassificationModule)
+        assert isinstance(text_module, AbstractTextClassificationModule)
         assert isinstance(image_module, ImageClassificationModule)
         assert isinstance(multimodal_module, MultimodalClassificationModule)
 
