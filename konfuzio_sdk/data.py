@@ -1620,7 +1620,7 @@ class Document(Data):
         project: 'Project',
         id_: Union[int, None] = None,
         file_url: str = None,
-        status=None,
+        status: List[Union[int, str]] = None,  # ?
         data_file_name: str = None,
         is_dataset: bool = None,
         dataset_status: int = None,
@@ -1694,7 +1694,6 @@ class Document(Data):
         self._characters: Dict[int, Bbox] = None
         self._bbox_hash = None
         self._bbox_json = bbox
-        self.bboxes_available: bool = True if (self.is_online or self._bbox_json) else False
         self._strict_bbox_validation = strict_bbox_validation
         self._hocr = None
         self._pages: List[Page] = []
@@ -1710,6 +1709,12 @@ class Document(Data):
         self.pages_file_path = os.path.join(self.document_folder, "pages.json5")
         self.bbox_file_path = os.path.join(self.document_folder, "bbox.zip")
         self.bio_scheme_file_path = os.path.join(self.document_folder, "bio_scheme.txt")
+
+        self.bboxes_available: bool = (
+            True
+            if (self.is_online or self._bbox_json or is_file(self.bbox_file_path, raise_exception=False))
+            else False
+        )
 
         if pages:
             self.pages()  # create page instances
@@ -1728,6 +1733,7 @@ class Document(Data):
         category: Category = None,
         data_file_name: str = None,
         dataset_status: int = None,
+        status: List[Union[int, str]] = None,
         **kwargs,
     ):
         """Update document metadata information."""
@@ -1741,6 +1747,8 @@ class Document(Data):
             self.category = None
 
         self.name = data_file_name
+
+        self.status = status
 
         self.dataset_status = dataset_status
 
@@ -1763,9 +1771,6 @@ class Document(Data):
             callback_url=callback_url,
             sync=sync,
         )
-        if response.status_code != 201:
-            logger.error(f"File upload resulted in response {response.status_code=}")
-            return -1
 
         new_document_id = json.loads(response.text)['id']
 
@@ -1777,7 +1782,7 @@ class Document(Data):
                 id_=new_document_id, project=project, category_template=category_id, dataset_status=dataset_status
             )
 
-        return doc  # new_document_id
+        return doc
 
     @property
     def file_path(self):
@@ -2610,6 +2615,8 @@ class Project(Data):
         """
         self.id_local = next(Data.id_iter)
         self.id_ = id_  # A Project with None ID is not retrieved from the HOST
+        if self.id_ is None:
+            self.set_offline()
         self._project_folder = project_folder
         self.categories: List[Category] = []
         self._label_sets: List[LabelSet] = []
@@ -2884,7 +2891,10 @@ class Project(Data):
                     doc = Document(project=self, update=True, id_=document_data['id'], **document_data)
                     logger.info(f'{doc} is not available on your machine, we will download it as soon you use it.')
                 else:
+                    doc = local_docs_dict[document_data['id']]
                     logger.debug(f'Unchanged local version of {doc} from {new_date}.')
+            else:
+                logger.info(f"Doc data: {document_data}")
 
         to_delete_ids = set(local_docs_dict.keys()) - updated_docs_ids_set
         for to_del_id in to_delete_ids:
