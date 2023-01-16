@@ -1,9 +1,8 @@
-.. meta::
-:description: overview of the Document Validation UI
+.. \_Document Validation UI overview:
 
-# Document Validation UI
+# What is the Konfuzio Document Validation UI?
 
-The Document Validation UI is a collection of open source components, developed with [Vue.js](https://v2.vuejs.org/), that lets you preview and interact with Documents uploaded to [Konfuzio Server](https://konfuzio.com/).
+The Konfuzio Document Validation UI is a collection of open source components, developed with [Vue.js](https://v2.vuejs.org/), that lets you preview and interact with Documents uploaded to [Konfuzio Server](https://konfuzio.com/).
 
 ![dvui.png](./images/dvui.png)
 
