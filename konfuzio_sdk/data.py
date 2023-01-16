@@ -5,10 +5,11 @@ import json
 import logging
 import os
 import pathlib
-import re
+import regex as re
 import shutil
 import time
 import zipfile
+from copy import deepcopy
 from typing import Optional, List, Union, Tuple, Dict
 from warnings import warn
 
@@ -363,11 +364,6 @@ class AnnotationSet(Data):
         """Return string representation of the Annotation Set."""
         return f"{self.__class__.__name__}({self.id_}) of {self.label_set} in {self.document}."
 
-    def lose_weight(self):
-        """Delete data of the instance."""
-        self.label_set = None
-        self.document = None
-
     def annotations(self, use_correct: bool = True, ignore_below_threshold: bool = False):
         """All Annotations currently in this Annotation Set."""
         if not self._annotations:
@@ -526,6 +522,8 @@ class Category(Data):
         self._force_offline = project._force_offline
         self.label_sets: List[LabelSet] = []
         self.project.add_category(category=self)
+        self._exclusive_first_page_strings = None
+        self._exclusive_span_tokenizer = None
 
     @property
     def labels(self):
@@ -560,6 +558,50 @@ class Category(Data):
             self.label_sets.append(label_set)
         else:
             raise ValueError(f'In {self} the {label_set} is a duplicate and will not be added.')
+
+    def _collect_exclusive_first_page_strings(self, tokenizer):
+        """
+        Collect exclusive first-page string across the Documents within the Category.
+
+        :param tokenizer: A tokenizer to re-tokenize Documents within the Category before gathering the strings.
+        """
+        cur_first_page_strings = []
+        cur_non_first_page_strings = []
+        for doc in self.documents():
+            doc = deepcopy(doc)
+            doc = tokenizer.tokenize(doc)
+            for page in doc.pages():
+                if page.number == 1:
+                    cur_first_page_strings.append({span.offset_string for span in page.spans()})
+                else:
+                    cur_non_first_page_strings.append({span.offset_string for span in page.spans()})
+            doc.delete()
+        if not cur_first_page_strings:
+            cur_first_page_strings.append(set())
+        true_first_page_strings = set.intersection(*cur_first_page_strings)
+        if not cur_non_first_page_strings:
+            cur_non_first_page_strings.append(set())
+        true_not_first_page_strings = set.intersection(*cur_non_first_page_strings)
+        true_first_page_strings = true_first_page_strings - true_not_first_page_strings
+        self._exclusive_first_page_strings = list(true_first_page_strings)
+
+    def exclusive_first_page_strings(self, tokenizer):
+        """
+        Return a set of strings exclusive for first Pages of Documents within the Category.
+
+        :param tokenizer: A tokenizer to process Documents before gathering strings.
+        """
+        if self._exclusive_span_tokenizer is not None:
+            if tokenizer != self._exclusive_span_tokenizer:
+                logger.warning(
+                    "Assigned tokenizer does not correspond to the one previously used within this instance."
+                    "All previously found exclusive first-page strings within each Category will be removed "
+                    "and replaced with the newly generated ones."
+                )
+                self._collect_exclusive_first_page_strings(tokenizer)
+        if not self._exclusive_first_page_strings:
+            self._collect_exclusive_first_page_strings(tokenizer)
+        return self._exclusive_first_page_strings
 
     def __lt__(self, other: 'Category'):
         """Sort Categories by name."""
@@ -624,7 +666,6 @@ class Label(Data):
         self._regex = {}  # : List[str] = []
         # self._combined_tokens = None
         self.regex_file_path = os.path.join(self.project.regex_folder, f'{self.name_clean}.json5')
-        self._correct_annotations = []
         self._evaluations = {}  # used to do the duplicate check on Annotation level
 
     def __repr__(self):
@@ -796,7 +837,8 @@ class Label(Data):
         label_regex_token = self.base_regex(category=category, annotations=all_annotations)
 
         search = [1, 3, 5]
-        regex_to_remove_groupnames = re.compile('<.*?>')
+        regex_to_remove_groupnames = re.compile(r'<.*?>')
+        regex_to_remove_groupnames_full = re.compile(r'\(\?:\(\?P<[^>]+>([^\)]+)\)\)')
 
         naive_proposal = label_regex_token
         regex_made = []
@@ -821,7 +863,11 @@ class Label(Data):
                             ]
                             before_regex += suggest_regex_for_string(to_rep_offset_string, replace_characters=True)
                         else:
-                            before_regex += before_span.annotation.label.base_regex(category)
+                            base_before_regex = before_span.annotation.label.base_regex(category)
+                            stripped_base_before_regex = re.sub(
+                                regex_to_remove_groupnames_full, r'\1', base_before_regex
+                            )
+                            before_regex += stripped_base_before_regex
                     before_reg_dict[spacer] = before_regex
 
                     after_regex = ''
@@ -835,7 +881,10 @@ class Label(Data):
                             ]
                             after_regex += suggest_regex_for_string(to_rep_offset_string, replace_characters=True)
                         else:
-                            after_regex += after_span.annotation.label.base_regex(category)
+                            base_after_regex = after_span.annotation.label.base_regex(category)
+                            stripped_base_after_regex = re.sub(regex_to_remove_groupnames_full, r'\1', base_after_regex)
+                            after_regex += stripped_base_after_regex
+
                     after_reg_dict[spacer] = after_regex
 
                     spacer_proposals = [
@@ -931,6 +980,13 @@ class Label(Data):
                 if not tokenizer.span_match(span):
                     spans_not_found.append(span)
         return spans_not_found
+
+    def lose_weight(self):
+        """Delete data of the instance."""
+        super().lose_weight()
+        self._evaluations = {}
+        self._tokens = {}
+        self._regex = {}
 
     # def save(self) -> bool:
     #     """
@@ -1311,7 +1367,7 @@ class Annotation(Data):
                 if "start_offset" in bbox.keys() and "end_offset" in bbox.keys():
                     Span(start_offset=bbox["start_offset"], end_offset=bbox["end_offset"], annotation=self)
                 else:
-                    ValueError(f'SDK cannot read bbox of Annotation {self.id_} in {self.document}: {bbox}')
+                    raise ValueError(f'SDK cannot read bbox of Annotation {self.id_} in {self.document}: {bbox}')
         elif (
             bboxes is None
             and kwargs.get("start_offset", None) is not None
@@ -1603,6 +1659,11 @@ class Annotation(Data):
     def spans(self) -> List[Span]:
         """Return default entry to get all Spans of the Annotation."""
         return sorted(self._spans)
+
+    def lose_weight(self):
+        """Delete data of the instance."""
+        super().lose_weight()
+        self._tokens = []
 
 
 class Document(Data):
@@ -1988,6 +2049,8 @@ class Document(Data):
                 continue
             if not annotation.is_correct and annotation.revised:  # if marked as incorrect by user
                 continue
+            if annotation.label is self.project.no_label:
+                continue
             spans_num = 0
             for span in annotation.spans:
                 for i in range(span.start_offset, span.end_offset):
@@ -2007,6 +2070,19 @@ class Document(Data):
                 no_label_duplicates.add(annotation.label.id_)
 
         return sorted(annotations)
+
+    def lose_weight(self):
+        """Remove NO_LABEL, wrong and below threshold Annotations."""
+        super().lose_weight()
+        for annotation in self.annotations(use_correct=False, ignore_below_threshold=False):
+            if annotation.label is self.project.no_label:
+                logger.info("no_label")
+                annotation.delete()
+            elif not annotation.is_correct and (
+                not annotation.confidence or annotation.label.threshold > annotation.confidence or annotation.revised
+            ):
+                logger.info(annotation.confidence)
+                annotation.delete()
 
     @property
     def document_folder(self):
@@ -2510,13 +2586,29 @@ class Document(Data):
 
         return self._annotations
 
-    def propose_splitting(self, splitting_ai, first_page_spans) -> List:
+    def propose_splitting(self, splitting_ai, first_page_strings) -> List:
         """Propose splitting for a multi-file Document.
 
         :param splitting_ai: An initialized SplittingAI class
         """
-        proposed = splitting_ai.propose_split_documents(self, first_page_spans)
+        proposed = splitting_ai.propose_split_documents(self, first_page_strings)
         return proposed
+
+    def create_subdocument_from_page_range(self, start_page: Page, end_page: Page):
+        """Create a shorter Document from a Page range of an initial Document."""
+        pages_text = self.text[start_page.start_offset : end_page.end_offset]
+        new_doc = Document(project=self.project, id_=None, text=pages_text)
+        for page in self.pages():
+            if page.number in range(start_page.number, end_page.number):
+                _ = Page(
+                    id_=None,
+                    original_size=(page.height, page.width),
+                    document=new_doc,
+                    start_offset=page.start_offset,
+                    end_offset=page.end_offset,
+                    number=page.number,
+                )
+        return new_doc
 
 
 class Project(Data):
@@ -2865,7 +2957,6 @@ class Project(Data):
         for label in self.labels:
             label.lose_weight()
         self._documents = []
-        self._test_documents = []
         return self
 
 

@@ -179,11 +179,11 @@ class LocalTextProject(Project):
         # Document with overlapping Annotations to test view_annotation filtering
 
         doc_3_text = """anno1
-date1:08/12/2001   span1
-date2: 08/12/2001   span2
-uncertain
- last x
-"""
+        date1:08/12/2001   span1
+        date2: 08/12/2001   span2
+        uncertain
+         last x
+        """
         document = Document(project=self, category=category, text=doc_3_text, dataset_status=3)
         label_set_2 = LabelSet(id_=4, project=self, categories=[category])
         view_label = Label(id_=8, text='ViewLabelName', project=self, label_sets=[label_set_2])
@@ -299,157 +299,14 @@ uncertain
             spans=[Span(start_offset=68, end_offset=72)],
         )
 
-        # Documents with sub-Documents in them
-
-        text_3 = "Hi all,\nI like bread.\nI hope to get everything done soon.\nMorning,\nI'm glad to see you.\nMorning,"
-        document_3 = Document(id_=None, project=self, category=category_3, text=text_3, dataset_status=3)
-        _ = Page(
-            id_=None,
-            original_size=(320, 240),
-            document=document_3,
-            start_offset=0,
-            end_offset=21,
-            number=1,
+        _ = Annotation(
+            id_=25,
+            document=document,
+            is_correct=False,
+            label=self.no_label,
+            label_set=self.no_label_set,
+            spans=[Span(start_offset=67, end_offset=71)],
         )
-        _.is_first_page = True
-
-        _ = Page(
-            id_=None,
-            original_size=(320, 240),
-            document=document_3,
-            start_offset=22,
-            end_offset=57,
-            number=2,
-        )
-
-        _ = Page(
-            id_=None,
-            original_size=(320, 240),
-            document=document_3,
-            start_offset=58,
-            end_offset=66,
-            number=3,
-        )
-        _.is_first_page = True
-
-        _ = Page(
-            id_=None,
-            original_size=(320, 240),
-            document=document_3,
-            start_offset=67,
-            end_offset=87,
-            number=4,
-        )
-
-        _ = Page(
-            id_=None,
-            original_size=(320, 240),
-            document=document_3,
-            start_offset=88,
-            end_offset=97,
-            number=5,
-        )
-        _.is_first_page = True
-
-        text_4 = "Morning,\nI like bread.\n\fI hope to get everything done soon."
-        document_4 = Document(id_=None, project=self, category=category_3, text=text_4, dataset_status=2)
-        _ = Page(
-            id_=None,
-            original_size=(320, 240),
-            document=document_4,
-            start_offset=0,
-            end_offset=22,
-            number=1,
-        )
-
-        _ = Page(
-            id_=None,
-            original_size=(320, 240),
-            document=document_4,
-            start_offset=23,
-            end_offset=57,
-            number=2,
-        )
-
-        text_5 = "Morning,\nI like bread.\n\fWhat are your plans for today?"
-        document_5 = Document(id_=None, project=self, category=category_3, text=text_5, dataset_status=2)
-        _ = Page(
-            id_=None,
-            original_size=(320, 240),
-            document=document_5,
-            start_offset=0,
-            end_offset=22,
-            number=1,
-        )
-
-        _ = Page(
-            id_=None,
-            original_size=(320, 240),
-            document=document_5,
-            start_offset=23,
-            end_offset=52,
-            number=2,
-        )
-
-        text_6 = "Morning,\nI wanted to call you.\n\fWhat's up?"
-        document_6 = Document(id_=None, project=self, category=category_3, text=text_6, dataset_status=3)
-        _ = Page(
-            id_=None,
-            original_size=(320, 240),
-            document=document_6,
-            start_offset=0,
-            end_offset=30,
-            number=1,
-        )
-        _ = Page(
-            id_=None,
-            original_size=(320, 240),
-            document=document_6,
-            start_offset=31,
-            end_offset=41,
-            number=2,
-        )
-
-        text_7 = "Evening,\nI like fish.\n\fHow was your day?"
-        document_7 = Document(id_=None, project=self, category=category_4, text=text_7, dataset_status=2)
-        _ = Page(
-            id_=None,
-            original_size=(320, 240),
-            document=document_7,
-            start_offset=0,
-            end_offset=21,
-            number=1,
-        )
-
-        _ = Page(
-            id_=None,
-            original_size=(320, 240),
-            document=document_7,
-            start_offset=22,
-            end_offset=39,
-            number=2,
-        )
-
-        text_8 = "Hi all,\nI like bread.\nWhat are your plans for today?\nEvening,\nI like it.\nHow was your week?"
-        document_8 = Document(id_=None, project=self, category=category_3, text=text_8, dataset_status=3)
-        _ = Page(id_=None, original_size=(320, 240), document=document_8, start_offset=0, end_offset=21, number=1)
-        _ = Page(id_=None, original_size=(320, 240), document=document_8, start_offset=22, end_offset=53, number=2)
-        _ = Page(id_=None, original_size=(320, 240), document=document_8, start_offset=54, end_offset=74, number=3)
-        _.is_first_page = True
-        _ = Page(id_=None, original_size=(320, 240), document=document_8, start_offset=75, end_offset=93, number=4)
-
-        text_9 = (
-            "Hi all,\nI like bread.\nWhat are your plans for today?\nEvening,\nI like it.\nHow was your week? \n"
-            "Evening,"
-        )
-        document_9 = Document(id_=None, project=self, category=category_4, text=text_9, dataset_status=3)
-        _ = Page(id_=None, original_size=(320, 240), document=document_9, start_offset=0, end_offset=21, number=1)
-        _ = Page(id_=None, original_size=(320, 240), document=document_9, start_offset=22, end_offset=53, number=2)
-        _ = Page(id_=None, original_size=(320, 240), document=document_9, start_offset=54, end_offset=74, number=3)
-        _.is_first_page = True
-        _ = Page(id_=None, original_size=(320, 240), document=document_9, start_offset=75, end_offset=93, number=4)
-        _ = Page(id_=None, original_size=(320, 240), document=document_9, start_offset=95, end_offset=103, number=5)
-        _.is_first_page = True
 
         ##########
         # Documents to test vertical merging logic
@@ -638,3 +495,165 @@ a2  s4
             label_set=vert_label_set,
             spans=[Span(start_offset=25, end_offset=27)],
         )
+
+        # Documents with sub-Documents in them
+
+        text_3 = "Hi all,\nI like bread.\nI hope to get everything done soon.\nMorning,\nI'm glad to see you.\nMorning,"
+        document_3 = Document(id_=None, project=self, category=category_3, text=text_3, dataset_status=3)
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_3,
+            start_offset=0,
+            end_offset=21,
+            number=1,
+        )
+        _.is_first_page = True
+
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_3,
+            start_offset=22,
+            end_offset=57,
+            number=2,
+        )
+
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_3,
+            start_offset=58,
+            end_offset=66,
+            number=3,
+        )
+        _.is_first_page = True
+
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_3,
+            start_offset=67,
+            end_offset=87,
+            number=4,
+        )
+
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_3,
+            start_offset=88,
+            end_offset=97,
+            number=5,
+        )
+        _.is_first_page = True
+
+        text_4 = "Morning,\nI like bread.\n\fI hope to get everything done soon."
+        document_4 = Document(id_=None, project=self, category=category_3, text=text_4, dataset_status=2)
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_4,
+            start_offset=0,
+            end_offset=22,
+            number=1,
+        )
+
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_4,
+            start_offset=23,
+            end_offset=57,
+            number=2,
+        )
+
+        text_5 = "Morning,\nI like bread.\n\fWhat are your plans for today?"
+        document_5 = Document(id_=None, project=self, category=category_3, text=text_5, dataset_status=2)
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_5,
+            start_offset=0,
+            end_offset=22,
+            number=1,
+        )
+
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_5,
+            start_offset=23,
+            end_offset=52,
+            number=2,
+        )
+
+        text_6 = "Morning,\nI wanted to call you.\n\fWhat's up?"
+        document_6 = Document(id_=None, project=self, category=category_3, text=text_6, dataset_status=3)
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_6,
+            start_offset=0,
+            end_offset=30,
+            number=1,
+        )
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_6,
+            start_offset=31,
+            end_offset=41,
+            number=2,
+        )
+
+        text_7 = "Evening,\nI like fish.\n\fHow was your day?"
+        document_7 = Document(id_=None, project=self, category=category_4, text=text_7, dataset_status=2)
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_7,
+            start_offset=0,
+            end_offset=21,
+            number=1,
+        )
+
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document_7,
+            start_offset=22,
+            end_offset=39,
+            number=2,
+        )
+
+        text_8 = "Hi all,\nI like bread.\nWhat are your plans for today?\nEvening,\nI like it.\nHow was your week?"
+        document_8 = Document(id_=None, project=self, category=category_3, text=text_8, dataset_status=3)
+        _ = Page(id_=None, original_size=(320, 240), document=document_8, start_offset=0, end_offset=21, number=1)
+        _ = Page(id_=None, original_size=(320, 240), document=document_8, start_offset=22, end_offset=53, number=2)
+        _ = Page(id_=None, original_size=(320, 240), document=document_8, start_offset=54, end_offset=74, number=3)
+        _.is_first_page = True
+        _ = Page(id_=None, original_size=(320, 240), document=document_8, start_offset=75, end_offset=93, number=4)
+
+        text_9 = (
+            "Hi all,\nI like bread.\nWhat are your plans for today?\nEvening,\nI like it.\nHow was your week? \n"
+            "Evening,"
+        )
+        document_9 = Document(id_=None, project=self, category=category_4, text=text_9, dataset_status=3)
+        _ = Page(id_=None, original_size=(320, 240), document=document_9, start_offset=0, end_offset=21, number=1)
+        _ = Page(id_=None, original_size=(320, 240), document=document_9, start_offset=22, end_offset=53, number=2)
+        _ = Page(id_=None, original_size=(320, 240), document=document_9, start_offset=54, end_offset=74, number=3)
+        _.is_first_page = True
+        _ = Page(id_=None, original_size=(320, 240), document=document_9, start_offset=75, end_offset=93, number=4)
+        _ = Page(id_=None, original_size=(320, 240), document=document_9, start_offset=95, end_offset=103, number=5)
+        _.is_first_page = True
+
+        text_10 = "Hi all,\nI like bread.\nEvening,\nI like fish."
+        document_10 = Document(id_=None, project=self, category=category_4, text=text_10, dataset_status=3)
+        _ = Page(id_=None, original_size=(320, 240), document=document_10, start_offset=0, end_offset=21, number=1)
+        _ = Page(id_=None, original_size=(320, 240), document=document_10, start_offset=22, end_offset=43, number=2)
+
+        text_11 = "Hi all,\nI like bread.\nHow was your week?\n "
+        document_11 = Document(id_=None, project=self, category=category_4, text=text_11, dataset_status=3)
+        _ = Page(id_=None, original_size=(320, 240), document=document_11, start_offset=0, end_offset=21, number=1)
+        _ = Page(id_=None, original_size=(320, 240), document=document_11, start_offset=22, end_offset=40, number=2)

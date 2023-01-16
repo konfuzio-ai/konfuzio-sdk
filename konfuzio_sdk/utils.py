@@ -5,7 +5,8 @@ import itertools
 import logging
 import operator
 import os
-import re
+import pkg_resources
+import regex as re
 import unicodedata
 import zipfile
 from contextlib import contextmanager
@@ -996,3 +997,8 @@ def get_merged_bboxes(doc_bbox: Dict, bboxes: Union[Dict, List], doc_text: Optio
             bbox['offset_string_original'] = offset_string
 
     return merged_bboxes
+
+
+def get_sdk_version():
+    """Get a version of current Konfuzio SDK used."""
+    return pkg_resources.get_distribution("konfuzio-sdk").version
