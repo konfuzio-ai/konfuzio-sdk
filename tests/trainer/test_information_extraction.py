@@ -9,7 +9,9 @@ from pympler import asizeof
 import unittest
 import parameterized
 import os
+import sys
 from requests import HTTPError
+from pkg_resources import get_distribution
 
 import pytest
 import pandas as pd
@@ -341,6 +343,9 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         """Test loading of trained model."""
         self.pipeline = load_model(self.pipeline.pipeline_path)
 
+        assert self.pipeline.python_version == '.'.join([str(v) for v in sys.version_info[:3]])
+        assert self.pipeline.konfuzio_sdk_version == get_distribution("konfuzio_sdk").version
+
         assert self.pipeline.documents == []
         assert self.pipeline.test_documents == []
 
@@ -531,6 +536,9 @@ class TestRegexRFExtractionAI(unittest.TestCase):
     def test_13_load_ai_model(self):
         """Test loading of trained model."""
         self.pipeline = load_model(self.pipeline.pipeline_path)
+
+        assert self.pipeline.python_version == '.'.join([str(v) for v in sys.version_info[:3]])
+        assert self.pipeline.konfuzio_sdk_version == get_distribution("konfuzio_sdk").version
 
         assert self.pipeline.documents == []
         assert self.pipeline.test_documents == []
