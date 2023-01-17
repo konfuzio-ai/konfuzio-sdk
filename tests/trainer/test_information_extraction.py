@@ -12,6 +12,7 @@ import unittest
 import parameterized
 import os
 import sys
+import shutil
 from requests import HTTPError
 from pkg_resources import get_distribution
 
