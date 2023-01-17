@@ -57,6 +57,8 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         self.project = self.categories[0].project  # we ensured that at least one Category is present
         self.documents = [document for category in self.categories for document in category.documents()]
         self.test_documents = [document for category in self.categories for document in category.test_documents()]
+        self.requires_text = False
+        self.requires_images = False
 
     @abc.abstractmethod
     def fit(self, *args, **kwargs):
@@ -142,6 +144,8 @@ class FusionModel(AbstractFileSplittingModel):
         super().__init__(categories=categories)
         self.name = self.__class__.__name__
         self.output_dir = self.project.model_folder
+        self.requires_images = True
+        self.requires_text = True
         self.train_txt_data = []
         self.train_img_data = None
         self.test_txt_data = []
@@ -311,6 +315,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         :raises ValueError: When a list passed into categories contains Categories from different Projects.
         """
         super().__init__(categories=categories)
+        self.requires_text = True
         self.name = self.__class__.__name__
         self.output_dir = self.project.model_folder
         self.tokenizer = tokenizer
@@ -378,10 +383,7 @@ class SplittingAI:
         else:
             self.model = model
         if isinstance(type(self.model), ContextAwareFileSplittingModel):
-            self.use_context_aware_logic = True
             self.tokenizer = self.model.tokenizer
-        else:
-            self.use_context_aware_logic = False
 
     def _suggest_first_pages(self, document: Document, inplace: bool = False) -> List[Document]:
         """
@@ -394,7 +396,7 @@ class SplittingAI:
         :returns: A list with a single Document – for the sake of unity across different prediction methods' returns
         in the class.
         """
-        if self.use_context_aware_logic:
+        if self.model.requires_images:
             if inplace:
                 document = self.tokenizer.tokenize(document)
             else:
@@ -415,7 +417,7 @@ class SplittingAI:
         :returns: A list of sub-Documents built from the original Document, based on model's prediction of first Pages.
         """
         suggested_splits = []
-        if self.use_context_aware_logic:
+        if self.tokenizer:
             document = self.tokenizer.tokenize(deepcopy(document))
         for page in document.pages():
             if page.number == 1:
@@ -456,7 +458,7 @@ class SplittingAI:
         :return: A list of suggested new sub-Documents built from the original Document or a list with a Document
         with Pages marked .is_first_page on splitting points.
         """
-        if not self.use_context_aware_logic:
+        if self.requires_images:
             document.get_images()
         if return_pages:
             processed = self._suggest_first_pages(document, inplace)
