@@ -11,7 +11,6 @@ from typing import List
 from konfuzio_sdk.data import Document, Page, Category
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
 from konfuzio_sdk.trainer.information_extraction import load_model, BaseModel
-from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 from konfuzio_sdk.utils import get_timestamp, normalize_memory
 
 logger = logging.getLogger(__name__)
@@ -189,13 +188,13 @@ class SplittingAI:
         :param model: A path to an existing .cloudpickle model or to a previously trained instance of
         ContextAwareFileSplittingModel().
         """
-        self.tokenizer = ConnectedTextTokenizer()
         if isinstance(model, str):
             self.model = load_model(model)
         else:
             self.model = model
         if not issubclass(type(self.model), AbstractFileSplittingModel):
             raise ValueError("The model is not inheriting from AbstractFileSplittingModel class.")
+        self.tokenizer = self.model.tokenizer
 
     def _suggest_first_pages(self, document: Document, inplace: bool = False) -> List[Document]:
         """
