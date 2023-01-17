@@ -9,6 +9,7 @@ import regex as re
 import shutil
 import time
 import zipfile
+from copy import deepcopy
 from typing import Optional, List, Union, Tuple, Dict
 from warnings import warn
 
@@ -521,6 +522,8 @@ class Category(Data):
         self._force_offline = project._force_offline
         self.label_sets: List[LabelSet] = []
         self.project.add_category(category=self)
+        self._exclusive_first_page_strings = None
+        self._exclusive_span_tokenizer = None
 
     @property
     def labels(self):
@@ -555,6 +558,50 @@ class Category(Data):
             self.label_sets.append(label_set)
         else:
             raise ValueError(f'In {self} the {label_set} is a duplicate and will not be added.')
+
+    def _collect_exclusive_first_page_strings(self, tokenizer):
+        """
+        Collect exclusive first-page string across the Documents within the Category.
+
+        :param tokenizer: A tokenizer to re-tokenize Documents within the Category before gathering the strings.
+        """
+        cur_first_page_strings = []
+        cur_non_first_page_strings = []
+        for doc in self.documents():
+            doc = deepcopy(doc)
+            doc = tokenizer.tokenize(doc)
+            for page in doc.pages():
+                if page.number == 1:
+                    cur_first_page_strings.append({span.offset_string for span in page.spans()})
+                else:
+                    cur_non_first_page_strings.append({span.offset_string for span in page.spans()})
+            doc.delete()
+        if not cur_first_page_strings:
+            cur_first_page_strings.append(set())
+        true_first_page_strings = set.intersection(*cur_first_page_strings)
+        if not cur_non_first_page_strings:
+            cur_non_first_page_strings.append(set())
+        true_not_first_page_strings = set.intersection(*cur_non_first_page_strings)
+        true_first_page_strings = true_first_page_strings - true_not_first_page_strings
+        self._exclusive_first_page_strings = true_first_page_strings
+
+    def exclusive_first_page_strings(self, tokenizer) -> set:
+        """
+        Return a set of strings exclusive for first Pages of Documents within the Category.
+
+        :param tokenizer: A tokenizer to process Documents before gathering strings.
+        """
+        if self._exclusive_span_tokenizer is not None:
+            if tokenizer != self._exclusive_span_tokenizer:
+                logger.warning(
+                    "Assigned tokenizer does not correspond to the one previously used within this instance."
+                    "All previously found exclusive first-page strings within each Category will be removed "
+                    "and replaced with the newly generated ones."
+                )
+                self._collect_exclusive_first_page_strings(tokenizer)
+        if not self._exclusive_first_page_strings:
+            self._collect_exclusive_first_page_strings(tokenizer)
+        return self._exclusive_first_page_strings
 
     def __lt__(self, other: 'Category'):
         """Sort Categories by name."""
@@ -791,7 +838,7 @@ class Label(Data):
 
         search = [1, 3, 5]
         regex_to_remove_groupnames = re.compile(r'<.*?>')
-        regex_to_remove_groupnames_full = re.compile(r'\(\?:\(\?P<[^>]+>([^\)]+)\)\)')
+        regex_to_remove_groupnames_full = re.compile(r'\?P<.*?>')
 
         naive_proposal = label_regex_token
         regex_made = []
@@ -817,9 +864,7 @@ class Label(Data):
                             before_regex += suggest_regex_for_string(to_rep_offset_string, replace_characters=True)
                         else:
                             base_before_regex = before_span.annotation.label.base_regex(category)
-                            stripped_base_before_regex = re.sub(
-                                regex_to_remove_groupnames_full, r'\1', base_before_regex
-                            )
+                            stripped_base_before_regex = re.sub(regex_to_remove_groupnames_full, '', base_before_regex)
                             before_regex += stripped_base_before_regex
                     before_reg_dict[spacer] = before_regex
 
@@ -835,7 +880,7 @@ class Label(Data):
                             after_regex += suggest_regex_for_string(to_rep_offset_string, replace_characters=True)
                         else:
                             base_after_regex = after_span.annotation.label.base_regex(category)
-                            stripped_base_after_regex = re.sub(regex_to_remove_groupnames_full, r'\1', base_after_regex)
+                            stripped_base_after_regex = re.sub(regex_to_remove_groupnames_full, '', base_after_regex)
                             after_regex += stripped_base_after_regex
 
                     after_reg_dict[spacer] = after_regex
@@ -2540,13 +2585,29 @@ class Document(Data):
 
         return self._annotations
 
-    def propose_splitting(self, splitting_ai, first_page_spans) -> List:
+    def propose_splitting(self, splitting_ai, first_page_strings) -> List:
         """Propose splitting for a multi-file Document.
 
         :param splitting_ai: An initialized SplittingAI class
         """
-        proposed = splitting_ai.propose_split_documents(self, first_page_spans)
+        proposed = splitting_ai.propose_split_documents(self, first_page_strings)
         return proposed
+
+    def create_subdocument_from_page_range(self, start_page: Page, end_page: Page):
+        """Create a shorter Document from a Page range of an initial Document."""
+        pages_text = self.text[start_page.start_offset : end_page.end_offset]
+        new_doc = Document(project=self.project, id_=None, text=pages_text)
+        for page in self.pages():
+            if page.number in range(start_page.number, end_page.number):
+                _ = Page(
+                    id_=None,
+                    original_size=(page.height, page.width),
+                    document=new_doc,
+                    start_offset=page.start_offset,
+                    end_offset=page.end_offset,
+                    number=page.number,
+                )
+        return new_doc
 
 
 class Project(Data):
@@ -2895,6 +2956,7 @@ class Project(Data):
         for label in self.labels:
             label.lose_weight()
         self._documents = []
+        self._meta_data = []
         return self
 
 
