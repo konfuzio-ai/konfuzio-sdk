@@ -18,9 +18,9 @@ class LocalTextProject(Project):
         default_label_set_2 = LabelSet(id_=2, project=self, name="CategoryName 2", categories=[category_2])
         default_label_2 = Label(id_=7, text='DefaultLabelName 2', project=self, label_sets=[default_label_set_2])
 
-        category_3 = Category(project=self, id_=3, name="CategoryName 3")
+        category_3 = Category(project=self, id_=3, name="FileSplittingCategory 1")
 
-        category_4 = Category(project=self, id_=4, name="CategoryName 4")
+        category_4 = Category(project=self, id_=4, name="FileSplittingCategory 2")
 
         label_set = LabelSet(id_=3, project=self, name="LabelSetName", categories=[category, category_2])
         label = Label(id_=4, text='LabelName', project=self, label_sets=[label_set])

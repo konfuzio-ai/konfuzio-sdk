@@ -1247,7 +1247,7 @@ class BaseModel(metaclass=abc.ABCMeta):
     def pkl_file_path(self):
         """Generate a path for a resulting pickle file."""
 
-    def save(self, include_konfuzio=True, reduce_weight=False, keep_documents=False, max_ram=None) -> str:
+    def save(self, include_konfuzio=True, reduce_weight=False, keep_documents=True, max_ram=None) -> str:
         """
         Save a pickled instance of the class.
 
@@ -1280,7 +1280,7 @@ class BaseModel(metaclass=abc.ABCMeta):
             # todo register all dependencies?
 
         logger.info('Saving model with cloudpickle')
-        # first save with cloudpickle
+        # first pickle
         temp_pkl_file_path = self.temp_pkl_file_path
         pkl_file_path = self.pkl_file_path
         if not keep_documents:

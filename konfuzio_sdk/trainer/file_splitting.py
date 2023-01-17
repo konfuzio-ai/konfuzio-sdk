@@ -21,7 +21,6 @@ from typing import List
 from konfuzio_sdk.data import Document, Page, Category
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
 from konfuzio_sdk.trainer.information_extraction import load_model, BaseModel
-from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 from konfuzio_sdk.utils import get_timestamp, normalize_memory
 
 logger = logging.getLogger(__name__)
@@ -365,23 +364,22 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
 class SplittingAI:
     """Split a given Document and return a list of resulting shorter Documents."""
 
-    def __init__(self, model="", tokenizer=ConnectedTextTokenizer()):
+    def __init__(self, model=""):
         """
         Initialize the class.
 
-        :param model: A path to an existing .cloudpickle model or to a previously trained instance of the model.
-        :param tokenizer: A tokenizer to use with ContextAwareFileSplittingModel in case this instance was passed into
-        model variable.
+        :param model: A path to an existing .cloudpickle model or to a previously trained instance of
+        ContextAwareFileSplittingModel().
         """
         if isinstance(model, str):
+            if not issubclass(type(self.model), AbstractFileSplittingModel):
+                raise ValueError("The model is not inheriting from AbstractFileSplittingModel class.")
             self.model = load_model(model)
         else:
             self.model = model
-        if not issubclass(type(self.model), AbstractFileSplittingModel):
-            raise ValueError("The model is not inheriting from AbstractFileSplittingModel class.")
         if isinstance(type(self.model), ContextAwareFileSplittingModel):
             self.use_context_aware_logic = True
-            self.tokenizer = tokenizer
+            self.tokenizer = self.model.tokenizer
         else:
             self.use_context_aware_logic = False
 
@@ -458,6 +456,8 @@ class SplittingAI:
         :return: A list of suggested new sub-Documents built from the original Document or a list with a Document
         with Pages marked .is_first_page on splitting points.
         """
+        if not self.use_context_aware_logic:
+            document.get_images()
         if return_pages:
             processed = self._suggest_first_pages(document, inplace)
         else:

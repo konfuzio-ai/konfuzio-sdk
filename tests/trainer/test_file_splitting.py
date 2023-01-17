@@ -6,11 +6,11 @@ import unittest
 
 from copy import deepcopy
 
-from konfuzio_sdk.data import Project, Category, Document
+from konfuzio_sdk.data import Category, Document, Project
 from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
-from konfuzio_sdk.trainer.document_categorization import FallbackCategorizationModel
 from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI, FusionModel
+from konfuzio_sdk.trainer.document_categorization import FallbackCategorizationModel
 from konfuzio_sdk.trainer.information_extraction import load_model
 
 

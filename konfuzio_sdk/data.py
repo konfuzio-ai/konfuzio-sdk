@@ -583,9 +583,9 @@ class Category(Data):
             cur_non_first_page_strings.append(set())
         true_not_first_page_strings = set.intersection(*cur_non_first_page_strings)
         true_first_page_strings = true_first_page_strings - true_not_first_page_strings
-        self._exclusive_first_page_strings = list(true_first_page_strings)
+        self._exclusive_first_page_strings = true_first_page_strings
 
-    def exclusive_first_page_strings(self, tokenizer):
+    def exclusive_first_page_strings(self, tokenizer) -> set:
         """
         Return a set of strings exclusive for first Pages of Documents within the Category.
 
