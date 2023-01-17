@@ -157,7 +157,7 @@ class FusionModel(AbstractFileSplittingModel):
         configuration.output_hidden_states = True
         self.bert_model = AutoModel.from_pretrained('nlpaueb/legal-bert-base-uncased', config=configuration)
         self.bert_tokenizer = BertTokenizer.from_pretrained(
-            'nlpaueb/legal-bert-base-uncased', do_lower_case=True, max_length=10000, padding="max_length", truncate=True
+            'nlpaueb/legal-bert-base-uncased', do_lower_case=True, max_length=2000, padding="max_length", truncate=True
         )
 
     def _preprocess_documents(self, data: List[Document]) -> (List[str], List[str], List[int]):
