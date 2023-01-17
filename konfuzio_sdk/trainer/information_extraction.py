@@ -101,7 +101,6 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     if hasattr(model, 'konfuzio_sdk_version'):
         logger.info(f"Loaded AI model trained with Konfuzio SDK version {model.konfuzio_sdk_version}")
 
-
     max_ram = normalize_memory(max_ram)
     if max_ram and asizeof.asizeof(model) > max_ram:
         logger.error(f"Loaded model's memory use ({asizeof.asizeof(model)}) is greater than max_ram ({max_ram})")
@@ -2475,7 +2474,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         label_set_clf_evaluation = Evaluation(eval_list)
 
-        return template_clf_evaluation
+        return label_set_clf_evaluation
 
     @property
     def temp_pkl_file_path(self) -> str:
@@ -2526,4 +2525,3 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         #     clean_annotations = list(set(document.annotations()) - set(no_label_annotations))
         #     document._annotations = clean_annotations
         self.category.project._documents = category_documents
-
