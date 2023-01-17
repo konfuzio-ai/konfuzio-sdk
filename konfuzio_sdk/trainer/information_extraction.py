@@ -19,6 +19,7 @@ import bz2
 import collections
 import difflib
 import functools
+import itertools
 import logging
 import konfuzio_sdk
 import os
@@ -36,11 +37,13 @@ import numpy
 import pandas
 import cloudpickle
 from pympler import asizeof
+from pkg_resources import get_distribution
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.validation import check_is_fitted
 from tabulate import tabulate
 
-from konfuzio_sdk.data import Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span
+from konfuzio_sdk.data import Data, Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span
+
 from konfuzio_sdk.normalize import (
     normalize_to_float,
     normalize_to_date,
@@ -69,8 +72,13 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     :raises TypeError: When the loaded pickle isn't recognized as a Konfuzio AI model.
     :return: Extraction AI model.
     """
+    logger.info(f"Starting loading AI model with path {pickle_path}")
+
     if not os.path.isfile(pickle_path):
         raise FileNotFoundError("Invalid pickle file path:", pickle_path)
+
+    # The current local id iterator might otherwise be overriden
+    prev_local_id = next(Data.id_iter)
 
     try:
         with bz2.open(pickle_path, 'rb') as file:
@@ -87,13 +95,13 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
         if "unsupported pickle protocol: 5" in str(err) and '3.7' in sys.version:
             raise ValueError("Pickle saved with incompatible Python version.") from err
         raise
-    if not issubclass(type(model), BaseModel):
-        if (  # a hotfix until the models are not regenerated with the usage of BaseModel
-            "2022-03-10-15-14-51_lohnabrechnung_old_model" not in pickle_path
-            and "2022-09-27-18-45-41_lohnabrechnung" not in pickle_path
-            and "list_test" not in pickle_path
-        ):
-            raise TypeError("Loaded model is not inheriting from the BaseModel class.")
+
+    if hasattr(model, 'python_version'):
+        logger.info(f"Loaded AI model trained with Python {model.python_version}")
+    if hasattr(model, 'konfuzio_sdk_version'):
+        logger.info(f"Loaded AI model trained with Konfuzio SDK version {model.konfuzio_sdk_version}")
+
+
     max_ram = normalize_memory(max_ram)
     if max_ram and asizeof.asizeof(model) > max_ram:
         logger.error(f"Loaded model's memory use ({asizeof.asizeof(model)}) is greater than max_ram ({max_ram})")
@@ -111,151 +119,10 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     else:
         logger.info(f"Loading {model.name} AI model.")
 
+    curr_local_id = next(Data.id_iter)
+    Data.id_iter = itertools.count(max(prev_local_id, curr_local_id))
+
     return model
-
-
-def get_offsets_per_page(doc_text: str) -> Dict:
-    """Get the first start and last end offsets per page."""
-    page_text = doc_text.split('\f')
-    start = 0
-    starts_ends_per_page = {}
-
-    for ind, page in enumerate(page_text):
-        len_page = len(page)
-        end = start + len_page
-        starts_ends_per_page[ind] = (start, end)
-        start = end + 1
-
-    return starts_ends_per_page
-
-
-def get_bboxes_by_coordinates(doc_bbox: Dict, selection_bboxes: List[Dict]) -> List[Dict]:
-    """
-    Get the bboxes of the characters contained in the selection bboxes.
-
-    todo: is this a duplicate of get_merged_bboxes in konfuzio_sdk.utils ?
-
-    Simplifies `get_bboxes`..
-
-    Returns a list of bboxes.
-    :param doc_bbox: Bboxes of the characters in the document.
-    :param selection_bboxes: Bboxes from which to get the info of the characters that they include.
-    :return: List of the bboxes of the characters included in selection_bboxes.
-    """
-    # initialize the list of bboxes that will later be returned
-    final_bboxes = []
-
-    # convert string indexes to int
-    doc_bbox = {int(index): char_bbox for index, char_bbox in doc_bbox.items()}
-
-    # iterate through every bbox of the selection
-    for selection_bbox in selection_bboxes:
-        selected_bboxes = [
-            # the index of the character is its offset, i.e. the number of chars before it in the document's text
-            {**char_bbox}
-            for index, char_bbox in doc_bbox.items()
-            if selection_bbox["page_index"] == char_bbox["page_number"] - 1
-            # filter the characters of the document according to their x/y values, so that we only include the
-            # characters that are inside the selection
-            and selection_bbox["x0"] <= char_bbox["x0"]
-            and selection_bbox["x1"] >= char_bbox["x1"]
-            and selection_bbox["y0"] <= char_bbox["y0"]
-            and selection_bbox["y1"] >= char_bbox["y1"]
-        ]
-
-        final_bboxes.extend(selected_bboxes)
-
-    return final_bboxes
-
-
-def is_valid_merge_vertical(
-    row: pandas.Series, buffer: List[pandas.Series], doc_bbox: Dict, offsets_per_page: Dict
-) -> bool:
-    """
-    Verify if the vertical merging that we are trying to do is valid.
-
-    To be valid, it has to respect 2 conditions:
-
-    1. There is an overlap in the x coordinates of the bbox that includes the entities in the buffer and the row x
-     coordinates.
-
-    2. The bbox that includes the entities in the buffer and the row does not include any other character of the
-    document.
-
-    To check the 2nd condition, we get the bboxes of the characters from the entities in the buffer and the entity in
-    the row:
-    a) based on their start and end offsets
-    b) based on the bounding box that includes all these entities
-
-    b should not include any character that is not in a.
-
-    :param row: Row candidate to be merged to what is already in the buffer.
-    :param buffer: Previous information.
-    :param doc_bbox: Bboxes of the characters in the document.
-    :param offsets_per_page: Start and end offset of each page in the document.
-    :return: If the merge is valid or not.
-    """
-    # Bbox formed by the entities in the buffer.
-    buffer_bbox = {
-        'x0': min([b['x0'] for b in buffer]),
-        'x1': max([b['x1'] for b in buffer]),
-        'y0': min([b['y0'] for b in buffer]),
-        'y1': max([b['y1'] for b in buffer]),
-    }
-
-    # 1. There is an overlap in x coordinates
-    is_overlap = (
-        buffer_bbox['x1'] >= row['x0'] >= buffer_bbox['x0']
-        or buffer_bbox['x1'] >= row['x1'] >= buffer_bbox['x0']
-        or (buffer_bbox['x0'] >= row['x0'] and row['x1'] >= buffer_bbox['x1'])
-    )  # NOQA
-
-    if not is_overlap:
-        return False
-
-    # 2. There is no other characters if the buffer bbox is updated with the current row
-    # update buffer with row
-    temp_buffer = buffer.copy()
-    temp_buffer.append(row)
-
-    # get page index (necessary to select the bboxes of the characters)
-    for buf in temp_buffer:
-        for page_index, offsets in offsets_per_page.items():
-            if buf['start_offset'] >= offsets[0] and buf['end_offset'] <= offsets[1]:
-                break
-
-        buf['page_index'] = page_index
-
-    if len(set([buf['page_index'] for buf in temp_buffer])) > 1:
-        logger.info('Merging annotations across pages is not possible.')
-        return False
-
-    # get bboxes by start and end offsets of each row in the temp buffer
-    bboxes_by_offset = []
-    for buf in temp_buffer:
-        char_bboxes = [
-            doc_bbox[str(char_bbox_id)]
-            for char_bbox_id in range(buf['start_offset'], buf['end_offset'] + 1)
-            if str(char_bbox_id) in doc_bbox
-        ]
-        bboxes_by_offset.extend(char_bboxes)
-
-    # get bboxes contained in the bbox of the temp buffer
-    buffer_row_bbox = {
-        'x0': min([buffer_bbox['x0'], row['x0']]),
-        'x1': max([buffer_bbox['x1'], row['x1']]),
-        'y0': min([buffer_bbox['y0'], row['y0']]),
-        'y1': max([buffer_bbox['y1'], row['y1']]),
-        'page_index': temp_buffer[0]['page_index'],
-    }
-
-    bboxes_by_coordinates = get_bboxes_by_coordinates(doc_bbox, [buffer_row_bbox])
-
-    # check if there are bboxes in the merged bbox that are not part of the ones obtained by the offsets
-    diff = [x for x in bboxes_by_coordinates if x not in bboxes_by_offset and x['text'] != ' ']
-    no_diffs = len(diff) == 0
-
-    return no_diffs
 
 
 def substring_count(list: list, substring: str) -> list:
@@ -1312,81 +1179,23 @@ class Trainer(BaseModel):
         # instance, or raise an error.
         super().__init__()
         self.clf = None
-        self.category = None
         self.name = self.__class__.__name__
         self.label_feature_list = None  # will be set later
 
         self.df_train = None
-        self.df_test = None
 
         self.evaluation = None
 
-    def build(self, **kwargs):
-        """Build an ExtractionModel using train valid split."""
-        self.create_candidates_dataset()
-        self.train_valid_split()
-        self.fit()
-        self.evaluate()
-        self.lose_weight()
-        return self
+        self.python_version = '.'.join([str(v) for v in sys.version_info[:3]])
+        self.konfuzio_sdk_version = get_distribution("konfuzio_sdk").version
 
     def name_lower(self):
         """Convert class name to machine readable name."""
         return f'{self.name.lower().strip()}'
 
-    def lose_weight(self):
-        """Delete everything that is not necessary for extraction."""
-        self.df_valid = None
-        self.df_train = None
-        self.df_test = None
-
-        self.X_train = None
-        self.y_train = None
-        self.X_valid = None
-        self.y_valid = None
-        self.X_test = None
-        self.y_test = None
-
-        # TODO what is this?
-        self.valid_data = None
-        self.training_data = None
-        self.test_data = None
-
-        self.df_data_list = None
-
-        for label in self.category.project.labels:
-            label.lose_weight()
-
-        for label_set in self.category.label_sets or []:
-            label_set.lose_weight()
-
-        logger.info(f'Lose weight was executed on {self.name}')
-
-    # def get_ai_model(self):
-    #     """Try to load the latest pickled model."""
-    #     try:
-    #         return load_pickle(get_latest_document_model(f'*_{self.name_lower()}.pkl'))
-    #     except FileNotFoundError:
-    #         return None
-
-    def create_candidates_dataset(self):
-        """Use as placeholder Function."""
-        logger.warning(f'{self} does not train a classifier.')
-        pass
-
-    def train_valid_split(self):
-        """Use as placeholder Function."""
-        logger.warning(f'{self} does not use a valid and train data split.')
-        pass
-
     def fit(self):
         """Use as placeholder Function."""
         logger.warning(f'{self} does not train a classifier.')
-        pass
-
-    def fit_label_set_clf(self):
-        """Use as placeholder Function."""
-        logger.warning(f'{self} does not train a label set classifier.')
         pass
 
     def evaluate(self):
@@ -1394,10 +1203,8 @@ class Trainer(BaseModel):
         logger.warning(f'{self} does not evaluate results.')
         pass
 
-    def extract(self, *args, **kwargs):
+    def extract(self):
         """Use as placeholder Function."""
-        # todo: extract should return a Document
-        #  see https://github.com/konfuzio-ai/konfuzio-sdk/blob/64fd8792/konfuzio_sdk/data.py#L1182
         logger.warning(f'{self} does not extract.')
         pass
 
@@ -1569,6 +1376,111 @@ class Trainer(BaseModel):
 
         return merge is not None
 
+    def save(
+        self, output_dir: str = None, include_konfuzio=True, reduce_weight=True, keep_documents=False, max_ram=None
+    ):
+        """
+        Save the label model as bz2 compressed pickle object to the release directory.
+
+        Saving is done by: getting the serialized pickle object (via cloudpickle), "optimizing" the serialized object
+        with the built-in pickletools.optimize function (see: https://docs.python.org/3/library/pickletools.html),
+        saving the optimized serialized object.
+
+        We then compress the pickle file with bz2 using shutil.copyfileobject which writes in chunks to avoid loading
+        the entire pickle file in memory.
+
+        Finally, we delete the cloudpickle file and are left with the bz2 file which has a .pkl extension.
+
+        :param output_dir: Folder to save AI model in.
+        :param include_konfuzio: Boolean whether to include konfuzio_sdk package in pickle file.
+        :param reduce_weight: Remove all non-strictly necessary parameters before saving.
+        :param max_ram: Specify maximum memory usage condition to save model.
+        :raises MemoryError: When the size of the model in memory is greater than the maximum value.
+        :return: Path of the saved model file.
+        """
+        logger.info('Saving model')
+
+        self.check_is_ready_for_extraction()
+
+        logger.info(f'{output_dir=}')
+        logger.info(f'{include_konfuzio=}')
+        logger.info(f'{reduce_weight=}')
+        logger.info(f'{keep_documents=}')
+        logger.info(f'{max_ram=}')
+
+        # if no argument passed, get project max_ram
+        if not max_ram and self.category is not None:
+            max_ram = self.category.project.max_ram
+            logger.info(f'project {max_ram=}')
+
+        if not output_dir:
+            output_dir = self.category.project.model_folder
+            logger.info(f'new {output_dir=}')
+
+        temp_pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower()}.cloudpickle')
+        pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower()}.pkl')
+
+        if reduce_weight:
+            logger.info('reducing weight before save')
+            self.df_train = None
+            project_docs = self.category.project._documents
+            self.category.project.lose_weight()
+            self.tokenizer.lose_weight()
+
+        if not keep_documents:
+            logger.info('removing documents before save')
+            restore_documents = self.documents
+            restore_test_documents = self.test_documents
+            self.documents = []
+            self.test_documents = []
+
+        logger.info(f'Model size: {asizeof.asizeof(self) / 1_000_000} MB')
+
+        max_ram = normalize_memory(max_ram)
+
+        if max_ram and asizeof.asizeof(self) > max_ram:
+            raise MemoryError(f"AI model memory use ({asizeof.asizeof(self)}) exceeds maximum ({max_ram=}).")
+
+        sys.setrecursionlimit(999999)  # ?
+
+        logger.info('Getting save paths')
+
+        if include_konfuzio:
+            import konfuzio_sdk
+
+            cloudpickle.register_pickle_by_value(konfuzio_sdk)
+            # todo register all dependencies?
+
+        # make sure output dir exists
+        pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
+
+        logger.info('Saving model with cloudpickle')
+        # first save with cloudpickle
+        with open(temp_pkl_file_path, 'wb') as f:  # see: https://stackoverflow.com/a/9519016/5344492
+            cloudpickle.dump(self, f)
+
+        logger.info('Compressing model with bz2')
+
+        # then save to bz2 in chunks
+        with open(temp_pkl_file_path, 'rb') as input_f:
+            with bz2.open(pkl_file_path, 'wb') as output_f:
+                shutil.copyfileobj(input_f, output_f)
+
+        logger.info('Deleting cloudpickle file')
+        # then delete cloudpickle file
+        os.remove(temp_pkl_file_path)
+
+        size_string = f'{os.path.getsize(pkl_file_path) / 1_000_000} MB'
+        logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
+
+        # restore Documents of the Category so that we can run the evaluation later
+        self.documents = restore_documents
+        self.test_documents = restore_test_documents
+        if reduce_weight:
+            self.category.project._documents = project_docs
+
+        return pkl_file_path
+
 
 class GroupAnnotationSets:
     """Groups Annotation into Annotation Sets."""
@@ -1578,9 +1490,9 @@ class GroupAnnotationSets:
         self.n_nearest_template = 5
         self.max_depth = 100
         self.n_estimators = 100
-        self.template_clf = None
+        self.label_set_clf = None
 
-    def fit_template_clf(self) -> Tuple[Optional[object], Optional[List['str']]]:
+    def fit_label_set_clf(self) -> Tuple[Optional[object], Optional[List['str']]]:
         """
         Fit classifier to predict start lines of Sections.
 
@@ -1655,11 +1567,13 @@ class GroupAnnotationSets:
             )
             return None, None
 
-        clf = RandomForestClassifier(n_estimators=self.n_estimators, max_depth=self.max_depth, random_state=420)
-        clf.fit(x_train, y_train)
+        label_set_clf = RandomForestClassifier(
+            n_estimators=self.n_estimators, max_depth=self.max_depth, random_state=420
+        )
+        label_set_clf.fit(x_train, y_train)
 
-        self.template_clf = clf
-        return self.template_clf, self.template_feature_list
+        self.label_set_clf = label_set_clf
+        return self.label_set_clf, self.template_feature_list
 
     def generate_relative_line_features(self, n_nearest: int, df_features: pandas.DataFrame) -> pandas.DataFrame:
         """Add the features of the n_nearest previous and next lines."""
@@ -1700,7 +1614,7 @@ class GroupAnnotationSets:
         self, feature_df_label: pandas.DataFrame, document_text
     ) -> pandas.DataFrame:
         """
-        Convert the feature_df for the label_clf to a feature_df for the template_clf.
+        Convert the feature_df for the label_clf to a feature_df for the label_set_clf.
 
         The input is the Feature-Dataframe and text for one document.
         """
@@ -1784,13 +1698,14 @@ class GroupAnnotationSets:
         # and runtime (default treshold.
 
         # df = df[df['confidence'] >= 0.1]  # df['OptimalThreshold']]
-        for i, line in enumerate(text.replace('\f', '\n').split('\n')):
+        lines = text.replace('\f', '\n').split('\n')
+        for i, line in enumerate(lines):
             new_char_count = char_count + len(line)
             assert line == text[char_count:new_char_count]
             line_df = df[(char_count <= df['start_offset']) & (df['end_offset'] <= new_char_count)]
             spans = [row for index, row in line_df.iterrows()]
             spans_dict = dict((x['result_name'], True) for x in spans)
-            counter_dict = {}  # why?
+            # counter_dict = {}  # why?
             # annotations_accuracy_dict = defaultdict(lambda: 0)
             # for annotation in annotations:
             # annotations_accuracy_dict[f'{annotation["label"]}_accuracy'] += annotation['confidence']
@@ -1805,10 +1720,10 @@ class GroupAnnotationSets:
             #             counter_dict[label_set.name] += 1
             #         else:
             #             counter_dict[label_set.name] = 1
-            tmp_df = pandas.DataFrame([{**spans_dict, **counter_dict}])
+            tmp_df = pandas.DataFrame([spans_dict])  # ([{**spans_dict, **counter_dict}])
             global_df = pandas.concat([global_df, tmp_df], ignore_index=True)
             char_count = new_char_count + 1
-        global_df['text'] = text.replace('\f', '\n').split('\n')
+        global_df['text'] = lines
         return global_df.fillna(0)
 
     def extract_template_with_clf(self, text, res_dict):
@@ -1821,7 +1736,7 @@ class GroupAnnotationSets:
         feature_df = feature_df.reindex(columns=self.template_feature_list).fillna(0)
         feature_df = self.generate_relative_line_features(n_nearest, feature_df)
 
-        res_series = self.template_clf.predict(feature_df)
+        res_series = self.label_set_clf.predict(feature_df)
         res_templates = pandas.DataFrame(res_series)
         # res_templates['text'] = text.replace('\f', '\n').split('\n')  # Debug code.
 
@@ -1946,37 +1861,35 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         max_depth: int = 100,
         no_label_limit: Union[int, float, None] = None,
         n_nearest_across_lines: bool = False,
-        use_separate_labels: bool = False,
+        use_separate_labels: bool = True,
         category: Category = None,
         tokenizer=None,
         *args,
         **kwargs,
     ):
         """RFExtractionAI."""
-        logging.info("Initializing RFExtractionAI.")
+        logger.info("Initializing RFExtractionAI.")
         super().__init__(*args, **kwargs)
         GroupAnnotationSets.__init__(self)
 
         self.label_feature_list = None
 
-        self.use_separate_labels = use_separate_labels
+        logger.info("RFExtractionAI settings:")
         logger.info(f"{use_separate_labels=}")
-
-        self.category: Category = category
         logger.info(f"{category=}")
-
-        self.n_nearest = n_nearest
         logger.info(f"{n_nearest=}")
-
-        self.first_word = first_word
         logger.info(f"{first_word=}")
-
-        self.max_depth = max_depth
         logger.info(f"{max_depth=}")
-
-        self.n_estimators = n_estimators
         logger.info(f"{n_estimators=}")
+        logger.info(f"{no_label_limit=}")
+        logger.info(f"{n_nearest_across_lines=}")
 
+        self.use_separate_labels = use_separate_labels
+        self.category = category
+        self.n_nearest = n_nearest
+        self.first_word = first_word
+        self.max_depth = max_depth
+        self.n_estimators = n_estimators
         self.no_label_limit = no_label_limit
         self.n_nearest_across_lines = n_nearest_across_lines
 
@@ -2015,6 +1928,22 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             df['target'] = df['label_name']
         return df, _feature_list, _temp_df_raw_errors
 
+    def check_is_ready_for_extraction(self):
+        """Check if tokenizer is set and the classifiers set and trained."""
+        if self.tokenizer is None:
+            raise AttributeError(f'{self} missing Tokenizer.')
+
+        if not self.category:
+            raise AttributeError(f'{self} requires a Category.')
+
+        if self.clf is None:
+            raise AttributeError(f'{self} does not provide a Label Classifier. Please add it.')
+        else:
+            check_is_fitted(self.clf)
+
+        if self.label_set_clf is None:
+            logger.warning('{self} does not provide a LabelSet Classfier.')
+
     def extract(self, document: Document) -> Document:
         """
         Infer information from a given Document.
@@ -2028,16 +1957,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         """
         logger.info(f"Starting extraction of {document}.")
-        if self.tokenizer is None:
-            raise AttributeError(f'{self} missing Tokenizer.')
 
-        if self.clf is None:
-            raise AttributeError(f'{self} does not provide a Label Classifier. Please add it.')
-        else:
-            check_is_fitted(self.clf)
-
-        if self.template_clf is None:
-            logger.warning('{self} does not provide a LabelSet Classfier.')
+        self.check_is_ready_for_extraction()
 
         # Main Logic -------------------------
         # 1. start inference with new document
@@ -2116,7 +2037,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         res_dict = self.merge_horizontal(res_dict, inference_document.text)
 
         # Try to calculate sections based on template classifier.
-        if self.template_clf is not None:  # todo smarter handling of multiple clf
+        if self.label_set_clf is not None:  # todo smarter handling of multiple clf
             res_dict = self.extract_template_with_clf(inference_document.text, res_dict)
             res_dict[self.no_label_set_name] = no_label_res_dict
 
@@ -2446,7 +2367,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         self.clf.fit(self.df_train[self.label_feature_list], self.df_train['target'])
 
-        self.fit_template_clf()
+        self.fit_label_set_clf()
 
         return self.clf
 
@@ -2517,12 +2438,12 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         return clf_evaluation
 
-    def evaluate_template_clf(self, use_training_docs: bool = False) -> Evaluation:
+    def evaluate_label_set_clf(self, use_training_docs: bool = False) -> Evaluation:
         """Evaluate the LabelSet classifier."""
-        if self.template_clf is None:
+        if self.label_set_clf is None:
             raise AttributeError(f'{self} does not provide a LabelSet Classifier.')
         else:
-            check_is_fitted(self.template_clf)
+            check_is_fitted(self.label_set_clf)
 
         eval_list = []
         if not use_training_docs:
@@ -2552,7 +2473,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
             eval_list.append((document, predicted_doc))
 
-        template_clf_evaluation = Evaluation(eval_list)
+        label_set_clf_evaluation = Evaluation(eval_list)
 
         return template_clf_evaluation
 
@@ -2605,3 +2526,4 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         #     clean_annotations = list(set(document.annotations()) - set(no_label_annotations))
         #     document._annotations = clean_annotations
         self.category.project._documents = category_documents
+
