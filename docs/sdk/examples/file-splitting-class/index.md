@@ -2,47 +2,47 @@
 
 ### Intro
 
-Not all multipage files that we process are always neatly scanned and organized. Sometimes we can have more than one actual 
-Document in a stream of pages; such files need to be properly processed and split into several independent Documents.
+It's common for multipage files to not be perfectly organized, and in some cases, multiple independent documents may be 
+included in a single file. To ensure that these documents are properly processed and separated, we will be discussing a 
+method for identifying and splitting these documents into individual, independent sub-documents.
 
 .. image:: /_static/img/multi_file_document_example.png
 
 _Multi-file Document Example_
 
-In this post, we will look at a simple way to implement an algorithm for searching common features between 
-Documents/Pages which can be used for splitting a multi-file Document into the sub-Documents. Our approach is based on 
-an assumption that we can go through all Pages of the Document and define splitting points. By splitting points, we mean 
-Pages that are similar in contents to the first Pages in the Documents. 
-Note: this approach only works with the Documents in the same language and gathering happens in each Category 
-independently. 
+In this section, we will explore an easy method for identifying and separating Documents that may be included in a 
+single file. Our approach involves analyzing the contents of each Page and identifying similarities to the first Pages 
+of the Document. This will allow us to define splitting points and divide the Document into multiple sub-documents. It's
+important to note that this approach is only effective for Documents written in the same language and that the process 
+must be repeated for each Category.
 
 If you are unfamiliar with the SDK's main concepts (like Page or Span), you can get to know them on the Quickstart page.
 
 
 ### Quick explanation
 
-First step for implementation is "training": we tokenize the Document (meaning that we split its text into parts, more 
-specifically to this tutorial – into strings without line breaks) and gather exclusive strings from Spans – the parts of 
-the text in the Page – each of which is present on every first Page of each Documents in the training data. 
+The first step in implementing this method is "training": this involves tokenizing the Document by splitting its text 
+into parts, specifically into strings without line breaks. We then gather the exclusive strings from Spans, which are 
+the parts of the text in the Page, and compare them to the first Pages of each Document in the training data.
 
-Then, for every input Document's Page, we determine if it's first or not by going through its strings and comparing them 
-to the set of strings collected in the first step. If we have at least one string of intersection between the current Page 
-and the strings from the first step, we believe it is the first Page.
+Once we have identified these strings, we can use them to determine whether a Page in an input Document is a first Page 
+or not. We do this by going through the strings in the Page and comparing them to the set of strings collected in the 
+training stage. If we find at least one string that intersects between the current Page and the strings from the first 
+step, we believe it is the first Page.
 
-Note that the more Documents we use in the "training" stage, the less intersecting strings we are likely to find, so if at
-the end of the tutorial you find that your first-Page strings set is empty, try using a slice of the dataset instead of 
-the whole like it is done in the example below. However, usually when ran on Documents within same Category, this 
-algorithm should not return an empty set; if that is the case, you might want to check if your data is consistent (i.e. 
-not in different languages, no occurrences of other Categories).
+Note that the more Documents we use in the training stage, the less intersecting strings we are likely to find. If you 
+find that your set of first-page strings is empty, try using a smaller slice of the dataset instead of the whole set. 
+Generally, when used on Documents within the same Category, this algorithm should not return an empty set. If that is 
+the case, it's worth checking if your data is consistent, for example, not in different languages or containing other 
+Categories.
 
 ### Step-by-step explanation
 
-In this section, we'll go through steps imitating initialization of `ContextAwareFileSplittingModel` class which you can 
-find in the full code block in the lower part of this page. A class itself is already implemented and can be imported via
+In this section, we will walk you through the process of setting up the `ContextAwareFileSplittingModel` class, which 
+can be found in the code block at the bottom of this page. This class is already implemented and can be imported using 
 `from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel`.
 
-Let's start with making all the necessary imports and initializing the class of `ContextAwareFileSplittingModel`:
-
+To begin, we will make all the necessary imports and initialize the `ContextAwareFileSplittingModel` class:
 ```python
 import logging
 
@@ -61,14 +61,14 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         self.tokenizer = tokenizer
         self.path = None
 ```
-The class inherits from `AbstractFileSplittingModel`, so we run `super().__init__(categories=categories)` for proper 
-inheritance of the attributes. `tokenizer` will be used for going through the Document's text and separating it into 
-Spans. We will use it to process training and testing Documents, as well as any Document that will undergo splitting. 
-This is done to ensure that texts in all the Documents are split using the same logic (particularly tokenization by 
-separating on `\n` whitespaces by ConnectedTextTokenizer, which is used in the example in the end of the page) and it 
-will be possible to find common Spans. `path` is a full path of the model-to-be-saved. Note: if you run fitting with one
-tokenizer and then reassign it within the same instance of a model, all previously gathered strings will be deleted and 
-replaced by new ones. 
+The class inherits from `AbstractFileSplittingModel`, so we run `super().__init__(categories=categories)` to properly 
+inherit its attributes. The `tokenizer` attribute will be used to process the text within the Document, separating it 
+into Spans. This is done to ensure that the text in all the Documents is split using the same logic (particularly 
+tokenization by separating on `\n` whitespaces by ConnectedTextTokenizer, which is used in the example in the end of the 
+page) and it will be possible to find common Spans. It will be used for training and testing Documents as well as any 
+Document that will undergo splitting.  `path` is a full path of the model-to-be-saved.  It's important to note that if 
+you run fitting with one tokenizer and then reassign it within the same instance of the model, all previously gathered 
+strings will be deleted and replaced by new ones.
 
 An example of how ConnectedTextTokenizer works:
 ```python
@@ -94,9 +94,10 @@ test_document.spans[0].offset_string
 # output: "This is an example text. "
 ```
 
-A first method to define will be `fit()`. For each Category, we call `exclusive_first_page_strings` to gather them.
-`allow_empty_categories` allows returning empty lists for Categories that haven't had any exclusive first-page strings 
-found across their Documents (meaning it would not be used in prediction).
+The first method to define will be the `fit()` method. For each Category, we call `exclusive_first_page_strings` method, 
+which allows us to gather the strings that appear on the first Page of each Document. `allow_empty_categories` allows 
+for returning empty lists for Categories that haven't had any exclusive first-page strings found across their Documents. 
+This means that those Categories would not be used in the prediction process.
 ```python
     def fit(self, allow_empty_categories: bool = False, *args, **kwargs):
         for category in self.categories:
@@ -111,10 +112,9 @@ found across their Documents (meaning it would not be used in prediction).
                     raise ValueError(f'No exclusive first-page strings were found for {category}.')
 ```
 
-Lastly, we define `predict()` method. A Page is accepted as an input and its Span set is checked for containing 
-first-page strings for each of the Categories. If there has been at least one intersection, a Page is predicted to be 
-first; if there's no such intersections, it's predicted non-first. 
-
+Lastly, we define `predict()` method. The method accepts a Page as an input and checks its Span set for containing 
+first-page strings for each of the Categories. If there is at least one intersection, the Page is predicted to be a 
+first Page. If there are no intersections, the Page is predicted to be a non-first Page.
 ```python
     def predict(self, page: Page) -> Page:
                 for category in self.categories:
