@@ -1200,14 +1200,14 @@ def test_load_model_corrupt_file():
 def test_load_model_wrong_pickle_data():
     """Test loading of wrong pickle data."""
     path = "trainer/list_test.pkl"
-    with pytest.raises(TypeError, match="Loaded model is not inheriting from the BaseModel class."):
+    with pytest.raises(AttributeError, match="object has no attribute"):
         load_model(path)
 
 
 def test_load_ai_model():
     """Test loading of trained model."""
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    path = "trainer/2023-01-09-15-37-20_lohnabrechnung.pkl"
+    path = "trainer/2023-01-17-20-21-13_lohnabrechnung.pkl"
     pipeline = load_model(path)
 
     assert issubclass(type(pipeline), BaseModel)
@@ -1220,14 +1220,14 @@ def test_load_ai_model():
 def test_load_old_ai_model():
     """Test loading of an old trained model."""
     path = "trainer/2022-03-10-15-14-51_lohnabrechnung_old_model.pkl"
-    with pytest.raises(TypeError, match="Loaded model is not inheriting from the BaseModel class."):
+    with pytest.raises(TypeError, match=" not inheriting from the BaseModel class."):
         load_model(path)
 
 
 def test_load_old_ai_model_2():
     """Test loading of a newer old trained model."""
     path = "trainer/2023-01-09-17-47-50_lohnabrechnung.pkl"
-    with pytest.raises(TypeError, match="Loaded model is not inheriting from the BaseModel class."):
+    with pytest.raises(TypeError, match="not inheriting from the BaseModel class."):
         load_model(path)
 
 

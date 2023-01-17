@@ -95,6 +95,9 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
             raise ValueError("Pickle saved with incompatible Python version.") from err
         raise
 
+    if not issubclass(type(model), BaseModel):
+        raise TypeError("Loaded model is not inheriting from the BaseModel class.")
+
     if hasattr(model, 'python_version'):
         logger.info(f"Loaded AI model trained with Python {model.python_version}")
     if hasattr(model, 'konfuzio_sdk_version'):
@@ -1898,6 +1901,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         self.no_label_name = None
 
         self.output_dir = None
+        self.label_set_clf = None
 
     def features(self, document: Document):
         """Calculate features using the best working default values that can be overwritten with self values."""
