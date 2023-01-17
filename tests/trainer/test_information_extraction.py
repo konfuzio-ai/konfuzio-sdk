@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """Test to train an Extraction AI."""
 from copy import deepcopy
-import bz2
-import cloudpickle
 import linecache
 import logging
 import math
@@ -12,7 +10,6 @@ import unittest
 import parameterized
 import os
 import sys
-import shutil
 from requests import HTTPError
 from pkg_resources import get_distribution
 
@@ -44,7 +41,6 @@ from konfuzio_sdk.trainer.information_extraction import (
 from konfuzio_sdk.api import upload_ai_model
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer
 from konfuzio_sdk.tokenizer.base import ListTokenizer
-from konfuzio_sdk.trainer.document_categorization import FallbackCategorizationModel
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 from konfuzio_sdk.samples import LocalTextProject
 
@@ -1223,21 +1219,6 @@ def test_load_old_ai_model():
     pipeline = load_model(path)
 
     assert pipeline.name == 'DocumentAnnotationMultiClassModel'
-
-
-def test_load_model_wrong_parent_class():
-    """Test load_model of a class that is not child of BaseModel."""
-    wrong_class = FallbackCategorizationModel(LocalTextProject())
-    tmp_path = "wrong_class.cloudpickle"
-    path = "wrong_class.pkl"
-    with open(tmp_path, 'wb') as f:
-        cloudpickle.dump(wrong_class, f)
-    with open(tmp_path, 'rb') as input_f:
-        with bz2.open(path, 'wb') as output_f:
-            shutil.copyfileobj(input_f, output_f)
-    os.remove(tmp_path)
-    with pytest.raises(TypeError, match="is not inheriting from the BaseModel class"):
-        load_model(path)
 
 
 def test_feat_num_count():

@@ -21,7 +21,6 @@ import difflib
 import functools
 import itertools
 import logging
-import konfuzio_sdk
 import os
 import pathlib
 import shutil
@@ -1127,32 +1126,38 @@ class BaseModel(metaclass=abc.ABCMeta):
         :return: Path of the saved model file.
         """
         logger.info('Saving model')
-        logger.info(f'{include_konfuzio=}')
-        logger.info(f'{reduce_weight=}')
-        logger.info(f'{max_ram=}')
-        logger.info(f'{keep_documents=}')
-        version = get_sdk_version()
-        logger.info(f'{version=}')
         if self.output_dir is None:
             raise OSError("Specify output_dir before saving the model.")
         pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
+        logger.info(f'{self.output_dir=}')
+        logger.info(f'{include_konfuzio=}')
+        logger.info(f'{reduce_weight=}')
+        logger.info(f'{keep_documents=}')
+        logger.info(f'{max_ram=}')
+        version = get_sdk_version()
+        logger.info(f'{version=}')
         logger.info('Getting save paths')
+        temp_pkl_file_path = self.temp_pkl_file_path
+        pkl_file_path = self.pkl_file_path
 
         if reduce_weight:
             self.reduce_model_weight()
-        if include_konfuzio:
-            cloudpickle.register_pickle_by_value(konfuzio_sdk)
-            # todo register all dependencies?
 
         if not keep_documents:
             self.documents = []
             self.test_documents = []
+
         logger.info(f'Model size: {asizeof.asizeof(self) / 1_000_000} MB')
         self.ensure_model_memory_usage_within_limit(max_ram)
+
+        if include_konfuzio:
+            import konfuzio_sdk
+
+            cloudpickle.register_pickle_by_value(konfuzio_sdk)
+            # todo register all dependencies?
+
         logger.info('Saving model with cloudpickle')
         # first save with cloudpickle
-        temp_pkl_file_path = self.temp_pkl_file_path
-        pkl_file_path = self.pkl_file_path
         with open(temp_pkl_file_path, 'wb') as f:  # see: https://stackoverflow.com/a/9519016/5344492
             cloudpickle.dump(self, f)
         logger.info('Compressing model with bz2')
