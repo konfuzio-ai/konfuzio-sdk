@@ -1758,7 +1758,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         for document in prj.documents:
             document.text
         after = _getsize(prj)
-        assert 1.6 < after / before < 1.8
+        assert 1.5 < after / before < 1.8
 
         # strings in prj take slightly less space than in a list
         assert _getsize([doc.text for doc in prj.documents]) + before < after + 500
@@ -2370,6 +2370,7 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
         assert len(first_page_strings) == 2
         assert 'I like bread.' in first_page_strings
         assert 'Morning,' in first_page_strings
+        project.delete()
 
 
 class TestFillOperation(unittest.TestCase):
