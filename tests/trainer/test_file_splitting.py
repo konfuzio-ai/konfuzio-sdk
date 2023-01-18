@@ -96,24 +96,25 @@ class TestFileSplittingModel(unittest.TestCase):
         # typically this happens in one of the private methods, but since here we pass a Document Page by Page, we
         # need to tokenize it explicitly (compared to when we pass a full Document to the SplittingAI).
         for page in test_document.pages():
-            intersections = []
+            page.is_first_page = False
             for category in self.file_splitting_model.categories:
-                cur_exclusive_first_page_strings = category.exclusive_first_page_strings(
-                    tokenizer=ConnectedTextTokenizer()
+                cur_first_page_strings = category.exclusive_first_page_strings(
+                    tokenizer=self.file_splitting_model.tokenizer
                 )
-                intersection = {span.offset_string for span in page.spans()}.intersection(
-                    cur_exclusive_first_page_strings
+                intersection = {span.offset_string.strip('\f').strip('\n') for span in page.spans()}.intersection(
+                    cur_first_page_strings
                 )
-                if intersection:
-                    intersections.append(intersection)
-            self.file_splitting_model.predict(page)
+                if len(intersection) > 0:
+                    page.is_first_page = True
+                    break
+            print(page.is_first_page, page.text)
             if page.number == 1:
-                assert intersections == [{'I like bread.'}]
+                assert intersection == {'I like bread.'}
                 assert page.is_first_page
             if page.number in (2, 4):
-                assert intersections == []
+                assert intersection == set()
             if page.number in (3, 5):
-                assert intersections == [{'Morning,'}]
+                assert intersection == {'Morning,'}
                 assert page.is_first_page
 
     def test_pickle_model_save_load(self):
@@ -153,7 +154,7 @@ class TestFileSplittingModel(unittest.TestCase):
     def test_splitting_ai_predict(self):
         """Test SplittingAI's Document-splitting method."""
         splitting_ai = SplittingAI(self.file_splitting_model)
-        pred = splitting_ai.propose_split_documents(self.test_document)
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=False)
         assert len(pred) == 3
 
     def test_splitting_ai_predict_one_file_document(self):

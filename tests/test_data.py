@@ -1363,7 +1363,7 @@ class TestOfflineDataSetup(unittest.TestCase):
             test_document.pages()[0], test_document.pages()[1], include=True
         )
         assert len(new_doc.pages()) == 2
-        assert new_doc.text == "Hi all,\nI like bread.\nI hope to get everything done soon."
+        assert new_doc.text == "Hi all,\nI like bread.\n\fI hope to get everything done soon.\n"
 
 
 class TestSeparateLabels(unittest.TestCase):

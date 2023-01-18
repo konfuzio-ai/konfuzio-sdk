@@ -170,7 +170,9 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         page.is_first_page = False
         for category in self.categories:
             cur_first_page_strings = category.exclusive_first_page_strings(tokenizer=self.tokenizer)
-            intersection = {span.offset_string for span in page.spans()}.intersection(cur_first_page_strings)
+            intersection = {span.offset_string.strip('\f').strip('\n') for span in page.spans()}.intersection(
+                cur_first_page_strings
+            )
             if len(intersection) > 0:
                 page.is_first_page = True
                 break
@@ -220,7 +222,8 @@ class SplittingAI:
         :returns: A list of sub-documents created from the original Document, split at predicted first Pages.
         """
         suggested_splits = []
-        document = self.tokenizer.tokenize(deepcopy(document))
+        if self.tokenizer:
+            document = self.tokenizer.tokenize(deepcopy(document))
         for page in document.pages():
             if page.number == 1:
                 suggested_splits.append(page)
@@ -237,15 +240,16 @@ class SplittingAI:
                 if page_i == 0:
                     split_docs.append(
                         document.create_subdocument_from_page_range(
-                            first_page,
-                            split_i,
+                            first_page, suggested_splits[page_i + 1], include=False
                         )
                     )
-                elif page_i == len(split_docs):
+                elif page_i == len(suggested_splits) - 1:
                     split_docs.append(document.create_subdocument_from_page_range(split_i, last_page, include=True))
                 else:
                     split_docs.append(
-                        document.create_subdocument_from_page_range(suggested_splits[page_i - 1], split_i)
+                        document.create_subdocument_from_page_range(
+                            split_i, suggested_splits[page_i + 1], include=False
+                        )
                     )
         return split_docs
 
