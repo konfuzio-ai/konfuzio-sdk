@@ -377,11 +377,12 @@ class SplittingAI:
         :raises ValueError: When the model is not inheriting from AbstractFileSplittingModel class.
         """
         if isinstance(model, str):
-            if not issubclass(type(self.model), AbstractFileSplittingModel):
-                raise ValueError("The model is not inheriting from AbstractFileSplittingModel class.")
             self.model = load_model(model)
         else:
             self.model = model
+        self.tokenizer = None
+        if not issubclass(type(self.model), AbstractFileSplittingModel):
+            raise ValueError("The model is not inheriting from AbstractFileSplittingModel class.")
         if isinstance(type(self.model), ContextAwareFileSplittingModel):
             self.tokenizer = self.model.tokenizer
 
@@ -433,8 +434,8 @@ class SplittingAI:
             for page_i, split_i in enumerate(suggested_splits):
                 if page_i == 0:
                     split_docs.append(document.create_subdocument_from_page_range(first_page, split_i))
-                elif page_i == len(split_docs):
-                    split_docs.append(document.create_subdocument_from_page_range(split_i, last_page))
+                elif page_i == len(suggested_splits):
+                    split_docs.append(document.create_subdocument_from_page_range(split_i, last_page, include=True))
                 else:
                     split_docs.append(
                         document.create_subdocument_from_page_range(suggested_splits[page_i - 1], split_i)
@@ -457,7 +458,7 @@ class SplittingAI:
         :return: A list of suggested new sub-Documents built from the original Document or a list with a Document
         with Pages marked .is_first_page on splitting points.
         """
-        if self.requires_images:
+        if self.model.requires_images:
             document.get_images()
         if return_pages:
             processed = self._suggest_first_pages(document, inplace)
