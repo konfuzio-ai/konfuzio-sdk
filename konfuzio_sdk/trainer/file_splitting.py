@@ -41,14 +41,14 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         """
         super().__init__()
         self.output_dir = None
-        if not len(categories):
+        if not categories:
             raise ValueError("Cannot initialize ContextAwareFileSplittingModel on an empty list.")
         for category in categories:
-            if not type(category) == Category:
+            if not isinstance(category, Category):
                 raise ValueError("All elements of the list have to be Categories.")
-            if not len(category.documents()):
+            if not category.documents():
                 raise ValueError(f'{category} does not have Documents and cannot be used for training.')
-            if not len(category.test_documents()):
+            if not category.test_documents():
                 raise ValueError(f'{category} does not have test Documents.')
         projects = set([category.project for category in categories])
         if len(projects) > 1:
@@ -59,6 +59,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         self.test_documents = [document for category in self.categories for document in category.test_documents()]
         self.requires_text = False
         self.requires_images = False
+        self.tokenizer = None
 
     @abc.abstractmethod
     def fit(self, *args, **kwargs):
@@ -110,9 +111,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         """
         if not max_ram:
             max_ram = self.documents[0].project.max_ram
-
         max_ram = normalize_memory(max_ram)
-
         if max_ram and asizeof.asizeof(self) > max_ram:
             raise MemoryError(f"AI model memory use ({asizeof.asizeof(self)}) exceeds maximum ({max_ram=}).")
 
@@ -346,7 +345,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
 
     def predict(self, page: Page) -> Page:
         """
-        Take a Page as an input and predict it as first or non-first.
+        Predict a Page as first or non-first.
 
         :param page: A Page to receive first or non-first label.
         :type page: Page
@@ -375,6 +374,7 @@ class SplittingAI:
 
         :param model: A path to an existing .cloudpickle model or to a previously trained instance of
         ContextAwareFileSplittingModel().
+        :raises ValueError: When the model is not inheriting from AbstractFileSplittingModel class.
         """
         if isinstance(model, str):
             if not issubclass(type(self.model), AbstractFileSplittingModel):
@@ -387,14 +387,13 @@ class SplittingAI:
 
     def _suggest_first_pages(self, document: Document, inplace: bool = False) -> List[Document]:
         """
-        Run prediction on Document's Pages, predicting them to be first or non-first.
+        Run prediction on Document's Pages, marking them as first or non-first.
 
-        :param document: A Document to run prediction on.
+        :param document: The Document to predict the Pages of.
         :type document: Document
-        :param inplace: To create a copy of a Document or to run prediction over the original one.
+        :param inplace: Whether to predict the Pages on the original Document or on a copy.
         :type inplace: bool
-        :returns: A list with a single Document – for the sake of unity across different prediction methods' returns
-        in the class.
+        :returns: A list containing the modified Document.
         """
         if self.model.requires_images:
             if inplace:
@@ -412,9 +411,9 @@ class SplittingAI:
         """
         Create a list of sub-Documents built from the original Document, split.
 
-        :param document: A Document to run prediction on.
+        :param document: The document to suggest Page splits for.
         :type document: Document
-        :returns: A list of sub-Documents built from the original Document, based on model's prediction of first Pages.
+        :returns: A list of sub-documents created from the original Document, split at predicted first Pages.
         """
         suggested_splits = []
         if self.tokenizer:
@@ -450,7 +449,7 @@ class SplittingAI:
 
         :param document: An input Document to be split.
         :type document: Document
-        :param inplace: Whether changes are applied to an initially passed Document, changing it, or to its deepcopy.
+        :param inplace: Whether changes are applied to the input Document, changing it, or to a deepcopy of it.
         :type inplace: bool
         :param return_pages: A flag to enable returning a copy of an old Document with Pages marked .is_first_page on
         splitting points instead of a set of sub-Documents.

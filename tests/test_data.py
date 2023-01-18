@@ -1349,9 +1349,11 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert project.labels[0]._evaluations == {}
         assert project.labels[0]._tokens == {}
         assert project.labels[0]._regex == {}
+        assert project._documents == []
         assert project.virtual_documents == []
         assert project.documents == []
         assert project.test_documents == []
+        assert project._meta_data == []
 
     def test_create_subdocument_from_page_range(self):
         """Test creating a smaller Document from original one within a Page range."""

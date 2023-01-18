@@ -3,7 +3,7 @@
 FileSplittingEvaluation class can be used to evaluate performance of ContextAwareFileSplittingModel, returning a set of 
 metrics that includes precision, recall, f1 measure, true positives, false positives and false negatives. 
 
-The class's methods `calculate()` and `calculate_by_category()` are ran at initialization. The class receives two lists 
+The class's methods `calculate()` and `calculate_by_category()` are run at initialization. The class receives two lists 
 of Documents as an input – first list consists of ground-truth Documents where all first Pages are marked as such, 
 second is of Documents on Pages of which FileSplittingModel ran a prediction of them being first or non-first. 
 
@@ -13,9 +13,11 @@ evaluation = FileSplittingEvaluation(ground_truth_documents=YOUR_GROUND_TRUTH_LI
                                      prediction_documents=YOUR_PREDICTION_LIST)
 ```
 
-Pages of each pair are compared; if a Page is first and predicted as such, it is a true positive; if it is first and 
-predicted as non-first, it is a false negative; if it is non-first and predicted as first, it is a false positive; if 
-it is non-first and predicted as such, it is true negative. 
+The class compares each pair of pages. If a page is labeled as first and the model also predicted it as first, it is 
+considered a true positive. If a page is labeled as first but the model predicted it as non-first, it is considered a 
+false negative. If a page is labeled as non-first but the model predicted it as first, it is considered a false 
+positive. If a page is labeled as non-first and the model also predicted it as non-first, it is considered a true 
+negative. 
 
 |  | predicted correctly | predicted incorrectly |
 | ------ | ------ | ------ |
@@ -131,11 +133,11 @@ _ = Page(
 _.is_first_page = True
 ```
 
-We need to pass two lists of Documents into the `FileSplittingEvaluation` class, so we have to run both Documents' Pages 
-through prediction before that. 
+We need to pass two lists of Documents into the `FileSplittingEvaluation` class. So, before that, we need to run each 
+page of the documents through the model's prediction.
 
-Suppose we ran the evaluation and received high results: only one first Page was predicted as non-first and the rest 
-were predicted first/non-first correctly. The implementation of the Evaluation would look like this:
+Let's say the evaluation gave good results, with only one first page being predicted as non-first and all the other 
+pages being predicted correctly. An example of how the evaluation would be implemented would be:
 ```python
 splitting_ai = SplittingAI(YOUR_MODEL_HERE)
 pred_1: Document = splitting_ai.propose_split_documents(document_1, return_pages=True)[0] 

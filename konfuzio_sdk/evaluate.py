@@ -460,8 +460,11 @@ class FileSplittingEvaluation:
         :type ground_truth_documents: list
         :param prediction_documents: A list of Documents with Pages newly predicted to be first or non-first.
         :type prediction_documents: list
+        :raises ValueError: When ground_truth_documents and prediction_documents are not the same length.
+        :raises ValueError: When a Page does not have a value of is_first_page.
+        :raises ValueError: When an original Document and prediction are not referring to the same Document.
         """
-        if not len(ground_truth_documents) == len(prediction_documents):
+        if len(ground_truth_documents) != len(prediction_documents):
             raise ValueError("ground_truth_documents and prediction_documents must be same length.")
         for document in ground_truth_documents:
             for page in document.pages():
@@ -500,10 +503,7 @@ class FileSplittingEvaluation:
         :type category: Category
         :returns: Seven metrics.
         """
-        tp = 0
-        fp = 0
-        fn = 0
-        tn = 0
+        tp, fp, fn, tn = 0, 0, 0, 0
         if category:
             evaluation_documents = [
                 [document_1, document_2]
@@ -566,14 +566,14 @@ class FileSplittingEvaluation:
 
     def _query(self, metric: str, search: Category = None) -> Union[int, float, None]:
         """
-        Query a metric for a Category or over the Categories.
+        Get a specific metric for a given category or get all metrics for all categories.
 
-        :param metric: Metric name.
+        :param metric: The name of the metric to get.
         :type metric: str
-        :param search: Category for which to get the metric.
+        :param search: The Category to get the metric for, if not provided will return all metrics for all Categories.
         :type search: Category
         :returns: A metric or a dictionary of metrics.
-        :raises KeyError: When a queried Category does not belong to a Project the Evaluation is running on.
+        :raises KeyError: If the given Category is not present in the project the evaluation is running on.
         """
         if search:
             if search.id_ not in self.evaluation_results_by_category:
