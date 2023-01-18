@@ -1758,6 +1758,14 @@ class Document(Data):
             document_id=self.id_, file_name=self.name, dataset_status=self.dataset_status, assignee=self.assignee
         )
 
+    def save(self):
+        """Save all local changes to Document to server."""
+        self.save_meta_data()
+
+        for annotation in self.annotations(use_correct=False):
+            if not annotation.is_online:
+                annotation.save()
+
     @classmethod
     def from_file_sync(
         self,

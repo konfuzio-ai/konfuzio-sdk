@@ -248,3 +248,48 @@ document.delete()
 
 The document will be deleted from your local data folder but it will remain in the Konfuzio Server.
 If you want to get it again you can update the project.
+
+If you want to delete a document permanently you can do it like so:
+
+```python
+document.delete(delete_online=True)
+```
+
+#### Upload Document
+To upload a new Document in your Project using the SDK, you have the option between two Document methods: `from_file_sync` and `from_file_async`. 
+
+If you want to upload a document, and start working with it as soon as the OCR processing step is done, we recommend `from_file_sync` as it will
+wait for the Document to be processed and then return a ready Document. Beware, this may take from a few seconds up to over a minute. 
+
+
+```python
+document = Document.from_file_sync(FILE_PATH, project=my_project)
+```
+
+If however you are trying to upload a large number of files and don't wait to wait for them to be processed you can use the asynchronous function which only returns a document ID:
+
+
+```python
+document_id = Document.from_file_async(FILE_PATH, project=my_project)
+```
+
+Later, you can load the processed document and get your document with:
+
+```python
+my_project.init_or_update_document(self, from_online=False)
+
+document = my_project.get_document_by_id(document_id)
+```
+
+#### Modify Document
+
+If you would like to use the SDK to modify some document's meta-data like the dataset status or the assignee, you can do it like this:
+
+```python
+document.assignee = 43
+document.dataset_status = 3
+
+doc.save_meta_data()
+```
+
+Here, the assignee has been changed in the server to the user with id 43, and the status of the document has been changed to 3 (i.e. Testing). 
