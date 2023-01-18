@@ -181,21 +181,38 @@ class TestOnlineProject(unittest.TestCase):
         annotation.delete()  # doc.update() performed internally when delete_online=True, which is default
         assert annotation not in doc.get_annotations()
 
-    def test_create_document_then_delete_document(self):
-        """Test the creation of an Online document from a file, and then deletion of the Document."""
-        doc = Document.from_file('test_data/pdf.pdf', self.project, sync=True)
+    def test_create_modify_and_delete_document(self):
+        """Test the creation of an online Document from a file, modification, and then deletion of the Document."""
+        doc = Document.from_file_sync('test_data/pdf.pdf', self.project, dataset_status=1)
+        doc_id = doc.id_
 
-        # doc = self.project.get_document_by_id(doc_id)
+        doc.dataset_status == 1
+        doc.dataset_status = 4
+
+        self.project.init_or_update_document()
+
+        doc.dataset_status == 1  # didn't save, so reloading the old data_set status
+        doc.dataset_status = 4
+        doc.save_meta_data()
+
+        self.project.init_or_update_document()
+
+        doc.dataset_status == 4
+
+        doc.delete(delete_online=False)
+
+        with pytest.raises(IndexError, match="was not found in"):
+            doc = self.project.get_document_by_id(doc_id)
+
+        self.project.init_or_update_document()
+
+        doc = self.project.get_document_by_id(doc_id)
 
         doc.delete(delete_online=True)
+        self.project.init_or_update_document()
 
-        # with pytest.raises(IndexError, match="was not found in"):
-        #     doc = self.project.get_document_by_id(doc.id_)
-
-        self.project.init_or_update_document(from_online=True)
-
-        # with pytest.raises(IndexError, match="was not found in"):
-        #     doc = self.project.get_document_by_id(doc_id)
+        with pytest.raises(IndexError, match="was not found in"):
+            doc = self.project.get_document_by_id(doc_id)
 
 
 class TestOfflineExampleData(unittest.TestCase):

@@ -1752,37 +1752,87 @@ class Document(Data):
 
         self.dataset_status = dataset_status
 
+    def save_meta_data(self):
+        """Save local changes to Document metadata to server."""
+        update_document_konfuzio_api(
+            document_id=self.id_, file_name=self.name, dataset_status=self.dataset_status, assignee=self.assignee
+        )
+
     @classmethod
-    def from_file(
+    def from_file_sync(
         self,
-        path: Union[str, List[str]],
+        path: str,
         project: 'Project',
         dataset_status: int = 0,
         category_id: Union[None, int] = None,
         callback_url: str = '',
-        sync: bool = False,
     ) -> 'Document':
-        """Initialize document from file."""
+        """
+        Initialize Document from file with synchronous API call.
+
+        This class method will wait for the document to be processed by the server
+        and then return the new Document. This may take a bit of time. When uploading
+        many documents, it is advised to use the Document.from_file_async method.
+
+        :param path: Path to file to be uploaded
+        :param project: If to filter by correct annotations
+        :param dataset_status: Dataset status of the document (None: 0 Preparation: 1 Training: 2 Test: 3 Excluded: 4)
+        :param category_id: Category the Document belongs to (if unset, it will be assigned one by the server)
+        :param callback_url: Callback URL receiving POST call once extraction is done
+        :return: New Document
+        """
         response = upload_file_konfuzio_api(
             path,
             project_id=project.id_,
             dataset_status=dataset_status,
             category_id=category_id,
             callback_url=callback_url,
-            sync=sync,
+            sync=True,
         )
 
         new_document_id = json.loads(response.text)['id']
 
-        if sync:
-            project.init_or_update_document(from_online=True)
-            doc = project.get_document_by_id(new_document_id)
-        else:
-            doc = Document(
-                id_=new_document_id, project=project, category_template=category_id, dataset_status=dataset_status
-            )
+        project.init_or_update_document(from_online=True)
+        doc = project.get_document_by_id(new_document_id)
 
         return doc
+
+    @classmethod
+    def from_file_async(
+        self,
+        path: str,
+        project: 'Project',
+        dataset_status: int = 0,
+        category_id: Union[None, int] = None,
+        callback_url: str = '',
+    ) -> int:
+        """
+        Initialize Document from file with asynchrinous API call.
+
+        This class method asynchronously uploads a file, to the Konfuzio API and returns the ID of
+        the newly created document. Use this method to create a new Document and don't want to wait
+        for the document to be processed by the server. This requires to update the Project at a
+        later point to be able to work with the new Document.
+
+        :param path: Path to file to be uploaded
+        :param project: If to filter by correct annotations
+        :param dataset_status: Dataset status of the document (None: 0 Preparation: 1 Training: 2 Test: 3 Excluded: 4)
+        :param category_id: Category the Document belongs to (if unset, it will be assigned one by the server)
+        :param callback_url: Callback URL receiving POST call once extraction is done
+        :return: ID of new Document
+        """
+        response = upload_file_konfuzio_api(
+            path,
+            project_id=project.id_,
+            dataset_status=dataset_status,
+            category_id=category_id,
+            callback_url=callback_url,
+            sync=False,
+        )
+
+        new_document_id = json.loads(response.text)['id']
+
+        return new_document_id
 
     @property
     def file_path(self):
@@ -2865,8 +2915,11 @@ class Project(Data):
         return self._labels
 
     def init_or_update_document(self, from_online=False):
-        """Initialize Document to then decide about full, incremental or no update."""
-        # self._documents = []  # clean up Documents to not create duplicates
+        """
+        Initialize or update Documents from local files to then decide about full, incremental or no update.
+
+        :param from_online: If True, all Document metadata info is first reloaded with latest changes in the server
+        """
         local_docs_dict = self.online_documents_dict
         if from_online:
             self.write_meta_of_files()
@@ -2894,7 +2947,7 @@ class Project(Data):
                     doc = local_docs_dict[document_data['id']]
                     logger.debug(f'Unchanged local version of {doc} from {new_date}.')
             else:
-                logger.info(f"Doc data: {document_data}")
+                logger.debug(f"Not loading Document {[document_data['id']]} with status {document_data['status'][0]}.")
 
         to_delete_ids = set(local_docs_dict.keys()) - updated_docs_ids_set
         for to_del_id in to_delete_ids:
