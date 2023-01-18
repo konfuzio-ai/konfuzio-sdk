@@ -206,6 +206,7 @@ class TestFileSplittingModel(unittest.TestCase):
 
     def test_suggest_first_pages(self):
         """Test SplittingAI's suggesting first Pages."""
+        assert type(self.file_splitting_model) == ContextAwareFileSplittingModel
         splitting_ai = SplittingAI(self.file_splitting_model)
         test_document = self.file_splitting_model.tokenizer.tokenize(
             deepcopy(self.project.get_category_by_id(3).test_documents()[0])

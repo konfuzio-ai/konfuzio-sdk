@@ -2601,15 +2601,26 @@ class Document(Data):
             pages_text = self.text[start_page.start_offset : end_page.start_offset]
         new_doc = Document(project=self.project, id_=None, text=pages_text)
         for page in self.pages():
-            if page.number in range(start_page.number, end_page.number + 1):
-                _ = Page(
-                    id_=None,
-                    original_size=(page.height, page.width),
-                    document=new_doc,
-                    start_offset=page.start_offset,
-                    end_offset=page.end_offset,
-                    number=page.number,
-                )
+            if include:
+                if page.number in range(start_page.number, end_page.number + 1):
+                    _ = Page(
+                        id_=None,
+                        original_size=(page.height, page.width),
+                        document=new_doc,
+                        start_offset=page.start_offset,
+                        end_offset=page.end_offset,
+                        number=page.number,
+                    )
+            else:
+                if page.number in range(start_page.number, end_page.number):
+                    _ = Page(
+                        id_=None,
+                        original_size=(page.height, page.width),
+                        document=new_doc,
+                        start_offset=page.start_offset,
+                        end_offset=page.end_offset,
+                        number=page.number,
+                    )
         return new_doc
 
 
