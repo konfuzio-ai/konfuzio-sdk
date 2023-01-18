@@ -2593,9 +2593,12 @@ class Document(Data):
         proposed = splitting_ai.propose_split_documents(self, first_page_strings)
         return proposed
 
-    def create_subdocument_from_page_range(self, start_page: Page, end_page: Page):
+    def create_subdocument_from_page_range(self, start_page: Page, end_page: Page, include=False):
         """Create a shorter Document from a Page range of an initial Document."""
-        pages_text = self.text[start_page.start_offset : end_page.end_offset]
+        if include:
+            pages_text = self.text[start_page.start_offset : end_page.end_offset]
+        else:
+            pages_text = self.text[start_page.start_offset : end_page.start_offset]
         new_doc = Document(project=self.project, id_=None, text=pages_text)
         for page in self.pages():
             if page.number in range(start_page.number, end_page.number):

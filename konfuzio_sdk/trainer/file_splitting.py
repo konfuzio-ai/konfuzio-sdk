@@ -235,9 +235,14 @@ class SplittingAI:
             last_page = document.pages()[-1]
             for page_i, split_i in enumerate(suggested_splits):
                 if page_i == 0:
-                    split_docs.append(document.create_subdocument_from_page_range(first_page, split_i))
+                    split_docs.append(
+                        document.create_subdocument_from_page_range(
+                            first_page,
+                            split_i,
+                        )
+                    )
                 elif page_i == len(split_docs):
-                    split_docs.append(document.create_subdocument_from_page_range(split_i, last_page))
+                    split_docs.append(document.create_subdocument_from_page_range(split_i, last_page, include=True))
                 else:
                     split_docs.append(
                         document.create_subdocument_from_page_range(suggested_splits[page_i - 1], split_i)
