@@ -1359,9 +1359,11 @@ class TestOfflineDataSetup(unittest.TestCase):
         """Test creating a smaller Document from original one within a Page range."""
         project = LocalTextProject()
         test_document = project.get_category_by_id(3).test_documents()[0]
-        new_doc = test_document.create_subdocument_from_page_range(test_document.pages()[0], test_document.pages()[2])
+        new_doc = test_document.create_subdocument_from_page_range(
+            test_document.pages()[0], test_document.pages()[1], include=True
+        )
         assert len(new_doc.pages()) == 2
-        assert new_doc.text == "Hi all,\nI like bread.\nI hope to get everything done soon.\nMorning,"
+        assert new_doc.text == "Hi all,\nI like bread.\nI hope to get everything done soon."
 
 
 class TestSeparateLabels(unittest.TestCase):
