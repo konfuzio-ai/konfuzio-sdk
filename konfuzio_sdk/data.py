@@ -2601,7 +2601,7 @@ class Document(Data):
             pages_text = self.text[start_page.start_offset : end_page.start_offset]
         new_doc = Document(project=self.project, id_=None, text=pages_text)
         for page in self.pages():
-            if page.number in range(start_page.number, end_page.number):
+            if page.number in range(start_page.number, end_page.number + 1):
                 _ = Page(
                     id_=None,
                     original_size=(page.height, page.width),
