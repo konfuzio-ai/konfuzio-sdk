@@ -35,6 +35,7 @@ import numpy
 import pandas
 import cloudpickle
 from pympler import asizeof
+from pkg_resources import get_distribution
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.validation import check_is_fitted
 from tabulate import tabulate
@@ -68,6 +69,8 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     :raises TypeError: When the loaded pickle isn't recognized as a Konfuzio AI model.
     :return: Extraction AI model.
     """
+    logger.info(f"Starting loading AI model with path {pickle_path}")
+
     if not os.path.isfile(pickle_path):
         raise FileNotFoundError("Invalid pickle file path:", pickle_path)
 
@@ -89,6 +92,11 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
         if "unsupported pickle protocol: 5" in str(err) and '3.7' in sys.version:
             raise ValueError("Pickle saved with incompatible Python version.") from err
         raise
+
+    if hasattr(model, 'python_version'):
+        logger.info(f"Loaded AI model trained with Python {model.python_version}")
+    if hasattr(model, 'konfuzio_sdk_version'):
+        logger.info(f"Loaded AI model trained with Konfuzio SDK version {model.konfuzio_sdk_version}")
 
     max_ram = normalize_memory(max_ram)
     if max_ram and asizeof.asizeof(model) > max_ram:
@@ -1076,6 +1084,9 @@ class Trainer:
         self.df_train = None
 
         self.evaluation = None
+
+        self.python_version = '.'.join([str(v) for v in sys.version_info[:3]])
+        self.konfuzio_sdk_version = get_distribution("konfuzio_sdk").version
 
     def name_lower(self):
         """Convert class name to machine readable name."""
