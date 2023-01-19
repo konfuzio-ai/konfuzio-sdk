@@ -47,10 +47,9 @@ use further integrations, see `help.konfuzio.com <https://help.konfuzio.com/inte
    :hidden:
    :maxdepth: 3
 
+   web/index.md
    web/explanations.rst
-   web/api.md
    web/api-v3.md
-   web/frontend/index.md
    web/on_premises.md
    web/changelog_app.md
 
