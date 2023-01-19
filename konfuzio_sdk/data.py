@@ -2947,12 +2947,14 @@ class Project(Data):
                 if updated:
                     doc = local_docs_dict[document_data['id']]
                     doc.update_meta_data(**document_data)
+                    doc.update()
                     logger.info(f'{doc} was updated, we will download it again as soon you use it.')
                 elif new:
                     doc = Document(project=self, update=True, id_=document_data['id'], **document_data)
                     logger.info(f'{doc} is not available on your machine, we will download it as soon you use it.')
                 else:
                     doc = local_docs_dict[document_data['id']]
+                    doc.update_meta_data(**document_data)  # reset any Document level meta data changes
                     logger.debug(f'Unchanged local version of {doc} from {new_date}.')
             else:
                 logger.debug(f"Not loading Document {[document_data['id']]} with status {document_data['status'][0]}.")
@@ -2971,6 +2973,12 @@ class Project(Data):
     def del_document_by_id(self, document_id: int, delete_online: bool = False) -> Document:
         """Delete Document by its ID."""
         document = self.get_document_by_id(document_id)
+
+        if delete_online and document.dataset_status != 0:
+            raise ValueError(
+                f"Cannot delete Document with dataset status {document.dataset_status} in server.\
+ Are you sure you want to delete this Document? If yes, change the dataset status to 0 and try again."
+            )
 
         self._documents.remove(document)
 
