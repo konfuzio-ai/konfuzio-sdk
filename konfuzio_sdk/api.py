@@ -161,7 +161,10 @@ def get_project_details(project_id: int, session=_konfuzio_session()) -> dict:
     """
     url = get_project_url(project_id=project_id)
     r = session.get(url=url)
-    r.raise_for_status()
+    try:
+        r.raise_for_status()
+    except HTTPError as e:
+        raise HTTPError(r.text) from e
     return r.json()
 
 
@@ -450,7 +453,11 @@ def upload_file_konfuzio_api(
     }
 
     r = session.post(url=url, files=files, data=data)
-    r.raise_for_status()
+
+    try:
+        r.raise_for_status()
+    except HTTPError as e:
+        raise HTTPError(r.text) from e
     return r
 
 
@@ -466,7 +473,12 @@ def delete_file_konfuzio_api(document_id: int, session=_konfuzio_session()):
     data = {'id': document_id}
 
     r = session.delete(url=url, json=data)
-    r.raise_for_status()
+
+    try:
+        r.raise_for_status()
+    except HTTPError as e:
+        raise HTTPError(r.text) from e
+
     return True
 
 
@@ -499,6 +511,12 @@ def update_document_konfuzio_api(document_id: int, session=_konfuzio_session(), 
         data.update({"assignee": assignee})
 
     r = session.patch(url=url, json=data)
+
+    try:
+        r.raise_for_status()
+    except HTTPError as e:
+        raise HTTPError(r.text) from e
+
     return json.loads(r.text)
 
 

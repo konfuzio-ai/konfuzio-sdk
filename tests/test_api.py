@@ -190,7 +190,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
     def test_upload_file_konfuzio_api_invalid_callback_url(self):
         """Test upload of a file through API and its removal."""
         file_path = os.path.join(FOLDER_ROOT, 'test_data', 'pdf.pdf')
-        with pytest.raises(HTTPError, match="400 Client Error"):
+        with pytest.raises(HTTPError, match="Enter a valid URL."):
             _ = upload_file_konfuzio_api(file_path, project_id=TEST_PROJECT_ID, callback_url='invalid url')
 
     def test_download_file_with_ocr(self):
