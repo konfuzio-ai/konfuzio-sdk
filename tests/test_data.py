@@ -3,6 +3,7 @@ import logging
 import os
 import unittest
 from copy import copy, deepcopy
+from requests import HTTPError
 
 import pytest
 from PIL.PngImagePlugin import PngImageFile
@@ -181,23 +182,60 @@ class TestOnlineProject(unittest.TestCase):
         annotation.delete()  # doc.update() performed internally when delete_online=True, which is default
         assert annotation not in doc.get_annotations()
 
+    def test_modify_document_metadata(self):
+        """Test modification of meta-data of test document."""
+        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+
+        doc.assignee = 42
+        doc.dataset_status = 1
+
+        with pytest.raises(HTTPError, match="assignee.*object does not exist"):
+            doc.save_meta_data()
+
+        doc.assignee = 1234
+        doc.save_meta_data()
+
+        self.project.init_or_update_document(from_online=True)
+
+        assert doc.assignee == 1234
+        assert doc.dataset_status == 1
+
+        doc.assignee = 1043
+        doc.dataset_status = 2
+        doc.save_meta_data()
+
+        self.project.init_or_update_document(from_online=True)
+
+        assert doc.assignee == 1043
+        assert doc.dataset_status == 2
+
     def test_create_modify_and_delete_document(self):
         """Test the creation of an online Document from a file, modification, and then deletion of the Document."""
+        # Test Document creation
         doc = Document.from_file_sync('test_data/pdf.pdf', self.project, dataset_status=1)
         doc_id = doc.id_
 
-        doc.dataset_status == 1
-        doc.dataset_status = 4
+        # Test Document modification
+        assert doc.dataset_status == 1
 
-        self.project.init_or_update_document()
+        doc.dataset_status = 0
 
-        doc.dataset_status == 1  # didn't save, so reloading the old data_set status
-        doc.dataset_status = 4
+        doc.project.init_or_update_document()
+
+        assert doc.dataset_status == 1  # didn't save, so reloading the old dataset status
+
+        with pytest.raises(ValueError, match="Cannot delete Document with dataset status"):
+            # Cannot delete Document with dataset_status != 0
+            doc.delete(delete_online=True)
+
+        doc.dataset_status = 0
+        doc.assignee = 1234
         doc.save_meta_data()
 
-        self.project.init_or_update_document()
+        doc.project.init_or_update_document(from_online=True)
 
-        doc.dataset_status == 4
+        assert doc.dataset_status == 0
+        assert doc.assignee == 1234
 
         doc.delete(delete_online=False)
 
@@ -206,7 +244,7 @@ class TestOnlineProject(unittest.TestCase):
 
         self.project.init_or_update_document()
 
-        doc = self.project.get_document_by_id(doc_id)
+        doc = self.project.get_document_by_id(doc_id)  # works because local meta-data still has it listed
 
         doc.delete(delete_online=True)
         self.project.init_or_update_document()
