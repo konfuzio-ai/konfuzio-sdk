@@ -464,8 +464,7 @@ class SplittingAI:
         :return: A list of suggested new sub-Documents built from the original Document or a list with a Document
         with Pages marked .is_first_page on splitting points.
         """
-        if self.model.requires_images:
-            document.get_images()
+        document.get_images()
         if return_pages:
             processed = self._suggest_first_pages(document, inplace)
         else:
