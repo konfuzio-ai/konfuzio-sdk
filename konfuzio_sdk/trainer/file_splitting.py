@@ -46,6 +46,8 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         self.documents = [document for category in self.categories for document in category.documents()]
         self.test_documents = [document for category in self.categories for document in category.test_documents()]
         self.tokenizer = None
+        self.requires_text = False
+        self.requires_images = False
 
     @abc.abstractmethod
     def fit(self, *args, **kwargs):
@@ -131,6 +133,8 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         self.output_dir = self.project.model_folder
         self.tokenizer = tokenizer
         self.path = None
+        self.requires_text = True
+        self.requires_images = False
 
     def fit(self, allow_empty_categories: bool = False, *args, **kwargs):
         """
@@ -205,13 +209,17 @@ class SplittingAI:
         :type inplace: bool
         :returns: A list containing the modified Document.
         """
-        if inplace:
-            new_doc = self.tokenizer.tokenize(document)
+        if not self.model.requires_images:
+            if inplace:
+                document = self.tokenizer.tokenize(document)
+            else:
+                document = self.tokenizer.tokenize(deepcopy(document))
+            for page in document.pages():
+                self.model.predict(page)
         else:
-            new_doc = self.tokenizer.tokenize(deepcopy(document))
-        for page in new_doc.pages():
-            self.model.predict(page)
-        return [new_doc]
+            for page in document.pages():
+                self.model.predict(page)
+        return [document]
 
     def _suggest_page_split(self, document: Document) -> List[Document]:
         """
@@ -269,6 +277,8 @@ class SplittingAI:
         :return: A list of suggested new sub-Documents built from the original Document or a list with a Document
         with Pages marked .is_first_page on splitting points.
         """
+        if self.model.requires_images:
+            document.get_images()
         if return_pages:
             processed = self._suggest_first_pages(document, inplace)
         else:
