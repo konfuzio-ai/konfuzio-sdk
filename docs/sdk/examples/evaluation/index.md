@@ -44,11 +44,11 @@ For more details, see the [Python API Documentation](https://dev.konfuzio.com/sd
 
 Suppose in our test dataset we have 2 Documents of 2 Categories: one 3-paged, consisting of a single file (-> it has only one ground-truth first Page) of a first Category, and one 5-paged, consisting of three files: two 2-paged and one 1-paged (-> it has three ground-truth first Pages), of a second Category.
 
-.. image:: /_static/img/document_example_1.png
+.. image:: /sdk/examples/evaluation/document_example_1.png
 
 _First document_
 
-.. image:: /_static/img/document_example_2.png
+.. image:: /sdk/examples/evaluation/document_example_2.png
 
 _Second document_
 
