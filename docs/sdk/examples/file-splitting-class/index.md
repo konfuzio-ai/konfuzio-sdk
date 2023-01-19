@@ -6,7 +6,7 @@ It's common for multipage files to not be perfectly organized, and in some cases
 included in a single file. To ensure that these documents are properly processed and separated, we will be discussing a 
 method for identifying and splitting these documents into individual, independent sub-documents.
 
-.. image:: /_static/img/multi_file_document_example.png
+.. image:: /sdk/examples/file-splitting-class/multi_file_document_example.png
 
 _Multi-file Document Example_
 
