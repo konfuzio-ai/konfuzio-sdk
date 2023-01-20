@@ -176,3 +176,9 @@ the output could be reflected in a following table:
 | ---- |-----|-----|-----|-----| ---- |--------|------|
 | Category 1 | 1   | 2   | 0   | 0   | 1 | 1      | 1    |
 | Category 2 | 2   | 2   | 0   | 1   | 1 | 0.66   | 0.79 |
+
+To log metrics after evaluation, you can call `EvaluationCalculator`'s method `metrics_logging` (you would need to 
+specify the metrics accordingly at the class's initialization). Example usage:
+```python
+EvaluationCalculator(tp=3, fp=0, fn=1, tn=4).metrics_logging()
+```
