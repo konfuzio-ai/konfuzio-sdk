@@ -22,7 +22,6 @@ You can think of the _Planned_ section as a _Roadmap_ that lists Konfuzio Server
 - First stable release of Capture Vue in version ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9958)).
 - Suggest page breaks if one file contains multiple Documents ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/7671)).
 - Perfomance improvement of the Konfuzio Server interface ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10274)).
-- Redirect https://app.konfuzio.com/api/ to stable API Version 3 ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9692)).
 - Sort Labels in Label-Sets to allow users to customize the UI per Category ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/8932)).
 - Delta Training, Partial Fit an exisiting classifier, so that training documents used previously can be deleted ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9251)).
 - Allow administrators of Konfuzio on-premise installations to run a speedtest ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9870)).
@@ -40,9 +39,16 @@ These changes are for the tokenizers/new SDK branch.
 - A bug during the extraction post-processing steps, which was causing the first line items of each page to be skipped ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9561))
 -->
 
-## Next Release (estimated release date: 23th January 2023)
+## Next Release (estimated release date: 20th January 2023)
 
-Upcoming...
+This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Capture Vue in version [0.1.0](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
+
+### Added
+- [Allow new users to use to use Konfuzio SaaS Basic](https://konfuzio.com/de/preise/) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10489)).
+
+### Changed
+- [Redirect https://app.konfuzio.com/api/ to stable API Version 3](https://app.konfuzio.com/api/) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9692)).
+- [Set the Limit of objects returned from the Document List endpoint to 10 000](https://dev.konfuzio.com/web/api-v3.html#content-limits) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9975)).
 
 ## released-2023-01-15_19-35-28
 
