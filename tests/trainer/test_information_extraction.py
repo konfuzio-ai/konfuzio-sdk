@@ -235,6 +235,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         self.pipeline.fit()
 
         assert asizeof.asizeof(self.pipeline.clf) < 1e5
+        assert asizeof.asizeof(self.pipeline.label_set_clf) < 1e5
 
         if self.pipeline.use_separate_labels:
             assert len(self.pipeline.clf.classes_) == 19
@@ -254,15 +255,15 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
             include_konfuzio=False,
             reduce_weight=True,
             keep_documents=False,
-            max_ram="5MB",
+            max_ram="500KB",
         )
 
         with pytest.raises(MemoryError):
             self.pipeline.pipeline_path = self.pipeline.save(
-                include_konfuzio=False, reduce_weight=False, keep_documents=True, max_ram="5MB"
+                include_konfuzio=False, reduce_weight=False, keep_documents=True, max_ram="500KB"
             )
 
-        self.project._max_ram = "5MB"
+        self.project._max_ram = "500KB"
         with pytest.raises(MemoryError):
             self.pipeline.pipeline_path = self.pipeline.save(
                 include_konfuzio=False, reduce_weight=False, keep_documents=True
@@ -279,7 +280,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
             include_konfuzio=True,
             reduce_weight=True,
             keep_documents=False,
-            max_ram="5MB",
+            max_ram="500KB",
         )
         assert os.path.isfile(self.pipeline.pipeline_path)
 
@@ -453,6 +454,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         self.pipeline.fit()
 
         assert asizeof.asizeof(self.pipeline.clf) < 1e5
+        assert asizeof.asizeof(self.pipeline.label_set_clf) < 1e5
 
         if self.pipeline.use_separate_labels:
             assert len(self.pipeline.clf.classes_) == 19
@@ -472,15 +474,15 @@ class TestRegexRFExtractionAI(unittest.TestCase):
             include_konfuzio=False,
             reduce_weight=True,
             keep_documents=False,
-            max_ram="5MB",
+            max_ram="500KB",
         )
 
         with pytest.raises(MemoryError):
             self.pipeline.pipeline_path = self.pipeline.save(
-                include_konfuzio=False, max_ram="5MB", keep_documents=True, reduce_weight=False
+                include_konfuzio=False, max_ram="500KB", keep_documents=True, reduce_weight=False
             )
 
-        self.project._max_ram = "5MB"
+        self.project._max_ram = "500KB"
         with pytest.raises(MemoryError):
             self.pipeline.pipeline_path = self.pipeline.save(
                 include_konfuzio=False, keep_documents=True, reduce_weight=False
@@ -497,7 +499,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
             include_konfuzio=True,
             reduce_weight=True,
             keep_documents=False,
-            max_ram="5MB",
+            max_ram="500KB",
         )
         assert os.path.isfile(self.pipeline.pipeline_path)
 

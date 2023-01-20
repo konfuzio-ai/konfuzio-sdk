@@ -1376,8 +1376,9 @@ class Trainer:
         logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
 
         # restore Documents of the Category so that we can run the evaluation later
-        self.documents = restore_documents
-        self.test_documents = restore_test_documents
+        if not keep_documents:
+            self.documents = restore_documents
+            self.test_documents = restore_test_documents
         if reduce_weight:
             self.category.project._documents = project_docs
 
