@@ -65,7 +65,7 @@ from konfuzio_sdk.data import Project, Document
 from konfuzio_sdk.trainer.information_extraction import load_model
 
 # Initialize Project and provide the AI training and test data
-project = Project(id_=YOUR_PROJECT_ID)
+project = Project(id_=YOUR_PROJECT_ID)  # see https://dev.konfuzio.com/sdk/get_started.html#example-usage
 
 extraction_pipeline = CustomExtractionAI(*args, **kwargs)
 extraction_pipeline.category = project.get_category_by_id(id_=YOUR_CATEGORY_ID)
@@ -120,7 +120,7 @@ from konfuzio_sdk.data import Project
 from konfuzio_sdk.trainer.information_extraction import load_model
 
 # Initialize Project and provide the AI training and test data
-project = Project(id_=YOUR_PROJECT_ID)
+project = Project(id_=YOUR_PROJECT_ID)  # see https://dev.konfuzio.com/sdk/get_started.html#example-usage
 
 categorization_pipeline = CustomCategorizationAI(*args, **kwargs)
 categorization_pipeline.categories = project.categories
@@ -182,7 +182,7 @@ from konfuzio_sdk.trainer.file_splitting import SplittingAI
 from konfuzio_sdk.trainer.information_extraction import load_model
 
 # Initialize Project and provide the AI training and test data
-project = Project(id_=YOUR_PROJECT_ID)
+project = Project(id_=YOUR_PROJECT_ID)  # see https://dev.konfuzio.com/sdk/get_started.html#example-usage
 
 file_splitting_model = CustomFileSplittingModel(categories=project.categories, *args, *kwargs)
 file_splitting_model.documents = [category.documents for category in categorization_pipeline.categories]
@@ -214,9 +214,13 @@ file_splitting_pipeline_loaded = SplittingAI(file_splitting_model_loaded)
 For a more in depth tutorial about the usage of File Splitting AIs in the SDK see 
 [Splitting for multi-file Documents: Step-by-step guide](examples/examples.html#file-splitting).
 
-### Other customizable features
+### Other use cases around documents
 
-#### PDF Form Generator
+The following is not a product we offer but a simple example of something you can build using the Konfuzio SDK.
+
+#### Build your own PDF Form Generator
+
+A simple implementation can look like the following.
 
 ##### 1. Upload a PDF Form and create empty annotations where you want to fill in data
 
@@ -225,17 +229,15 @@ For a more in depth tutorial about the usage of File Splitting AIs in the SDK se
 
 ##### 2. Use the SDK to fill in values in the PDF
 
-Find a demo at: https://pdf-gen.konfuzio.com/docs 
-
-Example PDF: [click here](https://pdf-gen.konfuzio.com/simple-render/?document_id=394000&project_id=1834&file_name=Teilnahmebestätiung.pdf&Name=Valerie&Startdatum=15.01.2022&Enddatum=30.03.2022&Kursleiter=Marianne&Kursgebuehr=150&Kurseinheitsdauer=50&Kurs=Pilates&Ausstellungsdatum=03.12.2022)
-
 Example implementation:
 ```python
-from konfuzio_sdk.data import Project
-from PyPDF2 import PdfFileWriter, PdfFileReader
 import io
+
+from PyPDF2 import PdfFileWriter, PdfFileReader
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
+
+from konfuzio_sdk.data import Project
 
 
 def render(document_id, project_id, values):
@@ -255,15 +257,12 @@ def render(document_id, project_id, values):
         for annotation in annotations:
             if annotation.selection_bbox.get('page_index') == page_index:
                 text_value = values.get(annotation.label.name, '')
-                print(f'{text_value}')
                 textobject = my_canvas.beginText()
                 # Set text location (x, y)
                 textobject.setTextOrigin(annotation.x0, annotation.y0)
-                # Set font face and size
-                # textobject.setFont('Times-Roman', 12)
                 # Change text color
                 textobject.setFillColor(colors.black)
-                # Write red text
+                # Write text
                 textobject.textLine(text=text_value)
                 # Write text to the canvas
                 my_canvas.drawText(textobject)
@@ -282,11 +281,11 @@ def render(document_id, project_id, values):
     return output
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    values = {'Name': 'Valerie', 'Startdatum': '15.01.2022', 'Enddatum': '30.03.2022'}
-    document_id = 394000
-    project_id = 1834
+    values = {'Name': 'Valerie', 'Kurs': 'Pilates', 'Startdatum': '15.01.2022', 'Enddatum': '30.03.2022'}
+    # To find your Project ID and Document ID see https://dev.konfuzio.com/sdk/get_started.html#example-usage
+    project_id = YOUR_PROJECT_ID
+    document_id = YOUR_DOCUMENT_ID
 
     output = render(document_id=document_id, project_id=project_id, values=values)
     # finally, write "output" to a real file
@@ -294,3 +293,8 @@ if __name__ == '__main__':
     output.write(outputStream)
     outputStream.close()
 ```
+
+The resulting filled in PDF form will look like this:
+
+.. image:: home/pdf_form_gen_example_compiled.png
+   :scale: 40%
