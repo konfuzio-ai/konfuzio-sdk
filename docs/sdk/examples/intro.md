@@ -286,10 +286,25 @@ document = my_project.get_document_by_id(document_id)
 If you would like to use the SDK to modify some document's meta-data like the dataset status or the assignee, you can do it like this:
 
 ```python
-document.assignee = 43
+document.assignee = ASSIGNEE_ID
 document.dataset_status = 3
 
 doc.save_meta_data()
 ```
 
 Here, the assignee has been changed in the server to the user with id 43, and the status of the document has been changed to 3 (i.e. Testing). 
+
+#### Delete Document
+
+If you would like to delete a Document in the remote server you can simply use the `Document.delete` method. You can only delete Documents with a dataset status of None (0). **Be careful!** Once the document is deleted online, we will have no way of recovering it. 
+
+
+```python
+document.dataset_status = 0
+
+doc.save_meta_data()
+
+doc.delete(delete_online=True)
+```
+
+If `delete_online` is set to False (the default), the Document will only be deleted on your local machine, and will be reloaded next time you load the Project, or if you run the `Project.init_or_update_document` method directly. 
