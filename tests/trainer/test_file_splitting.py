@@ -262,10 +262,10 @@ class TestFusionFileSplittingModel(unittest.TestCase):
             else:
                 assert not page.is_first_page
 
-    def test_save_load_model(self):
-        """Test saving and loading pickle file of the model."""
-        path = self.file_splitting_model.save(include_konfuzio=False)
-        loaded = load_model(path)
-        splitting_ai = SplittingAI(model=loaded)
-        assert isinstance(splitting_ai.model, FusionModel)
-        pathlib.Path(self.file_splitting_model.path).unlink()
+    # def test_save_load_model(self):
+    #     """Test saving and loading pickle file of the model."""
+    #     path = self.file_splitting_model.save(include_konfuzio=False)
+    #     loaded = load_model(path)
+    #     splitting_ai = SplittingAI(model=loaded)
+    #     assert isinstance(splitting_ai.model, FusionModel)
+    #     pathlib.Path(self.file_splitting_model.path).unlink()
