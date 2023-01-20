@@ -314,11 +314,12 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         :raises ValueError: When a list passed into categories contains Categories from different Projects.
         """
         super().__init__(categories=categories)
-        self.requires_text = True
         self.name = self.__class__.__name__
         self.output_dir = self.project.model_folder
         self.tokenizer = tokenizer
         self.path = None
+        self.requires_text = True
+        self.requires_images = False
 
     def fit(self, allow_empty_categories: bool = False, *args, **kwargs):
         """
@@ -358,7 +359,9 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         page.is_first_page = False
         for category in self.categories:
             cur_first_page_strings = category.exclusive_first_page_strings(tokenizer=self.tokenizer)
-            intersection = {span.offset_string for span in page.spans()}.intersection(cur_first_page_strings)
+            intersection = {span.offset_string.strip('\f').strip('\n') for span in page.spans()}.intersection(
+                cur_first_page_strings
+            )
             if len(intersection) > 0:
                 page.is_first_page = True
                 break
@@ -381,8 +384,9 @@ class SplittingAI:
         else:
             self.model = model
         self.tokenizer = None
-        if not issubclass(type(self.model), AbstractFileSplittingModel):
-            raise ValueError("The model is not inheriting from AbstractFileSplittingModel class.")
+
+        # if not issubclass(type(self.model), AbstractFileSplittingModel):
+        #     raise ValueError("The model is not inheriting from AbstractFileSplittingModel class.")
         if type(self.model) == ContextAwareFileSplittingModel:
             self.tokenizer = self.model.tokenizer
 
@@ -464,7 +468,8 @@ class SplittingAI:
         :return: A list of suggested new sub-Documents built from the original Document or a list with a Document
         with Pages marked .is_first_page on splitting points.
         """
-        document.get_images()
+        if self.model.requires_images:
+            document.get_images()
         if return_pages:
             processed = self._suggest_first_pages(document, inplace)
         else:

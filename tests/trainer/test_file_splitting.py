@@ -264,5 +264,8 @@ class TestFusionFileSplittingModel(unittest.TestCase):
 
     def test_save_load_model(self):
         """Test saving and loading pickle file of the model."""
-        self.file_splitting_model.save(include_konfuzio=False)
+        path = self.file_splitting_model.save(include_konfuzio=False)
+        loaded = load_model(path)
+        splitting_ai = SplittingAI(model=loaded)
+        assert isinstance(splitting_ai.model, FusionModel)
         pathlib.Path(self.file_splitting_model.path).unlink()
