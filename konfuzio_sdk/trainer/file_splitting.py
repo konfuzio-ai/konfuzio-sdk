@@ -385,8 +385,8 @@ class SplittingAI:
             self.model = model
         self.tokenizer = None
 
-        # if not issubclass(type(self.model), AbstractFileSplittingModel):
-        #     raise ValueError("The model is not inheriting from AbstractFileSplittingModel class.")
+        if not issubclass(type(self.model), AbstractFileSplittingModel):
+            raise ValueError("The model is not inheriting from AbstractFileSplittingModel class.")
         if type(self.model) == ContextAwareFileSplittingModel:
             self.tokenizer = self.model.tokenizer
 
