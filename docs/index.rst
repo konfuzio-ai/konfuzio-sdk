@@ -26,9 +26,10 @@ To then access the REST API via :ref:`Server API v2` and  :ref:`Server API v3` o
 use further integrations, see `help.konfuzio.com <https://help.konfuzio.com/integrations/index.html>`_.
 Also see `What is the Konfuzio Server? <https://www.konfuzio.com/web/index.html>`_
 
-**Document Validation UI:** The Document Validation UI is a white-label app, developed with Vue.js, that lets you
-preview and interact with Documents uploaded to Konfuzio Server. Review the release notes and and the source code on `GitHub <https://github.com/konfuzio-ai/document-validation-ui>`_.
-Also see `What is the Konfuzio DVUI? <https://www.konfuzio.com/dvui/index.html>`_
+**Document Validation UI:** This Open Source User Interface allows you to interact with Documents uploaded to the Konfuzio Server and with the data extracted from them.
+Check out our `Document Validation UI overview <Konfuzio Document Validation UI overview>`_ for technical information about the application or our `Konfuzio guide <https://help.konfuzio.com/document-validation-ui/index.html>`_ to learn how to use it.
+Review the release notes and and the source code on `GitHub <https://github.com/konfuzio-ai/document-validation-ui>`_.
+Also see `What is the Konfuzio DVUI? <https://dev.konfuzio.com/dvui/index.html>`_
 
 .. toctree::
    :hidden:
@@ -55,13 +56,12 @@ Also see `What is the Konfuzio DVUI? <https://www.konfuzio.com/dvui/index.html>`
    web/changelog_app.md
 
 .. toctree::
-   :caption: Document Validation UI
+   :caption: Konfuzio Document Validation UI
    :hidden:
    :maxdepth: 3
 
    dvui/index.md
-   dvui/users.md
-   dvui/modes.md
+   dvui/explanations.md
    dvui/guides.md
    dvui/sourcecode.md
    dvui/changelog.md

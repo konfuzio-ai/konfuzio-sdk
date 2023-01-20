@@ -50,9 +50,9 @@ format `Authorization: Basic <string>`, where `<string>` is a Base64-encoded str
 format `<username>:<password>` (this is usually done automatically by the HTTP client).
 
 .. warning::
-  While this approach doesn't require additional setup and is useful for testing in the Swagger page, it is
-  **discouraged** for serious/automated use, since it usually involves storing these credentials in plain text on the
-  client side.
+While this approach doesn't require additional setup and is useful for testing in the Swagger page, it is
+**discouraged** for serious/automated use, since it usually involves storing these credentials in plain text on the
+client side.
 
 #### Cookie authentication
 
@@ -79,8 +79,8 @@ This token doesn't currently expire, so you can use indefinitely, but you can de
 the [authentication DELETE endpoint](link).
 
 .. note::
-  This is the authentication method you **should** use if you're building an external service that consumes the Konfuzio
-  API.
+This is the authentication method you **should** use if you're building an external service that consumes the Konfuzio
+API.
 
 An example workflow would look like:
 
@@ -154,8 +154,8 @@ indicate failure on our side and are usually temporary (if they aren't, please
 [contact us](https://konfuzio.com/support/)).
 
 .. seealso::
-  The `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`_ provides a more detailed breakdown of which response
-  codes are expected for each endpoint.
+The `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`\_ provides a more detailed breakdown of which response
+codes are expected for each endpoint.
 
 ### Pagination
 
@@ -195,8 +195,8 @@ use `?created_at_before=2022-02-01&created_at_after=2021-12-01` to only return i
 December 1, 2021 and February 1, 2022 (specified dates excluded).
 
 .. seealso::
-  For more filtering options, refer to the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`_ for the endpoint
-  that you want to filter.
+For more filtering options, refer to the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`\_ for the endpoint
+that you want to filter.
 
 ### Ordering
 
@@ -209,8 +209,8 @@ You can specify that you want the ordering to be reversed by prefixing the field
 example: `?ordering=-created_at`.
 
 .. seealso::
-  For a list of fields that can be used for ordering, refer to
-  the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`_ for the endpoint that you want to order.
+For a list of fields that can be used for ordering, refer to
+the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`\_ for the endpoint that you want to order.
 
 ### Fields
 
@@ -220,9 +220,9 @@ returned. You can specify the `fields` `GET` parameter with the field names sepa
 For example, you can specify `?fields=id,created_at` to only return the `id` and `created_at` fields in the response.
 
 .. seealso::
-  Refer to the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`_ for a specific endpoint to see if it
-  supports using the `fields` parameter. When supported, any field in the response schema can be used in the `fields`
-  parameter.
+Refer to the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`\_ for a specific endpoint to see if it
+supports using the `fields` parameter. When supported, any field in the response schema can be used in the `fields`
+parameter.
 
 ### Coordinates and bounding boxes
 
@@ -371,8 +371,8 @@ After your initial project setup, you can start uploading documents. To upload a
 our [document creation endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_create).
 
 .. note::
-  Unlike most other endpoints, the document creation endpoint only supports `multipart/form-data` requests (to support
-  file uploading), so you won't have to JSON-encode your request this time.
+Unlike most other endpoints, the document creation endpoint only supports `multipart/form-data` requests (to support
+file uploading), so you won't have to JSON-encode your request this time.
 
 ```
 curl --request POST \
@@ -469,8 +469,8 @@ documents.
 #### Start from our Vue.js code
 
 Our document dashboard is based on Vue.js and completely implemented with the API v3. You can check out our solution
-[on GitHub](https://github.com/konfuzio-ai/konfuzio-capture-vue) and customize it to your needs. You will find a
-technical overview and component description in the repository's `README`.
+[on GitHub](https://github.com/konfuzio-ai/document-validation-ui) and customize it to your needs. You will find a
+technical overview and component description [here](../dvui/index.md).
 
 #### Start from scratch
 

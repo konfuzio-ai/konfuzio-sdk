@@ -35,6 +35,7 @@ import numpy
 import pandas
 import cloudpickle
 from pympler import asizeof
+from pkg_resources import get_distribution
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.validation import check_is_fitted
 from tabulate import tabulate
@@ -68,6 +69,8 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     :raises TypeError: When the loaded pickle isn't recognized as a Konfuzio AI model.
     :return: Extraction AI model.
     """
+    logger.info(f"Starting loading AI model with path {pickle_path}")
+
     if not os.path.isfile(pickle_path):
         raise FileNotFoundError("Invalid pickle file path:", pickle_path)
 
@@ -89,6 +92,11 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
         if "unsupported pickle protocol: 5" in str(err) and '3.7' in sys.version:
             raise ValueError("Pickle saved with incompatible Python version.") from err
         raise
+
+    if hasattr(model, 'python_version'):
+        logger.info(f"Loaded AI model trained with Python {model.python_version}")
+    if hasattr(model, 'konfuzio_sdk_version'):
+        logger.info(f"Loaded AI model trained with Konfuzio SDK version {model.konfuzio_sdk_version}")
 
     max_ram = normalize_memory(max_ram)
     if max_ram and asizeof.asizeof(model) > max_ram:
@@ -1024,20 +1032,23 @@ def add_extractions_as_annotations(
                 end = span['end_offset']
                 offset_string = document.text[start:end]
                 bbox0 = document.bboxes[start]
-                bbox1 = document.bboxes[end - 1]
+                min_x = min(document.bboxes[i].x0 for i in range(start, end) if i in document.bboxes)
+                max_x = max(document.bboxes[i].x1 for i in range(start, end) if i in document.bboxes)
+                min_y = min(document.bboxes[i].y0 for i in range(start, end) if i in document.bboxes)
+                max_y = max(document.bboxes[i].y1 for i in range(start, end) if i in document.bboxes)
                 ann_bbox = {
-                    'bottom': bbox0.page.height - bbox0.y0,
+                    'bottom': bbox0.page.height - min_y,
                     'end_offset': end,
                     'line_number': len(document.text[:start].split('\n')),
                     'offset_string': offset_string,
                     'offset_string_original': offset_string,
                     'page_index': bbox0.page.index,
                     'start_offset': start,
-                    'top': bbox0.page.height - bbox0.y1,
-                    'x0': bbox0.x0,
-                    'x1': bbox1.x1,
-                    'y0': bbox0.y0,
-                    'y1': bbox1.y1,
+                    'top': bbox0.page.height - max_y,
+                    'x0': min_x,
+                    'x1': max_x,
+                    'y0': min_y,
+                    'y1': max_y,
                 }
                 annotation = Annotation(
                     document=document,
@@ -1076,6 +1087,9 @@ class Trainer:
         self.df_train = None
 
         self.evaluation = None
+
+        self.python_version = '.'.join([str(v) for v in sys.version_info[:3]])
+        self.konfuzio_sdk_version = get_distribution("konfuzio_sdk").version
 
     def name_lower(self):
         """Convert class name to machine readable name."""
