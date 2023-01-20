@@ -2974,22 +2974,16 @@ class Project(Data):
         """Delete Document by its ID."""
         document = self.get_document_by_id(document_id)
 
-        if delete_online and document.dataset_status != 0:
-            raise ValueError(
-                f"Cannot delete Document with dataset status {document.dataset_status} in server.\
- Are you sure you want to delete this Document? If yes, change the dataset status to 0 and try again."
-            )
-
         self._documents.remove(document)
 
         if delete_online:
+            delete_file_konfuzio_api(document_id)
+            self.write_meta_of_files()
+            self.get_meta(reload=True)
             try:
                 shutil.rmtree(document.document_folder)
             except FileNotFoundError:
                 pass
-            delete_file_konfuzio_api(document_id)
-            self.write_meta_of_files()
-            self.get_meta(reload=True)
         return None
 
     def get_label_by_name(self, name: str) -> Label:
