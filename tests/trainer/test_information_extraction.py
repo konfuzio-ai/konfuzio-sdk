@@ -5,11 +5,12 @@ import linecache
 import logging
 import math
 import tracemalloc
-from pympler import asizeof
 import unittest
 import parameterized
 import os
 import sys
+import time
+
 from requests import HTTPError
 from pkg_resources import get_distribution
 
@@ -43,6 +44,7 @@ from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer
 from konfuzio_sdk.tokenizer.base import ListTokenizer
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 from konfuzio_sdk.samples import LocalTextProject
+from konfuzio_sdk.utils import memory_size_of
 
 logger = logging.getLogger(__name__)
 
@@ -184,7 +186,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
         self.pipeline.category = self.project.get_category_by_id(id_=63)
 
-        assert asizeof.asizeof(self.pipeline.category) < 5e5
+        assert memory_size_of(self.pipeline.category) < 5e5
 
         with pytest.raises(AttributeError, match="not provide a Label Classifier"):
             self.pipeline.check_is_ready_for_extraction()
@@ -206,7 +208,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
     def test_02_make_features(self):
         """Make sure the Data and Pipeline is configured."""
         # we have intentional unrevised annotations in the Training set which will block feature calculation
-        assert 2e5 < asizeof.asizeof(self.pipeline.category) < 4e5
+        assert 2e5 < memory_size_of(self.pipeline.category) < 4e5
         with pytest.raises(ValueError, match="is unrevised in this dataset and can't be used for training"):
             self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
                 documents=self.pipeline.documents, require_revised_annotations=True
@@ -226,16 +228,16 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
             documents=self.pipeline.documents, require_revised_annotations=True
         )
 
-        assert 7e5 < asizeof.asizeof(self.pipeline.category) < 9e5
+        assert 7e5 < memory_size_of(self.pipeline.category) < 9e5
 
-        assert 11e6 < asizeof.asizeof(self.pipeline.df_train) < 12e6
+        assert 11e6 < memory_size_of(self.pipeline.df_train) < 12e6
 
     def test_03_fit(self) -> None:
         """Start to train the Model."""
         self.pipeline.fit()
 
-        assert asizeof.asizeof(self.pipeline.clf) < 1e5
-        assert asizeof.asizeof(self.pipeline.label_set_clf) < 1e5
+        assert memory_size_of(self.pipeline.clf) < 1e5
+        assert memory_size_of(self.pipeline.label_set_clf) < 1e5
 
         if self.pipeline.use_separate_labels:
             assert len(self.pipeline.clf.classes_) == 19
@@ -248,7 +250,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
     def test_04_save_model(self):
         """Save the model."""
-        previous_size = asizeof.asizeof(self.pipeline)
+        previous_size = memory_size_of(self.pipeline)
 
         self.pipeline.pipeline_path_no_konfuzio_sdk = self.pipeline.save(
             output_dir=self.project.model_folder,
@@ -257,7 +259,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
             keep_documents=False,
             max_ram="500KB",
         )
-
+        time.sleep(1)  # If first and second model saved in same second, one overwrites the other
         with pytest.raises(MemoryError):
             self.pipeline.pipeline_path = self.pipeline.save(
                 include_konfuzio=False, reduce_weight=False, keep_documents=True, max_ram="500KB"
@@ -291,7 +293,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         assert self.pipeline.df_train is None
         assert self.pipeline.tokenizer.processing_steps == []
 
-        assert previous_size > asizeof.asizeof(self.pipeline)
+        assert previous_size > memory_size_of(self.pipeline)
 
     def test_05_upload_ai_model(self):
         """Upload the model."""
@@ -308,14 +310,14 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
         assert evaluation.f1(None) == self.evaluate_full_result
 
-        assert 5e5 < asizeof.asizeof(evaluation.data) < 6e5
+        assert 5e5 < memory_size_of(evaluation.data) < 6e5
 
     def test_07_data_quality(self):
         """Evaluate on training documents."""
         evaluation = self.pipeline.evaluate_full(use_training_docs=True)
         assert evaluation.f1(None) == self.data_quality_result
 
-        assert 22e5 < asizeof.asizeof(evaluation.data) < 24e5
+        assert 22e5 < memory_size_of(evaluation.data) < 24e5
 
     def test_08_tokenizer_quality(self):
         """Evaluate the tokenizer quality."""
@@ -325,14 +327,14 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         assert evaluation.tokenizer_fp() == 289
         assert evaluation.tokenizer_fn() == 5
 
-        assert 5e5 < asizeof.asizeof(evaluation.data) < 6e5
+        assert 5e5 < memory_size_of(evaluation.data) < 6e5
 
     def test_09_clf_quality(self):
         """Evaluate the Label classifier quality."""
         evaluation = self.pipeline.evaluate_clf()
         assert evaluation.clf_f1(None) == self.clf_quality_result
 
-        assert 1e5 < asizeof.asizeof(evaluation.data) < 2e5
+        assert 1e5 < memory_size_of(evaluation.data) < 2e5
 
     def test_10_label_set_clf_quality(self):
         """Evaluate the LabelSet classifier quality."""
@@ -340,7 +342,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
         assert evaluation.f1(None) == 0.9552238805970149
 
-        assert 1e5 < asizeof.asizeof(evaluation.data) < 2e5
+        assert 1e5 < memory_size_of(evaluation.data) < 2e5
 
     def test_11_extract_test_document(self):
         """Extract a randomly selected Test Document."""
@@ -411,15 +413,15 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         self.pipeline.tokenizer = ListTokenizer(tokenizers=[])
         self.pipeline.category = self.project.get_category_by_id(id_=63)
 
-        assert asizeof.asizeof(self.pipeline.category) < 5e5
+        assert memory_size_of(self.pipeline.category) < 5e5
 
         for label in self.pipeline.category.labels:
             for regex in label.find_regex(category=self.pipeline.category):
                 self.pipeline.tokenizer.tokenizers.append(RegexTokenizer(regex=regex))
 
-        assert 8e6 < asizeof.asizeof(self.pipeline.category) < 12e6
+        assert 8e6 < memory_size_of(self.pipeline.category) < 12e6
 
-        assert 10e3 < asizeof.asizeof(self.pipeline.tokenizer) < 15e3
+        assert 10e3 < memory_size_of(self.pipeline.tokenizer) < 15e3
 
         if not TEST_WITH_FULL_DATASET:
             train_doc_ids = [44823, 44834, 44839, 44840, 44841]
@@ -440,21 +442,21 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         # We have intentional unrevised annotations in the Training set which will block feature calculation,
         # unless we set require_revised_annotations=False (which is default), which we are doing here, so we ignore them
         # See TestWhitespaceRFExtractionAI::test_2_make_features for the case with require_revised_annotations=True
-        assert 8e6 < asizeof.asizeof(self.pipeline.category) < 11e6
+        assert 8e6 < memory_size_of(self.pipeline.category) < 11e6
 
         self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
             documents=self.pipeline.documents, retokenize=False, require_revised_annotations=False
         )
 
-        assert 8e6 < asizeof.asizeof(self.pipeline.category) < 11e6
-        assert 2e6 < asizeof.asizeof(self.pipeline.df_train) < 3e6
+        assert 8e6 < memory_size_of(self.pipeline.category) < 11e6
+        assert 2e6 < memory_size_of(self.pipeline.df_train) < 3e6
 
     def test_03_fit(self) -> None:
         """Start to train the Model."""
         self.pipeline.fit()
 
-        assert asizeof.asizeof(self.pipeline.clf) < 1e5
-        assert asizeof.asizeof(self.pipeline.label_set_clf) < 1e5
+        assert memory_size_of(self.pipeline.clf) < 1e5
+        assert memory_size_of(self.pipeline.label_set_clf) < 1e5
 
         if self.pipeline.use_separate_labels:
             assert len(self.pipeline.clf.classes_) == 19
@@ -467,7 +469,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
     def test_04_save_model(self):
         """Save the model."""
-        previous_size = asizeof.asizeof(self.pipeline)
+        previous_size = memory_size_of(self.pipeline)
 
         self.pipeline.pipeline_path_no_konfuzio_sdk = self.pipeline.save(
             output_dir=self.project.model_folder,
@@ -510,7 +512,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         assert self.pipeline.df_train is None
         assert self.pipeline.tokenizer.processing_steps == []
 
-        assert previous_size > asizeof.asizeof(self.pipeline)
+        assert previous_size > memory_size_of(self.pipeline)
 
     def test_05_upload_ai_model(self):
         """Upload the model."""
@@ -526,14 +528,14 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         evaluation = self.pipeline.evaluate_full()
         assert evaluation.f1(None) == self.evaluate_full_result
 
-        assert 1e5 < asizeof.asizeof(evaluation.data) < 2e5
+        assert 1e5 < memory_size_of(evaluation.data) < 2e5
 
     def test_07_data_quality(self):
         """Evaluate on training documents."""
         evaluation = self.pipeline.evaluate_full(use_training_docs=True)
         assert evaluation.f1(None) >= 0.94
 
-        assert 4e5 < asizeof.asizeof(evaluation.data) < 5e5
+        assert 4e5 < memory_size_of(evaluation.data) < 5e5
 
     def test_08_tokenizer_quality(self):
         """Evaluate the tokenizer quality."""
@@ -543,14 +545,14 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         assert evaluation.tokenizer_fp() == 26
         assert evaluation.tokenizer_fn() == 1
 
-        assert 1e5 < asizeof.asizeof(evaluation.data) < 2e5
+        assert 1e5 < memory_size_of(evaluation.data) < 2e5
 
     def test_09_clf_quality(self):
         """Evaluate the Label classifier quality."""
         evaluation = self.pipeline.evaluate_clf()
         assert evaluation.clf_f1(None) == 1.0
 
-        assert 1e5 < asizeof.asizeof(evaluation.data) < 2e5
+        assert 1e5 < memory_size_of(evaluation.data) < 2e5
 
     def test_10_label_set_clf_quality(self):
         """Evaluate the LabelSet classifier quality."""
