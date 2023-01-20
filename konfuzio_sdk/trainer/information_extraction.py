@@ -95,6 +95,9 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
             raise ValueError("Pickle saved with incompatible Python version.") from err
         raise
 
+    if not issubclass(type(model), BaseModel):
+        raise TypeError("Loaded model is not inheriting from the BaseModel class.")
+
     if hasattr(model, 'python_version'):
         logger.info(f"Loaded AI model trained with Python {model.python_version}")
     if hasattr(model, 'konfuzio_sdk_version'):
@@ -106,18 +109,7 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     if max_ram and asizeof.asizeof(model) > max_ram:
         logger.error(f"Loaded model's memory use ({asizeof.asizeof(model)}) is greater than max_ram ({max_ram})")
 
-    if not hasattr(model, "name"):
-        raise TypeError("Saved model file needs to be a Konfuzio Trainer instance.")
-    elif model.name in {
-        "DocumentAnnotationMultiClassModel",
-        "DocumentEntityMulticlassModel",
-        "SeparateLabelsAnnotationMultiClassModel",
-        "SeparateLabelsEntityMultiClassModel",
-        "ContextAwareFileSplittingModel",
-    }:
-        logger.warning(f"Loading legacy {model.name} AI model.")
-    else:
-        logger.info(f"Loading {model.name} AI model.")
+    logger.info(f"Loading {model.name} AI model.")
 
     curr_local_id = next(Data.id_iter)
     Data.id_iter = itertools.count(max(prev_local_id, curr_local_id))
@@ -1915,6 +1907,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         self.no_label_name = None
 
         self.output_dir = None
+        self.label_set_clf = None
 
     def features(self, document: Document):
         """Calculate features using the best working default values that can be overwritten with self values."""

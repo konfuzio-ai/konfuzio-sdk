@@ -37,6 +37,7 @@ from konfuzio_sdk.trainer.information_extraction import (
     load_model,
     RFExtractionAI,
     Trainer,
+    BaseModel,
 )
 from konfuzio_sdk.api import upload_ai_model
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer
@@ -550,6 +551,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
         assert len(res_doc.view_annotations()) == 19
+        assert issubclass(type(self.pipeline), BaseModel)
 
         no_konf_pipeline = load_model(self.pipeline.pipeline_path_no_konfuzio_sdk)
         res_doc = no_konf_pipeline.extract(document=test_document)
@@ -1198,27 +1200,35 @@ def test_load_model_corrupt_file():
 def test_load_model_wrong_pickle_data():
     """Test loading of wrong pickle data."""
     path = "trainer/list_test.pkl"
-    with pytest.raises(TypeError, match="needs to be a Konfuzio Trainer instance"):
+    with pytest.raises(TypeError, match="not inheriting from the BaseModel class."):
         load_model(path)
 
 
 def test_load_ai_model():
     """Test loading of trained model."""
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    path = "trainer/2022-09-27-18-45-41_lohnabrechnung.pkl"
+    path = "trainer/2023-01-17-20-21-13_lohnabrechnung.pkl"
     pipeline = load_model(path)
+
+    assert issubclass(type(pipeline), BaseModel)
 
     test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
     res_doc = pipeline.extract(document=test_document)
-    assert len(res_doc.annotations(use_correct=False)) == 20
+    assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
 
 
 def test_load_old_ai_model():
     """Test loading of an old trained model."""
     path = "trainer/2022-03-10-15-14-51_lohnabrechnung_old_model.pkl"
-    pipeline = load_model(path)
+    with pytest.raises(TypeError, match=" not inheriting from the BaseModel class."):
+        load_model(path)
 
-    assert pipeline.name == 'DocumentAnnotationMultiClassModel'
+
+def test_load_old_ai_model_2():
+    """Test loading of a newer old trained model."""
+    path = "trainer/2023-01-09-17-47-50_lohnabrechnung.pkl"
+    with pytest.raises(TypeError, match="not inheriting from the BaseModel class."):
+        load_model(path)
 
 
 def test_feat_num_count():
