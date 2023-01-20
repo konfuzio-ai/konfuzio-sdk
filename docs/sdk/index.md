@@ -96,11 +96,11 @@ For a more in depth tutorial about the usage of Extraction AIs in the SDK see
 Any custom [Categorization AI](sourcecode.html#document-categorization) (derived from the Konfuzio `FallbackCategorizationModel` class)  
 should implement the following interface:
 ```python
-from konfuzio_sdk.trainer.document_categorization import FallbackCategorizationModel
+from konfuzio_sdk.trainer.document_categorization import AbstractCategorizationModel
 from konfuzio_sdk.data import Document
 from typing import List
 
-class CustomCategorizationAI(FallbackCategorizationModel):
+class CustomCategorizationAI(AbstractCategorizationModel):
 
     def __init__(self, *args, **kwargs):
         # initialize key variables required by the custom AI
