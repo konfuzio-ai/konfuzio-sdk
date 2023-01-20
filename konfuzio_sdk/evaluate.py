@@ -4,11 +4,11 @@ from typing import Tuple, List, Optional
 import pandas
 import numpy
 import logging
-from pympler import asizeof
 from sklearn.utils.extmath import weighted_mode
 
-from konfuzio_sdk.utils import sdk_isinstance
+from konfuzio_sdk.utils import sdk_isinstance, memory_size_of
 from konfuzio_sdk.data import Document
+
 
 RELEVANT_FOR_EVALUATION = [
     "is_matched",  # needed to group spans in Annotations
@@ -287,7 +287,7 @@ class Evaluation:
         self.only_use_correct = True
         self.data = None
         self.calculate()
-        logger.info(f"Size of evaluation DataFrame: {asizeof.asizeof(self.data)/1000} KB.")
+        logger.info(f"Size of evaluation DataFrame: {memory_size_of(self.data)/1000} KB.")
 
     def calculate(self):
         """Calculate and update the data stored within this Evaluation."""
