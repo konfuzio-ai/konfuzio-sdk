@@ -35,6 +35,7 @@ import numpy
 import pandas
 import cloudpickle
 from pympler import asizeof
+from pkg_resources import get_distribution
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.validation import check_is_fitted
 from tabulate import tabulate
@@ -68,6 +69,8 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     :raises TypeError: When the loaded pickle isn't recognized as a Konfuzio AI model.
     :return: Extraction AI model.
     """
+    logger.info(f"Starting loading AI model with path {pickle_path}")
+
     if not os.path.isfile(pickle_path):
         raise FileNotFoundError("Invalid pickle file path:", pickle_path)
 
@@ -90,6 +93,11 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
             raise ValueError("Pickle saved with incompatible Python version.") from err
         raise
 
+    if hasattr(model, 'python_version'):
+        logger.info(f"Loaded AI model trained with Python {model.python_version}")
+    if hasattr(model, 'konfuzio_sdk_version'):
+        logger.info(f"Loaded AI model trained with Konfuzio SDK version {model.konfuzio_sdk_version}")
+
     max_ram = normalize_memory(max_ram)
     if max_ram and asizeof.asizeof(model) > max_ram:
         logger.error(f"Loaded model's memory use ({asizeof.asizeof(model)}) is greater than max_ram ({max_ram})")
@@ -110,150 +118,6 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     Data.id_iter = itertools.count(max(prev_local_id, curr_local_id))
 
     return model
-
-
-def get_offsets_per_page(doc_text: str) -> Dict:
-    """Get the first start and last end offsets per page."""
-    page_text = doc_text.split('\f')
-    start = 0
-    starts_ends_per_page = {}
-
-    for ind, page in enumerate(page_text):
-        len_page = len(page)
-        end = start + len_page
-        starts_ends_per_page[ind] = (start, end)
-        start = end + 1
-
-    return starts_ends_per_page
-
-
-def get_bboxes_by_coordinates(doc_bbox: Dict, selection_bboxes: List[Dict]) -> List[Dict]:
-    """
-    Get the bboxes of the characters contained in the selection bboxes.
-
-    todo: is this a duplicate of get_merged_bboxes in konfuzio_sdk.utils ?
-
-    Simplifies `get_bboxes`..
-
-    Returns a list of bboxes.
-    :param doc_bbox: Bboxes of the characters in the document.
-    :param selection_bboxes: Bboxes from which to get the info of the characters that they include.
-    :return: List of the bboxes of the characters included in selection_bboxes.
-    """
-    # initialize the list of bboxes that will later be returned
-    final_bboxes = []
-
-    # convert string indexes to int
-    doc_bbox = {int(index): char_bbox for index, char_bbox in doc_bbox.items()}
-
-    # iterate through every bbox of the selection
-    for selection_bbox in selection_bboxes:
-        selected_bboxes = [
-            # the index of the character is its offset, i.e. the number of chars before it in the document's text
-            {**char_bbox}
-            for index, char_bbox in doc_bbox.items()
-            if selection_bbox["page_index"] == char_bbox["page_number"] - 1
-            # filter the characters of the document according to their x/y values, so that we only include the
-            # characters that are inside the selection
-            and selection_bbox["x0"] <= char_bbox["x0"]
-            and selection_bbox["x1"] >= char_bbox["x1"]
-            and selection_bbox["y0"] <= char_bbox["y0"]
-            and selection_bbox["y1"] >= char_bbox["y1"]
-        ]
-
-        final_bboxes.extend(selected_bboxes)
-
-    return final_bboxes
-
-
-def is_valid_merge_vertical(
-    row: pandas.Series, buffer: List[pandas.Series], doc_bbox: Dict, offsets_per_page: Dict
-) -> bool:
-    """
-    Verify if the vertical merging that we are trying to do is valid.
-
-    To be valid, it has to respect 2 conditions:
-
-    1. There is an overlap in the x coordinates of the bbox that includes the entities in the buffer and the row x
-     coordinates.
-
-    2. The bbox that includes the entities in the buffer and the row does not include any other character of the
-    document.
-
-    To check the 2nd condition, we get the bboxes of the characters from the entities in the buffer and the entity in
-    the row:
-    a) based on their start and end offsets
-    b) based on the bounding box that includes all these entities
-
-    b should not include any character that is not in a.
-
-    :param row: Row candidate to be merged to what is already in the buffer.
-    :param buffer: Previous information.
-    :param doc_bbox: Bboxes of the characters in the document.
-    :param offsets_per_page: Start and end offset of each page in the document.
-    :return: If the merge is valid or not.
-    """
-    # Bbox formed by the entities in the buffer.
-    buffer_bbox = {
-        'x0': min([b['x0'] for b in buffer]),
-        'x1': max([b['x1'] for b in buffer]),
-        'y0': min([b['y0'] for b in buffer]),
-        'y1': max([b['y1'] for b in buffer]),
-    }
-
-    # 1. There is an overlap in x coordinates
-    is_overlap = (
-        buffer_bbox['x1'] >= row['x0'] >= buffer_bbox['x0']
-        or buffer_bbox['x1'] >= row['x1'] >= buffer_bbox['x0']
-        or (buffer_bbox['x0'] >= row['x0'] and row['x1'] >= buffer_bbox['x1'])
-    )  # NOQA
-
-    if not is_overlap:
-        return False
-
-    # 2. There is no other characters if the buffer bbox is updated with the current row
-    # update buffer with row
-    temp_buffer = buffer.copy()
-    temp_buffer.append(row)
-
-    # get page index (necessary to select the bboxes of the characters)
-    for buf in temp_buffer:
-        for page_index, offsets in offsets_per_page.items():
-            if buf['start_offset'] >= offsets[0] and buf['end_offset'] <= offsets[1]:
-                break
-
-        buf['page_index'] = page_index
-
-    if len(set([buf['page_index'] for buf in temp_buffer])) > 1:
-        logger.info('Merging annotations across pages is not possible.')
-        return False
-
-    # get bboxes by start and end offsets of each row in the temp buffer
-    bboxes_by_offset = []
-    for buf in temp_buffer:
-        char_bboxes = [
-            doc_bbox[str(char_bbox_id)]
-            for char_bbox_id in range(buf['start_offset'], buf['end_offset'] + 1)
-            if str(char_bbox_id) in doc_bbox
-        ]
-        bboxes_by_offset.extend(char_bboxes)
-
-    # get bboxes contained in the bbox of the temp buffer
-    buffer_row_bbox = {
-        'x0': min([buffer_bbox['x0'], row['x0']]),
-        'x1': max([buffer_bbox['x1'], row['x1']]),
-        'y0': min([buffer_bbox['y0'], row['y0']]),
-        'y1': max([buffer_bbox['y1'], row['y1']]),
-        'page_index': temp_buffer[0]['page_index'],
-    }
-
-    bboxes_by_coordinates = get_bboxes_by_coordinates(doc_bbox, [buffer_row_bbox])
-
-    # check if there are bboxes in the merged bbox that are not part of the ones obtained by the offsets
-    diff = [x for x in bboxes_by_coordinates if x not in bboxes_by_offset and x['text'] != ' ']
-    no_diffs = len(diff) == 0
-
-    return no_diffs
 
 
 def substring_count(list: list, substring: str) -> list:
@@ -1168,20 +1032,23 @@ def add_extractions_as_annotations(
                 end = span['end_offset']
                 offset_string = document.text[start:end]
                 bbox0 = document.bboxes[start]
-                bbox1 = document.bboxes[end - 1]
+                min_x = min(document.bboxes[i].x0 for i in range(start, end) if i in document.bboxes)
+                max_x = max(document.bboxes[i].x1 for i in range(start, end) if i in document.bboxes)
+                min_y = min(document.bboxes[i].y0 for i in range(start, end) if i in document.bboxes)
+                max_y = max(document.bboxes[i].y1 for i in range(start, end) if i in document.bboxes)
                 ann_bbox = {
-                    'bottom': bbox0.page.height - bbox0.y0,
+                    'bottom': bbox0.page.height - min_y,
                     'end_offset': end,
                     'line_number': len(document.text[:start].split('\n')),
                     'offset_string': offset_string,
                     'offset_string_original': offset_string,
                     'page_index': bbox0.page.index,
                     'start_offset': start,
-                    'top': bbox0.page.height - bbox0.y1,
-                    'x0': bbox0.x0,
-                    'x1': bbox1.x1,
-                    'y0': bbox0.y0,
-                    'y1': bbox1.y1,
+                    'top': bbox0.page.height - max_y,
+                    'x0': min_x,
+                    'x1': max_x,
+                    'y0': min_y,
+                    'y1': max_y,
                 }
                 annotation = Annotation(
                     document=document,
@@ -1220,6 +1087,9 @@ class Trainer:
         self.df_train = None
 
         self.evaluation = None
+
+        self.python_version = '.'.join([str(v) for v in sys.version_info[:3]])
+        self.konfuzio_sdk_version = get_distribution("konfuzio_sdk").version
 
     def name_lower(self):
         """Convert class name to machine readable name."""
@@ -1455,6 +1325,7 @@ class Trainer:
         if reduce_weight:
             logger.info('reducing weight before save')
             self.df_train = None
+            project_docs = self.category.project._documents
             self.category.project.lose_weight()
             self.tokenizer.lose_weight()
 
@@ -1508,7 +1379,7 @@ class Trainer:
         self.documents = restore_documents
         self.test_documents = restore_test_documents
         if reduce_weight:
-            self.category.project.init_or_update_document()
+            self.category.project._documents = project_docs
 
         return pkl_file_path
 
@@ -1730,13 +1601,14 @@ class GroupAnnotationSets:
         # and runtime (default treshold.
 
         # df = df[df['confidence'] >= 0.1]  # df['OptimalThreshold']]
-        for i, line in enumerate(text.replace('\f', '\n').split('\n')):
+        lines = text.replace('\f', '\n').split('\n')
+        for i, line in enumerate(lines):
             new_char_count = char_count + len(line)
             assert line == text[char_count:new_char_count]
             line_df = df[(char_count <= df['start_offset']) & (df['end_offset'] <= new_char_count)]
             spans = [row for index, row in line_df.iterrows()]
             spans_dict = dict((x['result_name'], True) for x in spans)
-            counter_dict = {}  # why?
+            # counter_dict = {}  # why?
             # annotations_accuracy_dict = defaultdict(lambda: 0)
             # for annotation in annotations:
             # annotations_accuracy_dict[f'{annotation["label"]}_accuracy'] += annotation['confidence']
@@ -1751,10 +1623,10 @@ class GroupAnnotationSets:
             #             counter_dict[label_set.name] += 1
             #         else:
             #             counter_dict[label_set.name] = 1
-            tmp_df = pandas.DataFrame([{**spans_dict, **counter_dict}])
+            tmp_df = pandas.DataFrame([spans_dict])  # ([{**spans_dict, **counter_dict}])
             global_df = pandas.concat([global_df, tmp_df], ignore_index=True)
             char_count = new_char_count + 1
-        global_df['text'] = text.replace('\f', '\n').split('\n')
+        global_df['text'] = lines
         return global_df.fillna(0)
 
     def extract_template_with_clf(self, text, res_dict):
@@ -1892,7 +1764,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         max_depth: int = 100,
         no_label_limit: Union[int, float, None] = None,
         n_nearest_across_lines: bool = False,
-        use_separate_labels: bool = False,
+        use_separate_labels: bool = True,
         category: Category = None,
         tokenizer=None,
         *args,
