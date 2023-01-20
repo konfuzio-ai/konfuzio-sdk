@@ -93,7 +93,7 @@ For a more in depth tutorial about the usage of Extraction AIs in the SDK see
 
 ### Customize Categorization AI
 
-Any custom [Categorization AI](sourcecode.html#document-categorization) (derived from the Konfuzio `FallbackCategorizationModel` class)  
+Any custom [Categorization AI](sourcecode.html#document-categorization) (derived from the Konfuzio `AbstractCategorizationModel` class)  
 should implement the following interface:
 ```python
 from konfuzio_sdk.trainer.document_categorization import AbstractCategorizationModel
@@ -216,7 +216,7 @@ For a more in depth tutorial about the usage of File Splitting AIs in the SDK se
 
 ### Other use cases around documents
 
-The following is not a product we offer but a simple example of something you can build using the Konfuzio SDK.
+The following is a simple example of something you can build using the Konfuzio SDK.
 
 #### Build your own PDF Form Generator
 
@@ -237,24 +237,22 @@ from PyPDF2 import PdfFileWriter, PdfFileReader
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 
-from konfuzio_sdk.data import Project
+from konfuzio_sdk.data import Project, Document, Page, Annotation
 
 
 def render(document_id, project_id, values):
     my_project = Project(id_=project_id, update=True)
-    document = my_project.get_document_by_id(document_id)
-    original_pdf_path = document.get_file()
+    document: Document = my_project.get_document_by_id(document_id)
 
     # read your existing PDF
-    existing_pdf = PdfFileReader(open(original_pdf_path, "rb"))
+    existing_pdf = PdfFileReader(open(document.get_file(), "rb"))
     output = PdfFileWriter()
 
     for page_index, page in enumerate(document.pages()):
         packet = io.BytesIO()
         my_canvas = canvas.Canvas(packet)
         my_canvas.setPageSize((page.width, page.height))
-        annotations = document.annotations()
-        for annotation in annotations:
+        for annotation: Annotation in document.annotations():
             if annotation.selection_bbox.get('page_index') == page_index:
                 text_value = values.get(annotation.label.name, '')
                 textobject = my_canvas.beginText()

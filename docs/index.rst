@@ -18,16 +18,17 @@ IT infrastructure. Find out more on our `Homepage <https://www.konfuzio.com>`_.
 
 **Konfuzio SDK:** The Open Source Konfuzio Software Development Kit (Konfuzio SDK) provides a Python API to build custom
 document processes. For a quick introduction to the SDK, check out the :ref:`Quickstart` section. Review the release notes and and the source code on
-`GitHub <https://github.com/konfuzio-ai/konfuzio-sdk/releases>`_.
+`GitHub <https://github.com/konfuzio-ai/konfuzio-sdk/releases>`_. Also see `What is the Konfuzio SDK? <https://www.konfuzio.com/sdk/index.html>`_
 
 **Konfuzio Server:** Register a trial account via our SaaS hosting on `app.konfuzio.com <https://app.konfuzio.com>`_ or
 :ref:`install it on your own infrastructure <Server Installation>` (see :ref:`Server Changelog`).
 To then access the REST API via :ref:`Server API v2` and  :ref:`Server API v3` or
 use further integrations, see `help.konfuzio.com <https://help.konfuzio.com/integrations/index.html>`_.
+Also see `What is the Konfuzio Server? <https://www.konfuzio.com/web/index.html>`_
 
-.. Note::
-    Konfuzio Trainer will no longer be available.
-    The functionality of Trainer will be moved to Server or become open source in SDK.
+**Document Validation UI:** The Document Validation UI is a white-label app, developed with Vue.js, that lets you
+preview and interact with Documents uploaded to Konfuzio Server. Review the release notes and and the source code on `GitHub <https://github.com/konfuzio-ai/document-validation-ui>`_.
+Also see `What is the Konfuzio DVUI? <https://www.konfuzio.com/dvui/index.html>`_
 
 .. toctree::
    :hidden:
