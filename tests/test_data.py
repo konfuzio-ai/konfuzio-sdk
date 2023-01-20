@@ -2176,6 +2176,20 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         # There is no regex available.
         assert len(automated_regex_for_label) == 0
 
+    def test_save_annotation_for_no_category_document(self):
+        """Test saving annotation error for no-category Document."""
+        project = LocalTextProject()
+        test_document = project.test_documents[-1]
+        label = Label(project=project)
+        label_set = LabelSet(project=project, categories=[test_document.category])
+        span = Span(start_offset=1, end_offset=2)
+        annotation_set = AnnotationSet(document=test_document, label_set=label_set)
+        _ = Annotation(
+            label=label, annotation_set=annotation_set, label_set=label_set, document=test_document, spans=[span]
+        )
+        with pytest.raises(ValueError, match='You cannot save Annotations of Documents with'):
+            _.save()
+
     @unittest.skip(reason='Patch not supported by Text-Annotation Server.')
     def test_to_change_an_annotation_online(self):
         """Test to update an Annotation from revised to not revised and back to revised."""
