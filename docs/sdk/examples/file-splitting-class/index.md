@@ -72,7 +72,7 @@ Document that will undergo splitting. `path` is a full path of the model-to-be-s
 you run fitting with one tokenizer and then reassign it within the same instance of the model, all previously gathered 
 strings will be deleted and replaced by new ones. `requires_images` and `requires_text` determine whether these types of
 data are used for prediction; this is needed for distinguishing between preprocessing types once a model is passed into
-the SplittingAI.
+the SplittingAI.   
 
 An example of how ConnectedTextTokenizer works:
 ```python
@@ -234,6 +234,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
                     page.is_first_page = True
                     break
             return page
+
 
 # initialize a Project and fetch a test Document of your choice
 project = Project(id_=YOUR_PROJECT_ID)
