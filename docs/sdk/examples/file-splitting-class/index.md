@@ -2,9 +2,9 @@
 
 ### Intro
 
-It's common for multipage files to not be perfectly organized, and in some cases, multiple independent documents may be 
-included in a single file. To ensure that these documents are properly processed and separated, we will be discussing a 
-method for identifying and splitting these documents into individual, independent sub-documents.
+It's common for multipage files to not be perfectly organized, and in some cases, multiple independent Documents may be 
+included in a single file. To ensure that these Documents are properly processed and separated, we will be discussing a 
+method for identifying and splitting them into individual, independent sub-documents.
 
 .. image:: /sdk/examples/file-splitting-class/multi_file_document_example.png
 
@@ -60,15 +60,19 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         self.output_dir = self.project.model_folder
         self.tokenizer = tokenizer
         self.path = None
+        self.requires_text = True
+        self.requires_images = False
 ```
 The class inherits from `AbstractFileSplittingModel`, so we run `super().__init__(categories=categories)` to properly 
 inherit its attributes. The `tokenizer` attribute will be used to process the text within the Document, separating it 
 into Spans. This is done to ensure that the text in all the Documents is split using the same logic (particularly 
 tokenization by separating on `\n` whitespaces by ConnectedTextTokenizer, which is used in the example in the end of the 
 page) and it will be possible to find common Spans. It will be used for training and testing Documents as well as any 
-Document that will undergo splitting.  `path` is a full path of the model-to-be-saved.  It's important to note that if 
+Document that will undergo splitting. `path` is a full path of the model-to-be-saved.  It's important to note that if 
 you run fitting with one tokenizer and then reassign it within the same instance of the model, all previously gathered 
-strings will be deleted and replaced by new ones.
+strings will be deleted and replaced by new ones. `requires_images` and `requires_text` determine whether these types of
+data are used for prediction; this is needed for distinguishing between preprocessing types once a model is passed into
+the SplittingAI.   
 
 An example of how ConnectedTextTokenizer works:
 ```python
@@ -117,7 +121,7 @@ first-page strings for each of the Categories. If there is at least one intersec
 first Page. If there are no intersections, the Page is predicted to be a non-first Page.
 ```python
     def predict(self, page: Page) -> Page:
-                for category in self.categories:
+        for category in self.categories:
             if not category.exclusive_first_page_strings:
                 raise ValueError(f"Cannot run prediction as {category} does not have exclusive_first_page_strings.")
         page.is_first_page = False
@@ -150,11 +154,11 @@ file_splitting_model.save()
 
 # run the prediction
 for page in test_document.pages():
- pred = file_splitting_model.predict(page)
- if pred.is_first_page:
-  print('Page {} is predicted as the first.'.format(page.number))
- else:
-  print('Page {} is predicted as the non-first.'.format(page.number))
+    pred = file_splitting_model.predict(page)
+    if pred.is_first_page:
+        print('Page {} is predicted as the first.'.format(page.number))
+    else:
+        print('Page {} is predicted as the non-first.'.format(page.number))
 
 # usage with the SplittingAI – you can load a pre-saved model or pass an initialized instance as the input
 # in this example, we load a previously saved one
@@ -202,6 +206,8 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         self.output_dir = self.project.model_folder
         self.tokenizer = tokenizer
         self.path = None
+        self.requires_text = True
+        self.requires_images = False
 
     def fit(self, allow_empty_categories: bool = False, *args, **kwargs):
         for category in self.categories:

@@ -2585,16 +2585,26 @@ class Document(Data):
 
         return self._annotations
 
-    def propose_splitting(self, splitting_ai, first_page_strings) -> List:
+    def propose_splitting(self, splitting_ai) -> List:
         """Propose splitting for a multi-file Document.
 
         :param splitting_ai: An initialized SplittingAI class
         """
-        proposed = splitting_ai.propose_split_documents(self, first_page_strings)
+        proposed = splitting_ai.propose_split_documents(self)
         return proposed
 
     def create_subdocument_from_page_range(self, start_page: Page, end_page: Page, include=False):
-        """Create a shorter Document from a Page range of an initial Document."""
+        """
+        Create a shorter Document from a Page range of an initial Document.
+
+        :param start_page: A Page that the new sub-Document starts with.
+        :type start_page: Page
+        :param end_page: A Page that the new sub-Document ends with, if include is True.
+        :type end_page: Page
+        :param include: Whether end_page is included into the new sub-Document.
+        :type include: bool
+        :returns: A new sub-Document.
+        """
         if include:
             pages_text = self.text[start_page.start_offset : end_page.end_offset]
         else:
