@@ -6,7 +6,7 @@ Data validation ensures that Training and Test data is consistent and well forme
 
 If a Document fails one of the following checks, it will not be possible to train an Extraction AI with that Document.
 
-### Initializing a Project with data validations enabled
+### Initializing a Project with enabled data validations
 
 By default, any [Project](https://dev.konfuzio.com/sdk/sourcecode.html#project) has data validation enabled, so nothing 
 special needs to be done to enable it.
@@ -29,8 +29,14 @@ marked as unsuitable for training an Extraction AI.
 An [Annotation](https://dev.konfuzio.com/sdk/sourcecode.html#annotation) passes the data validation rules only if:
 
 1. The Annotation is not from a Category different from the Document's Category
-2. The Annotation is not entirely overlapping with another Annotation (partial overlaps are allowed)
-3. The Annotation has at least one Span (in other words, it should contain text and not be an empty Annotation)
+2. The Annotation is not entirely overlapping with another Annotation with the same Label
+    - It implies that partial overlaps with same Labels are allowed
+    - It implies that full overlaps with different Labels are allowed
+3. The Annotation has at least one Span
+
+.. note::
+  The Annotation Validation Rules are indifferent about the values of `Annotation.is_correct` or `Annotation.revised`.
+  For more information about what these boolean values mean, see [Konfuzio Server - Annotations](https://help.konfuzio.com/modules/annotations/index.html).
 
 ### Span Validation Rules
 
@@ -45,9 +51,9 @@ A [Bbox](https://dev.konfuzio.com/sdk/sourcecode.html#bbox) passes the data vali
 
 1. The Bbox has positive width and height
 2. The Bbox is entirely contained within the bounds of a Page
-3. The text of the Bbox must correspond to the text in the Document (please note that, in Konfuzio, each Bbox within a Document is associated to a single character from the Document's text by default)
+3. The character that is mapped by the Bbox must correspond to the text in the Document
 
-### Initializing a Project with data validations disabled
+### Initializing a Project with disabled data validations
 
 By default, any [Project](https://dev.konfuzio.com/sdk/sourcecode.html#project) has data validation enabled.
 
