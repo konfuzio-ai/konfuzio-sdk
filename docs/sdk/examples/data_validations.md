@@ -34,9 +34,8 @@ An [Annotation](https://dev.konfuzio.com/sdk/sourcecode.html#annotation) passes 
     - It implies that full overlaps with different Labels are allowed
 3. The Annotation has at least one Span
 
-.. note::
-  The Annotation Validation Rules are indifferent about the values of `Annotation.is_correct` or `Annotation.revised`.
-  For more information about what these boolean values mean, see [Konfuzio Server - Annotations](https://help.konfuzio.com/modules/annotations/index.html).
+Please note that the Annotation Validation Rules are indifferent about the values of `Annotation.is_correct` or `Annotation.revised`.
+For more information about what these boolean values mean, see [Konfuzio Server - Annotations](https://help.konfuzio.com/modules/annotations/index.html).
 
 ### Span Validation Rules
 
