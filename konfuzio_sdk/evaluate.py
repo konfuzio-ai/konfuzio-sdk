@@ -269,12 +269,15 @@ class EvaluationCalculator:
         """Apply F1-score formula. Returns None if precision and recall are both None."""
         return None if (self.tp + 0.5 * (self.fp + self.fn) == 0) else self.tp / (self.tp + 0.5 * (self.fp + self.fn))
 
-    # def metrics_logging(self):
-    #     """Log metrics."""
-    #     logger.info("""| TP | TN | FP | FN | precision | recall | F1 |""")
-    #     header = """| TP | TN | FP | FN | precision | recall | F1 |\n|----|----|----|----|----|----|----|\n"""
-    #     metrics = f'|{self.tp}|{self.fn}|{self.fp}|{self.fn}|{self.precision}|{self.recall}|{self.f1}|'
-    # todo remake into logging
+    def metrics_logging(self):
+        """Log metrics."""
+        logger.info(f"true positives: {self.tp}")
+        logger.info(f"false negatives: {self.fn}")
+        logger.info(f"true negatives: {self.tn}")
+        logger.info(f"false positives: {self.fp}")
+        logger.info(f"precision: {self.precision}")
+        logger.info(f"recall: {self.recall}")
+        logger.info(f"F1: {self.f1}")
 
 
 class Evaluation:

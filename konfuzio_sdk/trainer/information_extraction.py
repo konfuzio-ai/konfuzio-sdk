@@ -1029,20 +1029,23 @@ def add_extractions_as_annotations(
                 end = span['end_offset']
                 offset_string = document.text[start:end]
                 bbox0 = document.bboxes[start]
-                bbox1 = document.bboxes[end - 1]
+                min_x = min(document.bboxes[i].x0 for i in range(start, end) if i in document.bboxes)
+                max_x = max(document.bboxes[i].x1 for i in range(start, end) if i in document.bboxes)
+                min_y = min(document.bboxes[i].y0 for i in range(start, end) if i in document.bboxes)
+                max_y = max(document.bboxes[i].y1 for i in range(start, end) if i in document.bboxes)
                 ann_bbox = {
-                    'bottom': bbox0.page.height - bbox0.y0,
+                    'bottom': bbox0.page.height - min_y,
                     'end_offset': end,
                     'line_number': len(document.text[:start].split('\n')),
                     'offset_string': offset_string,
                     'offset_string_original': offset_string,
                     'page_index': bbox0.page.index,
                     'start_offset': start,
-                    'top': bbox0.page.height - bbox0.y1,
-                    'x0': bbox0.x0,
-                    'x1': bbox1.x1,
-                    'y0': bbox0.y0,
-                    'y1': bbox1.y1,
+                    'top': bbox0.page.height - max_y,
+                    'x0': min_x,
+                    'x1': max_x,
+                    'y0': min_y,
+                    'y1': max_y,
                 }
                 annotation = Annotation(
                     document=document,
