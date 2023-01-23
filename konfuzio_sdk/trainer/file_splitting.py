@@ -155,7 +155,10 @@ class FusionModel(AbstractFileSplittingModel):
         self.requires_text = True
         self.train_txt_data = []
         self.train_img_data = None
+        self.test_txt_data = []
+        self.test_img_data = None
         self.train_labels = None
+        self.test_labels = None
         self.input_shape = None
         self.model = None
         logger.info('Initializing BERT components of the FusionModel.')
@@ -217,13 +220,20 @@ class FusionModel(AbstractFileSplittingModel):
             if counter != len(doc.pages()):
                 doc.get_images()
         train_image_paths, train_texts, train_labels = self._preprocess_documents(self.documents)
+        test_image_paths, test_texts, test_labels = self._preprocess_documents(self.test_documents)
         logger.info('Document preprocessing finished.')
         train_images = self._otsu_binarization(train_image_paths)
+        test_images = self._otsu_binarization(test_image_paths)
         self.train_labels = tf.cast(np.asarray(train_labels).reshape((-1, 1)), tf.float32)
+        self.test_labels = tf.cast(np.asarray(test_labels).reshape((-1, 1)), tf.float32)
         image_data_generator = ImageDataGenerator()
         train_data_generator = image_data_generator.flow(x=np.squeeze(train_images, axis=1), y=train_labels)
         self.train_img_data = np.concatenate(
             [train_data_generator.next()[0] for i in range(train_data_generator.__len__())]
+        )
+        test_data_generator = image_data_generator.flow(x=np.squeeze(test_images, axis=1), y=test_labels)
+        self.test_img_data = np.concatenate(
+            [test_data_generator.next()[0] for i in range(test_data_generator.__len__())]
         )
         logger.info('Image data preprocessing finished')
         for text in train_texts:
@@ -233,7 +243,14 @@ class FusionModel(AbstractFileSplittingModel):
             self.train_txt_data.append(output.pooler_output)
         self.train_txt_data = [np.asarray(x).astype('float32') for x in self.train_txt_data]
         self.train_txt_data = np.asarray(self.train_txt_data)
-        self.input_shape = self.train_txt_data[0].shape
+        for text in test_texts:
+            inputs = self.bert_tokenizer(text, truncation=True, return_tensors='pt')
+            with torch.no_grad():
+                output = self.bert_model(**inputs)
+            self.test_txt_data.append(output.pooler_output)
+        self.input_shape = self.test_txt_data[0].shape
+        self.test_txt_data = [np.asarray(x).astype('float32') for x in self.test_txt_data]
+        self.test_txt_data = np.asarray(self.test_txt_data)
         logger.info('Text data preprocessing finished.')
         logger.info('FusionModel compiling started.')
         txt_input = Input(shape=self.input_shape, name='text')
