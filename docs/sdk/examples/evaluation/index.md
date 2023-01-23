@@ -13,10 +13,10 @@ evaluation = FileSplittingEvaluation(ground_truth_documents=YOUR_GROUND_TRUTH_LI
                                      prediction_documents=YOUR_PREDICTION_LIST)
 ```
 
-The class compares each pair of pages. If a page is labeled as first and the model also predicted it as first, it is 
-considered a true positive. If a page is labeled as first but the model predicted it as non-first, it is considered a 
-false negative. If a page is labeled as non-first but the model predicted it as first, it is considered a false 
-positive. If a page is labeled as non-first and the model also predicted it as non-first, it is considered a true 
+The class compares each pair of Pages. If a Page is labeled as first and the model also predicted it as first, it is 
+considered a true positive. If a Page is labeled as first but the model predicted it as non-first, it is considered a 
+false negative. If a Page is labeled as non-first but the model predicted it as first, it is considered a false 
+positive. If a Page is labeled as non-first and the model also predicted it as non-first, it is considered a true 
 negative. 
 
 |  | predicted correctly | predicted incorrectly |
@@ -28,7 +28,7 @@ After iterating through all Pages of all Documents, precision, recall and f1 mea
 metrics to `None` in case there has been an attempt of zero division, set `allow_zero=True` at the initialization.
 
 
-To see a certain metric after the class has been initialized, you can call a metric's method. 
+To see a certain metric after the class has been initialized, you can call a metric's method:
 ```
 print(evaluation.fn())
 ```
@@ -59,7 +59,7 @@ from konfuzio_sdk.data import Category, Project, Document, Page
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
 from konfuzio_sdk.trainer.file_splitting import SplittingAI
 
-text_1 = "Hi all,\nI like bread.\nI hope to get everything done soon.\nHave you seen it?'
+text_1 = "Hi all,\nI like bread.\nI hope to get everything done soon.\nHave you seen it?"
 document_1 = Document(id_=None, project=YOUR_PROJECT, category=YOUR_CATEGORY_1, text=text_1, dataset_status=3)
 _ = Page(
         id_=None,
