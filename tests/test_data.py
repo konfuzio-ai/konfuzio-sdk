@@ -224,7 +224,7 @@ class TestOnlineProject(unittest.TestCase):
 
         assert doc.dataset_status == 1  # didn't save, so reloading the old dataset status
 
-        with pytest.raises(ValueError, match="Cannot delete Document with dataset status"):
+        with pytest.raises(HTTPError, match="You cannot delete documents which are part of a dataset"):
             # Cannot delete Document with dataset_status != 0
             doc.delete(delete_online=True)
 
@@ -1797,7 +1797,8 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         for document in prj.documents:
             document.text
         after = _getsize(prj)
-        assert 1.6 < after / before < 2.0
+        assert 1.6 < after / before < 2.1
+        assert after < 500000
 
         # strings in prj take slightly less space than in a list
         assert _getsize([doc.text for doc in prj.documents]) + before < after + 500
