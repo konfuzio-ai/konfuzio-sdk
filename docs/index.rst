@@ -25,6 +25,8 @@ document processes. For a quick introduction to the SDK, check out the :ref:`Qui
 To then access the REST API via :ref:`Server API v2` and  :ref:`Server API v3` or
 use further integrations, see `help.konfuzio.com <https://help.konfuzio.com/integrations/index.html>`_.
 
+**Konfuzio Document Validation UI:** This Open Source User Interface allows you to interact with Documents uploaded to the Konfuzio Server and with the data extracted from them. Check out our :ref:`Document Validation UI overview <Konfuzio Document Validation UI overview>` for technical information about the application or our `Konfuzio guide <https://help.konfuzio.com/document-validation-ui/index.html>` to learn how to use it.
+
 .. Note::
     Konfuzio Trainer will no longer be available.
     The functionality of Trainer will be moved to Server or become open source in SDK.
@@ -54,13 +56,12 @@ use further integrations, see `help.konfuzio.com <https://help.konfuzio.com/inte
    web/changelog_app.md
 
 .. toctree::
-   :caption: Document Validation UI
+   :caption: Konfuzio Document Validation UI
    :hidden:
    :maxdepth: 3
 
    dvui/index.md
-   dvui/users.md
-   dvui/modes.md
+   dvui/explanations.md
    dvui/guides.md
    dvui/sourcecode.md
    dvui/changelog.md
