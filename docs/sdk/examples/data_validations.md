@@ -48,7 +48,7 @@ A [Span](https://dev.konfuzio.com/sdk/sourcecode.html#span) passes the data vali
 
 A [Bbox](https://dev.konfuzio.com/sdk/sourcecode.html#bbox) passes the data validation rules only if:
 
-1. The Bbox has positive width and height
+1. The Bbox has non-negative width and height (zero is allowed for compatibility reasons with many OCR engines)
 2. The Bbox is entirely contained within the bounds of a Page
 3. The character that is mapped by the Bbox must correspond to the text in the Document
 

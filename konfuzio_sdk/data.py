@@ -259,11 +259,7 @@ class Page(Data):
 class BboxValidationTypes(Enum):
     """Define validation strictness for bounding boxes.
 
-    If ALLOW_ZERO_SIZE (default), it allows bounding boxes to have zero width or height.
-    This option is available and defaults to False for compatibility reasons since some OCR engines can sometimes
-    return character level bboxes with zero width or height. If STRICT, it doesn't allow zero size bboxes. If
-    DISABLED, it allows bboxes that have negative size, or coordinates beyond the Page bounds.
-    See https://dev.konfuzio.com/sdk/data_validations.html#bbox-validation-rules.
+    For more details see the `Bbox` class.
     """
 
     STRICT = 'strict'
@@ -275,10 +271,14 @@ class Bbox:
     """
     A bounding box relates to an area of a Document Page.
 
-    :param validation: If ALLOW_ZERO_SIZE (default), it allows bounding boxes to have zero width or height.
-    This option is available and defaults to False for compatibility reasons since some OCR engines can sometimes
-    return character level bboxes with zero width or height. If STRICT, it doesn't allow zero size bboxes. If
-    DISABLED, it allows bboxes that have negative size, or coordinates beyond the Page bounds.
+    What consistutes a valid Bbox changes depending on the value of the `validation` param.
+    If ALLOW_ZERO_SIZE (default), it allows bounding boxes to have zero width or height.
+    This option is available for compatibility reasons since some OCR engines can sometimes return character level
+    bboxes with zero width or height. If STRICT, it doesn't allow zero size bboxes. If DISABLED, it allows bboxes that
+    have negative size, or coordinates beyond the Page bounds.
+    For the default behaviour see https://dev.konfuzio.com/sdk/data_validations.html#bbox-validation-rules.
+
+    :param validation: One of ALLOW_ZERO_SIZE (default), STRICT, or DISABLED.
     """
 
     def __init__(self, x0: int, x1: int, y0: int, y1: int, page: Page, validation=BboxValidationTypes.ALLOW_ZERO_SIZE):
@@ -307,11 +307,7 @@ class Bbox:
         """
         Validate contained data.
 
-        :param validation: If ALLOW_ZERO_SIZE (default), it allows bounding boxes to have zero width or height.
-        This option is available and defaults to False for compatibility reasons since some OCR engines can sometimes
-        return character level bboxes with zero width or height. If STRICT, it doesn't allow zero size bboxes. If
-        DISABLED, it allows bboxes that have negative size, or coordinates beyond the Page bounds.
-        See https://dev.konfuzio.com/sdk/data_validations.html#bbox-validation-rules.
+        :param validation: One of ALLOW_ZERO_SIZE (default), STRICT, or DISABLED. Also see the `Bbox` class.
         """
         if self.x0 == self.x1:
             exception_or_error(
@@ -1707,11 +1703,7 @@ class Document(Data):
         :param updated_at: Updated information
         :param assignee: Assignee of the Document
         :param bbox: Bounding box information per character in the PDF (dict)
-        :param bbox_validation_type: If ALLOW_ZERO_SIZE (default), allows bounding boxes to have zero width or height.
-        This option is available and defaults to False for compatibility reasons since some OCR engines can sometimes
-        return character level bboxes with zero width or height. If STRICT, it doesn't allow zero size bboxes. If
-        DISABLED, it allows bboxes that have negative size, or coordinates beyond the Page bounds.
-        See https://dev.konfuzio.com/sdk/data_validations.html#bbox-validation-rules.
+        :param bbox_validation_type: One of ALLOW_ZERO_SIZE (default), STRICT, or DISABLED. Also see the `Bbox` class.
         :param pages: List of page sizes.
         :param update: Annotations, Annotation Sets will not be loaded by default. True will load it from the API.
                         False from local files
