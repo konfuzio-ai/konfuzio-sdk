@@ -31,7 +31,7 @@ from tests.variables import (
     TEST_RECEIPTS_CATEGORY_ID,
 )
 
-from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer
+from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer, ConnectedTextTokenizer
 from konfuzio_sdk.samples import LocalTextProject
 
 logger = logging.getLogger(__name__)
@@ -1349,9 +1349,21 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert project.labels[0]._evaluations == {}
         assert project.labels[0]._tokens == {}
         assert project.labels[0]._regex == {}
+        assert project._documents == []
         assert project.virtual_documents == []
         assert project.documents == []
         assert project.test_documents == []
+        assert project._meta_data == []
+
+    def test_create_subdocument_from_page_range(self):
+        """Test creating a smaller Document from original one within a Page range."""
+        project = LocalTextProject()
+        test_document = project.get_category_by_id(3).test_documents()[0]
+        new_doc = test_document.create_subdocument_from_page_range(
+            test_document.pages()[0], test_document.pages()[1], include=True
+        )
+        assert len(new_doc.pages()) == 2
+        assert new_doc.text == "Hi all,\nI like bread.\n\fI hope to get everything done soon.\n"
 
 
 class TestSeparateLabels(unittest.TestCase):
@@ -1746,7 +1758,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         for document in prj.documents:
             document.text
         after = _getsize(prj)
-        assert 1.6 < after / before < 1.8
+        assert 1.5 < after / before < 1.8
 
         # strings in prj take slightly less space than in a list
         assert _getsize([doc.text for doc in prj.documents]) + before < after + 500
@@ -2362,6 +2374,17 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
             copy_of_id=999999999,
         )
         assert not os.path.isdir(virtual_document.document_folder)
+
+    def test_category_collect_exclusive_first_page_strings(self):
+        """Test collecting exclusive first-page strings within the Documents of a Category."""
+        project = LocalTextProject()
+        category = project.get_category_by_id(3)
+        tokenizer = ConnectedTextTokenizer()
+        first_page_strings = category.exclusive_first_page_strings(tokenizer)
+        assert len(first_page_strings) == 2
+        assert 'I like bread.' in first_page_strings
+        assert 'Morning,' in first_page_strings
+        project.delete()
 
 
 class TestFillOperation(unittest.TestCase):

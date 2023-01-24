@@ -1,7 +1,6 @@
 """Test the evaluation."""
-import os.path
-import pathlib
 import unittest
+from copy import deepcopy
 from statistics import mean
 
 import pytest
@@ -1263,13 +1262,6 @@ class TestEvaluationCalculator(unittest.TestCase):
         assert no_f1.recall is None
         assert no_f1.f1 is None
 
-    def test_metrics_markdown_table_generator(self):
-        """Test Markdown metrics report generator."""
-        evaluation_calculator = EvaluationCalculator(tp=3, fp=22, fn=2)
-        path = evaluation_calculator.metrics_markdown_table_generator(output_dir="")
-        assert os.path.isfile(path)
-        pathlib.Path(path).unlink()
-
 
 class TestEvaluationFileSplitting(unittest.TestCase):
     """Test Evaluation class for ContextAwareFileSplitting."""
@@ -1278,27 +1270,68 @@ class TestEvaluationFileSplitting(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Initialize the tested class."""
         cls.project = LocalTextProject()
-        cls.file_splitting_model = ContextAwareFileSplittingModel()
-        cls.file_splitting_model.categories = [cls.project.get_category_by_id(3), cls.project.get_category_by_id(4)]
-        cls.file_splitting_model.documents = [
-            document for category in cls.file_splitting_model.categories for document in category.documents()
-        ]
+        #  Categories 3 and 4 are used because they were specifically created for File Splitting testing
+        cls.file_splitting_model = ContextAwareFileSplittingModel(
+            categories=[cls.project.get_category_by_id(3), cls.project.get_category_by_id(4)],
+            tokenizer=ConnectedTextTokenizer(),
+        )
         cls.file_splitting_model.test_documents = [
             document for category in cls.file_splitting_model.categories for document in category.test_documents()
         ][:-2]
-        cls.file_splitting_model.tokenizer = ConnectedTextTokenizer()
-        cls.file_splitting_model.first_page_spans = None
-        cls.test_document = cls.project.get_category_by_id(3).test_documents()[0]
+        cls.test_document = cls.project.get_category_by_id(3).test_documents()[0]  # a multi-file test Document
         cls.wrong_test_document = cls.project.get_category_by_id(4).test_documents()[-2]
+
+    def test_evaluation_input_different_lengths(self):
+        """Test having different lengths of input lists of Documnets."""
+        with pytest.raises(ValueError, match='must be same length'):
+            FileSplittingEvaluation([1, 2], [1])
+
+    def test_evaluation_input_different_projects(self):
+        """Test passing Documents from different Projects."""
+        self.file_splitting_model.fit(allow_empty_categories=True)
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        ground_truth = self.test_document
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)[0]
+        wrong_project = Project(id_=46)
+        wrong_doc = wrong_project.documents[0]
+        wrong_pred = splitting_ai.propose_split_documents(wrong_doc, return_pages=True)[0]
+        with pytest.raises(ValueError, match='have to belong to the same Project'):
+            FileSplittingEvaluation([ground_truth, wrong_doc], [pred, wrong_pred])
+
+    def test_evaluation_input_no_is_first_page_attr(self):
+        """Test passing a Document with Page that has is_first_page=None."""
+        test_document = deepcopy(self.test_document)
+        for page in test_document.pages():
+            page.is_first_page = None
+        with pytest.raises(ValueError, match='does not have a value of is_first_page'):
+            FileSplittingEvaluation([test_document], [test_document])
+
+    def test_evaluation_input_wrong_document_pair(self):
+        """Test passing a pair of different Documents."""
+        self.file_splitting_model.fit(allow_empty_categories=True)
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)[0]
+        pred.copy_of_id = 9999999
+        with pytest.raises(ValueError, match='Prediction has to be a copy of'):
+            FileSplittingEvaluation([self.test_document], [pred])
+
+    def test_evaluation_pred_input_no_is_first_page_attr(self):
+        """Test passing a prediction of a Document with Page that has is_first_page=None."""
+        self.file_splitting_model.fit(allow_empty_categories=True)
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)[0]
+        for page in pred.pages():
+            page.is_first_page = None
+        with pytest.raises(ValueError, match='does not have a value of is_first_page'):
+            FileSplittingEvaluation([self.test_document], [pred])
 
     def test_metrics_calculation(self):
         """Test Evaluation class for ContextAwareFileSplitting."""
-        self.file_splitting_model.first_page_spans = self.file_splitting_model.fit()
+        self.file_splitting_model.fit(allow_empty_categories=True)
         splitting_ai = SplittingAI(self.file_splitting_model)
         ground_truth = self.test_document
-        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)
-        documents = [[ground_truth, pred]]
-        evaluation = FileSplittingEvaluation(documents)
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)[0]
+        evaluation = FileSplittingEvaluation([ground_truth], [pred])
         assert evaluation.tp() == 3
         assert evaluation.fp() == 0
         assert evaluation.fn() == 0
@@ -1311,9 +1344,8 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         """Test Evaluation by Category."""
         splitting_ai = SplittingAI(self.file_splitting_model)
         ground_truth = self.test_document
-        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)
-        documents = [[ground_truth, pred]]
-        evaluation = FileSplittingEvaluation(documents)
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)[0]
+        evaluation = FileSplittingEvaluation([ground_truth], [pred])
         assert evaluation.tp(search=ground_truth.category) == 3
         assert evaluation.fp(search=ground_truth.category) == 0
         assert evaluation.fn(search=ground_truth.category) == 0
@@ -1326,9 +1358,8 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         """Test Evaluation on a file that does not return all-100% metrics."""
         splitting_ai = SplittingAI(self.file_splitting_model)
         ground_truth = self.wrong_test_document
-        pred = splitting_ai.propose_split_documents(self.wrong_test_document, return_pages=True)
-        documents = [[ground_truth, pred]]
-        evaluation = FileSplittingEvaluation(documents)
+        pred = splitting_ai.propose_split_documents(self.wrong_test_document, return_pages=True)[0]
+        evaluation = FileSplittingEvaluation([ground_truth], [pred])
         assert evaluation.tp() == 1
         assert evaluation.fp() == 1
         assert evaluation.fn() == 0
@@ -1341,9 +1372,8 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         """Test filtering by wrongly input Category."""
         splitting_ai = SplittingAI(self.file_splitting_model)
         ground_truth = self.test_document
-        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)
-        documents = [[ground_truth, pred]]
-        evaluation = FileSplittingEvaluation(documents)
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)[0]
+        evaluation = FileSplittingEvaluation([ground_truth], [pred])
         wrong_category = Project(id_=46).categories[0]
         with pytest.raises(KeyError, match="Only Categories within a Project can be used for viewing metrics."):
             evaluation.tp(wrong_category)
@@ -1358,10 +1388,10 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         """Test evaluate_full method of SplittingAI."""
         splitting_ai = SplittingAI(self.file_splitting_model)
         splitting_ai.evaluate_full()
-        assert splitting_ai.full_evaluation.evaluation_results['tp'] == 9
-        assert splitting_ai.full_evaluation.evaluation_results['fp'] == 0
-        assert splitting_ai.full_evaluation.evaluation_results['fn'] == 0
-        assert splitting_ai.full_evaluation.evaluation_results['tn'] == 7
+        assert splitting_ai.full_evaluation.evaluation_results['true_positives'] == 9
+        assert splitting_ai.full_evaluation.evaluation_results['false_positives'] == 0
+        assert splitting_ai.full_evaluation.evaluation_results['false_negatives'] == 0
+        assert splitting_ai.full_evaluation.evaluation_results['true_negatives'] == 7
         assert splitting_ai.full_evaluation.evaluation_results['precision'] == 1.0
         assert splitting_ai.full_evaluation.evaluation_results['recall'] == 1.0
         assert splitting_ai.full_evaluation.evaluation_results['f1'] == 1.0
@@ -1370,9 +1400,8 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         """Test get_evaluation_data method of the Evaluation class."""
         splitting_ai = SplittingAI(self.file_splitting_model)
         ground_truth = self.test_document
-        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)
-        documents = [[ground_truth, pred]]
-        evaluation = FileSplittingEvaluation(documents).get_evaluation_data()
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)[0]
+        evaluation = FileSplittingEvaluation([ground_truth], [pred]).get_evaluation_data()
         assert evaluation.tp == 3
         assert evaluation.fp == 0
         assert evaluation.fn == 0
@@ -1385,9 +1414,8 @@ class TestEvaluationFileSplitting(unittest.TestCase):
         """Test get_evaluation_data method of the Evaluation class within the specified Category."""
         splitting_ai = SplittingAI(self.file_splitting_model)
         ground_truth = self.test_document
-        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)
-        documents = [[ground_truth, pred]]
-        evaluation = FileSplittingEvaluation(documents).get_evaluation_data(search=ground_truth.category)
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)[0]
+        evaluation = FileSplittingEvaluation([ground_truth], [pred]).get_evaluation_data(search=ground_truth.category)
         assert evaluation.tp == 3
         assert evaluation.fp == 0
         assert evaluation.fn == 0

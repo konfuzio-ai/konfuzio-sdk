@@ -1,12 +1,15 @@
 """Calculate the accuracy on any level in a  Document."""
+import logging
 from typing import Tuple, List, Optional, Union
 
 import pandas
 import numpy
 from sklearn.utils.extmath import weighted_mode
 
-from konfuzio_sdk.utils import sdk_isinstance, get_timestamp
+from konfuzio_sdk.utils import sdk_isinstance
 from konfuzio_sdk.data import Document, Category
+
+logger = logging.getLogger(__name__)
 
 RELEVANT_FOR_EVALUATION = [
     "is_matched",  # needed to group spans in Annotations
@@ -266,21 +269,15 @@ class EvaluationCalculator:
         """Apply F1-score formula. Returns None if precision and recall are both None."""
         return None if (self.tp + 0.5 * (self.fp + self.fn) == 0) else self.tp / (self.tp + 0.5 * (self.fp + self.fn))
 
-    def metrics_markdown_table_generator(self, output_dir: str = ""):
-        """
-        Create a Markdown file with metrics.
-
-        :param output_dir: A path to save the resulting Markdown file to.
-        :type output_dir: str
-        :returns: A path to the saved metrics report.
-        """
-        header = """| TP | TN | FP | FN | precision | recall | F1 |\n|----|----|----|----|----|----|----|\n"""
-        metrics = f'|{self.tp}|{self.fn}|{self.fp}|{self.fn}|{self.precision}|{self.recall}|{self.f1}|'
-        path = output_dir + f'metrics_{get_timestamp()}.md'
-        with open(path, 'w') as f:
-            f.write(header)
-            f.write(metrics)
-        return path
+    def metrics_logging(self):
+        """Log metrics."""
+        logger.info(f"true positives: {self.tp}")
+        logger.info(f"false negatives: {self.fn}")
+        logger.info(f"true negatives: {self.tn}")
+        logger.info(f"false positives: {self.fp}")
+        logger.info(f"precision: {self.precision}")
+        logger.info(f"recall: {self.recall}")
+        logger.info(f"F1: {self.f1}")
 
 
 class Evaluation:
@@ -458,24 +455,67 @@ class Evaluation:
 class FileSplittingEvaluation:
     """Evaluate the quality of the filesplitting logic."""
 
-    def __init__(self, documents: List[Tuple[Document, Document]]):
+    def __init__(self, ground_truth_documents: List[Document], prediction_documents: List[Document]):
         """
         Initialize and run the metrics calculation.
 
-        :param documents: A list of Document pairs – first one is ground truth, second is the prediction.
-        :type documents: list
+        :param ground_truth_documents: A list of original unchanged Documents.
+        :type ground_truth_documents: list
+        :param prediction_documents: A list of Documents with Pages newly predicted to be first or non-first.
+        :type prediction_documents: list
+        :raises ValueError: When ground_truth_documents and prediction_documents are not the same length.
+        :raises ValueError: When a Page does not have a value of is_first_page.
+        :raises ValueError: When an original Document and prediction are not referring to the same Document.
         """
-        self.documents = documents
+        if len(ground_truth_documents) != len(prediction_documents):
+            raise ValueError("ground_truth_documents and prediction_documents must be same length.")
+        for document in ground_truth_documents:
+            for page in document.pages():
+                if page.is_first_page is None:
+                    raise ValueError(f'Page {page.number} of {document} does not have a value of is_first_page.')
+        for document in prediction_documents:
+            for page in document.pages():
+                if page.is_first_page is None:
+                    raise ValueError(
+                        f'Page {page.number} of prediction of {document.copy_of_id} does not have a value '
+                        f'of is_first_page.'
+                    )
+        for ground_truth, prediction in zip(ground_truth_documents, prediction_documents):
+            if ground_truth.id_ != prediction.copy_of_id:
+                raise ValueError(
+                    f"Incorrect prediction passed for {ground_truth}. Prediction has to be a copy of a "
+                    f"ground truth Document."
+                )
+        projects = list(set([document.project for document in ground_truth_documents]))
+        if len(projects) > 1:
+            raise ValueError("All Documents have to belong to the same Project.")
+        self.document_pairs = [
+            [document[0], document[1]] for document in zip(ground_truth_documents, prediction_documents)
+        ]
+        self.project = projects[0]  # because we check that exactly one Project exists across the Documents
+        self.evaluation_results = None
+        self.evaluation_results_by_category = None
         self.calculate()
         self.calculate_metrics_by_category()
 
-    def calculate(self):
-        """Calculate metrics for the filesplitting logic."""
-        tp = 0
-        fp = 0
-        fn = 0
-        tn = 0
-        for ground_truth, prediction in self.documents:
+    def _metric_calculations(self, category=None):
+        """
+        Calculate metrics for a single category.
+
+        :param category: A Category to calculate metrics for.
+        :type category: Category
+        :returns: Seven metrics.
+        """
+        tp, fp, fn, tn = 0, 0, 0, 0
+        if category:
+            evaluation_documents = [
+                [document_1, document_2]
+                for document_1, document_2 in self.document_pairs
+                if document_1.category and document_1.category.id_ == category.id_
+            ]
+        else:
+            evaluation_documents = self.document_pairs
+        for ground_truth, prediction in evaluation_documents:
             for page_gt, page_pr in zip(ground_truth.pages(), prediction.pages()):
                 if page_gt.is_first_page and page_pr.is_first_page:
                     tp += 1
@@ -486,23 +526,27 @@ class FileSplittingEvaluation:
                 elif not page_gt.is_first_page and not page_pr.is_first_page:
                     tn += 1
         if tp + fp != 0:
-            precision = tp / (tp + fp)
+            precision = EvaluationCalculator(tp=tp, fp=fp, fn=fn, tn=tn).precision
         else:
             raise ZeroDivisionError("TP and FP are zero.")
         if tp + fn != 0:
-            recall = tp / (tp + fn)
+            recall = EvaluationCalculator(tp=tp, fp=fp, fn=fn, tn=tn).recall
         else:
             raise ZeroDivisionError("TP and FN are zero.")
         if precision + recall != 0:
-            f1 = 2 * precision * recall / (precision + recall)
+            f1 = EvaluationCalculator(tp=tp, fp=fp, fn=fn, tn=tn).f1
         else:
             raise ZeroDivisionError("FP and FN are zero.")
-        self.project = self.documents[0][0].project
+        return tp, fp, fn, tn, precision, recall, f1
+
+    def calculate(self):
+        """Calculate metrics for the filesplitting logic."""
+        tp, fp, fn, tn, precision, recall, f1 = self._metric_calculations()
         self.evaluation_results = {
-            'tp': tp,
-            'fp': fp,
-            'fn': fn,
-            'tn': tn,
+            'true_positives': tp,
+            'false_positives': fp,
+            'false_negatives': fn,
+            'true_negatives': tn,
             'precision': precision,
             'recall': recall,
             'f1': f1,
@@ -510,63 +554,37 @@ class FileSplittingEvaluation:
 
     def calculate_metrics_by_category(self):
         """Calculate metrics by Category independently."""
-        categories = list(set([doc_pair[0].category for doc_pair in self.documents]))
-        self.evaluation_results_by_category = {
-            'tp': {},
-            'fp': {},
-            'fn': {},
-            'tn': {},
-            'precision': {},
-            'recall': {},
-            'f1': {},
-        }
+        categories = list(set([doc_pair[0].category for doc_pair in self.document_pairs]))
+        self.evaluation_results_by_category = {}
         for category in categories:
-            tp = 0
-            fp = 0
-            fn = 0
-            tn = 0
-            for ground_truth, prediction in [
-                [document_1, document_2]
-                for document_1, document_2 in self.documents
-                if document_1.category and document_1.category.id_ == category.id_
-            ]:
-                for page_gt, page_pr in zip(ground_truth.pages(), prediction.pages()):
-                    if page_gt.is_first_page and page_pr.is_first_page:
-                        tp += 1
-                    elif not page_gt.is_first_page and page_pr.is_first_page:
-                        fp += 1
-                    elif page_gt.is_first_page and not page_pr.is_first_page:
-                        fn += 1
-                    elif not page_gt.is_first_page and not page_pr.is_first_page:
-                        tn += 1
-            if tp + fp != 0:
-                precision = tp / (tp + fp)
-            else:
-                raise ZeroDivisionError("TP and FP are zero.")
-            if tp + fn != 0:
-                recall = tp / (tp + fn)
-            else:
-                raise ZeroDivisionError("TP and FN are zero.")
-            if precision + recall != 0:
-                f1 = 2 * precision * recall / (precision + recall)
-            else:
-                raise ZeroDivisionError("FP and FN are zero.")
-            self.evaluation_results_by_category['tp'][category.id_] = tp
-            self.evaluation_results_by_category['fp'][category.id_] = fp
-            self.evaluation_results_by_category['fn'][category.id_] = fn
-            self.evaluation_results_by_category['tn'][category.id_] = tn
-            self.evaluation_results_by_category['precision'][category.id_] = precision
-            self.evaluation_results_by_category['recall'][category.id_] = recall
-            self.evaluation_results_by_category['f1'][category.id_] = f1
+            self.evaluation_results_by_category[category.id_] = {}
+            tp, fp, fn, tn, precision, recall, f1 = self._metric_calculations(category)
+            self.evaluation_results_by_category[category.id_]['true_positives'] = tp
+            self.evaluation_results_by_category[category.id_]['false_positives'] = fp
+            self.evaluation_results_by_category[category.id_]['false_negatives'] = fn
+            self.evaluation_results_by_category[category.id_]['true_negatives'] = tn
+            self.evaluation_results_by_category[category.id_]['precision'] = precision
+            self.evaluation_results_by_category[category.id_]['recall'] = recall
+            self.evaluation_results_by_category[category.id_]['f1'] = f1
 
     def _query(self, metric: str, search: Category = None) -> Union[int, float, None]:
+        """
+        Get a specific metric for a given category or get all metrics for all categories.
+
+        :param metric: The name of the metric to get.
+        :type metric: str
+        :param search: The Category to get the metric for, if not provided will return all metrics for all Categories.
+        :type search: Category
+        :returns: A metric or a dictionary of metrics.
+        :raises KeyError: If the given Category is not present in the project the evaluation is running on.
+        """
         if search:
-            if search.id_ not in self.evaluation_results_by_category[metric]:
+            if search.id_ not in self.evaluation_results_by_category:
                 raise KeyError(
                     f'{search} is not present in {self.project}. Only Categories within a Project can be used for '
                     f'viewing metrics.'
                 )
-            return self.evaluation_results_by_category[metric][search.id_]
+            return self.evaluation_results_by_category[search.id_][metric]
         return self.evaluation_results[metric]
 
     def get_evaluation_data(self, search: Category = None, allow_zero: bool = True) -> EvaluationCalculator:
@@ -591,7 +609,7 @@ class FileSplittingEvaluation:
         :type search: Category
         :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
         """
-        return self._query('tp', search)
+        return self._query('true_positives', search)
 
     def fp(self, search: Category = None) -> int:
         """
@@ -601,7 +619,7 @@ class FileSplittingEvaluation:
         :type search: Category
         :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
         """
-        return self._query('fp', search)
+        return self._query('false_positives', search)
 
     def fn(self, search: Category = None) -> int:
         """
@@ -611,7 +629,7 @@ class FileSplittingEvaluation:
         :type search: Category
         :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
         """
-        return self._query('fn', search)
+        return self._query('false_negatives', search)
 
     def tn(self, search: Category = None) -> int:
         """
@@ -621,7 +639,7 @@ class FileSplittingEvaluation:
         :type search: Category
         :raises KeyError: When the Category in search is not present in the Project from which the Documents are.
         """
-        return self._query('tn', search)
+        return self._query('true_negatives', search)
 
     def precision(self, search: Category = None) -> float:
         """

@@ -18,9 +18,9 @@ class LocalTextProject(Project):
         default_label_set_2 = LabelSet(id_=2, project=self, name="CategoryName 2", categories=[category_2])
         default_label_2 = Label(id_=7, text='DefaultLabelName 2', project=self, label_sets=[default_label_set_2])
 
-        category_3 = Category(project=self, id_=3, name="CategoryName 3")
+        category_3 = Category(project=self, id_=3, name="FileSplittingCategory 1")
 
-        category_4 = Category(project=self, id_=4, name="CategoryName 4")
+        category_4 = Category(project=self, id_=4, name="FileSplittingCategory 2")
 
         label_set = LabelSet(id_=3, project=self, name="LabelSetName", categories=[category, category_2])
         label = Label(id_=4, text='LabelName', project=self, label_sets=[label_set])
@@ -498,14 +498,17 @@ a2  s4
 
         # Documents with sub-Documents in them
 
-        text_3 = "Hi all,\nI like bread.\nI hope to get everything done soon.\nMorning,\nI'm glad to see you.\nMorning,"
+        text_3 = (
+            "Hi all,\nI like bread.\n\fI hope to get everything done soon.\n\fMorning,\n\fI'm glad to see you."
+            "\n\fMorning,"
+        )
         document_3 = Document(id_=None, project=self, category=category_3, text=text_3, dataset_status=3)
         _ = Page(
             id_=None,
             original_size=(320, 240),
             document=document_3,
             start_offset=0,
-            end_offset=21,
+            end_offset=22,
             number=1,
         )
         _.is_first_page = True
@@ -514,8 +517,8 @@ a2  s4
             id_=None,
             original_size=(320, 240),
             document=document_3,
-            start_offset=22,
-            end_offset=57,
+            start_offset=23,
+            end_offset=59,
             number=2,
         )
 
@@ -523,8 +526,8 @@ a2  s4
             id_=None,
             original_size=(320, 240),
             document=document_3,
-            start_offset=58,
-            end_offset=66,
+            start_offset=60,
+            end_offset=69,
             number=3,
         )
         _.is_first_page = True
@@ -533,8 +536,8 @@ a2  s4
             id_=None,
             original_size=(320, 240),
             document=document_3,
-            start_offset=67,
-            end_offset=87,
+            start_offset=70,
+            end_offset=91,
             number=4,
         )
 
@@ -542,8 +545,8 @@ a2  s4
             id_=None,
             original_size=(320, 240),
             document=document_3,
-            start_offset=88,
-            end_offset=97,
+            start_offset=92,
+            end_offset=101,
             number=5,
         )
         _.is_first_page = True

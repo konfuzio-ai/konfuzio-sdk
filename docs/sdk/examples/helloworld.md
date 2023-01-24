@@ -126,7 +126,7 @@ evaluation = pipeline.evaluate_clf()
 print(f"Label classifier evaluation F1 score: {evaluation.clf_f1()}")
 
 # To get the evaluation of the LabelSet given perfect Label classification
-evaluation = pipeline.evaluate_template_clf()
+evaluation = pipeline.evaluate_label_set_clf()
 print(f"Label Set evaluation F1 score: {evaluation.f1()}")
 
 ```

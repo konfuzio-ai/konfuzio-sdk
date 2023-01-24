@@ -3,20 +3,21 @@
 FileSplittingEvaluation class can be used to evaluate performance of ContextAwareFileSplittingModel, returning a set of 
 metrics that includes precision, recall, f1 measure, true positives, false positives and false negatives. 
 
-The class's methods `calculate()` and `calculate_by_category()` are ran at initialization. The class receives pairs of 
-Documents as an input – first Document is ground-truth where all first Pages are marked as such, second is Document on 
-Pages of which FileSplittingModel ran a prediction of them being first or non-first. 
+The class's methods `calculate()` and `calculate_by_category()` are run at initialization. The class receives two lists 
+of Documents as an input – first list consists of ground-truth Documents where all first Pages are marked as such, 
+second is of Documents on Pages of which FileSplittingModel ran a prediction of them being first or non-first. 
 
-Suppose `gt_doc_1`, `gt_doc_2` and the following are ground truth Documents, and `pred_doc_1`, `pred_doc2` and the 
-following are the versions of these Documents that underwent the prediction step. Then the initialization would look 
-like this:
+The initialization would look like this:
 ```python
-evaluation = FileSplittingEvaluation([(gt_doc_1, pred_doc_1), (gt_doc_2, pred_doc_2), ...])
+evaluation = FileSplittingEvaluation(ground_truth_documents=YOUR_GROUND_TRUTH_LIST, 
+                                     prediction_documents=YOUR_PREDICTION_LIST)
 ```
 
-Pages of each pair are compared; if a Page is first and predicted as such, it is a true positive; if it is first and 
-predicted as non-first, it is a false negative; if it is non-first and predicted as first, it is a false positive; if 
-it is non-first and predicted as such, it is true negative. 
+The class compares each pair of Pages. If a Page is labeled as first and the model also predicted it as first, it is 
+considered a true positive. If a Page is labeled as first but the model predicted it as non-first, it is considered a 
+false negative. If a Page is labeled as non-first but the model predicted it as first, it is considered a false 
+positive. If a Page is labeled as non-first and the model also predicted it as non-first, it is considered a true 
+negative.
 
 |  | predicted correctly | predicted incorrectly |
 | ------ | ------ | ------ |
@@ -27,7 +28,7 @@ After iterating through all Pages of all Documents, precision, recall and f1 mea
 metrics to `None` in case there has been an attempt of zero division, set `allow_zero=True` at the initialization.
 
 
-To see a certain metric after the class has been initialized, you can call a metric's method. 
+To see a certain metric after the class has been initialized, you can call a metric's method:
 ```
 print(evaluation.fn())
 ```
@@ -43,11 +44,11 @@ For more details, see the [Python API Documentation](https://dev.konfuzio.com/sd
 
 Suppose in our test dataset we have 2 Documents of 2 Categories: one 3-paged, consisting of a single file (-> it has only one ground-truth first Page) of a first Category, and one 5-paged, consisting of three files: two 2-paged and one 1-paged (-> it has three ground-truth first Pages), of a second Category.
 
-.. image:: /_static/img/document_example_1.png
+.. image:: /sdk/examples/evaluation/document_example_1.png
 
 _First document_
 
-.. image:: /_static/img/document_example_2.png
+.. image:: /sdk/examples/evaluation/document_example_2.png
 
 _Second document_
 
@@ -58,7 +59,7 @@ from konfuzio_sdk.data import Category, Project, Document, Page
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
 from konfuzio_sdk.trainer.file_splitting import SplittingAI
 
-text_1 = "Hi all,\nI like bread.\nI hope to get everything done soon.\nHave you seen it?'
+text_1 = "Hi all,\nI like bread.\nI hope to get everything done soon.\nHave you seen it?"
 document_1 = Document(id_=None, project=YOUR_PROJECT, category=YOUR_CATEGORY_1, text=text_1, dataset_status=3)
 _ = Page(
         id_=None,
@@ -132,16 +133,17 @@ _ = Page(
 _.is_first_page = True
 ```
 
-We need to pass a list of tuples of `(ground_truth_doc, predicted_doc)` into the `FileSplittingEvaluation` class, so we have to run both Documents' Pages through prediction before that and create a list for the input – `ground_truth_docs` would be original Documents and `predicted_docs` would be their copies with Pages predicted to be first or non-first.
+We need to pass two lists of Documents into the `FileSplittingEvaluation` class. So, before that, we need to run each 
+page of the documents through the model's prediction.
 
-Suppose we ran the evaluation and received high results: only one first Page was predicted as non-first and the rest 
-were predicted first/non-first correctly. The implementation of the Evaluation would look like this:
+Let's say the evaluation gave good results, with only one first page being predicted as non-first and all the other 
+pages being predicted correctly. An example of how the evaluation would be implemented would be:
 ```python
 splitting_ai = SplittingAI(YOUR_MODEL_HERE)
-pred_1 = splitting_ai.propose_split_documents(document_1, return_pages=True)
-pred_2 = splitting_ai.propose_split_documents(document_2, return_pages=True)
-documents = [(document_1, pred_1), (document_2, pred_2)]
-evaluation = FileSplittingEvaluation(documents)
+pred_1: Document = splitting_ai.propose_split_documents(document_1, return_pages=True)[0] 
+pred_2: Document = splitting_ai.propose_split_documents(document_2, return_pages=True)[0]
+evaluation = FileSplittingEvaluation(ground_truth_documents=[document_1, document_2], 
+                                     prediction_documents=[pred_1, pred_2])
 print(evaluation.tp()) # returns: 3
 print(evaluation.tn()) # returns: 4
 print(evaluation.fp()) # returns: 0
@@ -174,3 +176,9 @@ the output could be reflected in a following table:
 | ---- |-----|-----|-----|-----| ---- |--------|------|
 | Category 1 | 1   | 2   | 0   | 0   | 1 | 1      | 1    |
 | Category 2 | 2   | 2   | 0   | 1   | 1 | 0.66   | 0.79 |
+
+To log metrics after evaluation, you can call `EvaluationCalculator`'s method `metrics_logging` (you would need to 
+specify the metrics accordingly at the class's initialization). Example usage:
+```python
+EvaluationCalculator(tp=3, fp=0, fn=1, tn=4).metrics_logging()
+```
