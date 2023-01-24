@@ -526,8 +526,11 @@ def get_results_from_segmentation(doc_id: int, project_id: int, session=_konfuzi
     """
     segmentation_url = get_document_segmentation_details_url(doc_id, project_id)
     response = session.get(segmentation_url)
+    try:
+        response.raise_for_status()
+    except HTTPError as e:
+        raise HTTPError(response.text) from e
     segmentation_result = response.json()
-
     return segmentation_result
 
 
