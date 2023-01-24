@@ -132,7 +132,6 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         self.name = self.__class__.__name__
         self.output_dir = self.project.model_folder
         self.tokenizer = tokenizer
-        self.path = None
         self.requires_text = True
         self.requires_images = False
 
@@ -149,6 +148,10 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         at least one Category.
         """
         for category in self.categories:
+            # method exclusive_first_page_strings fetches a set of first-page strings exclusive among the Documents
+            # of a given Category. they can be found in _exclusive_first_page_strings attribute of a Category after
+            # the method has been run. this is needed so that the information remains even if local variable
+            # cur_first_page_strings is lost.
             cur_first_page_strings = category.exclusive_first_page_strings(tokenizer=self.tokenizer)
             if not cur_first_page_strings:
                 if allow_empty_categories:
@@ -169,8 +172,10 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         :return: A Page with a newly predicted is_first_page attribute.
         """
         for category in self.categories:
-            if not category.exclusive_first_page_strings:
-                raise ValueError(f"Cannot run prediction as {category} does not have exclusive_first_page_strings.")
+            if not category.exclusive_first_page_strings(tokenizer=self.tokenizer):
+                # exclusive_first_page_strings calls an implicit _exclusive_first_page_strings attribute once it was
+                # already calculated during fit() method so it is not a recurrent calculation each time.
+                raise ValueError(f"Cannot run prediction as {category} does not have _exclusive_first_page_strings.")
         page.is_first_page = False
         for category in self.categories:
             cur_first_page_strings = category.exclusive_first_page_strings(tokenizer=self.tokenizer)

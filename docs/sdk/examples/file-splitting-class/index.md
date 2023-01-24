@@ -42,6 +42,16 @@ In this section, we will walk you through the process of setting up the `Context
 can be found in the code block at the bottom of this page. This class is already implemented and can be imported using 
 `from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel`.
 
+Note that any custom FileSplittingAI (derived from `AbstractFileSplittingModel` class) requires having the following 
+methods implemented:
+- `__init__` to initialize key variables required by the custom AI;
+- `fit` to define architecture and training that the model undergoes, i.e. a certain NN architecture or a custom 
+- hardcoded logic
+- `predict` to define how the model classifies Pages as first or non-first. **NB:** the classification needs to be 
+run on the Page level, not the Document level – the result of classification is reflected in `is_first_page` attribute 
+value, which is unique to the Page class and is not present in Document class. Pages with `is_first_page = True` become 
+splitting points, thus, each new sub-Document has a Page predicted as first as its starting point.
+
 To begin, we will make all the necessary imports and initialize the `ContextAwareFileSplittingModel` class:
 ```python
 import logging
@@ -59,7 +69,6 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         self.name = self.__class__.__name__
         self.output_dir = self.project.model_folder
         self.tokenizer = tokenizer
-        self.path = None
         self.requires_text = True
         self.requires_images = False
 ```
@@ -68,11 +77,10 @@ inherit its attributes. The `tokenizer` attribute will be used to process the te
 into Spans. This is done to ensure that the text in all the Documents is split using the same logic (particularly 
 tokenization by separating on `\n` whitespaces by ConnectedTextTokenizer, which is used in the example in the end of the 
 page) and it will be possible to find common Spans. It will be used for training and testing Documents as well as any 
-Document that will undergo splitting. `path` is a full path of the model-to-be-saved.  It's important to note that if 
-you run fitting with one tokenizer and then reassign it within the same instance of the model, all previously gathered 
-strings will be deleted and replaced by new ones. `requires_images` and `requires_text` determine whether these types of
-data are used for prediction; this is needed for distinguishing between preprocessing types once a model is passed into
-the SplittingAI.   
+Document that will undergo splitting. It's important to note that if you run fitting with one tokenizer and then 
+reassign it within the same instance of the model, all previously gathered strings will be deleted and replaced by new 
+ones. `requires_images` and `requires_text` determine whether these types of data are used for prediction; this is 
+needed for distinguishing between preprocessing types once a model is passed into the SplittingAI.   
 
 An example of how ConnectedTextTokenizer works:
 ```python
@@ -105,6 +113,10 @@ This means that those Categories would not be used in the prediction process.
 ```python
     def fit(self, allow_empty_categories: bool = False, *args, **kwargs):
         for category in self.categories:
+            # method exclusive_first_page_strings fetches a set of first-page strings exclusive among the Documents
+            # of a given Category. they can be found in _exclusive_first_page_strings attribute of a Category after
+            # the method has been run. this is needed so that the information remains even if local variable
+            # cur_first_page_strings is lost.
             cur_first_page_strings = category.exclusive_first_page_strings(tokenizer=self.tokenizer)
             if not cur_first_page_strings:
                 if allow_empty_categories:
@@ -122,6 +134,8 @@ first Page. If there are no intersections, the Page is predicted to be a non-fir
 ```python
     def predict(self, page: Page) -> Page:
         for category in self.categories:
+            # exclusive_first_page_strings calls an implicit _exclusive_first_page_strings attribute once it was 
+            # already calculated during fit() method so it is not a recurrent calculation each time.
             if not category.exclusive_first_page_strings:
                 raise ValueError(f"Cannot run prediction as {category} does not have exclusive_first_page_strings.")
         page.is_first_page = False
@@ -167,20 +181,24 @@ model = load_model(project.model_folder)
 # initialize the SplittingAI
 splitting_ai = SplittingAI(model)
 
+# SplittingAI is a more high-level interface to ContextAwareFileSplittingModel and any other models that can be 
+# developed for file-splitting purposes. It takes a Document as an input, rather than individual Pages, because it 
+# utilizes page-level prediction of possible split points and returns Document or Documents with changes depending on 
+# the prediction mode.
+
 # SplittingAI can be ran in two modes: returning a list of sub-Documents as the result of the input Document
 # splitting or returning a copy of the input Document with Pages predicted as first having an attribute
 # "is_first_page". The flag "return_pages" has to be True for the latter; let's use it
 new_document = splitting_ai.propose_split_documents(test_document, return_pages=True)
+print(new_document)
+# output: [predicted_document]
+
+for page in new_document[0].pages():
+    if page.is_first_page:
+        print('Page {} is predicted as the first.'.format(page.number))
+    else:
+        print('Page {} is predicted as the non-first.'.format(page.number))
 ```
-Note that any custom FileSplittingAI (derived from `AbstractFileSplittingModel` class) requires having the following 
-methods implemented:
-- `__init__` to initialize key variables required by the custom AI;
-- `fit` to define architecture and training that the model undergoes, i.e. a certain NN architecture or a custom 
-- hardcoded logic
-- `predict` to define how the model classifies Pages as first or non-first. **NB:** the classification needs to be ran on 
-the Page level, not the Document level – the result of classification is reflected in `is_first_page` attribute value, which
-is unique to the Page class and is not present in Document class. Pages with `is_first_page = True` become splitting 
-points, thus, each new sub-Document has a Page predicted as first as its starting point.
 
 Full code:
 
@@ -200,40 +218,46 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
     """Fallback definition of a File Splitting Model."""
 
     class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
-    def __init__(self, categories: List[Category], tokenizer, *args, **kwargs):
-        super().__init__(categories=categories)
-        self.name = self.__class__.__name__
-        self.output_dir = self.project.model_folder
-        self.tokenizer = tokenizer
-        self.path = None
-        self.requires_text = True
-        self.requires_images = False
-
-    def fit(self, allow_empty_categories: bool = False, *args, **kwargs):
-        for category in self.categories:
-            cur_first_page_strings = category.exclusive_first_page_strings(tokenizer=self.tokenizer)
-            if not cur_first_page_strings:
-                if allow_empty_categories:
-                    logger.warning(
-                        f'No exclusive first-page strings were found for {category}, so it will not be used '
-                        f'at prediction.'
-                    )
-                else:
-                    raise ValueError(f'No exclusive first-page strings were found for {category}.')
-
-    def predict(self, page: Page) -> Page:
-        for category in self.categories:
-            if not category.exclusive_first_page_strings:
-                raise ValueError(f"Cannot run prediction as {category} does not have exclusive_first_page_strings.")
-        page.is_first_page = False
-        for category in self.categories:
-            intersection = {span.offset_string for span in page.spans()}.intersection(
-                category.exclusive_first_page_strings
-            )
-            if len(intersection) > 0:
-                page.is_first_page = True
-                break
-        return page
+        def __init__(self, categories: List[Category], tokenizer, *args, **kwargs):
+            super().__init__(categories=categories)
+            self.name = self.__class__.__name__
+            self.output_dir = self.project.model_folder
+            self.tokenizer = tokenizer
+            self.requires_text = True
+            self.requires_images = False
+        
+        def fit(self, allow_empty_categories: bool = False, *args, **kwargs):
+            for category in self.categories:
+                # method exclusive_first_page_strings fetches a set of first-page strings exclusive among the Documents
+                # of a given Category. they can be found in _exclusive_first_page_strings attribute of a Category after
+                # the method has been run. this is needed so that the information remains even if local variable
+                # cur_first_page_strings is lost.
+                cur_first_page_strings = category.exclusive_first_page_strings(tokenizer=self.tokenizer)
+                if not cur_first_page_strings:
+                    if allow_empty_categories:
+                        logger.warning(
+                            f'No exclusive first-page strings were found for {category}, so it will not be used '
+                            f'at prediction.'
+                        )
+                    else:
+                        raise ValueError(f'No exclusive first-page strings were found for {category}.')
+        
+        def predict(self, page: Page) -> Page:
+            for category in self.categories:
+                if not category.exclusive_first_page_strings(tokenizer=self.tokenizer):
+                    # exclusive_first_page_strings calls an implicit _exclusive_first_page_strings attribute once it was
+                    # already calculated during fit() method so it is not a recurrent calculation each time.
+                    raise ValueError(f"Cannot run prediction as {category} does not have _exclusive_first_page_strings.")
+            page.is_first_page = False
+            for category in self.categories:
+                cur_first_page_strings = category.exclusive_first_page_strings(tokenizer=self.tokenizer)
+                intersection = {span.offset_string for span in page.spans()}.intersection(
+                    cur_first_page_strings
+                )
+                if len(intersection) > 0:
+                    page.is_first_page = True
+                    break
+            return page
 
 # initialize a Project and fetch a test Document of your choice
 project = Project(id_=YOUR_PROJECT_ID)
@@ -262,8 +286,21 @@ model = load_model(project.model_folder)
 # initialize the SplittingAI
 splitting_ai = SplittingAI(model)
 
+# SplittingAI is a more high-level interface to ContextAwareFileSplittingModel and any other models that can be 
+# developed for file-splitting purposes. It takes a Document as an input, rather than individual Pages, because it 
+# utilizes page-level prediction of possible split points and returns Document or Documents with changes depending on 
+# the prediction mode.
+
 # SplittingAI can be ran in two modes: returning a list of sub-Documents as the result of the input Document
 # splitting or returning a copy of the input Document with Pages predicted as first having an attribute
 # "is_first_page". The flag "return_pages" has to be True for the latter; let's use it
 new_document = splitting_ai.propose_split_documents(test_document, return_pages=True)
+print(new_document)
+# output: [predicted_document]
+
+for page in new_document[0].pages():
+    if page.is_first_page:
+        print('Page {} is predicted as the first.'.format(page.number))
+    else:
+        print('Page {} is predicted as the non-first.'.format(page.number))
 ```
