@@ -1,11 +1,10 @@
 ## Architecture overview
 
-we'll take a closer look at the most important ones and give you some examples of how they can be implemented 
+We'll take a closer look at the most important ones and give you some examples of how they can be implemented 
 consequentially or individually in case you want to experiment. 
 
 The first step we're going to cover is [File Splitting](https://dev.konfuzio.com/sdk/examples/examples.html#splitting-for-multi-file-documents-step-by-step-guide) 
-– this happens when the original Document consists of several smaller sub-Documents and needs to be separated 
- so that each one can be processed individually.
+– this happens when the original Document consists of several smaller sub-Documents and needs to be separated so that each one can be processed individually.
 
 Second part is on [Categorization](https://dev.konfuzio.com/sdk/examples/examples.html#document-categorization), where a Document is labelled to be of a certain Category within the Project. 
 
