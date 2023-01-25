@@ -107,7 +107,6 @@ class TestFileSplittingModel(unittest.TestCase):
                 if len(intersection) > 0:
                     page.is_first_page = True
                     break
-            print(page.is_first_page, page.text)
             if page.number == 1:
                 assert intersection == {'I like bread.'}
                 assert page.is_first_page
