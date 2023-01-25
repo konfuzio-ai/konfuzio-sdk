@@ -438,7 +438,7 @@ def get_paragraphs_by_line_space(
             if previous_y0 is not None and previous_y0 - max_y1 < line_threshold:
                 paragraphs[-1].append(paragraph)
             else:
-                paragraphs.append([paragraph])
+                paragraphs.append(paragraph)
 
             previous_y0 = min_y0
 

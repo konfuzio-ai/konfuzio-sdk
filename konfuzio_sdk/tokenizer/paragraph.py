@@ -120,6 +120,9 @@ class ParagraphTokenizer(AbstractTokenizer):
 
         return document
 
+    def found_spans(self, document: Document):
+        pass
+
     # def __eq__, __hash__, fit, found_spans
 
     def _line_distance_tokenize(self, document: Document) -> Document:
