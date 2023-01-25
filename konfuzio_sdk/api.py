@@ -40,6 +40,12 @@ def get_auth_token(username, password, host=KONFUZIO_HOST) -> str:
     """
     Generate the authentication token for the user.
 
+    :param username: Login username.
+    :type username: str
+    :param password: Login password.
+    :type password: str
+    :param host: Host URL.
+    :type host: str
     :return: The new generated token.
     """
     url = get_auth_token_url(host)
