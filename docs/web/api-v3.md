@@ -115,18 +115,13 @@ curl --request GET \
 To get a token:
 
 ```python
-import requests
+from konfuzio_sdk.api import get_auth_token
 
-url = "https://app.konfuzio.com/api/v3/auth/"
+username = "username"
+password = "password"
 
-payload = {
-    "username": "example@example.org",
-    "password": "examplepassword"
-}
-
-response = requests.post(url, json=payload)
-
-print(response.json())
+token = get_auth_token(username, password)
+print(token)
 ```
 
 To use the token:
@@ -137,8 +132,10 @@ from konfuzio_sdk.api import TimeoutHTTPAdapter
 
 url = "https://app.konfuzio.com/api/v3/projects/"
 
+token = "YOUR_TOKEN_HERE"
+
 headers = {
-    "Authorization": "Token bf20d992c0960876157b53745cdd86fad95e6ff4"
+    "Authorization": f"Token {token}"
 }
 
 session = requests.Session()

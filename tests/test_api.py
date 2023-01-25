@@ -25,7 +25,7 @@ from konfuzio_sdk.api import (
     get_project_details,
     upload_ai_model,
     init_env,
-    _get_auth_token,
+    get_auth_token,
     create_new_project,
     create_label,
     TimeoutHTTPAdapter,
@@ -431,7 +431,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
                 return {"token": "faketoken"}
 
         function.return_value = _Response()
-        _get_auth_token('test', 'test')
+        get_auth_token('test', 'test')
 
     def test_permission_error_with_none_token(self):
         """Test to raise PermissionError."""
@@ -466,7 +466,7 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
 
         function.return_value = _Response()
         with self.assertRaises(ConnectionError) as context:
-            _get_auth_token('test', 'test')
+            get_auth_token('test', 'test')
             assert 'HTTP Status 500' in context.exception
 
     @patch("requests.post")
