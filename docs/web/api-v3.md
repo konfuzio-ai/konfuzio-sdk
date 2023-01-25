@@ -666,7 +666,10 @@ real time status of the process. The newly trained Extraction AI will then autom
 extract machine-generated Annotations from newly uploaded Documents for that Category.
 
 If you add new training/test Documents, or change existing ones, don't forget to train a new Extraction AI, otherwise
-your modifications will not apply to the extraction process of new Documents.
+your modifications will not apply to the extraction process of new Documents. When training a new version of an AI, it
+will be automatically set as the active one only if its
+[evaluation results](https://help.konfuzio.com/modules/extractions/index.html?highlight=evaluation#evaluation) are
+better than the previous AI's.
 
 ### Revise machine-generated annotations
 
@@ -740,9 +743,9 @@ content of the Document.
 
 ### Download the OCR version of an uploaded Document
 
-After uploading a Document, the Konfuzio server also creates a PDF OCR version of it with indexed and selectable text.
-This version is also used to generate images for each page for our SmartView functionality. If you need it, you can
-download this OCR version of the Document: the `file_url` property of the
+After uploading a Document, the Konfuzio server also creates a [PDF OCR version](#ocr-processing) of it with indexed and 
+selectable text. This version is also used to generate images for each page for our SmartView functionality. If you
+need it, you can download this OCR version of the Document: the `file_url` property of the
 [document retrieve endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_retrieve) contains the URL to it
 (relative to the Konfuzio installation: on the main server, `/doc/show/123/` would become
 `https://app.konfuzio.com/doc/show/123/`); to access it, you need to be authenticated, so you would need a request like
