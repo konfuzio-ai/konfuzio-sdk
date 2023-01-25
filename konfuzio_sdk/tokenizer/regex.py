@@ -4,7 +4,7 @@ import time
 from typing import List
 
 
-from konfuzio_sdk.data import Annotation, Document, Category, Span
+from konfuzio_sdk.data import Annotation, Document, Span
 from konfuzio_sdk.regex import regex_matches
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer, ProcessingStep
 from konfuzio_sdk.utils import sdk_isinstance
@@ -32,10 +32,10 @@ class RegexTokenizer(AbstractTokenizer):
         """Compare RegexTokenizer with another Tokenizer."""
         return hash(self) == hash(other)
 
-    def fit(self, category: Category):
-        """Fit the tokenizer accordingly with the Documents of the Category."""
-        assert sdk_isinstance(category, Category)
-        return self
+    # def fit(self, category: Category):
+    #     """Fit the tokenizer accordingly with the Documents of the Category."""
+    #     assert sdk_isinstance(category, Category)
+    #     return self
 
     def tokenize(self, document: Document) -> Document:
         """

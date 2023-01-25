@@ -7,7 +7,7 @@ from copy import deepcopy
 
 import pandas as pd
 
-from konfuzio_sdk.data import Document, Category, Span
+from konfuzio_sdk.data import Document, Span
 from konfuzio_sdk.evaluate import compare, Evaluation
 from konfuzio_sdk.utils import sdk_isinstance
 
@@ -51,9 +51,9 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
     def __hash__(self):
         """Get unique hash for Tokenizer."""
 
-    @abc.abstractmethod
-    def fit(self, category: Category):
-        """Fit the tokenizer accordingly with the Documents of the Category."""
+    # @abc.abstractmethod
+    # def fit(self, category: Category):
+    #     """Fit the tokenizer accordingly with the Documents of the Category."""
 
     @abc.abstractmethod
     def tokenize(self, document: Document):
@@ -147,12 +147,12 @@ class ListTokenizer(AbstractTokenizer):
         """Get unique hash for ListTokenizer."""
         return hash(tuple(self.tokenizers))
 
-    def fit(self, category: Category):
-        """Call fit on all tokenizers."""
-        assert sdk_isinstance(category, Category)
+    # def fit(self, category: Category):
+    #     """Call fit on all tokenizers."""
+    #     assert sdk_isinstance(category, Category)
 
-        for tokenizer in self.tokenizers:
-            tokenizer.fit(category)
+    #     for tokenizer in self.tokenizers:
+    #         tokenizer.fit(category)
 
     def tokenize(self, document: Document) -> Document:
         """Run tokenize in the given order on a Document."""

@@ -94,6 +94,7 @@ class Page(Data):
         end_offset: int,
         number: int,
         original_size: Tuple[float, float],
+        full_size: Tuple[int, int],
     ):
         """Create a Page for a Document."""
         self.id_ = id_
@@ -107,6 +108,10 @@ class Page(Data):
         self._original_size = original_size
         self.width = self._original_size[0]
         self.height = self._original_size[1]
+        self._full_size = full_size
+        self.full_width = self._full_size[0]
+        self.full_height = self._full_size[1]
+
         self.image_path = os.path.join(self.document.document_folder, f'page_{self.number}.png')
 
         check_page = True
@@ -135,7 +140,15 @@ class Page(Data):
 
     def get_image(self, update: bool = False):
         """Get Document Page as PNG."""
-        if self.document.status[0] == 2 and (not is_file(self.image_path, raise_exception=False) or update):
+        if self.document.id_ is None and self.document.copy_of_id is not None:
+            # if it's a virtual Document, get image from original Document
+            original_doc = self.document.project.get_document_by_id(self.document.copy_of_id)
+            self.image = original_doc.get_page_by_index(self.index).get_image()
+        elif (
+            self.document.status
+            and self.document.status[0] == 2
+            and (not is_file(self.image_path, raise_exception=False) or update)
+        ):
             png_content = get_page_image(self.id_)
             with open(self.image_path, "wb") as f:
                 f.write(png_content)
@@ -144,38 +157,44 @@ class Page(Data):
             self.image = Image.open(self.image_path)
         return self.image
 
-    def get_annotations_image(self, image: Image = None):
+    def get_annotations_image(self):
         """Get Document Page as PNG with annotations shown."""
-        if image is None and self.document.id_ is not None:
-            image = self.get_image()
-        elif image is None and self.document.copy_of_id is not None:
-            original_doc = self.document.project.get_document_by_id(self.document.copy_of_id)
-            image = original_doc.get_page_by_index(self.index).get_image()
+        image = self.get_image()
         image = image.convert('RGB')
+
+        draw = ImageDraw.Draw(image)
+
         # bbox information are based on a downscaled image
         scale_mult = image.size[1] / self.height
 
         anns = self.view_annotations()
 
+        try:
+            font = ImageFont.truetype(
+                "/usr/share/fonts/truetype/liberation/LiberationSerif-Bold.ttf", 24, encoding="unic"
+            )
+        except OSError:
+            logger.warning('Font not found. Loading default.')
+            font = ImageFont.load_default()
+
         for ann in anns:
-            pos = [
-                scale_mult * ann.spans[0].bbox().x0,
-                scale_mult * (self.height - ann.spans[0].bbox().y0),
-                scale_mult * ann.spans[0].bbox().x1,
-                scale_mult * (self.height - ann.spans[0].bbox().y1),
+            ann_pos = [
+                scale_mult * ann.bbox().x0,
+                scale_mult * (self.height - ann.bbox().y0),
+                scale_mult * ann.bbox().x1,
+                scale_mult * (self.height - ann.bbox().y1),
             ]
-            draw = ImageDraw.Draw(image)
-            draw.rectangle(pos, outline='blue', width=2)
+            draw.rectangle(ann_pos, outline='blue', width=2)
+            draw.text((ann_pos[0], ann_pos[3] - 24), ann.label.name, fill='blue', font=font)
+            for span in ann.spans:
+                pos = [
+                    scale_mult * span.bbox().x0,
+                    scale_mult * (self.height - span.bbox().y0),
+                    scale_mult * span.bbox().x1,
+                    scale_mult * (self.height - span.bbox().y1),
+                ]
+                draw.rectangle(pos, outline='green', width=1)
 
-            try:
-                font = ImageFont.truetype(
-                    "/usr/share/fonts/truetype/liberation/LiberationSerif-Bold.ttf", 24, encoding="unic"
-                )
-            except OSError:
-                logger.warning('Font not found. Loading default.')
-                font = ImageFont.load_default()
-
-            draw.text((pos[0], pos[3] - 24), ann.label.name, fill='blue', font=font)
         return image
 
     @property
@@ -279,6 +298,21 @@ class Bbox:
     def __eq__(self, other: 'Bbox') -> bool:
         """Define that one Bounding Box on the same page is identical."""
         return self.__hash__() == other.__hash__()
+
+    # def __contains__(self, other: 'Bbox') -> bool:
+    #     """Define that one Bounding Box contains the other."""
+    #     if not isinstance(other, Bbox):
+    #         return super().__contains__(other)
+    #     else:
+    #         if other.page and other.page is not self.page:
+    #             return False
+    #         if self.x0 >= other.x0 and\
+    #            self.x1 <= other.x1 and\
+    #            self.y0 >= other.y0 and\
+    #            self.y1 <= other.y1:
+    #             return True
+    #         else:
+    #             return False
 
     def _valid(self, strict: bool = False):
         """
@@ -1257,6 +1291,8 @@ class Annotation(Data):
         self.id_ = id_  # Annotations can have None id_, if they are not saved online and are only available locally
         self._spans: List[Span] = []
 
+        self._bbox = None
+
         if accuracy is not None:  # its a confidence
             self.confidence = accuracy
         elif confidence is not None:
@@ -1390,6 +1426,11 @@ class Annotation(Data):
     def __hash__(self):
         """Identity of Annotation that does not change over time."""
         return hash((self.start_offset, self.end_offset, self.label_set, self.document, self.label))
+
+    @property
+    def page(self) -> Page:
+        """Return Page of Annotation."""
+        return self.spans[0].page
 
     @property
     def is_multiline(self) -> int:
@@ -1598,6 +1639,18 @@ class Annotation(Data):
             self.document.update()
         else:
             self.document._annotations.remove(self)
+
+    def bbox(self) -> Bbox:
+        """Get Bbox encompassing all Annoation Spans."""
+        if self._bbox is None:
+            self._bbox = Bbox(
+                x0=min([span.bbox().x0 for span in self.spans]),
+                x1=max([span.bbox().x1 for span in self.spans]),
+                y0=min([span.bbox().y0 for span in self.spans]),
+                y1=max([span.bbox().y1 for span in self.spans]),
+                page=self.page,
+            )
+        return self._bbox
 
     @property
     def spans(self) -> List[Span]:
@@ -1833,6 +1886,7 @@ class Document(Data):
                 end_offset=page.end_offset,
                 number=page.number,
                 original_size=(page.width, page.height),
+                full_size=(page.full_width, page.full_height),
             )
         return document
 
@@ -2020,12 +2074,10 @@ class Document(Data):
         super().lose_weight()
         for annotation in self.annotations(use_correct=False, ignore_below_threshold=False):
             if annotation.label is self.project.no_label:
-                logger.info("no_label")
                 annotation.delete()
             elif not annotation.is_correct and (
                 not annotation.confidence or annotation.label.threshold > annotation.confidence or annotation.revised
             ):
-                logger.info(annotation.confidence)
                 annotation.delete()
 
     @property
@@ -2324,6 +2376,7 @@ class Document(Data):
                     document=self,
                     number=page_data['number'],
                     original_size=page_data['original_size'],
+                    full_size=page_data['size'],
                     start_offset=start_offset,
                     end_offset=end_offset,
                 )
