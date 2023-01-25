@@ -36,7 +36,7 @@ from konfuzio_sdk.utils import is_file
 logger = logging.getLogger(__name__)
 
 
-def get_auth_token(username, password, host=KONFUZIO_HOST) -> str:
+def _get_auth_token(username, password, host=KONFUZIO_HOST) -> str:
     """
     Generate the authentication token for the user.
 
@@ -74,7 +74,7 @@ def init_env(
     :param working_directory: Directory where file should be added
     :param file_ending: Ending of file.
     """
-    token = get_auth_token(user, password, host)
+    token = _get_auth_token(user, password, host)
 
     with open(os.path.join(working_directory, file_ending), "w") as f:
         f.write(f"KONFUZIO_HOST = {host}\n")

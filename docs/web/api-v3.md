@@ -115,16 +115,54 @@ curl --request GET \
 To get a token:
 
 ```python
-from konfuzio_sdk.api import get_auth_token
+import requests
 
-username = "username"
-password = "password"
+url = "https://app.konfuzio.com/api/v3/auth/"
 
-token = get_auth_token(username, password)
-print(token)
+payload = {
+    "username": "example@example.org",
+    "password": "examplepassword"
+}
+
+response = requests.post(url, json=payload)
+
+print(response.json())
 ```
 
 To use the token:
+
+```python
+import requests
+
+url = "https://app.konfuzio.com/api/v3/projects/"
+
+headers = {
+    "Authorization": "Token bf20d992c0960876157b53745cdd86fad95e6ff4"
+}
+
+response = requests.get(url, headers=headers)
+
+print(response.json())
+```
+
+#### Konfuzio SDK example
+
+For more robust handling of retry events, Konfuzio SDK provides a wrapper around the `requests` library.
+
+To get a token, access the .env file's contents (read more about the file in [Initialize the package](https://dev.konfuzio.com/sdk/configuration_reference.html#initialize-the-package)). 
+This can be done either manually or this way:
+
+```python
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+token = os.getenv('KONFUZIO_TOKEN')
+print(token)
+```
+
+To use a token:
 
 ```python
 import requests
@@ -147,6 +185,8 @@ response = session.get(url)
 
 print(response.json())
 ```
+
+To access this and other information via SDK's Data layer concepts, see [SDK Quickstart](https://dev.konfuzio.com/sdk/home/index.html) page.
 
 ### Response codes
 
