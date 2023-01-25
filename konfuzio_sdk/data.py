@@ -575,12 +575,14 @@ class Category(Data):
                 else:
                     cur_non_first_page_strings.append({span.offset_string for span in page.spans()})
             doc.delete()
-        if not cur_first_page_strings:
-            cur_first_page_strings.append(set())
-        true_first_page_strings = set.intersection(*cur_first_page_strings)
-        if not cur_non_first_page_strings:
-            cur_non_first_page_strings.append(set())
-        true_not_first_page_strings = set.intersection(*cur_non_first_page_strings)
+        if cur_first_page_strings:
+            true_first_page_strings = set.intersection(*cur_first_page_strings)
+        else:
+            true_first_page_strings = set()
+        if cur_non_first_page_strings:
+            true_not_first_page_strings = set.intersection(*cur_non_first_page_strings)
+        else:
+            true_not_first_page_strings = set()
         true_first_page_strings = true_first_page_strings - true_not_first_page_strings
         self._exclusive_first_page_strings = true_first_page_strings
 
