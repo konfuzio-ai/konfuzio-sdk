@@ -16,7 +16,7 @@ of the Document. This will allow us to define splitting points and divide the Do
 important to note that this approach is only effective for Documents written in the same language and that the process 
 must be repeated for each Category.
 
-If you are unfamiliar with the SDK's main concepts (like Page or Span), you can get to know them on the Quickstart page.
+If you are unfamiliar with the SDK's main concepts (like Page or Span), you can get to know them on the [Quickstart](https://dev.konfuzio.com/sdk/home/index.html) page.
 
 
 ### Quick explanation
