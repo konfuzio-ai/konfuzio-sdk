@@ -1365,6 +1365,41 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert len(new_doc.pages()) == 2
         assert new_doc.text == "Hi all,\nI like bread.\n\fI hope to get everything done soon.\n"
 
+    def test_page_is_first_attribute(self):
+        """Test correct setting of Page's is_first_page attribute."""
+        project = LocalTextProject()
+        text = "Sample text."
+        document = Document(id=None, project=project, text=text, dataset_status=1)
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document,
+            start_offset=0,
+            end_offset=12,
+            number=1,
+        )
+        assert _.is_first_page is None
+        text = "Sample text.\n\fSome more."
+        document = Document(id=None, project=project, text=text, dataset_status=2)
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document,
+            start_offset=0,
+            end_offset=12,
+            number=1,
+        )
+        assert _.is_first_page
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document,
+            start_offset=13,
+            end_offset=23,
+            number=2,
+        )
+        assert not _.is_first_page
+
 
 class TestSeparateLabels(unittest.TestCase):
     """Test the feature create separated Labels per Label Set."""

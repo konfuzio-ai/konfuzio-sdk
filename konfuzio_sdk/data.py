@@ -109,13 +109,12 @@ class Page(Data):
         self.width = self._original_size[0]
         self.height = self._original_size[1]
         self.image_path = os.path.join(self.document.document_folder, f'page_{self.number}.png')
+        self.is_first_page = None
         if self.document.dataset_status in (2, 3):
             if self.number == 1:
                 self.is_first_page = True
             else:
                 self.is_first_page = False
-        else:
-            self.is_first_page = None
 
         check_page = True
         if self.index is None:
