@@ -133,6 +133,7 @@ To use the token:
 
 ```python
 import requests
+from konfuzio_sdk.api import TimeoutHTTPAdapter
 
 url = "https://app.konfuzio.com/api/v3/projects/"
 
@@ -140,7 +141,12 @@ headers = {
     "Authorization": "Token bf20d992c0960876157b53745cdd86fad95e6ff4"
 }
 
-response = requests.get(url, headers=headers)
+session = requests.Session()
+adapter = TimeoutHTTPAdapter(timeout=2.5)  # a custom SDK adapter to better handle retry events
+session.mount("https://", adapter)
+session.headers = headers
+
+response = session.get(url)
 
 print(response.json())
 ```
