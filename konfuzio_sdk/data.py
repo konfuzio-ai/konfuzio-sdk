@@ -1710,11 +1710,8 @@ class Document(Data):
         self.bbox_file_path = os.path.join(self.document_folder, "bbox.zip")
         self.bio_scheme_file_path = os.path.join(self.document_folder, "bio_scheme.txt")
 
-        self.bboxes_available: bool = (
-            True
-            if (self.is_online or self._bbox_json or is_file(self.bbox_file_path, raise_exception=False))
-            else False
-        )
+        bbox_file_exists = is_file(self.bbox_file_path, raise_exception=False)
+        self.bboxes_available: bool = self.is_online or self._bbox_json or bbox_file_exists
 
         if pages:
             self.pages()  # create page instances
