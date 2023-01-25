@@ -2137,15 +2137,17 @@ class Document(Data):
     def lose_weight(self):
         """Remove NO_LABEL, wrong and below threshold Annotations."""
         super().lose_weight()
+        self._bbox_json = None
+        self._characters = None
         for annotation in self.annotations(use_correct=False, ignore_below_threshold=False):
             if annotation.label is self.project.no_label:
-                logger.info("no_label")
-                annotation.delete()
+                annotation.delete(delete_online=False)
             elif not annotation.is_correct and (
                 not annotation.confidence or annotation.label.threshold > annotation.confidence or annotation.revised
             ):
-                logger.info(annotation.confidence)
-                annotation.delete()
+                annotation.delete(delete_online=False)
+            else:
+                annotation.lose_weight()
 
     @property
     def document_folder(self):

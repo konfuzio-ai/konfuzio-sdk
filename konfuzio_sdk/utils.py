@@ -10,6 +10,7 @@ import unicodedata
 import zipfile
 from contextlib import contextmanager
 from io import BytesIO
+from pympler import asizeof
 from typing import Union, List, Tuple, Dict, Optional
 from warnings import warn
 
@@ -80,6 +81,12 @@ def is_file(file_path, raise_exception=True, maximum_size=100000000, allow_empty
             raise FileNotFoundError(f'File expected but not found at: {file_path}')
         else:
             return False
+
+
+def memory_size_of(obj) -> int:
+    """Return memory size of object in bytes."""
+    size = asizeof.asizeof(obj)
+    return size
 
 
 def normalize_memory(memory: Union[None, str]) -> Union[int, None]:
