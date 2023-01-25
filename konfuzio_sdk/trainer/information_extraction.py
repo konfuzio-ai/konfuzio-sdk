@@ -34,7 +34,6 @@ from warnings import warn
 import numpy
 import pandas
 import cloudpickle
-from pympler import asizeof
 from pkg_resources import get_distribution
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.validation import check_is_fitted
@@ -48,7 +47,7 @@ from konfuzio_sdk.normalize import (
     normalize_to_positive_float,
 )
 from konfuzio_sdk.regex import regex_matches
-from konfuzio_sdk.utils import get_timestamp, get_bbox, normalize_memory
+from konfuzio_sdk.utils import get_timestamp, get_bbox, normalize_memory, memory_size_of
 from konfuzio_sdk.evaluate import Evaluation
 
 logger = logging.getLogger(__name__)
@@ -99,8 +98,8 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
         logger.info(f"Loaded AI model trained with Konfuzio SDK version {model.konfuzio_sdk_version}")
 
     max_ram = normalize_memory(max_ram)
-    if max_ram and asizeof.asizeof(model) > max_ram:
-        logger.error(f"Loaded model's memory use ({asizeof.asizeof(model)}) is greater than max_ram ({max_ram})")
+    if max_ram and memory_size_of(model) > max_ram:
+        logger.error(f"Loaded model's memory use ({memory_size_of(model)}) is greater than max_ram ({max_ram})")
 
     if not hasattr(model, "name"):
         raise TypeError("Saved model file needs to be a Konfuzio Trainer instance.")
@@ -1336,12 +1335,12 @@ class Trainer:
             self.documents = []
             self.test_documents = []
 
-        logger.info(f'Model size: {asizeof.asizeof(self) / 1_000_000} MB')
+        logger.info(f'Model size: {memory_size_of(self) / 1_000_000} MB')
 
         max_ram = normalize_memory(max_ram)
 
-        if max_ram and asizeof.asizeof(self) > max_ram:
-            raise MemoryError(f"AI model memory use ({asizeof.asizeof(self)}) exceeds maximum ({max_ram=}).")
+        if max_ram and memory_size_of(self) > max_ram:
+            raise MemoryError(f"AI model memory use ({memory_size_of(self)}) exceeds maximum ({max_ram=}).")
 
         sys.setrecursionlimit(999999)  # ?
 
@@ -1376,8 +1375,9 @@ class Trainer:
         logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
 
         # restore Documents of the Category so that we can run the evaluation later
-        self.documents = restore_documents
-        self.test_documents = restore_test_documents
+        if not keep_documents:
+            self.documents = restore_documents
+            self.test_documents = restore_test_documents
         if reduce_weight:
             self.category.project._documents = project_docs
 
@@ -1402,6 +1402,7 @@ class GroupAnnotationSets:
         :return:
         """
         # Only train template clf is there are non default templates
+        logger.info('Start training of LabelSet Classifier.')
 
         LabelSetInfo = collections.namedtuple(
             'LabelSetInfo', ['is_default', 'name', 'has_multiple_annotation_sets', 'target_names']
@@ -2243,6 +2244,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
             logger.info(f'Document {document} processed in {time.monotonic() - t0:.1f} seconds.')
 
+            document.lose_weight()  # reduce memory of virtual doc
+
             feature_list += _feature_list
             df_real_list.append(temp_df_real)
             df_raw_errors_list.append(temp_df_raw_errors)
@@ -2253,6 +2256,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             df_real_list = pandas.concat(df_real_list).reset_index(drop=True)
         else:
             raise NotImplementedError  # = pandas.DataFrame()
+
+        logger.info(f"Size of feature dict {memory_size_of(df_real_list)/1000} KB.")
 
         return df_real_list, feature_list
 
@@ -2267,7 +2272,11 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         self.clf.fit(self.df_train[self.label_feature_list], self.df_train['target'])
 
+        logger.info(f"Size of Label classifier: {memory_size_of(self.clf)/1000} KB.")
+
         self.fit_label_set_clf()
+
+        logger.info(f"Size of LabelSet classifier: {memory_size_of(self.label_set_clf)/1000} KB.")
 
         return self.clf
 
