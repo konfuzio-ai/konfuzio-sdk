@@ -24,7 +24,7 @@ const VueLoaderPlugin = require("vue-loader/lib/plugin");
 
 module.exports = {
     entry: {
-        capture_vue: "./node_modules/@konfuzio/capture-vue/src/main.js",
+        capture_vue: "./node_modules/@konfuzio/document-validation-ui/src/main.js",
     },
     output: {
         path: "/server/bundle",
@@ -69,9 +69,9 @@ You can also deploy the app by following the steps below:
 
 1. Clone the repository
 
-You can download the app by cloning our [GitHub repository](https://github.com/konfuzio-ai/konfuzio-capture-vue) or downloading the source code.
+You can download the app by cloning our [GitHub repository](https://github.com/konfuzio-ai/document-validation-ui) or downloading the source code.
 
-`git clone git@github.com:konfuzio-ai/konfuzio-capture-vue.git`
+`git clone git@github.com:konfuzio-ai/document-validation-ui.git`
 
 2. Configure the App
 
