@@ -22,6 +22,7 @@ from konfuzio_sdk.data import (
     Page,
     Bbox,
 )
+
 from konfuzio_sdk.utils import is_file
 from tests.variables import (
     OFFLINE_PROJECT,
@@ -31,7 +32,7 @@ from tests.variables import (
     TEST_RECEIPTS_CATEGORY_ID,
 )
 
-from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer
+from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer, ConnectedTextTokenizer
 from konfuzio_sdk.samples import LocalTextProject
 
 logger = logging.getLogger(__name__)
@@ -181,6 +182,32 @@ class TestOnlineProject(unittest.TestCase):
         # Test3: delete the Annotation from the document online.
         annotation.delete()  # doc.update() performed internally when delete_online=True, which is default
         assert annotation not in doc.get_annotations()
+
+    def test_merge_documents(self):
+        """Merge documents into a new document."""
+        test_documents = self.project.test_documents
+        all_pages = [page for doc in test_documents for page in doc.pages()]
+        pages_text = '\f'.join([doc.text for doc in test_documents])
+        new_doc = Document(project=self.project, id_=None, text=pages_text)
+        i = 1
+        running_start_offset = 0
+        running_end_offset = 0
+        for page in all_pages:
+            running_end_offset += page.end_offset
+            _ = Page(
+                id_=i,
+                original_size=(1500, 2400),
+                document=new_doc,
+                start_offset=running_start_offset,
+                end_offset=running_end_offset,
+                number=i,
+            )
+            i += 1
+            running_start_offset += page.end_offset + 1
+            running_end_offset += 1
+
+        for i, page in enumerate(all_pages):
+            assert page.text == new_doc.pages()[i].text
 
     def test_modify_document_metadata(self):
         """Test modification of meta-data of test document."""
@@ -1374,7 +1401,6 @@ class TestOfflineDataSetup(unittest.TestCase):
         document = project.no_status_documents[2]
 
         assert len(document.annotations(use_correct=False)) == 6
-
         document.merge_vertical(only_multiline_labels=False)
 
         assert len(document.annotations(use_correct=False)) == 4
@@ -1399,6 +1425,51 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert project.documents == []
         assert project.test_documents == []
         assert project._meta_data == []
+
+    def test_create_subdocument_from_page_range(self):
+        """Test creating a smaller Document from original one within a Page range."""
+        project = LocalTextProject()
+        test_document = project.get_category_by_id(3).test_documents()[0]
+        new_doc = test_document.create_subdocument_from_page_range(
+            test_document.pages()[0], test_document.pages()[1], include=True
+        )
+        assert len(new_doc.pages()) == 2
+        assert new_doc.text == "Hi all,\nI like bread.\n\fI hope to get everything done soon.\n"
+
+    def test_page_is_first_attribute(self):
+        """Test correct setting of Page's is_first_page attribute."""
+        project = LocalTextProject()
+        text = "Sample text."
+        document = Document(id=None, project=project, text=text, dataset_status=1)
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document,
+            start_offset=0,
+            end_offset=12,
+            number=1,
+        )
+        assert _.is_first_page is None
+        text = "Sample text.\n\fSome more."
+        document = Document(id=None, project=project, text=text, dataset_status=2)
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document,
+            start_offset=0,
+            end_offset=12,
+            number=1,
+        )
+        assert _.is_first_page
+        _ = Page(
+            id_=None,
+            original_size=(320, 240),
+            document=document,
+            start_offset=13,
+            end_offset=23,
+            number=2,
+        )
+        assert not _.is_first_page
 
 
 class TestSeparateLabels(unittest.TestCase):
@@ -2339,7 +2410,7 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
     def test_view_annotations(self):
         """Test that Document.view_annotations() gets all the right annotations."""
         project = LocalTextProject()
-        document = project.test_documents[-1]
+        document = project.get_document_by_id(7)
         annotations = document.view_annotations()
         assert len(annotations) == 5  # 4 if top_annotations filter is used
         assert sorted([ann.id_ for ann in annotations]) == [16, 17, 18, 19, 24]  # [16, 18, 19, 24]
@@ -2347,7 +2418,7 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
     def test_document_lose_weight(self):
         """Test that Document.lose_weight() removes all the right annotations."""
         project = LocalTextProject()
-        document = project.test_documents[-1]
+        document = project.get_document_by_id(7)
 
         assert len(document.annotations(use_correct=False, ignore_below_threshold=False)) == 11
 
@@ -2358,7 +2429,7 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
     def test_annotationset_annotations(self):
         """Test AnnotationSet.annotations method."""
         project = LocalTextProject()
-        document = project.test_documents[-1]
+        document = project.get_document_by_id(7)
 
         annotation_set = document.annotation_sets()[0]
 
@@ -2400,6 +2471,16 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
             copy_of_id=999999999,
         )
         assert not os.path.isdir(virtual_document.document_folder)
+
+    def test_category_collect_exclusive_first_page_strings(self):
+        """Test collecting exclusive first-page strings within the Documents of a Category."""
+        project = LocalTextProject()
+        category = project.get_category_by_id(3)
+        tokenizer = ConnectedTextTokenizer()
+        first_page_strings = category.exclusive_first_page_strings(tokenizer)
+        assert len(first_page_strings) == 2
+        assert 'I like bread.' in first_page_strings
+        assert 'Morning,' in first_page_strings
 
 
 class TestFillOperation(unittest.TestCase):

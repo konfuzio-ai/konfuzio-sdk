@@ -9,6 +9,7 @@ import regex as re
 import shutil
 import time
 import zipfile
+from copy import deepcopy
 from typing import Optional, List, Union, Tuple, Dict
 from warnings import warn
 
@@ -110,6 +111,12 @@ class Page(Data):
         self.width = self._original_size[0]
         self.height = self._original_size[1]
         self.image_path = os.path.join(self.document.document_folder, f'page_{self.number}.png')
+        self.is_first_page = None
+        if self.document.dataset_status in (2, 3):
+            if self.number == 1:
+                self.is_first_page = True
+            else:
+                self.is_first_page = False
 
         check_page = True
         if self.index is None:
@@ -516,6 +523,8 @@ class Category(Data):
         self._force_offline = project._force_offline
         self.label_sets: List[LabelSet] = []
         self.project.add_category(category=self)
+        self._exclusive_first_page_strings = None
+        self._exclusive_span_tokenizer = None
 
     @property
     def labels(self):
@@ -550,6 +559,52 @@ class Category(Data):
             self.label_sets.append(label_set)
         else:
             raise ValueError(f'In {self} the {label_set} is a duplicate and will not be added.')
+
+    def _collect_exclusive_first_page_strings(self, tokenizer):
+        """
+        Collect exclusive first-page string across the Documents within the Category.
+
+        :param tokenizer: A tokenizer to re-tokenize Documents within the Category before gathering the strings.
+        """
+        cur_first_page_strings = []
+        cur_non_first_page_strings = []
+        for doc in self.documents():
+            doc = deepcopy(doc)
+            doc = tokenizer.tokenize(doc)
+            for page in doc.pages():
+                if page.number == 1:
+                    cur_first_page_strings.append({span.offset_string for span in page.spans()})
+                else:
+                    cur_non_first_page_strings.append({span.offset_string for span in page.spans()})
+            doc.delete()
+        if cur_first_page_strings:
+            true_first_page_strings = set.intersection(*cur_first_page_strings)
+        else:
+            true_first_page_strings = set()
+        if cur_non_first_page_strings:
+            true_not_first_page_strings = set.intersection(*cur_non_first_page_strings)
+        else:
+            true_not_first_page_strings = set()
+        true_first_page_strings = true_first_page_strings - true_not_first_page_strings
+        self._exclusive_first_page_strings = true_first_page_strings
+
+    def exclusive_first_page_strings(self, tokenizer) -> set:
+        """
+        Return a set of strings exclusive for first Pages of Documents within the Category.
+
+        :param tokenizer: A tokenizer to process Documents before gathering strings.
+        """
+        if self._exclusive_span_tokenizer is not None:
+            if tokenizer != self._exclusive_span_tokenizer:
+                logger.warning(
+                    "Assigned tokenizer does not correspond to the one previously used within this instance."
+                    "All previously found exclusive first-page strings within each Category will be removed "
+                    "and replaced with the newly generated ones."
+                )
+                self._collect_exclusive_first_page_strings(tokenizer)
+        if not self._exclusive_first_page_strings:
+            self._collect_exclusive_first_page_strings(tokenizer)
+        return self._exclusive_first_page_strings
 
     def __lt__(self, other: 'Category'):
         """Sort Categories by name."""
@@ -2243,7 +2298,7 @@ class Document(Data):
         """
         Return an Annotation by ID, searching within the document.
 
-        :param id_: ID of the Annotation to get.
+        :param annotation_id: ID of the Annotation to get.
         """
         result = None
         if self._annotations is None:
@@ -2508,11 +2563,11 @@ class Document(Data):
         labels_dict = {}
         for label in self.project.labels:
             if not only_multiline_labels or label.has_multiline_annotations(categories=[self.category]):
-                labels_dict[label.id_local] = []
+                labels_dict[label.name] = []
 
         for annotation in self.annotations(use_correct=False, ignore_below_threshold=True):
-            if annotation.label.id_local in labels_dict:
-                labels_dict[annotation.label.id_local].append(annotation)
+            if annotation.label.name in labels_dict:
+                labels_dict[annotation.label.name].append(annotation)
 
         for label_id in labels_dict:
             buffer = []
@@ -2657,6 +2712,61 @@ class Document(Data):
                     _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
 
         return self._annotations
+
+    def propose_splitting(self, splitting_ai) -> List:
+        """Propose splitting for a multi-file Document.
+
+        :param splitting_ai: An initialized SplittingAI class
+        """
+        proposed = splitting_ai.propose_split_documents(self)
+        return proposed
+
+    def create_subdocument_from_page_range(self, start_page: Page, end_page: Page, include=False):
+        """
+        Create a shorter Document from a Page range of an initial Document.
+
+        :param start_page: A Page that the new sub-Document starts with.
+        :type start_page: Page
+        :param end_page: A Page that the new sub-Document ends with, if include is True.
+        :type end_page: Page
+        :param include: Whether end_page is included into the new sub-Document.
+        :type include: bool
+        :returns: A new sub-Document.
+        """
+        if include:
+            pages_text = self.text[start_page.start_offset : end_page.end_offset]
+        else:
+            pages_text = self.text[start_page.start_offset : end_page.start_offset]
+        new_doc = Document(project=self.project, id_=None, text=pages_text)
+        i = 1
+        start_offset = 0
+        for page in self.pages():
+            end_offset = start_offset + len(page.text)
+            if include:
+                if page.number in range(start_page.number, end_page.number + 1):
+                    _ = Page(
+                        id_=None,
+                        original_size=(page.height, page.width),
+                        document=new_doc,
+                        start_offset=start_offset,
+                        end_offset=end_offset,
+                        number=i,
+                    )
+                    i += 1
+                    start_offset = end_offset + 1
+            else:
+                if page.number in range(start_page.number, end_page.number):
+                    _ = Page(
+                        id_=None,
+                        original_size=(page.height, page.width),
+                        document=new_doc,
+                        start_offset=start_offset,
+                        end_offset=end_offset,
+                        number=i,
+                    )
+                    i += 1
+                    start_offset = end_offset + 1
+        return new_doc
 
 
 class Project(Data):
