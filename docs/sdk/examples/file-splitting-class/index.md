@@ -16,7 +16,7 @@ of the Document. This will allow us to define splitting points and divide the Do
 important to note that this approach is only effective for Documents written in the same language and that the process 
 must be repeated for each Category.
 
-If you are unfamiliar with the SDK's main concepts (like Page or Span), you can get to know them on the Quickstart page.
+If you are unfamiliar with the SDK's main concepts (like Page or Span), you can get to know them on the [Quickstart](https://dev.konfuzio.com/sdk/home/index.html) page.
 
 
 ### Quick explanation
@@ -157,7 +157,7 @@ A quick example of the class's usage:
 project = Project(id_=YOUR_PROJECT_ID)
 test_document = project.get_document_by_id(YOUR_DOCUMENT_ID)
 
-# initialize a ContextAwareFileSplittingModel and fit ut
+# initialize a ContextAwareFileSplittingModel and fit it
 
 file_splitting_model = ContextAwareFileSplittingModel(categories=project.categories, tokenizer=ConnectedTextTokenizer())
 file_splitting_model.fit()

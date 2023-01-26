@@ -26,7 +26,7 @@ class TestFileSplittingModel(unittest.TestCase):
             tokenizer=ConnectedTextTokenizer(),
         )
         cls.file_splitting_model.test_documents = cls.file_splitting_model.test_documents[:-2]
-        cls.test_document = cls.project.get_category_by_id(3).test_documents()[0]
+        cls.test_document = cls.project.get_document_by_id(9)
 
     def test_fit_context_aware_splitting_model(self):
         """Test pseudotraining of the context-aware splitting model."""
@@ -107,7 +107,6 @@ class TestFileSplittingModel(unittest.TestCase):
                 if len(intersection) > 0:
                     page.is_first_page = True
                     break
-            print(page.is_first_page, page.text)
             if page.number == 1:
                 assert intersection == {'I like bread.'}
                 assert page.is_first_page
@@ -160,7 +159,7 @@ class TestFileSplittingModel(unittest.TestCase):
     def test_splitting_ai_predict_one_file_document(self):
         """Test SplittingAI's Document-splitting method on a single-file Document."""
         splitting_ai = SplittingAI(self.file_splitting_model)
-        test_document = self.project.get_category_by_id(4).test_documents()[-1]
+        test_document = self.project.get_document_by_id(17)
         pred = splitting_ai.propose_split_documents(test_document)
         assert len(pred) == 1
         assert len(pred[0].pages()) == 2
@@ -194,7 +193,7 @@ class TestFileSplittingModel(unittest.TestCase):
     def test_splitting_no_category_document(self):
         """Test running SplittingAI on a Document with Category == NO_CATEGORY."""
         splitting_ai = SplittingAI(self.file_splitting_model)
-        test_document = self.project.test_documents[-1]
+        test_document = self.project.get_document_by_id(19)
         assert test_document.category == self.project.no_category
         pred = splitting_ai.propose_split_documents(test_document, return_pages=False)
         assert len(pred) == 1
