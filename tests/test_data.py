@@ -1398,7 +1398,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         """Test the vertical merging of Spans into a single Annotation."""
         project = LocalTextProject()
 
-        document = project.no_status_documents[2]
+        document = project.get_document_by_id(8)
 
         assert len(document.annotations(use_correct=False)) == 6
         document.merge_vertical(only_multiline_labels=False)
@@ -1429,7 +1429,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     def test_create_subdocument_from_page_range(self):
         """Test creating a smaller Document from original one within a Page range."""
         project = LocalTextProject()
-        test_document = project.get_category_by_id(3).test_documents()[0]
+        test_document = project.get_document_by_id(9)
         new_doc = test_document.create_subdocument_from_page_range(
             test_document.pages()[0], test_document.pages()[1], include=True
         )
@@ -2298,7 +2298,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_save_annotation_for_no_category_document(self):
         """Test saving annotation error for no-category Document."""
         project = LocalTextProject()
-        test_document = project.test_documents[-1]
+        test_document = project.get_document_by_id(19)
         label = Label(project=project)
         label_set = LabelSet(project=project, categories=[test_document.category])
         span = Span(start_offset=1, end_offset=2)
