@@ -1796,11 +1796,11 @@ class Document(Data):
         self.assignee = assignee
 
         if self.project and category_template:
-            self.category = self.project.get_category_by_id(category_template)
+            self._category = self.project.get_category_by_id(category_template)
         elif category:
-            self.category = category
+            self._category = category
         else:
-            self.category = None
+            self._category = None
 
         self.name = data_file_name
 
