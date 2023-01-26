@@ -502,6 +502,17 @@ Project.documents: 2  –&gt; Document recall 100%</p>
 <dd><p>Filter for Documents of this Category.</p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">exclusive_first_page_strings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tokenizer</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">set</span></span></span></dt>
+<dd><p>Return a set of strings exclusive for first Pages of Documents within the Category.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>tokenizer</strong> – A tokenizer to process Documents before gathering strings.</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fallback_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em></dt>
@@ -606,6 +617,24 @@ initializing the document, which will enable running a hash comparison during th
 
 <dl class="py method">
 <dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">create_subdocument_from_page_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_page</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.Page</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_page</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.Page</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Create a shorter Document from a Page range of an initial Document.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start_page</strong> (<em>Page</em>) – A Page that the new sub-Document starts with.</p></li>
+<li><p><strong>end_page</strong> (<em>Page</em>) – A Page that the new sub-Document ends with, if include is True.</p></li>
+<li><p><strong>include</strong> (<em>bool</em>) – Whether end_page is included into the new sub-Document.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new sub-Document.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delete_online</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Delete Document.</p>
 </dd></dl>
@@ -699,7 +728,7 @@ many documents, it is advised to use the Document.from_file_async method.</p>
 <dd><p>Return an Annotation by ID, searching within the document.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>id</strong> – ID of the Annotation to get.</p>
+<dd class="field-odd"><p><strong>annotation_id</strong> – ID of the Annotation to get.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -837,6 +866,17 @@ anymore because _annotation_sets will no longer be None.</p>
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">pages</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Page</span><span class="p"><span class="pre">]</span></span></span></span></dt>
 <dd><p>Get Pages of Document.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">propose_splitting</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">splitting_ai</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span></span></span></dt>
+<dd><p>Propose splitting for a multi-file Document.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>splitting_ai</strong> – An initialized SplittingAI class</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1710,6 +1750,17 @@ The Label Set classifier groups them into Annotation sets.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">ensure_model_memory_usage_within_limit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_ram</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Ensure that a model is not exceeding allowed max_ram.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>max_ram</strong> (<em>str</em>) – Specify maximum memory usage condition to save model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">evaluate_clf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_training_docs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.evaluate.Evaluation</span></span></span></dt>
 <dd><p>Evaluate the Label classifier.</p>
 </dd></dl>
@@ -1842,6 +1893,18 @@ NotFittedError: When CLF is not fitted</p>
 <dd><p>Lose weight before pickling.</p>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pkl_file_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em></dt>
+<dd><p>Generate a path for a resulting pickle file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">reduce_model_weight</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Remove all non-strictly necessary parameters before saving.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">remove_empty_dataframes_from_extraction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span></dt>
@@ -1854,9 +1917,21 @@ NotFittedError: When CLF is not fitted</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">restore_category_documents_for_eval</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Restore Documents of the Category so that we can run the evaluation later.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">separate_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span></dt>
 <dd><p>Undo the renaming of the labels.</p>
 <p>In this way we have the output of the extraction in the correct format.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">temp_pkl_file_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em></dt>
+<dd><p>Generate a path for temporary pickle file.</p>
 </dd></dl>
 
 </dd></dl>

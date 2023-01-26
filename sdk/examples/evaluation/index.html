@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FileSplittingEvaluation class &mdash; Konfuzio  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/full_green_square.png"/>
+    <link rel="canonical" href="https://dev.konfuzio.com/sdk/examples/evaluation/index.html" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+        <script>mermaid.initialize({startOnLoad:true});</script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Konfuzio
+            <img src="../../../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../home/index.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../configuration_reference.html">Install SDK</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html">Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html#tokenizers">Tokenizers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html#extraction-ai">Extraction AI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html#evaluation">Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html#document-categorization">Document Categorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Code Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribution.html">Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../coordinates_system.html">Coordinates System</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../merge/merge.html">Merging Logic</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/api.html">REST API v2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/api-v3.html">REST API v3</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/on_premises.html">On-Premises Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../web/changelog_app.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Document Validation UI</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dvui/index.html">What is the Konfuzio Document Validation UI?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dvui/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dvui/guides.html">Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dvui/sourcecode.html">Source Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dvui/changelog.html">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Konfuzio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>FileSplittingEvaluation class</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/sdk/examples/evaluation/index.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="filesplittingevaluation-class">
+<h1>FileSplittingEvaluation class<a class="headerlink" href="#filesplittingevaluation-class" title="Permalink to this headline">¶</a></h1>
+<p>FileSplittingEvaluation class can be used to evaluate performance of ContextAwareFileSplittingModel, returning a set of
+metrics that includes precision, recall, f1 measure, true positives, false positives and false negatives.</p>
+<p>The class’s methods <code class="docutils literal notranslate"><span class="pre">calculate()</span></code> and <code class="docutils literal notranslate"><span class="pre">calculate_by_category()</span></code> are run at initialization. The class receives two lists
+of Documents as an input – first list consists of ground-truth Documents where all first Pages are marked as such,
+second is of Documents on Pages of which FileSplittingModel ran a prediction of them being first or non-first.</p>
+<p>The initialization would look like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">evaluation</span> <span class="o">=</span> <span class="n">FileSplittingEvaluation</span><span class="p">(</span><span class="n">ground_truth_documents</span><span class="o">=</span><span class="n">YOUR_GROUND_TRUTH_LIST</span><span class="p">,</span>
+                                     <span class="n">prediction_documents</span><span class="o">=</span><span class="n">YOUR_PREDICTION_LIST</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The class compares each pair of Pages. If a Page is labeled as first and the model also predicted it as first, it is
+considered a true positive. If a Page is labeled as first but the model predicted it as non-first, it is considered a
+false negative. If a Page is labeled as non-first but the model predicted it as first, it is considered a false
+positive. If a Page is labeled as non-first and the model also predicted it as non-first, it is considered a true
+negative.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"></th>
+<th class="head"><p>predicted correctly</p></th>
+<th class="head"><p>predicted incorrectly</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>first Page</p></td>
+<td><p>TP</p></td>
+<td><p>FN</p></td>
+</tr>
+<tr class="row-odd"><td><p>non-first Page</p></td>
+<td><p>TN</p></td>
+<td><p>FP</p></td>
+</tr>
+</tbody>
+</table>
+<p>After iterating through all Pages of all Documents, precision, recall and f1 measure are calculated. If you wish to set
+metrics to <code class="docutils literal notranslate"><span class="pre">None</span></code> in case there has been an attempt of zero division, set <code class="docutils literal notranslate"><span class="pre">allow_zero=True</span></code> at the initialization.</p>
+<p>To see a certain metric after the class has been initialized, you can call a metric’s method:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">fn</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>It is also possible to look at the metrics calculated by each Category independently. For this, pass <code class="docutils literal notranslate"><span class="pre">search=YOUR_CATEGORY_HERE</span></code> when calling the wanted metric’s method:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">fn</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_HERE</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>For more details, see the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#evaluation">Python API Documentation</a> on Evaluation.</p>
+</section>
+<section id="example-of-evaluation-input-and-output">
+<h1>Example of evaluation input and output<a class="headerlink" href="#example-of-evaluation-input-and-output" title="Permalink to this headline">¶</a></h1>
+<p>Suppose in our test dataset we have 2 Documents of 2 Categories: one 3-paged, consisting of a single file (-&gt; it has only one ground-truth first Page) of a first Category, and one 5-paged, consisting of three files: two 2-paged and one 1-paged (-&gt; it has three ground-truth first Pages), of a second Category.</p>
+<img alt="../../../_images/document_example_1.png" src="../../../_images/document_example_1.png" />
+<p><em>First document</em></p>
+<img alt="../../../_images/document_example_2.png" src="../../../_images/document_example_2.png" />
+<p><em>Second document</em></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># generate the test Documents</span>
+
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Category</span><span class="p">,</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Document</span><span class="p">,</span> <span class="n">Page</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.evaluate</span> <span class="kn">import</span> <span class="n">FileSplittingEvaluation</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.file_splitting</span> <span class="kn">import</span> <span class="n">SplittingAI</span>
+
+<span class="n">text_1</span> <span class="o">=</span> <span class="s2">&quot;Hi all,</span><span class="se">\n</span><span class="s2">I like bread.</span><span class="se">\n</span><span class="s2">I hope to get everything done soon.</span><span class="se">\n</span><span class="s2">Have you seen it?&quot;</span>
+<span class="n">document_1</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">YOUR_PROJECT</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">YOUR_CATEGORY_1</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">text_1</span><span class="p">,</span> <span class="n">dataset_status</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span>
+        <span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">original_size</span><span class="o">=</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span>
+        <span class="n">document</span><span class="o">=</span><span class="n">document_1</span><span class="p">,</span>
+        <span class="n">start_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">end_offset</span><span class="o">=</span><span class="mi">21</span><span class="p">,</span>
+        <span class="n">number</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span>
+    <span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">original_size</span><span class="o">=</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span>
+    <span class="n">document</span><span class="o">=</span><span class="n">document_1</span><span class="p">,</span>
+    <span class="n">start_offset</span><span class="o">=</span><span class="mi">22</span><span class="p">,</span>
+    <span class="n">end_offset</span><span class="o">=</span><span class="mi">57</span><span class="p">,</span>
+    <span class="n">number</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span>
+    <span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">original_size</span><span class="o">=</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span>
+    <span class="n">document</span><span class="o">=</span><span class="n">document_1</span><span class="p">,</span>
+    <span class="n">start_offset</span><span class="o">=</span><span class="mi">58</span><span class="p">,</span>
+    <span class="n">end_offset</span><span class="o">=</span><span class="mi">75</span><span class="p">,</span>
+    <span class="n">number</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">text_2</span> <span class="o">=</span> <span class="s2">&quot;Good evening,</span><span class="se">\n</span><span class="s2">thank you for coming.</span><span class="se">\n</span><span class="s2">Can you give me that?</span><span class="se">\n</span><span class="s2">I need it.</span><span class="se">\n</span><span class="s2">Send it to me.&quot;</span>
+<span class="n">document_2</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">YOUR_PROJECT</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">YOUR_CATEGORY_2</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">text_2</span><span class="p">,</span> <span class="n">dataset_status</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span>
+    <span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">original_size</span><span class="o">=</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span>
+    <span class="n">document</span><span class="o">=</span><span class="n">document_2</span><span class="p">,</span>
+    <span class="n">start_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">end_offset</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
+    <span class="n">number</span><span class="o">=</span><span class="mi">1</span>
+<span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span>
+    <span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">original_size</span><span class="o">=</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span>
+    <span class="n">document</span><span class="o">=</span><span class="n">document_2</span><span class="p">,</span>
+    <span class="n">start_offset</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span>
+    <span class="n">end_offset</span><span class="o">=</span><span class="mi">34</span><span class="p">,</span>
+    <span class="n">number</span><span class="o">=</span><span class="mi">2</span>
+<span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span>
+    <span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">original_size</span><span class="o">=</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span>
+    <span class="n">document</span><span class="o">=</span><span class="n">document_2</span><span class="p">,</span>
+    <span class="n">start_offset</span><span class="o">=</span><span class="mi">35</span><span class="p">,</span>
+    <span class="n">end_offset</span><span class="o">=</span><span class="mi">56</span><span class="p">,</span>
+    <span class="n">number</span><span class="o">=</span><span class="mi">3</span>
+<span class="p">)</span>
+<span class="n">_</span><span class="o">.</span><span class="n">is_first_page</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span>
+    <span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">original_size</span><span class="o">=</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span>
+    <span class="n">document</span><span class="o">=</span><span class="n">document_2</span><span class="p">,</span>
+    <span class="n">start_offset</span><span class="o">=</span><span class="mi">57</span><span class="p">,</span>
+    <span class="n">end_offset</span><span class="o">=</span><span class="mi">67</span><span class="p">,</span>
+    <span class="n">number</span><span class="o">=</span><span class="mi">4</span>
+<span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span>
+    <span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">original_size</span><span class="o">=</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span>
+    <span class="n">document</span><span class="o">=</span><span class="n">document_2</span><span class="p">,</span>
+    <span class="n">start_offset</span><span class="o">=</span><span class="mi">68</span><span class="p">,</span>
+    <span class="n">end_offset</span><span class="o">=</span><span class="mi">82</span><span class="p">,</span>
+    <span class="n">number</span><span class="o">=</span><span class="mi">5</span>
+<span class="p">)</span>
+<span class="n">_</span><span class="o">.</span><span class="n">is_first_page</span> <span class="o">=</span> <span class="kc">True</span>
+</pre></div>
+</div>
+<p>We need to pass two lists of Documents into the <code class="docutils literal notranslate"><span class="pre">FileSplittingEvaluation</span></code> class. So, before that, we need to run each
+page of the documents through the model’s prediction.</p>
+<p>Let’s say the evaluation gave good results, with only one first page being predicted as non-first and all the other
+pages being predicted correctly. An example of how the evaluation would be implemented would be:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">splitting_ai</span> <span class="o">=</span> <span class="n">SplittingAI</span><span class="p">(</span><span class="n">YOUR_MODEL_HERE</span><span class="p">)</span>
+<span class="n">pred_1</span><span class="p">:</span> <span class="n">Document</span> <span class="o">=</span> <span class="n">splitting_ai</span><span class="o">.</span><span class="n">propose_split_documents</span><span class="p">(</span><span class="n">document_1</span><span class="p">,</span> <span class="n">return_pages</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">pred_2</span><span class="p">:</span> <span class="n">Document</span> <span class="o">=</span> <span class="n">splitting_ai</span><span class="o">.</span><span class="n">propose_split_documents</span><span class="p">(</span><span class="n">document_2</span><span class="p">,</span> <span class="n">return_pages</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">evaluation</span> <span class="o">=</span> <span class="n">FileSplittingEvaluation</span><span class="p">(</span><span class="n">ground_truth_documents</span><span class="o">=</span><span class="p">[</span><span class="n">document_1</span><span class="p">,</span> <span class="n">document_2</span><span class="p">],</span>
+                                     <span class="n">prediction_documents</span><span class="o">=</span><span class="p">[</span><span class="n">pred_1</span><span class="p">,</span> <span class="n">pred_2</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">tp</span><span class="p">())</span> <span class="c1"># returns: 3</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">tn</span><span class="p">())</span> <span class="c1"># returns: 4</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">fp</span><span class="p">())</span> <span class="c1"># returns: 0</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">fn</span><span class="p">())</span> <span class="c1"># returns: 1</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">precision</span><span class="p">())</span> <span class="c1"># returns: 1</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">recall</span><span class="p">())</span> <span class="c1"># returns: 0.75</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">f1</span><span class="p">())</span> <span class="c1"># returns: 0.85</span>
+</pre></div>
+</div>
+<p>Our results could be reflected in a following table:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>TPs</p></th>
+<th class="head"><p>TNs</p></th>
+<th class="head"><p>FPs</p></th>
+<th class="head"><p>FNs</p></th>
+<th class="head"><p>precision</p></th>
+<th class="head"><p>recall</p></th>
+<th class="head"><p>F1</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>4</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>0.75</p></td>
+<td><p>0.85</p></td>
+</tr>
+</tbody>
+</table>
+<p>If we want to see evaluation results by Category, the implementation of the Evaluation would look like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">tp</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">CATEGORY_1</span><span class="p">),</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">tp</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">CATEGORY_2</span><span class="p">))</span> <span class="c1"># returns: 1 2</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">tn</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">CATEGORY_1</span><span class="p">),</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">tn</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">CATEGORY_2</span><span class="p">))</span> <span class="c1"># returns: 2 2</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">fp</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">CATEGORY_1</span><span class="p">),</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">fp</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">CATEGORY_2</span><span class="p">))</span> <span class="c1"># returns: 0 0</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">fn</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">CATEGORY_1</span><span class="p">),</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">fn</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">CATEGORY_2</span><span class="p">))</span> <span class="c1"># returns: 0 1</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">precision</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">CATEGORY_1</span><span class="p">),</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">precision</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">CATEGORY_2</span><span class="p">))</span> <span class="c1"># returns: 1 1</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">recall</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">CATEGORY_1</span><span class="p">),</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">recall</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">CATEGORY_2</span><span class="p">))</span> <span class="c1"># returns: 1 0.66</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">f1</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">CATEGORY_1</span><span class="p">),</span> <span class="n">evaluation</span><span class="o">.</span><span class="n">f1</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">CATEGORY_2</span><span class="p">))</span> <span class="c1"># returns: 1 0.79</span>
+</pre></div>
+</div>
+<p>the output could be reflected in a following table:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 13%" />
+<col style="width: 13%" />
+<col style="width: 13%" />
+<col style="width: 13%" />
+<col style="width: 13%" />
+<col style="width: 13%" />
+<col style="width: 13%" />
+<col style="width: 13%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Category</p></th>
+<th class="head"><p>TPs</p></th>
+<th class="head"><p>TNs</p></th>
+<th class="head"><p>FPs</p></th>
+<th class="head"><p>FNs</p></th>
+<th class="head"><p>precision</p></th>
+<th class="head"><p>recall</p></th>
+<th class="head"><p>F1</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Category 1</p></td>
+<td><p>1</p></td>
+<td><p>2</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-odd"><td><p>Category 2</p></td>
+<td><p>2</p></td>
+<td><p>2</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>0.66</p></td>
+<td><p>0.79</p></td>
+</tr>
+</tbody>
+</table>
+<p>To log metrics after evaluation, you can call <code class="docutils literal notranslate"><span class="pre">EvaluationCalculator</span></code>‘s method <code class="docutils literal notranslate"><span class="pre">metrics_logging</span></code> (you would need to
+specify the metrics accordingly at the class’s initialization). Example usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">EvaluationCalculator</span><span class="p">(</span><span class="n">tp</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">fp</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">fn</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">tn</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">metrics_logging</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Helm und Nagel GmbH.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-D02B3QF8Z3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-D02B3QF8Z3');
+</script>
+<script src="https://cmp.osano.com/16CVyMSbk3Iar1G3f/97ee6223-b0cb-4f8c-abd6-a25a0d6f6507/osano.js"></script>
+
+
+</body>
+</html>
