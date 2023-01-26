@@ -399,8 +399,7 @@ def get_paragraphs_by_line_space(
         if height is None:
             # calculate median vertical character size for Page
             line_threshold = round(
-                line_height_ratio
-                * median(bbox['y1'] - bbox['y0'] for bbox in page_char_bboxes),
+                line_height_ratio * median(bbox['y1'] - bbox['y0'] for bbox in page_char_bboxes),
                 6,
             )
         else:
@@ -425,7 +424,7 @@ def get_paragraphs_by_line_space(
                     spans=paragraph_spans,
                 )
                 paragraph_spans = [span]
-          
+
             previous_y0 = min_y0
         _ = Annotation(
             document=document,
@@ -438,7 +437,6 @@ def get_paragraphs_by_line_space(
 
     # page_numbers = document.number_of_pages
     # document_structure = []
-
 
     # for page_number in page_numbers:
     #     previous_y0 = None

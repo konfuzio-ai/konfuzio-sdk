@@ -135,6 +135,5 @@ class ParagraphTokenizer(AbstractTokenizer):
         """Create one multiline Annotation per paragraph detected by line distance based rule based algorithm."""
         paragraph_bboxes = get_paragraphs_by_line_space(document.get_bbox(), document.text)
 
-
     def found_spans(self, document: Document):
         pass
