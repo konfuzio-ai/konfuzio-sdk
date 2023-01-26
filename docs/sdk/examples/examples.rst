@@ -5,9 +5,15 @@ Tutorials
 *Tutorials are lessons that take the reader by the hand through a series of steps to complete a project of some kind.*
 *Tutorials are learning-oriented.*
 
-.. mdinclude:: document_categorization.md
+.. mdinclude:: architecture_overview/index.md
 
 .. mdinclude:: file-splitting-class/index.md
+
+.. mdinclude:: file-splitting-class-out-of-the-box-usage/index.md
+
+.. mdinclude:: evaluation/index.md
+
+.. mdinclude:: document_categorization.md
 
 Train a Konfuzio SDK Model to Extract Information From Payslip Documents
 -----------------------------------------------------------
@@ -54,4 +60,6 @@ You can |OpenInColab2|_ or download it from
 and try it by yourself.
 
 .. |OpenInColab2| image:: https://colab.research.google.com/assets/colab-badge.svg
+
 .. _OpenInColab2: https://colab.research.google.com/github/konfuzio-ai/document-ai-python-sdk/blob/master/docs/sdk/examples/word_count.ipynb
+

@@ -39,7 +39,23 @@ These changes are for the tokenizers/new SDK branch.
 - A bug during the extraction post-processing steps, which was causing the first line items of each page to be skipped ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9561))
 -->
 
-## Next Release (estimated release date: 20th January 2023)
+## Next Release (estimated release date: 6th February 2023)
+
+Upcoming
+
+## released-2023-01-23_22-14-45
+
+This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Capture Vue in version [0.1.0](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
+
+### Added
+- [Set the Limit of objects returned from the Document List endpoint in API V2 to 10 000](https://dev.konfuzio.com/web/api-v3.html#content-limits) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9975)).
+
+### Changed
+
+### Fixed
+- Proper error handling when a Page number is used in the API which does not exist ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10313)).
+
+## released-2023-01-23_14-32-08
 
 This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Capture Vue in version [0.1.0](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
 
@@ -48,7 +64,7 @@ This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK 
 
 ### Changed
 - [Redirect https://app.konfuzio.com/api/ to stable API Version 3](https://app.konfuzio.com/api/) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9692)).
-- [Set the Limit of objects returned from the Document List endpoint to 10 000](https://dev.konfuzio.com/web/api-v3.html#content-limits) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9975)).
+- [Set the Limit of objects returned from the Document List in API V3 endpoint to 10 000](https://dev.konfuzio.com/web/api-v3.html#content-limits) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9975)).
 
 ## released-2023-01-15_19-35-28
 
