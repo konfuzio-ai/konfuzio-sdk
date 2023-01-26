@@ -110,7 +110,7 @@ class ParagraphTokenizer(AbstractTokenizer):
             spans = []
             line_bboxes = []
             for bbox in bboxes:
-                if line_bboxes == [] or bbox['line_number'] == line_bboxes[0]['line_number']:
+                if not line_bboxes or bbox['line_number'] == line_bboxes[0]['line_number']:
                     line_bboxes.append(bbox)
                     continue
                 else:
@@ -133,7 +133,8 @@ class ParagraphTokenizer(AbstractTokenizer):
 
     def _line_distance_tokenize(self, document: Document) -> Document:
         """Create one multiline Annotation per paragraph detected by line distance based rule based algorithm."""
-        paragraph_bboxes = get_paragraphs_by_line_space(document.bboxes, document.text)
+        paragraph_bboxes = get_paragraphs_by_line_space(document.get_bbox(), document.text)
+
 
     def found_spans(self, document: Document):
         pass
