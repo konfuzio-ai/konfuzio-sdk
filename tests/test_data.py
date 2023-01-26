@@ -3,6 +3,7 @@ import logging
 import os
 import unittest
 from copy import copy, deepcopy
+from requests import HTTPError
 
 import pytest
 from PIL.PngImagePlugin import PngImageFile
@@ -207,6 +208,76 @@ class TestOnlineProject(unittest.TestCase):
 
         for i, page in enumerate(all_pages):
             assert page.text == new_doc.pages()[i].text
+
+    def test_modify_document_metadata(self):
+        """Test modification of meta-data of test document."""
+        doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
+
+        doc.assignee = 42
+        doc.dataset_status = 1
+
+        with pytest.raises(HTTPError, match="assignee.*object does not exist"):
+            doc.save_meta_data()
+
+        doc.assignee = 1234
+        doc.save_meta_data()
+
+        self.project.init_or_update_document(from_online=True)
+
+        assert doc.assignee == 1234
+        assert doc.dataset_status == 1
+
+        doc.assignee = 1043
+        doc.dataset_status = 2
+        doc.save_meta_data()
+
+        self.project.init_or_update_document(from_online=True)
+
+        assert doc.assignee == 1043
+        assert doc.dataset_status == 2
+
+    def test_create_modify_and_delete_document(self):
+        """Test the creation of an online Document from a file, modification, and then deletion of the Document."""
+        # Test Document creation
+        doc = Document.from_file_sync('test_data/pdf.pdf', self.project, dataset_status=1)
+        doc_id = doc.id_
+
+        # Test Document modification
+        assert doc.dataset_status == 1
+
+        doc.dataset_status = 0
+
+        doc.project.init_or_update_document()
+
+        assert doc.dataset_status == 1  # didn't save, so reloading the old dataset status
+
+        with pytest.raises(HTTPError, match="You cannot delete documents which are part of a dataset"):
+            # Cannot delete Document with dataset_status != 0
+            doc.delete(delete_online=True)
+
+        doc.dataset_status = 0
+        doc.assignee = 1234
+        doc.save_meta_data()
+
+        doc.project.init_or_update_document(from_online=True)
+
+        assert doc.dataset_status == 0
+        assert doc.assignee == 1234
+
+        doc.delete(delete_online=False)
+
+        with pytest.raises(IndexError, match="was not found in"):
+            doc = self.project.get_document_by_id(doc_id)
+
+        self.project.init_or_update_document()
+
+        doc = self.project.get_document_by_id(doc_id)  # works because local meta-data still has it listed
+
+        doc.delete(delete_online=True)
+        self.project.init_or_update_document()
+
+        with pytest.raises(IndexError, match="was not found in"):
+            doc = self.project.get_document_by_id(doc_id)
 
 
 class TestOfflineExampleData(unittest.TestCase):
@@ -1797,7 +1868,8 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         for document in prj.documents:
             document.text
         after = _getsize(prj)
-        assert 1.5 < after / before < 1.8
+        assert 1.6 < after / before < 2.1
+        assert after < 500000
 
         # strings in prj take slightly less space than in a list
         assert _getsize([doc.text for doc in prj.documents]) + before < after + 500
@@ -2357,7 +2429,7 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
     def test_annotationset_annotations(self):
         """Test AnnotationSet.annotations method."""
         project = LocalTextProject()
-        document = project.test_documents[-7]
+        document = project.get_document_by_id(7)
 
         annotation_set = document.annotation_sets()[0]
 

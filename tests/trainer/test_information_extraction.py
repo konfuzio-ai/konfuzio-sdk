@@ -1002,7 +1002,7 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
 
         # The document used is an empty document, therefore it does not have text or bounding boxes,
         # so we cannot have the offset string or the coordinates and it shouldn't have been extracted at all
-        with pytest.raises(NotImplementedError, match='does not have a correspondence in the text of Document'):
+        with pytest.raises(NotImplementedError, match='does not have a correspondence in the text of Virtual Document'):
             add_extractions_as_annotations(
                 extractions=self.extraction_df,
                 document=document,
