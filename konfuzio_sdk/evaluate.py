@@ -473,7 +473,7 @@ class CategorizationEvaluation:
         """
         self.categories = categories
         self.documents = documents
-        self.evaluation_results = None
+        self._evaluation_results = None
         self._clf_report = None
         self.calculate()
 
@@ -504,9 +504,9 @@ class CategorizationEvaluation:
         """Confusion matrix."""
         return confusion_matrix(self.actual_classes, self.predicted_classes, labels=self.category_ids + [-1])
 
-    def _get_tp_tn_fp_fn_per_category(self) -> Dict:
+    def _get_tp_tn_fp_fn_per_category(self) -> Dict[int, EvaluationCalculator]:
         """
-        Get the tp, fp, tn and fn for each Category.
+        Get the TP, FP, TN and FN for each Category.
 
         The Category for which the evaluation is being done is considered the positive class. All others are considered
         as negative class.
@@ -541,99 +541,96 @@ class CategorizationEvaluation:
             fp = sum_columns[ind] - tp
             fn = sum_rows[ind] - tp
             tn = sum_all - fn - fp - tp
-
-            results[category_id] = {"tp": tp, "fp": fp, "fn": fn, "tn": tn}
+            results[category_id] = EvaluationCalculator(tp=tp, fp=fp, fn=fn, tn=tn)
 
         return results
 
-    def calculate(self):
-        """Calculate and update the data stored within this Evolution."""
-        self.evaluation_results = self._get_tp_tn_fp_fn_per_category()
-        self._clf_report = classification_report(
+    def _get_global_tp_tn_fp_fn(self) -> EvaluationCalculator:
+        """Get the global TP, FP, TN and FN."""
+        result = classification_report(
             y_true=self.actual_classes,
             y_pred=self.predicted_classes,
             labels=self.category_ids,
             target_names=self.category_names,
             output_dict=True,
-        )
+        )['weighted avg']
+        result['f1'] = result['f1-score']
+        return result
 
-    def _search_category(self, category: Optional[Category] = None) -> Optional[int]:
-        """Return the category id to filter for."""
-        if sdk_isinstance(category, Category):
-            return category.id_
-        elif isinstance(category, int):
-            return category
-        elif category is None:
-            return None
-        else:
-            raise NotImplementedError
+    def calculate(self):
+        """Calculate and update the data stored within this Evaluation."""
+        self._evaluation_results = self._get_tp_tn_fp_fn_per_category()
+        self._clf_report = self._get_global_tp_tn_fp_fn()
+
+    def _base_metric(self, metric: str, category: Optional[Category] = None) -> int:
+        """Return the base metric of all Documents filtered by Category.
+
+        :param metric: One of TP, FP, FN, TN.
+        :param category: A Category to filter for, or None for getting global evaluation results.
+        """
+        return sum(
+            [
+                getattr(evaluation, metric)
+                for category_id, evaluation in self._evaluation_results.items()
+                if (category is None) or (category_id == category.id_)
+            ]
+        )
 
     def tp(self, category: Optional[Category] = None) -> int:
         """Return the True Positives of all Documents."""
-        search_category_id = self._search_category(category)
-        return sum(
-            [
-                evaluation["tp"]
-                for category_id, evaluation in self.evaluation_results.items()
-                if (search_category_id is None) or (category_id == search_category_id)
-            ]
-        )
+        return self._base_metric("tp", category)
 
     def fp(self, category: Optional[Category] = None) -> int:
         """Return the False Positives of all Documents."""
-        search_category_id = self._search_category(category)
-        return sum(
-            [
-                evaluation["fp"]
-                for category_id, evaluation in self.evaluation_results.items()
-                if (search_category_id is None) or (category_id == search_category_id)
-            ]
-        )
+        return self._base_metric("fp", category)
 
     def fn(self, category: Optional[Category] = None) -> int:
         """Return the False Negatives of all Documents."""
-        search_category_id = self._search_category(category)
-        return sum(
-            [
-                evaluation["fn"]
-                for category_id, evaluation in self.evaluation_results.items()
-                if (search_category_id is None) or (category_id == search_category_id)
-            ]
-        )
+        return self._base_metric("fn", category)
 
     def tn(self, category: Optional[Category] = None) -> int:
         """Return the True Negatives of all Documents."""
-        search_category_id = self._search_category(category)
-        return sum(
-            [
-                evaluation["tn"]
-                for category_id, evaluation in self.evaluation_results.items()
-                if (search_category_id is None) or (category_id == search_category_id)
-            ]
+        return self._base_metric("tn", category)
+
+    def get_evaluation_data(self, search: Category = None, allow_zero: bool = True) -> EvaluationCalculator:
+        """
+        Get precision, recall, f1, based on TP, TN, FP, FN.
+
+        :param search: A Category to filter for, or None for getting global evaluation results.
+        :type search: Category
+        :param allow_zero: If true, will calculate None for precision and recall when the straightforward application
+        of the formula would otherwise result in 0/0. Raises ZeroDivisionError otherwise.
+        :type allow_zero: bool
+        """
+        return EvaluationCalculator(
+            tp=self.tp(search), fp=self.fp(search), fn=self.fn(search), tn=self.tn(search), allow_zero=allow_zero
         )
 
-    def precision(self, category: Optional[Category]) -> Optional[float]:
-        """Calculate the Precision and see f1 to calculate imbalanced classes."""
+    def _metric(self, metric: str, category: Optional[Category]) -> Optional[float]:
+        """Calculate a global metric or filter it by one Category.
+
+        :param metric: One of precision, recall, or f1.
+        :param category: A Category to filter for, or None for getting global evaluation results.
+        """
+        metric = metric.lower()
+        if metric not in ['precision', 'recall', 'f1']:
+            raise NotImplementedError
         if category is None:
-            return self._clf_report['weighted avg']['precision']
+            return self._clf_report[metric]
         else:
-            return EvaluationCalculator(tp=self.tp(category=category), fp=self.fp(category=category)).precision
+            return getattr(self.get_evaluation_data(search=category), metric)
+
+    def precision(self, category: Optional[Category]) -> Optional[float]:
+        """Calculate the global Precision or filter it by one Category."""
+        return self._metric('precision', category)
 
     def recall(self, category: Optional[Category]) -> Optional[float]:
-        """Calculate the Recall and see f1 to calculate imbalanced classes."""
-        if category is None:
-            return self._clf_report['weighted avg']['recall']
-        else:
-            return EvaluationCalculator(tp=self.tp(category=category), fn=self.fn(category=category)).recall
+        """Calculate the global Recall or filter it by one Category."""
+        return self._metric('recall', category)
 
     def f1(self, category: Optional[Category]) -> Optional[float]:
-        """Calculate the F1 Score of one class."""
-        if category is None:
-            return self._clf_report['weighted avg']['f1-score']
-        else:
-            return EvaluationCalculator(
-                tp=self.tp(category=category), fp=self.fp(category=category), fn=self.fn(category=category)
-            ).f1
+        """Calculate the global F1 Score or filter it by one Category."""
+        return self._metric('f1', category)
 
 
 class FileSplittingEvaluation:

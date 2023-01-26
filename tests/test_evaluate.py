@@ -1238,8 +1238,14 @@ class TestCategorizationEvaluation(unittest.TestCase):
     def test_get_tp_tn_fp_fn_per_category(self):
         """Test get results per Category for categorization problem."""
         results_per_category = self.cat_eval._get_tp_tn_fp_fn_per_category()
-        assert results_per_category[1] == {'tp': 1, 'fp': 0, 'fn': 2, 'tn': 1}
-        assert results_per_category[2] == {'tp': 1, 'fp': 2, 'fn': 0, 'tn': 1}
+        assert results_per_category[1].tp == 1
+        assert results_per_category[1].fp == 0
+        assert results_per_category[1].fn == 2
+        assert results_per_category[1].tn == 1
+        assert results_per_category[2].tp == 1
+        assert results_per_category[2].fp == 2
+        assert results_per_category[2].fn == 0
+        assert results_per_category[2].tn == 1
 
     def test_global_metrics(self):
         """Test metrics for a categorization problem."""

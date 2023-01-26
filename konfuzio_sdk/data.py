@@ -1914,8 +1914,9 @@ class Document(Data):
         """
         if not self.pages():
             return self._category
-        all_pages_have_same_category = len(set([page.category for page in self.pages()])) == 1
-        if all_pages_have_same_category:
+        all_pages_have_same_category = len(set([page.category for page in self.pages()]) - {None}) == 1
+        first_page_has_category = self.pages()[0].category is not None
+        if first_page_has_category and all_pages_have_same_category:
             self._category = self.pages()[0].category
         else:
             self._category = None
