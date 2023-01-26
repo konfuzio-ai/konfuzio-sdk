@@ -162,18 +162,19 @@ token = os.getenv('KONFUZIO_TOKEN')
 print(token)
 ```
 
+It is also possible to access a token via `from konfuzio_sdk import KONFUZIO_TOKEN` (available only after `konfuzio_sdk init`).
+
 To use a token:
 
 ```python
 import requests
+from konfuzio_sdk import KONFUZIO_TOKEN
 from konfuzio_sdk.api import TimeoutHTTPAdapter
 
 url = "https://app.konfuzio.com/api/v3/projects/"
 
-token = "YOUR_TOKEN_HERE"
-
 headers = {
-    "Authorization": f"Token {token}"
+    "Authorization": f"Token {KONFUZIO_TOKEN}"
 }
 
 session = requests.Session()
