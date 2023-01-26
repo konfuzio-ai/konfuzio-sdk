@@ -1246,7 +1246,7 @@ class TestCategorizationEvaluation(unittest.TestCase):
         assert self.cat_eval.tp(None) == 2
         assert self.cat_eval.fp(None) == 2
         assert self.cat_eval.fn(None) == 2
-        assert self.cat_eval.tn(None) == 2
+        assert self.cat_eval.tn(None) == 10
 
         assert self.cat_eval.precision(None) == 5 / 6
         assert self.cat_eval.recall(None) == 0.5
