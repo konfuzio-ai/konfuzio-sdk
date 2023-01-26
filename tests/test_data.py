@@ -2481,7 +2481,6 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
         assert len(first_page_strings) == 2
         assert 'I like bread.' in first_page_strings
         assert 'Morning,' in first_page_strings
-        project.delete()
 
 
 class TestFillOperation(unittest.TestCase):
