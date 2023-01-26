@@ -27,6 +27,8 @@ from konfuzio_sdk.api import (
     update_document_konfuzio_api,
     get_page_image,
     delete_document_annotation,
+    delete_file_konfuzio_api,
+    upload_file_konfuzio_api,
 )
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
@@ -109,13 +111,12 @@ class Page(Data):
         self.width = self._original_size[0]
         self.height = self._original_size[1]
         self.image_path = os.path.join(self.document.document_folder, f'page_{self.number}.png')
+        self.is_first_page = None
         if self.document.dataset_status in (2, 3):
             if self.number == 1:
                 self.is_first_page = True
             else:
                 self.is_first_page = False
-        else:
-            self.is_first_page = None
 
         check_page = True
         if self.index is None:
@@ -576,12 +577,14 @@ class Category(Data):
                 else:
                     cur_non_first_page_strings.append({span.offset_string for span in page.spans()})
             doc.delete()
-        if not cur_first_page_strings:
-            cur_first_page_strings.append(set())
-        true_first_page_strings = set.intersection(*cur_first_page_strings)
-        if not cur_non_first_page_strings:
-            cur_non_first_page_strings.append(set())
-        true_not_first_page_strings = set.intersection(*cur_non_first_page_strings)
+        if cur_first_page_strings:
+            true_first_page_strings = set.intersection(*cur_first_page_strings)
+        else:
+            true_first_page_strings = set()
+        if cur_non_first_page_strings:
+            true_not_first_page_strings = set.intersection(*cur_non_first_page_strings)
+        else:
+            true_not_first_page_strings = set()
         true_first_page_strings = true_first_page_strings - true_not_first_page_strings
         self._exclusive_first_page_strings = true_first_page_strings
 
@@ -1672,7 +1675,7 @@ class Document(Data):
         project: 'Project',
         id_: Union[int, None] = None,
         file_url: str = None,
-        status=None,
+        status: List[Union[int, str]] = None,  # ?
         data_file_name: str = None,
         is_dataset: bool = None,
         dataset_status: int = None,
@@ -1719,7 +1722,6 @@ class Document(Data):
         self.file_url = file_url
         self.is_dataset = is_dataset
         self.dataset_status = dataset_status
-        self.assignee = assignee
         self._update = update
         self.copy_of_id = copy_of_id
 
@@ -1747,7 +1749,6 @@ class Document(Data):
         self._characters: Dict[int, Bbox] = None
         self._bbox_hash = None
         self._bbox_json = bbox
-        self.bboxes_available: bool = True if (self.is_online or self._bbox_json) else False
         self._strict_bbox_validation = strict_bbox_validation
         self._hocr = None
         self._pages: List[Page] = []
@@ -1764,15 +1765,134 @@ class Document(Data):
         self.bbox_file_path = os.path.join(self.document_folder, "bbox.zip")
         self.bio_scheme_file_path = os.path.join(self.document_folder, "bio_scheme.txt")
 
+        bbox_file_exists = is_file(self.bbox_file_path, raise_exception=False)
+        self.bboxes_available: bool = self.is_online or self._bbox_json or bbox_file_exists
+
         if pages:
             self.pages()  # create page instances
 
     def __repr__(self):
         """Return the name of the Document incl. the ID."""
-        if self.copy_of_id:
-            return f"Document {self.name} ({self.copy_of_id})"
+        if self.id_ is None:
+            return f"Virtual Document {self.name} ({self.copy_of_id})"
         else:
             return f"Document {self.name} ({self.id_})"
+
+    def update_meta_data(
+        self,
+        assignee: int = None,
+        category_template: int = None,
+        category: Category = None,
+        data_file_name: str = None,
+        dataset_status: int = None,
+        status: List[Union[int, str]] = None,
+        **kwargs,
+    ):
+        """Update document metadata information."""
+        self.assignee = assignee
+
+        if self.project and category_template:
+            self.category = self.project.get_category_by_id(category_template)
+        elif category:
+            self.category = category
+        else:
+            self.category = None
+
+        self.name = data_file_name
+
+        self.status = status
+
+        self.dataset_status = dataset_status
+
+    def save_meta_data(self):
+        """Save local changes to Document metadata to server."""
+        update_document_konfuzio_api(
+            document_id=self.id_, file_name=self.name, dataset_status=self.dataset_status, assignee=self.assignee
+        )
+
+    def save(self):
+        """Save all local changes to Document to server."""
+        self.save_meta_data()
+
+        for annotation in self.annotations(use_correct=False):
+            if not annotation.is_online:
+                annotation.save()
+
+    @classmethod
+    def from_file_sync(
+        self,
+        path: str,
+        project: 'Project',
+        dataset_status: int = 0,
+        category_id: Union[None, int] = None,
+        callback_url: str = '',
+    ) -> 'Document':
+        """
+        Initialize Document from file with synchronous API call.
+
+        This class method will wait for the document to be processed by the server
+        and then return the new Document. This may take a bit of time. When uploading
+        many documents, it is advised to use the Document.from_file_async method.
+
+        :param path: Path to file to be uploaded
+        :param project: If to filter by correct annotations
+        :param dataset_status: Dataset status of the document (None: 0 Preparation: 1 Training: 2 Test: 3 Excluded: 4)
+        :param category_id: Category the Document belongs to (if unset, it will be assigned one by the server)
+        :param callback_url: Callback URL receiving POST call once extraction is done
+        :return: New Document
+        """
+        response = upload_file_konfuzio_api(
+            path,
+            project_id=project.id_,
+            dataset_status=dataset_status,
+            category_id=category_id,
+            callback_url=callback_url,
+            sync=True,
+        )
+
+        new_document_id = json.loads(response.text)['id']
+
+        project.init_or_update_document(from_online=True)
+        doc = project.get_document_by_id(new_document_id)
+
+        return doc
+
+    @classmethod
+    def from_file_async(
+        self,
+        path: str,
+        project: 'Project',
+        dataset_status: int = 0,
+        category_id: Union[None, int] = None,
+        callback_url: str = '',
+    ) -> int:
+        """
+        Initialize Document from file with asynchrinous API call.
+
+        This class method asynchronously uploads a file, to the Konfuzio API and returns the ID of
+        the newly created document. Use this method to create a new Document and don't want to wait
+        for the document to be processed by the server. This requires to update the Project at a
+        later point to be able to work with the new Document.
+
+        :param path: Path to file to be uploaded
+        :param project: If to filter by correct annotations
+        :param dataset_status: Dataset status of the document (None: 0 Preparation: 1 Training: 2 Test: 3 Excluded: 4)
+        :param category_id: Category the Document belongs to (if unset, it will be assigned one by the server)
+        :param callback_url: Callback URL receiving POST call once extraction is done
+        :return: ID of new Document
+        """
+        response = upload_file_konfuzio_api(
+            path,
+            project_id=project.id_,
+            dataset_status=dataset_status,
+            category_id=category_id,
+            callback_url=callback_url,
+            sync=False,
+        )
+
+        new_document_id = json.loads(response.text)['id']
+
+        return new_document_id
 
     @property
     def file_path(self):
@@ -2072,15 +2192,17 @@ class Document(Data):
     def lose_weight(self):
         """Remove NO_LABEL, wrong and below threshold Annotations."""
         super().lose_weight()
+        self._bbox_json = None
+        self._characters = None
         for annotation in self.annotations(use_correct=False, ignore_below_threshold=False):
             if annotation.label is self.project.no_label:
-                logger.info("no_label")
-                annotation.delete()
+                annotation.delete(delete_online=False)
             elif not annotation.is_correct and (
                 not annotation.confidence or annotation.label.threshold > annotation.confidence or annotation.revised
             ):
-                logger.info(annotation.confidence)
-                annotation.delete()
+                annotation.delete(delete_online=False)
+            else:
+                annotation.lose_weight()
 
     @property
     def document_folder(self):
@@ -2411,12 +2533,12 @@ class Document(Data):
 
     def update(self):
         """Update document information."""
-        self.delete()
+        self.delete_document_details()
         self.download_document_details()
         return self
 
-    def delete(self):
-        """Delete all local information for the document."""
+    def delete_document_details(self):
+        """Delete all local content information for the document."""
         try:
             shutil.rmtree(self.document_folder)
         except FileNotFoundError:
@@ -2424,6 +2546,12 @@ class Document(Data):
         pathlib.Path(self.document_folder).mkdir(parents=True, exist_ok=True)
         self._annotations = None
         self._annotation_sets = None
+        self._text = None
+        self._pages = []
+
+    def delete(self, delete_online: bool = False):
+        """Delete Document."""
+        self.project.del_document_by_id(self.id_, delete_online=delete_online)
 
     def merge_vertical(self, only_multiline_labels=True):
         """
@@ -2654,6 +2782,8 @@ class Project(Data):
         """
         self.id_local = next(Data.id_iter)
         self.id_ = id_  # A Project with None ID is not retrieved from the HOST
+        if self.id_ is None:
+            self.set_offline()
         self._project_folder = project_folder
         self.categories: List[Category] = []
         self._label_sets: List[LabelSet] = []
@@ -2685,6 +2815,11 @@ class Project(Data):
     def documents(self):
         """Return Documents with status training."""
         return [doc for doc in self._documents if doc.dataset_status == 2]
+
+    @property
+    def online_documents_dict(self) -> Dict:
+        """Return a dictionary of online documents using their id as key."""
+        return {doc.id_: doc for doc in self._documents if isinstance(doc.id_, int)}
 
     @property
     def virtual_documents(self):
@@ -2747,10 +2882,15 @@ class Project(Data):
         with open(self.labels_file_path, "w") as f:
             json.dump(data['labels'], f, indent=2, sort_keys=True)
 
+        self.write_meta_of_files()
+
+        return self
+
+    def write_meta_of_files(self):
+        """Overwrite meta-data of Documents in Project."""
         meta_data = get_meta_of_files(project_id=self.id_, session=self.session)
         with open(self.meta_file_path, "w") as f:
             json.dump(meta_data, f, indent=2, sort_keys=True)
-        return self
 
     def get(self, update=False):
         """
@@ -2758,13 +2898,6 @@ class Project(Data):
 
         :param update: Update the downloaded information even it is already available
         """
-        if is_file(self.meta_file_path, raise_exception=False):
-            logger.debug("Keep your local information about Documents to be able to do a partial update.")
-            with open(self.meta_file_path, "r") as f:
-                self.old_meta_data = json.load(f)
-        else:
-            self.old_meta_data = []
-
         pathlib.Path(self.project_folder).mkdir(parents=True, exist_ok=True)
         pathlib.Path(self.documents_folder).mkdir(parents=True, exist_ok=True)
         pathlib.Path(self.regex_folder).mkdir(parents=True, exist_ok=True)
@@ -2826,8 +2959,11 @@ class Project(Data):
         :return: Information of the Documents in the Project.
         """
         if not self._meta_data or reload:
+            if self._meta_data:
+                self.old_meta_data = self._meta_data
             with open(self.meta_file_path, "r") as f:
                 self._meta_data = json.load(f)
+
         return self._meta_data
 
     @property
@@ -2895,29 +3031,46 @@ class Project(Data):
             self.get_labels()
         return self._labels
 
-    def init_or_update_document(self):
-        """Initialize Document to then decide about full, incremental or no update."""
-        self._documents = []  # clean up Documents to not create duplicates
+    def init_or_update_document(self, from_online=False):
+        """
+        Initialize or update Documents from local files to then decide about full, incremental or no update.
+
+        :param from_online: If True, all Document metadata info is first reloaded with latest changes in the server
+        """
+        local_docs_dict = self.online_documents_dict
+        if from_online:
+            self.write_meta_of_files()
+            self.get_meta(reload=True)
+        updated_docs_ids_set = set()  # delete all docs not in the list at the end
         for document_data in self.meta_data:
+            updated_docs_ids_set.add(document_data['id'])
             if document_data['status'][0] == 2:  # NOQA - hotfix for Text Annotation Server # todo add test
+
                 new_date = document_data["updated_at"]
-                new = True
-                updated = None
-                if self.old_meta_data:
-                    new = document_data["id"] not in [doc["id"] for doc in self.old_meta_data]
-                    if not new:
-                        last_date = [d["updated_at"] for d in self.old_meta_data if d['id'] == document_data["id"]][0]
-                        updated = dateutil.parser.isoparse(new_date) > dateutil.parser.isoparse(last_date)
+                updated = False
+                new = document_data["id"] not in local_docs_dict
+                if not new:
+                    last_date = local_docs_dict[document_data['id']].updated_at
+                    updated = dateutil.parser.isoparse(new_date) > last_date if last_date is not None else True
 
                 if updated:
-                    doc = Document(project=self, update=True, id_=document_data['id'], **document_data)
+                    doc = local_docs_dict[document_data['id']]
+                    doc.update_meta_data(**document_data)
+                    doc.update()
                     logger.info(f'{doc} was updated, we will download it again as soon you use it.')
                 elif new:
                     doc = Document(project=self, update=True, id_=document_data['id'], **document_data)
                     logger.info(f'{doc} is not available on your machine, we will download it as soon you use it.')
                 else:
-                    doc = Document(project=self, update=False, id_=document_data['id'], **document_data)
-                    logger.debug(f'Load local version of {doc} from {new_date}.')
+                    doc = local_docs_dict[document_data['id']]
+                    doc.update_meta_data(**document_data)  # reset any Document level meta data changes
+                    logger.debug(f'Unchanged local version of {doc} from {new_date}.')
+            else:
+                logger.debug(f"Not loading Document {[document_data['id']]} with status {document_data['status'][0]}.")
+
+        to_delete_ids = set(local_docs_dict.keys()) - updated_docs_ids_set
+        for to_del_id in to_delete_ids:
+            local_docs_dict[to_del_id].delete(delete_online=False)
 
     def get_document_by_id(self, document_id: int) -> Document:
         """Return Document by its ID."""
@@ -2925,6 +3078,22 @@ class Project(Data):
             if document.id_ == document_id:
                 return document
         raise IndexError(f'Document id {document_id} was not found in {self}.')
+
+    def del_document_by_id(self, document_id: int, delete_online: bool = False) -> Document:
+        """Delete Document by its ID."""
+        document = self.get_document_by_id(document_id)
+
+        self._documents.remove(document)
+
+        if delete_online:
+            delete_file_konfuzio_api(document_id)
+            self.write_meta_of_files()
+            self.get_meta(reload=True)
+            try:
+                shutil.rmtree(document.document_folder)
+            except FileNotFoundError:
+                pass
+        return None
 
     def get_label_by_name(self, name: str) -> Label:
         """Return Label by its name."""

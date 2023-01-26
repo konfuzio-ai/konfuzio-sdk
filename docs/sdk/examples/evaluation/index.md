@@ -17,7 +17,7 @@ The class compares each pair of Pages. If a Page is labeled as first and the mod
 considered a true positive. If a Page is labeled as first but the model predicted it as non-first, it is considered a 
 false negative. If a Page is labeled as non-first but the model predicted it as first, it is considered a false 
 positive. If a Page is labeled as non-first and the model also predicted it as non-first, it is considered a true 
-negative. 
+negative.
 
 |  | predicted correctly | predicted incorrectly |
 | ------ | ------ | ------ |
