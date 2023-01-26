@@ -2299,8 +2299,8 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         """Test saving annotation error for no-category Document."""
         project = LocalTextProject()
         test_document = project.get_document_by_id(19)
-        label = Label(project=project)
-        label_set = LabelSet(project=project, categories=[test_document.category])
+        label = project.no_label
+        label_set = project.no_label_set
         span = Span(start_offset=1, end_offset=2)
         annotation_set = AnnotationSet(document=test_document, label_set=label_set)
         _ = Annotation(
@@ -2308,6 +2308,19 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         )
         with pytest.raises(ValueError, match='You cannot save Annotations of Documents with'):
             _.save()
+
+    def test_add_annotation_for_no_category_document(self):
+        """Test adding Annotation error for no-category Document."""
+        project = LocalTextProject()
+        test_document = project.get_document_by_id(19)
+        label = Label(project=project)
+        label_set = LabelSet(project=project, categories=[test_document.category])
+        span = Span(start_offset=1, end_offset=2)
+        annotation_set = AnnotationSet(document=test_document, label_set=label_set)
+        with pytest.raises(ValueError, match='where the category is'):
+            _ = Annotation(
+                label=label, annotation_set=annotation_set, label_set=label_set, document=test_document, spans=[span]
+            )
 
     @unittest.skip(reason='Patch not supported by Text-Annotation Server.')
     def test_to_change_an_annotation_online(self):

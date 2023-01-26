@@ -2274,7 +2274,7 @@ class Document(Data):
             # Hotfix Text Annotation Server:
             #  Annotation belongs to a Label / Label Set that does not relate to the Category of the Document.
             # todo: add test that the Label and Label Set of an Annotation belong to the Category of the Document
-            if self.category is not None:
+            if self.category != self.project.no_category:
                 if annotation.label_set is not None:
                     if annotation.label_set.categories:
                         if self.category in annotation.label_set.categories:
@@ -2289,7 +2289,10 @@ class Document(Data):
                 else:
                     raise ValueError(f'{annotation} has no Label Set, which cannot be added to {self}.')
             else:
-                raise ValueError(f'We cannot add {annotation} to {self} where the category is {self.category}')
+                if annotation.label.name == "NO_LABEL" and annotation.label_set.name_clean == "NO_LABEL_SET":
+                    self._annotations.append(annotation)
+                else:
+                    raise ValueError(f'We cannot add {annotation} to {self} where the category is {self.category}')
         else:
             duplicated = [x for x in self._annotations if x == annotation]
             raise ValueError(f'In {self} the {annotation} is a duplicate of {duplicated} and will not be added.')
