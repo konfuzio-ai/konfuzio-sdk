@@ -32,7 +32,7 @@ class LocalTextProject(Project):
         )
 
         self.local_training_document = Document(
-            id_=2, project=self, category=category, text="Hi all, I like fish.", dataset_status=2
+            id_=None, project=self, category=category, text="Hi all, I like fish.", dataset_status=2
         )
         default_annotation_set = AnnotationSet(
             id_=11, document=self.local_training_document, label_set=default_label_set
