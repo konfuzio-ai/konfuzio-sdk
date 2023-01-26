@@ -38,7 +38,7 @@ class ParagraphTokenizer(AbstractTokenizer):
     def tokenize(self, document: Document) -> Document:
         """Create one multiline Annotation per paragraph detected."""
         assert sdk_isinstance(document, Document)
-        assert isinstance(document.project.id_, int)  # isinstance(document.id_, int) and
+        assert isinstance(document.project.id_, int)
 
         before_none = len(document.annotations(use_correct=False, label=document.project.no_label))
 
@@ -75,39 +75,50 @@ class ParagraphTokenizer(AbstractTokenizer):
                 bbox['y0'] *= scale_mult
                 bbox['y1'] *= scale_mult
 
-        # for page_bboxes in paragraph_bboxes:
+        # assemble characters by their page
         pages_char_bboxes = [[] for _ in document.pages()]
         for char_index, bbox in document.get_bbox().items():
-            pages_char_bboxes[bbox['page_number'] - 1].append((int(char_index), bbox))
+            bbox['char_index'] = int(char_index)
+            pages_char_bboxes[bbox['page_number'] - 1].append(bbox)
 
         assert len(pages_char_bboxes) == len(paragraph_bboxes)
 
+        # assemble character by their pargraph
         paragraph_char_bboxes = collections.defaultdict(list)
         for i, (page_char_booxes, page_paragraph_bboxes) in enumerate(zip(pages_char_bboxes, paragraph_bboxes)):
             page = document.get_page_by_index(i)
-            # page_paragraph_bboxes = [Bbox(**bbox, page=page) for bbox in page_paragraph_bboxes]
-            for bbox in sorted(page_char_booxes, key=lambda x: x[0]):
+            for bbox in sorted(page_char_booxes, key=lambda x: x['char_index']):
                 for paragraph_bbox in page_paragraph_bboxes:
                     if (
-                        bbox[1]['x0'] <= paragraph_bbox['x1']
-                        and bbox[1]['x1'] >= paragraph_bbox['x0']
-                        and page.height - bbox[1]['y0'] <= paragraph_bbox['y1']
-                        and page.height - bbox[1]['y1'] >= paragraph_bbox['y0']
+                        bbox['x0'] <= paragraph_bbox['x1']
+                        and bbox['x1'] >= paragraph_bbox['x0']
+                        and page.height - bbox['y0'] <= paragraph_bbox['y1']
+                        and page.height - bbox['y1'] >= paragraph_bbox['y0']
                     ):
-                        paragraph_char_bboxes[(int(paragraph_bbox['x0']), int(paragraph_bbox['y0']))].append(bbox)
+                        paragraph_char_bboxes[
+                            (
+                                int(paragraph_bbox['x0']),
+                                int(paragraph_bbox['x1']),
+                                int(paragraph_bbox['y0']),
+                                int(paragraph_bbox['y1']),
+                            )
+                        ].append(bbox)
                         break
 
+        # create Spans for each line of characters, Annotation for each paragraph
         for k, bboxes in paragraph_char_bboxes.items():
             spans = []
             line_bboxes = []
             for bbox in bboxes:
-                if line_bboxes == [] or bbox[1]['line_number'] == line_bboxes[0][1]['line_number']:
+                if line_bboxes == [] or bbox['line_number'] == line_bboxes[0]['line_number']:
                     line_bboxes.append(bbox)
                     continue
                 else:
-                    spans.append(Span(start_offset=line_bboxes[0][0], end_offset=line_bboxes[-1][0] + 1))
+                    spans.append(
+                        Span(start_offset=line_bboxes[0]['char_index'], end_offset=line_bboxes[-1]['char_index'] + 1)
+                    )
                     line_bboxes = [bbox]
-            spans.append(Span(start_offset=line_bboxes[0][0], end_offset=line_bboxes[-1][0] + 1))
+            spans.append(Span(start_offset=line_bboxes[0]['char_index'], end_offset=line_bboxes[-1]['char_index'] + 1))
 
             _ = Annotation(
                 document=document,
@@ -120,11 +131,9 @@ class ParagraphTokenizer(AbstractTokenizer):
 
         return document
 
-    def found_spans(self, document: Document):
-        pass
-
-    # def __eq__, __hash__, fit, found_spans
-
     def _line_distance_tokenize(self, document: Document) -> Document:
         """Create one multiline Annotation per paragraph detected by line distance based rule based algorithm."""
         paragraph_bboxes = get_paragraphs_by_line_space(document.bboxes, document.text)
+
+    def found_spans(self, document: Document):
+        pass
