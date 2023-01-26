@@ -5,11 +5,12 @@ import linecache
 import logging
 import math
 import tracemalloc
-from pympler import asizeof
 import unittest
 import parameterized
 import os
 import sys
+import time
+
 from requests import HTTPError
 from pkg_resources import get_distribution
 
@@ -37,12 +38,14 @@ from konfuzio_sdk.trainer.information_extraction import (
     load_model,
     RFExtractionAI,
     Trainer,
+    BaseModel,
 )
 from konfuzio_sdk.api import upload_ai_model
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer
 from konfuzio_sdk.tokenizer.base import ListTokenizer
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 from konfuzio_sdk.samples import LocalTextProject
+from konfuzio_sdk.utils import memory_size_of
 
 logger = logging.getLogger(__name__)
 
@@ -167,6 +170,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Set up the Data and Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+
         cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_separate_labels, tokenizer=None)
         cls.pipeline.pipeline_path_no_konfuzio_sdk = None
 
@@ -183,6 +187,8 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
             self.pipeline.check_is_ready_for_extraction()
 
         self.pipeline.category = self.project.get_category_by_id(id_=63)
+
+        assert memory_size_of(self.pipeline.category) < 5e5
 
         with pytest.raises(AttributeError, match="not provide a Label Classifier"):
             self.pipeline.check_is_ready_for_extraction()
@@ -204,6 +210,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
     def test_02_make_features(self):
         """Make sure the Data and Pipeline is configured."""
         # we have intentional unrevised annotations in the Training set which will block feature calculation
+        assert 2e5 < memory_size_of(self.pipeline.category) < 4e5
         with pytest.raises(ValueError, match="is unrevised in this dataset and can't be used for training"):
             self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
                 documents=self.pipeline.documents, require_revised_annotations=True
@@ -223,9 +230,16 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
             documents=self.pipeline.documents, require_revised_annotations=True
         )
 
+        assert 7e5 < memory_size_of(self.pipeline.category) < 9e5
+
+        assert 11e6 < memory_size_of(self.pipeline.df_train) < 12e6
+
     def test_03_fit(self) -> None:
         """Start to train the Model."""
         self.pipeline.fit()
+
+        assert memory_size_of(self.pipeline.clf) < 1e5
+        assert memory_size_of(self.pipeline.label_set_clf) < 1e5
 
         if self.pipeline.use_separate_labels:
             assert len(self.pipeline.clf.classes_) == 19
@@ -238,22 +252,22 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
     def test_04_save_model(self):
         """Save the model."""
-        previous_size = asizeof.asizeof(self.pipeline)
+        previous_size = memory_size_of(self.pipeline)
 
         self.pipeline.pipeline_path_no_konfuzio_sdk = self.pipeline.save(
             output_dir=self.project.model_folder,
             include_konfuzio=False,
             reduce_weight=True,
             keep_documents=False,
-            max_ram="5MB",
+            max_ram="500KB",
         )
-
+        time.sleep(1)  # If first and second model saved in same second, one overwrites the other
         with pytest.raises(MemoryError):
             self.pipeline.pipeline_path = self.pipeline.save(
-                include_konfuzio=False, reduce_weight=False, keep_documents=True, max_ram="5MB"
+                include_konfuzio=False, reduce_weight=False, keep_documents=True, max_ram="500KB"
             )
 
-        self.project._max_ram = "5MB"
+        self.project._max_ram = "500KB"
         with pytest.raises(MemoryError):
             self.pipeline.pipeline_path = self.pipeline.save(
                 include_konfuzio=False, reduce_weight=False, keep_documents=True
@@ -270,8 +284,9 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
             include_konfuzio=True,
             reduce_weight=True,
             keep_documents=False,
-            max_ram="5MB",
+            max_ram="500KB",
         )
+
         assert os.path.isfile(self.pipeline.pipeline_path)
 
         assert n_project_documents == len(self.project._documents)
@@ -281,7 +296,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         assert self.pipeline.df_train is None
         assert self.pipeline.tokenizer.processing_steps == []
 
-        assert previous_size > asizeof.asizeof(self.pipeline)
+        assert previous_size > memory_size_of(self.pipeline)
 
     def test_05_upload_ai_model(self):
         """Upload the model."""
@@ -298,10 +313,14 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
         assert evaluation.f1(None) == self.evaluate_full_result
 
+        assert 5e5 < memory_size_of(evaluation.data) < 6e5
+
     def test_07_data_quality(self):
         """Evaluate on training documents."""
         evaluation = self.pipeline.evaluate_full(use_training_docs=True)
         assert evaluation.f1(None) == self.data_quality_result
+
+        assert 22e5 < memory_size_of(evaluation.data) < 24e5
 
     def test_08_tokenizer_quality(self):
         """Evaluate the tokenizer quality."""
@@ -311,16 +330,22 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         assert evaluation.tokenizer_fp() == 289
         assert evaluation.tokenizer_fn() == 5
 
+        assert 5e5 < memory_size_of(evaluation.data) < 6e5
+
     def test_09_clf_quality(self):
         """Evaluate the Label classifier quality."""
         evaluation = self.pipeline.evaluate_clf()
         assert evaluation.clf_f1(None) == self.clf_quality_result
+
+        assert 1e5 < memory_size_of(evaluation.data) < 2e5
 
     def test_10_label_set_clf_quality(self):
         """Evaluate the LabelSet classifier quality."""
         evaluation = self.pipeline.evaluate_label_set_clf()
 
         assert evaluation.f1(None) == 0.9552238805970149
+
+        assert 1e5 < memory_size_of(evaluation.data) < 2e5
 
     def test_11_extract_test_document(self):
         """Extract a randomly selected Test Document."""
@@ -382,6 +407,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         """Set up the Data and Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
         cls.pipeline = RFExtractionAI(use_separate_labels=cls.use_separate_labels)
+
         cls.pipeline.pipeline_path_no_konfuzio_sdk = None
 
         cls.tests_annotations_spans = list()
@@ -391,9 +417,15 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         self.pipeline.tokenizer = ListTokenizer(tokenizers=[])
         self.pipeline.category = self.project.get_category_by_id(id_=63)
 
+        assert memory_size_of(self.pipeline.category) < 5e5
+
         for label in self.pipeline.category.labels:
             for regex in label.find_regex(category=self.pipeline.category):
                 self.pipeline.tokenizer.tokenizers.append(RegexTokenizer(regex=regex))
+
+        assert 8e6 < memory_size_of(self.pipeline.category) < 12e6
+
+        assert 10e3 < memory_size_of(self.pipeline.tokenizer) < 15e3
 
         if not TEST_WITH_FULL_DATASET:
             train_doc_ids = [44823, 44834, 44839, 44840, 44841]
@@ -414,13 +446,21 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         # We have intentional unrevised annotations in the Training set which will block feature calculation,
         # unless we set require_revised_annotations=False (which is default), which we are doing here, so we ignore them
         # See TestWhitespaceRFExtractionAI::test_2_make_features for the case with require_revised_annotations=True
+        assert 8e6 < memory_size_of(self.pipeline.category) < 11e6
+
         self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
             documents=self.pipeline.documents, retokenize=False, require_revised_annotations=False
         )
 
+        assert 8e6 < memory_size_of(self.pipeline.category) < 11e6
+        assert 2e6 < memory_size_of(self.pipeline.df_train) < 3e6
+
     def test_03_fit(self) -> None:
         """Start to train the Model."""
         self.pipeline.fit()
+
+        assert memory_size_of(self.pipeline.clf) < 1e5
+        assert memory_size_of(self.pipeline.label_set_clf) < 1e5
 
         if self.pipeline.use_separate_labels:
             assert len(self.pipeline.clf.classes_) == 19
@@ -433,22 +473,22 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
     def test_04_save_model(self):
         """Save the model."""
-        previous_size = asizeof.asizeof(self.pipeline)
+        previous_size = memory_size_of(self.pipeline)
 
         self.pipeline.pipeline_path_no_konfuzio_sdk = self.pipeline.save(
             output_dir=self.project.model_folder,
             include_konfuzio=False,
             reduce_weight=True,
             keep_documents=False,
-            max_ram="5MB",
+            max_ram="500KB",
         )
 
         with pytest.raises(MemoryError):
             self.pipeline.pipeline_path = self.pipeline.save(
-                include_konfuzio=False, max_ram="5MB", keep_documents=True, reduce_weight=False
+                include_konfuzio=False, max_ram="500KB", keep_documents=True, reduce_weight=False
             )
 
-        self.project._max_ram = "5MB"
+        self.project._max_ram = "500KB"
         with pytest.raises(MemoryError):
             self.pipeline.pipeline_path = self.pipeline.save(
                 include_konfuzio=False, keep_documents=True, reduce_weight=False
@@ -465,8 +505,9 @@ class TestRegexRFExtractionAI(unittest.TestCase):
             include_konfuzio=True,
             reduce_weight=True,
             keep_documents=False,
-            max_ram="5MB",
+            max_ram="500KB",
         )
+
         assert os.path.isfile(self.pipeline.pipeline_path)
 
         assert n_project_documents == len(self.project._documents)
@@ -476,7 +517,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         assert self.pipeline.df_train is None
         assert self.pipeline.tokenizer.processing_steps == []
 
-        assert previous_size > asizeof.asizeof(self.pipeline)
+        assert previous_size > memory_size_of(self.pipeline)
 
     def test_05_upload_ai_model(self):
         """Upload the model."""
@@ -490,13 +531,16 @@ class TestRegexRFExtractionAI(unittest.TestCase):
     def test_06_evaluate_full(self):
         """Evaluate DocumentEntityMultiClassModel."""
         evaluation = self.pipeline.evaluate_full()
-
         assert evaluation.f1(None) == self.evaluate_full_result
+
+        assert 1e5 < memory_size_of(evaluation.data) < 2e5
 
     def test_07_data_quality(self):
         """Evaluate on training documents."""
         evaluation = self.pipeline.evaluate_full(use_training_docs=True)
         assert evaluation.f1(None) >= 0.94
+
+        assert 4e5 < memory_size_of(evaluation.data) < 5e5
 
     def test_08_tokenizer_quality(self):
         """Evaluate the tokenizer quality."""
@@ -506,10 +550,14 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         assert evaluation.tokenizer_fp() == 26
         assert evaluation.tokenizer_fn() == 1
 
+        assert 1e5 < memory_size_of(evaluation.data) < 2e5
+
     def test_09_clf_quality(self):
         """Evaluate the Label classifier quality."""
         evaluation = self.pipeline.evaluate_clf()
         assert evaluation.clf_f1(None) == 1.0
+
+        assert 1e5 < memory_size_of(evaluation.data) < 2e5
 
     def test_10_label_set_clf_quality(self):
         """Evaluate the LabelSet classifier quality."""
@@ -546,6 +594,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
         assert len(res_doc.view_annotations()) == 19
+        assert issubclass(type(self.pipeline), BaseModel)
 
         no_konf_pipeline = load_model(self.pipeline.pipeline_path_no_konfuzio_sdk)
         res_doc = no_konf_pipeline.extract(document=test_document)
@@ -562,6 +611,38 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         if os.path.isfile(cls.pipeline.pipeline_path):
             os.remove(cls.pipeline.pipeline_path)  # cleanup
             os.remove(cls.pipeline.pipeline_path_no_konfuzio_sdk)
+
+
+@unittest.skip(reason='Slow. Only use to debug memory use.')
+def test_tracemalloc_memory():
+    """Set up the Data and Pipeline."""
+    tracemalloc.start()
+
+    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+    pipeline = RFExtractionAI(use_separate_labels=True)
+
+    pipeline.tokenizer = ListTokenizer(tokenizers=[])
+    pipeline.category = project.get_category_by_id(id_=63)
+
+    for label in pipeline.category.labels:
+        for regex in label.find_regex(category=pipeline.category):
+            pipeline.tokenizer.tokenizers.append(RegexTokenizer(regex=regex))
+
+    pipeline.documents = project.get_category_by_id(63).documents()
+
+    pipeline.test_documents = project.get_category_by_id(63).test_documents()
+
+    pipeline.df_train, pipeline.label_feature_list = pipeline.feature_function(
+        documents=pipeline.documents, retokenize=False, require_revised_annotations=False
+    )
+
+    pipeline.fit()
+
+    _ = pipeline.evaluate_full()
+
+    _ = pipeline.evaluate_full(use_training_docs=True)
+
+    display_top(tracemalloc.take_snapshot())
 
 
 class TestInformationExtraction(unittest.TestCase):
@@ -921,7 +1002,7 @@ class TestAddExtractionAsAnnotation(unittest.TestCase):
 
         # The document used is an empty document, therefore it does not have text or bounding boxes,
         # so we cannot have the offset string or the coordinates and it shouldn't have been extracted at all
-        with pytest.raises(NotImplementedError, match='does not have a correspondence in the text of Document'):
+        with pytest.raises(NotImplementedError, match='does not have a correspondence in the text of Virtual Document'):
             add_extractions_as_annotations(
                 extractions=self.extraction_df,
                 document=document,
@@ -1194,27 +1275,35 @@ def test_load_model_corrupt_file():
 def test_load_model_wrong_pickle_data():
     """Test loading of wrong pickle data."""
     path = "trainer/list_test.pkl"
-    with pytest.raises(TypeError, match="needs to be a Konfuzio Trainer instance"):
+    with pytest.raises(TypeError, match="not inheriting from the BaseModel class."):
         load_model(path)
 
 
 def test_load_ai_model():
     """Test loading of trained model."""
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    path = "trainer/2022-09-27-18-45-41_lohnabrechnung.pkl"
+    path = "trainer/2023-01-17-20-21-13_lohnabrechnung.pkl"
     pipeline = load_model(path)
+
+    assert issubclass(type(pipeline), BaseModel)
 
     test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
     res_doc = pipeline.extract(document=test_document)
-    assert len(res_doc.annotations(use_correct=False)) == 20
+    assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
 
 
 def test_load_old_ai_model():
     """Test loading of an old trained model."""
     path = "trainer/2022-03-10-15-14-51_lohnabrechnung_old_model.pkl"
-    pipeline = load_model(path)
+    with pytest.raises(TypeError, match=" not inheriting from the BaseModel class."):
+        load_model(path)
 
-    assert pipeline.name == 'DocumentAnnotationMultiClassModel'
+
+def test_load_old_ai_model_2():
+    """Test loading of a newer old trained model."""
+    path = "trainer/2023-01-09-17-47-50_lohnabrechnung.pkl"
+    with pytest.raises(TypeError, match="not inheriting from the BaseModel class."):
+        load_model(path)
 
 
 def test_feat_num_count():
@@ -1533,7 +1622,7 @@ def test_num(test_input, expected, document_id):
 #
 #     Existing test cases:
 #
-#     test_data.TestAPIDataSetup.test_separate_labels
+#     test_documents.TestAPIDataSetup.test_separate_labels
 #     => Tests training and the number of labels after separation using project 46
 #
 #     Missing test:

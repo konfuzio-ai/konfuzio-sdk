@@ -179,13 +179,19 @@ class TestKonfuzioSDKAPI(unittest.TestCase):
         sorted_dataset_documents = [x for x in sorted_documents if x['dataset_status'] in [2, 3]]
         self.assertEqual(26 + 3, len(sorted_dataset_documents))
 
-    def test_upload_file_konfuzio_api(self):
+    def test_upload_file_konfuzio_api_1(self):
         """Test upload of a file through API and its removal."""
         file_path = os.path.join(FOLDER_ROOT, 'test_data', 'pdf.pdf')
         doc = upload_file_konfuzio_api(file_path, project_id=TEST_PROJECT_ID)
         assert doc.status_code == 201
         document_id = json.loads(doc.text)['id']
         assert delete_file_konfuzio_api(document_id)
+
+    def test_upload_file_konfuzio_api_invalid_callback_url(self):
+        """Test upload of a file through API and its removal."""
+        file_path = os.path.join(FOLDER_ROOT, 'test_data', 'pdf.pdf')
+        with pytest.raises(HTTPError, match="Enter a valid URL."):
+            _ = upload_file_konfuzio_api(file_path, project_id=TEST_PROJECT_ID, callback_url='invalid url')
 
     def test_download_file_with_ocr(self):
         """Test to download the OCR version of a document."""
