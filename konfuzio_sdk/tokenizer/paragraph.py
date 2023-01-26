@@ -6,7 +6,7 @@ import time
 from konfuzio_sdk.data import Annotation, Document, Span
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer, ProcessingStep
 
-from konfuzio_sdk.utils import sdk_isinstance, get_paragraphs_by_line_space
+from konfuzio_sdk.utils import sdk_isinstance  # , get_paragraphs_by_line_space
 from konfuzio_sdk.api import get_results_from_segmentation
 
 logger = logging.getLogger(__name__)
@@ -50,14 +50,16 @@ class ParagraphTokenizer(AbstractTokenizer):
             )
 
         if self.mode == 'detectron':
-            return self._detectron_tokenize(document=document)
+            self._detectron_tokenize(document=document)
         elif self.mode == 'line_distance':
-            return self._line_distance_tokenize(document=document)
+            self._line_distance_tokenize(document=document)
 
         after_none = len(document.annotations(use_correct=False, label=document.project.no_label))
         logger.info(f'{after_none - before_none} new Annotations in {document} by {repr(self)}.')
 
         self.processing_steps.append(ProcessingStep(self, document, time.monotonic() - t0))
+
+        return document
 
     def _detectron_tokenize(self, document: Document) -> Document:
         """Create one multiline Annotation per paragraph detected by detectron2."""
@@ -133,7 +135,74 @@ class ParagraphTokenizer(AbstractTokenizer):
 
     def _line_distance_tokenize(self, document: Document) -> Document:
         """Create one multiline Annotation per paragraph detected by line distance based rule based algorithm."""
-        paragraph_bboxes = get_paragraphs_by_line_space(document.get_bbox(), document.text)
+        # paragraph_bboxes = get_paragraphs_by_line_space(document.get_bbox(), document.text)
+        height = None
+        line_height_ratio = 0.8
+        if height is not None:
+            if not (isinstance(height, int) or isinstance(height, float)):
+                raise TypeError(f'Parameter must be of type int or float. It is {type(height)}.')
+
+        from statistics import median
+
+        # assemble bboxes by their page
+        pages_char_bboxes = [[] for _ in document.pages()]
+        for char_index, bbox in document.get_bbox().items():
+            bbox['char_index'] = int(char_index)
+            pages_char_bboxes[bbox['page_number'] - 1].append(bbox)
+
+        for page_char_bboxes in pages_char_bboxes:
+            # assemble bboxes by line and Page
+            page_lines = []
+            line_bboxes = []
+            for bbox in sorted(page_char_bboxes, key=lambda x: x['char_index']):
+                if not line_bboxes or line_bboxes[-1]['line_number'] == bbox['line_number']:
+                    line_bboxes.append(bbox)
+                else:
+                    page_lines.append(line_bboxes)
+                    line_bboxes = [bbox]
+            page_lines.append(line_bboxes)
+
+            # set line_threshold
+            if height is None:
+                # calculate median vertical character size for Page
+                line_threshold = round(
+                    line_height_ratio * median(bbox['y1'] - bbox['y0'] for bbox in page_char_bboxes),
+                    6,
+                )
+            else:
+                line_threshold = height
+
+            # go through lines to find paragraphs
+            previous_y0 = None
+            paragraph_spans = []
+            for line in page_lines:
+                assert line[0]['line_number'] == line[-1]['line_number']
+                max_y1 = max([bbox['y1'] for bbox in line])
+                min_y0 = min([bbox['y0'] for bbox in line])
+                span = Span(start_offset=line[0]['char_index'], end_offset=line[-1]['char_index'])
+                if not paragraph_spans or previous_y0 - max_y1 < line_threshold:
+                    paragraph_spans.append(span)
+                else:
+                    _ = Annotation(
+                        document=document,
+                        annotation_set=document.no_label_annotation_set,
+                        label=document.project.no_label,
+                        label_set=document.project.no_label_set,
+                        category=document.category,
+                        spans=paragraph_spans,
+                    )
+                    paragraph_spans = [span]
+
+                previous_y0 = min_y0
+            _ = Annotation(
+                document=document,
+                annotation_set=document.no_label_annotation_set,
+                label=document.project.no_label,
+                label_set=document.project.no_label_set,
+                category=document.category,
+                spans=paragraph_spans,
+            )
+        return document
 
     def found_spans(self, document: Document):
         pass
