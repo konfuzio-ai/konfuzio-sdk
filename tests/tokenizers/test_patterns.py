@@ -1944,7 +1944,6 @@ class TestAutomatedRegexTokenizer(TestTemplateRegexTokenizer):
 
         label.lose_weight()
 
-        label = self.category.labels[0]
         assert label._evaluations == {}
         assert label._tokens == {}
         assert label._regex == {}

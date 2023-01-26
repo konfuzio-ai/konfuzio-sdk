@@ -50,9 +50,9 @@ format `Authorization: Basic <string>`, where `<string>` is a Base64-encoded str
 format `<username>:<password>` (this is usually done automatically by the HTTP client).
 
 .. warning::
-  While this approach doesn't require additional setup and is useful for testing in the Swagger page, it is
-  **discouraged** for serious/automated use, since it usually involves storing these credentials in plain text on the
-  client side.
+While this approach doesn't require additional setup and is useful for testing in the Swagger page, it is
+**discouraged** for serious/automated use, since it usually involves storing these credentials in plain text on the
+client side.
 
 #### Cookie authentication
 
@@ -79,8 +79,8 @@ This token doesn't currently expire, so you can use indefinitely, but you can de
 the [authentication DELETE endpoint](link).
 
 .. note::
-  This is the authentication method you **should** use if you're building an external service that consumes the Konfuzio
-  API.
+This is the authentication method you **should** use if you're building an external service that consumes the Konfuzio
+API.
 
 An example workflow would look like:
 
@@ -154,8 +154,8 @@ indicate failure on our side and are usually temporary (if they aren't, please
 [contact us](https://konfuzio.com/support/)).
 
 .. seealso::
-  The `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`_ provides a more detailed breakdown of which response
-  codes are expected for each endpoint.
+The `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`\_ provides a more detailed breakdown of which response
+codes are expected for each endpoint.
 
 ### Pagination
 
@@ -195,8 +195,8 @@ use `?created_at_before=2022-02-01&created_at_after=2021-12-01` to only return i
 December 1, 2021 and February 1, 2022 (specified dates excluded).
 
 .. seealso::
-  For more filtering options, refer to the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`_ for the endpoint
-  that you want to filter.
+For more filtering options, refer to the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`\_ for the endpoint
+that you want to filter.
 
 ### Ordering
 
@@ -209,8 +209,8 @@ You can specify that you want the ordering to be reversed by prefixing the field
 example: `?ordering=-created_at`.
 
 .. seealso::
-  For a list of fields that can be used for ordering, refer to
-  the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`_ for the endpoint that you want to order.
+For a list of fields that can be used for ordering, refer to
+the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`\_ for the endpoint that you want to order.
 
 ### Fields
 
@@ -220,9 +220,9 @@ returned. You can specify the `fields` `GET` parameter with the field names sepa
 For example, you can specify `?fields=id,created_at` to only return the `id` and `created_at` fields in the response.
 
 .. seealso::
-  Refer to the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`_ for a specific endpoint to see if it
-  supports using the `fields` parameter. When supported, any field in the response schema can be used in the `fields`
-  parameter.
+Refer to the `Swagger documentation <http:/app.konfuzio.com/v3/swagger/>`\_ for a specific endpoint to see if it
+supports using the `fields` parameter. When supported, any field in the response schema can be used in the `fields`
+parameter.
 
 ### Coordinates and bounding boxes
 
@@ -249,7 +249,6 @@ There are three concepts related to coordinates and bounding boxes that are used
 
 If the endpoint you're working with uses a `span` or `bbox` field, refer to its Swagger schema and to the summary above
 to understand which fields it needs.
-
 
 ## Supported OCR languages
 
@@ -291,20 +290,19 @@ For information about file size and page limits, refer to the Content Limits, i
 | Tag Image File Format (TIFF)            | `.tiff`, `.tif`   | `image/tiff`                                                                |
 | Joint Photographic Experts Group (JPEG) | `.jpg`, `.jpeg`   | `image/jpeg`                                                                |
 | Portable Network Graphics (PNG)         | `.png`            | `image/png`                                                                 |
-| Excel                                   | `.xls`, `.xlsx`   |  several, see details below                                                 |
-| PowerPoint                              | `.ppt`, `.pptx`   |  several, see details below                                                 |
-| Word                                    | `.doc`, `.docx`   |  several, see details below                                                 |
-
+| Excel                                   | `.xls`, `.xlsx`   | several, see details below                                                  |
+| PowerPoint                              | `.ppt`, `.pptx`   | several, see details below                                                  |
+| Word                                    | `.doc`, `.docx`   | several, see details below                                                  |
 
 Note that some of these image formats are "lossy" (for example, JPEG). Reducing file sizes for lossy formats may result in a degradation of image quality and accuracy of results from Konfuzio.
 
 ##### File extension handling & correction
 
-It is possible to upload files with no (unknown or corrupted) file extension to Konfuzio (e.g. instead of 
-file:`example.pdf`, file: `example.p`, `example`, or even`example.example.example` was uploaded) when this happens, 
-internally  correction logic is run in order to try and guess the correct extension before saving and or extracting 
-the file/document. This correction attempts to guess all supported file types, but success cannot be guaranteed. The 
-maximum file extension for this correction to work should not exceed 99 characters. 
+It is possible to upload files with no (unknown or corrupted) file extension to Konfuzio (e.g. instead of
+file:`example.pdf`, file: `example.p`, `example`, or even`example.example.example` was uploaded) when this happens,
+internally correction logic is run in order to try and guess the correct extension before saving and or extracting
+the file/document. This correction attempts to guess all supported file types, but success cannot be guaranteed. The
+maximum file extension for this correction to work should not exceed 99 characters.
 
 #### PDFs
 
@@ -343,7 +341,6 @@ The following content limits apply to Konfuzio SaaS.
 | Number of pages in active processing                         | not limited                     |
 | Review document requests per minute                          | not limited                     |
 
-
 If you would like to increase your content limits, submit request for your project as a [Support Ticket](https://konfuzio.com/en/support/).
 
 ### Document scan resolution
@@ -361,21 +358,23 @@ try to demystify this process, and give you some insight into all the steps whic
 We first look at the projects settings to see what base settings have been set up for your documents.
 
 1. **Chosen OCR engine**
-    1. easy
-    2. precise
+
+   1. easy
+   2. precise
 
 2. **Chosen processing type**
-    1. OCR
-    2. Embedding
-    3. Embedding and OCR
+
+   1. OCR
+   2. Embedding
+   3. Embedding and OCR
 
 3. **Chosen auto-rotation option**
 
    (Only available for precise OCR engine)
 
-    1. None
-    2. Rounded
-    3. Exact
+   1. None
+   2. Rounded
+   3. Exact
 
 ### File pre-processing
 
@@ -391,27 +390,26 @@ During file upload, after the Project settings have been evaluated, we look at t
 8. We create thumbnails per page.
 9. We create images per page.
 
-
 ### OCR Text extraction
 
 During evaluation of both project settings and file, we also process OCR extraction
 
 1. We use the chosen engine on the pre-processed file.
-    1. If "Embedding and OCR" is chosen, internally we check which processing type is the most suitable, and use either
-       Embedding or OCR
-    2. Depending on chosen processing type, some pre-processing may be done:
-        1. Convert non-PDF Documents to a [PDF](https://dev.konfuzio.com/web/api.html#pdfs) 
-           that is being used here
-        2. Convert PDF to text (in case of embeddings)
-    3. If some sort of PDF corruption is detected, within our ability we attempt to repair the PDF
-    4. If the PDF or TIFF is multi page (and valid) we split the document in pages and process each page separately
+   1. If "Embedding and OCR" is chosen, internally we check which processing type is the most suitable, and use either
+      Embedding or OCR
+   2. Depending on chosen processing type, some pre-processing may be done:
+      1. Convert non-PDF Documents to a [PDF](https://dev.konfuzio.com/web/api.html#pdfs)
+         that is being used here
+      2. Convert PDF to text (in case of embeddings)
+   3. If some sort of PDF corruption is detected, within our ability we attempt to repair the PDF
+   4. If the PDF or TIFF is multi page (and valid) we split the document in pages and process each page separately
 2. We check whether auto-rotation was chosen when the precise OCR engine is used]
-    1. If rounded angle correction was chosen, we rotate the image to the nearest 45/90 degrees.
-    2. If exact angle rotation was chosen, we rotate the image at its exact angle rotation value.
+   1. If rounded angle correction was chosen, we rotate the image to the nearest 45/90 degrees.
+   2. If exact angle rotation was chosen, we rotate the image at its exact angle rotation value.
 3. We attempt to extract the text from (either ocr, embedded or both)
-    1. OCR may fail because text on the document is technically unreadable, the file is corrupted or empty and cannot be
-       repaired
-    2. OCR may fail because engine does not support the text language
+   1. OCR may fail because text on the document is technically unreadable, the file is corrupted or empty and cannot be
+      repaired
+   2. OCR may fail because engine does not support the text language
 
 Finally, we return you the extracted text.
 
@@ -536,8 +534,8 @@ After your initial project setup, you can start uploading documents. To upload a
 our [document creation endpoint](https://app.konfuzio.com/v3/swagger/#/documents/documents_create).
 
 .. note::
-  Unlike most other endpoints, the document creation endpoint only supports `multipart/form-data` requests (to support
-  file uploading), so you won't have to JSON-encode your request this time.
+Unlike most other endpoints, the document creation endpoint only supports `multipart/form-data` requests (to support
+file uploading), so you won't have to JSON-encode your request this time.
 
 ```
 curl --request POST \
@@ -634,8 +632,8 @@ documents.
 #### Start from our Vue.js code
 
 Our document dashboard is based on Vue.js and completely implemented with the API v3. You can check out our solution
-[on GitHub](https://github.com/konfuzio-ai/konfuzio-capture-vue) and customize it to your needs. You will find a
-technical overview and component description in the repository's `README`.
+[on GitHub](https://github.com/konfuzio-ai/document-validation-ui) and customize it to your needs. You will find a
+technical overview and component description [here](../dvui/index.md).
 
 #### Start from scratch
 

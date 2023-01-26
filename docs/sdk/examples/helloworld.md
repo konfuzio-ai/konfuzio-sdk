@@ -1,6 +1,6 @@
 ## Create Regex-based Annotations
 
-Let's see a simple example of how can we use the `konfuzio_sdk` package to get information on a project and to post annotations.
+Let's see a simple example of how we can use the `konfuzio_sdk` package to get information on a project and to post annotations.
 
 You can follow the example below to post annotations of a certain word or expression in the first document uploaded.
 
@@ -126,7 +126,7 @@ evaluation = pipeline.evaluate_clf()
 print(f"Label classifier evaluation F1 score: {evaluation.clf_f1()}")
 
 # To get the evaluation of the LabelSet given perfect Label classification
-evaluation = pipeline.evaluate_template_clf()
+evaluation = pipeline.evaluate_label_set_clf()
 print(f"Label Set evaluation F1 score: {evaluation.f1()}")
 
 ```
