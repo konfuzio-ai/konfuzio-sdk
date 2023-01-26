@@ -35,7 +35,6 @@ from warnings import warn
 import numpy
 import pandas
 import cloudpickle
-from pympler import asizeof
 from pkg_resources import get_distribution
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.validation import check_is_fitted
@@ -50,7 +49,8 @@ from konfuzio_sdk.normalize import (
     normalize_to_positive_float,
 )
 from konfuzio_sdk.regex import regex_matches
-from konfuzio_sdk.utils import get_timestamp, get_bbox, normalize_memory, memory_size_of, get_sdk_version
+from konfuzio_sdk.utils import get_timestamp, get_bbox, normalize_memory, get_sdk_version, memory_size_of
+
 from konfuzio_sdk.evaluate import Evaluation
 
 logger = logging.getLogger(__name__)
@@ -1152,7 +1152,7 @@ class BaseModel(metaclass=abc.ABCMeta):
             self.documents = []
             self.test_documents = []
 
-        logger.info(f'Model size: {asizeof.asizeof(self) / 1_000_000} MB')
+        logger.info(f'Model size: {memory_size_of(self) / 1_000_000} MB')
         self.ensure_model_memory_usage_within_limit(max_ram)
 
         if include_konfuzio:
@@ -2531,8 +2531,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         max_ram = normalize_memory(max_ram)
 
-        if max_ram and asizeof.asizeof(self) > max_ram:
-            raise MemoryError(f"AI model memory use ({asizeof.asizeof(self)}) exceeds maximum ({max_ram=}).")
+        if max_ram and memory_size_of(self) > max_ram:
+            raise MemoryError(f"AI model memory use ({memory_size_of(self)}) exceeds maximum ({max_ram=}).")
 
         sys.setrecursionlimit(999999)
 

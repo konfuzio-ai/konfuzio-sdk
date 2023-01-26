@@ -6,8 +6,7 @@ import pandas
 import numpy
 from sklearn.utils.extmath import weighted_mode
 
-from konfuzio_sdk.utils import memory_size_of
-from konfuzio_sdk.utils import sdk_isinstance
+from konfuzio_sdk.utils import sdk_isinstance, memory_size_of
 from konfuzio_sdk.data import Document, Category
 
 logger = logging.getLogger(__name__)
