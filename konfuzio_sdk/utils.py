@@ -5,11 +5,13 @@ import itertools
 import logging
 import operator
 import os
+import pkg_resources
 import regex as re
 import unicodedata
 import zipfile
 from contextlib import contextmanager
 from io import BytesIO
+from pympler import asizeof
 from typing import Union, List, Tuple, Dict, Optional
 from warnings import warn
 
@@ -82,6 +84,12 @@ def is_file(file_path, raise_exception=True, maximum_size=100000000, allow_empty
             raise FileNotFoundError(f'File expected but not found at: {file_path}')
         else:
             return False
+
+
+def memory_size_of(obj) -> int:
+    """Return memory size of object in bytes."""
+    size = asizeof.asizeof(obj)
+    return size
 
 
 def normalize_memory(memory: Union[None, str]) -> Union[int, None]:
@@ -889,3 +897,8 @@ def get_merged_bboxes(doc_bbox: Dict, bboxes: Union[Dict, List], doc_text: Optio
             bbox['offset_string_original'] = offset_string
 
     return merged_bboxes
+
+
+def get_sdk_version():
+    """Get a version of current Konfuzio SDK used."""
+    return pkg_resources.get_distribution("konfuzio-sdk").version

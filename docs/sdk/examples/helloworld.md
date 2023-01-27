@@ -1,6 +1,6 @@
 ## Create Regex-based Annotations
 
-Let's see a simple example of how can we use the `konfuzio_sdk` package to get information on a project and to post annotations.
+Let's see a simple example of how we can use the `konfuzio_sdk` package to get information on a project and to post annotations.
 
 You can follow the example below to post annotations of a certain word or expression in the first document uploaded.
 
