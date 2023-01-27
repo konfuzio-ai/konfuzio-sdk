@@ -116,6 +116,15 @@ class TestFileSplittingModel(unittest.TestCase):
                 assert intersection == {'Morning,'}
                 assert page.is_first_page
 
+    def test_predict_with_empty_categories(self):
+        """Test predicting with all empty Categories."""
+        model = ContextAwareFileSplittingModel(
+            categories=[self.project.get_category_by_id(2)], tokenizer=self.file_splitting_model.tokenizer
+        )
+        model.fit(allow_empty_categories=True)
+        with pytest.raises(ValueError, match="Cannot run prediction as none of the Categories in"):
+            model.predict(self.test_document.pages()[0])
+
     def test_pickle_model_save_load(self):
         """Test saving ContextAwareFileSplittingModel to pickle."""
         self.file_splitting_model.output_dir = self.project.model_folder

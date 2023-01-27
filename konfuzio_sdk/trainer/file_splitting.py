@@ -171,20 +171,33 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         :raises ValueError: When at least one Category does not have exclusive_first_page_strings.
         :return: A Page with a newly predicted is_first_page attribute.
         """
+        empty_first_page_strings = [
+            category
+            for category in self.categories
+            if not category.exclusive_first_page_strings(tokenizer=self.tokenizer)
+        ]
+        print(empty_first_page_strings)
+        if len(empty_first_page_strings) == len(self.categories):
+            raise ValueError(
+                f"Cannot run prediction as none of the Categories in {self.project} have "
+                f"_exclusive_first_page_strings."
+            )
         for category in self.categories:
             if not category.exclusive_first_page_strings(tokenizer=self.tokenizer):
                 # exclusive_first_page_strings calls an implicit _exclusive_first_page_strings attribute once it was
-                # already calculated during fit() method so it is not a recurrent calculation each time.
-                raise ValueError(f"Cannot run prediction as {category} does not have _exclusive_first_page_strings.")
-        page.is_first_page = False
-        for category in self.categories:
-            cur_first_page_strings = category.exclusive_first_page_strings(tokenizer=self.tokenizer)
-            intersection = {span.offset_string.strip('\f').strip('\n') for span in page.spans()}.intersection(
-                cur_first_page_strings
-            )
-            if len(intersection) > 0:
-                page.is_first_page = True
-                break
+                # already calculated during fit() method, so it is not a recurrent calculation each time.
+                logger.warning(
+                    f"Cannot run prediction with {category} as it does not have _exclusive_first_page_" f"strings."
+                )
+            else:
+                page.is_first_page = False
+                cur_first_page_strings = category.exclusive_first_page_strings(tokenizer=self.tokenizer)
+                intersection = {span.offset_string.strip('\f').strip('\n') for span in page.spans()}.intersection(
+                    cur_first_page_strings
+                )
+                if len(intersection) > 0:
+                    page.is_first_page = True
+                    break
         return page
 
 
