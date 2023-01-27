@@ -6,7 +6,7 @@ import time
 from konfuzio_sdk.data import Annotation, Document, Span
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer, ProcessingStep
 
-from konfuzio_sdk.utils import sdk_isinstance  # , get_paragraphs_by_line_space
+from konfuzio_sdk.utils import sdk_isinstance
 from konfuzio_sdk.api import get_results_from_segmentation
 
 logger = logging.getLogger(__name__)
@@ -179,7 +179,7 @@ class ParagraphTokenizer(AbstractTokenizer):
                 assert line[0]['line_number'] == line[-1]['line_number']
                 max_y1 = max([bbox['y1'] for bbox in line])
                 min_y0 = min([bbox['y0'] for bbox in line])
-                span = Span(start_offset=line[0]['char_index'], end_offset=line[-1]['char_index'])
+                span = Span(start_offset=line[0]['char_index'], end_offset=line[-1]['char_index'] + 1)
                 if not paragraph_spans or previous_y0 - max_y1 < line_threshold:
                     paragraph_spans.append(span)
                 else:
