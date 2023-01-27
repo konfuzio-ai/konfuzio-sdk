@@ -1900,11 +1900,6 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         # Main Logic -------------------------
 
-        # Do column renaming to be compatible with text-annotation
-        # todo: how can multilines be created via SDK
-        # todo: why do we need to adjust the woring for Server?
-        # todo: which other attributes could be send in the extraction method?
-
         # Convert DataFrame to Dict with labels as keys and label dataframes as value.
         res_dict = {}
         for result_name in set(df['result_name']):
