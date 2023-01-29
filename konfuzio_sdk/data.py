@@ -46,6 +46,11 @@ class Data:
     _update = False
     _force_offline = False
 
+    def __init__(self, **kwargs):
+        """Set a custom session if a session argument is specified."""
+        if kwargs.get('session'):
+            self.session = kwargs.get('session')
+
     def __eq__(self, other) -> bool:
         """Compare any point of data with their ID, overwrite if needed."""
         if self.id_ is None and other and other.id_ is None:
@@ -2434,6 +2439,7 @@ class Project(Data):
         :param id_: ID of the Project
         :param project_folder: Set a Project root folder, if empty "data_<id_>" will be used.
         """
+        super().__init__(**kwargs)
         self.id_local = next(Data.id_iter)
         self.id_ = id_  # A Project with None ID is not retrieved from the HOST
         self._project_folder = project_folder
@@ -2517,7 +2523,7 @@ class Project(Data):
 
     def write_project_files(self):
         """Overwrite files with Project, Label, Label Set information."""
-        data = get_project_details(project_id=self.id_)
+        data = get_project_details(project_id=self.id_, session=self.session)
         with open(self.label_sets_file_path, "w") as f:
             json.dump(data['section_labels'], f, indent=2, sort_keys=True)
         with open(self.labels_file_path, "w") as f:
