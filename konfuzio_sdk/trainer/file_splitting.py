@@ -1,4 +1,16 @@
-"""Find similarities between Documents or Pages via comparison between their texts."""
+"""
+Process Documents that consist of several files and propose splitting them into the sub-Documents accordingly.
+
+We suggest a context-aware approach based on scanning Category's Documents and finding strings exclusive for first
+Pages of all Documents within the Category. Upon predicting whether a Page is a potential splitting point (meaning
+whether it is first or not), we compare Page's contents to these exclusive first-page strings; if there is occurrence of
+at least one such string, we mark a Page to be first (thus meaning it is a splitting point).
+
+A ContextAwareFileSplittingModel instance can be used with an interface provided by SplittingAI – this class accepts a
+whole Document instead of a single Page and proposes splitting points or splits the original Documents.
+
+For developing a custom file-splitting approach, we propose an Abstract class.
+"""
 import abc
 import logging
 import os
