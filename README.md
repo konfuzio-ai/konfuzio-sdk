@@ -29,10 +29,10 @@ Deploy AI models       | :heavy_multiplication_x:                  |  :heavy_che
 
 |                                                                                               |                                                               |
 |-----------------------------------------------------------------------------------------------|---------------------------------------------------------------|
-| :ledger: [Docs](https://dev.konfuzio.com)                                                     | Read the docs                                                 |
+| :ledger: [Docs](https://dev.konfuzio.com/sdk/index.html)                                                    | Read the docs                                                 |
 | :floppy_disk: [Installation](https://github.com/konfuzio-ai/konfuzio-sdk#installation)        | How to install the Konfuzio SDK                               |
 | :mortar_board: [Tutorials](https://dev.konfuzio.com/sdk/examples/examples.html)               | See what the Konfuzio SDK can do with our Notebooks & Scripts |
-| :beginner: [Explanations](https://dev.konfuzio.com/sdk/explanations.html)                     | Here are links to teaching material about the Konfuzio SDK.   |
+| :bulb: [Explanations](https://dev.konfuzio.com/sdk/explanations.html)                         | Here are links to teaching material about the Konfuzio SDK.   |
 | :gear: [API Reference](https://dev.konfuzio.com/sdk/sourcecode.html)                          | Python classes, methods, and functions                        |
 | :heart: [Contributing](https://dev.konfuzio.com/sdk/contribution.html)                        | Learn how to contribute!                                      |
 | :bug: [Issue Tracker](https://github.com/konfuzio-ai/konfuzio-sdk/issues)                     | Report and monitor Konfuzio SDK issues                        |
@@ -52,7 +52,7 @@ Then you can use pip to install Konfuzio SDK and run init:
 The init will create a Token to connect to the Konfuzio Server. This will create variables `KONFUZIO_USER`,
 `KONFUZIO_TOKEN` and `KONFUZIO_HOST` in an `.env` file in your working directory.
 
-Find the full installation guide [here](https://dev.konfuzio.com/sdk/examples/index.html#install-sdk)
+Find the full installation guide [here](https://dev.konfuzio.com/sdk/get_started.html#install-sdk)
 or setup PyCharm as described [here](https://dev.konfuzio.com/sdk/quickstart_pycharm.html).
 
 ## CLI
@@ -69,30 +69,40 @@ And download any project via the id:
 
 ## Tutorials
 
+You can find detailed examples about how to set up and run document AI pipelines in our 
+[Tutorials](https://dev.konfuzio.com/sdk/tutorials.html), including:
+- [Split multi-file Document into Separate files](https://dev.konfuzio.com/sdk/tutorials.html#split-multi-file-document-into-separate-files-without-training-a-model)
+- [Document Categorization](https://dev.konfuzio.com/sdk/tutorials.html#document-categorization)
+- [Train a Konfuzio SDK Model to Extract Information From Payslip Documents](https://dev.konfuzio.com/sdk/tutorials.html#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents)
+
 ### Basics
+
+Here we show how to use the Konfuzio SDK to retrieve data hosted on a Konfuzio Server instance.
 
 ```python
 from konfuzio_sdk.data import Project, Document
 
-# Initialize the project:
-my_project = Project(id_='YOUR_PROJECT_ID')
+# Initialize the Project
+YOUR_PROJECT_ID: int
+my_project = Project(id_=YOUR_PROJECT_ID)
 
-# Get any project online
-doc: Document = my_project.get_document_by_id('DOCUMENT_ID_ONLNIE')
+# Get any Document online
+DOCUMENT_ID_ONLINE: int
+doc: Document = my_project.get_document_by_id(DOCUMENT_ID_ONLINE)
 
 # Get the Annotations in a Document
 doc.annotations()
 
 # Filter Annotations by Label
-label = my_project.get_label_by_name('MY_OWN_LABEL_NAME')
+MY_OWN_LABEL_NAME: str
+label = my_project.get_label_by_name(MY_OWN_LABEL_NAME)
 doc.annotations(label=label)
 
-# Or get all Annotations that belong to one Label
-cat = p.get_category_by_id(4433)
-label.annotations(categories=[cat])
+# Or get all Annotations that belong to one Category
+YOUR_CATEGORY_ID: int
+category = my_project.get_category_by_id(YOUR_CATEGORY_ID)
+label.annotations(categories=[category])
 
-# Force a project update. To save time documents will only be updated if they have changed.
-my_project.update()
+# Force a Project update. To save time Documents will only be updated if they have changed.
+my_project.get(update=True)
 ```
-
-Find more examples in the [Tutorials](https://dev.konfuzio.com/sdk/tutorials.html).

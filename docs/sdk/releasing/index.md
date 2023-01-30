@@ -1,5 +1,5 @@
 
-# Architecture SDK to Server
+## Architecture SDK to Server
 
 The following chart is automatically created by the version of the diagram on the branch master, see [source](https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/tests/SDK%20and%20Server%20Integration.drawio).
 
@@ -10,7 +10,7 @@ If you hover over the image you can zoom or use the full page mode.
 
 If you want to edit the diagramm, please refer to the [GitHub Drawio Documentation](https://drawio-app.com/github-support/).
 
-# Directory Structure
+## Directory Structure
 
 ```
 ├── konfuzio-sdk      <- SDK project name
