@@ -177,6 +177,11 @@ compare
 .. autofunction:: konfuzio_sdk.evaluate.compare
    :noindex:
 
+FileSplittingEvaluation
+---------------------
+.. autoclass:: konfuzio_sdk.evaluate.FileSplittingEvaluation
+   :members:
+   :noindex:
 
 =====================
 Document Categorization
