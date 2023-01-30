@@ -705,11 +705,9 @@ class Label(Data):
     def has_multiline_annotations(self, categories: List[Category] = None) -> bool:
         """Return if any Label annotations are multi-line."""
         if categories is None and self._has_multiline_annotations is None:
-            # logger.error("
             raise TypeError(
                 "This value has never been computed. Please provide a value for keyword argument: 'categories'"
             )
-            # return False
         elif type(categories) is list:
             self._has_multiline_annotations = False
             for category in categories:

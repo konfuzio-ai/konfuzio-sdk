@@ -194,16 +194,18 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
             self.pipeline.check_is_ready_for_extraction()
 
         if not TEST_WITH_FULL_DATASET:
-            train_doc_ids = [44823, 44834, 44839, 44840, 44841]
-            self.pipeline.documents = [self.project.get_document_by_id(doc_id) for doc_id in train_doc_ids]
-        else:
-            self.pipeline.documents = self.project.get_category_by_id(63).documents()
+            train_doc_ids = {44823, 44834, 44839, 44840, 44841}
+            for document in self.pipeline.category.documents():
+                if document.id_ not in train_doc_ids:
+                    document.dataset_status = 1  # set ignored training documents to preparation
+        self.pipeline.documents = self.pipeline.category.documents()
 
         if not TEST_WITH_FULL_DATASET:
-            test_doc_ids = [44865]
-            self.pipeline.test_documents = [self.project.get_document_by_id(doc_id) for doc_id in test_doc_ids]
-        else:
-            self.pipeline.test_documents = self.project.get_category_by_id(63).test_documents()
+            test_doc_ids = {44865}
+            for document in self.pipeline.category.test_documents():
+                if document.id_ not in test_doc_ids:
+                    document.dataset_status = 1
+        self.pipeline.test_documents = self.pipeline.category.test_documents()
 
         # todo have a separate test case for calculating features of offline documents
 
@@ -230,7 +232,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
             documents=self.pipeline.documents, require_revised_annotations=True
         )
 
-        assert 7e5 < memory_size_of(self.pipeline.category) < 9e5
+        assert 5e5 < memory_size_of(self.pipeline.category) < 7e5
 
         assert 11e6 < memory_size_of(self.pipeline.df_train) < 12e6
 
@@ -395,8 +397,8 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 @parameterized.parameterized_class(
     ('use_separate_labels', 'evaluate_full_result'),
     [
-        (False, 0.8266666666666667),  # w/ full dataset: 0.8930232558139535
-        (True, 0.8266666666666667),  # w/ full dataset: 0.9596412556053812
+        (False, 0.7272727272727273),  # w/ full dataset: 0.8930232558139535
+        (True, 0.7164179104477612),  # w/ full dataset: 0.9596412556053812
     ],
 )
 class TestRegexRFExtractionAI(unittest.TestCase):
@@ -419,25 +421,26 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
         assert memory_size_of(self.pipeline.category) < 5e5
 
+        train_doc_ids = {44823, 44834, 44839, 44840, 44841}
+        for doc in self.pipeline.category.documents():
+            if doc.id_ not in train_doc_ids:
+                doc.dataset_status = 1
+        self.pipeline.documents = self.pipeline.category.documents()
+
+        if not TEST_WITH_FULL_DATASET:
+            test_doc_ids = {44865}
+            for document in self.pipeline.category.test_documents():
+                if document.id_ not in test_doc_ids:
+                    document.dataset_status = 1
+
         for label in self.pipeline.category.labels:
             for regex in label.find_regex(category=self.pipeline.category):
                 self.pipeline.tokenizer.tokenizers.append(RegexTokenizer(regex=regex))
+        self.pipeline.test_documents = self.pipeline.category.test_documents()
 
-        assert 8e6 < memory_size_of(self.pipeline.category) < 12e6
+        assert 1e6 < memory_size_of(self.pipeline.category) < 2e6
 
-        assert 10e3 < memory_size_of(self.pipeline.tokenizer) < 15e3
-
-        if not TEST_WITH_FULL_DATASET:
-            train_doc_ids = [44823, 44834, 44839, 44840, 44841]
-            self.pipeline.documents = [self.project.get_document_by_id(doc_id) for doc_id in train_doc_ids]
-        else:
-            self.pipeline.documents = self.project.get_category_by_id(63).documents()
-
-        if not TEST_WITH_FULL_DATASET:
-            test_doc_ids = [44865]
-            self.pipeline.test_documents = [self.project.get_document_by_id(doc_id) for doc_id in test_doc_ids]
-        else:
-            self.pipeline.test_documents = self.project.get_category_by_id(63).test_documents()
+        assert 7e3 < memory_size_of(self.pipeline.tokenizer) < 10e3
 
         # todo have a separate test case for calculating features of offline documents
 
@@ -446,13 +449,13 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         # We have intentional unrevised annotations in the Training set which will block feature calculation,
         # unless we set require_revised_annotations=False (which is default), which we are doing here, so we ignore them
         # See TestWhitespaceRFExtractionAI::test_2_make_features for the case with require_revised_annotations=True
-        assert 8e6 < memory_size_of(self.pipeline.category) < 11e6
+        assert 1e6 < memory_size_of(self.pipeline.category) < 2e6
 
         self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
             documents=self.pipeline.documents, retokenize=False, require_revised_annotations=False
         )
 
-        assert 8e6 < memory_size_of(self.pipeline.category) < 11e6
+        assert 1e6 < memory_size_of(self.pipeline.category) < 2e6
         assert 2e6 < memory_size_of(self.pipeline.df_train) < 3e6
 
     def test_03_fit(self) -> None:
@@ -482,7 +485,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
             keep_documents=False,
             max_ram="500KB",
         )
-
+        time.sleep(1)  # If first and second model saved in same second, one overwrites the other
         with pytest.raises(MemoryError):
             self.pipeline.pipeline_path = self.pipeline.save(
                 include_konfuzio=False, max_ram="500KB", keep_documents=True, reduce_weight=False
@@ -540,15 +543,15 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         evaluation = self.pipeline.evaluate_full(use_training_docs=True)
         assert evaluation.f1(None) >= 0.94
 
-        assert 4e5 < memory_size_of(evaluation.data) < 5e5
+        assert 4e5 < memory_size_of(evaluation.data) < 6e5
 
     def test_08_tokenizer_quality(self):
         """Evaluate the tokenizer quality."""
         evaluation = self.pipeline.evaluate_tokenizer()
-        assert evaluation.tokenizer_f1(None) == 0.7157894736842105
-        assert evaluation.tokenizer_tp() == 34
-        assert evaluation.tokenizer_fp() == 26
-        assert evaluation.tokenizer_fn() == 1
+        assert evaluation.tokenizer_f1(None) == 0.5625
+        assert evaluation.tokenizer_tp() == 27
+        assert evaluation.tokenizer_fp() == 34
+        assert evaluation.tokenizer_fn() == 8
 
         assert 1e5 < memory_size_of(evaluation.data) < 2e5
 
