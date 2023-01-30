@@ -176,7 +176,6 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
             for category in self.categories
             if not category.exclusive_first_page_strings(tokenizer=self.tokenizer)
         ]
-        print(empty_first_page_strings)
         if len(empty_first_page_strings) == len(self.categories):
             raise ValueError(
                 f"Cannot run prediction as none of the Categories in {self.project} have "

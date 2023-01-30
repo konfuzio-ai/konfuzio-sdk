@@ -190,7 +190,6 @@ class TestFileSplittingModel(unittest.TestCase):
         self.file_splitting_model.test_documents = self.file_splitting_model.test_documents[:-2]
         splitting_ai = SplittingAI(self.file_splitting_model)
         splitting_ai.evaluate_full()
-        print(splitting_ai.full_evaluation.evaluation_results)
         assert splitting_ai.full_evaluation.tp() == 9
         assert splitting_ai.full_evaluation.fp() == 0
         assert splitting_ai.full_evaluation.fn() == 0
