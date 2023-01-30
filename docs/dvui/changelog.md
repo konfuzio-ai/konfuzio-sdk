@@ -3,4 +3,4 @@
 
 # Changelog
 
-You can find the Document Validation UI full changelog [here](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases).
+You can find the Konfuzio Document Validation UI full changelog [here](https://github.com/konfuzio-ai/document-validation-ui/releases).
