@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class ParagraphTokenizer(AbstractTokenizer):
-    """Tokenizer based on a single regex."""
+    """Tokenizer splitting Document into paragraphs."""
 
     def __init__(self, mode: str = 'detectron'):
         """
@@ -205,4 +205,5 @@ class ParagraphTokenizer(AbstractTokenizer):
         return document
 
     def found_spans(self, document: Document):
+        """"""
         pass
