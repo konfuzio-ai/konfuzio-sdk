@@ -179,19 +179,19 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
     def test_01_configure_pipeline(self):
         """Make sure the Data and Pipeline is configured."""
         with pytest.raises(AttributeError, match="missing Tokenizer"):
-            self.pipeline.check_is_ready_for_extraction()
+            self.pipeline.check_is_ready()
 
         self.pipeline.tokenizer = WhitespaceTokenizer()
 
         with pytest.raises(AttributeError, match="requires a Category"):
-            self.pipeline.check_is_ready_for_extraction()
+            self.pipeline.check_is_ready()
 
         self.pipeline.category = self.project.get_category_by_id(id_=63)
 
         assert memory_size_of(self.pipeline.category) < 5e5
 
         with pytest.raises(AttributeError, match="not provide a Label Classifier"):
-            self.pipeline.check_is_ready_for_extraction()
+            self.pipeline.check_is_ready()
 
         if not TEST_WITH_FULL_DATASET:
             train_doc_ids = {44823, 44834, 44839, 44840, 44841}
@@ -485,6 +485,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
             keep_documents=False,
             max_ram="500KB",
         )
+        assert os.path.isfile(self.pipeline.pipeline_path_no_konfuzio_sdk)
         time.sleep(1)  # If first and second model saved in same second, one overwrites the other
         with pytest.raises(MemoryError):
             self.pipeline.pipeline_path = self.pipeline.save(
@@ -602,6 +603,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         no_konf_pipeline = load_model(self.pipeline.pipeline_path_no_konfuzio_sdk)
         res_doc = no_konf_pipeline.extract(document=test_document)
         assert len(res_doc.view_annotations()) == 19
+        assert issubclass(type(no_konf_pipeline), BaseModel)
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -612,7 +614,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
             os.remove(os.path.join(dir, f))
 
         if os.path.isfile(cls.pipeline.pipeline_path):
-            os.remove(cls.pipeline.pipeline_path)  # cleanup
+            # os.remove(cls.pipeline.pipeline_path)  # cleanup
             os.remove(cls.pipeline.pipeline_path_no_konfuzio_sdk)
 
 
@@ -1039,9 +1041,8 @@ class TestExtractionToDocument(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Set LocalTextProject with example predictions."""
         cls.project = LocalTextProject()
-        cls.pipeline = RFExtractionAI()
         cls.category = cls.project.get_category_by_id(1)
-        cls.pipeline.category = cls.category
+        cls.pipeline = RFExtractionAI(category=cls.category)
         cls.label_set_0 = cls.project.get_label_set_by_id(2)
         # cls.label_set_1 = cls.project.get_label_set_by_id(3)
         cls.label_0 = cls.project.get_label_by_id(4)
@@ -1201,8 +1202,8 @@ class TestGetExtractionResults(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Set LocalTextProject with example predictions."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-        cls.pipeline = RFExtractionAI()
         cls.document = cls.project.get_document_by_id(44867)
+        cls.pipeline = RFExtractionAI(category=cls.document.category)
         cls.result_dict = {
             'Lohnabrechnung': {
                 'Vorname': pd.DataFrame(
@@ -1228,7 +1229,6 @@ class TestGetExtractionResults(unittest.TestCase):
 
     def test_get_extraction_results_with_virtual_doc(self):
         """Get back the extractions from our virtual doc."""
-        self.pipeline.category = self.document.category
         virtual_doc = self.pipeline.extraction_result_to_document(self.document, self.result_dict)
         ann1, ann2 = virtual_doc.annotations(use_correct=False)
         assert ann1.bboxes[0] == {
@@ -1285,7 +1285,10 @@ def test_load_model_wrong_pickle_data():
 def test_load_ai_model():
     """Test loading of trained model."""
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    path = "trainer/2023-01-17-20-21-13_lohnabrechnung.pkl"
+    # path = "trainer/2023-01-17-20-21-13_lohnabrechnung.pkl"
+    # path = "trainer/2023-01-30-15-23-27_lohnabrechnung.pkl"
+    # path = "trainer/2023-01-30-15-28-06_lohnabrechnung.pkl"
+    path = "trainer/2023-01-30-15-45-27_lohnabrechnung.pkl"
     pipeline = load_model(path)
 
     assert issubclass(type(pipeline), BaseModel)
