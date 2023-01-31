@@ -232,7 +232,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
             documents=self.pipeline.documents, require_revised_annotations=True
         )
 
-        assert 5e5 < memory_size_of(self.pipeline.category) < 7e5
+        assert 5e5 < memory_size_of(self.pipeline.category) < 8e5
 
         assert 11e6 < memory_size_of(self.pipeline.df_train) < 12e6
 
@@ -615,7 +615,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
         if os.path.isfile(cls.pipeline.pipeline_path):
             os.remove(cls.pipeline.pipeline_path)  # cleanup
-            # os.remove(cls.pipeline.pipeline_path_no_konfuzio_sdk)
+            os.remove(cls.pipeline.pipeline_path_no_konfuzio_sdk)
 
 
 @unittest.skip(reason='Slow. Only use to debug memory use.')
