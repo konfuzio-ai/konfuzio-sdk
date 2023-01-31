@@ -97,7 +97,7 @@ class Page(Data):
         end_offset: int,
         number: int,
         original_size: Tuple[float, float],
-        category: Optional['Category'] = None,
+        category: Optional['CategoryAnnotation'] = None,
     ):
         """Create a Page for a Document."""
         self.id_ = id_
@@ -112,9 +112,12 @@ class Page(Data):
         self.width = self._original_size[0]
         self.height = self._original_size[1]
         self.image_path = os.path.join(self.document.document_folder, f'page_{self.number}.png')
+
         self.category = category
+        self._category_annotations: List['CategoryAnnotation'] = [category]
         if self.category is None:
             self.category = self.document._category
+            self._category_annotations
         self.is_first_page = None
         if self.document.dataset_status in (2, 3):
             if self.number == 1:
@@ -260,6 +263,15 @@ class Page(Data):
         """Get the best Annotations, where the Spans are not overlapping in Page."""
         page_view_anns = self.document.view_annotations(start_offset=self.start_offset, end_offset=self.end_offset)
         return page_view_anns
+
+    def add_category_annotation(self, category_annotation: 'CategoryAnnotation'):
+        """Annotate a Page with a Category and confidence information."""
+        duplicated = [x for x in self._category_annotations if x == category_annotation]
+        if duplicated:
+            raise ValueError(
+                f'In {self} the {category_annotation} is a duplicate of {duplicated} and will not be added.'
+            )
+        self._category_annotations.append(category_annotation)
 
 
 class Bbox:
@@ -621,6 +633,34 @@ class Category(Data):
     def __repr__(self):
         """Return string representation of the Category."""
         return f"{self.name} ({self.id_})"
+
+
+class CategoryAnnotation(Data):
+    """Annotate the Category of a Page."""
+
+    def __init__(self, category: Category, confidence: float, page: Page, id_: Optional[int] = None):
+        """
+        Create a CategoryAnnotation and link it to a Page.
+
+        :param id_: ID of the CategoryAnnotation.
+        :param category: The Category to annotate the Page with.
+        :param confidence: Predicted confidence of the CategoryAnnotation.
+        :param page: The Page to be annotated.
+        """
+        self.id_local = next(Data.id_iter)
+        self.id_ = id_
+        self.category = category
+        self.confidence = confidence
+        self.page = page
+        # Call add_category_annotation to Page at the end, so all attributes for duplicate checking are available.
+        self.page.add_category_annotation(self)
+
+    def __eq__(self, other):
+        """Define equality condition for CategoryAnnotations.
+
+        A CategoryAnnotation is equal to another if both the linked Page and the predicted Category are the same.
+        """
+        return (self.page == other.page) and (self.category == other.category)
 
 
 class Label(Data):
@@ -1904,7 +1944,11 @@ class Document(Data):
         return os.path.join(self.document_folder, amend_file_name(self.name))
 
     @property
-    def category(self) -> Category:
+    def category_confidences(self) -> Dict[int, float]:  # key is category_id, float is confidence (Document level)
+        """Collect CategoryAnnotations and average them across all Pages."""
+
+    @property
+    def category(self) -> Optional[Category]:
         """
         Return the Category of the Document.
 

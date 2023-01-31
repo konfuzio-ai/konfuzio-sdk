@@ -2,7 +2,7 @@
 import logging
 from typing import Dict, Tuple, List, Optional, Union
 
-import numpy as np
+import numpy
 import pandas
 from sklearn.metrics import (
     confusion_matrix,
@@ -221,7 +221,7 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
             | (~spans["is_matched"])
         )
     )
-    spans = spans.replace({np.nan: None})
+    spans = spans.replace({numpy.nan: None})
     # one Span must not be defined as TP or FP or FN more than once
     quality = (spans[['true_positive', 'false_positive', 'false_negative']].sum(axis=1) <= 1).all()
     assert quality
@@ -479,22 +479,22 @@ class CategorizationEvaluation:
 
     @property
     def category_ids(self) -> List[int]:
-        """List of category ids as class labels."""
+        """List of Category IDs as class labels."""
         return [category.id_ for category in self.categories]
 
     @property
     def category_names(self) -> List[str]:
-        """List of category names as class names."""
+        """List of Category names as class names."""
         return [category.name for category in self.categories]
 
     @property
     def actual_classes(self) -> List[int]:
-        """List of ground truth category ids."""
+        """List of ground truth Category IDs."""
         return [ground_truth.category.id_ for ground_truth, predicted in self.documents]
 
     @property
     def predicted_classes(self) -> List[int]:
-        """List of predicted category ids."""
+        """List of predicted Category IDs."""
         return [
             predicted.category.id_ if predicted.category is not None else -1
             for ground_truth, predicted in self.documents
@@ -530,9 +530,9 @@ class CategorizationEvaluation:
         :return: dictionary with the results per Category
         """
         confusion_matrix = self.confusion_matrix()
-        sum_columns = np.sum(confusion_matrix, axis=0)
-        sum_rows = np.sum(confusion_matrix, axis=1)
-        sum_all = np.sum(confusion_matrix)
+        sum_columns = numpy.sum(confusion_matrix, axis=0)
+        sum_rows = numpy.sum(confusion_matrix, axis=1)
+        sum_all = numpy.sum(confusion_matrix)
 
         results = {}
 
@@ -545,8 +545,8 @@ class CategorizationEvaluation:
 
         return results
 
-    def _get_global_tp_tn_fp_fn(self) -> EvaluationCalculator:
-        """Get the global TP, FP, TN and FN."""
+    def _get_tp_tn_fp_fn_across_categories(self) -> EvaluationCalculator:
+        """Get the TP, FP, TN and FN across all Categories."""
         result = classification_report(
             y_true=self.actual_classes,
             y_pred=self.predicted_classes,
@@ -560,7 +560,7 @@ class CategorizationEvaluation:
     def calculate(self):
         """Calculate and update the data stored within this Evaluation."""
         self._evaluation_results = self._get_tp_tn_fp_fn_per_category()
-        self._clf_report = self._get_global_tp_tn_fp_fn()
+        self._clf_report = self._get_tp_tn_fp_fn_across_categories()
 
     def _base_metric(self, metric: str, category: Optional[Category] = None) -> int:
         """Return the base metric of all Documents filtered by Category.
