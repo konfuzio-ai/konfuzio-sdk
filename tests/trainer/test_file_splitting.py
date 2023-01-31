@@ -120,9 +120,7 @@ class TestFileSplittingModel(unittest.TestCase):
     def test_pickle_model_save_load(self):
         """Test saving ContextAwareFileSplittingModel to pickle."""
         self.file_splitting_model.output_dir = self.project.model_folder
-        self.file_splitting_model.path = self.file_splitting_model.save(
-            keep_documents=True, max_ram='5MB', include_konfuzio=False
-        )
+        self.file_splitting_model.path = self.file_splitting_model.save(keep_documents=True, max_ram='5MB')
         assert os.path.isfile(self.file_splitting_model.path)
         model = load_model(self.file_splitting_model.path)
         for category_gt, category_load in zip(self.file_splitting_model.categories, model.categories):
@@ -138,7 +136,7 @@ class TestFileSplittingModel(unittest.TestCase):
         """Test saving ContextAwareFileSplittingModel with reduce_weight."""
         self.file_splitting_model.output_dir = self.project.model_folder
         self.file_splitting_model.path = self.file_splitting_model.save(
-            reduce_weight=True, keep_documents=True, max_ram='5MB', include_konfuzio=False
+            reduce_weight=True, keep_documents=True, max_ram='5MB'
         )
         assert os.path.isfile(self.file_splitting_model.path)
         model = load_model(self.file_splitting_model.path)
@@ -260,7 +258,7 @@ class TestFusionFileSplittingModel(unittest.TestCase):
     @pytest.mark.skip(reason="Takes too long to test upon pushing; disable for local testing.")
     def test_save_load_model(self):
         """Test saving and loading pickle file of the model."""
-        path = self.file_splitting_model.save(include_konfuzio=False)
+        path = self.file_splitting_model.save()
         loaded = load_model(path)
         splitting_ai = SplittingAI(model=loaded)
         assert isinstance(splitting_ai.model, FusionModel)
