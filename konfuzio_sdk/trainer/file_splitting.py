@@ -2,16 +2,14 @@
 import abc
 import logging
 import os
-import sys
 
 from copy import deepcopy
-from pympler import asizeof
 from typing import List
 
 from konfuzio_sdk.data import Document, Page, Category
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
 from konfuzio_sdk.trainer.information_extraction import load_model, BaseModel
-from konfuzio_sdk.utils import get_timestamp, normalize_memory
+from konfuzio_sdk.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +66,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         """Generate a path for temporary pickle file."""
         temp_pkl_file_path = os.path.join(
             self.output_dir,
-            f'{get_timestamp(konfuzio_format="%Y-%m-%d-%H-%M")}_{self.name_lower()}_{self.project.id_}_' f'tmp.pkl',
+            f'{get_timestamp()}_{self.name_lower()}_{self.project.id_}_' f'tmp.pkl',
         )
         return temp_pkl_file_path
 
@@ -77,38 +75,9 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         """Generate a path for a resulting pickle file."""
         pkl_file_path = os.path.join(
             self.output_dir,
-            f'{get_timestamp(konfuzio_format="%Y-%m-%d-%H-%M")}_{self.name_lower()}_{self.project.id_}' f'.pkl',
+            f'{get_timestamp()}_{self.name_lower()}_{self.project.id_}' f'.pkl',
         )
         return pkl_file_path
-
-    def lose_weight(self):
-        """Remove all data not necessary for prediction."""
-        self.documents = None
-        self.test_documents = None
-
-    def reduce_model_weight(self):
-        """Remove all non-strictly necessary parameters before saving."""
-        self.lose_weight()
-        self.tokenizer.lose_weight()
-
-    def ensure_model_memory_usage_within_limit(self, max_ram):
-        """
-        Ensure that a model is not exceeding allowed max_ram.
-
-        :param max_ram: Specify maximum memory usage condition to save model.
-        """
-        if not max_ram:
-            max_ram = self.documents[0].project.max_ram
-        max_ram = normalize_memory(max_ram)
-        if max_ram and asizeof.asizeof(self) > max_ram:
-            raise MemoryError(f"AI model memory use ({asizeof.asizeof(self)}) exceeds maximum ({max_ram=}).")
-
-        sys.setrecursionlimit(99999999)
-
-    def restore_category_documents_for_eval(self):
-        """Restore Documents deleted when reducing weight in case there's evaluation needed."""
-        self.documents = [document for category in self.categories for document in category.documents()]
-        self.test_documents = [document for category in self.categories for document in category.test_documents()]
 
 
 class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
@@ -129,7 +98,6 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         :raises ValueError: When a list passed into categories contains Categories from different Projects.
         """
         super().__init__(categories=categories)
-        self.name = self.__class__.__name__
         self.output_dir = self.project.model_folder
         self.tokenizer = tokenizer
         self.requires_text = True
@@ -171,11 +139,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         :raises ValueError: When at least one Category does not have exclusive_first_page_strings.
         :return: A Page with a newly predicted is_first_page attribute.
         """
-        for category in self.categories:
-            if not category.exclusive_first_page_strings(tokenizer=self.tokenizer):
-                # exclusive_first_page_strings calls an implicit _exclusive_first_page_strings attribute once it was
-                # already calculated during fit() method so it is not a recurrent calculation each time.
-                raise ValueError(f"Cannot run prediction as {category} does not have _exclusive_first_page_strings.")
+        self.check_is_ready()
         page.is_first_page = False
         for category in self.categories:
             cur_first_page_strings = category.exclusive_first_page_strings(tokenizer=self.tokenizer)
@@ -186,6 +150,20 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
                 page.is_first_page = True
                 break
         return page
+
+    def check_is_ready(self):
+        """Check file splitting model is ready for inference."""
+        if self.tokenizer is None:
+            raise AttributeError(f'{self} missing Tokenizer.')
+
+        if not self.categories:
+            raise AttributeError(f'{self} requires Categories.')
+
+        for category in self.categories:
+            if not category.exclusive_first_page_strings(tokenizer=self.tokenizer):
+                # exclusive_first_page_strings calls an implicit _exclusive_first_page_strings attribute once it was
+                # already calculated during fit() method so it is not a recurrent calculation each time.
+                raise ValueError(f"Cannot run prediction as {category} does not have _exclusive_first_page_strings.")
 
 
 class SplittingAI:
