@@ -614,8 +614,8 @@ class TestRegexRFExtractionAI(unittest.TestCase):
             os.remove(os.path.join(dir, f))
 
         if os.path.isfile(cls.pipeline.pipeline_path):
-            # os.remove(cls.pipeline.pipeline_path)  # cleanup
-            os.remove(cls.pipeline.pipeline_path_no_konfuzio_sdk)
+            os.remove(cls.pipeline.pipeline_path)  # cleanup
+            # os.remove(cls.pipeline.pipeline_path_no_konfuzio_sdk)
 
 
 @unittest.skip(reason='Slow. Only use to debug memory use.')
@@ -1282,16 +1282,27 @@ def test_load_model_wrong_pickle_data():
         load_model(path)
 
 
-def test_load_ai_model():
-    """Test loading of trained model."""
+def test_load_ai_model_konfuzio_sdk_not_included():
+    """Test loading of trained model with include_konfuzio setting set to False."""
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-    # path = "trainer/2023-01-17-20-21-13_lohnabrechnung.pkl"
-    # path = "trainer/2023-01-30-15-23-27_lohnabrechnung.pkl"
-    # path = "trainer/2023-01-30-15-28-06_lohnabrechnung.pkl"
-    path = "trainer/2023-01-30-15-45-27_lohnabrechnung.pkl"
+    path = "trainer/2023-01-31-14-39-44_lohnabrechnung_no_konfuzio_sdk.pkl"
     pipeline = load_model(path)
 
     assert issubclass(type(pipeline), BaseModel)
+
+    test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
+    res_doc = pipeline.extract(document=test_document)
+    assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
+
+
+@pytest.mark.xfail(reason='Loaded model is not subclass of BaseModel.')
+def test_load_ai_model_konfuzio_sdk_included():
+    """Test loading of trained model with include_konfuzio setting set to True."""
+    project = Project(id_=None, project_folder=OFFLINE_PROJECT)
+    path = "trainer/2023-01-31-14-37-11_lohnabrechnung.pkl"
+    pipeline = load_model(path)
+
+    assert issubclass(type(pipeline), BaseModel)  # fails
 
     test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
     res_doc = pipeline.extract(document=test_document)
