@@ -43,6 +43,7 @@ from konfuzio_sdk.trainer.information_extraction import (
 from konfuzio_sdk.api import upload_ai_model
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer
 from konfuzio_sdk.tokenizer.base import ListTokenizer
+from setup import CURRENT_PYTHON
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.utils import memory_size_of
@@ -1279,6 +1280,7 @@ def test_load_model_wrong_pickle_data():
         load_model(path)
 
 
+@unittest.skipIf(CURRENT_PYTHON != '3.8', 'This AI can only loaded on Python 3.8.')
 def test_load_ai_model():
     """Test loading of trained model."""
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
@@ -1292,6 +1294,7 @@ def test_load_ai_model():
     assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
 
 
+@unittest.skipIf(CURRENT_PYTHON != '3.8', 'This AI can only loaded on Python 3.8.')
 def test_load_old_ai_model():
     """Test loading of an old trained model."""
     path = "trainer/2022-03-10-15-14-51_lohnabrechnung_old_model.pkl"
