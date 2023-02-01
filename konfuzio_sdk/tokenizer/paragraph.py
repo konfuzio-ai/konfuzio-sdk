@@ -205,5 +205,5 @@ class ParagraphTokenizer(AbstractTokenizer):
         return document
 
     def found_spans(self, document: Document):
-        """"""
+        """Paragraph found spans."""
         pass
