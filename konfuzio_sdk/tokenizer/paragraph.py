@@ -38,7 +38,6 @@ class ParagraphTokenizer(AbstractTokenizer):
     def tokenize(self, document: Document) -> Document:
         """Create one multiline Annotation per paragraph detected."""
         assert sdk_isinstance(document, Document)
-        assert isinstance(document.project.id_, int)
 
         before_none = len(document.annotations(use_correct=False, label=document.project.no_label))
 
@@ -63,6 +62,7 @@ class ParagraphTokenizer(AbstractTokenizer):
 
     def _detectron_tokenize(self, document: Document) -> Document:
         """Create one multiline Annotation per paragraph detected by detectron2."""
+        assert isinstance(document.project.id_, int)
         doc_id = document.id_ if document.id_ else document.copy_of_id
         paragraph_bboxes = get_results_from_segmentation(doc_id, document.project.id_)
 

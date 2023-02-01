@@ -97,7 +97,7 @@ class Page(Data):
         end_offset: int,
         number: int,
         original_size: Tuple[float, float],
-        full_size: Tuple[int, int],
+        full_size: Tuple[int, int] = (None, None),
     ):
         """Create a Page for a Document."""
         self.id_ = id_
