@@ -17,11 +17,11 @@ class TestDetectronParagraphTokenizer(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the tokenizer and test setup."""
-        cls.project = Project(id_=46, update=True)
+        cls.project = Project(id_=458, update=True)
         cls.tokenizer = ParagraphTokenizer(mode='detectron')
 
-        cls.document_1 = cls.project.get_document_by_id(597903)  # Lorem ipsum test document
-        cls.document_2 = cls.project.get_document_by_id(597904)  # Two column paper
+        cls.document_1 = cls.project.get_document_by_id(601418)  # Lorem ipsum test document
+        cls.document_2 = cls.project.get_document_by_id(601419)  # Two column paper
 
     def test_paragraph_document_1(self):
         """Test detectron Paragraph tokenizer on Lorem ipsum Document."""
@@ -64,11 +64,10 @@ class TestLineDistanceParagraphTokenizer(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the tokenizer and test setup."""
-        cls.project = Project(id_=46, update=True)
+        cls.project = Project(id_=458, update=True)
         cls.tokenizer = ParagraphTokenizer(mode='line_distance')
 
-        cls.document_1 = cls.project.get_document_by_id(597903)  # Lorem ipsum test document
-        # cls.document_2 = cls.project.get_document_by_id(597904)  # Two column paper
+        cls.document_1 = cls.project.get_document_by_id(601418)  # Lorem ipsum test document
 
     def test_paragraph_document_1(self):
         """Test detectron Paragraph tokenizer on Lorem ipsum Document."""
