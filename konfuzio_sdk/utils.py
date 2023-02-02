@@ -34,7 +34,7 @@ def sdk_isinstance(instance, klass):
     return result
 
 
-def exception_or_error(
+def exception_or_log_error(
     msg: str, fail_loudly: Optional[bool] = True, exception_type: Optional[Type[Exception]] = ValueError
 ) -> None:
     """Log error or raise an exception. Needed to control the decider in production."""

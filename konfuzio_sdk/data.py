@@ -36,7 +36,7 @@ from konfuzio_sdk.utils import (
     convert_to_bio_scheme,
     amend_file_name,
     sdk_isinstance,
-    exception_or_error,
+    exception_or_log_error,
     get_missing_offsets,
 )
 
@@ -310,56 +310,56 @@ class Bbox:
         :param validation: One of ALLOW_ZERO_SIZE (default), STRICT, or DISABLED. Also see the `Bbox` class.
         """
         if self.x0 == self.x1:
-            exception_or_error(
+            exception_or_log_error(
                 msg=f'{self} has no width in {self.page}.',
                 fail_loudly=validation is BboxValidationTypes.STRICT,
                 exception_type=ValueError,
             )
 
         if self.x0 > self.x1:
-            exception_or_error(
+            exception_or_log_error(
                 msg=f'{self} has negative width in {self.page}.',
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
             )
 
         if self.y0 == self.y1:
-            exception_or_error(
+            exception_or_log_error(
                 msg=f'{self} has no height in {self.page}.',
                 fail_loudly=validation is BboxValidationTypes.STRICT,
                 exception_type=ValueError,
             )
 
         if self.y0 > self.y1:
-            exception_or_error(
+            exception_or_log_error(
                 f'{self} has negative height in {self.page}.',
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
             )
 
         if self.y1 > self.page.height:
-            exception_or_error(
+            exception_or_log_error(
                 f'{self} exceeds height of {self.page}.',
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
             )
 
         if self.x1 > self.page.width:
-            exception_or_error(
+            exception_or_log_error(
                 f'{self} exceeds width of {self.page}.',
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
             )
 
         if self.y0 < 0:
-            exception_or_error(
+            exception_or_log_error(
                 f'{self} has negative y coordinate in {self.page}.',
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
             )
 
         if self.x0 < 0:
-            exception_or_error(
+            exception_or_log_error(
                 f'{self} has negative x coordinate in {self.page}.',
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
@@ -1034,17 +1034,17 @@ class Span(Data):
         if self.end_offset == self.start_offset == 0:
             logger.error(f'{self} is intentionally left empty.')
         elif self.start_offset < 0 or self.end_offset < 0:
-            exception_or_error(f'{self} must span text.', fail_loudly=strict, exception_type=ValueError)
+            exception_or_log_error(f'{self} must span text.', fail_loudly=strict, exception_type=ValueError)
         elif self.start_offset == self.end_offset:
-            exception_or_error(
+            exception_or_log_error(
                 f"{self} must span text: Start {self.start_offset} equals end.",
                 fail_loudly=strict,
                 exception_type=ValueError,
             )
         elif self.end_offset < self.start_offset:
-            exception_or_error(f"{self} length must be positive.", fail_loudly=strict, exception_type=ValueError)
+            exception_or_log_error(f"{self} length must be positive.", fail_loudly=strict, exception_type=ValueError)
         elif self.offset_string and ('\n' in self.offset_string or '\f' in self.offset_string):
-            exception_or_error(
+            exception_or_log_error(
                 f'{self} must not span more than one visual line.', fail_loudly=strict, exception_type=ValueError
             )
         return True
@@ -1411,7 +1411,7 @@ class Annotation(Data):
         if not self.label:
             raise NotImplementedError(f'{self} has no Label and cannot be created.')
         if not self.spans:
-            exception_or_error(
+            exception_or_log_error(
                 msg=f'{self} has no Spans and cannot be created.',
                 fail_loudly=self.document.project._strict_data_validation,
                 exception_type=NotImplementedError,
@@ -2163,7 +2163,7 @@ class Document(Data):
                         if self.category in annotation.label_set.categories:
                             self._annotations.append(annotation)
                         else:
-                            exception_or_error(
+                            exception_or_log_error(
                                 msg=f'We cannot add {annotation} related to {annotation.label_set.categories} to {self}'
                                 f' as the document has {self.category}',
                                 fail_loudly=self.project._strict_data_validation,
@@ -2177,7 +2177,7 @@ class Document(Data):
                 raise ValueError(f'We cannot add {annotation} to {self} where the category is {self.category}')
         else:
             duplicated = [x for x in self._annotations if x == annotation]
-            exception_or_error(
+            exception_or_log_error(
                 msg=f'In {self} the {annotation} is a duplicate of {duplicated} and will not be added.',
                 fail_loudly=self.project._strict_data_validation,
                 exception_type=ValueError,
@@ -2323,7 +2323,7 @@ class Document(Data):
                 box_character = box.get('text')
                 document_character = self.text[int(character_index)]
                 if box_character not in [' ', '\f', '\n'] and box_character != document_character:
-                    exception_or_error(
+                    exception_or_log_error(
                         msg=f'{self} Bbox provides Character "{box_character}" document text refers to '
                         f'"{document_character}" with ID "{character_index}".',
                         fail_loudly=self.project._strict_data_validation,
