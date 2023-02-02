@@ -135,7 +135,6 @@ class ParagraphTokenizer(AbstractTokenizer):
 
     def _line_distance_tokenize(self, document: Document) -> Document:
         """Create one multiline Annotation per paragraph detected by line distance based rule based algorithm."""
-        # paragraph_bboxes = get_paragraphs_by_line_space(document.get_bbox(), document.text)
         height = None
         line_height_ratio = 0.8
         if height is not None:

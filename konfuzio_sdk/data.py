@@ -308,21 +308,6 @@ class Bbox:
         """Define that one Bounding Box on the same page is identical."""
         return self.__hash__() == other.__hash__()
 
-    # def __contains__(self, other: 'Bbox') -> bool:
-    #     """Define that one Bounding Box contains the other."""
-    #     if not isinstance(other, Bbox):
-    #         return super().__contains__(other)
-    #     else:
-    #         if other.page and other.page is not self.page:
-    #             return False
-    #         if self.x0 >= other.x0 and\
-    #            self.x1 <= other.x1 and\
-    #            self.y0 >= other.y0 and\
-    #            self.y1 <= other.y1:
-    #             return True
-    #         else:
-    #             return False
-
     def _valid(self, strict: bool = False):
         """
         Validate contained data.
@@ -1698,7 +1683,7 @@ class Annotation(Data):
             self.document._annotations.remove(self)
 
     def bbox(self) -> Bbox:
-        """Get Bbox encompassing all Annoation Spans."""
+        """Get Bbox encompassing all Annotation Spans."""
         if self._bbox is None:
             self._bbox = Bbox(
                 x0=min([span.bbox().x0 for span in self.spans]),
