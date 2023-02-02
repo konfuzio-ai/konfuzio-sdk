@@ -18,7 +18,7 @@ from PIL import Image, ImageDraw, ImageFont
 from tqdm import tqdm
 
 from konfuzio_sdk.api import (
-    _konfuzio_session,
+    konfuzio_session,
     download_file_konfuzio_api,
     get_meta_of_files,
     get_project_details,
@@ -45,7 +45,7 @@ class Data:
     id_iter = itertools.count()
     id_ = None
     id_local = None
-    session = _konfuzio_session()
+    session = konfuzio_session()
     _update = False
     _force_offline = False
 
