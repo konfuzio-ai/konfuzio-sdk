@@ -84,7 +84,7 @@ setuptools.setup(
         'python-decouple',  # todo add ==3.3 ?
         'requests',  # todo add ==2.24.0 ?
         'regex>=2020.6.8',  # re module but better
-        'tabulate==0.8.7',  # Used to pretty print DataFrames
+        'tabulate==0.9.0',  # Used to pretty print DataFrames
         'tqdm',
         'pympler==1.0.1',  # Use to get pickle file size.
         'scikit-learn==1.0.2',
