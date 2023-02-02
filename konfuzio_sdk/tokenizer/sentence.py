@@ -150,9 +150,8 @@ class SentenceTokenizer(AbstractTokenizer):
 
         return document
 
-    def _line_distance_tokenize(self, document: Document) -> Document:
+    def _line_distance_tokenize(self, document: Document, height=None) -> Document:
         """Create one multiline Annotation per sentence in paragraph detected by line distance based rule based algo."""
-        height = None
         line_height_ratio = 0.8
         if height is not None:
             if not (isinstance(height, int) or isinstance(height, float)):
@@ -167,17 +166,6 @@ class SentenceTokenizer(AbstractTokenizer):
             pages_char_bboxes[bbox['page_number'] - 1].append(bbox)
 
         for page_char_bboxes in pages_char_bboxes:
-            # assemble bboxes by line and Page
-            page_lines = []
-            line_bboxes = []
-            for bbox in sorted(page_char_bboxes, key=lambda x: x['char_index']):
-                if not line_bboxes or line_bboxes[-1]['line_number'] == bbox['line_number']:
-                    line_bboxes.append(bbox)
-                else:
-                    page_lines.append(line_bboxes)
-                    line_bboxes = [bbox]
-            page_lines.append(line_bboxes)
-
             # set line_threshold
             if height is None:
                 # calculate median vertical character size for Page
@@ -188,36 +176,69 @@ class SentenceTokenizer(AbstractTokenizer):
             else:
                 line_threshold = height
 
-            # go through lines to find paragraphs
+            page_lines = []
+            line_bboxes = []
+            for bbox in sorted(page_char_bboxes, key=lambda x: x['char_index']):
+                if not line_bboxes or line_bboxes[-1]['line_number'] == bbox['line_number']:
+                    line_bboxes.append(bbox)
+                else:
+                    page_lines.append(line_bboxes)
+                    line_bboxes = [bbox]
+            page_lines.append(line_bboxes)
+
+            # assemble bboxes by line and Page
+            span_bboxes = []
+            sentence_spans = []
             previous_y0 = None
-            paragraph_spans = []
             for line in page_lines:
-                assert line[0]['line_number'] == line[-1]['line_number']
                 max_y1 = max([bbox['y1'] for bbox in line])
                 min_y0 = min([bbox['y0'] for bbox in line])
-                span = Span(start_offset=line[0]['char_index'], end_offset=line[-1]['char_index'] + 1)
-                if not paragraph_spans or previous_y0 - max_y1 < line_threshold:
-                    paragraph_spans.append(span)
-                else:
+                if sentence_spans and previous_y0 - max_y1 >= line_threshold:
                     _ = Annotation(
                         document=document,
                         annotation_set=document.no_label_annotation_set,
                         label=document.project.no_label,
                         label_set=document.project.no_label_set,
                         category=document.category,
-                        spans=paragraph_spans,
+                        spans=sentence_spans,
                     )
-                    paragraph_spans = [span]
-
+                    sentence_spans = []
+                for bbox in line:
+                    if span_bboxes and span_bboxes[-1]['text'] in {'.', '!', '?'}:
+                        sentence_spans.append(
+                            Span(
+                                start_offset=span_bboxes[0]['char_index'], end_offset=span_bboxes[-1]['char_index'] + 1
+                            )
+                        )
+                        _ = Annotation(
+                            document=document,
+                            annotation_set=document.no_label_annotation_set,
+                            label=document.project.no_label,
+                            label_set=document.project.no_label_set,
+                            category=document.category,
+                            spans=sentence_spans,
+                        )
+                        sentence_spans = []
+                        span_bboxes = [bbox]
+                    else:
+                        span_bboxes.append(bbox)
+                if span_bboxes:
+                    sentence_spans.append(
+                        Span(start_offset=span_bboxes[0]['char_index'], end_offset=span_bboxes[-1]['char_index'] + 1)
+                    )
+                    span_bboxes = []
                 previous_y0 = min_y0
+
+        if sentence_spans:
             _ = Annotation(
                 document=document,
                 annotation_set=document.no_label_annotation_set,
                 label=document.project.no_label,
                 label_set=document.project.no_label_set,
                 category=document.category,
-                spans=paragraph_spans,
+                spans=sentence_spans,
             )
+
         return document
 
     def found_spans(self, document: Document):
