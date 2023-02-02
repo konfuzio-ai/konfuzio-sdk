@@ -427,7 +427,7 @@ Project.documents: 2  –&gt; Document recall 100%</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">has_multiline_annotations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Category</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span></dt>
+<span class="sig-name descname"><span class="pre">has_multiline_annotations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Category</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span></dt>
 <dd><p>Return if any Label annotations are multi-line.</p>
 </dd></dl>
 
@@ -1609,25 +1609,8 @@ whole Document instead of a single Page and proposes splitting points or splits 
 <dd><p>Abstract class for the filesplitting model.</p>
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">ensure_model_memory_usage_within_limit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_ram</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Ensure that a model is not exceeding allowed max_ram.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>max_ram</strong> – Specify maximum memory usage condition to save model.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Fit the custom model on the training Documents.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">lose_weight</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Remove all data not necessary for prediction.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -1650,18 +1633,6 @@ whole Document instead of a single Page and proposes splitting points or splits 
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">reduce_model_weight</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Remove all non-strictly necessary parameters before saving.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">restore_category_documents_for_eval</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Restore Documents deleted when reducing weight in case there’s evaluation needed.</p>
-</dd></dl>
-
 <dl class="py property">
 <dt class="sig sig-object py">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">temp_pkl_file_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em></dt>
@@ -1674,6 +1645,12 @@ whole Document instead of a single Page and proposes splitting points or splits 
 <dt class="sig sig-object py">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.trainer.file_splitting.</span></span><span class="sig-name descname"><span class="pre">ContextAwareFileSplittingModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Category</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokenizer</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Fallback definition of a File Splitting Model.</p>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">check_is_ready</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Check file splitting model is ready for inference.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">allow_empty_categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
@@ -1835,40 +1812,6 @@ OR the resulting merging create a span normalizable to the same type</p></li>
 <dd><p>Merge contiguous spans with same predicted label.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">name_lower</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Convert class name to machine readable name.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_konfuzio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduce_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_documents</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_ram</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Save the label model as bz2 compressed pickle object to the release directory.</p>
-<p>Saving is done by: getting the serialized pickle object (via cloudpickle), “optimizing” the serialized object
-with the built-in pickletools.optimize function (see: <a class="reference external" href="https://docs.python.org/3/library/pickletools.html">https://docs.python.org/3/library/pickletools.html</a>),
-saving the optimized serialized object.</p>
-<p>We then compress the pickle file with bz2 using shutil.copyfileobject which writes in chunks to avoid loading
-the entire pickle file in memory.</p>
-<p>Finally, we delete the cloudpickle file and are left with the bz2 file which has a .pkl extension.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>output_dir</strong> – Folder to save AI model in.</p></li>
-<li><p><strong>include_konfuzio</strong> – Boolean whether to include konfuzio_sdk package in pickle file.</p></li>
-<li><p><strong>reduce_weight</strong> – Remove all non-strictly necessary parameters before saving.</p></li>
-<li><p><strong>max_ram</strong> – Specify maximum memory usage condition to save model.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>MemoryError</strong> – When the size of the model in memory is greater than the maximum value.</p>
-</dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>Path of the saved model file.</p>
-</dd>
-</dl>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -1908,19 +1851,8 @@ or to specify the number of Spans created by a WhitespaceTokenizer to consider
 The Label Set classifier groups them into Annotation sets.</p>
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">check_is_ready_for_extraction</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">check_is_ready</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
 <dd><p>Check if tokenizer is set and the classifiers set and trained.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">ensure_model_memory_usage_within_limit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_ram</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Ensure that a model is not exceeding allowed max_ram.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>max_ram</strong> (<em>str</em>) – Specify maximum memory usage condition to save model.</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -2051,16 +1983,16 @@ NotFittedError: When CLF is not fitted</p>
 <dd><p>Assign labels to Annotations in newly tokenized virtual training document.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">lose_weight</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Lose weight before pickling.</p>
-</dd></dl>
-
 <dl class="py property">
 <dt class="sig sig-object py">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pkl_file_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em></dt>
 <dd><p>Generate a path for a resulting pickle file.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">project</span></span></dt>
+<dd><p>Get RFExtractionAI Project.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2077,12 +2009,6 @@ NotFittedError: When CLF is not fitted</p>
 - dataframe
 - dictionary where the values are dataframes
 - list of dictionaries  where the values are dataframes</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">restore_category_documents_for_eval</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Restore Documents of the Category so that we can run the evaluation later.</p>
 </dd></dl>
 
 <dl class="py method">
