@@ -1,8 +1,11 @@
-## Split multi-file Document into Separate files without training a model
+## Split multi-file Document into Separate files
 
-Let's see how to use the `konfuzio_sdk` to automatically split documents consisting of 
-several files. We will be using a pre-built class SplittingAI. The class implements a context-aware rule-based logic 
-that requires no training.
+Let's see how to use the `konfuzio_sdk` to automatically split documents consisting of several files. We will be using 
+a pre-built class `SplittingAI` and an instance of a trained `ContextAwareFileSplittingModel`. The latter uses a 
+context-aware logic. By context-aware we mean a rule-based approach that looks for common strings between the first 
+Pages of all Category's Documents. Upon predicting whether a Page is a potential splitting point (meaning whether it is 
+first or not), we compare Page's contents to these common first-page strings; if there is occurrence of at least one 
+such string, we mark a Page to be first (thus meaning it is a splitting point).
 
 ```python
 from konfuzio_sdk.data import Project
@@ -42,7 +45,7 @@ splitting_ai = SplittingAI(model)
 # utilizes page-level prediction of possible split points and returns Document or Documents with changes depending on 
 # the prediction mode.
 
-# SplittingAI can be ran in two modes: returning a list of sub-Documents as the result of the input Document
+# SplittingAI can be ran in two modes: returning a list of Sub-Documents as the result of the input Document
 # splitting or returning a copy of the input Document with Pages predicted as first having an attribute
 # "is_first_page". The flag "return_pages" has to be True for the latter; let's use it
 new_document = splitting_ai.propose_split_documents(test_document, return_pages=True)
