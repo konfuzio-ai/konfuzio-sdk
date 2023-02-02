@@ -14,7 +14,7 @@ from keras.applications.vgg19 import preprocess_input
 from keras.layers import Dense, Conv2D, MaxPool2D, Flatten, Input, concatenate
 from keras.models import Model
 from pympler import asizeof
-from tensorflow.keras.preprocessing.image import ImageDataGenerator, img_to_array
+from tensorflow.keras.preprocessing.image import img_to_array
 from transformers import BertTokenizer, AutoModel, AutoConfig
 from typing import List
 
@@ -145,6 +145,7 @@ class FusionModel(AbstractFileSplittingModel):
     https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=9684474
     """
 
+    # todo scheme of the architecture + indicate frameworks used in each part?
     def __init__(self, categories: List[Category], *args, **kwargs):
         """Initialize the Fusion filesplitting model."""
         logging.info('Initializing FusionModel.')
@@ -191,17 +192,17 @@ class FusionModel(AbstractFileSplittingModel):
                     labels.append(0)
         return page_image_paths, texts, labels
 
-    def _otsu_binarization(self, pages: List[str]) -> List:
+    def _image_transformation(self, page_image_paths: List[str]) -> List[np.ndarray]:
         """
         Take an image and transform it into the format acceptable by the model's architecture.
 
-        :param pages: A list of pages' images to be transformed.
-        :type pages: List[str]
+        :param page_image_paths: A list of pages' images to be transformed.
+        :type page_image_paths: List[str]
         :returns: A list of processed images.
         """
         images = []
-        for img in pages:
-            image = cv2.imread(img)
+        for page_image_path in page_image_paths:
+            image = cv2.imread(page_image_path)
             image = cv2.resize(image, (224, 224), interpolation=cv2.INTER_AREA)
             image = img_to_array(image)
             image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
@@ -209,32 +210,30 @@ class FusionModel(AbstractFileSplittingModel):
             images.append(image)
         return images
 
-    def fit(self, *args, **kwargs):
-        """Process the train and test data, initialize and fit the model."""
+    def fit(self, epochs: int = 10, *args, **kwargs):
+        """
+        Process the train and test data, initialize and fit the model.
+
+        :param epochs: A number of epochs to train a model on.
+        :type epochs: int
+        """
         logger.info('Fitting FusionModel.')
         for doc in self.documents + self.test_documents:
-            counter = 0
-            for filename in os.listdir(doc.document_folder):
-                if filename.endswith('.png'):
-                    counter += 1
-            if counter != len(doc.pages()):
-                doc.get_images()
+            for page in doc.pages():
+                if not os.path.exists(page.image_path):
+                    page.get_image()
         train_image_paths, train_texts, train_labels = self._preprocess_documents(self.documents)
         test_image_paths, test_texts, test_labels = self._preprocess_documents(self.test_documents)
         logger.info('Document preprocessing finished.')
-        train_images = self._otsu_binarization(train_image_paths)
-        test_images = self._otsu_binarization(test_image_paths)
+        train_images = self._image_transformation(train_image_paths)
+        test_images = self._image_transformation(test_image_paths)
+        # labels are transformed into numpy array, reshaped into arrays of len==1 and then into TF tensor of shape
+        # (len(train_labels), 1) with elements of dtype==float32. this is needed to feed labels into the Multi-Layered
+        # Perceptron as input.
         self.train_labels = tf.cast(np.asarray(train_labels).reshape((-1, 1)), tf.float32)
         self.test_labels = tf.cast(np.asarray(test_labels).reshape((-1, 1)), tf.float32)
-        image_data_generator = ImageDataGenerator()
-        train_data_generator = image_data_generator.flow(x=np.squeeze(train_images, axis=1), y=train_labels)
-        self.train_img_data = np.concatenate(
-            [train_data_generator.next()[0] for i in range(train_data_generator.__len__())]
-        )
-        test_data_generator = image_data_generator.flow(x=np.squeeze(test_images, axis=1), y=test_labels)
-        self.test_img_data = np.concatenate(
-            [test_data_generator.next()[0] for i in range(test_data_generator.__len__())]
-        )
+        self.train_img_data = np.concatenate(train_images)
+        self.test_img_data = np.concatenate(test_images)
         logger.info('Image data preprocessing finished')
         for text in train_texts:
             inputs = self.bert_tokenizer(text, truncation=True, return_tensors='pt')
@@ -253,6 +252,9 @@ class FusionModel(AbstractFileSplittingModel):
         self.test_txt_data = np.asarray(self.test_txt_data)
         logger.info('Text data preprocessing finished.')
         logger.info('FusionModel compiling started.')
+        # we combine an output of generic VGG16 architecture for image processing (read more about it
+        # at https://datagen.tech/guides/computer-vision/vgg16/) and an output of BERT in an MLP-like
+        # architecture (read more about it at http://shorturl.at/puKN3)
         txt_input = Input(shape=self.input_shape, name='text')
         txt_x = Dense(units=768, activation="relu")(txt_input)
         txt_x = Flatten()(txt_x)
@@ -274,13 +276,13 @@ class FusionModel(AbstractFileSplittingModel):
         img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
         img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
         img_x = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
-        img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        # img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        # img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
+        # img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
         img_x = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
         img_x = Flatten()(img_x)
         img_x = Dense(units=4096, activation="relu")(img_x)
-        img_x = Dense(units=4096, activation="relu", name='img_outputs')(img_x)
+        img_x = Dense(units=4096, activation="relu", name='img_outputs')(img_x)  # todo minimize?
         concatenated = concatenate([img_x, txt_x], axis=-1)
         x = Dense(50, input_shape=(8192,), activation='relu')(concatenated)
         x = Dense(50, activation='elu')(x)
@@ -289,8 +291,10 @@ class FusionModel(AbstractFileSplittingModel):
         self.model = Model(inputs=[img_input, txt_input], outputs=output)
         self.model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
         logger.info('FusionModel compiling finished.')
-        self.model.fit([self.train_img_data, self.train_txt_data], self.train_labels, epochs=10, verbose=1)
-        logger.info('FusionModel fitting finished.')
+        self.model.fit([self.train_img_data, self.train_txt_data], self.train_labels, epochs=epochs, verbose=1)
+        logger.info('FusionModel fitting finished.')  # todo convert steps into a list of layers + pipeline
+
+        #  switch to usage of tf where possible / get rid of keras if possible
 
     def predict(self, page: Page) -> Page:
         """
@@ -311,9 +315,7 @@ class FusionModel(AbstractFileSplittingModel):
         image = img_to_array(image)
         image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
         image = preprocess_input(image)
-        image_data_generator = ImageDataGenerator()
-        data_generator = image_data_generator.flow(x=np.squeeze([image], axis=1))
-        img_data = np.concatenate([data_generator.next()[0] for i in range(data_generator.__len__())])
+        img_data = np.concatenate([image])
         preprocessed = [img_data.reshape((1, 224, 224, 3)), txt_data.reshape((1, 1, 768))]
         prediction = round(self.model.predict(preprocessed, verbose=0)[0, 0])
         if prediction == 1:
