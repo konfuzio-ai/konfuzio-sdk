@@ -11,12 +11,16 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        python-version: ["3.8"]  # Python3.9 and newer have 2 failing tests: trainer/test_information_extraction.py::test_load_ai_model and trainer/test_information_extraction.py::test_load_old_ai_model
+
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.8
+    - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: ${{ matrix.python-version }}
     - name: Load cached Python environment
       # see https://blog.allenai.org/python-caching-in-github-actions-e9452698e98d
       uses: actions/cache@v2
