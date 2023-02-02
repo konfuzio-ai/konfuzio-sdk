@@ -4,7 +4,7 @@
 
 It's common for multipage files to not be perfectly organized, and in some cases, multiple independent Documents may be 
 included in a single file. To ensure that these Documents are properly processed and separated, we will be discussing a 
-method for identifying and splitting them into individual, independent sub-documents.
+method for identifying and splitting them into individual, independent Sub-documents.
 
 .. image:: /sdk/examples/file-splitting-class/multi_file_document_example.png
 
@@ -12,7 +12,7 @@ _Multi-file Document Example_
 
 In this section, we will explore an easy method for identifying and separating Documents that may be included in a 
 single file. Our approach involves analyzing the contents of each Page and identifying similarities to the first Pages 
-of the Document. This will allow us to define splitting points and divide the Document into multiple sub-documents. It's
+of the Document. This will allow us to define splitting points and divide the Document into multiple Sub-documents. It's
 important to note that this approach is only effective for Documents written in the same language and that the process 
 must be repeated for each Category.
 
@@ -50,7 +50,7 @@ methods implemented:
 - `predict` to define how the model classifies Pages as first or non-first. **NB:** the classification needs to be 
 run on the Page level, not the Document level – the result of classification is reflected in `is_first_page` attribute 
 value, which is unique to the Page class and is not present in Document class. Pages with `is_first_page = True` become 
-splitting points, thus, each new sub-Document has a Page predicted as first as its starting point.
+splitting points, thus, each new Sub-Document has a Page predicted as first as its starting point.
 
 To begin, we will make all the necessary imports and initialize the `ContextAwareFileSplittingModel` class:
 ```python
@@ -186,7 +186,7 @@ splitting_ai = SplittingAI(model)
 # utilizes page-level prediction of possible split points and returns Document or Documents with changes depending on 
 # the prediction mode.
 
-# SplittingAI can be ran in two modes: returning a list of sub-Documents as the result of the input Document
+# SplittingAI can be ran in two modes: returning a list of Sub-Documents as the result of the input Document
 # splitting or returning a copy of the input Document with Pages predicted as first having an attribute
 # "is_first_page". The flag "return_pages" has to be True for the latter; let's use it
 new_document = splitting_ai.propose_split_documents(test_document, return_pages=True)
@@ -291,7 +291,7 @@ splitting_ai = SplittingAI(model)
 # utilizes page-level prediction of possible split points and returns Document or Documents with changes depending on 
 # the prediction mode.
 
-# SplittingAI can be ran in two modes: returning a list of sub-Documents as the result of the input Document
+# SplittingAI can be ran in two modes: returning a list of Sub-Documents as the result of the input Document
 # splitting or returning a copy of the input Document with Pages predicted as first having an attribute
 # "is_first_page". The flag "return_pages" has to be True for the latter; let's use it
 new_document = splitting_ai.propose_split_documents(test_document, return_pages=True)

@@ -1,5 +1,5 @@
 """
-Process Documents that consist of several files and propose splitting them into the sub-Documents accordingly.
+Process Documents that consist of several files and propose splitting them into the Sub-Documents accordingly.
 
 We suggest a context-aware approach based on scanning Category's Documents and finding strings exclusive for first
 Pages of all Documents within the Category. Upon predicting whether a Page is a potential splitting point (meaning
@@ -240,11 +240,11 @@ class SplittingAI:
 
     def _suggest_page_split(self, document: Document) -> List[Document]:
         """
-        Create a list of sub-Documents built from the original Document, split.
+        Create a list of Sub-Documents built from the original Document, split.
 
         :param document: The document to suggest Page splits for.
         :type document: Document
-        :returns: A list of sub-documents created from the original Document, split at predicted first Pages.
+        :returns: A list of Sub-Documents created from the original Document, split at predicted first Pages.
         """
         suggested_splits = []
         if self.tokenizer:
@@ -289,9 +289,9 @@ class SplittingAI:
         :param inplace: Whether changes are applied to the input Document, changing it, or to a deepcopy of it.
         :type inplace: bool
         :param return_pages: A flag to enable returning a copy of an old Document with Pages marked .is_first_page on
-        splitting points instead of a set of sub-Documents.
+        splitting points instead of a set of Sub-Documents.
         :type return_pages: bool
-        :return: A list of suggested new sub-Documents built from the original Document or a list with a Document
+        :return: A list of suggested new Sub-Documents built from the original Document or a list with a Document
         with Pages marked .is_first_page on splitting points.
         """
         if self.model.requires_images:

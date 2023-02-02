@@ -45,7 +45,7 @@ splitting_ai = SplittingAI(model)
 # utilizes page-level prediction of possible split points and returns Document or Documents with changes depending on 
 # the prediction mode.
 
-# SplittingAI can be ran in two modes: returning a list of sub-Documents as the result of the input Document
+# SplittingAI can be ran in two modes: returning a list of Sub-Documents as the result of the input Document
 # splitting or returning a copy of the input Document with Pages predicted as first having an attribute
 # "is_first_page". The flag "return_pages" has to be True for the latter; let's use it
 new_document = splitting_ai.propose_split_documents(test_document, return_pages=True)
