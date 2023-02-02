@@ -9,7 +9,7 @@ at least one such string, we mark a Page to be first (thus meaning it is a split
 A ContextAwareFileSplittingModel instance can be used with an interface provided by SplittingAI – this class accepts a
 whole Document instead of a single Page and proposes splitting points or splits the original Documents.
 
-For developing a custom file-splitting approach, we propose an Abstract class.
+For developing a custom file-splitting approach, we propose an abstract class.
 """
 import abc
 import logging
