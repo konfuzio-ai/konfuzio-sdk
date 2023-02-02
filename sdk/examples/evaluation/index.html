@@ -47,6 +47,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../configuration_reference.html">Install SDK</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html">Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html#tokenizers">Tokenizers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html#filesplitting-ai">FileSplitting AI</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html#extraction-ai">Extraction AI</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html#evaluation">Evaluation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html#document-categorization">Document Categorization</a></li>
@@ -146,9 +147,8 @@ metrics to <code class="docutils literal notranslate"><span class="pre">None</sp
 </pre></div>
 </div>
 <p>For more details, see the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#evaluation">Python API Documentation</a> on Evaluation.</p>
-</section>
 <section id="example-of-evaluation-input-and-output">
-<h1>Example of evaluation input and output<a class="headerlink" href="#example-of-evaluation-input-and-output" title="Permalink to this headline">¶</a></h1>
+<h2>Example of evaluation input and output<a class="headerlink" href="#example-of-evaluation-input-and-output" title="Permalink to this headline">¶</a></h2>
 <p>Suppose in our test dataset we have 2 Documents of 2 Categories: one 3-paged, consisting of a single file (-&gt; it has only one ground-truth first Page) of a first Category, and one 5-paged, consisting of three files: two 2-paged and one 1-paged (-&gt; it has three ground-truth first Pages), of a second Category.</p>
 <img alt="../../../_images/document_example_1.png" src="../../../_images/document_example_1.png" />
 <p><em>First document</em></p>
@@ -343,6 +343,7 @@ specify the metrics accordingly at the class’s initialization). Example usage:
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">EvaluationCalculator</span><span class="p">(</span><span class="n">tp</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">fp</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">fn</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">tn</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">metrics_logging</span><span class="p">()</span>
 </pre></div>
 </div>
+</section>
 </section>
 
 

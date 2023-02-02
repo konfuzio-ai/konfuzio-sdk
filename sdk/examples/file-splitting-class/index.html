@@ -47,6 +47,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../configuration_reference.html">Install SDK</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html">Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html#tokenizers">Tokenizers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html#filesplitting-ai">FileSplitting AI</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html#extraction-ai">Extraction AI</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html#evaluation">Evaluation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html#document-categorization">Document Categorization</a></li>
@@ -101,12 +102,12 @@
 <h2>Intro<a class="headerlink" href="#intro" title="Permalink to this headline">¶</a></h2>
 <p>It’s common for multipage files to not be perfectly organized, and in some cases, multiple independent Documents may be
 included in a single file. To ensure that these Documents are properly processed and separated, we will be discussing a
-method for identifying and splitting them into individual, independent sub-documents.</p>
+method for identifying and splitting them into individual, independent Sub-documents.</p>
 <img alt="../../../_images/multi_file_document_example.png" src="../../../_images/multi_file_document_example.png" />
 <p><em>Multi-file Document Example</em></p>
 <p>In this section, we will explore an easy method for identifying and separating Documents that may be included in a
 single file. Our approach involves analyzing the contents of each Page and identifying similarities to the first Pages
-of the Document. This will allow us to define splitting points and divide the Document into multiple sub-documents. It’s
+of the Document. This will allow us to define splitting points and divide the Document into multiple Sub-documents. It’s
 important to note that this approach is only effective for Documents written in the same language and that the process
 must be repeated for each Category.</p>
 <p>If you are unfamiliar with the SDK’s main concepts (like Page or Span), you can get to know them on the <a class="reference external" href="https://dev.konfuzio.com/sdk/home/index.html">Quickstart</a> page.</p>
@@ -140,7 +141,7 @@ methods implemented:</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">predict</span></code> to define how the model classifies Pages as first or non-first. <strong>NB:</strong> the classification needs to be
 run on the Page level, not the Document level – the result of classification is reflected in <code class="docutils literal notranslate"><span class="pre">is_first_page</span></code> attribute
 value, which is unique to the Page class and is not present in Document class. Pages with <code class="docutils literal notranslate"><span class="pre">is_first_page</span> <span class="pre">=</span> <span class="pre">True</span></code> become
-splitting points, thus, each new sub-Document has a Page predicted as first as its starting point.</p></li>
+splitting points, thus, each new Sub-Document has a Page predicted as first as its starting point.</p></li>
 </ul>
 <p>To begin, we will make all the necessary imports and initialize the <code class="docutils literal notranslate"><span class="pre">ContextAwareFileSplittingModel</span></code> class:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
@@ -270,7 +271,7 @@ first Page. If there are no intersections, the Page is predicted to be a non-fir
 <span class="c1"># utilizes page-level prediction of possible split points and returns Document or Documents with changes depending on</span>
 <span class="c1"># the prediction mode.</span>
 
-<span class="c1"># SplittingAI can be ran in two modes: returning a list of sub-Documents as the result of the input Document</span>
+<span class="c1"># SplittingAI can be ran in two modes: returning a list of Sub-Documents as the result of the input Document</span>
 <span class="c1"># splitting or returning a copy of the input Document with Pages predicted as first having an attribute</span>
 <span class="c1"># &quot;is_first_page&quot;. The flag &quot;return_pages&quot; has to be True for the latter; let&#39;s use it</span>
 <span class="n">new_document</span> <span class="o">=</span> <span class="n">splitting_ai</span><span class="o">.</span><span class="n">propose_split_documents</span><span class="p">(</span><span class="n">test_document</span><span class="p">,</span> <span class="n">return_pages</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -373,7 +374,7 @@ first Page. If there are no intersections, the Page is predicted to be a non-fir
 <span class="c1"># utilizes page-level prediction of possible split points and returns Document or Documents with changes depending on</span>
 <span class="c1"># the prediction mode.</span>
 
-<span class="c1"># SplittingAI can be ran in two modes: returning a list of sub-Documents as the result of the input Document</span>
+<span class="c1"># SplittingAI can be ran in two modes: returning a list of Sub-Documents as the result of the input Document</span>
 <span class="c1"># splitting or returning a copy of the input Document with Pages predicted as first having an attribute</span>
 <span class="c1"># &quot;is_first_page&quot;. The flag &quot;return_pages&quot; has to be True for the latter; let&#39;s use it</span>
 <span class="n">new_document</span> <span class="o">=</span> <span class="n">splitting_ai</span><span class="o">.</span><span class="n">propose_split_documents</span><span class="p">(</span><span class="n">test_document</span><span class="p">,</span> <span class="n">return_pages</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>

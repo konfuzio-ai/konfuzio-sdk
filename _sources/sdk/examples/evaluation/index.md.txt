@@ -1,4 +1,4 @@
-### FileSplittingEvaluation class
+## FileSplittingEvaluation class
 
 FileSplittingEvaluation class can be used to evaluate performance of ContextAwareFileSplittingModel, returning a set of 
 metrics that includes precision, recall, f1 measure, true positives, false positives and false negatives. 

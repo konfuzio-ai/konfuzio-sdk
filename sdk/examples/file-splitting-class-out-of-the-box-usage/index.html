@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Split multi-file Document into Separate files without training a model &mdash; Konfuzio  documentation</title>
+  <title>Split multi-file Document into Separate files &mdash; Konfuzio  documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
@@ -47,6 +47,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../configuration_reference.html">Install SDK</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html">Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html#tokenizers">Tokenizers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html#filesplitting-ai">FileSplitting AI</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html#extraction-ai">Extraction AI</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html#evaluation">Evaluation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../sourcecode.html#document-categorization">Document Categorization</a></li>
@@ -85,7 +86,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Split multi-file Document into Separate files without training a model</li>
+      <li>Split multi-file Document into Separate files</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../../../_sources/sdk/examples/file-splitting-class-out-of-the-box-usage/index.md.txt" rel="nofollow"> View page source</a>
       </li>
@@ -95,11 +96,14 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="split-multi-file-document-into-separate-files-without-training-a-model">
-<h1>Split multi-file Document into Separate files without training a model<a class="headerlink" href="#split-multi-file-document-into-separate-files-without-training-a-model" title="Permalink to this headline">¶</a></h1>
-<p>Let’s see how to use the <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> to automatically split documents consisting of
-several files. We will be using a pre-built class SplittingAI. The class implements a context-aware rule-based logic
-that requires no training.</p>
+  <section id="split-multi-file-document-into-separate-files">
+<h1>Split multi-file Document into Separate files<a class="headerlink" href="#split-multi-file-document-into-separate-files" title="Permalink to this headline">¶</a></h1>
+<p>Let’s see how to use the <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> to automatically split documents consisting of several files. We will be using
+a pre-built class <code class="docutils literal notranslate"><span class="pre">SplittingAI</span></code> and an instance of a trained <code class="docutils literal notranslate"><span class="pre">ContextAwareFileSplittingModel</span></code>. The latter uses a
+context-aware logic. By context-aware we mean a rule-based approach that looks for common strings between the first
+Pages of all Category’s Documents. Upon predicting whether a Page is a potential splitting point (meaning whether it is
+first or not), we compare Page’s contents to these common first-page strings; if there is occurrence of at least one
+such string, we mark a Page to be first (thus meaning it is a splitting point).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.regex</span> <span class="kn">import</span> <span class="n">ConnectedTextTokenizer</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.file_splitting</span> <span class="kn">import</span> <span class="n">ContextAwareFileSplittingModel</span><span class="p">,</span> <span class="n">SplittingAI</span>
@@ -137,7 +141,7 @@ that requires no training.</p>
 <span class="c1"># utilizes page-level prediction of possible split points and returns Document or Documents with changes depending on</span>
 <span class="c1"># the prediction mode.</span>
 
-<span class="c1"># SplittingAI can be ran in two modes: returning a list of sub-Documents as the result of the input Document</span>
+<span class="c1"># SplittingAI can be ran in two modes: returning a list of Sub-Documents as the result of the input Document</span>
 <span class="c1"># splitting or returning a copy of the input Document with Pages predicted as first having an attribute</span>
 <span class="c1"># &quot;is_first_page&quot;. The flag &quot;return_pages&quot; has to be True for the latter; let&#39;s use it</span>
 <span class="n">new_document</span> <span class="o">=</span> <span class="n">splitting_ai</span><span class="o">.</span><span class="n">propose_split_documents</span><span class="p">(</span><span class="n">test_document</span><span class="p">,</span> <span class="n">return_pages</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
