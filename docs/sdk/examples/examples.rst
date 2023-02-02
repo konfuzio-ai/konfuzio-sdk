@@ -6,6 +6,8 @@ Code Examples
 
 .. mdinclude:: intro.md
 
+.. mdinclude:: data_validations.md
+
 .. mdinclude:: helloworld.md
 
 .. mdinclude:: architecture_overview/index.md

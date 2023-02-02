@@ -12,6 +12,7 @@ import zipfile
 from copy import deepcopy
 from typing import Optional, List, Union, Tuple, Dict
 from warnings import warn
+from enum import Enum
 
 import dateutil.parser
 from PIL import Image, ImageDraw, ImageFont
@@ -33,8 +34,14 @@ from konfuzio_sdk.api import (
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
 from konfuzio_sdk.urls import get_annotation_view_url
-from konfuzio_sdk.utils import get_missing_offsets
-from konfuzio_sdk.utils import is_file, convert_to_bio_scheme, amend_file_name, sdk_isinstance
+from konfuzio_sdk.utils import (
+    is_file,
+    convert_to_bio_scheme,
+    amend_file_name,
+    sdk_isinstance,
+    exception_or_log_error,
+    get_missing_offsets,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -258,16 +265,32 @@ class Page(Data):
         return page_view_anns
 
 
+class BboxValidationTypes(Enum):
+    """Define validation strictness for bounding boxes.
+
+    For more details see the `Bbox` class.
+    """
+
+    STRICT = 'strict'
+    ALLOW_ZERO_SIZE = 'allow zero size'
+    DISABLED = 'disabled'
+
+
 class Bbox:
     """
     A bounding box relates to an area of a Document Page.
 
-    :param strict_validation: If False, it allows bounding boxes to have zero width or height. This option is available
-    and defaults to False for compatibility reasons since some OCR engines can sometimes return character level bboxes
-    with zero width or height.
+    What consistutes a valid Bbox changes depending on the value of the `validation` param.
+    If ALLOW_ZERO_SIZE (default), it allows bounding boxes to have zero width or height.
+    This option is available for compatibility reasons since some OCR engines can sometimes return character level
+    bboxes with zero width or height. If STRICT, it doesn't allow zero size bboxes. If DISABLED, it allows bboxes that
+    have negative size, or coordinates beyond the Page bounds.
+    For the default behaviour see https://dev.konfuzio.com/sdk/data_validations.html#bbox-validation-rules.
+
+    :param validation: One of ALLOW_ZERO_SIZE (default), STRICT, or DISABLED.
     """
 
-    def __init__(self, x0: int, x1: int, y0: int, y1: int, page: Page, strict_validation: bool = False):
+    def __init__(self, x0: int, x1: int, y0: int, y1: int, page: Page, validation=BboxValidationTypes.ALLOW_ZERO_SIZE):
         """Store information and validate."""
         self.x0: int = x0
         self.x1: int = x1
@@ -275,7 +298,7 @@ class Bbox:
         self.y1: int = y1
         self.angle: float = 0.0  # not yet used
         self.page: Page = page
-        self._valid(strict_validation)
+        self._valid(validation)
 
     def __repr__(self):
         """Represent the Box."""
@@ -289,51 +312,67 @@ class Bbox:
         """Define that one Bounding Box on the same page is identical."""
         return self.__hash__() == other.__hash__()
 
-    def _valid(self, strict: bool = False):
+    def _valid(self, validation=BboxValidationTypes.ALLOW_ZERO_SIZE):
         """
         Validate contained data.
 
-        :param strict: If False, it allows bounding boxes to have zero width or height. This option is available
-        and defaults to False for compatibility reasons since some OCR engines can sometimes return character level
-        bboxes with zero width or height.
+        :param validation: One of ALLOW_ZERO_SIZE (default), STRICT, or DISABLED. Also see the `Bbox` class.
         """
         if self.x0 == self.x1:
-            if strict:
-                raise ValueError(f'{self} has no width in {self.page}.')
-            else:
-                # todo add link to documentation page relating to feature calculation for the RandomForest ExtractionAI
-                logger.error(
-                    f'{self} has no width in {self.page}. Some of our AIs use the area of bboxes as a feature'
-                    f'during training and prediction, which will be zero.'
-                )
+            exception_or_log_error(
+                msg=f'{self} has no width in {self.page}.',
+                fail_loudly=validation is BboxValidationTypes.STRICT,
+                exception_type=ValueError,
+            )
 
         if self.x0 > self.x1:
-            raise ValueError(f'{self} has negative width in {self.page}.')
+            exception_or_log_error(
+                msg=f'{self} has negative width in {self.page}.',
+                fail_loudly=validation is not BboxValidationTypes.DISABLED,
+                exception_type=ValueError,
+            )
 
         if self.y0 == self.y1:
-            if strict:
-                raise ValueError(f'{self} has no height in {self.page}.')
-            else:
-                # todo add link to documentation page relating to feature calculation for the RandomForest ExtractionAI
-                logger.error(
-                    f'{self} has no height in {self.page}. Some of our AIs use the area of bboxes as a feature'
-                    f'during training and prediction, which will be zero.'
-                )
+            exception_or_log_error(
+                msg=f'{self} has no height in {self.page}.',
+                fail_loudly=validation is BboxValidationTypes.STRICT,
+                exception_type=ValueError,
+            )
 
         if self.y0 > self.y1:
-            raise ValueError(f'{self} has negative height in {self.page}.')
+            exception_or_log_error(
+                f'{self} has negative height in {self.page}.',
+                fail_loudly=validation is not BboxValidationTypes.DISABLED,
+                exception_type=ValueError,
+            )
 
         if self.y1 > self.page.height:
-            raise ValueError(f'{self} exceeds height of {self.page}.')
+            exception_or_log_error(
+                f'{self} exceeds height of {self.page}.',
+                fail_loudly=validation is not BboxValidationTypes.DISABLED,
+                exception_type=ValueError,
+            )
 
         if self.x1 > self.page.width:
-            raise ValueError(f'{self} exceeds width of {self.page}.')
+            exception_or_log_error(
+                f'{self} exceeds width of {self.page}.',
+                fail_loudly=validation is not BboxValidationTypes.DISABLED,
+                exception_type=ValueError,
+            )
 
         if self.y0 < 0:
-            raise ValueError(f'{self} has negative y coordinate in {self.page}.')
+            exception_or_log_error(
+                f'{self} has negative y coordinate in {self.page}.',
+                fail_loudly=validation is not BboxValidationTypes.DISABLED,
+                exception_type=ValueError,
+            )
 
         if self.x0 < 0:
-            raise ValueError(f'{self} has negative x coordinate in {self.page}.')
+            exception_or_log_error(
+                f'{self} has negative x coordinate in {self.page}.',
+                fail_loudly=validation is not BboxValidationTypes.DISABLED,
+                exception_type=ValueError,
+            )
 
     @property
     def area(self):
@@ -1017,7 +1056,7 @@ class Label(Data):
 class Span(Data):
     """A Span is a sequence of characters or whitespaces without line break."""
 
-    def __init__(self, start_offset: int, end_offset: int, annotation=None):
+    def __init__(self, start_offset: int, end_offset: int, annotation=None, strict_validation: bool = True):
         """
         Initialize the Span without bbox, to save storage.
 
@@ -1026,6 +1065,8 @@ class Span(Data):
         :param start_offset: Start of the offset string (int)
         :param end_offset: Ending of the offset string (int)
         :param annotation: The Annotation the Span belong to
+        :param strict_validation: Whether to apply strict validation rules.
+        See https://dev.konfuzio.com/sdk/data_validation.html.
         """
         self.id_local = next(Data.id_iter)
         self.annotation: Annotation = annotation
@@ -1038,22 +1079,31 @@ class Span(Data):
         self._bbox: Union[Bbox, None] = None
         self.regex_matching = []
         annotation and annotation.add_span(self)  # only add if Span has access to an Annotation
-        self._valid()
+        self._valid(strict_validation)
 
-    def _valid(
-        self,
-    ):
-        """Validate containted data."""
+    def _valid(self, strict: bool = True):
+        """
+        Validate containted data.
+
+        :param strict: If False, it allows Spans to have zero length, or span more than one visual line. For more
+        details see https://dev.konfuzio.com/sdk/data_validations.html#span-validation-rules.
+        """
         if self.end_offset == self.start_offset == 0:
             logger.error(f'{self} is intentionally left empty.')
-        elif self.end_offset < 0:
-            raise ValueError(f'{self} must span text.')
+        elif self.start_offset < 0 or self.end_offset < 0:
+            exception_or_log_error(f'{self} must span text.', fail_loudly=strict, exception_type=ValueError)
         elif self.start_offset == self.end_offset:
-            raise ValueError(f"{self} must span text: Start {self.start_offset} equals end.")
+            exception_or_log_error(
+                f"{self} must span text: Start {self.start_offset} equals end.",
+                fail_loudly=strict,
+                exception_type=ValueError,
+            )
         elif self.end_offset < self.start_offset:
-            raise ValueError(f"{self} length must be positive.")
+            exception_or_log_error(f"{self} length must be positive.", fail_loudly=strict, exception_type=ValueError)
         elif self.offset_string and ('\n' in self.offset_string or '\f' in self.offset_string):
-            raise ValueError(f'{self} must not span more than one visual line.')
+            exception_or_log_error(
+                f'{self} must not span more than one visual line.', fail_loudly=strict, exception_type=ValueError
+            )
         return True
 
     @property
@@ -1140,6 +1190,7 @@ class Span(Data):
                 y0=min([ch.y0 for c, ch in characters.items() if ch is not None]),
                 y1=max([ch.y1 for c, ch in characters.items() if ch is not None]),
                 page=self.page,
+                validation=self.annotation.document._bbox_validation_type,
             )
         return self._bbox
 
@@ -1417,7 +1468,11 @@ class Annotation(Data):
         if not self.label:
             raise NotImplementedError(f'{self} has no Label and cannot be created.')
         if not self.spans:
-            raise NotImplementedError(f'{self} has no Spans and cannot be created.')
+            exception_or_log_error(
+                msg=f'{self} has no Spans and cannot be created.',
+                fail_loudly=self.document.project._strict_data_validation,
+                exception_type=NotImplementedError,
+            )
 
     def __repr__(self):
         """Return string representation."""
@@ -1685,7 +1740,7 @@ class Document(Data):
         category: Category = None,
         text: str = None,
         bbox: dict = None,
-        strict_bbox_validation: bool = False,
+        bbox_validation_type=None,
         pages: list = None,
         update: bool = None,
         copy_of_id: Union[int, None] = None,
@@ -1705,9 +1760,7 @@ class Document(Data):
         :param updated_at: Updated information
         :param assignee: Assignee of the Document
         :param bbox: Bounding box information per character in the PDF (dict)
-        :param strict_bbox_validation: If False, it allows bounding boxes to have zero width or height. This option is
-                        available and defaults to False for compatibility reasons since some OCR engines can sometimes
-                        return character level bboxes with zero width or height.
+        :param bbox_validation_type: One of ALLOW_ZERO_SIZE (default), STRICT, or DISABLED. Also see the `Bbox` class.
         :param pages: List of page sizes.
         :param update: Annotations, Annotation Sets will not be loaded by default. True will load it from the API.
                         False from local files
@@ -1749,7 +1802,13 @@ class Document(Data):
         self._characters: Dict[int, Bbox] = None
         self._bbox_hash = None
         self._bbox_json = bbox
-        self._strict_bbox_validation = strict_bbox_validation
+        self.bboxes_available: bool = True if (self.is_online or self._bbox_json) else False
+        self._bbox_validation_type = bbox_validation_type
+        if bbox_validation_type is None:
+            if self.project._strict_data_validation:
+                self._bbox_validation_type = BboxValidationTypes.ALLOW_ZERO_SIZE
+            else:
+                self._bbox_validation_type = BboxValidationTypes.DISABLED
         self._hocr = None
         self._pages: List[Page] = []
         self._n_pages = None
@@ -2261,7 +2320,10 @@ class Document(Data):
         return self
 
     def add_annotation(self, annotation: Annotation):
-        """Add an annotation to a document.
+        """Add an Annotation to a Document.
+
+        The Annotation is only added to the Document if the data validation tests are passing for this Annotation.
+        See https://dev.konfuzio.com/sdk/data_validations.html#annotation-validation-rules.
 
         :param annotation: Annotation to add in the document
         :return: Input annotation.
@@ -2278,9 +2340,11 @@ class Document(Data):
                         if self.category in annotation.label_set.categories:
                             self._annotations.append(annotation)
                         else:
-                            raise ValueError(
-                                f'We cannot add {annotation} related to {annotation.label_set.categories} to {self} '
-                                f'as the document has {self.category}'
+                            exception_or_log_error(
+                                msg=f'We cannot add {annotation} related to {annotation.label_set.categories} to {self}'
+                                f' as the document has {self.category}',
+                                fail_loudly=self.project._strict_data_validation,
+                                exception_type=ValueError,
                             )
                     else:
                         raise ValueError(f'{annotation} uses Label Set without Category, cannot be added to {self}.')
@@ -2290,7 +2354,11 @@ class Document(Data):
                 raise ValueError(f'We cannot add {annotation} to {self} where the category is {self.category}')
         else:
             duplicated = [x for x in self._annotations if x == annotation]
-            raise ValueError(f'In {self} the {annotation} is a duplicate of {duplicated} and will not be added.')
+            exception_or_log_error(
+                msg=f'In {self} the {annotation} is a duplicate of {duplicated} and will not be added.',
+                fail_loudly=self.project._strict_data_validation,
+                exception_type=ValueError,
+            )
 
         return self
 
@@ -2432,12 +2500,14 @@ class Document(Data):
                 box_character = box.get('text')
                 document_character = self.text[int(character_index)]
                 if box_character not in [' ', '\f', '\n'] and box_character != document_character:
-                    raise ValueError(
-                        f'{self} Bbox provides Character "{box_character}" document text refers to '
-                        f'"{document_character}" with ID "{character_index}".'
+                    exception_or_log_error(
+                        msg=f'{self} Bbox provides Character "{box_character}" document text refers to '
+                        f'"{document_character}" with ID "{character_index}".',
+                        fail_loudly=self.project._strict_data_validation,
+                        exception_type=ValueError,
                     )
                 boxes[int(character_index)] = Bbox(
-                    x0=x0, x1=x1, y0=y0, y1=y1, page=page, strict_validation=self._strict_bbox_validation
+                    x0=x0, x1=x1, y0=y0, y1=y1, page=page, validation=self._bbox_validation_type
                 )
             self._characters = boxes
         return self._characters
@@ -2447,7 +2517,7 @@ class Document(Data):
         characters = {int(key): bbox for key, bbox in characters.items()}
 
         for key, bbox in characters.items():
-            bbox._valid(self._strict_bbox_validation)
+            bbox._valid(self._bbox_validation_type)
 
         self._characters = characters
         self.bboxes_available = True
@@ -2772,13 +2842,24 @@ class Document(Data):
 class Project(Data):
     """Access the information of a Project."""
 
-    def __init__(self, id_: Union[int, None], project_folder=None, update=False, max_ram=None, **kwargs):
+    def __init__(
+        self,
+        id_: Union[int, None],
+        project_folder=None,
+        update=False,
+        max_ram=None,
+        strict_data_validation: bool = True,
+        **kwargs,
+    ):
         """
         Set up the Data using the Konfuzio Host.
 
         :param id_: ID of the Project
         :param project_folder: Set a Project root folder, if empty "data_<id_>" will be used.
+        :param update: Whether to sync local files with the Project online.
         :param max_ram: Maximum RAM used by AI models trained on this Project.
+        :param strict_data_validation: Whether to apply strict data validation rules.
+        See https://dev.konfuzio.com/sdk/data_validations.html.
         """
         self.id_local = next(Data.id_iter)
         self.id_ = id_  # A Project with None ID is not retrieved from the HOST
@@ -2791,6 +2872,7 @@ class Project(Data):
         self._documents: List[Document] = []
         self._meta_data = []
         self._max_ram = max_ram
+        self._strict_data_validation = strict_data_validation
 
         # paths
         self.meta_file_path = os.path.join(self.project_folder, "documents_meta.json5")
