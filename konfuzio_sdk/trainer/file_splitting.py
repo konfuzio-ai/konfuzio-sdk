@@ -10,10 +10,11 @@ import numpy as np
 import tensorflow as tf
 
 from copy import deepcopy
-from keras.applications.vgg19 import preprocess_input
-from keras.layers import Dense, Conv2D, MaxPool2D, Flatten, Input, concatenate
-from keras.models import Model
 from pympler import asizeof
+from tensorflow.keras import Input
+from tensorflow.keras.applications.vgg19 import preprocess_input
+from tensorflow.keras.layers import Dense, Conv2D, MaxPool2D, Flatten, Concatenate
+from tensorflow.keras.models import Model
 from tensorflow.keras.preprocessing.image import img_to_array
 from transformers import BertTokenizer, AutoModel, AutoConfig
 from typing import List
@@ -136,7 +137,7 @@ class FusionModel(AbstractFileSplittingModel):
     Split a multi-Document file into a list of shorter documents based on model's prediction.
 
     We use an approach suggested by Guha et al.(2022) that incorporates steps for accepting separate visual and textual
-    inputs and processing them independently via the VGG16 architecture and LegalBERT model which is essentially
+    inputs and processing them independently via the VGG19 architecture and LegalBERT model which is essentially
     a BERT-type architecture trained on domain-specific data, and passing the resulting outputs together to
     a Multi-Layered Perceptron.
 
@@ -145,7 +146,7 @@ class FusionModel(AbstractFileSplittingModel):
     https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=9684474
     """
 
-    # todo scheme of the architecture + indicate frameworks used in each part?
+    # todo scheme of the architecture
     def __init__(self, categories: List[Category], *args, **kwargs):
         """Initialize the Fusion filesplitting model."""
         logging.info('Initializing FusionModel.')
@@ -210,12 +211,14 @@ class FusionModel(AbstractFileSplittingModel):
             images.append(image)
         return images
 
-    def fit(self, epochs: int = 10, *args, **kwargs):
+    def fit(self, epochs: int = 10, use_gpu: bool = False, *args, **kwargs):
         """
         Process the train and test data, initialize and fit the model.
 
         :param epochs: A number of epochs to train a model on.
         :type epochs: int
+        :param use_gpu: Run training on GPU if available.
+        :type use_gpu: bool
         """
         logger.info('Fitting FusionModel.')
         for doc in self.documents + self.test_documents:
@@ -252,8 +255,8 @@ class FusionModel(AbstractFileSplittingModel):
         self.test_txt_data = np.asarray(self.test_txt_data)
         logger.info('Text data preprocessing finished.')
         logger.info('FusionModel compiling started.')
-        # we combine an output of generic VGG16 architecture for image processing (read more about it
-        # at https://datagen.tech/guides/computer-vision/vgg16/) and an output of BERT in an MLP-like
+        # we combine an output of a simplified VGG19 architecture for image processing (read more about it
+        # at https://iq.opengenus.org/vgg19-architecture/) and an output of BERT in an MLP-like
         # architecture (read more about it at http://shorturl.at/puKN3)
         txt_input = Input(shape=self.input_shape, name='text')
         txt_x = Dense(units=768, activation="relu")(txt_input)
@@ -276,14 +279,10 @@ class FusionModel(AbstractFileSplittingModel):
         img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
         img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
         img_x = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
-        # img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        # img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        # img_x = Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
-        img_x = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(img_x)
         img_x = Flatten()(img_x)
         img_x = Dense(units=4096, activation="relu")(img_x)
-        img_x = Dense(units=4096, activation="relu", name='img_outputs')(img_x)  # todo minimize?
-        concatenated = concatenate([img_x, txt_x], axis=-1)
+        img_x = Dense(units=4096, activation="relu", name='img_outputs')(img_x)
+        concatenated = Concatenate(axis=-1)([img_x, txt_x])
         x = Dense(50, input_shape=(8192,), activation='relu')(concatenated)
         x = Dense(50, activation='elu')(x)
         x = Dense(50, activation='elu')(x)
@@ -291,17 +290,29 @@ class FusionModel(AbstractFileSplittingModel):
         self.model = Model(inputs=[img_input, txt_input], outputs=output)
         self.model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
         logger.info('FusionModel compiling finished.')
-        self.model.fit([self.train_img_data, self.train_txt_data], self.train_labels, epochs=epochs, verbose=1)
-        logger.info('FusionModel fitting finished.')  # todo convert steps into a list of layers + pipeline
+        if not use_gpu:
+            with tf.device('/cpu:0'):
+                self.model.fit([self.train_img_data, self.train_txt_data], self.train_labels, epochs=epochs, verbose=1)
+        else:
+            if tf.config.list_physical_devices('GPU'):
+                with tf.device('/gpu:0'):
+                    self.model.fit(
+                        [self.train_img_data, self.train_txt_data], self.train_labels, epochs=epochs, verbose=1
+                    )
+            else:
+                raise ValueError('Fitting on the GPU is impossible because there is no GPU available on the device.')
+        logger.info('FusionModel fitting finished.')
 
         #  switch to usage of tf where possible / get rid of keras if possible
 
-    def predict(self, page: Page) -> Page:
+    def predict(self, page: Page, use_gpu: bool = False) -> Page:
         """
         Run prediction with the trained model.
 
         :param page: A Page to be predicted as first or non-first.
         :type page: Page
+        :param use_gpu: Run prediction on GPU if available.
+        :type use_gpu: bool
         :return: A Page with possible changes in is_first_page attribute value.
         """
         inputs = self.bert_tokenizer(page.text, truncation=True, return_tensors='pt')
@@ -317,7 +328,15 @@ class FusionModel(AbstractFileSplittingModel):
         image = preprocess_input(image)
         img_data = np.concatenate([image])
         preprocessed = [img_data.reshape((1, 224, 224, 3)), txt_data.reshape((1, 1, 768))]
-        prediction = round(self.model.predict(preprocessed, verbose=0)[0, 0])
+        if not use_gpu:
+            with tf.device('/cpu:0'):
+                prediction = round(self.model.predict(preprocessed, verbose=0)[0, 0])
+        else:
+            if tf.config.list_physical_devices('GPU'):
+                with tf.device('/gpu:0'):
+                    prediction = round(self.model.predict(preprocessed, verbose=0)[0, 0])
+            else:
+                raise ValueError('Predicting on the GPU is impossible because there is no GPU available on the device.')
         if prediction == 1:
             page.is_first_page = True
         else:

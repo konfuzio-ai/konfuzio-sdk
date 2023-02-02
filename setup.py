@@ -75,8 +75,6 @@ setuptools.setup(
     entry_points={'console_scripts': ['konfuzio_sdk=konfuzio_sdk.cli:main']},
     install_requires=[
         'cloudpickle==2.0.0',  # Used to pickle objects
-        'keras==2.9.0',
-        'Keras-Preprocessing==1.1.2',
         'filetype==1.0.7',  # Used to check that files are in the correct format
         'nltk',
         'numpy>=1.21.6',
