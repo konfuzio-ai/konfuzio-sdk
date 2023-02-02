@@ -2228,13 +2228,11 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
                                 f"it, or modifying it."
                             )
 
-            virt_document = deepcopy(document)
+            virtual_document = deepcopy(document)
             if retokenize:
-                self.tokenizer.tokenize(virt_document)
-                self.label_train_document(virt_document, document)
-                # document = virt_document
+                self.tokenizer.tokenize(virtual_document)
+                self.label_train_document(virtual_document, document)
             else:
-                # virt_document = deepcopy(document)
                 for ann in document.annotations():
                     new_spans = []
                     for span in ann.spans:
@@ -2242,31 +2240,32 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
                         new_spans.append(new_span)
 
                     new_ann = Annotation(
-                        document=virt_document,
-                        annotation_set=virt_document.no_label_annotation_set,
+                        document=virtual_document,
+                        annotation_set=virtual_document.no_label_annotation_set,
                         label=ann.label,
-                        label_set=virt_document.project.no_label_set,
+                        label_set=virtual_document.project.no_label_set,
                         category=self.category,
                         spans=new_spans,
                     )
                     new_ann.label_set = ann.label_set
                     new_ann.annotation_set = ann.annotation_set
 
-                self.tokenizer.tokenize(virt_document)
-                # document = virt_document
+                self.tokenizer.tokenize(virtual_document)
 
-            no_label_annotations = virt_document.annotations(use_correct=False, label=virt_document.project.no_label)
-            label_annotations = [x for x in virt_document.annotations(use_correct=False) if x.label.id_ is not None]
+            no_label_annotations = virtual_document.annotations(
+                use_correct=False, label=virtual_document.project.no_label
+            )
+            label_annotations = [x for x in virtual_document.annotations(use_correct=False) if x.label.id_ is not None]
 
             # We calculate features of documents as long as they have IDs, even if they are offline.
             # The assumption is that if they have an ID, then the data came either from the API or from the DB.
-            if virt_document.id_ is None and virt_document.copy_of_id is None:
+            if virtual_document.id_ is None and virtual_document.copy_of_id is None:
                 # inference time todo reduce shuffled complexity
                 assert (
                     not label_annotations
                 ), "Documents that don't come from the server have no human revised Annotations."
                 raise NotImplementedError(
-                    f'{virt_document} does not come from the server, please use process_document_data function.'
+                    f'{virtual_document} does not come from the server, please use process_document_data function.'
                 )
             else:
                 # training time: todo reduce shuffled complexity
@@ -2282,22 +2281,22 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
                         n_no_labels, label_annotations, no_label_annotations
                     )
                     logger.info(
-                        f'Document {virt_document} NO_LABEL annotations has been reduced to {len(no_label_annotations)}'
+                        f'Document {virtual_document} NO_LABEL annotations reduced to {len(no_label_annotations)}'
                     )
 
-            logger.info(f'Document {virt_document} has {len(label_annotations)} labeled annotations')
-            logger.info(f'Document {virt_document} has {len(no_label_annotations)} NO_LABEL annotations')
+            logger.info(f'Document {virtual_document} has {len(label_annotations)} labeled annotations')
+            logger.info(f'Document {virtual_document} has {len(no_label_annotations)} NO_LABEL annotations')
 
             # todo: check if eq method of Annotation prevents duplicates
             # annotations = self._filter_annotations_for_duplicates(label_annotations + no_label_annotations)
 
             t0 = time.monotonic()
 
-            temp_df_real, _feature_list, temp_df_raw_errors = self.features(virt_document)
+            temp_df_real, _feature_list, temp_df_raw_errors = self.features(virtual_document)
 
-            logger.info(f'Document {virt_document} processed in {time.monotonic() - t0:.1f} seconds.')
+            logger.info(f'Document {virtual_document} processed in {time.monotonic() - t0:.1f} seconds.')
 
-            virt_document.delete(delete_online=False)  # reduce memory from virtual doc
+            virtual_document.delete(delete_online=False)  # reduce memory from virtual doc
 
             feature_list += _feature_list
             df_real_list.append(temp_df_real)
@@ -2308,7 +2307,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         if df_real_list:
             df_real_list = pandas.concat(df_real_list).reset_index(drop=True)
         else:
-            raise NotImplementedError  # = pandas.DataFrame()
+            raise NotImplementedError
 
         logger.info(f"Size of feature dict {memory_size_of(df_real_list)/1000} KB.")
 
