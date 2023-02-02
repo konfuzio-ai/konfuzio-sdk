@@ -1,4 +1,5 @@
 """Validate utils functions."""
+import importlib.metadata
 import os
 import unittest
 
@@ -22,6 +23,7 @@ from konfuzio_sdk.utils import (
     get_bbox,
     normalize_memory,
     exception_or_log_error,
+    get_sdk_version,
 )
 
 TEST_STRING = "sample string"
@@ -495,3 +497,10 @@ def test_iter_before_and_after():
             assert before + 1 == i
         elif after:
             assert after - 1 == i
+
+
+def test_get_sdk_version():
+    """Test to get a current SDK version."""
+    version = get_sdk_version()
+    assert isinstance(version, str)
+    assert version == importlib.metadata.version('konfuzio_sdk')
