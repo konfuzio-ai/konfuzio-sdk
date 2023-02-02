@@ -147,40 +147,18 @@ print(response.json())
 
 #### Konfuzio SDK example
 
-For more robust handling of retry events, Konfuzio SDK provides a wrapper around the `requests` library.
-
-To get a token, access the .env file's contents (read more about the file in [Initialize the package](https://dev.konfuzio.com/sdk/configuration_reference.html#initialize-the-package)). 
-This can be done either manually or this way:
-
-```python
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
-token = os.getenv('KONFUZIO_TOKEN')
-print(token)
-```
-
-It is also possible to access a token via `from konfuzio_sdk import KONFUZIO_TOKEN` (available only after `konfuzio_sdk init`).
+To get a token, access it via `from konfuzio_sdk import KONFUZIO_TOKEN` (available only after `konfuzio_sdk init`).
 
 To use a token:
 
 ```python
-import requests
 from konfuzio_sdk import KONFUZIO_TOKEN
-from konfuzio_sdk.api import TimeoutHTTPAdapter
+from konfuzio_sdk.api import konfuzio_session
 
 url = "https://app.konfuzio.com/api/v3/projects/"
 
-headers = {
-    "Authorization": f"Token {KONFUZIO_TOKEN}"
-}
-
-session = requests.Session()
-adapter = TimeoutHTTPAdapter(timeout=2.5)  # a custom SDK adapter to better handle retry events
-session.mount("https://", adapter)
-session.headers = headers
+# if you ran konfuzio_sdk init, you can run konfuzio_session() without explicitly specifying the token
+session = konfuzio_session(KONFUZIO_TOKEN)  
 
 response = session.get(url)
 

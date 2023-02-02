@@ -115,7 +115,7 @@ class TimeoutHTTPAdapter(HTTPAdapter):
     def build_response(self, req, resp):
         """Throw error for any HTTPError that is not part of the retry strategy."""
         response = super().build_response(req, resp)
-        # handle status code one by one as some status codes will cause a retry, see _konfuzio_session
+        # handle status code one by one as some status codes will cause a retry, see konfuzio_session
         if response.status_code in [403, 404]:
             # Fallback to None if there's no detail, for whatever reason.
             try:
@@ -127,7 +127,7 @@ class TimeoutHTTPAdapter(HTTPAdapter):
         return response
 
 
-def _konfuzio_session(token: str = KONFUZIO_TOKEN):
+def konfuzio_session(token: str = KONFUZIO_TOKEN):
     """
     Create a session incl. Token to the KONFUZIO_HOST.
 
@@ -145,7 +145,7 @@ def _konfuzio_session(token: str = KONFUZIO_TOKEN):
     return session
 
 
-def get_project_list(session=_konfuzio_session()):
+def get_project_list(session=konfuzio_session()):
     """
     Get the list of all Projects for the user.
 
@@ -157,7 +157,7 @@ def get_project_list(session=_konfuzio_session()):
     return r.json()
 
 
-def get_project_details(project_id: int, session=_konfuzio_session()) -> dict:
+def get_project_details(project_id: int, session=konfuzio_session()) -> dict:
     """
     Get Label Sets available in Project.
 
@@ -174,7 +174,7 @@ def get_project_details(project_id: int, session=_konfuzio_session()) -> dict:
     return r.json()
 
 
-def create_new_project(project_name, session=_konfuzio_session()):
+def create_new_project(project_name, session=konfuzio_session()):
     """
     Create a new Project for the user.
 
@@ -197,7 +197,7 @@ def create_new_project(project_name, session=_konfuzio_session()):
         )
 
 
-def get_document_details(document_id: int, project_id: int, session=_konfuzio_session(), extra_fields: str = ''):
+def get_document_details(document_id: int, project_id: int, session=konfuzio_session(), extra_fields: str = ''):
     """
     Use the text-extraction server to retrieve the data from a document.
 
@@ -212,7 +212,7 @@ def get_document_details(document_id: int, project_id: int, session=_konfuzio_se
     return r.json()
 
 
-def get_page_image(page_id: int, session=_konfuzio_session(), thumbnail: bool = False):
+def get_page_image(page_id: int, session=konfuzio_session(), thumbnail: bool = False):
     """
     Load image of a Page as Bytes.
 
@@ -235,7 +235,7 @@ def get_page_image(page_id: int, session=_konfuzio_session(), thumbnail: bool = 
     return r.content
 
 
-# def post_document_bulk_annotation(document_id: int, project_id: int, annotation_list, session=_konfuzio_session()):
+# def post_document_bulk_annotation(document_id: int, project_id: int, annotation_list, session=konfuzio_session()):
 #     """
 #     Add a list of Annotations to an existing document.
 #
@@ -260,7 +260,7 @@ def post_document_annotation(
     revised: bool = False,
     is_correct: bool = False,
     annotation_set=None,
-    session=_konfuzio_session(),
+    session=konfuzio_session(),
     **kwargs,
 ):
     """
@@ -335,7 +335,7 @@ def post_document_annotation(
     return r
 
 
-def delete_document_annotation(document_id: int, annotation_id: int, project_id: int, session=_konfuzio_session()):
+def delete_document_annotation(document_id: int, annotation_id: int, project_id: int, session=konfuzio_session()):
     """
     Delete a given Annotation of the given document.
 
@@ -356,7 +356,7 @@ def delete_document_annotation(document_id: int, annotation_id: int, project_id:
         raise ConnectionError(f'Error{r.status_code}: {r.content} {r.url}')
 
 
-def get_meta_of_files(project_id: int, limit: int = 1000, session=_konfuzio_session()) -> List[dict]:
+def get_meta_of_files(project_id: int, limit: int = 1000, session=konfuzio_session()) -> List[dict]:
     """
     Get meta information of Documents in a Project.
 
@@ -386,7 +386,7 @@ def create_label(
     project_id: int,
     label_name: str,
     label_sets: list,
-    session=_konfuzio_session(),
+    session=konfuzio_session(),
     description=None,
     has_multiple_top_candidates=None,
     data_type=None,
@@ -426,7 +426,7 @@ def upload_file_konfuzio_api(
     filepath: str,
     project_id: int,
     dataset_status: int = 0,
-    session=_konfuzio_session(),
+    session=konfuzio_session(),
     category_id: Union[None, int] = None,
     callback_url: str = '',
     sync: bool = False,
@@ -467,7 +467,7 @@ def upload_file_konfuzio_api(
     return r
 
 
-def delete_file_konfuzio_api(document_id: int, session=_konfuzio_session()):
+def delete_file_konfuzio_api(document_id: int, session=konfuzio_session()):
     """
     Delete Document by ID via Konfuzio API.
 
@@ -488,7 +488,7 @@ def delete_file_konfuzio_api(document_id: int, session=_konfuzio_session()):
     return True
 
 
-def update_document_konfuzio_api(document_id: int, session=_konfuzio_session(), **kwargs):
+def update_document_konfuzio_api(document_id: int, session=konfuzio_session(), **kwargs):
     """
     Update an existing Document via Konfuzio API.
 
@@ -526,7 +526,7 @@ def update_document_konfuzio_api(document_id: int, session=_konfuzio_session(), 
     return json.loads(r.text)
 
 
-def download_file_konfuzio_api(document_id: int, ocr: bool = True, session=_konfuzio_session()):
+def download_file_konfuzio_api(document_id: int, ocr: bool = True, session=konfuzio_session()):
     """
     Download file from the Konfuzio server using the Document id_.
 
@@ -552,7 +552,7 @@ def download_file_konfuzio_api(document_id: int, ocr: bool = True, session=_konf
     return r.content
 
 
-def get_results_from_segmentation(doc_id: int, project_id: int, session=_konfuzio_session()) -> List[List[dict]]:
+def get_results_from_segmentation(doc_id: int, project_id: int, session=konfuzio_session()) -> List[List[dict]]:
     """Get bbox results from segmentation endpoint.
 
     :param doc_id: ID of the document
@@ -566,7 +566,7 @@ def get_results_from_segmentation(doc_id: int, project_id: int, session=_konfuzi
     return segmentation_result
 
 
-def upload_ai_model(ai_model_path: str, category_ids: List[int] = None, session=_konfuzio_session()):  # noqa: F821
+def upload_ai_model(ai_model_path: str, category_ids: List[int] = None, session=konfuzio_session()):  # noqa: F821
     """
     Upload an ai_model to the text-annotation server.
 
