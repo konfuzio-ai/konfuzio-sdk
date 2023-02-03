@@ -193,7 +193,7 @@ class TestFileSplittingModel(unittest.TestCase):
         """Test running SplittingAI on a Document with Category == NO_CATEGORY."""
         splitting_ai = SplittingAI(self.file_splitting_model)
         test_document = self.project.get_document_by_id(19)
-        assert test_document.category == self.project.no_category
+        assert test_document.category.name == self.project.no_category.name
         pred = splitting_ai.propose_split_documents(test_document, return_pages=False)
         assert len(pred) == 1
         assert pred[0].text == test_document.text

@@ -80,17 +80,17 @@ class TestFallbackCategorizationModel(unittest.TestCase):
         """Test cannot extract category for two Test Document if their texts don't contain the category name."""
         test_receipt_document = self.project.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID).test_documents()[0]
         # reset the category attribute to test that it can't be categorized successfully
-        test_receipt_document.category = None
+        test_receipt_document.category = self.project.no_category
         result = self.categorization_pipeline.categorize(document=test_receipt_document)
         assert isinstance(result, Document)
-        assert result.category is None
+        assert result.category == self.project.no_category
 
         test_payslip_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         # reset the category attribute to test that it can't be categorized successfully
-        test_payslip_document.category = None
+        test_payslip_document.category = self.project.no_category
         result = self.categorization_pipeline.categorize(document=test_payslip_document)
         assert isinstance(result, Document)
-        assert result.category is None
+        assert result.category == self.project.no_category
 
     def test_9_force_categorization(self):
         """Test extract category for two selected Test Documents that already contain a category attribute."""
