@@ -187,7 +187,6 @@ class TestFileSplittingModel(unittest.TestCase):
 
     def test_splitting_ai_evaluate_full_on_testing(self):
         """Test SplittingAI's evaluate_full on testing Documents."""
-        self.file_splitting_model.test_documents = self.file_splitting_model.test_documents[:-2]
         splitting_ai = SplittingAI(self.file_splitting_model)
         splitting_ai.evaluate_full()
         assert splitting_ai.full_evaluation.tp() == 9
