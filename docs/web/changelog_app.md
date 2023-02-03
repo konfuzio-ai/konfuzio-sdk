@@ -41,7 +41,15 @@ These changes are for the tokenizers/new SDK branch.
 
 ## Next Release (estimated release date: 6th February 2023)
 
-Upcoming
+### Added
+- [For self-hosted installations, allow to upload customized AIs](https://testing.konfuzio.com/v3/swagger/#/extraction-ais/extraction_ais_upload_create) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9432)).
+- [Track if a User accepts a suggested Category in the DVUI](https://github.com/konfuzio-ai/document-validation-ui) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9995)).
+- [Allow to change the Category of Documents wth existing Annotations](https://help.konfuzio.com/modules/documents/index.html#category)  ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9995)).
+
+### Fixed
+- Proper error handling in case a password is reset for an unregistered User ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10490)).
+- In-active users do not longer receive email notifications ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9995)).
+
 
 ## released-2023-01-23_22-14-45
 
