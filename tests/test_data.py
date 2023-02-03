@@ -296,7 +296,7 @@ class TestOfflineExampleData(unittest.TestCase):
         """Control the number of Documents created in the Test."""
         assert len(cls.payslips_category.documents()) == 25
         assert len(cls.receipts_category.documents()) == 25
-        assert cls.project.get_document_by_id(44864).category == cls.project.no_category
+        assert cls.project.get_document_by_id(44864).category.name == cls.project.no_category.name
         assert len(cls.project.documents) == 51
 
     def test_copy(self):
@@ -1291,13 +1291,13 @@ class TestOfflineDataSetup(unittest.TestCase):
             document.add_annotation_set(self.annotation_set)
 
     def test_to_add_annotation_to_none_category_document(self):
-        """A Document with Category None must not contain Annotations."""
+        """A Document with Category NO_CATEGORY must not contain Annotations."""
         document = Document(project=self.project)
         annotation_set = AnnotationSet(document=document, label_set=self.label_set)
 
         # Add annotation for the first time
         span = Span(start_offset=1, end_offset=2)
-        with pytest.raises(ValueError, match="without Category must not have Annotations"):
+        with pytest.raises(ValueError, match="where the category is NO_CATEGORY"):
             _ = Annotation(
                 document=document,
                 is_correct=True,
@@ -1694,7 +1694,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_document_with_no_category_has_only_no_label_annotations(self):
         """Test if we skip Annotations except for NO_LABEL in no Category Documents."""
         document = self.prj.get_document_by_id(44864)
-        assert document.category is self.prj.no_category
+        assert document.category.name == self.prj.no_category.name
         assert document.annotations() == []
 
     def test_number_test_documents(self):
@@ -1768,7 +1768,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_category(self):
         """Test if Category of main Label Set is initialized correctly."""
-        assert len(self.prj.categories) == 3
+        assert len(self.prj.categories) == 4
         assert self.prj.categories[0].id_ == 63
         assert self.prj.label_sets[0].categories[0].id_ == 63
 
@@ -1841,7 +1841,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_categories(self):
         """Test get Labels in the Project."""
-        assert self.prj.categories.__len__() == 3
+        assert self.prj.categories.__len__() == 4
         payslips_category = self.prj.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID)
         assert payslips_category.name == 'Lohnabrechnung'
         # We have 5 Label Sets, Lohnabrechnung is Category and a Label Set as it hold labels, however a Category

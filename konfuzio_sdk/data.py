@@ -1592,7 +1592,7 @@ class Annotation(Data):
         :param document_annotations: Annotations in the Document (list)
         :return: True if new Annotation was created
         """
-        if self.document.category == self.document.project.no_category:
+        if self.document.category.name == self.document.project.no_category.name:
             raise ValueError(f"You cannot save Annotations of Documents with {self.document.category}.")
         new_annotation_added = False
         if not self.label_set:
@@ -1795,7 +1795,7 @@ class Document(Data):
         elif category:
             self.category = category
         else:
-            self.category = None
+            self.category = Category(project=project, name="NO_CATEGORY", name_clean="NO_CATEGORY")
 
         if updated_at:
             self.updated_at = dateutil.parser.isoparse(updated_at)
@@ -2346,7 +2346,7 @@ class Document(Data):
             # Hotfix Text Annotation Server:
             #  Annotation belongs to a Label / Label Set that does not relate to the Category of the Document.
             # todo: add test that the Label and Label Set of an Annotation belong to the Category of the Document
-            if self.category != self.project.no_category:
+            if self.category.name != self.project.no_category.name:
                 if annotation.label_set is not None:
                     if annotation.label_set.categories:
                         if self.category in annotation.label_set.categories:
@@ -2774,7 +2774,7 @@ class Document(Data):
             with open(self.annotation_file_path, 'r') as f:
                 raw_annotations = json.load(f)
 
-            if self.category is self.project.no_category:
+            if self.category.name == self.project.no_category.name:
                 raw_annotations = [
                     annotation for annotation in raw_annotations if annotation['label_text'] == 'NO_LABEL'
                 ]
@@ -2794,7 +2794,7 @@ class Document(Data):
                 with open(self.annotation_file_path, 'r') as f:
                     raw_annotations = json.load(f)
 
-                if self.category is self.project.no_category:
+                if self.category.name == self.project.no_category.name:
                     raw_annotations = [
                         annotation for annotation in raw_annotations if annotation['label_text'] == 'NO_LABEL'
                     ]
@@ -2920,15 +2920,10 @@ class Project(Data):
         """Return string representation."""
         return f"Project {self.id_}"
 
-    def _assign_category(self, document: Document):
-        if document.category is None:
-            document.category = self.no_category
-        return document
-
     @property
     def documents(self):
         """Return Documents with status training."""
-        return [self._assign_category(doc) for doc in self._documents if doc.dataset_status == 2]
+        return [doc for doc in self._documents if doc.dataset_status == 2]
 
     @property
     def online_documents_dict(self) -> Dict:
@@ -2938,27 +2933,27 @@ class Project(Data):
     @property
     def virtual_documents(self):
         """Return Documents created virtually."""
-        return [self._assign_category(doc) for doc in self._documents if doc.dataset_status is None or doc.id_ is None]
+        return [doc for doc in self._documents if doc.dataset_status is None or doc.id_ is None]
 
     @property
     def test_documents(self):
         """Return Documents with status test."""
-        return [self._assign_category(doc) for doc in self._documents if doc.dataset_status == 3]
+        return [doc for doc in self._documents if doc.dataset_status == 3]
 
     @property
     def excluded_documents(self):
         """Return Documents which have been excluded."""
-        return [self._assign_category(doc) for doc in self._documents if doc.dataset_status == 4]
+        return [doc for doc in self._documents if doc.dataset_status == 4]
 
     @property
     def preparation_documents(self):
         """Return Documents with status test."""
-        return [self._assign_category(doc) for doc in self._documents if doc.dataset_status == 1]
+        return [doc for doc in self._documents if doc.dataset_status == 1]
 
     @property
     def no_status_documents(self):
         """Return Documents with status test."""
-        return [self._assign_category(doc) for doc in self._documents if doc.dataset_status == 0]
+        return [doc for doc in self._documents if doc.dataset_status == 0]
 
     @property
     def project_folder(self) -> str:
@@ -3190,7 +3185,7 @@ class Project(Data):
         """Return Document by its ID."""
         for document in self._documents:
             if document.id_ == document_id:
-                return self._assign_category(document)
+                return document
         raise IndexError(f'Document id {document_id} was not found in {self}.')
 
     def del_document_by_id(self, document_id: int, delete_online: bool = False) -> Document:
