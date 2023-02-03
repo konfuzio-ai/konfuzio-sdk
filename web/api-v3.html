@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>REST API v3 &mdash; Konfuzio  documentation</title>
+  <title>REST API &mdash; Konfuzio  documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -24,7 +24,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="On-Premises Documentation" href="on_premises.html" />
-    <link rel="prev" title="REST API v2" href="api.html" /> 
+    <link rel="prev" title="Explanations" href="explanations.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -45,23 +45,19 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../sdk/home/index.html">Quickstart</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sdk/configuration_reference.html">Install SDK</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sdk/sourcecode.html">Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sdk/sourcecode.html#tokenizers">Tokenizers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sdk/sourcecode.html#filesplitting-ai">FileSplitting AI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sdk/sourcecode.html#extraction-ai">Extraction AI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sdk/sourcecode.html#evaluation">Evaluation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sdk/sourcecode.html#document-categorization">Document Categorization</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sdk/examples/examples.html">Code Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/index.html">What is the Konfuzio SDK?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/get_started.html">Get Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/sourcecode.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../sdk/contribution.html">Contribution Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sdk/coordinates_system.html">Coordinates System</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../merge/merge.html">Merging Logic</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sdk/changelog.html">Changelog</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="api.html">REST API v2</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">REST API v3</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">What is the Konfuzio Server?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explanations.html">Explanations</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">REST API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#general-information">General Information</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#authentication">Authentication</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#basic-http-authentication">Basic HTTP authentication</a></li>
@@ -79,24 +75,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#ordering">Ordering</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#fields">Fields</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#coordinates-and-bounding-boxes">Coordinates and bounding boxes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#supported-ocr-languages">Supported OCR languages</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#supported-file-types">Supported File Types</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#file-types">File Types</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#pdfs">PDFs</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#images">Images</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#office-documents">Office documents</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#content-limits">Content limits</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#document-scan-resolution">Document scan resolution</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#ocr-processing">OCR Processing</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#project-settings">Project settings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#file-pre-processing">File pre-processing</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ocr-text-extraction">OCR Text extraction</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#guides-and-how-tos">Guides and How-Tos</a><ul>
@@ -149,7 +127,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>REST API v3</li>
+      <li>REST API</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/web/api-v3.md.txt" rel="nofollow"> View page source</a>
       </li>
@@ -159,8 +137,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="rest-api-v3">
-<h1><a class="toc-backref" href="#id6">REST API v3</a><a class="headerlink" href="#rest-api-v3" title="Permalink to this headline">¶</a></h1>
+  <section id="rest-api">
+<h1><a class="toc-backref" href="#id6">REST API</a><a class="headerlink" href="#rest-api" title="Permalink to this headline">¶</a></h1>
 <p>This document aims to provide developers with a high-level overview of what can be accomplished through the Konfuzio API
 v3. For a more thorough description of the available endpoints and their parameters and response, we invite you to
 browse our <a class="reference external" href="http:/app.konfuzio.com/v3/swagger/">Swagger documentation</a>, which also provides an OpenAPI specification
@@ -185,7 +163,7 @@ that can be used to generate language-specific API clients.</p>
 </div><div class="contents topic" id="table-of-contents">
 <p class="topic-title">Table of Contents</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="#rest-api-v3" id="id6">REST API v3</a></p>
+<li><p><a class="reference internal" href="#rest-api" id="id6">REST API</a></p>
 <ul>
 <li><p><a class="reference internal" href="#general-information" id="id7">General Information</a></p>
 <ul>
@@ -208,48 +186,27 @@ that can be used to generate language-specific API clients.</p>
 <li><p><a class="reference internal" href="#coordinates-and-bounding-boxes" id="id21">Coordinates and bounding boxes</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#supported-ocr-languages" id="id22">Supported OCR languages</a></p></li>
-<li><p><a class="reference internal" href="#supported-file-types" id="id23">Supported File Types</a></p>
+<li><p><a class="reference internal" href="#guides-and-how-tos" id="id22">Guides and How-Tos</a></p>
 <ul>
-<li><p><a class="reference internal" href="#file-types" id="id24">File Types</a></p>
+<li><p><a class="reference internal" href="#setup-a-project-with-labels-label-sets-and-categories" id="id23">Setup a project with labels, label sets and categories</a></p>
 <ul>
-<li><p><a class="reference internal" href="#pdfs" id="id25">PDFs</a></p></li>
-<li><p><a class="reference internal" href="#images" id="id26">Images</a></p></li>
-<li><p><a class="reference internal" href="#office-documents" id="id27">Office documents</a></p></li>
+<li><p><a class="reference internal" href="#create-a-project" id="id24">Create a Project</a></p></li>
+<li><p><a class="reference internal" href="#create-a-category" id="id25">Create a category</a></p></li>
+<li><p><a class="reference internal" href="#create-some-labels" id="id26">Create some Labels</a></p></li>
+<li><p><a class="reference internal" href="#create-a-label-set" id="id27">Create a Label Set</a></p></li>
+<li><p><a class="reference internal" href="#next-steps" id="id28">Next steps</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#content-limits" id="id28">Content limits</a></p></li>
-<li><p><a class="reference internal" href="#document-scan-resolution" id="id29">Document scan resolution</a></p></li>
-</ul>
-</li>
-<li><p><a class="reference internal" href="#ocr-processing" id="id30">OCR Processing</a></p>
+<li><p><a class="reference internal" href="#upload-a-document" id="id29">Upload a Document</a></p></li>
+<li><p><a class="reference internal" href="#create-an-anotation" id="id30">Create an Anotation</a></p></li>
+<li><p><a class="reference internal" href="#create-training-data-and-train-the-ai" id="id31">Create training data and train the AI</a></p></li>
+<li><p><a class="reference internal" href="#revise-machine-generated-annotations" id="id32">Revise machine-generated annotations</a></p></li>
+<li><p><a class="reference internal" href="#post-process-a-document-split-rotate-and-sort-pages" id="id33">Post-process a document: split, rotate and sort pages</a></p></li>
+<li><p><a class="reference internal" href="#download-the-ocr-version-of-an-uploaded-document" id="id34">Download the OCR version of an uploaded Document</a></p></li>
+<li><p><a class="reference internal" href="#create-your-own-document-dashboard" id="id35">Create your own document dashboard</a></p>
 <ul>
-<li><p><a class="reference internal" href="#project-settings" id="id31">Project settings</a></p></li>
-<li><p><a class="reference internal" href="#file-pre-processing" id="id32">File pre-processing</a></p></li>
-<li><p><a class="reference internal" href="#ocr-text-extraction" id="id33">OCR Text extraction</a></p></li>
-</ul>
-</li>
-<li><p><a class="reference internal" href="#guides-and-how-tos" id="id34">Guides and How-Tos</a></p>
-<ul>
-<li><p><a class="reference internal" href="#setup-a-project-with-labels-label-sets-and-categories" id="id35">Setup a project with labels, label sets and categories</a></p>
-<ul>
-<li><p><a class="reference internal" href="#create-a-project" id="id36">Create a Project</a></p></li>
-<li><p><a class="reference internal" href="#create-a-category" id="id37">Create a category</a></p></li>
-<li><p><a class="reference internal" href="#create-some-labels" id="id38">Create some Labels</a></p></li>
-<li><p><a class="reference internal" href="#create-a-label-set" id="id39">Create a Label Set</a></p></li>
-<li><p><a class="reference internal" href="#next-steps" id="id40">Next steps</a></p></li>
-</ul>
-</li>
-<li><p><a class="reference internal" href="#upload-a-document" id="id41">Upload a Document</a></p></li>
-<li><p><a class="reference internal" href="#create-an-anotation" id="id42">Create an Anotation</a></p></li>
-<li><p><a class="reference internal" href="#create-training-data-and-train-the-ai" id="id43">Create training data and train the AI</a></p></li>
-<li><p><a class="reference internal" href="#revise-machine-generated-annotations" id="id44">Revise machine-generated annotations</a></p></li>
-<li><p><a class="reference internal" href="#post-process-a-document-split-rotate-and-sort-pages" id="id45">Post-process a document: split, rotate and sort pages</a></p></li>
-<li><p><a class="reference internal" href="#download-the-ocr-version-of-an-uploaded-document" id="id46">Download the OCR version of an uploaded Document</a></p></li>
-<li><p><a class="reference internal" href="#create-your-own-document-dashboard" id="id47">Create your own document dashboard</a></p>
-<ul>
-<li><p><a class="reference internal" href="#start-from-our-vue-js-code" id="id48">Start from our Vue.js code</a></p></li>
-<li><p><a class="reference internal" href="#start-from-scratch" id="id49">Start from scratch</a></p></li>
+<li><p><a class="reference internal" href="#start-from-our-vue-js-code" id="id36">Start from our Vue.js code</a></p></li>
+<li><p><a class="reference internal" href="#start-from-scratch" id="id37">Start from scratch</a></p></li>
 </ul>
 </li>
 </ul>
@@ -479,248 +436,8 @@ properties as the bbox, but it adds more:</p>
 to understand which fields it needs.</p>
 </section>
 </section>
-<section id="supported-ocr-languages">
-<h2><a class="toc-backref" href="#id22">Supported OCR languages</a><a class="headerlink" href="#supported-ocr-languages" title="Permalink to this headline">¶</a></h2>
-<p>The default OCR engine for <a class="reference external" href="https://app.konfuzio.com">Konfuzio Server</a> supports the following languages:</p>
-<p>Afrikaans, Albanian, Asturian, Azerbaijani (Latin), Basque, Belarusian (Cyrillic), Belarusian (Latin), Bislama,
-Bosnian (Latin), Breton, Bulgarian, Buryat (Cyrillic), Catalan, Cebuano, Chamorro, Chinese Simplified, Chinese
-Traditional, Cornish, Corsican, Crimean Tatar (Latin), Croatian, Czech, Danish, Dutch, English, Erzya (Cyrillic),
-Estonian, Faroese, Fijian, Filipino, Finnish, French, Friulian, Gagauz (Latin), Galician, German, Gilbertese,
-Greenlandic, Haitian Creole, Hani, Hawaiian, Hmong Daw (Latin), Hungarian, Icelandic, Inari Sami, Indonesian,
-Interlingua, Inuktitut (Latin), Irish, Italian, Japanese, Javanese, K’iche’, Kabuverdianu, Kachin (Latin), Kara-Kalpak (
-Latin), Kara-Kalpak (Cyrillic), Karachay-Balkar, Kashubian, Kazakh (Cyrillic), Kazakh (Latin), Khasi, Korean, Koryak,
-Kosraean, Kumyk (Cyrillic), Kurdish (Latin), Kyrgyz (Cyrillic), Lakota, Latin, Lithuanian, Lower Sorbian, Lule Sami,
-Luxembourgish, Malay (Latin), Maltese, Manx, Maori, Mongolian (Cyrillic), Montenegrin (Cyrillic), Montenegrin (Latin),
-Neapolitan, Niuean, Nogay, Northern Sami (Latin), Norwegian, Occitan, Ossetic, Polish, Portuguese, Ripuarian, Romanian,
-Romansh, Russian, Samoan (Latin), Scots, Scottish Gaelic, Serbian (Cyrillic), Serbian (Latin), Skolt Sami, Slovak,
-Slovenian, Southern Sami, Spanish, Swahili (Latin), Swedish, Tajik (Cyrillic), Tatar (Latin), Tetum, Tongan, Turkish,
-Turkmen (Latin), Tuvan, Upper Sorbian, Uzbek (Cyrillic), Uzbek (Latin), Volapük, Walser, Welsh, Western Frisian, Yucatec
-Maya, Zhuang, Zulu.</p>
-<p>The detection of handwritten text is supported for the following languages:</p>
-<p>English, Chinese Simplified, French, German, Italian, Portuguese, Spanish.</p>
-<p>The availability of OCR languages depends on the selected OCR engine and might differ across configurations (e.g.
-on-premise installation).</p>
-</section>
-<section id="supported-file-types">
-<h2><a class="toc-backref" href="#id23">Supported File Types</a><a class="headerlink" href="#supported-file-types" title="Permalink to this headline">¶</a></h2>
-<section id="file-types">
-<h3><a class="toc-backref" href="#id24">File Types</a><a class="headerlink" href="#file-types" title="Permalink to this headline">¶</a></h3>
-<p>Konfuzio supports the following Document types.</p>
-<p>For information about file size and page limits, refer to the Content Limits, if you are using Konfuzio SaaS.</p>
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Name</p></th>
-<th class="head"><p>File Extension(s)</p></th>
-<th class="head"><p><a class="reference external" href="https://www.iana.org/assignments/media-types/media-types.xhtml">MIME Type</a></p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>Portable Document Format (PDF)</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">.pdf</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">application/pdf</span></code></p></td>
-</tr>
-<tr class="row-odd"><td><p>Tag Image File Format (TIFF)</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">.tiff</span></code>, <code class="docutils literal notranslate"><span class="pre">.tif</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">image/tiff</span></code></p></td>
-</tr>
-<tr class="row-even"><td><p>Joint Photographic Experts Group (JPEG)</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">.jpg</span></code>, <code class="docutils literal notranslate"><span class="pre">.jpeg</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">image/jpeg</span></code></p></td>
-</tr>
-<tr class="row-odd"><td><p>Portable Network Graphics (PNG)</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">.png</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">image/png</span></code></p></td>
-</tr>
-<tr class="row-even"><td><p>Excel</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">.xls</span></code>, <code class="docutils literal notranslate"><span class="pre">.xlsx</span></code></p></td>
-<td><p>several, see details below</p></td>
-</tr>
-<tr class="row-odd"><td><p>PowerPoint</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">.ppt</span></code>, <code class="docutils literal notranslate"><span class="pre">.pptx</span></code></p></td>
-<td><p>several, see details below</p></td>
-</tr>
-<tr class="row-even"><td><p>Word</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">.doc</span></code>, <code class="docutils literal notranslate"><span class="pre">.docx</span></code></p></td>
-<td><p>several, see details below</p></td>
-</tr>
-</tbody>
-</table>
-<p>Note that some of these image formats are “lossy” (for example, JPEG). Reducing file sizes for lossy formats may result in a degradation of image quality and accuracy of results from Konfuzio.</p>
-<p>It is possible to upload files with no (unknown or corrupted) file extension to Konfuzio (e.g. instead of
-file:<code class="docutils literal notranslate"><span class="pre">example.pdf</span></code>, file: <code class="docutils literal notranslate"><span class="pre">example.p</span></code>, <code class="docutils literal notranslate"><span class="pre">example</span></code>, or even<code class="docutils literal notranslate"><span class="pre">example.example.example</span></code> was uploaded) when this happens,
-internally correction logic is run in order to try and guess the correct extension before saving and or extracting
-the file/document. This correction attempts to guess all supported file types, but success cannot be guaranteed. The
-maximum file extension for this correction to work should not exceed 99 characters.</p>
-<section id="pdfs">
-<h4><a class="toc-backref" href="#id25">PDFs</a><a class="headerlink" href="#pdfs" title="Permalink to this headline">¶</a></h4>
-<p>Konfuzio supports PDF/A-1a, PDF/A-1b, PDF/A-2a, PDF/A-2b, PDF/A-3a, PDF/A-3b, PDF/X-1a, PDF/1.7, PDF/2.0. An attempt
-will be made to repair corrupted PDFs. Konfuzio does not support AcroForms and AEM (Adobe Experience Manager) form
-content.</p>
-</section>
-<section id="images">
-<h4><a class="toc-backref" href="#id26">Images</a><a class="headerlink" href="#images" title="Permalink to this headline">¶</a></h4>
-<p>Konfuzio supports JPEG, TIFF and PNG (including support for alpha channel).</p>
-</section>
-<section id="office-documents">
-<h4><a class="toc-backref" href="#id27">Office documents</a><a class="headerlink" href="#office-documents" title="Permalink to this headline">¶</a></h4>
-<p>Konfuzio offers limited support for common office documents like Microsoft® Word (.doc, .docx), Excel (.xls, .xlsx),
-PowerPoint (.ppt, .pptx) and Publisher as well as the Open Document Format (ODF). Uploaded office documents are
-converted to PDFs by Konfuzio. Libre Office is used for the PDF conversion. The layout of the converted office document
-may differ from the original. Office files can not be edited after they have been uploaded.</p>
-</section>
-</section>
-<section id="content-limits">
-<h3><a class="toc-backref" href="#id28">Content limits</a><a class="headerlink" href="#content-limits" title="Permalink to this headline">¶</a></h3>
-<p>The following content limits apply to Konfuzio SaaS.</p>
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Content limit</p></th>
-<th class="head"><p>Default Value</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>Maximum image resolution (limit does not apply to PDF files)</p></td>
-<td><p>megapixels not limited per page</p></td>
-</tr>
-<tr class="row-odd"><td><p>Maximum PDF dimension (limit does not apply to images)</p></td>
-<td><p>17 x 17 inches</p></td>
-</tr>
-<tr class="row-even"><td><p>Maximum file size per request</p></td>
-<td><p>not limited</p></td>
-</tr>
-<tr class="row-odd"><td><p>Maximum number of Pages per Document (synchronous requests)</p></td>
-<td><p>250 pages</p></td>
-</tr>
-<tr class="row-even"><td><p>Maximum number of Pages (batch/asynchronous requests)</p></td>
-<td><p>250 pages</p></td>
-</tr>
-<tr class="row-odd"><td><p>Concurrent processor version training requests</p></td>
-<td><p>one per Category</p></td>
-</tr>
-<tr class="row-even"><td><p>Concurrent files processing per Project (Batch / Parallel)</p></td>
-<td><p>not limited</p></td>
-</tr>
-<tr class="row-odd"><td><p>Requests per minute</p></td>
-<td><p>not limited</p></td>
-</tr>
-<tr class="row-even"><td><p>Maximum number of objects per API Call</p></td>
-<td><p>1000</p></td>
-</tr>
-<tr class="row-odd"><td><p>Synchronous requests process requests per minute</p></td>
-<td><p>not limited</p></td>
-</tr>
-<tr class="row-even"><td><p>Asynchronous requests process requests per minute</p></td>
-<td><p>not limited</p></td>
-</tr>
-<tr class="row-odd"><td><p>Number of pages in active processing</p></td>
-<td><p>not limited</p></td>
-</tr>
-<tr class="row-even"><td><p>Review document requests per minute</p></td>
-<td><p>not limited</p></td>
-</tr>
-</tbody>
-</table>
-<p>If you would like to increase your content limits, submit request for your project as a <a class="reference external" href="https://konfuzio.com/en/support/">Support Ticket</a>.</p>
-</section>
-<section id="document-scan-resolution">
-<h3><a class="toc-backref" href="#id29">Document scan resolution</a><a class="headerlink" href="#document-scan-resolution" title="Permalink to this headline">¶</a></h3>
-<p>For most accurate OCR results from Konfuzio, document scans should be a minimum of 200 dpi <a class="reference external" href="https://en.wikipedia.org/wiki/Dots_per_inch">(dots per inch)</a>. 300 dpi and higher will generally produce the best results.</p>
-</section>
-</section>
-<section id="ocr-processing">
-<h2><a class="toc-backref" href="#id30">OCR Processing</a><a class="headerlink" href="#ocr-processing" title="Permalink to this headline">¶</a></h2>
-<p>After <a class="reference external" href="https://help.konfuzio.com/modules/documents/index.html#upload-new-documents">uploading a Document</a>, depending on
-how your Project was set up, the Document is automatically queued and processed by our OCR. In the below breakdown we
-try to demystify this process, and give you some insight into all the steps which happen during OCR processing.</p>
-<section id="project-settings">
-<h3><a class="toc-backref" href="#id31">Project settings</a><a class="headerlink" href="#project-settings" title="Permalink to this headline">¶</a></h3>
-<p>We first look at the Project settings to see what base settings have been set up for your Documents.</p>
-<ol class="arabic">
-<li><p><strong>Chosen OCR engine</strong></p>
-<ol class="arabic simple">
-<li><p>easy</p></li>
-<li><p>precise</p></li>
-</ol>
-</li>
-<li><p><strong>Chosen processing type</strong></p>
-<ol class="arabic simple">
-<li><p>OCR</p></li>
-<li><p>Embedding</p></li>
-<li><p>Embedding and OCR</p></li>
-</ol>
-</li>
-<li><p><strong>Chosen auto-rotation option</strong></p>
-<p>(Only available for precise OCR engine)</p>
-<ol class="arabic simple">
-<li><p>None</p></li>
-<li><p>Rounded</p></li>
-<li><p>Exact</p></li>
-</ol>
-</li>
-</ol>
-</section>
-<section id="file-pre-processing">
-<h3><a class="toc-backref" href="#id32">File pre-processing</a><a class="headerlink" href="#file-pre-processing" title="Permalink to this headline">¶</a></h3>
-<p>During file upload, after the Project settings have been evaluated, we look at the file:</p>
-<ol class="arabic simple">
-<li><p>We check if the filetype is <a class="reference external" href="https://dev.konfuzio.com/web/api-v3.html#supported-file-types">supported</a>.</p></li>
-<li><p>We check if the file is valid and/or corrupted.</p></li>
-<li><p>If the file is corrupted, some repairing is attempted.</p></li>
-<li><p>We check if the filetype provides embeddings.</p></li>
-<li><p>We check if the project enforces OCR.</p></li>
-<li><p>We then conduct OCR on the file.</p></li>
-<li><p>We check if the image is angled.</p></li>
-<li><p>We create thumbnails per page.</p></li>
-<li><p>We create images per page.</p></li>
-</ol>
-</section>
-<section id="ocr-text-extraction">
-<h3><a class="toc-backref" href="#id33">OCR Text extraction</a><a class="headerlink" href="#ocr-text-extraction" title="Permalink to this headline">¶</a></h3>
-<p>During evaluation of both Project settings and file, we also process OCR extraction.</p>
-<ol class="arabic simple">
-<li><p>We use the chosen engine on the pre-processed file.</p>
-<ol class="arabic simple">
-<li><p>If “Embedding and OCR” is chosen, internally we check which processing type is the most suitable, and use either
-Embedding or OCR.</p></li>
-<li><p>Depending on chosen processing type, some pre-processing may be done:</p>
-<ol class="arabic simple">
-<li><p>Convert non-PDF Documents to a <a class="reference external" href="https://dev.konfuzio.com/web/api.html#pdfs">PDF</a>
-that is being used here.</p></li>
-<li><p>Convert PDF to text (in case of embeddings).</p></li>
-</ol>
-</li>
-<li><p>If some sort of PDF corruption is detected, within our ability we attempt to repair the PDF.</p></li>
-<li><p>If the PDF or TIFF is multi page (and valid) we split the document in pages and process each page separately.</p></li>
-</ol>
-</li>
-<li><p>We check whether auto-rotation was chosen when the precise OCR engine is used.</p>
-<ol class="arabic simple">
-<li><p>If rounded angle correction was chosen, we rotate the image to the nearest 45/90 degrees.</p></li>
-<li><p>If exact angle rotation was chosen, we rotate the image at its exact angle rotation value.</p></li>
-</ol>
-</li>
-<li><p>We attempt to extract the text from (either OCR, embedded or both).</p>
-<ol class="arabic simple">
-<li><p>OCR may fail because text on the Document is technically unreadable, or because the file is corrupted or empty
-and cannot be repaired.</p></li>
-<li><p>OCR may fail because the engine does not support the text language.</p></li>
-</ol>
-</li>
-</ol>
-<p>Finally, we return you the extracted text.</p>
-</section>
-</section>
 <section id="guides-and-how-tos">
-<h2><a class="toc-backref" href="#id34">Guides and How-Tos</a><a class="headerlink" href="#guides-and-how-tos" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id22">Guides and How-Tos</a><a class="headerlink" href="#guides-and-how-tos" title="Permalink to this headline">¶</a></h2>
 <p>These guides will teach you how to do common operations with the Konfuzio API. You can refer to the
 <a class="reference external" href="#general-information">general information</a> section above for a general overview of how the API works and to our
 <a class="reference external" href="https://app.konfuzio.com/v3/swagger/">Swagger documentation</a> for a full list of all the available endpoints.</p>
@@ -729,11 +446,11 @@ like <a class="reference external" href="https://curlconverter.com">cURL Convert
 <p>The guides assume you already have a <a class="reference external" href="#token-authentication">token</a> that you will use in the headers of
 every API call. If you’re copy-pasting the snippets, remember to replace <code class="docutils literal notranslate"><span class="pre">YOUR_TOKEN</span></code> with the actual token value.</p>
 <section id="setup-a-project-with-labels-label-sets-and-categories">
-<h3><a class="toc-backref" href="#id35">Setup a project with labels, label sets and categories</a><a class="headerlink" href="#setup-a-project-with-labels-label-sets-and-categories" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id23">Setup a project with labels, label sets and categories</a><a class="headerlink" href="#setup-a-project-with-labels-label-sets-and-categories" title="Permalink to this headline">¶</a></h3>
 <p>This guide will walk you through the API-based initial setup of a Project with all the initial data you need to start
 uploading documents and training the AI.</p>
 <section id="create-a-project">
-<h4><a class="toc-backref" href="#id36">Create a Project</a><a class="headerlink" href="#create-a-project" title="Permalink to this headline">¶</a></h4>
+<h4><a class="toc-backref" href="#id24">Create a Project</a><a class="headerlink" href="#create-a-project" title="Permalink to this headline">¶</a></h4>
 <p>First you need to set up a <a class="reference external" href="https://help.konfuzio.com/modules/projects/index.html">Project</a>. To do so, you will make a
 call to our <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/projects/projects_create">Project creation endpoint</a>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">--</span><span class="n">request</span> <span class="n">POST</span> \
@@ -748,7 +465,7 @@ call to our <a class="reference external" href="https://app.konfuzio.com/v3/swag
 of it, as you will need it in the next steps.</p>
 </section>
 <section id="create-a-category">
-<h4><a class="toc-backref" href="#id37">Create a category</a><a class="headerlink" href="#create-a-category" title="Permalink to this headline">¶</a></h4>
+<h4><a class="toc-backref" href="#id25">Create a category</a><a class="headerlink" href="#create-a-category" title="Permalink to this headline">¶</a></h4>
 <p>A <a class="reference external" href="https://help.konfuzio.com/modules/categories/index.html">Category</a> is used to group Documents by type and can be
 associated to an <a class="reference external" href="https://help.konfuzio.com/modules/extractions/index.html">extraction AI</a>. For example, you might want
 to create a category called “Invoice”. To do so, you will make a call to
@@ -767,7 +484,7 @@ of it, as you will need it in the next steps. You can retrieve a list of your cr
 request to the same endpoint.</p>
 </section>
 <section id="create-some-labels">
-<h4><a class="toc-backref" href="#id38">Create some Labels</a><a class="headerlink" href="#create-some-labels" title="Permalink to this headline">¶</a></h4>
+<h4><a class="toc-backref" href="#id26">Create some Labels</a><a class="headerlink" href="#create-some-labels" title="Permalink to this headline">¶</a></h4>
 <p><a class="reference external" href="https://help.konfuzio.com/modules/labels/index.html">Labels</a> are used to label Annotations with their business context.
 In the case of our invoice Category, we might want to have Labels such as “amount” and “product”. For each Label, we
 need to make a different API request to
@@ -795,7 +512,7 @@ of it, as you will need it in the next steps. You can retrieve a list of your cr
 to the same endpoint.</p>
 </section>
 <section id="create-a-label-set">
-<h4><a class="toc-backref" href="#id39">Create a Label Set</a><a class="headerlink" href="#create-a-label-set" title="Permalink to this headline">¶</a></h4>
+<h4><a class="toc-backref" href="#id27">Create a Label Set</a><a class="headerlink" href="#create-a-label-set" title="Permalink to this headline">¶</a></h4>
 <p>A <a class="reference external" href="https://help.konfuzio.com/modules/sets/index.html">Label Set</a> is used to group Labels that make sense together.
 Sometimes these Labels might occur multiple times in a document — in our “invoice” example, there’s going to be one set
 of “amount” and “product” for each line item we have in the invoice. We can call it “line item” and we can create it
@@ -816,12 +533,12 @@ to <code class="docutils literal notranslate"><span class="pre">true</span></cod
 invoice.</p>
 </section>
 <section id="next-steps">
-<h4><a class="toc-backref" href="#id40">Next steps</a><a class="headerlink" href="#next-steps" title="Permalink to this headline">¶</a></h4>
+<h4><a class="toc-backref" href="#id28">Next steps</a><a class="headerlink" href="#next-steps" title="Permalink to this headline">¶</a></h4>
 <p>Your basic setup is done! You’re now ready to upload Documents and train the AI.</p>
 </section>
 </section>
 <section id="upload-a-document">
-<h3><a class="toc-backref" href="#id41">Upload a Document</a><a class="headerlink" href="#upload-a-document" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id29">Upload a Document</a><a class="headerlink" href="#upload-a-document" title="Permalink to this headline">¶</a></h3>
 <p>After your initial project setup, you can start uploading Documents. To upload a Document, you will make a call to
 our <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/documents/documents_create">Document creation endpoint</a>.</p>
 <div class="admonition note">
@@ -864,7 +581,7 @@ the <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/do
 Document has finished processing, and if so, retrieve the extracted data.</p>
 </section>
 <section id="create-an-anotation">
-<h3><a class="toc-backref" href="#id42">Create an Anotation</a><a class="headerlink" href="#create-an-anotation" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id30">Create an Anotation</a><a class="headerlink" href="#create-an-anotation" title="Permalink to this headline">¶</a></h3>
 <p><a class="reference external" href="https://help.konfuzio.com/modules/annotations/">Annotations</a> are automatically created by the extraction process when
 you upload a Document, but if some data is missing you can annotate it manually to train the AI model to recognize it.</p>
 <p>Creating an Annotation via the API requires the client to provide the bounding box coordinates of the relevant text
@@ -914,7 +631,7 @@ existing Annotation Set, or to create a new one. You can refer to the following 
 </div>
 </section>
 <section id="create-training-data-and-train-the-ai">
-<h3><a class="toc-backref" href="#id43">Create training data and train the AI</a><a class="headerlink" href="#create-training-data-and-train-the-ai" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id31">Create training data and train the AI</a><a class="headerlink" href="#create-training-data-and-train-the-ai" title="Permalink to this headline">¶</a></h3>
 <p>Once you have uploaded enough Documents and created enough Annotations, you can start training an
 <a class="reference external" href="https://help.konfuzio.com/modules/extractions/index.html">extraction AI</a>. You will need at least one Document in the
 “training” dataset for the Category you want to train, but more data is usually better (see our
@@ -941,7 +658,7 @@ will be automatically set as the active one only if its
 better than the previous AI’s.</p>
 </section>
 <section id="revise-machine-generated-annotations">
-<h3><a class="toc-backref" href="#id44">Revise machine-generated annotations</a><a class="headerlink" href="#revise-machine-generated-annotations" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id32">Revise machine-generated annotations</a><a class="headerlink" href="#revise-machine-generated-annotations" title="Permalink to this headline">¶</a></h3>
 <p>You can revise the Annotations that are created automatically by an Extraction AI: this will help the next Extraction AI
 training you create, as it will tell the system the points where the information it extract was correct and the points
 where it was not.</p>
@@ -988,7 +705,7 @@ more information.)</p>
 <p>Once there are no unrevised Annotations left in the document, the document is considered <em>reviewed</em>.</p>
 </section>
 <section id="post-process-a-document-split-rotate-and-sort-pages">
-<h3><a class="toc-backref" href="#id45">Post-process a document: split, rotate and sort pages</a><a class="headerlink" href="#post-process-a-document-split-rotate-and-sort-pages" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id33">Post-process a document: split, rotate and sort pages</a><a class="headerlink" href="#post-process-a-document-split-rotate-and-sort-pages" title="Permalink to this headline">¶</a></h3>
 <p>We offer a <a class="reference external" href="https://app.konfuzio.com/v3/swagger/#/documents/documents_postprocess_create">postprocess endpoint</a>
 that allows you to change uploaded Documents in three ways, which can be combined into a single API request:</p>
 <ul class="simple">
@@ -1002,7 +719,7 @@ splitting functionality, this list should only contain one document). The <code 
 content of the Document.</p>
 </section>
 <section id="download-the-ocr-version-of-an-uploaded-document">
-<h3><a class="toc-backref" href="#id46">Download the OCR version of an uploaded Document</a><a class="headerlink" href="#download-the-ocr-version-of-an-uploaded-document" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id34">Download the OCR version of an uploaded Document</a><a class="headerlink" href="#download-the-ocr-version-of-an-uploaded-document" title="Permalink to this headline">¶</a></h3>
 <p>After uploading a Document, the Konfuzio server also creates a <a class="reference external" href="#ocr-processing">PDF OCR version</a> of it with indexed and
 selectable text. This version is also used to generate images for each page for our SmartView functionality. If you
 need it, you can download this OCR version of the Document: the <code class="docutils literal notranslate"><span class="pre">file_url</span></code> property of the
@@ -1019,18 +736,18 @@ this:</p>
 <p>This will save the file in the current directory.</p>
 </section>
 <section id="create-your-own-document-dashboard">
-<h3><a class="toc-backref" href="#id47">Create your own document dashboard</a><a class="headerlink" href="#create-your-own-document-dashboard" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id35">Create your own document dashboard</a><a class="headerlink" href="#create-your-own-document-dashboard" title="Permalink to this headline">¶</a></h3>
 <p>In cases where our <a class="reference external" href="https://help.konfuzio.com/integrations/public-documents/">public documents and iframes</a> are not
 enough, you can build your own solution. Here we explain how you can easily build a read-only dashboard for your
 documents.</p>
 <section id="start-from-our-vue-js-code">
-<h4><a class="toc-backref" href="#id48">Start from our Vue.js code</a><a class="headerlink" href="#start-from-our-vue-js-code" title="Permalink to this headline">¶</a></h4>
+<h4><a class="toc-backref" href="#id36">Start from our Vue.js code</a><a class="headerlink" href="#start-from-our-vue-js-code" title="Permalink to this headline">¶</a></h4>
 <p>Our document dashboard is based on Vue.js and completely implemented with the API v3. You can check out our solution
 <a class="reference external" href="https://github.com/konfuzio-ai/document-validation-ui">on GitHub</a> and customize it to your needs. You will find a
 technical overview and component description <a class="reference external" href="../dvui/index.md">here</a>.</p>
 </section>
 <section id="start-from-scratch">
-<h4><a class="toc-backref" href="#id49">Start from scratch</a><a class="headerlink" href="#start-from-scratch" title="Permalink to this headline">¶</a></h4>
+<h4><a class="toc-backref" href="#id37">Start from scratch</a><a class="headerlink" href="#start-from-scratch" title="Permalink to this headline">¶</a></h4>
 <p>If you’re using React, Angular or other technologies, you can use API v3 to build your own solution.</p>
 <p>For feature parity with our read-only document dashboard, you only need to use two endpoints, and if you’re only
 handling public documents, you don’t need authentication for these two endpoints.</p>
@@ -1053,7 +770,7 @@ contact support for guidance.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="api.html" class="btn btn-neutral float-left" title="REST API v2" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="explanations.html" class="btn btn-neutral float-left" title="Explanations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="on_premises.html" class="btn btn-neutral float-right" title="On-Premises Documentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

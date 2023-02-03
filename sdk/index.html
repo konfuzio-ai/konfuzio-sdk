@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>What is the Konfuzio SDK? &mdash; Konfuzio  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/full_green_square.png"/>
+    <link rel="canonical" href="https://dev.konfuzio.com/sdk/index.html" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+        <script>mermaid.initialize({startOnLoad:true});</script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Get Started" href="get_started.html" />
+    <link rel="prev" title="Konfuzio Developer Center" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Konfuzio
+            <img src="../_static/docs__static_square_transparent_super_small.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">What is the Konfuzio SDK?</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#customizing-document-processes-with-the-konfuzio-sdk">Customizing document processes with the Konfuzio SDK</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#three-steps-to-customize-document-ai-pipelines">Three steps to customize document AI pipelines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#customize-extraction-ai">Customize Extraction AI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#customize-categorization-ai-coming-february-17th-2023">Customize Categorization AI (coming February 17th, 2023)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#customize-file-splitting-ai">Customize File Splitting AI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#other-use-cases-around-documents">Other use cases around documents</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#build-your-own-pdf-form-generator">Build your own PDF Form Generator</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="get_started.html">Get Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sourcecode.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contribution.html">Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../web/index.html">What is the Konfuzio Server?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/api-v3.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/on_premises.html">On-Premises Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../web/changelog_app.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Document Validation UI</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dvui/index.html">What is the Konfuzio Document Validation UI?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dvui/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dvui/guides.html">Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dvui/sourcecode.html">Source Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dvui/changelog.html">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Konfuzio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>What is the Konfuzio SDK?</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/sdk/index.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="what-is-the-konfuzio-sdk">
+<h1>What is the Konfuzio SDK?<a class="headerlink" href="#what-is-the-konfuzio-sdk" title="Permalink to this headline">¶</a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>The Open Source Konfuzio Software Development Kit (Konfuzio SDK) provides a Python API to build custom document processes. For a quick introduction to the SDK, check out the <a class="reference external" href="get_started.html">Get Started</a> section. Review the release notes and the source code on <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">GitHub</a>.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Section</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference external" href="get_started.html">Get Started</a></p></td>
+<td><p>Learn more about the Konfuzio SDK and how it works.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="tutorials.html">Tutorials</a></p></td>
+<td><p>Learn how to build your first document extraction pipeline, speed up your annotation process and many more.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="explanations.html">Explanations</a></p></td>
+<td><p>Here are links to teaching material about the Konfuzio SDK.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="sourcecode.html">API Reference</a></p></td>
+<td><p>Get to know all major Data Layer concepts of the Konfuzio SDK.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="contribution.html">Contribution Guide</a></p></td>
+<td><p>Learn how to contribute, run the tests locally, and submit a Pull Request.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases">Changelog</a></p></td>
+<td><p>Review the release notes and the source code of the Konfuzio SDK.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="customizing-document-processes-with-the-konfuzio-sdk">
+<h2>Customizing document processes with the Konfuzio SDK<a class="headerlink" href="#customizing-document-processes-with-the-konfuzio-sdk" title="Permalink to this headline">¶</a></h2>
+<p>For documentation about how to train and evaluate document understanding AIs, as well as extract new documents using
+the Konfuzio Server web interface, please see our <a class="reference external" href="https://help.konfuzio.com/tutorials/quickstart/index.html">Konfuzio Guide</a>.</p>
+<p>If you need to <strong>add custom functionality</strong> to the document processes of the Konfuzio Server, the Konfuzio SDK
+is the tool for you. You can customize pipelines for automatic document Categorization, File Splitting, and Extraction.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Customizing document AI pipelines with the Konfuzio SDK requires a self-hosted installation of the Konfuzio Server.</p>
+</div>
+<section id="three-steps-to-customize-document-ai-pipelines">
+<h3>Three steps to customize document AI pipelines<a class="headerlink" href="#three-steps-to-customize-document-ai-pipelines" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li><p>The Konfuzio SDK defines abstract Python classes and interfaces for <a class="reference external" href="sourcecode.html#document-categorization">Categorization</a>, <a class="reference external" href="sourcecode.html#file-splitting">File Splitting</a>, and <a class="reference external" href="sourcecode.html#extraction-ai">Extraction</a> AI pipelines.
+By implementing the abstract methods in a custom subclass, custom behaviours can be defined for each AI pipeline. Make
+sure to familiarize yourself with the <a class="reference external" href="sourcecode.html#data-layer-concepts">Data Layer concepts</a> so that you can
+manipulate data effectively within your custom pipelines.</p></li>
+<li><p>All AIs inherit from <a class="reference external" href="sourcecode.html#basemodel">BaseModel</a>, which provides <code class="docutils literal notranslate"><span class="pre">BaseModel.save</span></code> to generate a pickle file,
+to be directly uploaded to the Konfuzio Server (see <a class="reference external" href="../web/on_premises.html#upload-extraction-or-category-ai-to-target-instance">Upload Extraction or Category AI to target instance</a>).</p></li>
+<li><p>Finally, activating the uploaded AI on the web interface will enable the custom pipeline on your self-hosted installation.</p></li>
+</ol>
+</section>
+<section id="customize-extraction-ai">
+<h3>Customize Extraction AI<a class="headerlink" href="#customize-extraction-ai" title="Permalink to this headline">¶</a></h3>
+<p>Any Custom <a class="reference external" href="sourcecode.html#extraction-ai">Extraction AI</a> (derived from the Konfuzio <code class="docutils literal notranslate"><span class="pre">Trainer</span></code> class) should implement
+the following interface:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">Trainer</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Document</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+
+<span class="k">class</span> <span class="nc">CustomExtractionAI</span><span class="p">(</span><span class="n">Trainer</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># initialize key variables required by the custom AI</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Define architecture and training that the model undergoes, i.e. a NN architecture or a custom hardcoded logic</span>
+        <span class="c1"># This method is allowed to be implemented as a no-op if you provide the trained model in other ways</span>
+
+    <span class="k">def</span> <span class="nf">extract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">:</span> <span class="n">Document</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Document</span><span class="p">:</span>
+        <span class="c1"># define how the model extracts information from Documents</span>
+        <span class="c1"># **NB:** The result of extraction must be a copy of the input Document with added Annotations attribute `Document._annotations`</span>
+</pre></div>
+</div>
+<p>Example usage of your Custom Extraction AI:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Document</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
+
+<span class="c1"># Initialize Project and provide the AI training and test data</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>  <span class="c1"># see https://dev.konfuzio.com/sdk/get_started.html#example-usage</span>
+
+<span class="n">extraction_pipeline</span> <span class="o">=</span> <span class="n">CustomExtractionAI</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">category</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_category_by_id</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_CATEGORY_ID</span><span class="p">)</span>
+<span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">documents</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">category</span><span class="o">.</span><span class="n">documents</span><span class="p">()</span>
+<span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">test_documents</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">category</span><span class="o">.</span><span class="n">test_documents</span><span class="p">()</span>
+
+<span class="c1"># Train the AI</span>
+<span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+
+<span class="c1"># Evaluate the AI</span>
+<span class="n">data_quality</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">evaluate_full</span><span class="p">(</span><span class="n">use_training_docs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ai_quality</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">evaluate_full</span><span class="p">(</span><span class="n">use_training_docs</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Extract a Document</span>
+<span class="n">document</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+<span class="n">extraction_result</span><span class="p">:</span> <span class="n">Document</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">)</span>
+
+<span class="c1"># Save and load a pickle file for the model</span>
+<span class="n">pickle_model_path</span> <span class="o">=</span> <span class="n">extraction_pipeline</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">output_dir</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">model_folder</span><span class="p">,</span> <span class="n">include_konfuzio</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">extraction_pipeline_loaded</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">pickle_model_path</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For a more in depth tutorial about the usage of Extraction AIs in the SDK see
+<a class="reference external" href="examples/examples.html#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents">Train a Konfuzio SDK Model to Extract Information From Payslip Documents</a>.</p>
+</section>
+<section id="customize-categorization-ai-coming-february-17th-2023">
+<h3>Customize Categorization AI (coming February 17th, 2023)<a class="headerlink" href="#customize-categorization-ai-coming-february-17th-2023" title="Permalink to this headline">¶</a></h3>
+<p>Any custom <a class="reference external" href="sourcecode.html#document-categorization">Categorization AI</a> (derived from the Konfuzio <code class="docutils literal notranslate"><span class="pre">AbstractCategorizationModel</span></code> class)<span class="raw-html-m2r"><br></span>
+should implement the following interface:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">AbstractCategorizationModel</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Document</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+
+<span class="k">class</span> <span class="nc">CustomCategorizationAI</span><span class="p">(</span><span class="n">AbstractCategorizationModel</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># initialize key variables required by the custom AI</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Define architecture and training that the model undergoes, i.e. a NN architecture or a custom hardcoded logic</span>
+        <span class="c1"># This method is allowed to be implemented as a no-op if you provide the trained model in other ways</span>
+
+    <span class="k">def</span> <span class="nf">_categorize_page</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">:</span> <span class="n">Page</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Page</span><span class="p">:</span>
+        <span class="c1"># define how the model assigns a Category to a Page</span>
+        <span class="c1"># **NB:** The result of extraction must be the input Page with added Categorization attribute `Page.category`</span>
+</pre></div>
+</div>
+<p>Example usage of your Custom Categorization AI:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
+
+<span class="c1"># Initialize Project and provide the AI training and test data</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>  <span class="c1"># see https://dev.konfuzio.com/sdk/get_started.html#example-usage</span>
+
+<span class="n">categorization_pipeline</span> <span class="o">=</span> <span class="n">CustomCategorizationAI</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">categories</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">categories</span>
+<span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">documents</span> <span class="o">=</span> <span class="p">[</span><span class="n">category</span><span class="o">.</span><span class="n">documents</span> <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">categories</span><span class="p">]</span>
+<span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">test_documents</span> <span class="o">=</span> <span class="p">[</span><span class="n">category</span><span class="o">.</span><span class="n">test_documents</span><span class="p">()</span> <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">categories</span><span class="p">]</span>
+
+<span class="c1"># Calculate features and train the AI</span>
+<span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+
+<span class="c1"># Evaluate the AI</span>
+<span class="n">data_quality</span> <span class="o">=</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">use_training_docs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ai_quality</span> <span class="o">=</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">use_training_docs</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Categorize a Document</span>
+<span class="n">document</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+<span class="n">categorization_result</span> <span class="o">=</span> <span class="n">categorization_model</span><span class="o">.</span><span class="n">categorize</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">categorization_result</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found category </span><span class="si">{</span><span class="n">page</span><span class="o">.</span><span class="n">category</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">page</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found category </span><span class="si">{</span><span class="n">categorization_result</span><span class="o">.</span><span class="n">category</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">result_doc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Save and load a pickle file for the model</span>
+<span class="n">pickle_model_path</span> <span class="o">=</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">output_dir</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">model_folder</span><span class="p">,</span> <span class="n">include_konfuzio</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">categorization_pipeline_loaded</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">pickle_model_path</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For a more in depth tutorial about the usage of Categorization AIs in the SDK see
+<a class="reference external" href="examples/examples.html#document-categorization">Tutorials - Document Categorization</a>.</p>
+</section>
+<section id="customize-file-splitting-ai">
+<h3>Customize File Splitting AI<a class="headerlink" href="#customize-file-splitting-ai" title="Permalink to this headline">¶</a></h3>
+<p>Any Custom <a class="reference external" href="sourcecode.html#file-splitting">File Splitting AI</a> (derived from the Konfuzio <code class="docutils literal notranslate"><span class="pre">AbstractFileSplittingModel</span></code> class)
+should implement the following interface:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.file_spltting</span> <span class="kn">import</span> <span class="n">AbstractFileSplittingModel</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Document</span><span class="p">,</span> <span class="n">Page</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+
+<span class="k">class</span> <span class="nc">CustomFileSplittingModel</span><span class="p">(</span><span class="n">AbstractFileSplittingModel</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># initialize key variables required by the custom AI</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Define architecture and training that the model undergoes, i.e. a NN architecture or a custom hardcoded logic</span>
+        <span class="c1"># This method is allowed to be implemented as a no-op if you provide the trained model in other ways</span>
+
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">:</span> <span class="n">Page</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Page</span><span class="p">:</span>
+        <span class="c1"># Define how the model determines a split point for a Page</span>
+        <span class="c1"># **NB:** The classification needs to be ran on the Page level, not the Document level – the result of</span>
+        <span class="c1"># classification is reflected in `is_first_page` attribute value, which is unique to the Page class and is not</span>
+        <span class="c1"># present in Document class. Pages with `is_first_page = True` become splitting points, thus, each new</span>
+        <span class="c1"># sub-Document has a Page predicted as first as its starting point.</span>
+</pre></div>
+</div>
+<p>Example usage of your Custom File Splitting AI:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.file_splitting</span> <span class="kn">import</span> <span class="n">SplittingAI</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
+
+<span class="c1"># Initialize Project and provide the AI training and test data</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>  <span class="c1"># see https://dev.konfuzio.com/sdk/get_started.html#example-usage</span>
+
+<span class="n">file_splitting_model</span> <span class="o">=</span> <span class="n">CustomFileSplittingModel</span><span class="p">(</span><span class="n">categories</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">categories</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">*</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="n">file_splitting_model</span><span class="o">.</span><span class="n">documents</span> <span class="o">=</span> <span class="p">[</span><span class="n">category</span><span class="o">.</span><span class="n">documents</span> <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">categories</span><span class="p">]</span>
+<span class="n">file_splitting_model</span><span class="o">.</span><span class="n">test_documents</span> <span class="o">=</span> <span class="p">[</span><span class="n">category</span><span class="o">.</span><span class="n">test_documents</span><span class="p">()</span> <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="n">categorization_pipeline</span><span class="o">.</span><span class="n">categories</span><span class="p">]</span>
+
+<span class="c1"># Calculate features and train the AI</span>
+<span class="n">file_splitting_model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+
+<span class="c1"># Initialize the Splitting pipeline by providing the trained model</span>
+<span class="n">file_splitting_pipeline</span> <span class="o">=</span> <span class="n">SplittingAI</span><span class="p">(</span><span class="n">file_splitting_model</span><span class="p">)</span>
+
+<span class="c1"># Evaluate the AI</span>
+<span class="n">data_quality</span> <span class="o">=</span> <span class="n">file_splitting_pipeline</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">use_training_docs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ai_quality</span> <span class="o">=</span> <span class="n">file_splitting_pipeline</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">use_training_docs</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Suggest Page splits for a Document</span>
+<span class="n">document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+<span class="n">splitting_results</span> <span class="o">=</span> <span class="n">file_splitting_pipeline</span><span class="o">.</span><span class="n">propose_split_documents</span><span class="p">(</span><span class="n">document</span><span class="p">,</span> <span class="n">return_pages</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">splitting_results</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">page</span><span class="o">.</span><span class="n">is_first_page</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">page</span><span class="si">}</span><span class="s1"> is a suggested split point for </span><span class="si">{</span><span class="n">document</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="c1"># Save and load a pickle file for the model</span>
+<span class="n">pickle_model_path</span> <span class="o">=</span> <span class="n">file_splitting_model</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="n">file_splitting_model_loaded</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">pickle_model_path</span><span class="p">)</span>
+<span class="n">file_splitting_pipeline_loaded</span> <span class="o">=</span> <span class="n">SplittingAI</span><span class="p">(</span><span class="n">file_splitting_model_loaded</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For a more in depth tutorial about the usage of File Splitting AIs in the SDK see
+<a class="reference external" href="examples/examples.html#file-splitting">Splitting for multi-file Documents: Step-by-step guide</a>.</p>
+</section>
+<section id="other-use-cases-around-documents">
+<h3>Other use cases around documents<a class="headerlink" href="#other-use-cases-around-documents" title="Permalink to this headline">¶</a></h3>
+<p>The following is a simple example of something you can build using the Konfuzio SDK.</p>
+<section id="build-your-own-pdf-form-generator">
+<h4>Build your own PDF Form Generator<a class="headerlink" href="#build-your-own-pdf-form-generator" title="Permalink to this headline">¶</a></h4>
+<p>A simple implementation can look like the following.</p>
+<section id="upload-a-pdf-form-and-create-empty-annotations-where-you-want-to-fill-in-data">
+<h5>1. Upload a PDF Form and create empty annotations where you want to fill in data<a class="headerlink" href="#upload-a-pdf-form-and-create-empty-annotations-where-you-want-to-fill-in-data" title="Permalink to this headline">¶</a></h5>
+<a class="reference internal image-reference" href="../_images/pdf_form_gen_example.png"><img alt="../_images/pdf_form_gen_example.png" src="../_images/pdf_form_gen_example.png" style="width: 403.6px; height: 361.6px;" /></a>
+</section>
+<section id="use-the-sdk-to-fill-in-values-in-the-pdf">
+<h5>2. Use the SDK to fill in values in the PDF<a class="headerlink" href="#use-the-sdk-to-fill-in-values-in-the-pdf" title="Permalink to this headline">¶</a></h5>
+<p>Example implementation:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">io</span>
+
+<span class="kn">from</span> <span class="nn">PyPDF2</span> <span class="kn">import</span> <span class="n">PdfFileWriter</span><span class="p">,</span> <span class="n">PdfFileReader</span>
+<span class="kn">from</span> <span class="nn">reportlab.pdfgen</span> <span class="kn">import</span> <span class="n">canvas</span>
+<span class="kn">from</span> <span class="nn">reportlab.lib</span> <span class="kn">import</span> <span class="n">colors</span>
+
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Document</span><span class="p">,</span> <span class="n">Page</span><span class="p">,</span> <span class="n">Annotation</span>
+
+
+<span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="n">document_id</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+    <span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">project_id</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">document</span><span class="p">:</span> <span class="n">Document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">document_id</span><span class="p">)</span>
+
+    <span class="c1"># read your existing PDF</span>
+    <span class="n">existing_pdf</span> <span class="o">=</span> <span class="n">PdfFileReader</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">get_file</span><span class="p">(),</span> <span class="s2">&quot;rb&quot;</span><span class="p">))</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">PdfFileWriter</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">page_index</span><span class="p">,</span> <span class="n">page</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">pages</span><span class="p">()):</span>
+        <span class="n">packet</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+        <span class="n">my_canvas</span> <span class="o">=</span> <span class="n">canvas</span><span class="o">.</span><span class="n">Canvas</span><span class="p">(</span><span class="n">packet</span><span class="p">)</span>
+        <span class="n">my_canvas</span><span class="o">.</span><span class="n">setPageSize</span><span class="p">((</span><span class="n">page</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="n">page</span><span class="o">.</span><span class="n">height</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">annotation</span><span class="p">:</span> <span class="n">Annotation</span> <span class="ow">in</span> <span class="n">document</span><span class="o">.</span><span class="n">annotations</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">annotation</span><span class="o">.</span><span class="n">selection_bbox</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;page_index&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">page_index</span><span class="p">:</span>
+                <span class="n">text_value</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">annotation</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="n">textobject</span> <span class="o">=</span> <span class="n">my_canvas</span><span class="o">.</span><span class="n">beginText</span><span class="p">()</span>
+                <span class="c1"># Set text location (x, y)</span>
+                <span class="n">textobject</span><span class="o">.</span><span class="n">setTextOrigin</span><span class="p">(</span><span class="n">annotation</span><span class="o">.</span><span class="n">x0</span><span class="p">,</span> <span class="n">annotation</span><span class="o">.</span><span class="n">y0</span><span class="p">)</span>
+                <span class="c1"># Change text color</span>
+                <span class="n">textobject</span><span class="o">.</span><span class="n">setFillColor</span><span class="p">(</span><span class="n">colors</span><span class="o">.</span><span class="n">black</span><span class="p">)</span>
+                <span class="c1"># Write text</span>
+                <span class="n">textobject</span><span class="o">.</span><span class="n">textLine</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">text_value</span><span class="p">)</span>
+                <span class="c1"># Write text to the canvas</span>
+                <span class="n">my_canvas</span><span class="o">.</span><span class="n">drawText</span><span class="p">(</span><span class="n">textobject</span><span class="p">)</span>
+        <span class="n">my_canvas</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+        <span class="c1"># move to the beginning of the StringIO buffer</span>
+        <span class="n">packet</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># create a new PDF with Reportlab</span>
+        <span class="n">new_pdf</span> <span class="o">=</span> <span class="n">PdfFileReader</span><span class="p">(</span><span class="n">packet</span><span class="p">)</span>
+
+        <span class="n">page</span> <span class="o">=</span> <span class="n">existing_pdf</span><span class="o">.</span><span class="n">getPage</span><span class="p">(</span><span class="n">page_index</span><span class="p">)</span>
+        <span class="n">page</span><span class="o">.</span><span class="n">mergePage</span><span class="p">(</span><span class="n">new_pdf</span><span class="o">.</span><span class="n">getPage</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="n">output</span><span class="o">.</span><span class="n">addPage</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">output</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;Valerie&#39;</span><span class="p">,</span> <span class="s1">&#39;Kurs&#39;</span><span class="p">:</span> <span class="s1">&#39;Pilates&#39;</span><span class="p">,</span> <span class="s1">&#39;Startdatum&#39;</span><span class="p">:</span> <span class="s1">&#39;15.01.2022&#39;</span><span class="p">,</span> <span class="s1">&#39;Enddatum&#39;</span><span class="p">:</span> <span class="s1">&#39;30.03.2022&#39;</span><span class="p">}</span>
+    <span class="c1"># To find your Project ID and Document ID see https://dev.konfuzio.com/sdk/get_started.html#example-usage</span>
+    <span class="n">project_id</span> <span class="o">=</span> <span class="n">YOUR_PROJECT_ID</span>
+    <span class="n">document_id</span> <span class="o">=</span> <span class="n">YOUR_DOCUMENT_ID</span>
+
+    <span class="n">output</span> <span class="o">=</span> <span class="n">render</span><span class="p">(</span><span class="n">document_id</span><span class="o">=</span><span class="n">document_id</span><span class="p">,</span> <span class="n">project_id</span><span class="o">=</span><span class="n">project_id</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">values</span><span class="p">)</span>
+    <span class="c1"># finally, write &quot;output&quot; to a real file</span>
+    <span class="n">outputStream</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">document_id</span><span class="si">}</span><span class="s2">.pdf&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span>
+    <span class="n">output</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">outputStream</span><span class="p">)</span>
+    <span class="n">outputStream</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The resulting filled in PDF form will look like this:</p>
+<a class="reference internal image-reference" href="../_images/pdf_form_gen_example_compiled.png"><img alt="../_images/pdf_form_gen_example_compiled.png" src="../_images/pdf_form_gen_example_compiled.png" style="width: 385.20000000000005px; height: 330.0px;" /></a>
+</section>
+</section>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="Konfuzio Developer Center" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="get_started.html" class="btn btn-neutral float-right" title="Get Started" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Helm und Nagel GmbH.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-D02B3QF8Z3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-D02B3QF8Z3');
+</script>
+<script src="https://cmp.osano.com/16CVyMSbk3Iar1G3f/97ee6223-b0cb-4f8c-abd6-a25a0d6f6507/osano.js"></script>
+<script>window._nQc="89655017";</script>
+<script async src="https://serve.albacross.com/track.js"></script>
+
+
+</body>
+</html>

@@ -2,10 +2,9 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<meta content="How to release a Python package automatically on PyPI including. The guide covers how to release pre-releases." name="description" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Releasing Changes &mdash; Konfuzio  documentation</title>
+  <title>Architecture SDK to Server &mdash; Konfuzio  documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
@@ -19,11 +18,11 @@
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
+        <script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+        <script>mermaid.initialize({startOnLoad:true});</script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Coordinates System" href="../coordinates_system.html" />
-    <link rel="prev" title="Contribution Guide" href="../contribution.html" /> 
+    <link rel="search" title="Search" href="../../search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -42,49 +41,31 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Konfuzio Python SDK</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../configuration_reference.html">Install SDK</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../quickstart_pycharm.html">Install SDK using PyCharm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples/examples.html">Code Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html">Source Code Reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../contribution.html">Contribution Guide</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Releasing Changes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#how-to-release-with-github-to-pypi">How to release with GitHub to PyPI</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#how-to-use-nightly-builds">How to use nightly builds?</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../coordinates_system.html">Coordinates System</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../changelog.html#archived-changelog">Archived Changelog</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Konfuzio Trainer</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html">LabelSectionModel Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#documentmodel-examples">DocumentModel Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#paragraphmodel-examples">ParagraphModel Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#design-philosophy">Design Philosophy</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#tokenizers">Tokenizers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#vocabularies">Vocabularies</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#text-modules">Text Modules</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#image-modules">Image Modules</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#loading-pre-trained-modules">Loading Pre-trained Modules</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#extraction">Extraction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../training/training_documentation.html#ocr">OCR</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../training/changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">What is the Konfuzio SDK?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../get_started.html">Get Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribution.html">Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../web/api.html">Konfuzio API Video Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../web/api.html#how-to-make-an-api-call">How to make an API Call</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../web/api.html#document-categorization-api">Document Categorization API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../web/api.html#document-segmentation-api">Document Segmentation API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../web/api.html#supported-ocr-languages">Supported OCR languages</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../web/api.html#supported-file-types">Supported File Types</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../web/api.html#supported-data-normalization">Supported Data Normalization</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../web/api.html#support">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/index.html">What is the Konfuzio Server?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/api-v3.html">REST API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../web/on_premises.html">On-Premises Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../web/changelog_app.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Konfuzio Document Validation UI</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dvui/index.html">What is the Konfuzio Document Validation UI?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dvui/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dvui/guides.html">Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dvui/sourcecode.html">Source Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dvui/changelog.html">Changelog</a></li>
 </ul>
 
         </div>
@@ -101,7 +82,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Releasing Changes</li>
+      <li>Architecture SDK to Server</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../../_sources/sdk/releasing/index.md.txt" rel="nofollow"> View page source</a>
       </li>
@@ -111,60 +92,49 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="releasing-changes">
-<h1>Releasing Changes<a class="headerlink" href="#releasing-changes" title="Permalink to this headline">¶</a></h1>
-<p>Any changes released to the branch master, will be released to PyPI in the next release.</p>
-<section id="how-to-release-with-github-to-pypi">
-<h2>How to release with GitHub to PyPI<a class="headerlink" href="#how-to-release-with-github-to-pypi" title="Permalink to this headline">¶</a></h2>
-<ol class="arabic">
-<li><p>Change the version number in the file VERSION use the format <code class="docutils literal notranslate"><span class="pre">v.X.X.X</span></code> without whitespaces.</p>
-<a class="reference external image-reference" href="update-python-version.png"><img alt="Update Python Package Version" src="../../_images/update-python-version.png" /></a>
-</li>
-<li><p>Draft a Release <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases/new">here</a>.</p>
-<a class="reference external image-reference" href="steps-to-draft-a-release.png"><img alt="draft_new_release.png" src="../../_images/steps-to-draft-a-release.png" /></a>
-<ol class="arabic simple">
-<li><p>Create a new Tag on master, named as the version number in step 1.</p></li>
-<li><p>Add a title for the release</p></li>
-<li><p>Automatically generate the description using the Names of the merged Pull Requests</p></li>
-</ol>
-</li>
-<li><p>After you press publish release, a new Python Package will be uploaded to PyPI by a GitHub Action, see code
-<a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/.github/workflows/release.yml">here</a>. You can verify
-that the Release was uploaded via having a look on <a class="reference external" href="https://pypi.org/project/konfuzio-sdk/#history">PyPI</a></p></li>
-</ol>
+  <section id="architecture-sdk-to-server">
+<h1>Architecture SDK to Server<a class="headerlink" href="#architecture-sdk-to-server" title="Permalink to this headline">¶</a></h1>
+<p>The following chart is automatically created by the version of the diagram on the branch master, see <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/tests/SDK%20and%20Server%20Integration.drawio">source</a>.</p>
+<p>If you hover over the image you can zoom or use the full page mode.</p>
+<p><span class="raw-html-m2r"><div class="mxgraph" style="max-width:100%;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;toolbar&quot;:&quot;zoom layers tags lightbox&quot;,&quot;edit&quot;:&quot;_blank&quot;,&quot;url&quot;:&quot;https://raw.githubusercontent.com/konfuzio-ai/konfuzio-sdk/master/docs/sdk/SDK%20and%20Server%20Integration.drawio&quot;}"></div></span></p>
+<script type="text/javascript" src="https://viewer.diagrams.net/embed2.js?&fetch=https%3A%2F%2Fraw.githubusercontent.com%2Fkonfuzio-ai%2Fkonfuzio-sdk%2Fmaster%2Fdocs%2Fsdk%2FSDK%2520and%2520Server%2520Integration.drawio"></script><p>If you want to edit the diagramm, please refer to the <a class="reference external" href="https://drawio-app.com/github-support/">GitHub Drawio Documentation</a>.</p>
 </section>
-<section id="how-to-use-nightly-builds">
-<h2>How to use nightly builds?<a class="headerlink" href="#how-to-use-nightly-builds" title="Permalink to this headline">¶</a></h2>
-<a class="reference external image-reference" href="new-pypi-release.png"><img alt="New PyPI Python release" src="../../_images/new-pypi-release.png" /></a>
-<ol class="arabic simple">
-<li><p>Install the latest pre-release <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--pre</span> <span class="pre">konfuzio_sdk</span></code></p></li>
-<li><p>Force to pick the latest pre-release the version <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">konfuzio_sdk&gt;=0.2.3.dev0</span></code>. As PEP440 states: The
-developmental release segment consists of the string .dev, followed by a non-negative integer value.<span class="raw-html-m2r"><br></span>
-Developmental releases are ordered by their numerical component, immediately before the corresponding  release
-(and before any pre-releases with the same release segment), and following any previous release (including any<span class="raw-html-m2r"><br></span>
-post-releases)</p></li>
-</ol>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Pre-Releases don’t use tags but reference commits. The version number of a pre-release relates to the
-Year-Month-Date-Hour-Minute-Second of last commit date on branch master used to create this release.</p>
+<section id="directory-structure">
+<h1>Directory Structure<a class="headerlink" href="#directory-structure" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>├── konfuzio-sdk      &lt;- SDK project name
+│   │
+│   ├── docs                    &lt;- Documentation to use konfuzio_sdk package in a project
+│   │
+│   ├── konfuzio_sdk            &lt;- Source code of Konfuzio SDK
+│   │  ├── __init__.py          &lt;- Makes konfuzio_sdk a Python module
+│   │  ├── api.py               &lt;- Functions to interact with the Konfuzio Server
+│   │  ├── cli.py               &lt;- Command Line interface to the konfuzio_sdk package
+│   │  ├── data.py              &lt;- Functions to handle data from the API
+│   │  ├── settings_importer.py &lt;- Meta settings loaded from the project
+│   │  ├── urls.py              &lt;- Endpoints of the Konfuzio host
+│   │  └── utils.py             &lt;- Utils functions for the konfuzio_sdk package
+│   │
+│   ├── tests                   &lt;- Pytests: basic tests to test scripts based on a demo project
+│   │
+│   ├── .gitignore              &lt;- Specify files untracked and ignored by git
+│   ├── README.md               &lt;- Readme to get to know konfuzio_sdk package
+│   ├── pytest.ini              &lt;- Configurations for pytests
+│   ├── settings.py             &lt;- Settings of SDK project
+│   ├── setup.cfg               &lt;- Setup configurations
+│   ├── setup.py                &lt;- Installation requirements
+</pre></div>
 </div>
-<a class="reference external image-reference" href="version-number-prerelease.png"><img alt="img.png" src="../../_images/version-number-prerelease.png" /></a>
-</section>
 </section>
 
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../contribution.html" class="btn btn-neutral float-left" title="Contribution Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../coordinates_system.html" class="btn btn-neutral float-right" title="Coordinates System" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2022, Helm und Nagel GmbH.</p>
+    <p>&#169; Copyright 2023, Helm und Nagel GmbH.</p>
   </div>
 
    
@@ -189,6 +159,8 @@ Year-Month-Date-Hour-Minute-Second of last commit date on branch master used to 
   gtag('config', 'G-D02B3QF8Z3');
 </script>
 <script src="https://cmp.osano.com/16CVyMSbk3Iar1G3f/97ee6223-b0cb-4f8c-abd6-a25a0d6f6507/osano.js"></script>
+<script>window._nQc="89655017";</script>
+<script async src="https://serve.albacross.com/track.js"></script>
 
 
 </body>

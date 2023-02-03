@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Quickstart &mdash; Konfuzio  documentation</title>
+  <title>Data Layer Concepts &mdash; Konfuzio  documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
@@ -22,9 +22,7 @@
         <script>mermaid.initialize({startOnLoad:true});</script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Install SDK" href="../configuration_reference.html" />
-    <link rel="prev" title="Konfuzio Developer Center" href="../../index.html" /> 
+    <link rel="search" title="Search" href="../../search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -44,36 +42,20 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Konfuzio SDK</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Quickstart</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#id1">Project</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#document">Document</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id4">Category</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#page">Page</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#span">Span</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#annotation">Annotation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id9">Annotation Set</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id11">Label</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#label-set">Label Set</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id14">Bbox</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../configuration_reference.html">Install SDK</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html">Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html#tokenizers">Tokenizers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html#filesplitting-ai">FileSplitting AI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html#extraction-ai">Extraction AI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html#evaluation">Evaluation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html#document-categorization">Document Categorization</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples/examples.html">Code Examples</a></li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">What is the Konfuzio SDK?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../get_started.html">Get Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sourcecode.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../contribution.html">Contribution Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../coordinates_system.html">Coordinates System</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../merge/merge.html">Merging Logic</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Konfuzio Server</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../web/api.html">REST API v2</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../web/api-v3.html">REST API v3</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/index.html">What is the Konfuzio Server?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/explanations.html">Explanations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../web/api-v3.html">REST API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../web/on_premises.html">On-Premises Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../web/changelog_app.html">Changelog</a></li>
 </ul>
@@ -100,7 +82,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Quickstart</li>
+      <li>Data Layer Concepts</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../../_sources/sdk/home/index.md.txt" rel="nofollow"> View page source</a>
       </li>
@@ -110,18 +92,20 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="quickstart">
-<h1>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this headline">¶</a></h1>
-<p>Get to know all major Data Layer concepts of the SDK before you begin working with it. The relations between them are
-the following: a <a class="reference external" href="#Project">Project</a> consists of multiple <a class="reference external" href="#Document">Documents</a>. Each one of the Documents consists of
-the <a class="reference external" href="#Page">Pages</a> and belongs to a certain <a class="reference external" href="#Category">Category</a>. Text of the Documents consists of <a class="reference external" href="#Span">Spans</a> and
-can be marked by <a class="reference external" href="#Annotation">Annotations</a> from some <a class="reference external" href="#Annotation%20Set">Annotation Set</a>. Each Annotation is located in
-a certain <a class="reference external" href="#Bbox">Bbox</a> and is defined by a <a class="reference external" href="#Label">Label</a> that is a part of one of the <a class="reference external" href="#Label%20Set">Label Sets</a>.</p>
+  <section id="data-layer-concepts">
+<h1>Data Layer Concepts<a class="headerlink" href="#data-layer-concepts" title="Permalink to this headline">¶</a></h1>
+<p>The relations between all major Data Layer concepts of the SDK are
+the following: a <a class="reference external" href="#id1">Project</a> consists of multiple <a class="reference external" href="#document">Documents</a>. Each one of the Documents consists of
+the <a class="reference external" href="#page">Pages</a> and belongs to a certain <a class="reference external" href="#category">Category</a>. Text in a Document can be marked by
+<a class="reference external" href="#annotation">Annotations</a>, which can be multi-line, and where each continuous piece of text contained into an
+Annotation is a <a class="reference external" href="#span">Span</a>. Each Annotation is located within a certain <a class="reference external" href="#id14">Bbox</a> and is defined by a
+<a class="reference external" href="#id11">Label</a> that is a part of one of the <a class="reference external" href="#label-set">Label Sets</a>. An <a class="reference external" href="#id9">Annotation Set</a> is a list of Annotations
+that share a Label Set.</p>
 <p>For more detailed information on each concept, follow the link on the concept’s name which leads to the automatically
 generated documentation.</p>
 <section id="id1">
 <h2>Project<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#project">Project</a> is essentially a dataset that contains Documents
+<p><a class="reference external" href="sourcecode.html#project">Project</a> is essentially a dataset that contains Documents
 belonging to different Categories or not having any Category assigned. To initialize it, call <code class="docutils literal notranslate"><span class="pre">Project(id_=YOUR_PROJECT_ID)</span></code>.</p>
 <p>The Project can also be accessed via the Smartview, with URL typically looking like
 <a class="reference external" href="https://YOUR_HOST/admin/server/document/?project=YOUR_PROJECT_ID">https://YOUR_HOST/admin/server/document/?project=YOUR_PROJECT_ID</a>.</p>
@@ -137,7 +121,7 @@ if you want to fetch the updates from the server, use the argument <code class="
 </section>
 <section id="document">
 <h2>Document<a class="headerlink" href="#document" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#document">Document</a> is one of the files that constitute a Project. It
+<p><a class="reference external" href="sourcecode.html#document">Document</a> is one of the files that constitute a Project. It
 consists of Pages and can belong to a certain Category.</p>
 <p>A Document can be accessed by <code class="docutils literal notranslate"><span class="pre">project.get_document_by_id(YOUR_DOCUMENT_ID)</span></code> when its ID is known to you; otherwise, it
 is possible to iterate through the output of <code class="docutils literal notranslate"><span class="pre">project.documents</span></code> (or <code class="docutils literal notranslate"><span class="pre">test_documents</span></code>/<code class="docutils literal notranslate"><span class="pre">_documents</span></code>) to see which
@@ -158,7 +142,7 @@ data for training your own models, for example;</p></li>
 </section>
 <section id="id4">
 <h2>Category<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#category">Category</a> is a group of Documents united by common feature or type, i.e. invoice or receipt.</p>
+<p><a class="reference external" href="sourcecode.html#category">Category</a> is a group of Documents united by common feature or type, i.e. invoice or receipt.</p>
 <p>To see all Categories in the Project, you can use <code class="docutils literal notranslate"><span class="pre">project.get_categories()</span></code>.
 To find a Category the Document belongs to, you can use <code class="docutils literal notranslate"><span class="pre">document.category</span></code>.
 To get <code class="docutils literal notranslate"><span class="pre">documents</span></code> or <code class="docutils literal notranslate"><span class="pre">test_documents</span></code> under the Category, use <code class="docutils literal notranslate"><span class="pre">category.documents()</span></code> or <code class="docutils literal notranslate"><span class="pre">category.test_documents()</span></code> respectively.</p>
@@ -166,43 +150,43 @@ To get <code class="docutils literal notranslate"><span class="pre">documents</s
 </section>
 <section id="page">
 <h2>Page<a class="headerlink" href="#page" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#page">Page</a> is a constituent part of the Document. Here are some of the properties and methods of the Page you might need when working with the SDK:</p>
+<p><a class="reference external" href="sourcecode.html#page">Page</a> is a constituent part of the Document. Here are some of the properties and methods of the Page you might need when working with the SDK:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">page.text</span></code> – get text of the Page;</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">page.spans()</span></code> – get a list of Spans on the Page;</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">page.number</span></code> – get Page’s number, starting from 1.</p></li>
 </ul>
 </section>
-<section id="span">
-<h2>Span<a class="headerlink" href="#span" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#span">Span</a> is a part of the Document’s text without the line breaks. Each Span has <code class="docutils literal notranslate"><span class="pre">start_offset</span></code> and <code class="docutils literal notranslate"><span class="pre">end_offset</span></code> denoting its starting and finishing characters in <code class="docutils literal notranslate"><span class="pre">document.text</span></code>.</p>
+<section id="id7">
+<h2>Span<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="sourcecode.html#span">Span</a> is a part of the Document’s text without the line breaks. Each Span has <code class="docutils literal notranslate"><span class="pre">start_offset</span></code> and <code class="docutils literal notranslate"><span class="pre">end_offset</span></code> denoting its starting and finishing characters in <code class="docutils literal notranslate"><span class="pre">document.text</span></code>.</p>
 <p>To access Span’s text, you can call <code class="docutils literal notranslate"><span class="pre">span.offset_string</span></code>. We are going to use it later when collecting the Spans from the Documents.</p>
 </section>
 <section id="annotation">
 <h2>Annotation<a class="headerlink" href="#annotation" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#annotation">Annotation</a> is a combination of Spans that has a certain Label  (i.e. Issue_Date, Auszahlungsbetrag) assigned to it. They typically denote a certain type of entity that is found in the text. Annotations can be predicted by AI or human-added.</p>
+<p><a class="reference external" href="sourcecode.html#annotation">Annotation</a> is a combination of Spans that has a certain Label  (i.e. Issue_Date, Auszahlungsbetrag) assigned to it. They typically denote a certain type of entity that is found in the text. Annotations can be predicted by AI or human-added.</p>
 <p>Like Spans, Annotations also have <code class="docutils literal notranslate"><span class="pre">start_offset</span></code> and <code class="docutils literal notranslate"><span class="pre">end_offset</span></code> denoting the starting and the ending characters. To access the text under the Annotation, call <code class="docutils literal notranslate"><span class="pre">annotation.offset_string</span></code>.</p>
 <p>To see the Annotation in the Smartview, you can call <code class="docutils literal notranslate"><span class="pre">annotation.get_link()</span></code> and open the returned URL.</p>
 </section>
-<section id="id9">
-<h2>Annotation Set<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#annotation-set">Annotation Set</a> is a group of Annotations united by Labels
+<section id="id10">
+<h2>Annotation Set<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="sourcecode.html#annotation-set">Annotation Set</a> is a group of Annotations united by Labels
 belonging to the same Label Set. To see Annotations in the set, call <code class="docutils literal notranslate"><span class="pre">annotation_set.annotations()</span></code>.</p>
 </section>
-<section id="id11">
-<h2>Label<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#label">Label</a> defines what the Annotation is about (i.e. Issue_Date,
+<section id="id12">
+<h2>Label<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="sourcecode.html#label">Label</a> defines what the Annotation is about (i.e. Issue_Date,
 Auszahlungsbetrag). Labels are grouped into Label Sets. To see Annotations with a current Label,
 call <code class="docutils literal notranslate"><span class="pre">label.annotations()</span></code> .</p>
 </section>
 <section id="label-set">
 <h2>Label Set<a class="headerlink" href="#label-set" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#label-set">Label Set</a> is a group of Labels united. A Label Set can belong
+<p><a class="reference external" href="sourcecode.html#label-set">Label Set</a> is a group of Labels united. A Label Set can belong
 to different Categories and multiple Annotation Sets.</p>
 </section>
-<section id="id14">
-<h2>Bbox<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#bbox">Bbox</a> is an area of the Page denoted by four rectangle-like
+<section id="id15">
+<h2>Bbox<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="sourcecode.html#bbox">Bbox</a> is an area of the Page denoted by four rectangle-like
 coordinates. You can access Bboxes of the Document by calling <code class="docutils literal notranslate"><span class="pre">document.bboxes</span></code>.</p>
 </section>
 </section>
@@ -210,10 +194,7 @@ coordinates. You can access Bboxes of the Document by calling <code class="docut
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../../index.html" class="btn btn-neutral float-left" title="Konfuzio Developer Center" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../configuration_reference.html" class="btn btn-neutral float-right" title="Install SDK" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 
