@@ -3,7 +3,7 @@
 
 .. _Server Installation:
 
-# On-Premises Documentation
+# On-Premises Guide
 
 On-premises, also known as self-hosted, is a setup that allows Konfuzio to be implemented 100% on your own infrastructure. In practice, it means that you know where your data is stored, how it's handled and who gets hold of it. This is because you keep the data on your own servers.
 
@@ -848,9 +848,9 @@ TASK_ACKS_ON_FAILURE_OR_TIMEOUT=
 TASK_ACKS_LATE=
 ```
 
-## Django-silk integration
+## Profiling
 
-[Django-silk](https://github.com/jazzband/django-silk) is an integration into our server which offers a detailed
+[Django-silk](https://github.com/jazzband/django-silk) is an integration into Konfuzio Server which offers a detailed
 overview of time spend in the database or within the internal code. When trying to troubleshoot performance issues,
 wanting to understand where queries are made, or needing to cooperate with our support on technical problems, it may be
 useful to use the Django-silk profiling to analyze performance. 
@@ -866,8 +866,6 @@ By default, only 15% of requests are being profiled, this can be changed to any 
 To avoid the database from filling up, only the past 10k requests are being kept, this can be changed to any value:
 
 - `SILKY_MAX_RECORDED_REQUESTS: 10000`
-
-### Profiling with Django silk
 
 After enabling Django silk, the dashboard will become available on `http://localhost:8000/silk` for users who are 
 logged in as superuser. The database can also be cleared by navigating to `http://localhost:8000/silk/cleardb/`. Do keep
