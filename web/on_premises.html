@@ -5,7 +5,7 @@
 <meta content="Documentation on how to deploy Konfuzio on premises using Kubernetes and Helm or Docker." name="description" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>On-Premises Documentation &mdash; Konfuzio  documentation</title>
+  <title>On-Premises Guide &mdash; Konfuzio  documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -59,7 +59,7 @@
 <li class="toctree-l1"><a class="reference internal" href="index.html">What is the Konfuzio Server?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="explanations.html">Explanations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api-v3.html">REST API</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">On-Premises Documentation</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">On-Premises Guide</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#billing-and-license">Billing and License</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#kubernetes">Kubernetes</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#required-tools">Required tools</a><ul>
@@ -110,9 +110,6 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#migrate-ais-and-projects">Migrate AIs and Projects</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#migrate-an-extraction-or-categorization-ai">Migrate an Extraction or Categorization AI</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#download-extraction-ai-from-source-instance">Download extraction AI from source instance</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#upload-extraction-or-category-ai-to-target-instance">Upload Extraction or Category AI to target instance</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#note">Note:</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#migrate-a-project">Migrate a Project</a></li>
 </ul>
 </li>
@@ -127,10 +124,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#environment-variables-for-detectron-container">Environment Variables for Detectron Container</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#django-silk-integration">Django-silk integration</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#profiling-with-django-silk">Profiling with Django silk</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="#profiling">Profiling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="changelog_app.html">Changelog</a></li>
@@ -158,7 +152,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>On-Premises Documentation</li>
+      <li>On-Premises Guide</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/web/on_premises.md.txt" rel="nofollow"> View page source</a>
       </li>
@@ -168,8 +162,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="on-premises-documentation">
-<span id="server-installation"></span><h1>On-Premises Documentation<a class="headerlink" href="#on-premises-documentation" title="Permalink to this headline">¶</a></h1>
+  <section id="on-premises-guide">
+<span id="server-installation"></span><h1>On-Premises Guide<a class="headerlink" href="#on-premises-guide" title="Permalink to this headline">¶</a></h1>
 <p>On-premises, also known as self-hosted, is a setup that allows Konfuzio to be implemented 100% on your own infrastructure. In practice, it means that you know where your data is stored, how it’s handled and who gets hold of it. This is because you keep the data on your own servers.</p>
 <p>A common way to operate a production-ready and scalabe Konfuzio installation is via Kubernetens. An alternative deployment option is the <a class="reference external" href="/web/on_premises.html#alternative-deployment-options">Single VM setup via Docker</a>. We recommend to use the option which is more familiar to you. In general</p>
 <p>On-Premise Konfuzio installations allow to create Superuser accounts which can access all <a class="reference external" href="https://help.konfuzio.com/modules/superuserdocuments/index.html">Documents</a>, <a class="reference external" href="https://help.konfuzio.com/modules/superuserprojects/index.html">Projects</a> and <a class="reference external" href="https://help.konfuzio.com/modules/superuserais/index.html">AIs</a> via a dedicated view as well as creating custom <a class="reference external" href="https://help.konfuzio.com/modules/superuserroles/index.html">Roles</a></p>
@@ -287,7 +281,10 @@ specify an email address to register your TLS certificates.</p>
 <h5>PostgreSQL<a class="headerlink" href="#postgresql" title="Permalink to this headline">¶</a></h5>
 <p>By default this Konfuzio provides an in-cluster PostgreSQL database, for trial purposes
 only.</p>
-<p><strong>NOTE: This configuration is not recommended for use in production.</strong></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Unless you are an expert in managing a PostgreSQL database within a cluster, we do not recommended this configuration for use in production.**</p>
+</div>
 <ul class="simple">
 <li><p>A single, non-resilient Deployment is used</p></li>
 </ul>
@@ -394,24 +391,23 @@ corresponding to the specific release you want to upgrade to and look for any th
 pertain to the new version.</p>
 <p>We also recommend that you take a backup first.</p>
 <p>Upgrade Konfuzio following our standard procedure,with the following additions of:</p>
-<ol class="arabic simple">
+<ol class="arabic">
 <li><p>Check the change log for the specific version you would like to upgrade to</p></li>
 <li><p>Ensure that you have created a <a class="reference external" href="https://www.postgresql.org/docs/11/backup.html">PostgreSQL backup</a> in the previous
-step. Without a backup, Konfuzio data might be lost if the upgrade fails.</p></li>
-<li><p>Go through deployment section step by step</p></li>
-<li><p>Extract your previous <code class="docutils literal notranslate"><span class="pre">--set</span></code> arguments with (see Action1)</p></li>
-<li><p>Decide on all the values you need to set</p></li>
-<li><p>Perform the upgrade, with all <code class="docutils literal notranslate"><span class="pre">--set</span></code> arguments extracted(see Action 2)</p></li>
+step. Without a backup, Konfuzio data might be lost if the upgrade fails.
+3a. If you use a values.yaml, update image.tag=”released-<strong>**</strong>” to the desired Konfuzio Server version.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">helm</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">my</span><span class="o">-</span><span class="n">konfuzio</span> <span class="n">konfuzio</span><span class="o">-</span><span class="n">repo</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">chart</span> <span class="o">-</span><span class="n">f</span> <span class="n">values</span><span class="o">.</span><span class="n">yaml</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<p>3b. If you use “–set”, you can directly set the desired Konfuzio Server version.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">helm</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">my</span><span class="o">-</span><span class="n">konfuzio</span> <span class="n">konfuzio</span><span class="o">-</span><span class="n">repo</span><span class="o">/</span><span class="n">konfuzio</span><span class="o">-</span><span class="n">chart</span> <span class="o">--</span><span class="n">reuse</span><span class="o">-</span><span class="n">values</span> <span class="o">--</span><span class="nb">set</span> <span class="n">image</span><span class="o">.</span><span class="n">tag</span><span class="o">=</span><span class="s2">&quot;released-******&quot;</span>
+</pre></div>
+</div>
+<ol class="arabic simple">
 <li><p>We will perform the migrations for the Database for PostgreSQL automatically.</p></li>
 </ol>
-<p><em>Action 1</em></p>
-<p><code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">get</span> <span class="pre">values</span> <span class="pre">konfuzio</span> <span class="pre">&gt;</span> <span class="pre">konfuzio.yaml</span></code></p>
-<p><em>Action 2</em></p>
-<p><code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">upgrade</span> <span class="pre">kofuzio</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">--version</span> <span class="pre">&lt;new</span> <span class="pre">version&gt;</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">-f</span> <span class="pre">konfuzio.yaml</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">konfuzio.migrations.enabled=true</span> <span class="pre">\</span></code><span class="raw-html-m2r"><br></span>
-<code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">...</span></code></p>
 </section>
 </section>
 <section id="docker">
@@ -463,7 +459,10 @@ The container needs to be able to access IP addresses and hostnames used in the 
 </pre></div>
 </div>
 <p>After completing these steps you can exit and remove the container.</p>
-<p>Note: The username used during the createsuperuser dialog must have the format of a valid e-mail in order to be able to login later.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The username used during the createsuperuser dialog must have the format of a valid e-mail in order to be able to login later.</p>
+</div>
 </section>
 <section id="start-the-container">
 <h4>5. Start the container<a class="headerlink" href="#start-the-container" title="Permalink to this headline">¶</a></h4>
@@ -668,28 +667,7 @@ and webhooks. The CI application needs network access to the Konfuzio installati
 <h2>Migrate AIs and Projects<a class="headerlink" href="#migrate-ais-and-projects" title="Permalink to this headline">¶</a></h2>
 <section id="migrate-an-extraction-or-categorization-ai">
 <h3>Migrate an Extraction or Categorization AI<a class="headerlink" href="#migrate-an-extraction-or-categorization-ai" title="Permalink to this headline">¶</a></h3>
-<p>This feature is only available for on-prem customers.</p>
-</section>
-<section id="download-extraction-ai-from-source-instance">
-<h3>Download extraction AI from source instance<a class="headerlink" href="#download-extraction-ai-from-source-instance" title="Permalink to this headline">¶</a></h3>
-<p>In a first step the extraction AI needs to be downloaded from the target Konfuzio instance. In order to download the extraction AI you need to be a superuser.
-The extraction AI can be downloaded from the superuser AI page.</p>
-<a class="reference external image-reference" href="./migration-between-konfuzio-server-instances/select_AI.png"><img alt="select_AI.png" src="web/migration-between-konfuzio-server-instances/select_AI.png" /></a>
-<p>Click on the extraction AI you want to migrate.</p>
-<a class="reference external image-reference" href="./migration-between-konfuzio-server-instances/download_AI.png"><img alt="download_AI.png" src="web/migration-between-konfuzio-server-instances/download_AI.png" /></a>
-<p>Download the AI file.</p>
-</section>
-<section id="upload-extraction-or-category-ai-to-target-instance">
-<h3>Upload Extraction or Category AI to target instance<a class="headerlink" href="#upload-extraction-or-category-ai-to-target-instance" title="Permalink to this headline">¶</a></h3>
-<p>Upload the downloaded extraction AI via superuser AI page.</p>
-<a class="reference external image-reference" href="./migration-between-konfuzio-server-instances/upload_AI.png"><img alt="upload_AI.png" src="web/migration-between-konfuzio-server-instances/upload_AI.png" /></a>
-</section>
-<section id="note">
-<h3>Note:<a class="headerlink" href="#note" title="Permalink to this headline">¶</a></h3>
-<p>In case of an Extraction AI, a target category needs to be chosen. A project relation is made by means of choosing a “project - category” relation in “Available Category”. No project should be assigned in the shown “Available projects” select box.
-In comparison for a Categorization AI the targe project has to be chosen from “Available projects”.</p>
-<a class="reference external image-reference" href="./migration-between-konfuzio-server-instances/create_label_sets.png"><img alt="create_label_sets.png" src="web/migration-between-konfuzio-server-instances/create_label_sets.png" /></a>
-<p>If you upload the extraction AI to a new project without the labels and label set, you need to enable “Create labels and templates” on the respective project.</p>
+<p>Superusers can migrate Extraction and Categorization AIs via the webinterface. This is explained on <a class="reference external" href="https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html">https://help.konfuzio.com</a>.</p>
 </section>
 <section id="migrate-a-project">
 <h3>Migrate a Project<a class="headerlink" href="#migrate-a-project" title="Permalink to this headline">¶</a></h3>
@@ -1016,9 +994,9 @@ TASK_ACKS_LATE=
 </div>
 </section>
 </section>
-<section id="django-silk-integration">
-<h2>Django-silk integration<a class="headerlink" href="#django-silk-integration" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="https://github.com/jazzband/django-silk">Django-silk</a> is an integration into our server which offers a detailed
+<section id="profiling">
+<h2>Profiling<a class="headerlink" href="#profiling" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://github.com/jazzband/django-silk">Django-silk</a> is an integration into Konfuzio Server which offers a detailed
 overview of time spend in the database or within the internal code. When trying to troubleshoot performance issues,
 wanting to understand where queries are made, or needing to cooperate with our support on technical problems, it may be
 useful to use the Django-silk profiling to analyze performance.</p>
@@ -1034,13 +1012,10 @@ useful to use the Django-silk profiling to analyze performance.</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">SILKY_MAX_RECORDED_REQUESTS:</span> <span class="pre">10000</span></code></p></li>
 </ul>
-<section id="profiling-with-django-silk">
-<h3>Profiling with Django silk<a class="headerlink" href="#profiling-with-django-silk" title="Permalink to this headline">¶</a></h3>
 <p>After enabling Django silk, the dashboard will become available on <code class="docutils literal notranslate"><span class="pre">http://localhost:8000/silk</span></code> for users who are
 logged in as superuser. The database can also be cleared by navigating to <code class="docutils literal notranslate"><span class="pre">http://localhost:8000/silk/cleardb/</span></code>. Do keep
 in mind that this package does add some overhead querying to each request. So unless there are active problems, it
 may be best to keep it turned off or at a low <code class="docutils literal notranslate"><span class="pre">SILKY_INTERCEPT_PERCENT</span></code> percentage.</p>
-</section>
 </section>
 </section>
 
