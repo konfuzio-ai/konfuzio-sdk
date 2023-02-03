@@ -148,7 +148,6 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
 
         :param page: A Page to receive first or non-first label.
         :type page: Page
-        :raises ValueError: When at least one Category does not have exclusive_first_page_strings.
         :return: A Page with a newly predicted is_first_page attribute.
         """
         self.check_is_ready()
@@ -164,18 +163,28 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         return page
 
     def check_is_ready(self):
-        """Check file splitting model is ready for inference."""
+        """
+        Check file splitting model is ready for inference.
+
+        :raises AttributeError: When no tokenizer or no Categories were passed.
+        :raises ValueError: When no Categories have _exclusive_first_page_strings.
+        """
         if self.tokenizer is None:
             raise AttributeError(f'{self} missing Tokenizer.')
 
         if not self.categories:
             raise AttributeError(f'{self} requires Categories.')
 
-        for category in self.categories:
-            if not category.exclusive_first_page_strings(tokenizer=self.tokenizer):
-                # exclusive_first_page_strings calls an implicit _exclusive_first_page_strings attribute once it was
-                # already calculated during fit() method so it is not a recurrent calculation each time.
-                raise ValueError(f"Cannot run prediction as {category} does not have _exclusive_first_page_strings.")
+        empty_first_page_strings = [
+            category
+            for category in self.categories
+            if not category.exclusive_first_page_strings(tokenizer=self.tokenizer)
+        ]
+        if len(empty_first_page_strings) == len(self.categories):
+            raise ValueError(
+                f"Cannot run prediction as none of the Categories in {self.project} have "
+                f"_exclusive_first_page_strings."
+            )
 
 
 class SplittingAI:
