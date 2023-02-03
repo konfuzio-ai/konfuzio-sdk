@@ -5,7 +5,7 @@ from typing import Dict, Optional
 import regex as re
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger( __name__)
 
 ROMAN_NUMS = {'M': 1000, 'D': 500, 'C': 100, 'L': 50, 'X': 10, 'V': 5, 'I': 1}
 
