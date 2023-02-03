@@ -3,6 +3,13 @@
 
 
 =====================
+API Reference
+=====================
+
+*Reference guides are technical descriptions of the machinery and how to operate it.*
+*Reference material is information-oriented.*
+
+
 Data
 =====================
 
@@ -12,7 +19,7 @@ Data
 
 
 Span
-=====================
+---------------------
 
 .. autoclass:: Span
    :members:
@@ -20,28 +27,28 @@ Span
 
 
 Bbox
-=====================
+---------------------
 
 .. autoclass:: Bbox
    :members:
    :noindex:
 
 Annotation
-=====================
+---------------------
 .. autoclass:: Annotation
    :members:
    :noindex:
 
 
 Annotation Set
-=====================
+---------------------
 .. autoclass:: AnnotationSet
    :members:
    :noindex:
 
 
 Label
-=====================
+---------------------
 
 .. autoclass:: Label
    :members:
@@ -49,41 +56,40 @@ Label
 
 
 Label Set
-=====================
+---------------------
 .. autoclass:: LabelSet
    :members:
    :noindex:
 
 
 Category
-=====================
+---------------------
 .. autoclass:: Category
    :members:
    :noindex:
 
 
 Document
-=====================
+---------------------
 .. autoclass:: Document
    :members:
    :noindex:
 
 
 Page
-=====================
+---------------------
 .. autoclass:: Page
    :members:
    :noindex:
 
 
 Project
-=====================
+---------------------
 .. autoclass:: Project
    :members:
    :noindex:
 
 
-=====================
 Tokenizers
 =====================
 
@@ -92,24 +98,24 @@ Tokenizers
 .. automodule:: konfuzio_sdk.tokenizer.base
 
 Abstract Tokenizer
-=====================
+---------------------
 .. autoclass:: AbstractTokenizer
    :members:
    :noindex:
 
 List Tokenizer
-=====================
+---------------------
 .. autoclass:: ListTokenizer
    :members:
    :noindex:
 
 Rule Based Tokenizer
-=====================
+---------------------
 
 .. automodule:: konfuzio_sdk.tokenizer.regex
 
 Regex Tokenizer
-=====================
+---------------------
 .. autoclass:: RegexTokenizer
    :members:
    :noindex:
@@ -117,7 +123,6 @@ Regex Tokenizer
 .. automodule:: konfuzio_sdk.tokenizer.regex
     :members:
 
-=====================
 FileSplitting AI
 =====================
 
@@ -137,7 +142,6 @@ FileSplitting AI
    :members:
    :noindex:
 
-=====================
 Extraction AI
 =====================
 
@@ -146,21 +150,31 @@ Extraction AI
 
 .. automodule:: konfuzio_sdk.trainer.information_extraction
 
-.. autoclass:: Trainer
-   :members:
-   :noindex:
-
 .. autoclass:: RFExtractionAI
    :members:
    :noindex:
 
 Load Saved AI Model
-=====================
+---------------------
 
 .. autofunction:: konfuzio_sdk.trainer.information_extraction.load_model
    :noindex:
 
+Document Categorization
 =====================
+
+`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/trainer/document_categorization.py>`__
+
+.. automodule:: konfuzio_sdk.trainer.document_categorization
+
+
+Fallback Categorization Model
+---------------------
+.. autoclass:: FallbackCategorizationModel
+   :members:
+   :noindex:
+
+
 Evaluation
 =====================
 
@@ -180,20 +194,5 @@ compare
 FileSplittingEvaluation
 ---------------------
 .. autoclass:: konfuzio_sdk.evaluate.FileSplittingEvaluation
-   :members:
-   :noindex:
-
-=====================
-Document Categorization
-=====================
-
-`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/trainer/document_categorization.py>`__
-
-.. automodule:: konfuzio_sdk.trainer.document_categorization
-
-
-Fallback Categorization Model
-=====================
-.. autoclass:: FallbackCategorizationModel
    :members:
    :noindex:
