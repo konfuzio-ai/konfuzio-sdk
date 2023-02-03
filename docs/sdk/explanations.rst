@@ -10,6 +10,8 @@ Explanations
 
 .. mdinclude:: home/index.md
 
+.. mdinclude:: examples/data_validations.md
+
 .. mdinclude:: releasing/index.md
 
 .. mdinclude:: coordinates_system.md
