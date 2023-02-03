@@ -123,11 +123,30 @@ Regex Tokenizer
 .. automodule:: konfuzio_sdk.tokenizer.regex
     :members:
 
+=====================
+FileSplitting AI
+=====================
+
+`[source] <https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/konfuzio_sdk/trainer/file_splitting.py>`__
+
+.. automodule:: konfuzio_sdk.trainer.file_splitting
+
+.. autoclass:: AbstractFileSplittingModel
+   :members:
+   :noindex:
+
+.. autoclass:: ContextAwareFileSplittingModel
+   :members:
+   :noindex:
+
+.. autoclass:: SplittingAI
+   :members:
+   :noindex:
 
 Extraction AI
 =====================
 
-`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/trainer.information_extraction.py>`__
+`[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/trainer/information_extraction.py>`__
 
 
 .. automodule:: konfuzio_sdk.trainer.information_extraction
@@ -158,6 +177,11 @@ compare
 .. autofunction:: konfuzio_sdk.evaluate.compare
    :noindex:
 
+FileSplittingEvaluation
+---------------------
+.. autoclass:: konfuzio_sdk.evaluate.FileSplittingEvaluation
+   :members:
+   :noindex:
 
 Document Categorization
 =====================
