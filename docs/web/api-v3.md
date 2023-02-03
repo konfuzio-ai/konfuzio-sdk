@@ -145,6 +145,28 @@ response = requests.get(url, headers=headers)
 print(response.json())
 ```
 
+#### Konfuzio SDK example
+
+To get a token, access it via `from konfuzio_sdk import KONFUZIO_TOKEN` (available only after `konfuzio_sdk init`).
+
+To use a token:
+
+```python
+from konfuzio_sdk import KONFUZIO_TOKEN
+from konfuzio_sdk.api import konfuzio_session
+
+url = "https://app.konfuzio.com/api/v3/projects/"
+
+# if you ran konfuzio_sdk init, you can run konfuzio_session() without explicitly specifying the token
+session = konfuzio_session(KONFUZIO_TOKEN)  
+
+response = session.get(url)
+
+print(response.json())
+```
+
+To access this and other information via SDK's Data layer concepts, see [SDK Quickstart](https://dev.konfuzio.com/sdk/home/index.html) page.
+
 ### Response codes
 
 All endpoints return an HTTP code that indicates the success of the request. Following the standard, codes starting
