@@ -139,7 +139,8 @@ _Include these options in your Helm install command:_
 By default this Konfuzio provides an in-cluster PostgreSQL database, for trial purposes
 only.
 
-**NOTE: This configuration is not recommended for use in production.**
+.. note::
+  Unless you are an expert in managing a PostgreSQL database within a cluster, we do not recommended this configuration for use in production.**
 
 - A single, non-resilient Deployment is used
 
@@ -257,26 +258,22 @@ We also recommend that you take a backup first.
 
 Upgrade Konfuzio following our standard procedure,with the following additions of:
 
-1. Check the change log for the specific version you would like to upgrade to
-2. Ensure that you have created a [PostgreSQL backup](https://www.postgresql.org/docs/11/backup.html) in the previous
-   step. Without a backup, Konfuzio data might be lost if the upgrade fails.
-3. Go through deployment section step by step
-4. Extract your previous `--set` arguments with (see Action1)
-5. Decide on all the values you need to set
-6. Perform the upgrade, with all `--set` arguments extracted(see Action 2)
-7. We will perform the migrations for the Database for PostgreSQL automatically.
+1.  Check the change log for the specific version you would like to upgrade to
+2.  Ensure that you have created a [PostgreSQL backup](https://www.postgresql.org/docs/11/backup.html) in the previous
+    step. Without a backup, Konfuzio data might be lost if the upgrade fails.
+3a. If you use a values.yaml, update image.tag="released-******" to the desired Konfuzio Server version.
+```
+helm install --upgrade my-konfuzio konfuzio-repo/konfuzio-chart -f values.yaml
+```
 
-_Action 1_
+3b. If you use "--set", you can directly set the desired Konfuzio Server version.
+```
+helm install --upgrade my-konfuzio konfuzio-repo/konfuzio-chart --reuse-values --set image.tag="released-******"
+```
 
-`helm get values konfuzio > konfuzio.yaml`
+4. We will perform the migrations for the Database for PostgreSQL automatically.
 
-_Action 2_
 
-`helm upgrade kofuzio \`  
-`--version <new version> \`  
-`-f konfuzio.yaml \`  
-`--set konfuzio.migrations.enabled=true \`  
-`--set ...`  
 
 ## Docker
 
@@ -335,7 +332,8 @@ python manage.py init_user_permissions
 
 After completing these steps you can exit and remove the container.
 
-Note: The username used during the createsuperuser dialog must have the format of a valid e-mail in order to be able to login later.
+.. note::
+  The username used during the createsuperuser dialog must have the format of a valid e-mail in order to be able to login later.
 
 #### 5. Start the container
 In this example we start four containers. The first one to serve the Konfuzio web application. 
@@ -548,37 +546,7 @@ Click `SSO` on login page to log in to Konfuzio using keycloak
 
 ### Migrate an Extraction or Categorization AI
 
-This feature is only available for on-prem customers.
-
-### Download extraction AI from source instance
-
-In a first step the extraction AI needs to be downloaded from the target Konfuzio instance. In order to download the extraction AI you need to be a superuser.
-The extraction AI can be downloaded from the superuser AI page.
-
-![select_AI.png](./migration-between-konfuzio-server-instances/select_AI.png)
-
-Click on the extraction AI you want to migrate.
-
-![download_AI.png](./migration-between-konfuzio-server-instances/download_AI.png)
-
-Download the AI file.
-
-### Upload Extraction or Category AI to target instance
-
-Upload the downloaded extraction AI via superuser AI page.
-
-![upload_AI.png](./migration-between-konfuzio-server-instances/upload_AI.png)
-
-### Note:
-
-In case of an Extraction AI, a target category needs to be chosen. A project relation is made by means of choosing a "project - category" relation in "Available Category". No project should be assigned in the shown "Available projects" select box.
-In comparison for a Categorization AI the targe project has to be chosen from "Available projects".
-
-
-![create_label_sets.png](./migration-between-konfuzio-server-instances/create_label_sets.png)
-
-If you upload the extraction AI to a new project without the labels and label set, you need to enable "Create labels and templates" on the respective project. 
-
+Superusers can migrate Extraction and Categorization AIs via the webinterface. This is explained on [https://help.konfuzio.com](https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html). 
 
 ### Migrate a Project
 
