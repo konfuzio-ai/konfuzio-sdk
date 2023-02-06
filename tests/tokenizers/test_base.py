@@ -45,10 +45,6 @@ class TestAbstractTokenizer(unittest.TestCase):
         # DummyTokenizer definition
 
         class DummyTokenizer(AbstractTokenizer):
-            def fit(self, category: Category):
-                assert isinstance(category, Category)
-                pass
-
             def tokenize(self, document: Document):
                 assert isinstance(document, Document)
                 t0 = time.monotonic()
@@ -102,15 +98,6 @@ class TestAbstractTokenizer(unittest.TestCase):
     def test_string_representation(self):
         """Test string representation."""
         assert str(self.tokenizer) == "DummyTokenizer"
-
-    # def test_fit_input(self):
-    #     """Test input for the fit of the tokenizer."""
-    #     with self.assertRaises(AssertionError):
-    #         self.tokenizer.fit(self.document)
-
-    # def test_fit_output(self):
-    #     """Test output for the fit of the tokenizer."""
-    #     self.assertIsNone(self.tokenizer.fit(self.category_1))
 
     def test_tokenize_input(self):
         """Test input for the tokenize method."""
@@ -255,15 +242,6 @@ class TestListTokenizer(unittest.TestCase):
             label_set=cls.label_set,
             spans=[cls.span_1, cls.span_2],
         )
-
-    # def test_fit_input(self):
-    #     """Test input for the fit of the tokenizer."""
-    #     with self.assertRaises(AssertionError):
-    #         self.tokenizer.fit(self.document)
-
-    # def test_fit_output(self):
-    #     """Test output for the fit of the tokenizer."""
-    #     self.assertIsNone(self.tokenizer.fit(self.category_1))
 
     def test_tokenize_input(self):
         """Test input for the tokenize method."""

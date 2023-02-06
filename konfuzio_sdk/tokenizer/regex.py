@@ -32,11 +32,6 @@ class RegexTokenizer(AbstractTokenizer):
         """Compare RegexTokenizer with another Tokenizer."""
         return hash(self) == hash(other)
 
-    # def fit(self, category: Category):
-    #     """Fit the tokenizer accordingly with the Documents of the Category."""
-    #     assert sdk_isinstance(category, Category)
-    #     return self
-
     def tokenize(self, document: Document) -> Document:
         """
         Create Annotations with 1 Span based on the result of the Tokenizer.

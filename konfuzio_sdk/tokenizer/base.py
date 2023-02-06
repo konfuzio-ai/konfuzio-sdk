@@ -51,10 +51,6 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
     def __hash__(self):
         """Get unique hash for Tokenizer."""
 
-    # @abc.abstractmethod
-    # def fit(self, category: Category):
-    #     """Fit the tokenizer accordingly with the Documents of the Category."""
-
     @abc.abstractmethod
     def tokenize(self, document: Document):
         """Create Annotations with 1 Span based on the result of the Tokenizer."""
@@ -146,13 +142,6 @@ class ListTokenizer(AbstractTokenizer):
     def __hash__(self):
         """Get unique hash for ListTokenizer."""
         return hash(tuple(self.tokenizers))
-
-    # def fit(self, category: Category):
-    #     """Call fit on all tokenizers."""
-    #     assert sdk_isinstance(category, Category)
-
-    #     for tokenizer in self.tokenizers:
-    #         tokenizer.fit(category)
 
     def tokenize(self, document: Document) -> Document:
         """Run tokenize in the given order on a Document."""

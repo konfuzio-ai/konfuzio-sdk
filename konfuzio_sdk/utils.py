@@ -20,8 +20,6 @@ from PIL import Image
 
 from konfuzio_sdk import IMAGE_FILE, PDF_FILE, OFFICE_FILE, SUPPORTED_FILE_TYPES
 
-# from konfuzio_sdk.data import Document, Span, Annotation
-
 logger = logging.getLogger(__name__)
 
 
