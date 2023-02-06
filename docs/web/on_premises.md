@@ -3,112 +3,14 @@
 
 .. _Server Installation:
 
-# On-Premises Documentation
+# On-Premises Guide
 
 On-premises, also known as self-hosted, is a setup that allows Konfuzio to be implemented 100% on your own infrastructure. In practice, it means that you know where your data is stored, how it's handled and who gets hold of it. This is because you keep the data on your own servers.
 
 A common way to operate a production-ready and scalabe Konfuzio installation is via Kubernetens. An alternative deployment option is the [Single VM setup via Docker](/web/on_premises.html#alternative-deployment-options). We recommend to use the option which is more familiar to you. In general
 
-On-Premise Konfuzio installations allow to create Superuser accounts which can access all [Documents](https://help.konfuzio.com/modules/superuserdocuments/index.html), [Projects](https://help.konfuzio.com/modules/superuserprojects/index.html) and [AIs](https://help.konfuzio.com/modules/superuserais/index.html) via a dedicated view as well as creating custom [Roles](https://help.konfuzio.com/modules/superuserroles/index.html)
+On-Premise Konfuzio installations allow to create Superuser accounts which can access all [Documents](https://help.konfuzio.com/modules/administration/superuserdocuments/index.html), [Projects](https://help.konfuzio.com/modules/administration/superuserprojects/index.html) and [AIs](https://help.konfuzio.com/modules/administration/superuserais/index.html) via a dedicated view as well as creating custom [Roles](https://help.konfuzio.com/modules/administration/superuserroles/index.html)
 
-## Architectural Overview
-
-The diagram illustrates the components of a Konfuzio Server deployment. Optional components are represented by dashed lines. The numbers in brackets represent the minimal and maximal container count per component.
-
-.. mermaid::
-
-   graph TD
-      classDef client fill:#D5E8D4,stroke:#82B366,color:#000000;
-      classDef old_optional fill:#E1D5E7,stroke:#9673A6,color:#000000;
-      classDef optional fill:#DAE8FC,stroke:#6C8EBF,color:#000000,stroke-dasharray: 3 3;
-      
-      ip("Loadbalancer / Public IP")
-      smtp("SMTP Mailbox")
-      a("Database")
-      b("Task Queue")
-      c("File Storage")
-      worker("Generic Worker (1:n)")
-      web("Web & API (1:n)")
-      beats("Beats Worker (1:n)")
-      mail("Mail-Scan (0:1)")
-      
-      %% Outside references
-      smtp <-- Poll emails --> mail
-      ip <--> web
-      
-      %% Optional Containers
-      ocr("OCR (0:n)")
-      segmentation("Segmentation (0:n)")
-      summarization("Summarization (0:n)")
-      flower("Flower (0:1)")
-      
-      %% Server / Cluster
-      h0("Server 1")
-      h1("Server 2")
-      h2("Server 3")
-      h3("Server 4")
-      h4("Server 5")
-      i("...")
-      j("Server with GPU")
-
-      subgraph all["Private Network"]
-      subgraph databases["Persistent Container / Services"]
-      a
-      c
-      b
-      end
-      subgraph containers["Stateless Containers"]
-      mail
-      web
-      flower
-      worker
-      beats
-      subgraph optional["Optional Containers"]
-      ocr
-      segmentation
-      summarization
-      end
-      end
-      subgraph servers["Server / Cluster"]
-      h0
-      h1
-      h2
-      h3
-      h4
-      i
-      j
-      end    
-      worker <--> databases
-      worker -- Can delegate tasks--> optional
-      worker -- "Can process tasks"--> worker
-      web <--> databases
-      web <--> flower
-      flower <--> b
-      mail <--> databases
-      beats <--> databases
-      containers -- "Operated on"--> servers
-      databases -- "Can be operated on"--> servers
-      end
-      
-      click flower "/web/on_premises.html#optional-6-use-flower-to-monitor-tasks"
-      click web "/web/on_premises.html#start-the-container"
-      click worker "/web/on_premises.html#start-the-container"
-      click ocr "/web/on_premises.html#optional-7-use-azure-read-api-on-premise"
-      click segmentation "/web/on_premises.html#optional-8-install-document-segmentation-container"
-      click summarization "/web/on_premises.html#optional-9-install-document-summarization-container" 
-      
-      class flower optional
-      class ocr optional
-      class mail optional
-      class ocr optional
-      class segmentation optional
-      class summarization optional
-      class h1 optional
-      class h2 optional
-      class h3 optional
-      class h4 optional
-      class i optional
-      class j optional  
 
 ## Billing and License
 
@@ -237,7 +139,8 @@ _Include these options in your Helm install command:_
 By default this Konfuzio provides an in-cluster PostgreSQL database, for trial purposes
 only.
 
-**NOTE: This configuration is not recommended for use in production.**
+.. note::
+  Unless you are an expert in managing a PostgreSQL database within a cluster, we do not recommended this configuration for use in production.**
 
 - A single, non-resilient Deployment is used
 
@@ -355,26 +258,22 @@ We also recommend that you take a backup first.
 
 Upgrade Konfuzio following our standard procedure,with the following additions of:
 
-1. Check the change log for the specific version you would like to upgrade to
-2. Ensure that you have created a [PostgreSQL backup](https://www.postgresql.org/docs/11/backup.html) in the previous
-   step. Without a backup, Konfuzio data might be lost if the upgrade fails.
-3. Go through deployment section step by step
-4. Extract your previous `--set` arguments with (see Action1)
-5. Decide on all the values you need to set
-6. Perform the upgrade, with all `--set` arguments extracted(see Action 2)
-7. We will perform the migrations for the Database for PostgreSQL automatically.
+1.  Check the change log for the specific version you would like to upgrade to
+2.  Ensure that you have created a [PostgreSQL backup](https://www.postgresql.org/docs/11/backup.html) in the previous
+    step. Without a backup, Konfuzio data might be lost if the upgrade fails.
+3a. If you use a values.yaml, update image.tag="released-******" to the desired Konfuzio Server version.
+```
+helm install --upgrade my-konfuzio konfuzio-repo/konfuzio-chart -f values.yaml
+```
 
-_Action 1_
+3b. If you use "--set", you can directly set the desired Konfuzio Server version.
+```
+helm install --upgrade my-konfuzio konfuzio-repo/konfuzio-chart --reuse-values --set image.tag="released-******"
+```
 
-`helm get values konfuzio > konfuzio.yaml`
+4. We will perform the migrations for the Database for PostgreSQL automatically.
 
-_Action 2_
 
-`helm upgrade kofuzio \`  
-`--version <new version> \`  
-`-f konfuzio.yaml \`  
-`--set konfuzio.migrations.enabled=true \`  
-`--set ...`  
 
 ## Docker
 
@@ -433,7 +332,8 @@ python manage.py init_user_permissions
 
 After completing these steps you can exit and remove the container.
 
-Note: The username used during the createsuperuser dialog must have the format of a valid e-mail in order to be able to login later.
+.. note::
+  The username used during the createsuperuser dialog must have the format of a valid e-mail in order to be able to login later.
 
 #### 5. Start the container
 In this example we start four containers. The first one to serve the Konfuzio web application. 
@@ -646,37 +546,7 @@ Click `SSO` on login page to log in to Konfuzio using keycloak
 
 ### Migrate an Extraction or Categorization AI
 
-This feature is only available for on-prem customers.
-
-### Download extraction AI from source instance
-
-In a first step the extraction AI needs to be downloaded from the target Konfuzio instance. In order to download the extraction AI you need to be a superuser.
-The extraction AI can be downloaded from the superuser AI page.
-
-![select_AI.png](./migration-between-konfuzio-server-instances/select_AI.png)
-
-Click on the extraction AI you want to migrate.
-
-![download_AI.png](./migration-between-konfuzio-server-instances/download_AI.png)
-
-Download the AI file.
-
-### Upload Extraction or Category AI to target instance
-
-Upload the downloaded extraction AI via superuser AI page.
-
-![upload_AI.png](./migration-between-konfuzio-server-instances/upload_AI.png)
-
-### Note:
-
-In case of an Extraction AI, a target category needs to be chosen. A project relation is made by means of choosing a "project - category" relation in "Available Category". No project should be assigned in the shown "Available projects" select box.
-In comparison for a Categorization AI the targe project has to be chosen from "Available projects".
-
-
-![create_label_sets.png](./migration-between-konfuzio-server-instances/create_label_sets.png)
-
-If you upload the extraction AI to a new project without the labels and label set, you need to enable "Create labels and templates" on the respective project. 
-
+Superusers can migrate Extraction and Categorization AIs via the webinterface. This is explained on [https://help.konfuzio.com](https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html). 
 
 ### Migrate a Project
 
@@ -945,76 +815,10 @@ TASK_TRACK_STARTED=
 TASK_ACKS_ON_FAILURE_OR_TIMEOUT=
 TASK_ACKS_LATE=
 ```
-## Background processes
 
-Processes within our server are distributed between
-[Celery](https://docs.celeryq.dev/en/stable/) [workers](https://docs.celeryq.dev/en/stable/userguide/workers.html)
-between several [tasks](https://docs.celeryq.dev/en/stable/userguide/tasks.html). Together this creates the definition 
-of Servers internal workflow. Below the individual tasks of the Server's workflow are described in order of their 
-triggered events. Tasks are run in parallel queue's which are grouped in celery chords. While some tasks in each queue 
-run in parallel, some tasks are still dependent on others. And no next queue will start until all tasks in the queue are finished. 
-More on Celery workflows can be found here: https://docs.celeryq.dev/en/stable/userguide/canvas.html
+## Profiling
 
-### Queue's
-
-
-| id  | queue-name   |                   description                   |
-|-----|--------------|:-----------------------------------------------:|
-| 1   | `ocr`        |             ocr and post ocr tasks              |
-| 2   | `processing` |               non dependent tasks               |
-| 3   | `categorize` |              categorization tasks               |
-| 4   | `extract`    |              extraction after ocr               |
-| 5   | `finalize`   | end queue after OCR and extraction has occurred |
-| 6   | `training`   |              queue for AI training              |
-| 7   | `evaluation` |             queue for AI evaluation             |
-
-
-
-### Celery Tasks
-
-#### Document tasks
-
-Series of events & tasks triggered when uploading a Document
-
-| Queue | task id | task name                    | description                                                                                                     | default time limit |
-|-------|---------|------------------------------|-----------------------------------------------------------------------------------------------------------------|--------------------|
-| 1, 2  | 1       | page_ocr                     | Apply OCR to the documents page(s).                                                                             | 10 minutes         |
-| 1, 2  | 2       | page_image                   | Create png image for a page. If a PNG was submitted or already exists it will be returned without regeneration. | 10 minutes         |
-| 1     | 3       | set_document_text_and_bboxes | Collect the result of the pages OCR (OCR from task_id #1) and set text & bboxes.                                | 1 minute           |
-| 3     | 4       | categorize                   | Categorize the document.                                                                                        | 3 minutes          |
-| 4     | 5       | document_extract             | Extract the document using the AI models linked to the Project.                                                 | 60 minutes         |
-| 5     | 6       | build_sandwich               | Generates the pdfsandwich for a submitted PDF                                                                   | 30 minutes         |
-| 5     | 7       | generate_entities            | Generate entities for a document which are shown in the labeling tool.                                          | 60 minutes         |
-| 5     | 8       | set_labeling_available       | Sets the document available for labeling                                                                        | 10 minutes         |
-| 5     | 9       | get_hocr                     | Get hOCR representation for bboxes (bboxes from task_id #3).                                                    | 5 minutes          |
-
-#### Extraction & Category AI Training
-
-##### Extraction AI
-
-Series of events triggered when training an extraction AI
-
-| Queue | task id | task name           | description                                                                                                     | default time limit |
-|-------|---------|---------------------|-----------------------------------------------------------------------------------------------------------------|--------------------|
-| 2     | 1       | page_image          | Create png image for a page. If a PNG was submitted or already exists it will be returned without regeneration. | 10 minutes         |
-| 6     | 1       | train_extraction_ai | Start the training of the Ai model.                                                                             | 20 hours           |
-| 4     | 2       | document_extract    | Extract the document using the AI models linked to the Project.                                                 | 60 minutes         |
-| 7     | 3       | evaluate_ai_model   | Evaluate the trained Ai models performance.                                                                     | 60 minutes         |
-
-##### Category AI
-
-Series of events triggered when training a Categorization AI
-
-| Queue | task id | task name         | description                                                                                                     | default time limit |
-|-------|---------|-------------------|-----------------------------------------------------------------------------------------------------------------|--------------------|
-| 7     | 2       | train_category_ai | Start the training of the categorization model.                                                                 | 10 hours           |
-| 7, 3  | 3       | categorize        | Run the categorization against all Documents in the its category.                                               | 3 minutes          |
-| 7, 3  | 4       | evaluate_ai_model | Evaluate the categorization Ai models performance.                                                              | 60 hours           | 
-
-
-## Django-silk integration
-
-[Django-silk](https://github.com/jazzband/django-silk) is an integration into our server which offers a detailed
+[Django-silk](https://github.com/jazzband/django-silk) is an integration into Konfuzio Server which offers a detailed
 overview of time spend in the database or within the internal code. When trying to troubleshoot performance issues,
 wanting to understand where queries are made, or needing to cooperate with our support on technical problems, it may be
 useful to use the Django-silk profiling to analyze performance. 
@@ -1030,8 +834,6 @@ By default, only 15% of requests are being profiled, this can be changed to any 
 To avoid the database from filling up, only the past 10k requests are being kept, this can be changed to any value:
 
 - `SILKY_MAX_RECORDED_REQUESTS: 10000`
-
-### Profiling with Django silk
 
 After enabling Django silk, the dashboard will become available on `http://localhost:8000/silk` for users who are 
 logged in as superuser. The database can also be cleared by navigating to `http://localhost:8000/silk/cleardb/`. Do keep
