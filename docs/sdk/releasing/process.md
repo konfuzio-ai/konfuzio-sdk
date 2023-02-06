@@ -1,5 +1,5 @@
 
-# Internal release process
+## Internal release process
 
 Every day at 5:19 AM UTC (3:19 AM UTC+2, see code [here](https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/.github/workflows/nightly.yml)) a new nightly release of the SDK (master branch) is released to <https://pypi.org/project/konfuzio-sdk/#history>.
 
