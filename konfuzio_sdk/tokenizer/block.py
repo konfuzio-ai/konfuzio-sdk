@@ -1,4 +1,4 @@
-"""Sentence tokenizer."""
+"""Sentence and Paragraph tokenizers."""
 import logging
 import collections
 import time
@@ -12,16 +12,8 @@ from konfuzio_sdk.api import get_results_from_segmentation
 logger = logging.getLogger(__name__)
 
 
-class SentenceTokenizer(AbstractTokenizer):
-    """Tokenizer splitting Document into Sentences."""
-
-    def __init__(self, mode: str = 'detectron'):
-        """
-        Initialize Sentence Tokenizer.
-
-        :param mode: line_distance or detectron
-        """
-        self.mode = mode
+class BlockTokenizer(AbstractTokenizer):
+    """Block tokenizer for methods shared between Paragraph and Sentence tokenizers."""
 
     def __repr__(self):
         """Return string representation of the class."""
@@ -60,8 +52,8 @@ class SentenceTokenizer(AbstractTokenizer):
 
         return document
 
-    def _detectron_tokenize(self, document: Document) -> Document:
-        """Create one multiline Annotation per sentence detected in paragraph detected by detectron2."""
+    def _detectron_get_paragraph_bboxes(self, document: Document):
+        """Call detectron and use bbox information to get character bboxes corresponding to each paragraph."""
         assert isinstance(document.project.id_, int)
         doc_id = document.id_ if document.id_ else document.copy_of_id
         paragraph_bboxes = get_results_from_segmentation(doc_id, document.project.id_)
@@ -106,6 +98,140 @@ class SentenceTokenizer(AbstractTokenizer):
                             )
                         ].append(bbox)
                         break
+
+        return paragraph_char_bboxes
+
+    def found_spans(self, document: Document):
+        """Sentence found spans."""
+        pass
+
+
+class ParagraphTokenizer(BlockTokenizer):
+    """Tokenizer splitting Document into paragraphs."""
+
+    def __init__(self, mode: str = 'detectron'):
+        """
+        Initialize Paragraph Tokenizer.
+
+        :param mode: line_distance or detectron
+        """
+        self.mode = mode
+
+    def _detectron_tokenize(self, document: Document) -> Document:
+        """Create one multiline Annotation per paragraph detected by detectron2."""
+        paragraph_char_bboxes = self._detectron_get_paragraph_bboxes(document)
+
+        # create Spans for each line of characters, Annotation for each paragraph
+        for k, bboxes in paragraph_char_bboxes.items():
+            spans = []
+            line_bboxes = []
+            for bbox in bboxes:
+                if not line_bboxes or bbox['line_number'] == line_bboxes[0]['line_number']:
+                    line_bboxes.append(bbox)
+                    continue
+                else:
+                    spans.append(
+                        Span(start_offset=line_bboxes[0]['char_index'], end_offset=line_bboxes[-1]['char_index'] + 1)
+                    )
+                    line_bboxes = [bbox]
+            spans.append(Span(start_offset=line_bboxes[0]['char_index'], end_offset=line_bboxes[-1]['char_index'] + 1))
+
+            _ = Annotation(
+                document=document,
+                annotation_set=document.no_label_annotation_set,
+                label=document.project.no_label,
+                label_set=document.project.no_label_set,
+                category=document.category,
+                spans=spans,
+            )
+
+        return document
+
+    def _line_distance_tokenize(self, document: Document) -> Document:
+        """Create one multiline Annotation per paragraph detected by line distance based rule based algorithm."""
+        height = None
+        line_height_ratio = 0.8
+        if height is not None:
+            if not (isinstance(height, int) or isinstance(height, float)):
+                raise TypeError(f'Parameter must be of type int or float. It is {type(height)}.')
+
+        from statistics import median
+
+        # assemble bboxes by their page
+        pages_char_bboxes = [[] for _ in document.pages()]
+        for char_index, bbox in document.get_bbox().items():
+            bbox['char_index'] = int(char_index)
+            pages_char_bboxes[bbox['page_number'] - 1].append(bbox)
+
+        for page_char_bboxes in pages_char_bboxes:
+            # assemble bboxes by line and Page
+            page_lines = []
+            line_bboxes = []
+            for bbox in sorted(page_char_bboxes, key=lambda x: x['char_index']):
+                if not line_bboxes or line_bboxes[-1]['line_number'] == bbox['line_number']:
+                    line_bboxes.append(bbox)
+                else:
+                    page_lines.append(line_bboxes)
+                    line_bboxes = [bbox]
+            page_lines.append(line_bboxes)
+
+            # set line_threshold
+            if height is None:
+                # calculate median vertical character size for Page
+                line_threshold = round(
+                    line_height_ratio * median(bbox['y1'] - bbox['y0'] for bbox in page_char_bboxes),
+                    6,
+                )
+            else:
+                line_threshold = height
+
+            # go through lines to find paragraphs
+            previous_y0 = None
+            paragraph_spans = []
+            for line in page_lines:
+                assert line[0]['line_number'] == line[-1]['line_number']
+                max_y1 = max([bbox['y1'] for bbox in line])
+                min_y0 = min([bbox['y0'] for bbox in line])
+                span = Span(start_offset=line[0]['char_index'], end_offset=line[-1]['char_index'] + 1)
+                if not paragraph_spans or previous_y0 - max_y1 < line_threshold:
+                    paragraph_spans.append(span)
+                else:
+                    _ = Annotation(
+                        document=document,
+                        annotation_set=document.no_label_annotation_set,
+                        label=document.project.no_label,
+                        label_set=document.project.no_label_set,
+                        category=document.category,
+                        spans=paragraph_spans,
+                    )
+                    paragraph_spans = [span]
+
+                previous_y0 = min_y0
+            _ = Annotation(
+                document=document,
+                annotation_set=document.no_label_annotation_set,
+                label=document.project.no_label,
+                label_set=document.project.no_label_set,
+                category=document.category,
+                spans=paragraph_spans,
+            )
+        return document
+
+
+class SentenceTokenizer(BlockTokenizer):
+    """Tokenizer splitting Document into Sentences."""
+
+    def __init__(self, mode: str = 'detectron'):
+        """
+        Initialize Sentence Tokenizer.
+
+        :param mode: line_distance or detectron
+        """
+        self.mode = mode
+
+    def _detectron_tokenize(self, document: Document) -> Document:
+        """Create one multiline Annotation per sentence detected in paragraph detected by detectron2."""
+        paragraph_char_bboxes = self._detectron_get_paragraph_bboxes(document)
 
         for k, bboxes in paragraph_char_bboxes.items():
             spans = []
@@ -240,7 +366,3 @@ class SentenceTokenizer(AbstractTokenizer):
             )
 
         return document
-
-    def found_spans(self, document: Document):
-        """Sentence found spans."""
-        pass

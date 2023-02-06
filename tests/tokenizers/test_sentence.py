@@ -5,7 +5,7 @@ import unittest
 from copy import deepcopy
 from konfuzio_sdk.data import Project
 
-from konfuzio_sdk.tokenizer.sentence import SentenceTokenizer
+from konfuzio_sdk.tokenizer.block import SentenceTokenizer
 
 
 logger = logging.getLogger(__name__)
