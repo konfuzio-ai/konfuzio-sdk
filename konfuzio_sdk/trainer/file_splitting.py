@@ -237,7 +237,8 @@ class FusionModel(AbstractFileSplittingModel):
         logger.info('FusionModel compiling started.')
         # we combine an output of a simplified VGG19 architecture for image processing (read more about it
         # at https://iq.opengenus.org/vgg19-architecture/) and an output of BERT in an MLP-like
-        # architecture (read more about it at http://shorturl.at/puKN3)
+        # architecture (read more about it at http://shorturl.at/puKN3). a scheme of our custom architecture can be
+        # found at https://dev.konfuzio.com/sdk/tutorials.html#splitting-for-multi-file-documents-step-by-step-guide
         txt_input = Input(shape=self.input_shape, name='text')
         txt_x = Dense(units=768, activation="relu")(txt_input)
         txt_x = Flatten()(txt_x)

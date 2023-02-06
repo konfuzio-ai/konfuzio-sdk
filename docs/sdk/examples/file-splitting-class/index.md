@@ -10,9 +10,20 @@ method for identifying and splitting them into individual, independent Sub-docum
 
 _Multi-file Document Example_
 
-In this section, we will explore an easy method for identifying and separating Documents that may be included in a 
-single file. Our approach involves analyzing the contents of each Page and identifying similarities to the first Pages 
-of the Document. This will allow us to define splitting points and divide the Document into multiple Sub-documents. It's
+Konfuzio SDK offers two ways for separating Documents that may be included in a single file. One of them is training 
+ the instance of the Fusion model for file splitting that would predict whether a Page is first or not and running the 
+SplittingAI with it. Fusion model is a combined approach based on architecture that processes textual and visual data
+from the Documents separately (in our case, using BERT and VGG19 simplified archtectures respectively) and then combines 
+the outputs which go into a Multi-layer Perceptron architecture as inputs. A more detailed scheme of the architecture
+can be found further.
+
+If you hover over the image you can zoom or use the full page mode.
+
+<div class="mxgraph" style="max-width:100%;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;toolbar&quot;:&quot;zoom layers tags lightbox&quot;,&quot;edit&quot;:&quot;_blank&quot;,&quot;url&quot;:&quot;https://raw.githubusercontent.com/konfuzio-ai/konfuzio-sdk/master/docs/sdk/examples/file-splitting-class/fusion_model.drawio&quot;}"></div>
+<script type="text/javascript" src="https://viewer.diagrams.net/embed2.js?&fetch=https%3A%2F%2Fraw.githubusercontent.com%2Fkonfuzio-ai%2Fkonfuzio-sdk%2Fmaster%2Fdocs%2Fsdk%2Fexamples%2Ffile-splitting-class%2Ffusion_model.drawio"></script>
+
+Another approach is Context-aware file-splitting logic. This approach involves analyzing the contents of each Page and identifying similarities to the first Pages 
+of the Document. It will allow us to define splitting points and divide the Document into multiple Sub-documents. It's
 important to note that this approach is only effective for Documents written in the same language and that the process 
 must be repeated for each Category.
 
