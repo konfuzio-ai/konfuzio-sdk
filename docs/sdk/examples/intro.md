@@ -1,5 +1,7 @@
 ## Example Usage
 
+Make sure to set up your Project (so that you can retrieve the Project ID) using our [Konfuzio Guide](https://help.konfuzio.com/tutorials/quickstart/index.html).
+
 ### Project
 
 Retrieve all information available for your project:
