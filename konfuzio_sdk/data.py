@@ -1592,7 +1592,7 @@ class Annotation(Data):
         :param document_annotations: Annotations in the Document (list)
         :return: True if new Annotation was created
         """
-        if self.document.category.name == self.document.project.no_category.name:
+        if self.document.category == self.document.project.no_category:
             raise ValueError(f"You cannot save Annotations of Documents with {self.document.category}.")
         new_annotation_added = False
         if not self.label_set:
@@ -1795,7 +1795,7 @@ class Document(Data):
         elif category:
             self.category = category
         else:
-            self.category = Category(project=project, name="NO_CATEGORY", name_clean="NO_CATEGORY")
+            self.category = project.no_category
 
         if updated_at:
             self.updated_at = dateutil.parser.isoparse(updated_at)
@@ -2346,7 +2346,7 @@ class Document(Data):
             # Hotfix Text Annotation Server:
             #  Annotation belongs to a Label / Label Set that does not relate to the Category of the Document.
             # todo: add test that the Label and Label Set of an Annotation belong to the Category of the Document
-            if self.category.name != self.project.no_category.name:
+            if self.category != self.project.no_category:
                 if annotation.label_set is not None:
                     if annotation.label_set.categories:
                         if self.category in annotation.label_set.categories:
@@ -2774,7 +2774,7 @@ class Document(Data):
             with open(self.annotation_file_path, 'r') as f:
                 raw_annotations = json.load(f)
 
-            if self.category.name == self.project.no_category.name:
+            if self.category == self.project.no_category:
                 raw_annotations = [
                     annotation for annotation in raw_annotations if annotation['label_text'] == 'NO_LABEL'
                 ]
@@ -2794,7 +2794,7 @@ class Document(Data):
                 with open(self.annotation_file_path, 'r') as f:
                     raw_annotations = json.load(f)
 
-                if self.category.name == self.project.no_category.name:
+                if self.category == self.project.no_category:
                     raw_annotations = [
                         annotation for annotation in raw_annotations if annotation['label_text'] == 'NO_LABEL'
                     ]
@@ -2903,13 +2903,12 @@ class Project(Data):
         self.labels_file_path = os.path.join(self.project_folder, "labels.json5")
         self.label_sets_file_path = os.path.join(self.project_folder, "label_sets.json5")
 
+        self.no_category = None
+
         if self.id_ or self._project_folder:
             self.get(update=update)
 
         # todo: list of Categories related to NO LABEL SET can be outdated, i.e. if the number of Categories changes
-        self.no_category = Category(project=self)
-        self.no_category.name_clean = "NO_CATEGORY"
-        self.no_category.name = "NO_CATEGORY"
         self.no_label_set = LabelSet(project=self, categories=self.categories)
         self.no_label_set.name_clean = 'NO_LABEL_SET'
         self.no_label_set.name = 'NO_LABEL_SET'
@@ -3011,7 +3010,11 @@ class Project(Data):
         pathlib.Path(self.documents_folder).mkdir(parents=True, exist_ok=True)
         pathlib.Path(self.regex_folder).mkdir(parents=True, exist_ok=True)
         pathlib.Path(self.model_folder).mkdir(parents=True, exist_ok=True)
-
+        # adding a NO_CATEGORY at this step because we need to preserve it after Project is updated
+        if "NO_CATEGORY" not in [category.name for category in self.categories]:
+            self.no_category = Category(project=self)
+            self.no_category.name_clean = "NO_CATEGORY"
+            self.no_category.name = "NO_CATEGORY"
         if self.id_ and (not is_file(self.meta_file_path, raise_exception=False) or update):
             self.write_project_files()
         self.get_meta(reload=True)

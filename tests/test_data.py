@@ -1297,7 +1297,7 @@ class TestOfflineDataSetup(unittest.TestCase):
 
         # Add annotation for the first time
         span = Span(start_offset=1, end_offset=2)
-        with pytest.raises(ValueError, match="where the category is NO_CATEGORY"):
+        with pytest.raises(ValueError, match="where the category is None"):
             _ = Annotation(
                 document=document,
                 is_correct=True,
@@ -1768,7 +1768,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_category(self):
         """Test if Category of main Label Set is initialized correctly."""
-        assert len(self.prj.categories) == 4
+        assert len(self.prj.categories) == 2
         assert self.prj.categories[0].id_ == 63
         assert self.prj.label_sets[0].categories[0].id_ == 63
 
@@ -1841,7 +1841,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_categories(self):
         """Test get Labels in the Project."""
-        assert self.prj.categories.__len__() == 4
+        assert self.prj.categories.__len__() == 2
         payslips_category = self.prj.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID)
         assert payslips_category.name == 'Lohnabrechnung'
         # We have 5 Label Sets, Lohnabrechnung is Category and a Label Set as it hold labels, however a Category
@@ -2435,28 +2435,16 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         # There is no regex available.
         assert len(automated_regex_for_label) == 0
 
-    def test_save_annotation_for_no_category_document(self):
-        """Test saving annotation error for no-category Document."""
-        project = LocalTextProject()
-        test_document = project.get_document_by_id(19)
-        label = project.no_label
-        label_set = project.no_label_set
-        span = Span(start_offset=1, end_offset=2)
-        annotation_set = AnnotationSet(document=test_document, label_set=label_set)
-        _ = Annotation(
-            label=label, annotation_set=annotation_set, label_set=label_set, document=test_document, spans=[span]
-        )
-        with pytest.raises(ValueError, match='You cannot save Annotations of Documents with'):
-            _.save()
-
     def test_add_annotation_for_no_category_document(self):
         """Test adding Annotation error for no-category Document."""
         project = LocalTextProject()
         test_document = project.get_document_by_id(19)
         label = Label(project=project)
+        test_document.category = project.get_category_by_id(3)
         label_set = LabelSet(project=project, categories=[test_document.category])
         span = Span(start_offset=1, end_offset=2)
         annotation_set = AnnotationSet(document=test_document, label_set=label_set)
+        test_document.category = project.no_category
         with pytest.raises(ValueError, match='where the category is'):
             _ = Annotation(
                 label=label, annotation_set=annotation_set, label_set=label_set, document=test_document, spans=[span]
