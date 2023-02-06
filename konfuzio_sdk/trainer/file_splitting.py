@@ -127,7 +127,6 @@ class FusionModel(AbstractFileSplittingModel):
     https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=9684474
     """
 
-    # todo scheme of the architecture
     def __init__(self, categories: List[Category], *args, **kwargs):
         """Initialize the Fusion filesplitting model."""
         logging.info('Initializing FusionModel.')
@@ -283,8 +282,6 @@ class FusionModel(AbstractFileSplittingModel):
             else:
                 raise ValueError('Fitting on the GPU is impossible because there is no GPU available on the device.')
         logger.info('FusionModel fitting finished.')
-
-        #  switch to usage of tf where possible / get rid of keras if possible
 
     def predict(self, page: Page, use_gpu: bool = False) -> Page:
         """
