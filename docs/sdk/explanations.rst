@@ -16,4 +16,6 @@ Explanations
 
 .. mdinclude:: coordinates_system.md
 
+.. mdinclude:: merging_of_predicted_annotations/index.md
+
 .. mdinclude:: releasing/process.md
