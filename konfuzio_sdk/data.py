@@ -144,7 +144,7 @@ class Page(Data):
 
     def __hash__(self):
         """Define that one Page per Document is unique."""
-        return (self.document, self.index)
+        return hash((self.document, self.index))
 
     def __eq__(self, other: 'Page') -> bool:
         """Define how one Page is identical."""
@@ -325,7 +325,7 @@ class Bbox:
 
     def __hash__(self):
         """Return identical value for a Bounding Box."""
-        return (self.x0, self.x1, self.y0, self.y1, self.page)
+        return hash((self.x0, self.x1, self.y0, self.y1, self.page))
 
     def __eq__(self, other: 'Bbox') -> bool:
         """Define that one Bounding Box on the same page is identical."""

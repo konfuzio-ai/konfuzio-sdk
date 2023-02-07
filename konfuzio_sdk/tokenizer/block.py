@@ -59,18 +59,25 @@ class BlockTokenizer(AbstractTokenizer):
         """Call detectron and use bbox information to get character bboxes corresponding to each paragraph."""
         assert isinstance(document.project.id_, int)
         doc_id = document.id_ if document.id_ else document.copy_of_id
-        paragraph_bboxes = get_results_from_segmentation(doc_id, document.project.id_)
+        detectron_paragraph_bboxes = get_results_from_segmentation(doc_id, document.project.id_)
 
-        assert len(paragraph_bboxes) == document.number_of_pages
+        assert len(detectron_paragraph_bboxes) == document.number_of_pages
 
-        # normalize
+        paragraph_bboxes: List[List[Bbox]] = []
         for i, page in enumerate(document.pages()):
+            paragraph_bboxes.append([])
+            page = document.get_page_by_index(i)
             scale_factor = page.height / page.full_height
-            for bbox in paragraph_bboxes[i]:
-                bbox['x0'] *= scale_factor
-                bbox['x1'] *= scale_factor
-                bbox['y0'] *= scale_factor
-                bbox['y1'] *= scale_factor
+            for bbox in detectron_paragraph_bboxes[i]:
+                paragraph_bboxes[-1].append(
+                    Bbox(
+                        x0=bbox['x0'] * scale_factor,
+                        x1=bbox['x1'] * scale_factor,
+                        y0=bbox['y0'] * scale_factor,
+                        y1=bbox['y1'] * scale_factor,
+                        page=page,
+                    )
+                )
 
         # assemble characters by their page
         pages_char_bboxes: List[List[Dict]] = [[] for _ in document.pages()]
@@ -87,19 +94,12 @@ class BlockTokenizer(AbstractTokenizer):
             for bbox in sorted(page_char_booxes, key=lambda x: x['char_index']):
                 for paragraph_bbox in page_paragraph_bboxes:
                     if (
-                        bbox['x0'] <= paragraph_bbox['x1']
-                        and bbox['x1'] >= paragraph_bbox['x0']
-                        and page.height - bbox['y0'] <= paragraph_bbox['y1']
-                        and page.height - bbox['y1'] >= paragraph_bbox['y0']
+                        bbox['x0'] <= paragraph_bbox.x1
+                        and bbox['x1'] >= paragraph_bbox.x0
+                        and page.height - bbox['y0'] <= paragraph_bbox.y1
+                        and page.height - bbox['y1'] >= paragraph_bbox.y0
                     ):
-                        paragraph_char_bboxes[
-                            (
-                                int(paragraph_bbox['x0']),
-                                int(paragraph_bbox['x1']),
-                                int(paragraph_bbox['y0']),
-                                int(paragraph_bbox['y1']),
-                            )
-                        ].append(bbox)
+                        paragraph_char_bboxes[paragraph_bbox].append(bbox)
                         break
 
         return paragraph_char_bboxes
