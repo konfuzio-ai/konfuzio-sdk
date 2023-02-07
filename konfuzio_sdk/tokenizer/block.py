@@ -1,9 +1,11 @@
 """Sentence and Paragraph tokenizers."""
 import logging
+import abc
+from typing import List, Dict
 import collections
 import time
 
-from konfuzio_sdk.data import Annotation, Document, Span
+from konfuzio_sdk.data import Annotation, Document, Span, Bbox
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer, ProcessingStep
 
 from konfuzio_sdk.utils import sdk_isinstance
@@ -15,6 +17,11 @@ logger = logging.getLogger(__name__)
 class BlockTokenizer(AbstractTokenizer):
     """Block tokenizer for methods shared between Paragraph and Sentence tokenizers."""
 
+    def __init__(self, mode: str, line_height_ratio: float):
+        """Initialize Block Tokenizer."""
+        self.mode = mode
+        self.line_height_ratio = line_height_ratio
+
     def __repr__(self):
         """Return string representation of the class."""
         return f"{self.__class__.__name__}: {self.mode=}"
@@ -22,10 +29,6 @@ class BlockTokenizer(AbstractTokenizer):
     def __hash__(self):
         """Get unique hash for RegexTokenizer."""
         return hash(repr(self))
-
-    def __eq__(self, other) -> bool:
-        """Compare Tokenizer with another Tokenizer."""
-        return hash(self) == hash(other)
 
     def tokenize(self, document: Document) -> Document:
         """Create one multiline Annotation per paragraph detected."""
@@ -52,7 +55,7 @@ class BlockTokenizer(AbstractTokenizer):
 
         return document
 
-    def _detectron_get_paragraph_bboxes(self, document: Document):
+    def _detectron_get_paragraph_bboxes(self, document: Document) -> Dict[Bbox, List[Dict]]:
         """Call detectron and use bbox information to get character bboxes corresponding to each paragraph."""
         assert isinstance(document.project.id_, int)
         doc_id = document.id_ if document.id_ else document.copy_of_id
@@ -62,15 +65,15 @@ class BlockTokenizer(AbstractTokenizer):
 
         # normalize
         for i, page in enumerate(document.pages()):
-            scale_mult = page.height / page.full_height
+            scale_factor = page.height / page.full_height
             for bbox in paragraph_bboxes[i]:
-                bbox['x0'] *= scale_mult
-                bbox['x1'] *= scale_mult
-                bbox['y0'] *= scale_mult
-                bbox['y1'] *= scale_mult
+                bbox['x0'] *= scale_factor
+                bbox['x1'] *= scale_factor
+                bbox['y0'] *= scale_factor
+                bbox['y1'] *= scale_factor
 
         # assemble characters by their page
-        pages_char_bboxes = [[] for _ in document.pages()]
+        pages_char_bboxes: List[List[Dict]] = [[] for _ in document.pages()]
         for char_index, bbox in document.get_bbox().items():
             bbox['char_index'] = int(char_index)
             pages_char_bboxes[bbox['page_number'] - 1].append(bbox)
@@ -101,6 +104,14 @@ class BlockTokenizer(AbstractTokenizer):
 
         return paragraph_char_bboxes
 
+    @abc.abstractmethod
+    def _line_distance_tokenize(self, document: Document, height=None) -> Document:
+        """Use line distance rule based algorithm to perform tokenization."""
+
+    @abc.abstractmethod
+    def _detectron_tokenize(self, document: Document) -> Document:
+        """Use Detectron endpoint to perform tokenization."""
+
     def found_spans(self, document: Document):
         """Sentence found spans."""
         pass
@@ -109,20 +120,20 @@ class BlockTokenizer(AbstractTokenizer):
 class ParagraphTokenizer(BlockTokenizer):
     """Tokenizer splitting Document into paragraphs."""
 
-    def __init__(self, mode: str = 'detectron'):
+    def __init__(self, mode: str = 'detectron', line_height_ratio: float = 0.8):
         """
         Initialize Paragraph Tokenizer.
 
         :param mode: line_distance or detectron
         """
-        self.mode = mode
+        super().__init__(mode=mode, line_height_ratio=line_height_ratio)
 
     def _detectron_tokenize(self, document: Document) -> Document:
         """Create one multiline Annotation per paragraph detected by detectron2."""
         paragraph_char_bboxes = self._detectron_get_paragraph_bboxes(document)
 
         # create Spans for each line of characters, Annotation for each paragraph
-        for k, bboxes in paragraph_char_bboxes.items():
+        for _, bboxes in paragraph_char_bboxes.items():
             spans = []
             line_bboxes = []
             for bbox in bboxes:
@@ -150,7 +161,6 @@ class ParagraphTokenizer(BlockTokenizer):
     def _line_distance_tokenize(self, document: Document) -> Document:
         """Create one multiline Annotation per paragraph detected by line distance based rule based algorithm."""
         height = None
-        line_height_ratio = 0.8
         if height is not None:
             if not (isinstance(height, int) or isinstance(height, float)):
                 raise TypeError(f'Parameter must be of type int or float. It is {type(height)}.')
@@ -179,7 +189,7 @@ class ParagraphTokenizer(BlockTokenizer):
             if height is None:
                 # calculate median vertical character size for Page
                 line_threshold = round(
-                    line_height_ratio * median(bbox['y1'] - bbox['y0'] for bbox in page_char_bboxes),
+                    self.line_height_ratio * median(bbox['y1'] - bbox['y0'] for bbox in page_char_bboxes),
                     6,
                 )
             else:
@@ -221,18 +231,19 @@ class ParagraphTokenizer(BlockTokenizer):
 class SentenceTokenizer(BlockTokenizer):
     """Tokenizer splitting Document into Sentences."""
 
-    def __init__(self, mode: str = 'detectron'):
+    def __init__(self, mode: str = 'detectron', line_height_ratio: float = 0.8):
         """
         Initialize Sentence Tokenizer.
 
         :param mode: line_distance or detectron
         """
-        self.mode = mode
+        super().__init__(mode=mode, line_height_ratio=line_height_ratio)
+        self.punctuation = {'.', '!', '?'}
 
     def _detectron_tokenize(self, document: Document) -> Document:
         """Create one multiline Annotation per sentence detected in paragraph detected by detectron2."""
         paragraph_char_bboxes = self._detectron_get_paragraph_bboxes(document)
-
+        # more comments
         for k, bboxes in paragraph_char_bboxes.items():
             spans = []
             line_bboxes = []
@@ -278,7 +289,6 @@ class SentenceTokenizer(BlockTokenizer):
 
     def _line_distance_tokenize(self, document: Document, height=None) -> Document:
         """Create one multiline Annotation per sentence in paragraph detected by line distance based rule based algo."""
-        line_height_ratio = 0.8
         if height is not None:
             if not (isinstance(height, int) or isinstance(height, float)):
                 raise TypeError(f'Parameter must be of type int or float. It is {type(height)}.')
@@ -296,7 +306,7 @@ class SentenceTokenizer(BlockTokenizer):
             if height is None:
                 # calculate median vertical character size for Page
                 line_threshold = round(
-                    line_height_ratio * median(bbox['y1'] - bbox['y0'] for bbox in page_char_bboxes),
+                    self.line_height_ratio * median(bbox['y1'] - bbox['y0'] for bbox in page_char_bboxes),
                     6,
                 )
             else:
@@ -330,7 +340,7 @@ class SentenceTokenizer(BlockTokenizer):
                     )
                     sentence_spans = []
                 for bbox in line:
-                    if span_bboxes and span_bboxes[-1]['text'] in {'.', '!', '?'}:
+                    if span_bboxes and span_bboxes[-1]['text'] in self.punctuation:
                         sentence_spans.append(
                             Span(
                                 start_offset=span_bboxes[0]['char_index'], end_offset=span_bboxes[-1]['char_index'] + 1

@@ -28,10 +28,6 @@ class RegexTokenizer(AbstractTokenizer):
         """Get unique hash for RegexTokenizer."""
         return hash(repr(self.regex))
 
-    def __eq__(self, other) -> bool:
-        """Compare RegexTokenizer with another Tokenizer."""
-        return hash(self) == hash(other)
-
     def tokenize(self, document: Document) -> Document:
         """
         Create Annotations with 1 Span based on the result of the Tokenizer.

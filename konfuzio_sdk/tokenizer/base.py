@@ -43,9 +43,9 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
         """Return string representation of the class."""
         return f"{self.__class__.__name__}"
 
-    @abc.abstractmethod
     def __eq__(self, other) -> bool:
         """Check if two Tokenizers are the same."""
+        return hash(self) == hash(other)
 
     @abc.abstractmethod
     def __hash__(self):
