@@ -55,8 +55,8 @@ class BlockTokenizer(AbstractTokenizer):
 
         return document
 
-    def _detectron_get_paragraph_bboxes(self, document: Document) -> Dict[Bbox, List[Dict]]:
-        """Call detectron and use bbox information to get character bboxes corresponding to each paragraph."""
+    def _detectron_get_paragraph_bbox(self, document: Document) -> Dict[Bbox, List[Dict]]:
+        """Call detectron Bbox corresponding to each paragraph."""
         assert isinstance(document.project.id_, int)
         doc_id = document.id_ if document.id_ else document.copy_of_id
         detectron_paragraph_bboxes = get_results_from_segmentation(doc_id, document.project.id_)
@@ -78,31 +78,9 @@ class BlockTokenizer(AbstractTokenizer):
                         page=page,
                     )
                 )
+        assert len(document.pages()) == len(paragraph_bboxes)
 
-        # assemble characters by their page
-        pages_char_bboxes: List[List[Dict]] = [[] for _ in document.pages()]
-        for char_index, bbox in document.get_bbox().items():
-            bbox['char_index'] = int(char_index)
-            pages_char_bboxes[bbox['page_number'] - 1].append(bbox)
-
-        assert len(pages_char_bboxes) == len(paragraph_bboxes)
-
-        # assemble character by their pargraph
-        paragraph_char_bboxes = collections.defaultdict(list)
-        for i, (page_char_booxes, page_paragraph_bboxes) in enumerate(zip(pages_char_bboxes, paragraph_bboxes)):
-            page = document.get_page_by_index(i)
-            for bbox in sorted(page_char_booxes, key=lambda x: x['char_index']):
-                for paragraph_bbox in page_paragraph_bboxes:
-                    if (
-                        bbox['x0'] <= paragraph_bbox.x1
-                        and bbox['x1'] >= paragraph_bbox.x0
-                        and page.height - bbox['y0'] <= paragraph_bbox.y1
-                        and page.height - bbox['y1'] >= paragraph_bbox.y0
-                    ):
-                        paragraph_char_bboxes[paragraph_bbox].append(bbox)
-                        break
-
-        return paragraph_char_bboxes
+        return paragraph_bboxes
 
     @abc.abstractmethod
     def _line_distance_tokenize(self, document: Document, height=None) -> Document:
@@ -130,31 +108,67 @@ class ParagraphTokenizer(BlockTokenizer):
 
     def _detectron_tokenize(self, document: Document) -> Document:
         """Create one multiline Annotation per paragraph detected by detectron2."""
-        paragraph_char_bboxes = self._detectron_get_paragraph_bboxes(document)
+        paragraph_bboxes = self._detectron_get_paragraph_bbox(document)
 
-        # create Spans for each line of characters, Annotation for each paragraph
-        for _, bboxes in paragraph_char_bboxes.items():
-            spans = []
-            line_bboxes = []
-            for bbox in bboxes:
-                if not line_bboxes or bbox['line_number'] == line_bboxes[0]['line_number']:
-                    line_bboxes.append(bbox)
-                    continue
-                else:
-                    spans.append(
-                        Span(start_offset=line_bboxes[0]['char_index'], end_offset=line_bboxes[-1]['char_index'] + 1)
-                    )
-                    line_bboxes = [bbox]
-            spans.append(Span(start_offset=line_bboxes[0]['char_index'], end_offset=line_bboxes[-1]['char_index'] + 1))
+        for i, (page, page_paragraph_bboxes) in enumerate(zip(document.pages(), paragraph_bboxes)):
+            page = document.get_page_by_index(i)
+            paragraph_span_bboxes = collections.defaultdict(list)
+            curr_paragraph = None
+            paragraph_anns: Dict[Bbox, Annotation] = {}
+            for bbox in sorted(page.get_bbox(), key=lambda x: x['char_index']):
 
-            _ = Annotation(
-                document=document,
-                annotation_set=document.no_label_annotation_set,
-                label=document.project.no_label,
-                label_set=document.project.no_label_set,
-                category=document.category,
-                spans=spans,
-            )
+                for paragraph_bbox in page_paragraph_bboxes:
+                    if (
+                        bbox['x0'] <= paragraph_bbox.x1
+                        and bbox['x1'] >= paragraph_bbox.x0
+                        and page.height - bbox['y0'] <= paragraph_bbox.y1
+                        and page.height - bbox['y1'] >= paragraph_bbox.y0
+                    ):
+                        if not curr_paragraph:
+                            curr_paragraph = paragraph_bbox
+                        if paragraph_span_bboxes[curr_paragraph] and (
+                            (paragraph_span_bboxes[curr_paragraph][-1]['line_number'] != bbox['line_number'])
+                            or (paragraph_bbox is not curr_paragraph)
+                        ):
+                            span = Span(
+                                start_offset=paragraph_span_bboxes[curr_paragraph][0]['char_index'],
+                                end_offset=paragraph_span_bboxes[curr_paragraph][-1]['char_index'] + 1,
+                            )
+                            if curr_paragraph not in paragraph_anns:
+                                annotation = Annotation(
+                                    document=document,
+                                    annotation_set=document.no_label_annotation_set,
+                                    label=document.project.no_label,
+                                    label_set=document.project.no_label_set,
+                                    category=document.category,
+                                    spans=[span],
+                                )
+                                paragraph_anns[curr_paragraph] = annotation
+                            else:
+                                paragraph_anns[curr_paragraph].add_span(span)
+                            paragraph_span_bboxes[curr_paragraph] = []
+
+                            curr_paragraph = paragraph_bbox
+                            paragraph_span_bboxes[curr_paragraph] = [bbox]
+                        else:
+                            paragraph_span_bboxes[curr_paragraph].append(bbox)
+                        break
+
+            for paragraph_bbox, span_bboxes in paragraph_span_bboxes.items():
+                if span_bboxes:
+                    span = Span(start_offset=span_bboxes[0]['char_index'], end_offset=span_bboxes[-1]['char_index'] + 1)
+                    if paragraph_bbox not in paragraph_anns:
+                        annotation = Annotation(
+                            document=document,
+                            annotation_set=document.no_label_annotation_set,
+                            label=document.project.no_label,
+                            label_set=document.project.no_label_set,
+                            category=document.category,
+                            spans=[span],
+                        )
+                        paragraph_anns[curr_paragraph] = annotation
+                    else:
+                        paragraph_anns[curr_paragraph].add_span(span)
 
         return document
 
@@ -241,49 +255,83 @@ class SentenceTokenizer(BlockTokenizer):
         self.punctuation = {'.', '!', '?'}
 
     def _detectron_tokenize(self, document: Document) -> Document:
-        """Create one multiline Annotation per sentence detected in paragraph detected by detectron2."""
-        paragraph_char_bboxes = self._detectron_get_paragraph_bboxes(document)
-        # more comments
-        for k, bboxes in paragraph_char_bboxes.items():
-            spans = []
-            line_bboxes = []
-            for bbox in bboxes:
-                if not line_bboxes or bbox['line_number'] == line_bboxes[0]['line_number']:
-                    line_bboxes.append(bbox)
-                else:
-                    spans.append(
-                        Span(start_offset=line_bboxes[0]['char_index'], end_offset=line_bboxes[-1]['char_index'] + 1)
-                    )
-                    line_bboxes = [bbox]
+        """Create one multiline Annotation per sentence detected in paragraph detected by detectron."""
+        paragraph_bboxes = self._detectron_get_paragraph_bbox(document)
 
-                if bbox['text'] in {'.', '!', '?'}:
-                    spans.append(
-                        Span(start_offset=line_bboxes[0]['char_index'], end_offset=line_bboxes[-1]['char_index'] + 1)
-                    )
-                    line_bboxes = []
-                    _ = Annotation(
-                        document=document,
-                        annotation_set=document.no_label_annotation_set,
-                        label=document.project.no_label,
-                        label_set=document.project.no_label_set,
-                        category=document.category,
-                        spans=spans,
-                    )
-                    spans = []
+        for i, (page, page_paragraph_bboxes) in enumerate(zip(document.pages(), paragraph_bboxes)):
+            page = document.get_page_by_index(i)
+            paragraph_span_bboxes = collections.defaultdict(list)
+            curr_paragraph = None
+            paragraph_sentence_anns: Dict[Bbox, List[Annotation]] = {}
+            for bbox in sorted(page.get_bbox(), key=lambda x: x['char_index']):
 
-            if line_bboxes:
-                spans.append(
-                    Span(start_offset=line_bboxes[0]['char_index'], end_offset=line_bboxes[-1]['char_index'] + 1)
-                )
-            if spans:
-                _ = Annotation(
-                    document=document,
-                    annotation_set=document.no_label_annotation_set,
-                    label=document.project.no_label,
-                    label_set=document.project.no_label_set,
-                    category=document.category,
-                    spans=spans,
-                )
+                for paragraph_bbox in page_paragraph_bboxes:
+                    if (
+                        bbox['x0'] <= paragraph_bbox.x1
+                        and bbox['x1'] >= paragraph_bbox.x0
+                        and page.height - bbox['y0'] <= paragraph_bbox.y1
+                        and page.height - bbox['y1'] >= paragraph_bbox.y0
+                    ):
+                        if not curr_paragraph:
+                            curr_paragraph = paragraph_bbox
+                        if paragraph_span_bboxes[curr_paragraph] and (
+                            (paragraph_span_bboxes[curr_paragraph][-1]['line_number'] != bbox['line_number'])
+                            or (paragraph_bbox is not curr_paragraph)
+                            or (paragraph_span_bboxes[curr_paragraph][-1]['text'] in self.punctuation)
+                        ):
+                            span = Span(
+                                start_offset=paragraph_span_bboxes[curr_paragraph][0]['char_index'],
+                                end_offset=paragraph_span_bboxes[curr_paragraph][-1]['char_index'] + 1,
+                            )
+                            if curr_paragraph not in paragraph_sentence_anns:
+                                paragraph_sentence_anns[curr_paragraph] = []
+
+                            if (
+                                not paragraph_sentence_anns[curr_paragraph]
+                                or paragraph_sentence_anns[curr_paragraph][-1].spans[-1].offset_string[-1]
+                                in self.punctuation
+                            ):
+                                annotation = Annotation(
+                                    document=document,
+                                    annotation_set=document.no_label_annotation_set,
+                                    label=document.project.no_label,
+                                    label_set=document.project.no_label_set,
+                                    category=document.category,
+                                    spans=[span],
+                                )
+                                paragraph_sentence_anns[curr_paragraph].append(annotation)
+                            else:
+                                paragraph_sentence_anns[curr_paragraph][-1].add_span(span)
+
+                            paragraph_span_bboxes[curr_paragraph] = []
+
+                            curr_paragraph = paragraph_bbox
+                            paragraph_span_bboxes[curr_paragraph] = [bbox]
+                        else:
+                            paragraph_span_bboxes[curr_paragraph].append(bbox)
+                        break
+
+            for paragraph_bbox, span_bboxes in paragraph_span_bboxes.items():
+                if span_bboxes:
+                    span = Span(start_offset=span_bboxes[0]['char_index'], end_offset=span_bboxes[-1]['char_index'] + 1)
+                    if curr_paragraph not in paragraph_sentence_anns:
+                        paragraph_sentence_anns[curr_paragraph] = []
+
+                    if (
+                        not paragraph_sentence_anns[curr_paragraph]
+                        or paragraph_sentence_anns[curr_paragraph][-1].spans[-1].offset_string[-1] in self.punctuation
+                    ):
+                        annotation = Annotation(
+                            document=document,
+                            annotation_set=document.no_label_annotation_set,
+                            label=document.project.no_label,
+                            label_set=document.project.no_label_set,
+                            category=document.category,
+                            spans=[span],
+                        )
+                        paragraph_sentence_anns[curr_paragraph].append(annotation)
+                    else:
+                        paragraph_sentence_anns[curr_paragraph][-1].add_span(span)
 
         return document
 
