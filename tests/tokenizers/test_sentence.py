@@ -29,32 +29,32 @@ class TestDetectronSentenceTokenizer(unittest.TestCase):
 
         doc = self.tokenizer.tokenize(virtual_doc)
 
-        assert len(doc.annotations(use_correct=False)) == 161
+        assert len(doc.annotations(use_correct=False)) == 166
 
         pages = doc.pages()
 
         assert len(pages) == 3
 
-        assert len(pages[0].annotations(use_correct=False)) == 49
-        assert len(pages[1].annotations(use_correct=False)) == 57
-        assert len(pages[2].annotations(use_correct=False)) == 55
+        assert len(pages[0].annotations(use_correct=False)) == 51
+        assert len(pages[1].annotations(use_correct=False)) == 58
+        assert len(pages[2].annotations(use_correct=False)) == 57
 
     def test_sentence_document_2(self):
         """Test detectron Setence tokenizer on two column paper."""
         virtual_doc = deepcopy(self.document_2)
 
         doc = self.tokenizer.tokenize(virtual_doc)
-        assert len(doc.annotations(use_correct=False)) == 392
+        assert len(doc.annotations(use_correct=False)) == 403
 
         pages = doc.pages()
         assert len(pages) == 7
 
-        assert len(pages[0].annotations(use_correct=False)) == 40
-        assert len(pages[1].annotations(use_correct=False)) == 27
+        assert len(pages[0].annotations(use_correct=False)) == 45
+        assert len(pages[1].annotations(use_correct=False)) == 29
         assert len(pages[2].annotations(use_correct=False)) == 62
-        assert len(pages[3].annotations(use_correct=False)) == 55
+        assert len(pages[3].annotations(use_correct=False)) == 58
         assert len(pages[4].annotations(use_correct=False)) == 49
-        assert len(pages[5].annotations(use_correct=False)) == 47
+        assert len(pages[5].annotations(use_correct=False)) == 48
         assert len(pages[6].annotations(use_correct=False)) == 112
 
 

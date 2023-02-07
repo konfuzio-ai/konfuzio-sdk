@@ -73,8 +73,8 @@ class BlockTokenizer(AbstractTokenizer):
                     Bbox(
                         x0=bbox['x0'] * scale_factor,
                         x1=bbox['x1'] * scale_factor,
-                        y0=bbox['y0'] * scale_factor,
-                        y1=bbox['y1'] * scale_factor,
+                        y1=page.height - bbox['y0'] * scale_factor,
+                        y0=page.height - bbox['y1'] * scale_factor,
                         page=page,
                     )
                 )
@@ -118,12 +118,7 @@ class ParagraphTokenizer(BlockTokenizer):
             for bbox in sorted(page.get_bbox(), key=lambda x: x['char_index']):
 
                 for paragraph_bbox in page_paragraph_bboxes:
-                    if (
-                        bbox['x0'] <= paragraph_bbox.x1
-                        and bbox['x1'] >= paragraph_bbox.x0
-                        and page.height - bbox['y0'] <= paragraph_bbox.y1
-                        and page.height - bbox['y1'] >= paragraph_bbox.y0
-                    ):
+                    if paragraph_bbox.check_overlap(bbox):
                         if not curr_paragraph:
                             curr_paragraph = paragraph_bbox
                         if paragraph_span_bboxes[curr_paragraph] and (
@@ -266,12 +261,7 @@ class SentenceTokenizer(BlockTokenizer):
             for bbox in sorted(page.get_bbox(), key=lambda x: x['char_index']):
 
                 for paragraph_bbox in page_paragraph_bboxes:
-                    if (
-                        bbox['x0'] <= paragraph_bbox.x1
-                        and bbox['x1'] >= paragraph_bbox.x0
-                        and page.height - bbox['y0'] <= paragraph_bbox.y1
-                        and page.height - bbox['y1'] >= paragraph_bbox.y0
-                    ):
+                    if paragraph_bbox.check_overlap(bbox):
                         if not curr_paragraph:
                             curr_paragraph = paragraph_bbox
                         if paragraph_span_bboxes[curr_paragraph] and (

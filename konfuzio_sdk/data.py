@@ -249,8 +249,7 @@ class Page(Data):
 
     def get_bbox(self):
         """Get bbox information per character of Page."""
-        doc_bbox = self.document.get_bbox()
-        page_bbox = {k: doc_bbox[k] for k in doc_bbox.keys() if doc_bbox[k]["page_number"] == self.number}
+        page_bbox = self.document.get_bbox_by_page(self.index)
         return page_bbox
 
     def annotations(
@@ -392,6 +391,19 @@ class Bbox:
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
             )
+
+    def check_overlap(self, bbox: Union['Bbox', Dict]):
+        """Verify if there's overal between two Bboxes."""
+        if type(bbox) is dict and (
+            bbox['x0'] <= self.x1 and bbox['x1'] >= self.x0 and bbox['y0'] <= self.y1 and bbox['y1'] >= self.y0
+        ):
+            return True
+        elif type(bbox) is type(self) and (
+            bbox.x0 <= self.x1 and bbox.x1 >= self.x0 and bbox.y0 <= self.y1 and bbox.y1 >= self.y0
+        ):
+            return True
+        else:
+            return False
 
     @property
     def area(self):
@@ -1848,6 +1860,7 @@ class Document(Data):
         self._text: str = text
         self._text_hash = None
         self._characters: Dict[int, Bbox] = None
+        self._pages_char_bboxes = None
         self._bbox_hash = None
         self._bbox_json = bbox
         self.bboxes_available: bool = True if (self.is_online or self._bbox_json) else False
@@ -2515,6 +2528,15 @@ class Document(Data):
             bbox = {}
 
         return bbox
+
+    def get_bbox_by_page(self, page_index: int):
+        """Return list of all bboxes in a Page."""
+        if not self._pages_char_bboxes:
+            self._pages_char_bboxes: List[List[Dict]] = [[] for _ in self.pages()]
+            for char_index, bbox in self.get_bbox().items():
+                bbox['char_index'] = int(char_index)
+                self._pages_char_bboxes[bbox['page_number'] - 1].append(bbox)
+        return self._pages_char_bboxes[page_index]
 
     @property
     def _hashable_characters(self) -> Optional[frozenset]:
