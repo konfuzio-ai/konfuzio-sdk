@@ -145,7 +145,7 @@ response = requests.get(url, headers=headers)
 print(response.json())
 ```
 
-#### Konfuzio SDK example
+#### Accessing and using the token via the Konfuzio SDK
 
 To get a token, access it via `from konfuzio_sdk import KONFUZIO_TOKEN` (available only after `konfuzio_sdk init`).
 
