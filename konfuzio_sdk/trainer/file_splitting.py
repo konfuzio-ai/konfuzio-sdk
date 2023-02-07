@@ -1,10 +1,12 @@
 """
 Process Documents that consist of several files and propose splitting them into the Sub-Documents accordingly.
 
-We suggest a context-aware approach based on scanning Category's Documents and finding strings exclusive for first
-Pages of all Documents within the Category. Upon predicting whether a Page is a potential splitting point (meaning
-whether it is first or not), we compare Page's contents to these exclusive first-page strings; if there is occurrence of
-at least one such string, we mark a Page to be first (thus meaning it is a splitting point).
+A ContextAwareFileSplittingModel uses a simple hands-on logic based on scanning Category's Documents and finding strings
+exclusive for first Pages of all Documents within the Category. Upon predicting whether a Page is a potential splitting
+point (meaning whether it is first or not), we compare Page's contents to these exclusive first-page strings; if there
+is occurrence of at least one such string, we mark a Page to be first (thus meaning it is a splitting point). An
+instance of the ContextAwareFileSplittingModel can be used to initially build a file-splitting pipeline and can later
+be replaced with more complex solutions (like the one that's coming soon: MultimodalFileSplittingModel).
 
 A ContextAwareFileSplittingModel instance can be used with an interface provided by SplittingAI – this class accepts a
 whole Document instead of a single Page and proposes splitting points or splits the original Documents.
