@@ -1205,7 +1205,7 @@ class Span(Data):
         return self._bbox
 
     def bbox_dict(self) -> Dict:
-        """Return Span Bbox info as a Dict."""
+        """Return Span Bbox info as a serializable Dict format for external integration with the Konfuzio Server."""
         span_dict = {
             'start_offset': self.start_offset,
             'end_offset': self.end_offset,
@@ -1745,7 +1745,10 @@ class Annotation(Data):
 
     @property
     def bboxes(self) -> List[Dict]:
-        """Return the Bbox information for all Spans."""
+        """Return the Bbox information for all Spans in serialized format.
+
+        This is useful for external integration (e.g. Konfuzio Server)."
+        """
         return [span.bbox_dict() for span in self.spans]
 
     def lose_weight(self):
