@@ -16,6 +16,4 @@ Explanations
 
 .. mdinclude:: coordinates_system.md
 
-.. mdinclude:: ../merge/merge.md
-
 .. mdinclude:: releasing/process.md

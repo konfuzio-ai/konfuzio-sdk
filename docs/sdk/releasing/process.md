@@ -37,9 +37,9 @@ The strategy follows a 2 weeks sprint schedule (10 work days). The SDK process i
 ## How to release with GitHub to PyPI
 
 1. Change the version number in the file VERSION use the format `v.X.X.X` without whitespaces.
-   ![Update Python Package Version](releasing/update-python-version.png)
+   ![Update Python Package Version](/sdk/releasing/update-python-version.png)
 2. Draft a Release [here](https://github.com/konfuzio-ai/konfuzio-sdk/releases/new).
-   ![draft_new_release.png](releasing/steps-to-draft-a-release.png)
+   ![draft_new_release.png](/sdk/releasing/steps-to-draft-a-release.png)
    1. Create a new Tag on master, named as the version number in step 1.
    2. Add a title for the release
    3. Automatically generate the description using the Names of the merged Pull Requests
@@ -49,7 +49,7 @@ The strategy follows a 2 weeks sprint schedule (10 work days). The SDK process i
 
 ## How to use nightly builds?
 
-![New PyPI Python release](releasing/new-pypi-release.png)
+![New PyPI Python release](/sdk/releasing/new-pypi-release.png)
 
 1. Install the latest pre-release `pip install --pre konfuzio_sdk` 
 2. Force to pick the latest pre-release the version `pip install konfuzio_sdk>=0.2.3.dev0`. As PEP440 states: The 
@@ -64,4 +64,4 @@ The strategy follows a 2 weeks sprint schedule (10 work days). The SDK process i
    Year-Month-Date-Hour-Minute-Second of last commit date on branch master used to create this release.
    This process allows publish a new package if there are new commits on the master branch.
 
-![img.png](releasing/version-number-prerelease.png)
+![img.png](/sdk/releasing/version-number-prerelease.png)
