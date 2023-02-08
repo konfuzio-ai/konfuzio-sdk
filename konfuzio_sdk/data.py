@@ -342,7 +342,7 @@ class Bbox:
                 msg=f'{self} has no width in {self.page}.',
                 fail_loudly=validation is BboxValidationTypes.STRICT,
                 exception_type=ValueError,
-                handler=handler
+                handler=handler,
             )
 
         if self.x0 > self.x1:
@@ -350,7 +350,7 @@ class Bbox:
                 msg=f'{self} has negative width in {self.page}.',
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
-                handler=handler
+                handler=handler,
             )
 
         if self.y0 == self.y1:
@@ -358,7 +358,7 @@ class Bbox:
                 msg=f'{self} has no height in {self.page}.',
                 fail_loudly=validation is BboxValidationTypes.STRICT,
                 exception_type=ValueError,
-                handler=handler
+                handler=handler,
             )
 
         if self.y0 > self.y1:
@@ -366,7 +366,7 @@ class Bbox:
                 msg=f'{self} has negative height in {self.page}.',
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
-                handler=handler
+                handler=handler,
             )
 
         if self.y1 > self.page.height:
@@ -374,7 +374,7 @@ class Bbox:
                 msg=f'{self} exceeds height of {self.page}.',
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
-                handler=handler
+                handler=handler,
             )
 
         if self.x1 > self.page.width:
@@ -382,7 +382,7 @@ class Bbox:
                 msg=f'{self} exceeds width of {self.page}.',
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
-                handler=handler
+                handler=handler,
             )
 
         if self.y0 < 0:
@@ -390,7 +390,7 @@ class Bbox:
                 msg=f'{self} has negative y coordinate in {self.page}.',
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
-                handler=handler
+                handler=handler,
             )
 
         if self.x0 < 0:
@@ -398,7 +398,7 @@ class Bbox:
                 msg=f'{self} has negative x coordinate in {self.page}.',
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
-                handler=handler
+                handler=handler,
             )
 
     def check_overlap(self, bbox: Union['Bbox', Dict]):
@@ -1161,9 +1161,7 @@ class Span(Data):
                 exception_type=ValueError,
                 handler=handler,
             )
-        elif self.offset_string and (
-                "\n" in self.offset_string or "\f" in self.offset_string
-        ):
+        elif self.offset_string and ("\n" in self.offset_string or "\f" in self.offset_string):
             exception_or_log_error(
                 msg=f"{self} must not span more than one visual line.",
                 fail_loudly=strict,
@@ -2582,10 +2580,10 @@ class Document(Data):
     def get_bbox_by_page(self, page_index: int):
         """Return list of all bboxes in a Page."""
         if not self._pages_char_bboxes:
-            self._pages_char_bboxes: List[List[Dict]] = [[] for _ in self.pages()]
+            self._pages_char_bboxes: List[Dict[str, Dict]] = [{} for _ in self.pages()]
             for char_index, bbox in self.get_bbox().items():
                 bbox['char_index'] = int(char_index)
-                self._pages_char_bboxes[bbox['page_number'] - 1].append(bbox)
+                self._pages_char_bboxes[bbox['page_number'] - 1][char_index] = bbox
         return self._pages_char_bboxes[page_index]
 
     @property

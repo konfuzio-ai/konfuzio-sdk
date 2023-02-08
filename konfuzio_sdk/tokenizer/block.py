@@ -115,7 +115,7 @@ class ParagraphTokenizer(BlockTokenizer):
             paragraph_span_bboxes = collections.defaultdict(list)
             curr_paragraph = None
             paragraph_anns: Dict[Bbox, Annotation] = {}
-            for bbox in sorted(page.get_bbox(), key=lambda x: x['char_index']):
+            for bbox in sorted(page.get_bbox().values(), key=lambda x: x['char_index']):
 
                 for paragraph_bbox in page_paragraph_bboxes:
                     if paragraph_bbox.check_overlap(bbox):
@@ -258,7 +258,7 @@ class SentenceTokenizer(BlockTokenizer):
             paragraph_span_bboxes = collections.defaultdict(list)
             curr_paragraph = None
             paragraph_sentence_anns: Dict[Bbox, List[Annotation]] = {}
-            for bbox in sorted(page.get_bbox(), key=lambda x: x['char_index']):
+            for bbox in sorted(page.get_bbox().values(), key=lambda x: x['char_index']):
 
                 for paragraph_bbox in page_paragraph_bboxes:
                     if paragraph_bbox.check_overlap(bbox):
