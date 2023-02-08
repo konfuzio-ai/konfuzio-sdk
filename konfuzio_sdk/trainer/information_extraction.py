@@ -94,8 +94,8 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
             raise ValueError("Pickle saved with incompatible Python version.") from err
         raise
 
-    if not issubclass(type(model), BaseModel):
-        raise TypeError("Loaded model is not inheriting from the BaseModel class.")
+    # if not issubclass(type(model), BaseModel):
+    #     raise TypeError("Loaded model is not inheriting from the BaseModel class.")
 
     if hasattr(model, 'python_version'):
         logger.info(f"Loaded AI model trained with Python {model.python_version}")
