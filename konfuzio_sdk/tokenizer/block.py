@@ -176,13 +176,8 @@ class ParagraphTokenizer(BlockTokenizer):
 
         from statistics import median
 
-        # assemble bboxes by their page
-        pages_char_bboxes = [[] for _ in document.pages()]
-        for char_index, bbox in document.get_bbox().items():
-            bbox['char_index'] = int(char_index)
-            pages_char_bboxes[bbox['page_number'] - 1].append(bbox)
-
-        for page_char_bboxes in pages_char_bboxes:
+        for page in document.pages():
+            page_char_bboxes = page.get_bbox().values()
             # assemble bboxes by line and Page
             page_lines = []
             line_bboxes = []
@@ -333,13 +328,8 @@ class SentenceTokenizer(BlockTokenizer):
 
         from statistics import median
 
-        # assemble bboxes by their page
-        pages_char_bboxes = [[] for _ in document.pages()]
-        for char_index, bbox in document.get_bbox().items():
-            bbox['char_index'] = int(char_index)
-            pages_char_bboxes[bbox['page_number'] - 1].append(bbox)
-
-        for page_char_bboxes in pages_char_bboxes:
+        for page in document.pages():
+            page_char_bboxes = page.get_bbox().values()
             # set line_threshold
             if height is None:
                 # calculate median vertical character size for Page
