@@ -196,9 +196,8 @@ documents being processed.
 1. For testing purposes, a minimum of 10 GB is required per server (not per instance of a worker).
 2. For serious use, a minimum of 100 GB should be directly available to the application. This amount should also cover
    the following:
-    - PostgreSQL (PG), which typically uses 10% of this size.
+    - Postgres, which typically uses 10% of this size.
     - Docker image storage, up to 25 GB should be reserved for upgrades.
-
 3. Each page thumbnail adds 1-2 KB to the file size.
 4. After uploading, the total file size of a page image and its thumbnails increases by approximately a factor of 3 (10
    MB becomes approximately 30 MB on the server).
