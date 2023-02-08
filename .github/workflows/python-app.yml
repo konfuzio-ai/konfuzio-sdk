@@ -7,8 +7,7 @@ on:
   push:
 
 jobs:
-  build:
-
+  example_matrix:
     runs-on: ubuntu-latest
 
     strategy:
