@@ -154,6 +154,12 @@
 
 <dl class="py method">
 <dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">bbox_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span></dt>
+<dd><p>Return Span Bbox info as a serializable Dict format for external integration with the Konfuzio Server.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">eval_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
 <dd><p>Return any information needed to evaluate the Span.</p>
 </dd></dl>
@@ -227,6 +233,13 @@ For the default behaviour see <a class="reference external" href="https://dev.ko
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">add_span</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">span</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.Span</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Add a Span to an Annotation incl. a duplicate check per Annotation.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bboxes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></em></dt>
+<dd><p>Return the Bbox information for all Spans in serialized format.</p>
+<p>This is useful for external integration (e.g. Konfuzio Server).”</p>
 </dd></dl>
 
 <dl class="py method">
