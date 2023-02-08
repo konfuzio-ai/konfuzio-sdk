@@ -1204,6 +1204,24 @@ class Span(Data):
             )
         return self._bbox
 
+    def bbox_dict(self) -> Dict:
+        """Return Span Bbox info as a serializable Dict format for external integration with the Konfuzio Server."""
+        span_dict = {
+            'start_offset': self.start_offset,
+            'end_offset': self.end_offset,
+            'line_number': self.line_index + 1,
+            'offset_string': self.offset_string,
+            'offset_string_original': self.offset_string,
+            'page_index': self.bbox().page.index,
+            'top': self.bbox().page.height - self.bbox().y1,
+            'bottom': self.bbox().page.height - self.bbox().y0,
+            'x0': self.bbox().x0,
+            'x1': self.bbox().x1,
+            'y0': self.bbox().y0,
+            'y1': self.bbox().y1,
+        }
+        return span_dict
+
     @property
     def normalized(self):
         """Normalize the offset string."""
@@ -1459,7 +1477,6 @@ class Annotation(Data):
             self.y0 = bbox.get('y0')
             self.y1 = bbox.get('y1')
 
-        self.bboxes = kwargs.get('bboxes', None)
         self.selection_bbox = kwargs.get('selection_bbox', None)
         self.page_number = kwargs.get('page_number', None)
         # END LEGACY -
@@ -1729,6 +1746,14 @@ class Annotation(Data):
     def spans(self) -> List[Span]:
         """Return default entry to get all Spans of the Annotation."""
         return sorted(self._spans)
+
+    @property
+    def bboxes(self) -> List[Dict]:
+        """Return the Bbox information for all Spans in serialized format.
+
+        This is useful for external integration (e.g. Konfuzio Server)."
+        """
+        return [span.bbox_dict() for span in self.spans]
 
     def lose_weight(self):
         """Delete data of the instance."""
