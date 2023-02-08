@@ -187,9 +187,9 @@ RAM and one Nvidia GPU with minimum 4GB which supports at least CUDA10.1 and CUD
 trying to deploy a non-production instance, you can reduce the defaults in order to fit
 into a smaller cluster. Konfuzio can work without a GPU. The GPU is used to train and run Categorization AIs. We observe a 5x faster training and a 2x faster execution on GPU compared to CPU. Most Konfuzio Installations do not use GPUs.
 
-##### Initial Storage Requirements
+##### Storage Requirements
 
-This section outlines the initial storage requirements for the on-premise installation. It is important to take these
+This section outlines the initial storage requirements for the on-premises installation. It is important to take these
 requirements into consideration when setting up your server, as the amount of storage needed may depend on the number of
 documents being processed.
 
