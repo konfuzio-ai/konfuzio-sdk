@@ -7,6 +7,13 @@ on:
   push:
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run pydocstyle
+        run: |
+          ls
+    
   example_matrix:
     runs-on: ubuntu-latest
 
