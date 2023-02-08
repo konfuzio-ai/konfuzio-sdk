@@ -312,7 +312,7 @@ class Bbox:
         """Define that one Bounding Box on the same page is identical."""
         return self.__hash__() == other.__hash__()
 
-    def _valid(self, validation=BboxValidationTypes.ALLOW_ZERO_SIZE):
+    def _valid(self, validation=BboxValidationTypes.ALLOW_ZERO_SIZE, handler="sdk_validation"):
         """
         Validate contained data.
 
@@ -323,6 +323,7 @@ class Bbox:
                 msg=f'{self} has no width in {self.page}.',
                 fail_loudly=validation is BboxValidationTypes.STRICT,
                 exception_type=ValueError,
+                handler=handler
             )
 
         if self.x0 > self.x1:
@@ -330,6 +331,7 @@ class Bbox:
                 msg=f'{self} has negative width in {self.page}.',
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
+                handler=handler
             )
 
         if self.y0 == self.y1:
@@ -337,41 +339,47 @@ class Bbox:
                 msg=f'{self} has no height in {self.page}.',
                 fail_loudly=validation is BboxValidationTypes.STRICT,
                 exception_type=ValueError,
+                handler=handler
             )
 
         if self.y0 > self.y1:
             exception_or_log_error(
-                f'{self} has negative height in {self.page}.',
+                msg=f'{self} has negative height in {self.page}.',
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
+                handler=handler
             )
 
         if self.y1 > self.page.height:
             exception_or_log_error(
-                f'{self} exceeds height of {self.page}.',
+                msg=f'{self} exceeds height of {self.page}.',
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
+                handler=handler
             )
 
         if self.x1 > self.page.width:
             exception_or_log_error(
-                f'{self} exceeds width of {self.page}.',
+                msg=f'{self} exceeds width of {self.page}.',
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
+                handler=handler
             )
 
         if self.y0 < 0:
             exception_or_log_error(
-                f'{self} has negative y coordinate in {self.page}.',
+                msg=f'{self} has negative y coordinate in {self.page}.',
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
+                handler=handler
             )
 
         if self.x0 < 0:
             exception_or_log_error(
-                f'{self} has negative x coordinate in {self.page}.',
+                msg=f'{self} has negative x coordinate in {self.page}.',
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
+                handler=handler
             )
 
     @property
@@ -1091,7 +1099,7 @@ class Span(Data):
         annotation and annotation.add_span(self)  # only add if Span has access to an Annotation
         self._valid(strict_validation)
 
-    def _valid(self, strict: bool = True):
+    def _valid(self, strict: bool = True, handler: str = "sdk_validation"):
         """
         Validate containted data.
 
@@ -1099,20 +1107,36 @@ class Span(Data):
         details see https://dev.konfuzio.com/sdk/data_validations.html#span-validation-rules.
         """
         if self.end_offset == self.start_offset == 0:
-            logger.error(f'{self} is intentionally left empty.')
+            logger.error(f"{self} is intentionally left empty.")
         elif self.start_offset < 0 or self.end_offset < 0:
-            exception_or_log_error(f'{self} must span text.', fail_loudly=strict, exception_type=ValueError)
-        elif self.start_offset == self.end_offset:
             exception_or_log_error(
-                f"{self} must span text: Start {self.start_offset} equals end.",
+                msg=f"{self} must span text.",
                 fail_loudly=strict,
                 exception_type=ValueError,
+                handler=handler,
+            )
+        elif self.start_offset == self.end_offset:
+            exception_or_log_error(
+                msg=f"{self} must span text: Start {self.start_offset} equals end.",
+                fail_loudly=strict,
+                exception_type=ValueError,
+                handler=handler,
             )
         elif self.end_offset < self.start_offset:
-            exception_or_log_error(f"{self} length must be positive.", fail_loudly=strict, exception_type=ValueError)
-        elif self.offset_string and ('\n' in self.offset_string or '\f' in self.offset_string):
             exception_or_log_error(
-                f'{self} must not span more than one visual line.', fail_loudly=strict, exception_type=ValueError
+                msg=f"{self} length must be positive.",
+                fail_loudly=strict,
+                exception_type=ValueError,
+                handler=handler,
+            )
+        elif self.offset_string and (
+                "\n" in self.offset_string or "\f" in self.offset_string
+        ):
+            exception_or_log_error(
+                msg=f"{self} must not span more than one visual line.",
+                fail_loudly=strict,
+                exception_type=ValueError,
+                handler=handler,
             )
         return True
 
