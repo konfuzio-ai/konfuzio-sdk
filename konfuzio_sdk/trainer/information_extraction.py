@@ -1031,46 +1031,14 @@ def add_extractions_as_annotations(
         extracted_spans = extractions[required_fields].sort_values(by='confidence', ascending=False)
 
         for span in extracted_spans.to_dict('records'):  # todo: are start_offset and end_offset always ints?
-            if document.bboxes is not None:
-                start = span['start_offset']
-                end = span['end_offset']
-                offset_string = document.text[start:end]
-                bbox0 = document.bboxes[start]
-                min_x = min(document.bboxes[i].x0 for i in range(start, end) if i in document.bboxes)
-                max_x = max(document.bboxes[i].x1 for i in range(start, end) if i in document.bboxes)
-                min_y = min(document.bboxes[i].y0 for i in range(start, end) if i in document.bboxes)
-                max_y = max(document.bboxes[i].y1 for i in range(start, end) if i in document.bboxes)
-                ann_bbox = {
-                    'bottom': bbox0.page.height - min_y,
-                    'end_offset': end,
-                    'line_number': len(document.text[:start].split('\n')),
-                    'offset_string': offset_string,
-                    'offset_string_original': offset_string,
-                    'page_index': bbox0.page.index,
-                    'start_offset': start,
-                    'top': bbox0.page.height - max_y,
-                    'x0': min_x,
-                    'x1': max_x,
-                    'y0': min_y,
-                    'y1': max_y,
-                }
-                annotation = Annotation(
-                    document=document,
-                    label=label,
-                    confidence=span['confidence'],
-                    label_set=label_set,
-                    annotation_set=annotation_set,
-                    bboxes=[ann_bbox],
-                )
-            else:
-                annotation = Annotation(
-                    document=document,
-                    label=label,
-                    confidence=span['confidence'],
-                    label_set=label_set,
-                    annotation_set=annotation_set,
-                    spans=[Span(start_offset=span['start_offset'], end_offset=span['end_offset'])],
-                )
+            annotation = Annotation(
+                document=document,
+                label=label,
+                confidence=span['confidence'],
+                label_set=label_set,
+                annotation_set=annotation_set,
+                spans=[Span(start_offset=span['start_offset'], end_offset=span['end_offset'])],
+            )
             if annotation.spans[0].offset_string is None:
                 raise NotImplementedError(
                     f"Extracted {annotation} does not have a correspondence in the " f"text of {document}."
