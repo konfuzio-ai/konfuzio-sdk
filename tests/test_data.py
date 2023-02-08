@@ -537,7 +537,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 55
+        assert len(cls.project.virtual_documents) == 59
 
     def test_document_only_needs_project(self):
         """Test that a Document can be created without Category."""
@@ -833,7 +833,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         span = Span(start_offset=1, end_offset=2)
         _ = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
         _ = Page(id_=1, number=1, original_size=(595.2, 300.0), document=document, start_offset=0, end_offset=1)
-        with pytest.raises(ValueError, match='provides Character "None" Document text refers to "e"'):
+        with pytest.raises(ValueError, match='provides Character "None" document text refers to "e"'):
             span.bbox()
 
     def test_get_span_bbox_with_characters_without_width_allowed(self):
@@ -2331,7 +2331,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         self.assertTrue(virtual_doc.bboxes)
         virtual_doc.set_text_bbox_hashes()
         virtual_doc._text = '123' + doc.text  # Change text to bring bbox out of sync.
-        with pytest.raises(ValueError, match='Bbox provides Character "n" Document text refers to "l"'):
+        with pytest.raises(ValueError, match='Bbox provides Character "n" document text refers to "l"'):
             virtual_doc.check_bbox()
 
     def test_document_check_bbox_without_validations(self):

@@ -1888,7 +1888,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         inference_document = deepcopy(document)
 
         # In case document category was changed after RFExtractionAI training
-        inference_document.category = self.category
+        inference_document.set_category(self.category)
 
         # 2. tokenize
         self.tokenizer.tokenize(inference_document)
