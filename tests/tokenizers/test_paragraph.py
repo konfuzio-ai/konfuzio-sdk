@@ -120,7 +120,7 @@ class TestLineDistanceParagraphTokenizer(unittest.TestCase):
         assert len(pages[2].annotations(use_correct=False)) == len(virtual_doc_pages[2].spans(use_correct=False))
         assert len(pages[2].annotations(use_correct=False)) == 35
 
-        new_virtual_document.merge_vertical_like(self.virtual_doc)
+        new_virtual_document.merge_vertical_like(virtual_doc)
 
         assert len(pages[0].annotations(use_correct=False)) == len(virtual_doc_pages[0].annotations(use_correct=False))
         assert len(pages[0].annotations(use_correct=False)) == 8
