@@ -6,14 +6,7 @@ name: Python application
 on:
   push:
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Run pydocstyle
-        run: |
-          ls
-    
+jobs:   
   example_matrix:
     runs-on: ubuntu-latest
 
