@@ -7,7 +7,13 @@ on:
   push:
 
 jobs:   
-  example_matrix:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run pydocstyle
+        run: |
+          echo "No build step required."
+  tests:
     runs-on: ubuntu-latest
 
     strategy:
