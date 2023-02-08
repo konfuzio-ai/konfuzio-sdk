@@ -237,8 +237,8 @@ class SplittingAI:
         """
         suggested_splits = []
         if self.tokenizer:
-            document = self.tokenizer.tokenize(deepcopy(document))
-        for page in document.pages():
+            document_tokenized = self.tokenizer.tokenize(deepcopy(document))
+        for page in document_tokenized.pages():
             if page.number == 1:
                 suggested_splits.append(page)
             else:
@@ -248,20 +248,22 @@ class SplittingAI:
             return [document]
         else:
             split_docs = []
-            first_page = document.pages()[0]
-            last_page = document.pages()[-1]
+            first_page = document_tokenized.pages()[0]
+            last_page = document_tokenized.pages()[-1]
             for page_i, split_i in enumerate(suggested_splits):
                 if page_i == 0:
                     split_docs.append(
-                        document.create_subdocument_from_page_range(
+                        document_tokenized.create_subdocument_from_page_range(
                             first_page, suggested_splits[page_i + 1], include=False
                         )
                     )
                 elif page_i == len(suggested_splits) - 1:
-                    split_docs.append(document.create_subdocument_from_page_range(split_i, last_page, include=True))
+                    split_docs.append(
+                        document_tokenized.create_subdocument_from_page_range(split_i, last_page, include=True)
+                    )
                 else:
                     split_docs.append(
-                        document.create_subdocument_from_page_range(
+                        document_tokenized.create_subdocument_from_page_range(
                             split_i, suggested_splits[page_i + 1], include=False
                         )
                     )
