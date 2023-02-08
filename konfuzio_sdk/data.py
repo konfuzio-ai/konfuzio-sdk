@@ -9,6 +9,7 @@ import regex as re
 import shutil
 import time
 import zipfile
+import collections
 from copy import deepcopy
 from typing import Optional, List, Union, Tuple, Dict
 from warnings import warn
@@ -1544,7 +1545,7 @@ class Annotation(Data):
 
     def __hash__(self):
         """Identity of Annotation that does not change over time."""
-        return hash((self.start_offset, self.end_offset, self.label_set, self.document, self.label))
+        return hash((self.id_local, self.document))
 
     @property
     def page(self) -> Page:
@@ -2755,6 +2756,33 @@ class Document(Data):
                             candidate.annotation.add_span(span)
                             buffer.remove(candidate)
                     buffer.append(span)
+
+    def merge_vertical_like(self, document: 'Document'):
+        """Merge Annotations the same way as in another version of the Document."""
+        assert self.text == document.text, f"{self} and {document} need to have the same ocr text."
+        span_to_annotation = {
+            (span.start_offset, span.end_offset): hash(span.annotation) for span in document.spans(use_correct=False)
+        }
+        ann_to_anns = collections.defaultdict(list)
+        for annotation in self.annotations(use_correct=False):
+            assert len(annotation.spans) == 1, f"Cannot use merge_verical_like in {self} with multi-span {annotation}."
+            span_offset_key = (annotation.spans[0].start_offset, annotation.spans[0].end_offset)
+            if span_offset_key in span_to_annotation:
+                ann_to_anns[span_to_annotation[span_offset_key]].append(annotation)
+        for _, self_annotations in ann_to_anns.items():
+            if len(self_annotations) == 1:
+                continue
+            else:
+                keep_annotation = self_annotations[0]
+                annotation_labels = [keep_annotation.label]
+                for to_merge_annotation in self_annotations[1:]:
+                    annotation_labels.append(to_merge_annotation.label)
+                    span = to_merge_annotation.spans[0]
+                    to_merge_annotation.delete(delete_online=False)
+                    span.annotation = None
+                    keep_annotation.add_span(span)
+                most_common_label = collections.Counter(annotation_labels).most_common(1)[0][0]
+                keep_annotation.label = most_common_label
 
     def evaluate_regex(self, regex, label: Label, annotations: List['Annotation'] = None):
         """Evaluate a regex based on the Document."""
