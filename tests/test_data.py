@@ -21,6 +21,7 @@ from konfuzio_sdk.data import (
     Category,
     Page,
     Bbox,
+    BboxValidationTypes,
 )
 
 from konfuzio_sdk.utils import is_file
@@ -628,7 +629,6 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert document.category is None
         assert document.pages() == []
 
-    @unittest.skip(reason='Span validation.')
     def test_span_negative_offset(self):
         """Negative Span creation should not be possible."""
         project = Project(id_=None)
@@ -636,7 +636,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         label_set = LabelSet(id_=33, project=project, categories=[category])
         label = Label(id_=22, text='LabelName', project=project, label_sets=[label_set], threshold=0.5)
         document = Document(project=project, category=category, text="From 14.12.2021 to 1.1.2022.", dataset_status=2)
-        with self.assertRaises():
+        with self.assertRaises(ValueError):
             span_1 = Span(start_offset=-1, end_offset=2)
             annotation_set_1 = AnnotationSet(id_=1, document=document, label_set=label_set)
             _ = Annotation(
@@ -647,6 +647,24 @@ class TestOfflineDataSetup(unittest.TestCase):
                 label_set=label_set,
                 spans=[span_1],
             )
+
+    def test_span_negative_offset_force_allow(self):
+        """Negative Span creation should only be possible by force disabling validation rules."""
+        project = Project(id_=None, strict_data_validation=False)
+        category = Category(project=project)
+        label_set = LabelSet(id_=33, project=project, categories=[category])
+        label = Label(id_=22, text='LabelName', project=project, label_sets=[label_set], threshold=0.5)
+        document = Document(project=project, category=category, text="From 14.12.2021 to 1.1.2022.", dataset_status=2)
+        span_1 = Span(start_offset=-1, end_offset=2, strict_validation=False)
+        annotation_set_1 = AnnotationSet(id_=1, document=document, label_set=label_set)
+        _ = Annotation(
+            document=document,
+            is_correct=True,
+            annotation_set=annotation_set_1,
+            label=label,
+            label_set=label_set,
+            spans=[span_1],
+        )
 
     def test_training_document_annotations_are_available(self):
         """Test if the Label can access the new Annotation."""
@@ -669,7 +687,9 @@ class TestOfflineDataSetup(unittest.TestCase):
 
     def test_add_annotation_with_complete_bbox_data(self):
         """Test to add an Annotation via complete bboxes param."""
-        document = Document(project=self.project, category=self.category, text='hello', strict_bbox_validation=True)
+        document = Document(
+            project=self.project, category=self.category, text='hello', bbox_validation_type=BboxValidationTypes.STRICT
+        )
         page = Page(id_=None, document=document, start_offset=0, end_offset=4, number=1, original_size=(12, 6))
         document_bbox = {'1': Bbox(x0=0, x1=1, y0=0, y1=1, page=page)}
         document.set_bboxes(document_bbox)
@@ -698,7 +718,9 @@ class TestOfflineDataSetup(unittest.TestCase):
 
     def test_add_annotation_with_incomplete_bbox_data(self):
         """Test to add an Annotation via bboxes param that is missing offset information."""
-        document = Document(project=self.project, category=self.category, text='hello', strict_bbox_validation=True)
+        document = Document(
+            project=self.project, category=self.category, text='hello', bbox_validation_type=BboxValidationTypes.STRICT
+        )
         page = Page(id_=None, document=document, start_offset=0, end_offset=4, number=1, original_size=(12, 6))
         document_bbox = {'1': Bbox(x0=0, x1=1, y0=0, y1=1, page=page)}
         document.set_bboxes(document_bbox)
@@ -792,7 +814,11 @@ class TestOfflineDataSetup(unittest.TestCase):
         """
         document_bbox = {'1': {'text': 'e', 'x0': 0, 'x1': 1, 'y0': 1, 'y1': 1, 'page_number': 1}}
         document = Document(
-            project=self.project, category=self.category, text='hello', bbox=document_bbox, strict_bbox_validation=True
+            project=self.project,
+            category=self.category,
+            text='hello',
+            bbox=document_bbox,
+            bbox_validation_type=BboxValidationTypes.STRICT,
         )
         span = Span(start_offset=1, end_offset=2)
         _ = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
@@ -831,7 +857,11 @@ class TestOfflineDataSetup(unittest.TestCase):
         """
         document_bbox = {'0': {'x0': 1, 'x1': 1, 'y0': 0, 'y1': 1, 'page_number': 1, 'text': 'h'}}
         document = Document(
-            project=self.project, category=self.category, text='hello', bbox=document_bbox, strict_bbox_validation=True
+            project=self.project,
+            category=self.category,
+            text='hello',
+            bbox=document_bbox,
+            bbox_validation_type=BboxValidationTypes.STRICT,
         )
         span = Span(start_offset=0, end_offset=1)
         _ = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
@@ -869,8 +899,23 @@ class TestOfflineDataSetup(unittest.TestCase):
         with pytest.raises(ValueError, match='exceeds width of Page 0'):
             span.bbox()
 
+    def test_get_span_bbox_with_characters_with_x_coord_outside_page_width_disable_validations(self):
+        """Test disable validations of Bbox where the characters have negative x coordinates (OCR problem)."""
+        document_bbox = {'1': {'text': 'e', 'x0': 596, 'x1': 597, 'y0': 0, 'y1': 1, 'page_number': 1}}
+        document = Document(
+            project=self.project,
+            category=self.category,
+            text='hello',
+            bbox=document_bbox,
+            bbox_validation_type=BboxValidationTypes.DISABLED,
+        )
+        span = Span(start_offset=1, end_offset=2)
+        _ = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
+        _ = Page(id_=1, number=1, original_size=(595.2, 300.0), document=document, start_offset=0, end_offset=3)
+        span.bbox()
+
     def test_get_span_bbox_with_characters_with_y_coord_outside_page_height(self):
-        """Test get the bbox of a Span where the characters have negative x coordinates (OCR problem)."""
+        """Test get the bbox of a Span where the characters have negative y coordinates (OCR problem)."""
         document_bbox = {'1': {'text': 'e', 'x0': 0, 'x1': 1, 'y0': 301, 'y1': 302, 'page_number': 1}}
         document = Document(project=self.project, category=self.category, text='hello', bbox=document_bbox)
         span = Span(start_offset=1, end_offset=2)
@@ -878,6 +923,21 @@ class TestOfflineDataSetup(unittest.TestCase):
         _ = Page(id_=1, number=1, original_size=(595.2, 300.0), document=document, start_offset=0, end_offset=3)
         with pytest.raises(ValueError, match='exceeds height of Page 0'):
             span.bbox()
+
+    def test_get_span_bbox_with_characters_with_y_coord_outside_page_height_disable_validations(self):
+        """Test disable validations of Bbox where the characters have negative y coordinates (OCR problem)."""
+        document_bbox = {'1': {'text': 'e', 'x0': 0, 'x1': 1, 'y0': 301, 'y1': 302, 'page_number': 1}}
+        document = Document(
+            project=self.project,
+            category=self.category,
+            text='hello',
+            bbox=document_bbox,
+            bbox_validation_type=BboxValidationTypes.DISABLED,
+        )
+        span = Span(start_offset=1, end_offset=2)
+        _ = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
+        _ = Page(id_=1, number=1, original_size=(595.2, 300.0), document=document, start_offset=0, end_offset=3)
+        span.bbox()
 
     def test_get_span_bbox_with_unavailable_characters(self):
         """Test get the bbox of a Span where the characters are unavailable."""
@@ -920,7 +980,11 @@ class TestOfflineDataSetup(unittest.TestCase):
             '0': {'x0': 0, 'x1': 2, 'y0': 0, 'y1': 0, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
         }
         document = Document(
-            project=self.project, category=self.category, text='h', bbox=document_bbox, strict_bbox_validation=True
+            project=self.project,
+            category=self.category,
+            text='h',
+            bbox=document_bbox,
+            bbox_validation_type=BboxValidationTypes.STRICT,
         )
         _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
         with pytest.raises(ValueError, match='has no height'):
@@ -941,7 +1005,11 @@ class TestOfflineDataSetup(unittest.TestCase):
             '0': {'x0': 0, 'x1': 0, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
         }
         document = Document(
-            project=self.project, category=self.category, text='h', bbox=document_bbox, strict_bbox_validation=True
+            project=self.project,
+            category=self.category,
+            text='h',
+            bbox=document_bbox,
+            bbox_validation_type=BboxValidationTypes.STRICT,
         )
         _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
         with pytest.raises(ValueError, match='has no width'):
@@ -971,7 +1039,11 @@ class TestOfflineDataSetup(unittest.TestCase):
             '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
         }
         document = Document(
-            project=self.project, category=self.category, text='hello', bbox=document_bbox, strict_bbox_validation=True
+            project=self.project,
+            category=self.category,
+            text='hello',
+            bbox=document_bbox,
+            bbox_validation_type=BboxValidationTypes.STRICT,
         )
         _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
         self.assertTrue(document.text)
@@ -986,13 +1058,17 @@ class TestOfflineDataSetup(unittest.TestCase):
             '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
         }
         document = Document(
-            project=self.project, category=self.category, text='hello', bbox=document_bbox, strict_bbox_validation=True
+            project=self.project,
+            category=self.category,
+            text='hello',
+            bbox=document_bbox,
+            bbox_validation_type=BboxValidationTypes.STRICT,
         )
         page = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
         self.assertTrue(document.bboxes)
         document.set_text_bbox_hashes()
         self.assertFalse(document._check_text_or_bbox_modified())
-        document._characters[1] = Bbox(x0=1, x1=2, y0=1, y1=3, page=page, strict_validation=True)
+        document._characters[1] = Bbox(x0=1, x1=2, y0=1, y1=3, page=page, validation=BboxValidationTypes.STRICT)
         self.assertTrue(document._check_text_or_bbox_modified())
 
     def test_document_spans(self):
@@ -1135,6 +1211,21 @@ class TestOfflineDataSetup(unittest.TestCase):
         with pytest.raises(ValueError, match='has negative width'):
             document.bboxes
 
+    def test_bypass_document_check_bbox_invalid_height_coordinates(self):
+        """Test bypassing bbox check with invalid x coordinates regarding the page height."""
+        document_bbox = {
+            '0': {'x0': 1, 'x1': 0, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
+        }
+        document = Document(
+            project=self.project,
+            category=self.category,
+            text='h',
+            bbox=document_bbox,
+            bbox_validation_type=BboxValidationTypes.DISABLED,
+        )
+        _ = Page(id_=1, number=1, original_size=(595.2, 841.68), document=document, start_offset=0, end_offset=1)
+        document.bboxes
+
     def test_document_check_duplicated_annotations(self):
         """Test Annotations check when an error is raised due to duplicated Annotations by get_annotations."""
         # overwriting get_annotations for test
@@ -1269,7 +1360,7 @@ class TestOfflineDataSetup(unittest.TestCase):
 
         # Add annotation for the first time
         span = Span(start_offset=1, end_offset=2)
-        with self.assertRaises(ValueError) as context:
+        with pytest.raises(ValueError, match="without Category must not have Annotations"):
             _ = Annotation(
                 document=document,
                 is_correct=True,
@@ -1278,7 +1369,6 @@ class TestOfflineDataSetup(unittest.TestCase):
                 label_set=self.label_set,
                 spans=[span],
             )
-            assert 'where the category is None' in context.exception
 
     def test_add_overlapping_virtual_annotations(self):
         """Add one Span as Annotation multiple times when document.id_ is None."""
@@ -1296,7 +1386,7 @@ class TestOfflineDataSetup(unittest.TestCase):
 
         # Add annotation for the second time, heere it should be skipped.
         span = Span(start_offset=1, end_offset=2)
-        with self.assertRaises(ValueError) as context:
+        with pytest.raises(ValueError, match="is a duplicate of"):
             Annotation(
                 document=document,
                 is_correct=True,
@@ -1305,7 +1395,33 @@ class TestOfflineDataSetup(unittest.TestCase):
                 label_set=self.label_set,
                 spans=[span],
             )
-            assert "is a duplicate of" in context.exception
+
+    def test_force_add_overlapping_virtual_annotations(self):
+        """Add one Span as Annotation multiple times by disabling Project level data validations."""
+        self.project._strict_data_validation = False
+        document = Document(project=self.project, category=self.category, data_file_name='add_twice.pdf')
+        span = Span(start_offset=1, end_offset=2)
+        annotation_set = AnnotationSet(document=document, label_set=self.label_set)
+        Annotation(
+            document=document,
+            is_correct=True,
+            label=self.label,
+            annotation_set=annotation_set,
+            label_set=self.label_set,
+            spans=[span],
+        )
+
+        # Force add annotation for the second time
+        span = Span(start_offset=1, end_offset=2)
+        Annotation(
+            document=document,
+            is_correct=True,
+            label=self.label,
+            annotation_set=annotation_set,
+            label_set=self.label_set,
+            spans=[span],
+        )
+        self.project._strict_data_validation = True  # restore validation rules to not interfere with other tests
 
     def test_to_add_an_annotation_twice_to_a_document(self):
         """Test to add the same Annotation twice to a Document."""
@@ -1427,15 +1543,22 @@ class TestOfflineDataSetup(unittest.TestCase):
         """Test the vertical merging of Spans into a single Annotation."""
         project = LocalTextProject()
 
+        category = project.get_category_by_id(1)
+
         document = project.no_status_documents[1]
+        label = document.annotations(use_correct=False)[0].label
 
         assert len(document.spans()) == 4
         assert len(document.annotations(use_correct=False)) == 4
 
+        with pytest.raises(TypeError, match="This value has never been computed."):
+            document.merge_vertical()
+
+        for category_label in category.labels:
+            category_label.has_multiline_annotations(categories=[category])
+
         document.merge_vertical()
 
-        label = document.annotations(use_correct=False)[0].label
-        category = project.get_category_by_id(1)
         assert label.has_multiline_annotations(categories=[category]) is False
         assert document.bboxes_available is True
 
@@ -1450,7 +1573,9 @@ class TestOfflineDataSetup(unittest.TestCase):
             spans=[train_span1, train_span2],
         )
 
+        assert label.has_multiline_annotations() is False  # Value hasn't been updated yet
         assert label.has_multiline_annotations(categories=[category]) is True
+        assert label.has_multiline_annotations() is True
 
         document.merge_vertical()
 
@@ -1464,6 +1589,10 @@ class TestOfflineDataSetup(unittest.TestCase):
         document = project.no_status_documents[2]
 
         assert len(document.annotations(use_correct=False)) == 6
+
+        with pytest.raises(TypeError, match="This value has never been computed."):
+            document.merge_vertical(only_multiline_labels=True)
+
         document.merge_vertical(only_multiline_labels=False)
 
         assert len(document.annotations(use_correct=False)) == 4
@@ -2204,6 +2333,17 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         virtual_doc._text = '123' + doc.text  # Change text to bring bbox out of sync.
         with pytest.raises(ValueError, match='Bbox provides Character "n" Document text refers to "l"'):
             virtual_doc.check_bbox()
+
+    def test_document_check_bbox_without_validations(self):
+        """Test bbox check when force disabling validation rules."""
+        self.prj._strict_data_validation = False
+        doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
+        virtual_doc = deepcopy(doc)
+        self.assertTrue(virtual_doc.bboxes)
+        virtual_doc.set_text_bbox_hashes()
+        virtual_doc._text = '123' + doc.text  # Change text to bring bbox out of sync.
+        virtual_doc.check_bbox()  # no exception is raised
+        self.prj._strict_data_validation = True  # restore data validations to not interfere with other tests
 
     def test_hashing_bboxes_faster_than_recalculation(self):
         """Test that it's 100x faster to compare hashes of text and bboxes rathar than force recalculation of bboxes."""
