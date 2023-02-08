@@ -11,8 +11,8 @@ method for identifying and splitting them into individual, independent Sub-docum
 _Multi-file Document Example_
 
 Konfuzio SDK offers two ways for separating Documents that may be included in a single file. One of them is training 
- the instance of the Fusion model for file splitting that would predict whether a Page is first or not and running the 
-SplittingAI with it. Fusion model is a combined approach based on architecture that processes textual and visual data
+ the instance of the Multimodal File-splitting model for file splitting that would predict whether a Page is first or not and running the 
+SplittingAI with it. Multimodal File-splitting model is a combined approach based on architecture that processes textual and visual data
 from the Documents separately (in our case, using BERT and VGG19 simplified archtectures respectively) and then combines 
 the outputs which go into a Multi-layer Perceptron architecture as inputs. A more detailed scheme of the architecture
 can be found further.

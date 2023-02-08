@@ -1282,6 +1282,7 @@ def test_load_model_wrong_pickle_data():
         load_model(path)
 
 
+@unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
 def test_load_ai_model_konfuzio_sdk_not_included():
     """Test loading of trained model with include_konfuzio setting set to False."""
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
@@ -1295,6 +1296,7 @@ def test_load_ai_model_konfuzio_sdk_not_included():
     assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
 
 
+@unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
 @pytest.mark.xfail(reason='Loaded model is not subclass of BaseModel.')
 def test_load_ai_model_konfuzio_sdk_included():
     """Test loading of trained model with include_konfuzio setting set to True."""
@@ -1309,6 +1311,7 @@ def test_load_ai_model_konfuzio_sdk_included():
     assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
 
 
+@unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
 def test_load_old_ai_model():
     """Test loading of an old trained model."""
     path = "trainer/2022-03-10-15-14-51_lohnabrechnung_old_model.pkl"
@@ -1316,6 +1319,7 @@ def test_load_old_ai_model():
         load_model(path)
 
 
+@unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
 def test_load_old_ai_model_2():
     """Test loading of a newer old trained model."""
     path = "trainer/2023-01-09-17-47-50_lohnabrechnung.pkl"

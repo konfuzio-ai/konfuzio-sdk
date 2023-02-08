@@ -36,6 +36,9 @@ from konfuzio_sdk.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
 
+# for proper compiling of MultimodalFileSplittingModel that requires eager running instead of lazy
+# because of multiple inputs (read more about eager vs lazy (graph) here)
+# https://towardsdatascience.com/eager-execution-vs-graph-execution-which-is-better-38162ea4dbf6
 tf.config.experimental_run_functions_eagerly(True)
 
 
@@ -113,7 +116,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         return pkl_file_path
 
 
-class FusionModel(AbstractFileSplittingModel):
+class MultimodalFileSplittingModel(AbstractFileSplittingModel):
     """
     Split a multi-Document file into a list of shorter documents based on model's prediction.
 
@@ -129,7 +132,7 @@ class FusionModel(AbstractFileSplittingModel):
 
     def __init__(self, categories: List[Category], *args, **kwargs):
         """Initialize the Fusion filesplitting model."""
-        logging.info('Initializing FusionModel.')
+        logging.info('Initializing MultimodalFileSplittingModel.')
         super().__init__(categories=categories)
         self.output_dir = self.project.model_folder
         self.requires_images = True
@@ -142,7 +145,7 @@ class FusionModel(AbstractFileSplittingModel):
         self.test_labels = None
         self.input_shape = None
         self.model = None
-        logger.info('Initializing BERT components of the FusionModel.')
+        logger.info('Initializing BERT components of the MultimodalFileSplittingModel.')
         configuration = AutoConfig.from_pretrained('nlpaueb/legal-bert-base-uncased')
         configuration.num_labels = 2
         configuration.output_hidden_states = True
@@ -199,7 +202,7 @@ class FusionModel(AbstractFileSplittingModel):
         :param use_gpu: Run training on GPU if available.
         :type use_gpu: bool
         """
-        logger.info('Fitting FusionModel.')
+        logger.info('Fitting MultimodalFileSplittingModel.')
         for doc in self.documents + self.test_documents:
             for page in doc.pages():
                 if not os.path.exists(page.image_path):
@@ -233,7 +236,7 @@ class FusionModel(AbstractFileSplittingModel):
         self.test_txt_data = [np.asarray(x).astype('float32') for x in self.test_txt_data]
         self.test_txt_data = np.asarray(self.test_txt_data)
         logger.info('Text data preprocessing finished.')
-        logger.info('FusionModel compiling started.')
+        logger.info('MultimodalFileSplittingModel compiling started.')
         # we combine an output of a simplified VGG19 architecture for image processing (read more about it
         # at https://iq.opengenus.org/vgg19-architecture/) and an output of BERT in an MLP-like
         # architecture (read more about it at http://shorturl.at/puKN3). a scheme of our custom architecture can be
@@ -269,7 +272,7 @@ class FusionModel(AbstractFileSplittingModel):
         output = Dense(1, activation='sigmoid')(x)
         self.model = Model(inputs=[img_input, txt_input], outputs=output)
         self.model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-        logger.info('FusionModel compiling finished.')
+        logger.info('MultimodalFileSplittingModel compiling finished.')
         if not use_gpu:
             with tf.device('/cpu:0'):
                 self.model.fit([self.train_img_data, self.train_txt_data], self.train_labels, epochs=epochs, verbose=1)
@@ -281,7 +284,7 @@ class FusionModel(AbstractFileSplittingModel):
                     )
             else:
                 raise ValueError('Fitting on the GPU is impossible because there is no GPU available on the device.')
-        logger.info('FusionModel fitting finished.')
+        logger.info('MultimodalFileSplittingModel fitting finished.')
 
     def predict(self, page: Page, use_gpu: bool = False) -> Page:
         """

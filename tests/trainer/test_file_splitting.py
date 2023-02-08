@@ -9,7 +9,11 @@ from copy import deepcopy
 from konfuzio_sdk.data import Category, Document, Project
 from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
-from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI, FusionModel
+from konfuzio_sdk.trainer.file_splitting import (
+    ContextAwareFileSplittingModel,
+    SplittingAI,
+    MultimodalFileSplittingModel,
+)
 
 from konfuzio_sdk.trainer.document_categorization import FallbackCategorizationModel
 from konfuzio_sdk.trainer.information_extraction import load_model
@@ -223,7 +227,7 @@ class TestFusionFileSplittingModel(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Initialize the tested class."""
         cls.project = Project(id_=46)
-        cls.file_splitting_model = FusionModel(categories=cls.project.categories)
+        cls.file_splitting_model = MultimodalFileSplittingModel(categories=cls.project.categories)
         if not TEST_WITH_FULL_DATASET:
             cls.file_splitting_model.documents = [
                 document for category in cls.file_splitting_model.categories for document in category.documents()
@@ -254,11 +258,36 @@ class TestFusionFileSplittingModel(unittest.TestCase):
             else:
                 assert not page.is_first_page
 
-    @pytest.mark.skip(reason="Takes too long to test upon pushing; disable for local testing.")
+    @pytest.mark.skip(reason="Takes too long to test upon pushing; skipping can be removed for local testing.")
     def test_save_load_model(self):
         """Test saving and loading pickle file of the model."""
         path = self.file_splitting_model.save()
         loaded = load_model(path)
         splitting_ai = SplittingAI(model=loaded)
-        assert isinstance(splitting_ai.model, FusionModel)
+        assert isinstance(splitting_ai.model, MultimodalFileSplittingModel)
         pathlib.Path(path).unlink()
+
+    # def test_splitting_ai_evaluate_full_on_training(self):
+    #     """Test SplittingAI's evaluate_full on training Documents."""
+    #     splitting_ai = SplittingAI(self.file_splitting_model)
+    #     splitting_ai.evaluate_full(use_training_docs=True)
+    #     assert splitting_ai.full_evaluation.tp() == 10
+    #     assert splitting_ai.full_evaluation.fp() == 0
+    #     assert splitting_ai.full_evaluation.fn() == 0
+    #     assert splitting_ai.full_evaluation.tn() == 0
+    #     assert splitting_ai.full_evaluation.precision() == 1.0
+    #     assert splitting_ai.full_evaluation.recall() == 1.0
+    #     assert splitting_ai.full_evaluation.f1() == 1.0
+    #
+    # def test_splitting_ai_evaluate_full_on_testing(self):
+    #     """Test SplittingAI's evaluate_full on testing Documents."""
+    #     splitting_ai = SplittingAI(self.file_splitting_model)
+    #     splitting_ai.evaluate_full()
+    #     print(splitting_ai.full_evaluation.evaluation_results)
+    #     assert splitting_ai.full_evaluation.tp() == 9
+    #     assert splitting_ai.full_evaluation.fp() == 0
+    #     assert splitting_ai.full_evaluation.fn() == 0
+    #     assert splitting_ai.full_evaluation.tn() == 7
+    #     assert splitting_ai.full_evaluation.precision() == 1.0
+    #     assert splitting_ai.full_evaluation.recall() == 1.0
+    #     assert splitting_ai.full_evaluation.f1() == 1.0
