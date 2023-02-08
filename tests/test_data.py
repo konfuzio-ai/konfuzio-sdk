@@ -1689,7 +1689,13 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_get_labels_of_category(self):
         """Return only related Labels as Information Extraction can be trained per Category."""
         # we calculate the set to avoid double counting the NO_LABEL
-        assert len(set(self.prj.categories[0].labels + self.prj.categories[1].labels)) == len(self.prj.labels)
+        assert len(set(self.prj.categories[1].labels + self.prj.categories[2].labels)) == len(self.prj.labels)
+
+    def test_no_category_after_update(self):
+        """Test that NO_CATEGORY is not lost after updating a Project."""
+        self.prj = Project(id_=None, project_folder=OFFLINE_PROJECT, update=True)
+        assert self.prj.no_category
+        assert self.prj.no_category in self.prj.categories
 
     def test_document_with_no_category_has_only_no_label_annotations(self):
         """Test if we skip Annotations except for NO_LABEL in no Category Documents."""
@@ -1768,8 +1774,8 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_category(self):
         """Test if Category of main Label Set is initialized correctly."""
-        assert len(self.prj.categories) == 2
-        assert self.prj.categories[0].id_ == 63
+        assert len(self.prj.categories) == 3
+        assert self.prj.categories[1].id_ == 63
         assert self.prj.label_sets[0].categories[0].id_ == 63
 
     def test_category_documents(self):
@@ -1841,12 +1847,12 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_categories(self):
         """Test get Labels in the Project."""
-        assert self.prj.categories.__len__() == 2
+        assert self.prj.categories.__len__() == 3
         payslips_category = self.prj.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID)
         assert payslips_category.name == 'Lohnabrechnung'
         # We have 5 Label Sets, Lohnabrechnung is Category and a Label Set as it hold labels, however a Category
         # cannot hold labels
-        assert sorted([label_set.name for label_set in self.prj.categories[0].label_sets]) == [
+        assert sorted([label_set.name for label_set in self.prj.categories[1].label_sets]) == [
             'Brutto-Bezug',
             'Lohnabrechnung',
             'NO_LABEL_SET',
@@ -1858,7 +1864,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert receipts_category.name == 'Quittung (GERMAN)'
         # We have 5 Label Sets, Quittung is Category and a Label Set as it hold labels, however a Category
         # cannot hold labels
-        assert sorted([label_set.name for label_set in self.prj.categories[0].label_sets]) == [
+        assert sorted([label_set.name for label_set in self.prj.categories[1].label_sets]) == [
             'Brutto-Bezug',
             'Lohnabrechnung',
             'NO_LABEL_SET',

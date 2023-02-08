@@ -3012,11 +3012,6 @@ class Project(Data):
         pathlib.Path(self.documents_folder).mkdir(parents=True, exist_ok=True)
         pathlib.Path(self.regex_folder).mkdir(parents=True, exist_ok=True)
         pathlib.Path(self.model_folder).mkdir(parents=True, exist_ok=True)
-        # adding a NO_CATEGORY at this step because we need to preserve it after Project is updated
-        if "NO_CATEGORY" not in [category.name for category in self.categories]:
-            self.no_category = Category(project=self)
-            self.no_category.name_clean = "NO_CATEGORY"
-            self.no_category.name = "NO_CATEGORY"
         if self.id_ and (not is_file(self.meta_file_path, raise_exception=False) or update):
             self.write_project_files()
         self.get_meta(reload=True)
@@ -3108,6 +3103,12 @@ class Project(Data):
 
             self._label_sets = []  # clean up Label Sets to not create duplicates
             self.categories = []  # clean up Labels to not create duplicates
+
+            # adding a NO_CATEGORY at this step because we need to preserve it after Project is updated
+            if "NO_CATEGORY" not in [category.name for category in self.categories]:
+                self.no_category = Category(project=self)
+                self.no_category.name_clean = "NO_CATEGORY"
+                self.no_category.name = "NO_CATEGORY"
             for label_set_data in label_sets_data:
                 label_set = LabelSet(project=self, id_=label_set_data['id'], **label_set_data)
                 if label_set.is_default:
