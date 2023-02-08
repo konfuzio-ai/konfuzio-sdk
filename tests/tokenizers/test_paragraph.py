@@ -3,7 +3,7 @@ import logging
 import unittest
 
 from copy import deepcopy
-from konfuzio_sdk.data import Project
+from konfuzio_sdk.data import Project, Span, Annotation
 
 from konfuzio_sdk.tokenizer.block import ParagraphTokenizer
 
@@ -17,7 +17,7 @@ class TestDetectronParagraphTokenizer(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the tokenizer and test setup."""
-        cls.project = Project(id_=458, update=True)
+        cls.project = Project(id_=458)
         cls.tokenizer = ParagraphTokenizer(mode='detectron')
 
         cls.document_1 = cls.project.get_document_by_id(601418)  # Lorem ipsum test document
@@ -64,7 +64,7 @@ class TestLineDistanceParagraphTokenizer(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the tokenizer and test setup."""
-        cls.project = Project(id_=458, update=True)
+        cls.project = Project(id_=458)
         cls.tokenizer = ParagraphTokenizer(mode='line_distance')
 
         cls.document_1 = cls.project.get_document_by_id(601418)  # Lorem ipsum test document
@@ -83,4 +83,48 @@ class TestLineDistanceParagraphTokenizer(unittest.TestCase):
 
         assert len(pages[0].annotations(use_correct=False)) == 8
         assert len(pages[1].annotations(use_correct=False)) == 12
+        assert len(pages[2].annotations(use_correct=False)) == 9
+
+    def test_paragraph_document_2_merge_vertical_like(self):
+        """Test vertical_merge_like to merge Annotations like another Document."""
+        virtual_doc = deepcopy(self.document_1)
+        self.tokenizer.tokenize(virtual_doc)
+        assert len(virtual_doc.annotations(use_correct=False)) == 29
+        virtual_doc_pages = virtual_doc.pages()
+
+        assert len(virtual_doc_pages) == 3
+        assert len(virtual_doc_pages[0].annotations(use_correct=False)) == 8
+        assert len(virtual_doc_pages[1].annotations(use_correct=False)) == 12
+        assert len(virtual_doc_pages[2].annotations(use_correct=False)) == 9
+
+        new_virtual_document = deepcopy(virtual_doc)
+
+        for span in virtual_doc.spans(use_correct=False):
+            spans = [Span(start_offset=span.start_offset, end_offset=span.end_offset)]
+            _ = Annotation(
+                document=new_virtual_document,
+                annotation_set=new_virtual_document.no_label_annotation_set,
+                label=new_virtual_document.project.no_label,
+                label_set=new_virtual_document.project.no_label_set,
+                category=new_virtual_document.category,
+                spans=spans,
+            )
+
+        pages = new_virtual_document.pages()
+        assert len(pages) == 3
+
+        assert len(pages[0].annotations(use_correct=False)) == len(virtual_doc_pages[0].spans(use_correct=False))
+        assert len(pages[0].annotations(use_correct=False)) == 32
+        assert len(pages[1].annotations(use_correct=False)) == len(virtual_doc_pages[1].spans(use_correct=False))
+        assert len(pages[1].annotations(use_correct=False)) == 32
+        assert len(pages[2].annotations(use_correct=False)) == len(virtual_doc_pages[2].spans(use_correct=False))
+        assert len(pages[2].annotations(use_correct=False)) == 35
+
+        new_virtual_document.merge_vertical_like(self.virtual_doc)
+
+        assert len(pages[0].annotations(use_correct=False)) == len(virtual_doc_pages[0].annotations(use_correct=False))
+        assert len(pages[0].annotations(use_correct=False)) == 8
+        assert len(pages[1].annotations(use_correct=False)) == len(virtual_doc_pages[1].annotations(use_correct=False))
+        assert len(pages[1].annotations(use_correct=False)) == 12
+        assert len(pages[2].annotations(use_correct=False)) == len(virtual_doc_pages[2].annotations(use_correct=False))
         assert len(pages[2].annotations(use_correct=False)) == 9
