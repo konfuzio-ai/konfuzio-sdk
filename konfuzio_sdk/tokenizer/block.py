@@ -1,7 +1,7 @@
 """Sentence and Paragraph tokenizers."""
 import logging
 import abc
-from typing import List, Dict
+from typing import List, Dict, Union
 import collections
 import time
 
@@ -17,10 +17,14 @@ logger = logging.getLogger(__name__)
 class BlockTokenizer(AbstractTokenizer):
     """Block tokenizer for methods shared between Paragraph and Sentence tokenizers."""
 
-    def __init__(self, mode: str, line_height_ratio: float):
+    def __init__(self, mode: str, line_height_ratio: float, height: Union[int, float, None] = None):
         """Initialize Block Tokenizer."""
         self.mode = mode
         self.line_height_ratio = line_height_ratio
+        if height is not None:
+            if not (isinstance(height, int) or isinstance(height, float)):
+                raise TypeError(f'Parameter must be of type int or float. It is {type(height)}.')
+        self.height = height
 
     def __repr__(self):
         """Return string representation of the class."""
@@ -98,13 +102,15 @@ class BlockTokenizer(AbstractTokenizer):
 class ParagraphTokenizer(BlockTokenizer):
     """Tokenizer splitting Document into paragraphs."""
 
-    def __init__(self, mode: str = 'detectron', line_height_ratio: float = 0.8):
+    def __init__(self, mode: str = 'detectron', line_height_ratio: float = 0.8, height: Union[int, float, None] = None):
         """
         Initialize Paragraph Tokenizer.
 
         :param mode: line_distance or detectron
+        :param line_height_ratio: ratio of the median line height to use as threshold to create new paragraph.
+        :param height: Height line threshold to use instead of the automatically calulated one.
         """
-        super().__init__(mode=mode, line_height_ratio=line_height_ratio)
+        super().__init__(mode=mode, line_height_ratio=line_height_ratio, height=height)
 
     def _detectron_tokenize(self, document: Document) -> Document:
         """Create one multiline Annotation per paragraph detected by detectron2."""
@@ -169,11 +175,6 @@ class ParagraphTokenizer(BlockTokenizer):
 
     def _line_distance_tokenize(self, document: Document) -> Document:
         """Create one multiline Annotation per paragraph detected by line distance based rule based algorithm."""
-        height = None
-        if height is not None:
-            if not (isinstance(height, int) or isinstance(height, float)):
-                raise TypeError(f'Parameter must be of type int or float. It is {type(height)}.')
-
         from statistics import median
 
         for page in document.pages():
@@ -190,14 +191,14 @@ class ParagraphTokenizer(BlockTokenizer):
             page_lines.append(line_bboxes)
 
             # set line_threshold
-            if height is None:
+            if self.height is None:
                 # calculate median vertical character size for Page
                 line_threshold = round(
                     self.line_height_ratio * median(bbox['y1'] - bbox['y0'] for bbox in page_char_bboxes),
                     6,
                 )
             else:
-                line_threshold = height
+                line_threshold = self.height
 
             # go through lines to find paragraphs
             previous_y0 = None
@@ -235,13 +236,15 @@ class ParagraphTokenizer(BlockTokenizer):
 class SentenceTokenizer(BlockTokenizer):
     """Tokenizer splitting Document into Sentences."""
 
-    def __init__(self, mode: str = 'detectron', line_height_ratio: float = 0.8):
+    def __init__(self, mode: str = 'detectron', line_height_ratio: float = 0.8, height: Union[int, float, None] = None):
         """
         Initialize Sentence Tokenizer.
 
         :param mode: line_distance or detectron
+        :param line_height_ratio: ratio of the median line height to use as threshold to create new paragraph.
+        :param height: Height line threshold to use instead of the automatically calulated one.
         """
-        super().__init__(mode=mode, line_height_ratio=line_height_ratio)
+        super().__init__(mode=mode, line_height_ratio=line_height_ratio, height=height)
         self.punctuation = {'.', '!', '?'}
 
     def _detectron_tokenize(self, document: Document) -> Document:
@@ -320,25 +323,21 @@ class SentenceTokenizer(BlockTokenizer):
 
         return document
 
-    def _line_distance_tokenize(self, document: Document, height=None) -> Document:
+    def _line_distance_tokenize(self, document: Document) -> Document:
         """Create one multiline Annotation per sentence in paragraph detected by line distance based rule based algo."""
-        if height is not None:
-            if not (isinstance(height, int) or isinstance(height, float)):
-                raise TypeError(f'Parameter must be of type int or float. It is {type(height)}.')
-
         from statistics import median
 
         for page in document.pages():
             page_char_bboxes = page.get_bbox().values()
             # set line_threshold
-            if height is None:
+            if self.height is None:
                 # calculate median vertical character size for Page
                 line_threshold = round(
                     self.line_height_ratio * median(bbox['y1'] - bbox['y0'] for bbox in page_char_bboxes),
                     6,
                 )
             else:
-                line_threshold = height
+                line_threshold = self.height
 
             page_lines = []
             line_bboxes = []
