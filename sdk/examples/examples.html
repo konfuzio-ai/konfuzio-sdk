@@ -651,37 +651,6 @@ specify the metrics accordingly at the class’s initialization). Example usage:
 </div>
 </section>
 </section>
-<section id="document-categorization">
-<h2>Document Categorization<a class="headerlink" href="#document-categorization" title="Permalink to this headline">¶</a></h2>
-<section id="categorization-fallback-logic">
-<h3>Categorization Fallback Logic<a class="headerlink" href="#categorization-fallback-logic" title="Permalink to this headline">¶</a></h3>
-<p>Use the name of the category as an effective fallback logic to categorize documents when no categorization AI is available:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">FallbackCategorizationModel</span>
-
-<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
-<span class="n">categorization_model</span> <span class="o">=</span> <span class="n">FallbackCategorizationModel</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
-<span class="n">categorization_model</span><span class="o">.</span><span class="n">categories</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">categories</span>
-
-<span class="n">test_document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
-
-<span class="c1"># returns virtual SDK Document with category attribute</span>
-<span class="n">result_doc</span> <span class="o">=</span> <span class="n">categorization_model</span><span class="o">.</span><span class="n">categorize</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">test_document</span><span class="p">)</span>
-
-<span class="c1"># if the input document is already categorized, the already present category is used</span>
-<span class="c1"># unless recategorize is True</span>
-<span class="n">result_doc</span> <span class="o">=</span> <span class="n">categorization_model</span><span class="o">.</span><span class="n">categorize</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">test_document</span><span class="p">,</span> <span class="n">recategorize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found category </span><span class="si">{</span><span class="n">result_doc</span><span class="o">.</span><span class="n">category</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">result_doc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-<span class="c1"># option to modify the provided document in place</span>
-<span class="n">categorization_model</span><span class="o">.</span><span class="n">categorize</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">test_document</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found category </span><span class="si">{</span><span class="n">test_document</span><span class="o">.</span><span class="n">category</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">test_document</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-</section>
 <section id="train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents">
 <h2>Train a Konfuzio SDK Model to Extract Information From Payslip Documents<a class="headerlink" href="#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents" title="Permalink to this headline">¶</a></h2>
 <p>The tutorial <em>RFExtractionAI Demo</em> aims to show you how to use the Konfuzio SDK package to use a simple <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#konfuzio_sdk.tokenizer.regex.WhitespaceTokenizer">Whitespace

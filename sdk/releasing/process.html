@@ -255,14 +255,15 @@
 <li><p>SDK Release Notes are automatically generated from our pull requests using <a class="reference external" href="https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes">the Github’s feature</a>. Each pull request includes links to relevant documentation about how to use the new feature, see for example <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/pull/124">https://github.com/konfuzio-ai/konfuzio-sdk/pull/124</a>.</p></li>
 <li><p>The new SDK features are available on Friday evening at the end of each sprint. As we internally test and integrated the Konfuzio Server with each nightly SDK release, a new Server release is also available at app.konfuzio.com on the same Friday evening. See the <a class="reference external" href="https://dev.konfuzio.com/web/changelog_app.html">changelog</a> for full information about each Konfuzio Server release.</p></li>
 </ul>
+</section>
 <section id="how-to-release-with-github-to-pypi">
-<h2>How to release with GitHub to PyPI<a class="headerlink" href="#how-to-release-with-github-to-pypi" title="Permalink to this headline">¶</a></h2>
+<h1>How to release with GitHub to PyPI<a class="headerlink" href="#how-to-release-with-github-to-pypi" title="Permalink to this headline">¶</a></h1>
 <ol class="arabic">
 <li><p>Change the version number in the file VERSION use the format <code class="docutils literal notranslate"><span class="pre">v.X.X.X</span></code> without whitespaces.</p>
-<a class="reference external image-reference" href="releasing/update-python-version.png"><img alt="Update Python Package Version" src="sdk/releasing/releasing/update-python-version.png" /></a>
+<a class="reference external image-reference" href="/sdk/releasing/update-python-version.png"><img alt="Update Python Package Version" src="../../_images/update-python-version.png" /></a>
 </li>
 <li><p>Draft a Release <a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/releases/new">here</a>.</p>
-<a class="reference external image-reference" href="releasing/steps-to-draft-a-release.png"><img alt="draft_new_release.png" src="sdk/releasing/releasing/steps-to-draft-a-release.png" /></a>
+<a class="reference external image-reference" href="/sdk/releasing/steps-to-draft-a-release.png"><img alt="draft_new_release.png" src="../../_images/steps-to-draft-a-release.png" /></a>
 <ol class="arabic simple">
 <li><p>Create a new Tag on master, named as the version number in step 1.</p></li>
 <li><p>Add a title for the release</p></li>
@@ -275,8 +276,8 @@ that the Release was uploaded via having a look on <a class="reference external"
 </ol>
 </section>
 <section id="how-to-use-nightly-builds">
-<h2>How to use nightly builds?<a class="headerlink" href="#how-to-use-nightly-builds" title="Permalink to this headline">¶</a></h2>
-<a class="reference external image-reference" href="releasing/new-pypi-release.png"><img alt="New PyPI Python release" src="sdk/releasing/releasing/new-pypi-release.png" /></a>
+<h1>How to use nightly builds?<a class="headerlink" href="#how-to-use-nightly-builds" title="Permalink to this headline">¶</a></h1>
+<a class="reference external image-reference" href="/sdk/releasing/new-pypi-release.png"><img alt="New PyPI Python release" src="../../_images/new-pypi-release.png" /></a>
 <ol class="arabic simple">
 <li><p>Install the latest pre-release <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--pre</span> <span class="pre">konfuzio_sdk</span></code></p></li>
 <li><p>Force to pick the latest pre-release the version <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">konfuzio_sdk&gt;=0.2.3.dev0</span></code>. As PEP440 states: The
@@ -291,8 +292,7 @@ post-releases)</p></li>
 Year-Month-Date-Hour-Minute-Second of last commit date on branch master used to create this release.
 This process allows publish a new package if there are new commits on the master branch.</p>
 </div>
-<a class="reference external image-reference" href="releasing/version-number-prerelease.png"><img alt="img.png" src="sdk/releasing/releasing/version-number-prerelease.png" /></a>
-</section>
+<a class="reference external image-reference" href="/sdk/releasing/version-number-prerelease.png"><img alt="img.png" src="../../_images/version-number-prerelease.png" /></a>
 </section>
 
 

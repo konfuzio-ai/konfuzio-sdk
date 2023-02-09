@@ -59,10 +59,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#example-of-evaluation-input-and-output">Example of evaluation input and output</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#document-categorization">Document Categorization</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#categorization-fallback-logic">Categorization Fallback Logic</a></li>
-</ul>
-</li>
 <li class="toctree-l2"><a class="reference internal" href="#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents">Train a Konfuzio SDK Model to Extract Information From Payslip Documents</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#evaluate-a-trained-extraction-ai-model">Evaluate a Trained Extraction AI Model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#create-regex-based-annotations">Create Regex-based Annotations</a></li>
@@ -672,37 +668,6 @@ pages being predicted correctly. An example of how the evaluation would be imple
 <p>To log metrics after evaluation, you can call <code class="docutils literal notranslate"><span class="pre">EvaluationCalculator</span></code>‘s method <code class="docutils literal notranslate"><span class="pre">metrics_logging</span></code> (you would need to
 specify the metrics accordingly at the class’s initialization). Example usage:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">EvaluationCalculator</span><span class="p">(</span><span class="n">tp</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">fp</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">fn</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">tn</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">metrics_logging</span><span class="p">()</span>
-</pre></div>
-</div>
-</section>
-</section>
-<section id="document-categorization">
-<h2>Document Categorization<a class="headerlink" href="#document-categorization" title="Permalink to this headline">¶</a></h2>
-<section id="categorization-fallback-logic">
-<h3>Categorization Fallback Logic<a class="headerlink" href="#categorization-fallback-logic" title="Permalink to this headline">¶</a></h3>
-<p>Use the name of the category as an effective fallback logic to categorize documents when no categorization AI is available:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
-<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">FallbackCategorizationModel</span>
-
-<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
-<span class="n">categorization_model</span> <span class="o">=</span> <span class="n">FallbackCategorizationModel</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
-<span class="n">categorization_model</span><span class="o">.</span><span class="n">categories</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">categories</span>
-
-<span class="n">test_document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
-
-<span class="c1"># returns virtual SDK Document with category attribute</span>
-<span class="n">result_doc</span> <span class="o">=</span> <span class="n">categorization_model</span><span class="o">.</span><span class="n">categorize</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">test_document</span><span class="p">)</span>
-
-<span class="c1"># if the input document is already categorized, the already present category is used</span>
-<span class="c1"># unless recategorize is True</span>
-<span class="n">result_doc</span> <span class="o">=</span> <span class="n">categorization_model</span><span class="o">.</span><span class="n">categorize</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">test_document</span><span class="p">,</span> <span class="n">recategorize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found category </span><span class="si">{</span><span class="n">result_doc</span><span class="o">.</span><span class="n">category</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">result_doc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-<span class="c1"># option to modify the provided document in place</span>
-<span class="n">categorization_model</span><span class="o">.</span><span class="n">categorize</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">test_document</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found category </span><span class="si">{</span><span class="n">test_document</span><span class="o">.</span><span class="n">category</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">test_document</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
