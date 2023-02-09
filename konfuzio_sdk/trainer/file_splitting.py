@@ -285,6 +285,8 @@ class SplittingAI:
         :return: A list of suggested new Sub-Documents built from the original Document or a list with a Document
         with Pages marked .is_first_page on splitting points.
         """
+        if not document.category:
+            raise AttributeError("A Document without Category cannot be split.")
         if self.model.requires_images:
             document.get_images()
         if return_pages:
