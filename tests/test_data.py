@@ -19,6 +19,7 @@ from konfuzio_sdk.data import (
     Span,
     download_training_and_test_data,
     Category,
+    CategoryAnnotation,
     Page,
     Bbox,
     BboxValidationTypes,
@@ -357,6 +358,84 @@ class TestOfflineExampleData(unittest.TestCase):
         test_category = Category(project=self.project, id_=1, name="Te(s)t Category Name (content content)")
         assert test_category.fallback_name == "tet category name"
 
+    def test_document_with_no_category_has_category_annotations_with_zero_confidence(self):
+        """Test that a Document with no Category has only Category Annotations with zero confidence."""
+        document = deepcopy(self.project.get_document_by_id(89928))
+        document.set_category(None)
+        for page in document.pages():
+            assert page.category_annotations == []
+        assert len(document.category_annotations) == len(self.project.categories)
+        assert document.category_annotations[0].category == self.payslips_category
+        assert document.category_annotations[0].confidence == 0.0
+        assert document.category_annotations[1].category == self.receipts_category
+        assert document.category_annotations[1].confidence == 0.0
+        assert document.maximum_confidence_category_annotation is None
+        assert document.maximum_confidence_category is None
+        # test that no annotations are attached to the Pages
+        for page in document.pages():
+            assert page.category_annotations == []
+            assert page.category is None
+
+    def test_category_annotations_no_predictions(self):
+        """Test Category Annotations for a Document with a user defined Category but with no AI Category predictions."""
+        document = deepcopy(self.project.get_document_by_id(89928))
+        assert document.category == self.receipts_category
+        for page in document.pages():
+            assert page.category_annotations == []
+        assert len(document.category_annotations) == len(self.project.categories)
+        assert document.category_annotations[0].category == self.payslips_category
+        assert document.category_annotations[0].confidence == 0.0
+        assert document.category_annotations[1].category == self.receipts_category
+        assert document.category_annotations[1].confidence == 1.0
+        assert document.maximum_confidence_category_annotation.category == self.receipts_category
+        assert document.maximum_confidence_category == self.receipts_category
+        # test that no annotations are attached to the Pages while still having their Category defined
+        for page in document.pages():
+            assert page.category_annotations == []
+            assert page.category == self.receipts_category
+
+    def test_category_annotations_with_predictions(self):
+        """Test Category Annotations for a Document with no user defined Category but with AI Category predictions."""
+        document = deepcopy(self.project.get_document_by_id(89928))
+        document.set_category(None)
+        for page in document.pages():  # this Document has 2 Pages
+            assert page.category_annotations == []
+            # simulate the prediction of a Categorization AI by adding Category Annotations to the Pages
+            CategoryAnnotation(category=self.payslips_category, confidence=0.2 * page.number, page=page)  # 0.2+0.4=0.6
+            CategoryAnnotation(category=self.receipts_category, confidence=0.3 * page.number, page=page)  # 0.3+0.6=0.9
+            assert page.maximum_confidence_category_annotation.category == self.receipts_category
+            assert page.category == self.receipts_category
+        assert len(document.category_annotations) == len(self.project.categories)
+        assert document.category_annotations[0].category == self.payslips_category
+        assert round(document.category_annotations[0].confidence, 2) == 0.3  # 0.6/2
+        assert document.category_annotations[1].category == self.receipts_category
+        assert round(document.category_annotations[1].confidence, 2) == 0.45  # 0.9/2
+        assert document.maximum_confidence_category_annotation.category == self.receipts_category
+        assert document.maximum_confidence_category == self.receipts_category
+
+    def test_category_annotations_with_predictions_and_user_revised_category(self):
+        """Test Category Annotations for a Document with both user defined Category and AI Category predictions."""
+        document = deepcopy(self.project.get_document_by_id(89928))
+        document.set_category(None)
+        for page in document.pages():  # this Document has 2 Pages
+            assert page.category_annotations == []
+            # simulate the prediction of a Categorization AI by adding Category Annotations to the Pages
+            CategoryAnnotation(category=self.payslips_category, confidence=0.2 * page.number, page=page)  # 0.2+0.4=0.6
+            CategoryAnnotation(category=self.receipts_category, confidence=0.3 * page.number, page=page)  # 0.3+0.6=0.9
+            assert page.maximum_confidence_category_annotation.category == self.receipts_category
+            assert page.category == self.receipts_category
+        # test a user defined Category that is different from the maximum confidence predicted Category will override
+        document.set_category(self.payslips_category)
+        assert len(document.category_annotations) == len(self.project.categories)
+        assert document.category_annotations[0].category == self.payslips_category
+        assert round(document.category_annotations[0].confidence, 2) == 0.3  # 0.6/2
+        assert document.category_annotations[1].category == self.receipts_category
+        # Test that a user revised Category overrides predictions
+        assert round(document.category_annotations[1].confidence, 2) == 0.45  # 0.9/2
+        assert document.maximum_confidence_category_annotation.category == self.payslips_category
+        assert round(document.maximum_confidence_category_annotation.confidence, 2) == 0.3
+        assert document.maximum_confidence_category == self.payslips_category
+
 
 class TestEqualityAnnotation(unittest.TestCase):
     """Test the equality of Annotations."""
@@ -528,7 +607,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         cls.label = Label(project=cls.project, text='First Offline Label')
         cls.category = Category(project=cls.project, id_=1)
         cls.category2 = Category(project=cls.project, id_=2)
-        cls.document = Document(project=cls.project, category=cls.category)
+        cls.document = Document(project=cls.project, category=cls.category, text="Hello.")
         cls.label_set = LabelSet(project=cls.project, categories=[cls.category], id_=421)
         cls.label_set.add_label(cls.label)
         cls.annotation_set = AnnotationSet(document=cls.document, label_set=cls.label_set)
@@ -587,7 +666,7 @@ class TestOfflineDataSetup(unittest.TestCase):
             page.set_category(self.category)
             assert page.maximum_confidence_category_annotation.category == self.category
             assert page.maximum_confidence_category_annotation.confidence == 1.0
-            assert len(page._category_annotations) == 1
+            assert len(page.category_annotations) == 1
         assert document.maximum_confidence_category == self.category
         assert document.category == self.category
 
@@ -598,7 +677,7 @@ class TestOfflineDataSetup(unittest.TestCase):
             page = Page(id_=None, document=document, start_offset=0, end_offset=0, number=i + 1, original_size=(0, 0))
             assert page.category is None
             assert page.maximum_confidence_category_annotation is None
-            assert len(page._category_annotations) == 0
+            assert len(page.category_annotations) == 0
         assert document.maximum_confidence_category is None
         assert document.category is None
 
@@ -618,7 +697,7 @@ class TestOfflineDataSetup(unittest.TestCase):
             page.set_category(page_category)
             assert page.maximum_confidence_category_annotation.category == page_category
             assert page.maximum_confidence_category_annotation.confidence == 1.0
-            assert len(page._category_annotations) == 1
+            assert len(page.category_annotations) == 1
         assert len(document.category_annotations) == 2
         assert document.category is None
         # as each page got assigned a different Category with confidence all equal to 1,
@@ -646,11 +725,11 @@ class TestOfflineDataSetup(unittest.TestCase):
             if page_category is not None:
                 assert page.maximum_confidence_category_annotation.category == page_category
                 assert page.maximum_confidence_category_annotation.confidence == 1.0
-                assert len(page._category_annotations) == 1
+                assert len(page.category_annotations) == 1
             else:
                 assert page.category is None
                 assert page.maximum_confidence_category_annotation is None
-                assert len(page._category_annotations) == 0
+                assert len(page.category_annotations) == 0
         assert len(document.category_annotations) == 2
         assert document.category is None
 

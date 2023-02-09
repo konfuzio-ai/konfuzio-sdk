@@ -34,7 +34,7 @@ for page in result_doc.pages():
 print(f"Found category {result_doc.category} for {result_doc}")
 ```
 
-### Operating the Category of a Document and its individual Pages
+### Working with the Category of a Document and its individual Pages
 
 You can initialize a Document with a Category, which will count as if a human manually revised it.
 
@@ -66,35 +66,19 @@ for page in document.pages():
 
 If you use a Categorization AI to automatically assign a Category to a Document (such as the 
 [FallbackCategorizationModel](tutorials.html#categorization-fallback-logic)), each Page will be assigned a 
-Category Annotation with predicted confidence information, and the following attributes will be accessible. You can 
+Category Annotation with predicted confidence information, and the following properties will be accessible. You can 
 also find these documented under [API Reference - Document](sourcecode.html#document), 
 [API Reference - Page](sourcecode.html#page) and 
 [API Reference - Category Annotation](sourcecode.html#category-annotation).
 
-```python
-# List of predicted Category Annotations at the Document level
-Document.category_annotations: List[CategoryAnnotation]
-
-CategoryAnnotation.category: Category  # the AI predicted Category of this Category Annotation
-CategoryAnnotation.confidence: float  # the AI predicted confidence of this Category Annotation
-
-# Get the maximum confidence predicted Category Annotation or the human revised one if present.
-Document.maximum_confidence_category_annotation: Optional[CategoryAnnotation]
-
-# Get the maximum confidence predicted Category or the human revised one if present.
-Document.maximum_confidence_category: Optional[Category]
-
-# Returns a Category only if all Pages have same Category, otherwise None.
-# In that case, it hints to the fact that the Document should probably be revised 
-# or split into Documents with consistently categorized Pages.
-Document.category: Optional[Category]
-
-# List of predicted Category Annotations at the Page level.
-Page.category_annotations: List[CategoryAnnotation]
-
-# Get the maximum confidence predicted Category Annotation or the one revised by user for this Page.
-Page.maximum_confidence_category_annotation: Optional[CategoryAnnotation]
-
-# Get the maximum confidence predicted Category or the one revised by user for this Page.
-Page.category: Optional[Category]
-```
+| Property                     | Description                                                                                                                                                                                                                       |
+|-------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `CategoryAnnotation.category`    | The AI predicted Category of this Category<br>Annotation.                                                                                                                                                                         |
+| `CategoryAnnotation.confidence`  | The AI predicted confidence of this Category<br>Annotation.                                                                                                                                                                       |
+| `Document.category_annotations`   | List of predicted Category Annotations at the<br>Document level.                                                                                                                                                                  |
+| `Document.maximum_confidence_category_annotation`   | Get the maximum confidence predicted Category<br>Annotation, or the human revised one if present.                                                                                                                                 |
+| `Document.maximum_confidence_category`   | Get the maximum confidence predicted Category<br>or the human revised one if present.                                                                                                                                             |
+| `Document.category`  | Returns a Category only if all Pages have same<br>Category, otherwise None. In that case, it hints<br>to the fact that the Document should probably<br>be revised or split into Documents with<br>consistently categorized Pages. |
+| `Page.category_annotations`   | List of predicted Category Annotations at the<br>Page level.                                                                                                                                                                      |
+| `Page.maximum_confidence_category_annotation`   | Get the maximum confidence predicted Category<br>Annotation or the one revised by the user for this<br>Page.                                                                                                                      |
+| `Page.category`  | Get the maximum confidence predicted Category<br>or the one revised by user for this Page.                                                                                                                                        |

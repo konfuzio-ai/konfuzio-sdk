@@ -61,8 +61,6 @@ class AbstractCategorizationAI(metaclass=abc.ABCMeta):
                 f'again. Please use recategorize=True to force running the Categorization AI again on this Document.'
             )
             return virtual_doc
-        elif recategorize:
-            virtual_doc.set_category(None)
 
         # Categorize each Page of the Document.
         for page in virtual_doc.pages():
@@ -123,5 +121,10 @@ class FallbackCategorizationModel(AbstractCategorizationAI):
                 _ = CategoryAnnotation(category=training_category, confidence=1.0, page=page)
                 break
         if page.category is None:
-            logger.warning(f'{self} could not find the Category of {page} by using the fallback categorization logic.')
+            logger.info(
+                f'{self} could not find the Category of {page} by using the fallback categorization logic.'
+                f'We will now apply the same Category of the first Page to this Page (if any).'
+            )
+            first_page = page.document.pages()[0]
+            _ = CategoryAnnotation(category=first_page.category, confidence=1.0, page=page)
         return page

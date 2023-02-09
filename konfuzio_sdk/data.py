@@ -120,7 +120,7 @@ class Page(Data):
         self.image_path = os.path.join(self.document.document_folder, f'page_{self.number}.png')
 
         self._category = self.document._category
-        self._category_annotations: List['CategoryAnnotation'] = []
+        self.category_annotations: List['CategoryAnnotation'] = []
         self._human_chosen_category_annotation: Optional[CategoryAnnotation] = None
         self.is_first_page = None
         if self.document.dataset_status in (2, 3):
@@ -270,12 +270,12 @@ class Page(Data):
 
     def add_category_annotation(self, category_annotation: 'CategoryAnnotation'):
         """Annotate a Page with a Category and confidence information."""
-        duplicated = [x for x in self._category_annotations if x == category_annotation]
+        duplicated = [x for x in self.category_annotations if x == category_annotation]
         if duplicated:
             raise ValueError(
                 f'In {self} the {category_annotation} is a duplicate of {duplicated} and will not be added.'
             )
-        self._category_annotations.append(category_annotation)
+        self.category_annotations.append(category_annotation)
 
     def get_category_annotation(self, category, add_if_not_present: bool = False) -> 'CategoryAnnotation':
         """
@@ -291,7 +291,7 @@ class Page(Data):
         """
         filtered_category_annotations = [
             category_annotation
-            for category_annotation in self._category_annotations
+            for category_annotation in self.category_annotations
             if category_annotation.category == category
         ]
         # if the list is not empty it means there is exactly one CategoryAnnotation with the assigned Category
@@ -314,7 +314,7 @@ class Page(Data):
         """
         self._category = category
         if category is None:
-            self._category_annotations = []
+            self.category_annotations = []
             self._human_chosen_category_annotation = None
             return
         category_annotation = self.get_category_annotation(category, add_if_not_present=True)
@@ -329,9 +329,9 @@ class Page(Data):
         """
         if self._human_chosen_category_annotation is not None:
             return self._human_chosen_category_annotation
-        elif self._category_annotations:
+        elif self.category_annotations:
             # return the highest confidence CategoryAnnotation if no human revised it
-            return sorted(self._category_annotations, key=lambda x: x.confidence)[-1]
+            return sorted(self.category_annotations, key=lambda x: x.confidence)[-1]
         else:
             return None
 
@@ -756,7 +756,7 @@ class CategoryAnnotation(Data):
         id_: Optional[int] = None,
     ):
         """
-        Create a CategoryAnnotation and link it to a Page.
+        Create a CategoryAnnotation and link it to a Document or to a specific Page in a Document.
 
         :param id_: ID of the CategoryAnnotation.
         :param category: The Category to annotate the Page with.
@@ -784,18 +784,21 @@ class CategoryAnnotation(Data):
 
     def __repr__(self):
         """Return string representation."""
-        return f"Category Annotation: {self.category}, {self.confidence}"
+        return f"Category Annotation: ({self.category}, {self.confidence}) in {self.page or self.document}"
 
     def __eq__(self, other):
         """Define equality condition for CategoryAnnotations.
 
         A CategoryAnnotation is equal to another if both the linked Page and the predicted Category are the same.
         """
-        return (self.page == other.page) and (self.category == other.category)
+        return (other is not None) and (self.page == other.page) and (self.category == other.category)
 
     def set_revised(self) -> None:
         """Set this Category Annotation as revised by human, and thus the correct one for the linked Page."""
-        self.page.set_category(self)
+        if self.page is not None:
+            self.page.set_category(self.category)
+        elif self.document is not None:
+            self.document.set_category(self.category)
 
     @property
     def confidence(self) -> float:
@@ -809,8 +812,10 @@ class CategoryAnnotation(Data):
         """
         # if confidence is None it means it was never predicted by an AI
         if self._confidence is None:
-            if (self.page is not None) and (self.page.maximum_confidence_category_annotation == self):
-                # if this CategoryAnnotation was added by a human then the confidence is 1
+            # if this CategoryAnnotation was added by a human then the confidence is 1
+            if (self.page is not None) and (self.page._human_chosen_category_annotation == self):
+                return 1.0
+            elif (self.document is not None) and (self.document._category == self.category):
                 return 1.0
             else:
                 # otherwise there is no prediction and no human revision so the confidence is 0
@@ -2184,12 +2189,12 @@ class Document(Data):
         """
         category_annotations = []
         for category in self.project.categories:
-            confidence = self._category_confidence
-            if self._category_confidence is None:
-                confidence = 0
-                for page in self.pages():
-                    confidence += page.get_category_annotation(category).confidence
-                confidence /= len(self.project.categories)
+            confidence = 0
+            for page in self.pages():
+                confidence += page.get_category_annotation(category).confidence
+            confidence /= self.number_of_pages
+            if (confidence == 0.0) and (category == self._category):
+                confidence = self._category_confidence
             category_annotation = CategoryAnnotation(category=category, document=self, confidence=confidence)
             category_annotations.append(category_annotation)
         return category_annotations
@@ -2201,19 +2206,17 @@ class Document(Data):
 
         :return: The found Category Annotation, or None if not present.
         """
-        if self.category_annotations:
-            if self.category_is_revised:
-                # there is a unique Category Annotation per Category associated to this Document
-                # by construction in Document.category_annotations
-                return [
-                    category_annotation
-                    for category_annotation in self.category_annotations
-                    if category_annotation.category == self._category
-                ][0]
-            else:
-                category_annotation = sorted(self.category_annotations, key=lambda x: x.confidence)[-1]
-                if category_annotation.confidence > 0.0:
-                    return category_annotation
+        if self._category is not None:
+            # there is a unique Category Annotation per Category associated to this Document
+            # by construction in Document.category_annotations
+            return [
+                category_annotation
+                for category_annotation in self.category_annotations
+                if category_annotation.category == self._category
+            ][0]
+        category_annotation = sorted(self.category_annotations, key=lambda x: x.confidence)[-1]
+        if category_annotation.confidence != 0.0:
+            return category_annotation
         return None
 
     @property
@@ -2223,8 +2226,6 @@ class Document(Data):
 
         :return: The found Category, or None if not present.
         """
-        if self._category is not None:
-            return self._category
         if self.maximum_confidence_category_annotation is not None:
             return self.maximum_confidence_category_annotation.category
         return None
@@ -2241,15 +2242,20 @@ class Document(Data):
         if not self.pages():
             return self._category
         all_pages_have_same_category = len(set([page.category for page in self.pages()]) - {None}) == 1
-        first_page_has_category = self.pages()[0].category is not None
-        if first_page_has_category and all_pages_have_same_category:
+        if all_pages_have_same_category:
             self._category = self.pages()[0].category
         else:
             self._category = None
         return self._category
 
     def set_category(self, category: Union[None, Category]) -> None:
-        """Set the Category of the Document and the Category of all of its Pages."""
+        """Set the Category of the Document and the Category of all of its Pages as revised."""
+        if (self._category is not None) and (category != self._category) and (category is not None):
+            raise ValueError(
+                "We forbid changing Category when already existing, because this requires some validations that are "
+                "currently implemented in the Konfuzio Server. We recommend changing the Category of a Document via "
+                "the Konfuzio Server."
+            )
         for page in self.pages():
             page.set_category(category)
         self._category = category

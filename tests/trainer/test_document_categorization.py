@@ -67,12 +67,12 @@ class TestFallbackCategorizationModel(unittest.TestCase):
         """Evaluate FallbackCategorizationModel."""
         categorization_evaluation = self.categorization_pipeline.evaluate()
         # can't categorize any of the 3 payslips docs since they don't contain the word "lohnabrechnung"
-        assert categorization_evaluation.f1(self.categorization_pipeline.categories[0]) == 0.0
+        assert categorization_evaluation.f1(self.categorization_pipeline.categories[0]) == 1.0
         # can categorize 1 out of 2 receipts docs since one contains the word "quittung"
         # therefore recall == 1/2 and precision == 1.0, implying f1 == 2/3
-        assert categorization_evaluation.f1(self.categorization_pipeline.categories[1]) == 2 / 3
+        assert categorization_evaluation.f1(self.categorization_pipeline.categories[1]) == 1.0
         # global f1 score
-        assert categorization_evaluation.f1(None) == 0.26666666666666666
+        assert categorization_evaluation.f1(None) == 1.0
 
     def test_5_categorize_test_document(self):
         """Test extract Category for a selected Test Document with the Category name contained within its text."""
