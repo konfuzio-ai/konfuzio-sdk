@@ -312,7 +312,7 @@ class Bbox:
         """Define that one Bounding Box on the same page is identical."""
         return self.__hash__() == other.__hash__()
 
-    def _valid(self, validation=BboxValidationTypes.ALLOW_ZERO_SIZE):
+    def _valid(self, validation=BboxValidationTypes.ALLOW_ZERO_SIZE, handler="sdk_validation"):
         """
         Validate contained data.
 
@@ -323,6 +323,7 @@ class Bbox:
                 msg=f'{self} has no width in {self.page}.',
                 fail_loudly=validation is BboxValidationTypes.STRICT,
                 exception_type=ValueError,
+                handler=handler
             )
 
         if self.x0 > self.x1:
@@ -330,6 +331,7 @@ class Bbox:
                 msg=f'{self} has negative width in {self.page}.',
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
+                handler=handler
             )
 
         if self.y0 == self.y1:
@@ -337,41 +339,47 @@ class Bbox:
                 msg=f'{self} has no height in {self.page}.',
                 fail_loudly=validation is BboxValidationTypes.STRICT,
                 exception_type=ValueError,
+                handler=handler
             )
 
         if self.y0 > self.y1:
             exception_or_log_error(
-                f'{self} has negative height in {self.page}.',
+                msg=f'{self} has negative height in {self.page}.',
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
+                handler=handler
             )
 
         if self.y1 > self.page.height:
             exception_or_log_error(
-                f'{self} exceeds height of {self.page}.',
+                msg=f'{self} exceeds height of {self.page}.',
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
+                handler=handler
             )
 
         if self.x1 > self.page.width:
             exception_or_log_error(
-                f'{self} exceeds width of {self.page}.',
+                msg=f'{self} exceeds width of {self.page}.',
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
+                handler=handler
             )
 
         if self.y0 < 0:
             exception_or_log_error(
-                f'{self} has negative y coordinate in {self.page}.',
+                msg=f'{self} has negative y coordinate in {self.page}.',
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
+                handler=handler
             )
 
         if self.x0 < 0:
             exception_or_log_error(
-                f'{self} has negative x coordinate in {self.page}.',
+                msg=f'{self} has negative x coordinate in {self.page}.',
                 fail_loudly=validation is not BboxValidationTypes.DISABLED,
                 exception_type=ValueError,
+                handler=handler
             )
 
     @property
@@ -1091,7 +1099,7 @@ class Span(Data):
         annotation and annotation.add_span(self)  # only add if Span has access to an Annotation
         self._valid(strict_validation)
 
-    def _valid(self, strict: bool = True):
+    def _valid(self, strict: bool = True, handler: str = "sdk_validation"):
         """
         Validate containted data.
 
@@ -1099,20 +1107,36 @@ class Span(Data):
         details see https://dev.konfuzio.com/sdk/data_validations.html#span-validation-rules.
         """
         if self.end_offset == self.start_offset == 0:
-            logger.error(f'{self} is intentionally left empty.')
+            logger.error(f"{self} is intentionally left empty.")
         elif self.start_offset < 0 or self.end_offset < 0:
-            exception_or_log_error(f'{self} must span text.', fail_loudly=strict, exception_type=ValueError)
-        elif self.start_offset == self.end_offset:
             exception_or_log_error(
-                f"{self} must span text: Start {self.start_offset} equals end.",
+                msg=f"{self} must span text.",
                 fail_loudly=strict,
                 exception_type=ValueError,
+                handler=handler,
+            )
+        elif self.start_offset == self.end_offset:
+            exception_or_log_error(
+                msg=f"{self} must span text: Start {self.start_offset} equals end.",
+                fail_loudly=strict,
+                exception_type=ValueError,
+                handler=handler,
             )
         elif self.end_offset < self.start_offset:
-            exception_or_log_error(f"{self} length must be positive.", fail_loudly=strict, exception_type=ValueError)
-        elif self.offset_string and ('\n' in self.offset_string or '\f' in self.offset_string):
             exception_or_log_error(
-                f'{self} must not span more than one visual line.', fail_loudly=strict, exception_type=ValueError
+                msg=f"{self} length must be positive.",
+                fail_loudly=strict,
+                exception_type=ValueError,
+                handler=handler,
+            )
+        elif self.offset_string and (
+                "\n" in self.offset_string or "\f" in self.offset_string
+        ):
+            exception_or_log_error(
+                msg=f"{self} must not span more than one visual line.",
+                fail_loudly=strict,
+                exception_type=ValueError,
+                handler=handler,
             )
         return True
 
@@ -1203,6 +1227,24 @@ class Span(Data):
                 validation=self.annotation.document._bbox_validation_type,
             )
         return self._bbox
+
+    def bbox_dict(self) -> Dict:
+        """Return Span Bbox info as a serializable Dict format for external integration with the Konfuzio Server."""
+        span_dict = {
+            'start_offset': self.start_offset,
+            'end_offset': self.end_offset,
+            'line_number': self.line_index + 1,
+            'offset_string': self.offset_string,
+            'offset_string_original': self.offset_string,
+            'page_index': self.bbox().page.index,
+            'top': self.bbox().page.height - self.bbox().y1,
+            'bottom': self.bbox().page.height - self.bbox().y0,
+            'x0': self.bbox().x0,
+            'x1': self.bbox().x1,
+            'y0': self.bbox().y0,
+            'y1': self.bbox().y1,
+        }
+        return span_dict
 
     @property
     def normalized(self):
@@ -1459,7 +1501,6 @@ class Annotation(Data):
             self.y0 = bbox.get('y0')
             self.y1 = bbox.get('y1')
 
-        self.bboxes = kwargs.get('bboxes', None)
         self.selection_bbox = kwargs.get('selection_bbox', None)
         self.page_number = kwargs.get('page_number', None)
         # END LEGACY -
@@ -1725,6 +1766,14 @@ class Annotation(Data):
     def spans(self) -> List[Span]:
         """Return default entry to get all Spans of the Annotation."""
         return sorted(self._spans)
+
+    @property
+    def bboxes(self) -> List[Dict]:
+        """Return the Bbox information for all Spans in serialized format.
+
+        This is useful for external integration (e.g. Konfuzio Server)."
+        """
+        return [span.bbox_dict() for span in self.spans]
 
     def lose_weight(self):
         """Delete data of the instance."""

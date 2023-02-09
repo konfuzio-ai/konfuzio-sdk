@@ -185,15 +185,16 @@ More on Celery workflows can be found here: https://docs.celeryq.dev/en/stable/u
 ### Queue's
 
 
-| id  | queue-name   |                   description                   |
-|-----|--------------|:-----------------------------------------------:|
-| 1   | `ocr`        |             ocr and post ocr tasks              |
-| 2   | `processing` |               non dependent tasks               |
-| 3   | `categorize` |              categorization tasks               |
-| 4   | `extract`    |              extraction after ocr               |
-| 5   | `finalize`   | end queue after OCR and extraction has occurred |
-| 6   | `training`   |              queue for AI training              |
-| 7   | `evaluation` |             queue for AI evaluation             |
+| id  | queue-name       |                   description                   |
+|-----|------------------|:-----------------------------------------------:|
+| 1   | `ocr`            |             ocr and post ocr tasks              |
+| 2   | `processing`     |               non dependent tasks               |
+| 3   | `categorize`     |              categorization tasks               |
+| 4   | `extract`        |              extraction after ocr               |
+| 5   | `finalize`       | end queue after OCR and extraction has occurred |
+| 6   | `training`       |              queue for AI training              |
+| 7   | `training_heavy` |       queue for RAM intensive ai training       |
+| 8   | `evaluation`     |             queue for AI evaluation             |
 
 
 
@@ -221,20 +222,20 @@ Series of events & tasks triggered when uploading a Document
 
 Series of events triggered when training an extraction AI
 
-| Queue | task id | task name           | description                                                                                                     | default time limit |
-|-------|---------|---------------------|-----------------------------------------------------------------------------------------------------------------|--------------------|
-| 2     | 1       | page_image          | Create png image for a page. If a PNG was submitted or already exists it will be returned without regeneration. | 10 minutes         |
-| 6     | 1       | train_extraction_ai | Start the training of the Ai model.                                                                             | 20 hours           |
-| 4     | 2       | document_extract    | Extract the document using the AI models linked to the Project.                                                 | 60 minutes         |
-| 7     | 3       | evaluate_ai_model   | Evaluate the trained Ai models performance.                                                                     | 60 minutes         |
+| Queue   | task id | task name           | description                                                                                                     | default time limit |
+|---------|---------|---------------------|-----------------------------------------------------------------------------------------------------------------|--------------------|
+| 2       | 1       | page_image          | Create png image for a page. If a PNG was submitted or already exists it will be returned without regeneration. | 10 minutes         |
+| 6, 7    | 1       | train_extraction_ai | Start the training of the Ai model.                                                                             | 20 hours           |
+| 4       | 2       | document_extract    | Extract the document using the AI models linked to the Project.                                                 | 60 minutes         |
+| 6, 7, 8 | 3       | evaluate_ai_model   | Evaluate the trained Ai models performance.                                                                     | 60 minutes         |
 
 ##### Category AI
 
 Series of events triggered when training a Categorization AI
 
-| Queue | task id | task name         | description                                                                                                     | default time limit |
-|-------|---------|-------------------|-----------------------------------------------------------------------------------------------------------------|--------------------|
-| 7     | 2       | train_category_ai | Start the training of the categorization model.                                                                 | 10 hours           |
-| 7, 3  | 3       | categorize        | Run the categorization against all Documents in the its category.                                               | 3 minutes          |
-| 7, 3  | 4       | evaluate_ai_model | Evaluate the categorization Ai models performance.                                                              | 60 hours           | 
+| Queue      | task id | task name         | description                                                                                                     | default time limit |
+|------------|---------|-------------------|-----------------------------------------------------------------------------------------------------------------|--------------------|
+| 8          | 2       | train_category_ai | Start the training of the categorization model.                                                                 | 10 hours           |
+| 8, 3       | 3       | categorize        | Run the categorization against all Documents in the its category.                                               | 3 minutes          |
+| 6, 7, 8, 3 | 4       | evaluate_ai_model | Evaluate the categorization Ai models performance.                                                              | 60 hours           | 
 

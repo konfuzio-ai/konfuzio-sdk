@@ -9,7 +9,7 @@ This documentation explains the internals of the Konfuzio Server, illustrate how
 
 | Section                                                           | Description                                                                                                 |
 |-------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
-| [On-Premises Guide](on_premised.html)                             | Learn how to deploy Konfuzio Server in your infrastructure.                                                 |
+| [On-Premises Guide](on_premises.html)                             | Learn how to deploy Konfuzio Server in your infrastructure.                                                 |
 | [Explanations](explanations.html)                                 | Understand the internals of Konfuzio Server .                                                               |
 | [API Reference](api-v3.html)                                      | Integrate using the Konfuzio Server REST API.                                                               |
 | [Changelog](changelog_app.html)                                   | Review the Konfuzio Server releases.                                                                        |
