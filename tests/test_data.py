@@ -575,52 +575,73 @@ class TestOfflineDataSetup(unittest.TestCase):
         """Test categorizing a Document when all Pages have the same Category."""
         document = Document(project=self.project, text="hello")
         for i in range(2):
-            _ = Page(
+            page = Page(
                 id_=None,
                 document=document,
                 start_offset=0,
                 end_offset=0,
                 number=i + 1,
                 original_size=(0, 0),
-                category=self.category,
             )
+            page.set_category(self.category)
+            assert page.category_annotation.category == self.category
+            assert page.category_annotation.confidence == 1.0
+            assert len(page._category_annotations) == 1
         assert document.category == self.category
 
     def test_categorize_when_all_pages_have_no_category(self):
         """Test categorizing a Document when all Pages have no Category."""
         document = Document(project=self.project, text="hello")
         for i in range(2):
-            _ = Page(id_=None, document=document, start_offset=0, end_offset=0, number=i + 1, original_size=(0, 0))
+            page = Page(id_=None, document=document, start_offset=0, end_offset=0, number=i + 1, original_size=(0, 0))
+            assert page.category is None
+            assert page.category_annotation is None
+            assert len(page._category_annotations) == 0
         assert document.category is None
 
     def test_categorize_when_pages_have_different_categories(self):
         """Test categorizing a Document when Pages have different Category."""
         document = Document(project=self.project, text="hello")
         for i in range(2):
-            _ = Page(
+            page = Page(
                 id_=None,
                 document=document,
                 start_offset=0,
                 end_offset=0,
                 number=i + 1,
                 original_size=(0, 0),
-                category=self.category if i else self.category2,
             )
+            page_category = self.category if i else self.category2
+            page.set_category(page_category)
+            assert page.category_annotation.category == page_category
+            assert page.category_annotation.confidence == 1.0
+            assert len(page._category_annotations) == 1
+        assert len(document.category_annotations) == 2
         assert document.category is None
 
     def test_categorize_when_pages_have_mixed_categories_or_no_category(self):
         """Test categorizing a Document when Pages have different Category or no Category."""
         document = Document(project=self.project, text="hello")
         for i in range(3):
-            _ = Page(
+            page = Page(
                 id_=None,
                 document=document,
                 start_offset=0,
                 end_offset=0,
                 number=i + 1,
                 original_size=(0, 0),
-                category=[self.category, self.category2, None][i],
             )
+            page_category = [self.category, self.category2, None][i]
+            page.set_category(page_category)
+            if page_category is not None:
+                assert page.category_annotation.category == page_category
+                assert page.category_annotation.confidence == 1.0
+                assert len(page._category_annotations) == 1
+            else:
+                assert page.category is None
+                assert page.category_annotation is None
+                assert len(page._category_annotations) == 0
+        assert len(document.category_annotations) == 2
         assert document.category is None
 
     def test_categorize_with_no_pages(self):

@@ -69,6 +69,13 @@ Category
    :noindex:
 
 
+Category Annotation
+---------------------
+.. autoclass:: CategoryAnnotation
+   :members:
+   :noindex:
+
+
 Document
 ---------------------
 .. autoclass:: Document

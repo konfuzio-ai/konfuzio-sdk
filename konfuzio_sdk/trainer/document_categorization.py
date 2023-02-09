@@ -6,7 +6,7 @@ from copy import deepcopy
 from typing import List
 from warnings import warn
 
-from konfuzio_sdk.data import Document, Category, Page
+from konfuzio_sdk.data import Document, Category, Page, CategoryAnnotation
 from konfuzio_sdk.evaluate import CategorizationEvaluation
 
 logger = logging.getLogger(__name__)
@@ -19,6 +19,8 @@ class AbstractCategorizationAI(metaclass=abc.ABCMeta):
 
     def __init__(self, categories: List[Category], *args, **kwargs):
         """Initialize AbstractCategorizationAI."""
+        self.documents = None
+        self.test_documents = None
         self.categories = categories
         self.name = self.__class__.__name__
         self.evaluation = None
@@ -36,7 +38,7 @@ class AbstractCategorizationAI(metaclass=abc.ABCMeta):
         """Run categorization on a Page.
 
         :param page: Input Page
-        :returns: The input Page with added Category information
+        :returns: The input Page with added CategoryAnnotation information
         """
 
     def categorize(self, document: Document, recategorize: bool = False, inplace: bool = False) -> Document:
@@ -47,7 +49,7 @@ class AbstractCategorizationAI(metaclass=abc.ABCMeta):
         this flag is True
 
         :param inplace: Option to categorize the provided Document in place, which would assign the Category attribute
-        :returns: Copy of the input Document with added categorization information
+        :returns: Copy of the input Document with added CategoryAnnotation information
         """
         if inplace:
             virtual_doc = document
@@ -60,9 +62,7 @@ class AbstractCategorizationAI(metaclass=abc.ABCMeta):
             )
             return virtual_doc
         elif recategorize:
-            virtual_doc._category = None
-            for page in virtual_doc.pages():
-                page.category = None
+            virtual_doc.set_category(None)
 
         # Categorize each Page of the Document.
         for page in virtual_doc.pages():
@@ -120,7 +120,7 @@ class FallbackCategorizationModel(AbstractCategorizationAI):
         """
         for training_category in self.categories:
             if training_category.fallback_name in page.text.lower():
-                page.category = training_category
+                _ = CategoryAnnotation(category=training_category, confidence=1.0, page=page)
                 break
         if page.category is None:
             logger.warning(f'{self} could not find the Category of {page} by using the fallback categorization logic.')
