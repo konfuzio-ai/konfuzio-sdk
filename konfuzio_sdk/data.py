@@ -2930,6 +2930,8 @@ class Document(Data):
         """
         Merge Annotations with the same Label.
 
+        See more details at https://dev.konfuzio.com/sdk/explanations.html#vertical-merge
+
         :param only_multiline_labels: Only merge if a multiline Label Annotation is in the Category Training set
         """
         logger.info("Vertical merging Annotations.")
