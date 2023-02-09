@@ -6,7 +6,7 @@
 First, please contact us via our [contact form](https://konfuzio.com/en/contact/). Some tests are data dependent.
 Please request access to this data. The access is free of charge and without any obligation.
 
-The [Architecture SDK to Server](sdk/explanations.html#architecture-sdk-to-server) can be useful for details about how 
+The [Architecture SDK to Server](explanations.html#architecture-sdk-to-server) can be useful for details about how 
 the Konfuzio SDK interacts with the Konfuzio Server.
 
 ## How to open a PR
