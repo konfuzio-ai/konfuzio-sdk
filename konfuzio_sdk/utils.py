@@ -461,29 +461,28 @@ def map_offsets(characters_bboxes: list) -> dict:
     return offsets_map
 
 
-def convert_segmentation_bbox(bbox: dict, page: dict) -> dict:
-    """
-    Convert bounding box from the segmentation result to the scale of the characters bboxes of the document.
+def detectron_get_paragraph_bbox(detectron_results: List, document: 'Document') -> List[List['Bbox']]:
+    """Call detectron Bbox corresponding to each paragraph."""
+    from konfuzio_sdk.data import Bbox
+    assert isinstance(document.project.id_, int)
+    assert len(detectron_results) == document.number_of_pages
 
-    :param bbox: Bounding box from the segmentation result
-    :param page: Page information
-    :return: Converted bounding box.
-    """
-    warn('Method needs testing and revision. Please create a Ticket if you use it.', DeprecationWarning, stacklevel=2)
-    original_size = page['original_size']
-    image_size = page['size']
-    factor_y = original_size[1] / image_size[1]
-    factor_x = original_size[0] / image_size[0]
-    height = image_size[1]
+    paragraph_bboxes: List[List['Bbox']] = []
+    for page in document.pages():
+        paragraph_bboxes.append([])
+        for bbox in detectron_results[page.index]:
+            paragraph_bboxes[-1].append(
+                Bbox(
+                    x0=bbox['x0'],
+                    x1=bbox['x1'],
+                    y1=page.height - bbox['y0'],
+                    y0=page.height - bbox['y1'],
+                    page=page,
+                ).convert_from_size_to_original_size()
+            )
+    assert len(document.pages()) == len(paragraph_bboxes)
 
-    temp_y0 = (height - bbox['y0']) * factor_y
-    temp_y1 = (height - bbox['y1']) * factor_y
-    bbox['y0'] = temp_y1
-    bbox['y1'] = temp_y0
-    bbox['x0'] = bbox['x0'] * factor_x
-    bbox['x1'] = bbox['x1'] * factor_x
-
-    return bbox
+    return paragraph_bboxes
 
 
 def select_bboxes(selection_bbox: dict, page_bboxes: list, tolerance: int = 10) -> list:
@@ -510,7 +509,7 @@ def select_bboxes(selection_bbox: dict, page_bboxes: list, tolerance: int = 10) 
     return selected_char_bboxes
 
 
-def group_bboxes_per_line(char_bboxes: dict, page_index: int) -> list:
+def group_bboxes_per_line(char_bboxes: list, page_index: int) -> List['Span']:
     """
     Group characters bounding boxes per line.
 
@@ -520,7 +519,7 @@ def group_bboxes_per_line(char_bboxes: dict, page_index: int) -> list:
     :param page_index: Index of the page in the document.
     :return: List with 1 bounding box per line.
     """
-    warn('Method needs testing and revision. Please create a Ticket if you use it.', DeprecationWarning, stacklevel=2)
+    # warn('Method needs testing and revision. Please create a Ticket if you use it.', DeprecationWarning, stacklevel=2)
     lines_bboxes = []
 
     # iterate over each line_number and all of the character bboxes with that line number
@@ -552,8 +551,8 @@ def group_bboxes_per_line(char_bboxes: dict, page_index: int) -> list:
             bottom = max(char_bbox['bottom'], bottom)
             y1 = max(char_bbox['y1'], y1)
 
-            start_offset = min(int(char_bbox['string_offset']), start_offset)
-            end_offset = max(int(char_bbox['string_offset']), end_offset)
+            start_offset = min(int(char_bbox['char_index']), start_offset)
+            end_offset = max(int(char_bbox['char_index']), end_offset)
 
         line_bbox = {
             'bottom': bottom,
