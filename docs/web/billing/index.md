@@ -1,4 +1,4 @@
-**Internal Documentation. This does not apply to on-premise Konfuzio Server installations.**
+**Internal Documentation. This does not apply to on-premises Konfuzio Server installations.**
 
 # Overview
 
