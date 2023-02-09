@@ -91,6 +91,10 @@ class Data:
         """Force data into offline mode."""
         self._force_offline = True
         self._update = False
+        if hasattr(self, 'categories') and "NO_CATEGORY" not in [category.name for category in self.categories]:
+            self.no_category = Category(project=self)
+            self.no_category.name_clean = "NO_CATEGORY"
+            self.no_category.name = "NO_CATEGORY"
 
 
 class Page(Data):
