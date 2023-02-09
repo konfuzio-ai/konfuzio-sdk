@@ -48,9 +48,9 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
                 raise ValueError(f'{category} does not have Documents and cannot be used for training.')
             if not category.test_documents():
                 raise ValueError(f'{category} does not have test Documents.')
-        # projects = set([category.project for category in categories])
-        # if len(projects) > 1:
-        #     raise ValueError("All Categories have to belong to the same Project.")
+        projects = set([category.project for category in categories])
+        if len(projects) > 1:
+            raise ValueError("All Categories have to belong to the same Project.")
         self.categories = categories
         self.project = self.categories[0].project  # we ensured that at least one Category is present
         self.documents = [document for category in self.categories for document in category.documents()]
