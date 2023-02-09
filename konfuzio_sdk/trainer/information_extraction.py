@@ -1278,7 +1278,10 @@ class Trainer(BaseModel):
 
     @classmethod
     def merge_horizontal(cls, res_dict: Dict, doc_text: str) -> Dict:
-        """Merge contiguous spans with same predicted label."""
+        """Merge contiguous spans with same predicted label.
+
+        See more details at https://dev.konfuzio.com/sdk/explanations.html#horizontal-merge
+        """
         logger.info("Horizontal merge.")
         merged_res_dict = dict()  # stores final results
         for label, items in res_dict.items():
