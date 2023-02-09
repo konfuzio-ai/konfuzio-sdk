@@ -1245,6 +1245,7 @@ class TestGetExtractionResults(unittest.TestCase):
             'y0': 628.833,
             'y1': 636.833,
         }
+        assert ann1.bboxes[0] == virtual_doc.spans()[0].bbox_dict()
         assert ann2.bboxes[0] == {
             'bottom': 212.84699999999998,
             'end_offset': 1293,
@@ -1259,6 +1260,7 @@ class TestGetExtractionResults(unittest.TestCase):
             'y0': 628.833,
             'y1': 636.833,
         }
+        assert ann2.bboxes[0] == virtual_doc.spans()[1].bbox_dict()
 
 
 def test_load_model_no_file():
