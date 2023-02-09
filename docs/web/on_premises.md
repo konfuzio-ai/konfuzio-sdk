@@ -187,6 +187,23 @@ RAM and one Nvidia GPU with minimum 4GB which supports at least CUDA10.1 and CUD
 trying to deploy a non-production instance, you can reduce the defaults in order to fit
 into a smaller cluster. Konfuzio can work without a GPU. The GPU is used to train and run Categorization AIs. We observe a 5x faster training and a 2x faster execution on GPU compared to CPU. Most Konfuzio Installations do not use GPUs.
 
+##### Storage Requirements
+
+This section outlines the initial storage requirements for the on-premises installation. It is important to take these
+requirements into consideration when setting up your server, as the amount of storage needed may depend on the number of
+documents being processed.
+
+1. For testing purposes, a minimum of 10 GB is required per server (not per instance of a worker).
+2. For serious use, a minimum of 100 GB should be directly available to the application. This amount should also cover
+   the following:
+    - Postgres, which typically uses 10% of this size.
+    - Docker image storage, up to 25 GB should be reserved for upgrades.
+3. Each page thumbnail adds 1-2 KB to the file size.
+4. After uploading, the total file size of a page image and its thumbnails increases by approximately a factor of 3 (10
+   MB becomes approximately 30 MB on the server).
+5. To reduce storage usage, it is recommended to disable sandwich file generation by
+   setting `ALWAYS_GENERATE_SANDWICH_PDF=False`.
+
 #### Deploy using Helm
 
 Once you have all of your configuration options collected, we can get any dependencies
