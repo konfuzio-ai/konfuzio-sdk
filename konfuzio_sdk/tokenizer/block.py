@@ -59,7 +59,7 @@ class BlockTokenizer(AbstractTokenizer):
 
         return document
 
-    def _detectron_get_paragraph_bbox(self, document: Document) -> Dict[Bbox, List[Dict]]:
+    def _detectron_get_paragraph_bbox(self, document: Document) -> List[List[Bbox]]:
         """Call detectron Bbox corresponding to each paragraph."""
         assert isinstance(document.project.id_, int)
         doc_id = document.id_ if document.id_ else document.copy_of_id
@@ -116,26 +116,24 @@ class ParagraphTokenizer(BlockTokenizer):
         """Create one multiline Annotation per paragraph detected by detectron2."""
         paragraph_bboxes = self._detectron_get_paragraph_bbox(document)
 
-        for i, (page, page_paragraph_bboxes) in enumerate(zip(document.pages(), paragraph_bboxes)):
-            page = document.get_page_by_index(i)
+        for _, (page, page_paragraph_bboxes) in enumerate(zip(document.pages(), paragraph_bboxes)):
             paragraph_span_bboxes = collections.defaultdict(list)
-            curr_paragraph = None
-            paragraph_anns: Dict[Bbox, Annotation] = {}
+            current_paragraph = None
+            paragraph_annotations: Dict[Bbox, Annotation] = {}
             for bbox in sorted(page.get_bbox().values(), key=lambda x: x['char_index']):
-
                 for paragraph_bbox in page_paragraph_bboxes:
                     if paragraph_bbox.check_overlap(bbox):
-                        if not curr_paragraph:
-                            curr_paragraph = paragraph_bbox
-                        if paragraph_span_bboxes[curr_paragraph] and (
-                            (paragraph_span_bboxes[curr_paragraph][-1]['line_number'] != bbox['line_number'])
-                            or (paragraph_bbox is not curr_paragraph)
+                        if not current_paragraph:
+                            current_paragraph = paragraph_bbox
+                        if paragraph_span_bboxes[current_paragraph] and (
+                            (paragraph_span_bboxes[current_paragraph][-1]['line_number'] != bbox['line_number'])
+                            or (paragraph_bbox is not current_paragraph)
                         ):
                             span = Span(
-                                start_offset=paragraph_span_bboxes[curr_paragraph][0]['char_index'],
-                                end_offset=paragraph_span_bboxes[curr_paragraph][-1]['char_index'] + 1,
+                                start_offset=paragraph_span_bboxes[current_paragraph][0]['char_index'],
+                                end_offset=paragraph_span_bboxes[current_paragraph][-1]['char_index'] + 1,
                             )
-                            if curr_paragraph not in paragraph_anns:
+                            if current_paragraph not in paragraph_annotations:
                                 annotation = Annotation(
                                     document=document,
                                     annotation_set=document.no_label_annotation_set,
@@ -144,21 +142,21 @@ class ParagraphTokenizer(BlockTokenizer):
                                     category=document.category,
                                     spans=[span],
                                 )
-                                paragraph_anns[curr_paragraph] = annotation
+                                paragraph_annotations[current_paragraph] = annotation
                             else:
-                                paragraph_anns[curr_paragraph].add_span(span)
-                            paragraph_span_bboxes[curr_paragraph] = []
+                                paragraph_annotations[current_paragraph].add_span(span)
+                            paragraph_span_bboxes[current_paragraph] = []
 
-                            curr_paragraph = paragraph_bbox
-                            paragraph_span_bboxes[curr_paragraph] = [bbox]
+                            current_paragraph = paragraph_bbox
+                            paragraph_span_bboxes[current_paragraph] = [bbox]
                         else:
-                            paragraph_span_bboxes[curr_paragraph].append(bbox)
+                            paragraph_span_bboxes[current_paragraph].append(bbox)
                         break
 
             for paragraph_bbox, span_bboxes in paragraph_span_bboxes.items():
                 if span_bboxes:
                     span = Span(start_offset=span_bboxes[0]['char_index'], end_offset=span_bboxes[-1]['char_index'] + 1)
-                    if paragraph_bbox not in paragraph_anns:
+                    if paragraph_bbox not in paragraph_annotations:
                         annotation = Annotation(
                             document=document,
                             annotation_set=document.no_label_annotation_set,
@@ -167,9 +165,9 @@ class ParagraphTokenizer(BlockTokenizer):
                             category=document.category,
                             spans=[span],
                         )
-                        paragraph_anns[curr_paragraph] = annotation
+                        paragraph_annotations[current_paragraph] = annotation
                     else:
-                        paragraph_anns[curr_paragraph].add_span(span)
+                        paragraph_annotations[current_paragraph].add_span(span)
 
         return document
 
@@ -251,32 +249,31 @@ class SentenceTokenizer(BlockTokenizer):
         """Create one multiline Annotation per sentence detected in paragraph detected by detectron."""
         paragraph_bboxes = self._detectron_get_paragraph_bbox(document)
 
-        for i, (page, page_paragraph_bboxes) in enumerate(zip(document.pages(), paragraph_bboxes)):
-            page = document.get_page_by_index(i)
+        for _, (page, page_paragraph_bboxes) in enumerate(zip(document.pages(), paragraph_bboxes)):
             paragraph_span_bboxes = collections.defaultdict(list)
-            curr_paragraph = None
+            current_paragraph = None
             paragraph_sentence_anns: Dict[Bbox, List[Annotation]] = {}
             for bbox in sorted(page.get_bbox().values(), key=lambda x: x['char_index']):
 
                 for paragraph_bbox in page_paragraph_bboxes:
                     if paragraph_bbox.check_overlap(bbox):
-                        if not curr_paragraph:
-                            curr_paragraph = paragraph_bbox
-                        if paragraph_span_bboxes[curr_paragraph] and (
-                            (paragraph_span_bboxes[curr_paragraph][-1]['line_number'] != bbox['line_number'])
-                            or (paragraph_bbox is not curr_paragraph)
-                            or (paragraph_span_bboxes[curr_paragraph][-1]['text'] in self.punctuation)
+                        if not current_paragraph:
+                            current_paragraph = paragraph_bbox
+                        if paragraph_span_bboxes[current_paragraph] and (
+                            (paragraph_span_bboxes[current_paragraph][-1]['line_number'] != bbox['line_number'])
+                            or (paragraph_bbox is not current_paragraph)
+                            or (paragraph_span_bboxes[current_paragraph][-1]['text'] in self.punctuation)
                         ):
                             span = Span(
-                                start_offset=paragraph_span_bboxes[curr_paragraph][0]['char_index'],
-                                end_offset=paragraph_span_bboxes[curr_paragraph][-1]['char_index'] + 1,
+                                start_offset=paragraph_span_bboxes[current_paragraph][0]['char_index'],
+                                end_offset=paragraph_span_bboxes[current_paragraph][-1]['char_index'] + 1,
                             )
-                            if curr_paragraph not in paragraph_sentence_anns:
-                                paragraph_sentence_anns[curr_paragraph] = []
+                            if current_paragraph not in paragraph_sentence_anns:
+                                paragraph_sentence_anns[current_paragraph] = []
 
                             if (
-                                not paragraph_sentence_anns[curr_paragraph]
-                                or paragraph_sentence_anns[curr_paragraph][-1].spans[-1].offset_string[-1]
+                                not paragraph_sentence_anns[current_paragraph]
+                                or paragraph_sentence_anns[current_paragraph][-1].spans[-1].offset_string[-1]
                                 in self.punctuation
                             ):
                                 annotation = Annotation(
@@ -287,27 +284,28 @@ class SentenceTokenizer(BlockTokenizer):
                                     category=document.category,
                                     spans=[span],
                                 )
-                                paragraph_sentence_anns[curr_paragraph].append(annotation)
+                                paragraph_sentence_anns[current_paragraph].append(annotation)
                             else:
-                                paragraph_sentence_anns[curr_paragraph][-1].add_span(span)
+                                paragraph_sentence_anns[current_paragraph][-1].add_span(span)
 
-                            paragraph_span_bboxes[curr_paragraph] = []
+                            paragraph_span_bboxes[current_paragraph] = []
 
-                            curr_paragraph = paragraph_bbox
-                            paragraph_span_bboxes[curr_paragraph] = [bbox]
+                            current_paragraph = paragraph_bbox
+                            paragraph_span_bboxes[current_paragraph] = [bbox]
                         else:
-                            paragraph_span_bboxes[curr_paragraph].append(bbox)
+                            paragraph_span_bboxes[current_paragraph].append(bbox)
                         break
 
             for paragraph_bbox, span_bboxes in paragraph_span_bboxes.items():
                 if span_bboxes:
                     span = Span(start_offset=span_bboxes[0]['char_index'], end_offset=span_bboxes[-1]['char_index'] + 1)
-                    if curr_paragraph not in paragraph_sentence_anns:
-                        paragraph_sentence_anns[curr_paragraph] = []
+                    if current_paragraph not in paragraph_sentence_anns:
+                        paragraph_sentence_anns[current_paragraph] = []
 
                     if (
-                        not paragraph_sentence_anns[curr_paragraph]
-                        or paragraph_sentence_anns[curr_paragraph][-1].spans[-1].offset_string[-1] in self.punctuation
+                        not paragraph_sentence_anns[current_paragraph]
+                        or paragraph_sentence_anns[current_paragraph][-1].spans[-1].offset_string[-1]
+                        in self.punctuation
                     ):
                         annotation = Annotation(
                             document=document,
@@ -317,9 +315,9 @@ class SentenceTokenizer(BlockTokenizer):
                             category=document.category,
                             spans=[span],
                         )
-                        paragraph_sentence_anns[curr_paragraph].append(annotation)
+                        paragraph_sentence_anns[current_paragraph].append(annotation)
                     else:
-                        paragraph_sentence_anns[curr_paragraph][-1].add_span(span)
+                        paragraph_sentence_anns[current_paragraph][-1].add_span(span)
 
         return document
 
