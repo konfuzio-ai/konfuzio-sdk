@@ -155,7 +155,7 @@ class Page(Data):
         """Return the name of the Document incl. the ID."""
         return f"Page {self.index} in {self.document}"
 
-    def get_image(self, update: bool = False):
+    def get_image(self, update: bool = False) -> Image:
         """Get Document Page as PNG."""
         if self.document.id_ is None and self.document.copy_of_id is not None:
             # if it's a virtual Document, get image from original Document
@@ -174,7 +174,7 @@ class Page(Data):
             self.image = Image.open(self.image_path)
         return self.image
 
-    def get_annotations_image(self):
+    def get_annotations_image(self) -> Image:
         """Get Document Page as PNG with annotations shown."""
         image = self.get_image()
         image = image.convert('RGB')
@@ -401,8 +401,8 @@ class Bbox:
                 handler=handler,
             )
 
-    def check_overlap(self, bbox: Union['Bbox', Dict]):
-        """Verify if there's overal between two Bboxes."""
+    def check_overlap(self, bbox: Union['Bbox', Dict]) -> bool:
+        """Verify if there's overlap between two Bboxes."""
         if type(bbox) is dict and (
             bbox['x0'] <= self.x1 and bbox['x1'] >= self.x0 and bbox['y0'] <= self.y1 and bbox['y1'] >= self.y0
         ):
@@ -2820,6 +2820,7 @@ class Document(Data):
             if len(self_annotations) == 1:
                 continue
             else:
+                self_annotations = sorted(self_annotations)
                 keep_annotation = self_annotations[0]
                 annotation_labels = [keep_annotation.label]
                 for to_merge_annotation in self_annotations[1:]:
