@@ -768,7 +768,7 @@ TRAIN_EXTRACTION_AI_AUTOMATICALLY_IF_QUEUE_IS_EMPTY=False
 ALWAYS_GENERATE_SANDWICH_PDF=True
 
 # Default time limits for background tasks (optional).
-# These defaults can be viewed here: https://dev.konfuzio.com/web/on_premises.html#background-processes.
+# These defaults can be viewed here: https://dev.konfuzio.com/web/explanations.html#celery-tasks.
 EXTRACTION_TIME_LIMIT = 
 CATEGORIZATION_TIME_LIMIT = 
 EVALUATION_TIME_LIMIT = 
@@ -782,6 +782,9 @@ DOCUMENT_TEXT_AND_BBOXES_TIME_LIMIT =
 # If a huge amount of documents have been deleted, this may need to be increased. 
 CLEAN_DELETED_DOCUMENT_TIME_LIMIT = 
 CLEAN_DOCUMENT_WITHOUT_DATASET_TIME_LIMIT =
+
+# Some models require a lot of ram during training. Defaults to 150 threshold which is the amount of training documents necessary to switch to a "training_heavy" celery queue
+THRESHOLD_FOR_HEAVY_TRAINING = 
 ```
 
 ### Environment Variables for Read API Container
