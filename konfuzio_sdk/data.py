@@ -321,7 +321,7 @@ class Page(Data):
         self._human_chosen_category_annotation = category_annotation
 
     @property
-    def category_annotation(self) -> Optional['CategoryAnnotation']:
+    def maximum_confidence_category_annotation(self) -> Optional['CategoryAnnotation']:
         """
         Get the human revised Category Annotation of this Page, or the highest confidence one if not revised.
 
@@ -338,8 +338,8 @@ class Page(Data):
     @property
     def category(self) -> Optional['Category']:
         """Get the Category of the Page, based on human revised Category Annotation, or on highest confidence."""
-        if self.category_annotation is not None:
-            return self.category_annotation.category
+        if self.maximum_confidence_category_annotation is not None:
+            return self.maximum_confidence_category_annotation.category
         return self._category
 
 
@@ -784,13 +784,7 @@ class CategoryAnnotation(Data):
 
     def __repr__(self):
         """Return string representation."""
-        if self.label and self.document:
-            span_str = ', '.join(f'{x.start_offset, x.end_offset}' for x in self._spans)
-            return f"Annotation ({self.get_link()}) {self.label.name} {span_str}"
-        elif self.label:
-            return f"Annotation ({self.get_link()}) {self.label.name} ({self._spans})"
-        else:
-            return f"Annotation ({self.get_link()}) without Label ({self.start_offset}, {self.end_offset})"
+        return f"Category Annotation: {self.category}, {self.confidence}"
 
     def __eq__(self, other):
         """Define equality condition for CategoryAnnotations.
@@ -815,7 +809,7 @@ class CategoryAnnotation(Data):
         """
         # if confidence is None it means it was never predicted by an AI
         if self._confidence is None:
-            if (self.page is not None) and (self.page.category_annotation == self):
+            if (self.page is not None) and (self.page.maximum_confidence_category_annotation == self):
                 # if this CategoryAnnotation was added by a human then the confidence is 1
                 return 1.0
             else:
@@ -2201,14 +2195,25 @@ class Document(Data):
         return category_annotations
 
     @property
-    def category_annotation(self) -> Optional[CategoryAnnotation]:
+    def maximum_confidence_category_annotation(self) -> Optional[CategoryAnnotation]:
         """
         Get the human revised Category Annotation of this Document, or the highest confidence one if not revised.
 
         :return: The found Category Annotation, or None if not present.
         """
         if self.category_annotations:
-            return sorted(self.category_annotations, key=lambda x: x.confidence)[-1]
+            if self.category_is_revised:
+                # there is a unique Category Annotation per Category associated to this Document
+                # by construction in Document.category_annotations
+                return [
+                    category_annotation
+                    for category_annotation in self.category_annotations
+                    if category_annotation.category == self._category
+                ][0]
+            else:
+                category_annotation = sorted(self.category_annotations, key=lambda x: x.confidence)[-1]
+                if category_annotation.confidence > 0.0:
+                    return category_annotation
         return None
 
     @property
@@ -2218,14 +2223,16 @@ class Document(Data):
 
         :return: The found Category, or None if not present.
         """
-        if self.category_annotations:
-            return self.category_annotation.category
+        if self._category is not None:
+            return self._category
+        if self.maximum_confidence_category_annotation is not None:
+            return self.maximum_confidence_category_annotation.category
         return None
 
     @property
-    def consistent_category(self) -> Optional[Category]:
+    def category(self) -> Optional[Category]:
         """
-        Return the Category of the Document in file splitting mode.
+        Return the Category of the Document.
 
         The Category of a Document is only defined as long as all Pages have the same Category. Otherwise, the Document
         should probably be split into multiple Documents with a consistent Category assignment within their Pages, or
@@ -2241,16 +2248,12 @@ class Document(Data):
             self._category = None
         return self._category
 
-    @property
-    def category(self) -> Optional[Category]:
-        """Return the Category of the Document."""
-        return self.consistent_category
-
     def set_category(self, category: Union[None, Category]) -> None:
         """Set the Category of the Document and the Category of all of its Pages."""
         for page in self.pages():
             page.set_category(category)
         self._category = category
+        self.category_is_revised = True
 
     @property
     def ocr_file_path(self):

@@ -568,6 +568,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     def test_category_of_document(self):
         """Test if setup worked."""
         assert self.document.category == self.category
+        assert self.document.maximum_confidence_category == self.category
         for page in self.document.pages():
             assert page.category == self.category
 
@@ -584,9 +585,10 @@ class TestOfflineDataSetup(unittest.TestCase):
                 original_size=(0, 0),
             )
             page.set_category(self.category)
-            assert page.category_annotation.category == self.category
-            assert page.category_annotation.confidence == 1.0
+            assert page.maximum_confidence_category_annotation.category == self.category
+            assert page.maximum_confidence_category_annotation.confidence == 1.0
             assert len(page._category_annotations) == 1
+        assert document.maximum_confidence_category == self.category
         assert document.category == self.category
 
     def test_categorize_when_all_pages_have_no_category(self):
@@ -595,8 +597,9 @@ class TestOfflineDataSetup(unittest.TestCase):
         for i in range(2):
             page = Page(id_=None, document=document, start_offset=0, end_offset=0, number=i + 1, original_size=(0, 0))
             assert page.category is None
-            assert page.category_annotation is None
+            assert page.maximum_confidence_category_annotation is None
             assert len(page._category_annotations) == 0
+        assert document.maximum_confidence_category is None
         assert document.category is None
 
     def test_categorize_when_pages_have_different_categories(self):
@@ -613,11 +616,18 @@ class TestOfflineDataSetup(unittest.TestCase):
             )
             page_category = self.category if i else self.category2
             page.set_category(page_category)
-            assert page.category_annotation.category == page_category
-            assert page.category_annotation.confidence == 1.0
+            assert page.maximum_confidence_category_annotation.category == page_category
+            assert page.maximum_confidence_category_annotation.confidence == 1.0
             assert len(page._category_annotations) == 1
         assert len(document.category_annotations) == 2
         assert document.category is None
+        # as each page got assigned a different Category with confidence all equal to 1,
+        # the maximum confidence Category of the Document will be a random one
+        assert document.maximum_confidence_category in [self.category, self.category2]
+        # if the user revises it, it will be consistently updated
+        document.set_category(self.category)
+        assert document.maximum_confidence_category == self.category
+        assert document.category == self.category
 
     def test_categorize_when_pages_have_mixed_categories_or_no_category(self):
         """Test categorizing a Document when Pages have different Category or no Category."""
@@ -634,12 +644,12 @@ class TestOfflineDataSetup(unittest.TestCase):
             page_category = [self.category, self.category2, None][i]
             page.set_category(page_category)
             if page_category is not None:
-                assert page.category_annotation.category == page_category
-                assert page.category_annotation.confidence == 1.0
+                assert page.maximum_confidence_category_annotation.category == page_category
+                assert page.maximum_confidence_category_annotation.confidence == 1.0
                 assert len(page._category_annotations) == 1
             else:
                 assert page.category is None
-                assert page.category_annotation is None
+                assert page.maximum_confidence_category_annotation is None
                 assert len(page._category_annotations) == 0
         assert len(document.category_annotations) == 2
         assert document.category is None
