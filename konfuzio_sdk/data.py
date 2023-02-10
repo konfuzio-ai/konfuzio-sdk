@@ -446,7 +446,7 @@ class Bbox:
     def from_image_size(self, x0, x1, y0, y1, page: Page) -> 'Bbox':
         """Create Bbox from the image dimensions based result to the scale of the characters bboxes of the document.
 
-        :return: Bbox with the rescaled .
+        :return: Bbox with the rescaled dimensions.
         """
         factor_y = page.height / page.image_height
         factor_x = page.width / page.image_width
