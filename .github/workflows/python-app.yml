@@ -18,8 +18,7 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]  # Python3.9 and newer have 2 failing tests: trainer/test_information_extraction.py::test_load_ai_model and trainer/test_information_extraction.py::test_load_old_ai_model
-
+        python-version: ["3.8", "3.9", "3.10"]
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
