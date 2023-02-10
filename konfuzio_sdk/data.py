@@ -181,11 +181,6 @@ class Page(Data):
 
         draw = ImageDraw.Draw(image)
 
-        # bbox information are based on a downscaled image
-        scale_mult = image.size[1] / self.height
-
-        anns = self.view_annotations()
-
         try:
             font = ImageFont.truetype(
                 "/usr/share/fonts/truetype/liberation/LiberationSerif-Bold.ttf", 24, encoding="unic"
@@ -194,23 +189,26 @@ class Page(Data):
             logger.warning('Font not found. Loading default.')
             font = ImageFont.load_default()
 
-        for ann in anns:
-            ann_pos = [
-                scale_mult * ann.bbox().x0,
-                scale_mult * (self.height - ann.bbox().y0),
-                scale_mult * ann.bbox().x1,
-                scale_mult * (self.height - ann.bbox().y1),
-            ]
-            draw.rectangle(ann_pos, outline='blue', width=2)
-            draw.text((ann_pos[0], ann_pos[3] - 24), ann.label.name, fill='blue', font=font)
-            for span in ann.spans:
-                pos = [
-                    scale_mult * span.bbox().x0,
-                    scale_mult * (self.height - span.bbox().y0),
-                    scale_mult * span.bbox().x1,
-                    scale_mult * (self.height - span.bbox().y1),
-                ]
-                draw.rectangle(pos, outline='green', width=1)
+        annotations = self.view_annotations()
+        for annotation in annotations:
+            annotation_image_bbox = (
+                annotation.bbox().x0_image,
+                annotation.bbox().y0_image,
+                annotation.bbox().x1_image,
+                annotation.bbox().y1_image,
+            )
+            draw.rectangle(annotation_image_bbox, outline='blue', width=2)
+            draw.text(
+                (annotation_image_bbox[0], annotation_image_bbox[1] - 24), annotation.label.name, fill='blue', font=font
+            )
+            for span in annotation.spans:
+                span_image_bbox = (
+                    span.bbox().x0_image,
+                    span.bbox().y0_image,
+                    span.bbox().x1_image,
+                    span.bbox().y1_image,
+                )
+                draw.rectangle(span_image_bbox, outline='green', width=1)
 
         return image
 
@@ -462,6 +460,26 @@ class Bbox:
         x1 = x1 * factor_x
 
         return Bbox(x0=x0, x1=x1, y0=y0, y1=y1, page=page)
+
+    @property
+    def x0_image(self):
+        """Get the x0 coordinate in the context of the Page image."""
+        return self.x0 * (self.page.image_width / self.page.width)
+
+    @property
+    def x1_image(self):
+        """Get the x1 coordinate in the context of the Page image."""
+        return self.x1 * (self.page.image_width / self.page.width)
+
+    @property
+    def y0_image(self):
+        """Get the y0 coordinate in the context of the Page image."""
+        return self.page.image_height - self.y1 * (self.page.image_height / self.page.height)
+
+    @property
+    def y1_image(self):
+        """Get the y1 coordinate in the context of the Page image."""
+        return self.page.image_height - self.y0 * (self.page.image_height / self.page.height)
 
 
 class AnnotationSet(Data):
