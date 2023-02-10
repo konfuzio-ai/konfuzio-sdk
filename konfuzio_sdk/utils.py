@@ -37,12 +37,27 @@ def sdk_isinstance(instance, klass):
 
 
 def exception_or_log_error(
-    msg: str, fail_loudly: Optional[bool] = True, exception_type: Optional[Type[Exception]] = ValueError
+    msg: str,
+    handler: str = "sdk",
+    fail_loudly: Optional[bool] = True,
+    exception_type: Optional[Type[Exception]] = ValueError,
 ) -> None:
-    """Log error or raise an exception. Needed to control the decider in production."""
-    # Raise whatever exception
+    """
+    Log error or raise an exception.
+
+    This function is needed to control error handling in production. If `fail_loudly` is set to `True`, the function
+    raises an exception to type `exception_type` with a message and handler in the format `{"message" : msg, "handler" : handler}`.
+    If `fail_loudly` is set to `False`, the function logs an error with `msg` using the logger.
+
+    :param msg: (str): The error message to be logged or raised.
+    :param handler: (str): The handler associated with the error. Defaults to "sdk"
+    :param fail_loudly: A flag indicating whether to raise an exception or log the error. Defaults to `True`.
+    :param exception_type: The type of exception to be raised. Defaults to `ValueError`.
+    :return: None
+    """
+    # Raise whatever exception while specifying the handler
     if fail_loudly:
-        raise exception_type(msg)
+        raise exception_type({"message": msg, "handler": handler})
     else:
         logger.error(msg)
 

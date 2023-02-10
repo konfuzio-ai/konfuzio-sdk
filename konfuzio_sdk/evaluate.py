@@ -1,9 +1,13 @@
 """Calculate the accuracy on any level in a  Document."""
 import logging
-from typing import Tuple, List, Optional, Union
+from typing import Dict, Tuple, List, Optional, Union
 
-import pandas
 import numpy
+import pandas
+from sklearn.metrics import (
+    confusion_matrix,
+    classification_report,
+)
 from sklearn.utils.extmath import weighted_mode
 
 from konfuzio_sdk.utils import sdk_isinstance, memory_size_of
@@ -455,6 +459,178 @@ class Evaluation:
         """Return Spans that were wrongly merged vertically."""
         self.data.groupby('id_local_predicted').apply(lambda group: self._apply(group, 'wrong_merge'))
         return self.data[self.data['wrong_merge']]
+
+
+class CategorizationEvaluation:
+    """Calculated evaluation measures for the classification task of Document categorization."""
+
+    def __init__(self, categories: List[Category], documents: List[Tuple[Document, Document]]):
+        """
+        Relate to the two document instances.
+
+        :param categories: The Categories to be evaluated.
+        :param documents: A list of tuple Documents that should be compared.
+        """
+        self.categories = categories
+        self.documents = documents
+        self._evaluation_results = None
+        self._clf_report = None
+        self.calculate()
+
+    @property
+    def category_ids(self) -> List[int]:
+        """List of Category IDs as class labels."""
+        return [category.id_ for category in self.categories]
+
+    @property
+    def category_names(self) -> List[str]:
+        """List of Category names as class names."""
+        return [category.name for category in self.categories]
+
+    @property
+    def actual_classes(self) -> List[int]:
+        """List of ground truth Category IDs."""
+        return [ground_truth.category.id_ for ground_truth, predicted in self.documents]
+
+    @property
+    def predicted_classes(self) -> List[int]:
+        """List of predicted Category IDs."""
+        return [
+            predicted.category.id_ if predicted.category is not None else -1
+            for ground_truth, predicted in self.documents
+        ]
+
+    def confusion_matrix(self) -> pandas.DataFrame:
+        """Confusion matrix."""
+        return confusion_matrix(self.actual_classes, self.predicted_classes, labels=self.category_ids + [-1])
+
+    def _get_tp_tn_fp_fn_per_category(self) -> Dict[int, EvaluationCalculator]:
+        """
+        Get the TP, FP, TN and FN for each Category.
+
+        The Category for which the evaluation is being done is considered the positive class. All others are considered
+        as negative class.
+
+        Follows the logic:
+        tpi = cii (value in the diagonal of the cm for the respective Category)
+        fpi = ∑nl=1 cli − tpi (sum of the column of the cm - except tp)
+        fni = ∑nl=1 cil − tpi (sum of the row of the cm - except tp)
+        tni = ∑nl=1 ∑nk=1 clk − tpi − fpi − fni (all other values not considered above)
+
+        cm = [[1, 1, 0],
+            [0, 2, 1],
+            [1, 2, 3]]
+
+        For Category '1':
+        tp = 2
+        fp = 1 + 2 = 3
+        fn = 1 + 0 = 1
+        tn = 11 - 2 - 3 - 1 = 5
+
+        :return: dictionary with the results per Category
+        """
+        confusion_matrix = self.confusion_matrix()
+        sum_columns = numpy.sum(confusion_matrix, axis=0)
+        sum_rows = numpy.sum(confusion_matrix, axis=1)
+        sum_all = numpy.sum(confusion_matrix)
+
+        results = {}
+
+        for ind, category_id in enumerate(self.category_ids):
+            tp = confusion_matrix[ind, ind]
+            fp = sum_columns[ind] - tp
+            fn = sum_rows[ind] - tp
+            tn = sum_all - fn - fp - tp
+            results[category_id] = EvaluationCalculator(tp=tp, fp=fp, fn=fn, tn=tn)
+
+        return results
+
+    def _get_tp_tn_fp_fn_across_categories(self) -> EvaluationCalculator:
+        """Get the TP, FP, TN and FN across all Categories."""
+        result = classification_report(
+            y_true=self.actual_classes,
+            y_pred=self.predicted_classes,
+            labels=self.category_ids,
+            target_names=self.category_names,
+            output_dict=True,
+        )['weighted avg']
+        result['f1'] = result['f1-score']
+        return result
+
+    def calculate(self):
+        """Calculate and update the data stored within this Evaluation."""
+        self._evaluation_results = self._get_tp_tn_fp_fn_per_category()
+        self._clf_report = self._get_tp_tn_fp_fn_across_categories()
+
+    def _base_metric(self, metric: str, category: Optional[Category] = None) -> int:
+        """Return the base metric of all Documents filtered by Category.
+
+        :param metric: One of TP, FP, FN, TN.
+        :param category: A Category to filter for, or None for getting global evaluation results.
+        """
+        return sum(
+            [
+                getattr(evaluation, metric)
+                for category_id, evaluation in self._evaluation_results.items()
+                if (category is None) or (category_id == category.id_)
+            ]
+        )
+
+    def tp(self, category: Optional[Category] = None) -> int:
+        """Return the True Positives of all Documents."""
+        return self._base_metric("tp", category)
+
+    def fp(self, category: Optional[Category] = None) -> int:
+        """Return the False Positives of all Documents."""
+        return self._base_metric("fp", category)
+
+    def fn(self, category: Optional[Category] = None) -> int:
+        """Return the False Negatives of all Documents."""
+        return self._base_metric("fn", category)
+
+    def tn(self, category: Optional[Category] = None) -> int:
+        """Return the True Negatives of all Documents."""
+        return self._base_metric("tn", category)
+
+    def get_evaluation_data(self, search: Category = None, allow_zero: bool = True) -> EvaluationCalculator:
+        """
+        Get precision, recall, f1, based on TP, TN, FP, FN.
+
+        :param search: A Category to filter for, or None for getting global evaluation results.
+        :type search: Category
+        :param allow_zero: If true, will calculate None for precision and recall when the straightforward application
+        of the formula would otherwise result in 0/0. Raises ZeroDivisionError otherwise.
+        :type allow_zero: bool
+        """
+        return EvaluationCalculator(
+            tp=self.tp(search), fp=self.fp(search), fn=self.fn(search), tn=self.tn(search), allow_zero=allow_zero
+        )
+
+    def _metric(self, metric: str, category: Optional[Category]) -> Optional[float]:
+        """Calculate a global metric or filter it by one Category.
+
+        :param metric: One of precision, recall, or f1.
+        :param category: A Category to filter for, or None for getting global evaluation results.
+        """
+        metric = metric.lower()
+        if metric not in ['precision', 'recall', 'f1']:
+            raise NotImplementedError
+        if category is None:
+            return self._clf_report[metric]
+        else:
+            return getattr(self.get_evaluation_data(search=category), metric)
+
+    def precision(self, category: Optional[Category]) -> Optional[float]:
+        """Calculate the global Precision or filter it by one Category."""
+        return self._metric('precision', category)
+
+    def recall(self, category: Optional[Category]) -> Optional[float]:
+        """Calculate the global Recall or filter it by one Category."""
+        return self._metric('recall', category)
+
+    def f1(self, category: Optional[Category]) -> Optional[float]:
+        """Calculate the global F1 Score or filter it by one Category."""
+        return self._metric('f1', category)
 
 
 class FileSplittingEvaluation:
