@@ -2007,7 +2007,7 @@ class Document(Data):
         elif category:
             self._category = category
         else:
-            self.category = project.no_category
+            self._category = project.no_category
         self._category_confidence = category_confidence
         self.category_is_revised = category_is_revised
 

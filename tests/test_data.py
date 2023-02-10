@@ -365,10 +365,10 @@ class TestOfflineExampleData(unittest.TestCase):
         for page in document.pages():
             assert page.category_annotations == []
         assert len(document.category_annotations) == len(self.project.categories)
-        assert document.category_annotations[0].category == self.payslips_category
-        assert document.category_annotations[0].confidence == 0.0
-        assert document.category_annotations[1].category == self.receipts_category
+        assert document.category_annotations[1].category == self.payslips_category
         assert document.category_annotations[1].confidence == 0.0
+        assert document.category_annotations[2].category == self.receipts_category
+        assert document.category_annotations[2].confidence == 0.0
         assert document.maximum_confidence_category_annotation is None
         assert document.maximum_confidence_category is None
         # test that no annotations are attached to the Pages
@@ -383,10 +383,10 @@ class TestOfflineExampleData(unittest.TestCase):
         for page in document.pages():
             assert page.category_annotations == []
         assert len(document.category_annotations) == len(self.project.categories)
-        assert document.category_annotations[0].category == self.payslips_category
-        assert document.category_annotations[0].confidence == 0.0
-        assert document.category_annotations[1].category == self.receipts_category
-        assert document.category_annotations[1].confidence == 1.0
+        assert document.category_annotations[1].category == self.payslips_category
+        assert document.category_annotations[1].confidence == 0.0
+        assert document.category_annotations[2].category == self.receipts_category
+        assert document.category_annotations[2].confidence == 1.0
         assert document.maximum_confidence_category_annotation.category == self.receipts_category
         assert document.maximum_confidence_category == self.receipts_category
         # test that no annotations are attached to the Pages while still having their Category defined
@@ -406,10 +406,10 @@ class TestOfflineExampleData(unittest.TestCase):
             assert page.maximum_confidence_category_annotation.category == self.receipts_category
             assert page.category == self.receipts_category
         assert len(document.category_annotations) == len(self.project.categories)
-        assert document.category_annotations[0].category == self.payslips_category
-        assert round(document.category_annotations[0].confidence, 2) == 0.3  # 0.6/2
-        assert document.category_annotations[1].category == self.receipts_category
-        assert round(document.category_annotations[1].confidence, 2) == 0.45  # 0.9/2
+        assert document.category_annotations[1].category == self.payslips_category
+        assert round(document.category_annotations[1].confidence, 2) == 0.3  # 0.6/2
+        assert document.category_annotations[2].category == self.receipts_category
+        assert round(document.category_annotations[2].confidence, 2) == 0.45  # 0.9/2
         assert document.maximum_confidence_category_annotation.category == self.receipts_category
         assert document.maximum_confidence_category == self.receipts_category
 
@@ -427,11 +427,11 @@ class TestOfflineExampleData(unittest.TestCase):
         # test a user defined Category that is different from the maximum confidence predicted Category will override
         document.set_category(self.payslips_category)
         assert len(document.category_annotations) == len(self.project.categories)
-        assert document.category_annotations[0].category == self.payslips_category
-        assert round(document.category_annotations[0].confidence, 2) == 0.3  # 0.6/2
-        assert document.category_annotations[1].category == self.receipts_category
+        assert document.category_annotations[1].category == self.payslips_category
+        assert round(document.category_annotations[1].confidence, 2) == 0.3  # 0.6/2
+        assert document.category_annotations[2].category == self.receipts_category
         # Test that a user revised Category overrides predictions
-        assert round(document.category_annotations[1].confidence, 2) == 0.45  # 0.9/2
+        assert round(document.category_annotations[2].confidence, 2) == 0.45  # 0.9/2
         assert document.maximum_confidence_category_annotation.category == self.payslips_category
         assert round(document.maximum_confidence_category_annotation.confidence, 2) == 0.3
         assert document.maximum_confidence_category == self.payslips_category
@@ -1470,7 +1470,7 @@ class TestOfflineDataSetup(unittest.TestCase):
 
         # Add annotation for the first time
         span = Span(start_offset=1, end_offset=2)
-        with pytest.raises(ValueError, match="where the category is None"):
+        with pytest.raises(ValueError, match="without Category must not have Annotations"):
             _ = Annotation(
                 document=document,
                 is_correct=True,
@@ -2625,11 +2625,11 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         project = LocalTextProject()
         test_document = project.get_document_by_id(19)
         label = Label(project=project)
-        test_document.category = project.get_category_by_id(3)
+        test_document._category = project.get_category_by_id(3)
         label_set = LabelSet(project=project, categories=[test_document.category])
         span = Span(start_offset=1, end_offset=2)
         annotation_set = AnnotationSet(document=test_document, label_set=label_set)
-        test_document.category = project.no_category
+        test_document._category = project.no_category
         with pytest.raises(ValueError, match='where the category is'):
             _ = Annotation(
                 label=label, annotation_set=annotation_set, label_set=label_set, document=test_document, spans=[span]
