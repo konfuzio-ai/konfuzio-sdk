@@ -662,7 +662,6 @@ class FileSplittingEvaluation:
                         f'of is_first_page.'
                     )
         for ground_truth, prediction in zip(ground_truth_documents, prediction_documents):
-            print(ground_truth.id_, [prediction.copy_of_id, prediction.id_])
             if ground_truth.id_ not in [prediction.copy_of_id, prediction.id_]:
                 raise ValueError(
                     f"Incorrect prediction passed for {ground_truth}. Prediction has to be a copy of a "
