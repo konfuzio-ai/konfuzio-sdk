@@ -459,6 +459,9 @@ def _check_for_dates_with_day_count(offset_string: str, org_str: str, month_dict
     elif len(offset_string) == 10 and offset_string[2] == '.' and offset_string[5] == '.':
         _date = offset_string  # => 01.01.2001
         translation = _date
+    elif len(offset_string) == 9 and offset_string[2] == '.' and offset_string[4] == '.':
+        _date = f'{offset_string[:2]}.0{offset_string[3]}.{offset_string[5:]}'
+        translation = _date
     # check for 01/01/2001
     elif len(offset_string) == 10 and offset_string[2] == '/' and offset_string[5] == '/':
         _date = offset_string.replace('/', '.')  # => 01.01.2001
