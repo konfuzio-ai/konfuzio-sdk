@@ -7,7 +7,7 @@ import pytest
 from pandas import DataFrame
 
 from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span, LabelSet, Label, Category
-from konfuzio_sdk.evaluate import compare, grouped, Evaluation, EvaluationCalculator
+from konfuzio_sdk.evaluate import compare, grouped, Evaluation, EvaluationCalculator, CategorizationEvaluation
 
 from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
@@ -1212,6 +1212,71 @@ class TestEvaluationSecondLabelDocumentBDocumentA(unittest.TestCase):
     def test_true_negatives(self):
         """Evaluate that that nothing is correctly predicted below threshold."""
         assert self.evaluation.tn(search=self.label) == 0
+
+
+class TestCategorizationEvaluation(unittest.TestCase):
+    """Test the calculation two Documents with overlapping Spans and multiple Labels."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Test evaluation when changing filtered Category and Documents."""
+        cls.project = LocalTextProject()
+        cls.cat1_doca = cls.project.categories[0].documents()[0]
+        cls.cat1_docb = cls.project.categories[0].test_documents()[0]
+        cls.cat2_doca = cls.project.categories[1].documents()[0]
+        cls.cat2_docb = cls.project.categories[1].test_documents()[0]
+        cls.cat_eval = CategorizationEvaluation(
+            cls.project.categories,
+            documents=[
+                (cls.cat1_doca, cls.cat1_docb),
+                (cls.cat2_doca, cls.cat2_docb),
+                (cls.cat1_doca, cls.cat2_docb),
+                (cls.cat1_doca, cls.cat2_docb),
+            ],
+        )
+
+    def test_get_tp_tn_fp_fn_per_category(self):
+        """Test get results per Category for categorization problem."""
+        results_per_category = self.cat_eval._get_tp_tn_fp_fn_per_category()
+        assert results_per_category[1].tp == 1
+        assert results_per_category[1].fp == 0
+        assert results_per_category[1].fn == 2
+        assert results_per_category[1].tn == 1
+        assert results_per_category[2].tp == 1
+        assert results_per_category[2].fp == 2
+        assert results_per_category[2].fn == 0
+        assert results_per_category[2].tn == 1
+
+    def test_global_metrics(self):
+        """Test metrics for a categorization problem."""
+        assert self.cat_eval.tp(None) == 2
+        assert self.cat_eval.fp(None) == 2
+        assert self.cat_eval.fn(None) == 2
+        assert self.cat_eval.tn(None) == 10
+
+        assert self.cat_eval.precision(None) == 5 / 6
+        assert self.cat_eval.recall(None) == 0.5
+        assert self.cat_eval.f1(None) == 0.5
+
+    def test_filtered_metrics(self):
+        """Test metrics for a categorization problem while filtering for categories."""
+        assert self.cat_eval.tp(category=self.project.categories[0]) == 1
+        assert self.cat_eval.fp(category=self.project.categories[0]) == 0
+        assert self.cat_eval.fn(category=self.project.categories[0]) == 2
+        assert self.cat_eval.tn(category=self.project.categories[0]) == 1
+
+        assert self.cat_eval.precision(category=self.project.categories[0]) == 1.0
+        assert self.cat_eval.recall(category=self.project.categories[0]) == 1 / 3
+        assert self.cat_eval.f1(category=self.project.categories[0]) == 0.5
+
+        assert self.cat_eval.tp(category=self.project.categories[1]) == 1
+        assert self.cat_eval.fp(category=self.project.categories[1]) == 2
+        assert self.cat_eval.fn(category=self.project.categories[1]) == 0
+        assert self.cat_eval.tn(category=self.project.categories[1]) == 1
+
+        assert self.cat_eval.precision(category=self.project.categories[1]) == 1 / 3
+        assert self.cat_eval.recall(category=self.project.categories[1]) == 1.0
+        assert self.cat_eval.f1(category=self.project.categories[1]) == 0.5
 
 
 class TestEvaluationCalculator(unittest.TestCase):

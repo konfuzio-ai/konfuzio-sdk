@@ -19,6 +19,7 @@ from konfuzio_sdk.data import (
     Span,
     download_training_and_test_data,
     Category,
+    CategoryAnnotation,
     Page,
     Bbox,
     BboxValidationTypes,
@@ -40,7 +41,7 @@ logger = logging.getLogger(__name__)
 
 
 class TestOnlineProject(unittest.TestCase):
-    """Use this class only to test data.py operations that need an online project."""
+    """Use this class only to test data.py operations that need an online Project."""
 
     annotations_correct = 24
 
@@ -94,7 +95,7 @@ class TestOnlineProject(unittest.TestCase):
 
         # existing annotation
         # https://app.konfuzio.com/admin/server/sequenceannotation/?document_id=44823&project=46
-        # we are no longer filtering out the rejected annotations so it's 21
+        # we are no longer filtering out the rejected Annotations so it's 21
         self.assertEqual(21, len(doc.annotations(use_correct=False)))
         # a multiline Annotation in the top right corner, see https://app.konfuzio.com/a/4419937
         self.assertEqual(66, doc.annotations()[0]._spans[0].start_offset)
@@ -113,6 +114,7 @@ class TestOnlineProject(unittest.TestCase):
         """Test to download page files."""
         doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         assert len(doc.pages()) == 1
+        assert doc.pages()[0].category == doc.category
 
     def test_load_image_in_memory(self):
         """Test to download page files."""
@@ -122,7 +124,7 @@ class TestOnlineProject(unittest.TestCase):
             assert type(image) is PngImageFile
 
     def test_get_annotation_by_id(self):
-        """Test to find an online annotation by its ID."""
+        """Test to find an online Annotation by its ID."""
         doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         annotation = doc.get_annotation_by_id(4420057)
         assert annotation.start_offset == 1507
@@ -130,13 +132,13 @@ class TestOnlineProject(unittest.TestCase):
         assert annotation.offset_string == ['Erna-Muster']
 
     def test_get_nonexistent_annotation_by_id(self):
-        """Test to find an online annotation that does not exist by its ID, should raise an IndexError."""
+        """Test to find an online Annotation that does not exist by its ID, should raise an IndexError."""
         doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         with pytest.raises(IndexError, match="is not part of"):
             _ = doc.get_annotation_by_id(999999)
 
     def test_create_annotation_offline(self):
-        """Test to add an Annotation to the document offline, and that it does not persist after updating the doc."""
+        """Test to add an Annotation to the Document offline, and that it does not persist after updating the doc."""
         doc = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         assert Span(start_offset=1590, end_offset=1602) not in doc.spans()
         label = self.project.get_label_by_name('Lohnart')
@@ -149,7 +151,7 @@ class TestOnlineProject(unittest.TestCase):
             is_correct=True,
         )
         assert annotation in doc.annotations()
-        doc.update()  # redownload document information to check that the annotation was not added online
+        doc.update()  # redownload Document information to check that the Annotation was not added online
         assert annotation not in doc.annotations()
 
     def test_create_annotation_then_delete_annotation(self):
@@ -171,16 +173,16 @@ class TestOnlineProject(unittest.TestCase):
         )
         annotation.save()
         assert annotation in doc.annotations()
-        doc.update()  # redownload document information to check that the annotation was saved online
+        doc.update()  # redownload Document information to check that the Annotation was saved online
         assert annotation in doc.annotations()
 
-        # Test2: delete the Annotation from the document offline
+        # Test2: delete the Annotation from the Document offline
         annotation.delete(delete_online=False)
         assert annotation not in doc.get_annotations()
-        doc.update()  # redownload document information to check that the annotation was not deleted online
+        doc.update()  # redownload Document information to check that the Annotation was not deleted online
         assert annotation in doc.get_annotations()
 
-        # Test3: delete the Annotation from the document online.
+        # Test3: delete the Annotation from the Document online.
         annotation.delete()  # doc.update() performed internally when delete_online=True, which is default
         assert annotation not in doc.get_annotations()
 
@@ -297,7 +299,7 @@ class TestOfflineExampleData(unittest.TestCase):
         assert len(cls.payslips_category.documents()) == 25
         assert len(cls.receipts_category.documents()) == 25
         assert cls.project.get_document_by_id(44864).category.name == cls.project.no_category.name
-        assert len(cls.project.documents) == 51
+        assert len(cls.project.documents) == 25 + 24 + 2
 
     def test_copy(self):
         """Test that copy is not allowed as it needs to be implemented for every SDK concept."""
@@ -355,6 +357,84 @@ class TestOfflineExampleData(unittest.TestCase):
         assert self.receipts_category.fallback_name == "quittung"
         test_category = Category(project=self.project, id_=1, name="Te(s)t Category Name (content content)")
         assert test_category.fallback_name == "tet category name"
+
+    def test_document_with_no_category_has_category_annotations_with_zero_confidence(self):
+        """Test that a Document with no Category has only Category Annotations with zero confidence."""
+        document = deepcopy(self.project.get_document_by_id(89928))
+        document.set_category(None)
+        for page in document.pages():
+            assert page.category_annotations == []
+        assert len(document.category_annotations) == len(self.project.categories)
+        assert document.category_annotations[0].category == self.payslips_category
+        assert document.category_annotations[0].confidence == 0.0
+        assert document.category_annotations[1].category == self.receipts_category
+        assert document.category_annotations[1].confidence == 0.0
+        assert document.maximum_confidence_category_annotation is None
+        assert document.maximum_confidence_category is None
+        # test that no annotations are attached to the Pages
+        for page in document.pages():
+            assert page.category_annotations == []
+            assert page.category is None
+
+    def test_category_annotations_no_predictions(self):
+        """Test Category Annotations for a Document with a user defined Category but with no AI Category predictions."""
+        document = deepcopy(self.project.get_document_by_id(89928))
+        assert document.category == self.receipts_category
+        for page in document.pages():
+            assert page.category_annotations == []
+        assert len(document.category_annotations) == len(self.project.categories)
+        assert document.category_annotations[0].category == self.payslips_category
+        assert document.category_annotations[0].confidence == 0.0
+        assert document.category_annotations[1].category == self.receipts_category
+        assert document.category_annotations[1].confidence == 1.0
+        assert document.maximum_confidence_category_annotation.category == self.receipts_category
+        assert document.maximum_confidence_category == self.receipts_category
+        # test that no annotations are attached to the Pages while still having their Category defined
+        for page in document.pages():
+            assert page.category_annotations == []
+            assert page.category == self.receipts_category
+
+    def test_category_annotations_with_predictions(self):
+        """Test Category Annotations for a Document with no user defined Category but with AI Category predictions."""
+        document = deepcopy(self.project.get_document_by_id(89928))
+        document.set_category(None)
+        for page in document.pages():  # this Document has 2 Pages
+            assert page.category_annotations == []
+            # simulate the prediction of a Categorization AI by adding Category Annotations to the Pages
+            CategoryAnnotation(category=self.payslips_category, confidence=0.2 * page.number, page=page)  # 0.2+0.4=0.6
+            CategoryAnnotation(category=self.receipts_category, confidence=0.3 * page.number, page=page)  # 0.3+0.6=0.9
+            assert page.maximum_confidence_category_annotation.category == self.receipts_category
+            assert page.category == self.receipts_category
+        assert len(document.category_annotations) == len(self.project.categories)
+        assert document.category_annotations[0].category == self.payslips_category
+        assert round(document.category_annotations[0].confidence, 2) == 0.3  # 0.6/2
+        assert document.category_annotations[1].category == self.receipts_category
+        assert round(document.category_annotations[1].confidence, 2) == 0.45  # 0.9/2
+        assert document.maximum_confidence_category_annotation.category == self.receipts_category
+        assert document.maximum_confidence_category == self.receipts_category
+
+    def test_category_annotations_with_predictions_and_user_revised_category(self):
+        """Test Category Annotations for a Document with both user defined Category and AI Category predictions."""
+        document = deepcopy(self.project.get_document_by_id(89928))
+        document.set_category(None)
+        for page in document.pages():  # this Document has 2 Pages
+            assert page.category_annotations == []
+            # simulate the prediction of a Categorization AI by adding Category Annotations to the Pages
+            CategoryAnnotation(category=self.payslips_category, confidence=0.2 * page.number, page=page)  # 0.2+0.4=0.6
+            CategoryAnnotation(category=self.receipts_category, confidence=0.3 * page.number, page=page)  # 0.3+0.6=0.9
+            assert page.maximum_confidence_category_annotation.category == self.receipts_category
+            assert page.category == self.receipts_category
+        # test a user defined Category that is different from the maximum confidence predicted Category will override
+        document.set_category(self.payslips_category)
+        assert len(document.category_annotations) == len(self.project.categories)
+        assert document.category_annotations[0].category == self.payslips_category
+        assert round(document.category_annotations[0].confidence, 2) == 0.3  # 0.6/2
+        assert document.category_annotations[1].category == self.receipts_category
+        # Test that a user revised Category overrides predictions
+        assert round(document.category_annotations[1].confidence, 2) == 0.45  # 0.9/2
+        assert document.maximum_confidence_category_annotation.category == self.payslips_category
+        assert round(document.maximum_confidence_category_annotation.confidence, 2) == 0.3
+        assert document.maximum_confidence_category == self.payslips_category
 
 
 class TestEqualityAnnotation(unittest.TestCase):
@@ -526,7 +606,8 @@ class TestOfflineDataSetup(unittest.TestCase):
         cls.project = Project(id_=None)
         cls.label = Label(project=cls.project, text='First Offline Label')
         cls.category = Category(project=cls.project, id_=1)
-        cls.document = Document(project=cls.project, category=cls.category)
+        cls.category2 = Category(project=cls.project, id_=2)
+        cls.document = Document(project=cls.project, category=cls.category, text="Hello.")
         cls.label_set = LabelSet(project=cls.project, categories=[cls.category], id_=421)
         cls.label_set.add_label(cls.label)
         cls.annotation_set = AnnotationSet(document=cls.document, label_set=cls.label_set)
@@ -535,11 +616,11 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 53
+        assert len(cls.project.virtual_documents) == 59
 
-    # def test_document_only_needs_project(self):
-    #     """Test that a Document can be created without category"""
-    #     _ = Document(project=self.project)
+    def test_document_only_needs_project(self):
+        """Test that a Document can be created without Category."""
+        _ = Document(project=self.project)
 
     def test_project_no_label(self):
         """Test that no_label exists in the Labels of the Project and has the expected name."""
@@ -566,6 +647,97 @@ class TestOfflineDataSetup(unittest.TestCase):
     def test_category_of_document(self):
         """Test if setup worked."""
         assert self.document.category == self.category
+        assert self.document.maximum_confidence_category == self.category
+        for page in self.document.pages():
+            assert page.category == self.category
+
+    def test_categorize_when_all_pages_have_same_category(self):
+        """Test categorizing a Document when all Pages have the same Category."""
+        document = Document(project=self.project, text="hello")
+        for i in range(2):
+            page = Page(
+                id_=None,
+                document=document,
+                start_offset=0,
+                end_offset=0,
+                number=i + 1,
+                original_size=(0, 0),
+            )
+            page.set_category(self.category)
+            assert page.maximum_confidence_category_annotation.category == self.category
+            assert page.maximum_confidence_category_annotation.confidence == 1.0
+            assert len(page.category_annotations) == 1
+        assert document.maximum_confidence_category == self.category
+        assert document.category == self.category
+
+    def test_categorize_when_all_pages_have_no_category(self):
+        """Test categorizing a Document when all Pages have no Category."""
+        document = Document(project=self.project, text="hello")
+        for i in range(2):
+            page = Page(id_=None, document=document, start_offset=0, end_offset=0, number=i + 1, original_size=(0, 0))
+            assert page.category is None
+            assert page.maximum_confidence_category_annotation is None
+            assert len(page.category_annotations) == 0
+        assert document.maximum_confidence_category is None
+        assert document.category is None
+
+    def test_categorize_when_pages_have_different_categories(self):
+        """Test categorizing a Document when Pages have different Category."""
+        document = Document(project=self.project, text="hello")
+        for i in range(2):
+            page = Page(
+                id_=None,
+                document=document,
+                start_offset=0,
+                end_offset=0,
+                number=i + 1,
+                original_size=(0, 0),
+            )
+            page_category = self.category if i else self.category2
+            page.set_category(page_category)
+            assert page.maximum_confidence_category_annotation.category == page_category
+            assert page.maximum_confidence_category_annotation.confidence == 1.0
+            assert len(page.category_annotations) == 1
+        assert len(document.category_annotations) == 2
+        assert document.category is None
+        # as each page got assigned a different Category with confidence all equal to 1,
+        # the maximum confidence Category of the Document will be a random one
+        assert document.maximum_confidence_category in [self.category, self.category2]
+        # if the user revises it, it will be consistently updated
+        document.set_category(self.category)
+        assert document.maximum_confidence_category == self.category
+        assert document.category == self.category
+
+    def test_categorize_when_pages_have_mixed_categories_or_no_category(self):
+        """Test categorizing a Document when Pages have different Category or no Category."""
+        document = Document(project=self.project, text="hello")
+        for i in range(3):
+            page = Page(
+                id_=None,
+                document=document,
+                start_offset=0,
+                end_offset=0,
+                number=i + 1,
+                original_size=(0, 0),
+            )
+            page_category = [self.category, self.category2, None][i]
+            page.set_category(page_category)
+            if page_category is not None:
+                assert page.maximum_confidence_category_annotation.category == page_category
+                assert page.maximum_confidence_category_annotation.confidence == 1.0
+                assert len(page.category_annotations) == 1
+            else:
+                assert page.category is None
+                assert page.maximum_confidence_category_annotation is None
+                assert len(page.category_annotations) == 0
+        assert len(document.category_annotations) == 2
+        assert document.category is None
+
+    def test_categorize_with_no_pages(self):
+        """Test categorizing a Document with no Pages."""
+        document = Document(project=self.project, text="hello")
+        assert document.category is None
+        assert document.pages() == []
 
     def test_span_negative_offset(self):
         """Negative Span creation should not be possible."""
@@ -729,7 +901,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         annotation = Annotation(document=document, spans=[span], label=self.label, label_set=self.label_set)
         assert annotation.spans[0].annotation is not None
         assert annotation.spans[0].bbox() is None  # Span bboxes must be explicitly loaded using span.bbox
-        # Here this would be failing even when calling span.bbox as the test document does not have a bbox.
+        # Here this would be failing even when calling Span.bbox as the test document does not have a bbox.
 
     def test_get_span_bbox_with_characters_without_height_allowed(self):
         """
@@ -991,7 +1163,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         self.assertTrue(document._check_text_or_bbox_modified())
 
     def test_document_bbox_modified(self):
-        """Test that we can detect changes in the bboxes of a document."""
+        """Test that we can detect changes in the bboxes of a Document."""
         document_bbox = {
             '0': {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
         }
@@ -1086,7 +1258,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert '8' not in page1.get_bbox() and '10' not in page1.get_bbox()
 
     def test_page_annotations(self):
-        """Test getting annotations of a Page."""
+        """Test getting Annotations of a Page."""
         document = Document(project=self.project, category=self.category, text='p\n1\fnap2')
         span1 = Span(start_offset=0, end_offset=1)
         span2 = Span(start_offset=2, end_offset=3)
@@ -1140,7 +1312,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert document.text[filled_span.start_offset : filled_span.end_offset] == 'a'
 
     def test_document_check_bbox_invalid_height_coordinates(self):
-        """Test bbox check with invalid x coordinates regarding the page height."""
+        """Test bbox check with invalid x coordinates regarding the Page height."""
         document_bbox = {
             '0': {'x0': 1, 'x1': 0, 'y0': 0, 'y1': 2, 'top': 10, 'bottom': 11, 'page_number': 1, 'text': 'h'}
         }
@@ -1185,11 +1357,11 @@ class TestOfflineDataSetup(unittest.TestCase):
         self.assertFalse(document.check_annotations())
 
     def test_to_there_must_not_be_a_folder(self):
-        """Check that a virtual Document has now folder."""
+        """Check that a virtual Document has no folder."""
         assert not os.path.isdir(self.document.document_folder)
 
     def test_new_annotation_in_annotation_set_of_document_of_add_foreign_annotation_set(self):
-        """Add new annotation to a document."""
+        """Add new Annotation to a Document, when the AnnotationSet is not part of the same Document."""
         project = Project(id_=None)
         document = Document(project=project, category=self.category)
         span = Span(start_offset=1, end_offset=2)
@@ -1206,7 +1378,7 @@ class TestOfflineDataSetup(unittest.TestCase):
             assert 'Annotation Set None is not part of Document None' in context.exception
 
     def test_new_annotation_in_document(self):
-        """Add new annotation to a document."""
+        """Add new Annotation to a Document."""
         project = Project(id_=None)
         document = Document(project=project, category=self.category)
         span = Span(start_offset=1, end_offset=2)
@@ -1224,7 +1396,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert annotation in document.annotations()
 
     def test_new_annotation_in_document_with_confidence_zero(self):
-        """Add new annotation to a document with confidence of 0.0."""
+        """Add new Annotation to a Document with confidence of 0.0."""
         project = Project(id_=None)
         document = Document(project=project, category=self.category)
         span = Span(start_offset=1, end_offset=2)
@@ -1242,7 +1414,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert annotation in document.annotations(use_correct=False)
 
     def test_new_annotation_in_annotation_set_of_document(self):
-        """Add new annotation to a document."""
+        """Add new Annotation to a Document."""
         project = Project(id_=None)
         document = Document(project=project, category=self.category)
         span = Span(start_offset=1, end_offset=2)
@@ -1260,7 +1432,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert annotation in annotation_set.annotations()
 
     def test_create_document_with_page_object(self):
-        """Create a Document with pages information from a Page object."""
+        """Create a Document with Pages information from a Page object."""
         document = Document(project=self.project, category=self.category, text='a')
         page_list = [{"id_": 1, "number": 1, "original_size": [595.2, 841.68]}]
         page = Page(**page_list[0], document=document, start_offset=0, end_offset=1)
@@ -1269,9 +1441,10 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert page.image is None
         assert page.number == 1
         assert page.width == 595.2
+        assert page.category == self.category
 
     def test_create_new_annotation_set_in_document(self):
-        """Add new annotation set to a document."""
+        """Add new Annotation Set to a Document."""
         document = Document(project=self.project, category=self.category)
         annotation_set = AnnotationSet(document=document, label_set=self.label_set)
         assert annotation_set in document.annotation_sets()
@@ -1285,7 +1458,7 @@ class TestOfflineDataSetup(unittest.TestCase):
             assert 'is a duplicate and will not be added' in context.exception
 
     def test_to_add_annotation_set_of_another_document(self):
-        """One Annotation Set must only belong to one document."""
+        """One Annotation Set must only belong to one Document."""
         document = Document(project=self.project, category=self.category)
         with self.assertRaises(ValueError):
             document.add_annotation_set(self.annotation_set)
@@ -1477,7 +1650,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert len(document.annotations(use_correct=False)) == 2
 
     def test_merge_vertical_1(self):
-        """Test the vertical merging of spans into a single Annotation."""
+        """Test the vertical merging of Spans into a single Annotation."""
         project = LocalTextProject()
 
         category = project.get_category_by_id(1)
@@ -1536,7 +1709,7 @@ class TestOfflineDataSetup(unittest.TestCase):
         assert len(document.annotations(use_correct=False)[1].spans) == 3
 
     def test_lose_weight(self):
-        """Lose weight should remove session and documents."""
+        """Lose weight should remove session and Documents."""
         project = Project(id_=None)
         _ = Category(project=project)
         label_set = LabelSet(project=project)
@@ -1619,7 +1792,7 @@ class TestKonfuzioDataCustomPath(unittest.TestCase):
     """Test handle data."""
 
     def test_get_text_for_doc_needing_update(self):
-        """Test to load the Project into a custom folder and only get one document."""
+        """Test to load the Project into a custom folder and only get one Document."""
         prj = Project(id_=TEST_PROJECT_ID, project_folder='my_own_data')
         doc = prj.get_document_by_id(214414)
         doc.download_document_details()
@@ -1631,7 +1804,7 @@ class TestKonfuzioDataCustomPath(unittest.TestCase):
         prj.delete()
 
     def test_make_sure_text_is_downloaded_automatically(self):
-        """Test if a Text is downloaded automatically."""
+        """Test if a text is downloaded automatically."""
         prj = Project(id_=TEST_PROJECT_ID, project_folder='my_own_data')
         doc = prj.get_document_by_id(214414)
         self.assertFalse(is_file(doc.txt_file_path, raise_exception=False))
@@ -1667,8 +1840,8 @@ class TestKonfuzioOneVirtualTwoRealCategories(unittest.TestCase):
 class TestKonfuzioDataSetup(unittest.TestCase):
     """Test handle data."""
 
-    document_count = 51
-    test_document_count = 4
+    document_count = 50
+    test_document_count = 5
     annotations_correct = 24
     # 24 created by human
     # https://app.konfuzio.com/admin/server/sequenceannotation/?
@@ -1683,7 +1856,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         cls.prj = Project(id_=None, project_folder=OFFLINE_PROJECT)
 
     def test_number_training_documents(self):
-        """Test the number of Documents in data set status training."""
+        """Test the number of Documents in dataset status Training."""
         assert len(self.prj.documents) == self.document_count
 
     def test_get_labels_of_category(self):
@@ -1704,37 +1877,37 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert document.annotations() == []
 
     def test_number_test_documents(self):
-        """Test the number of Documents in data set status test."""
+        """Test the number of Documents in dataset status Test."""
         assert len(self.prj.test_documents) == self.test_document_count
 
     def test_number_excluded_documents(self):
-        """Test the number of Documents in data set status excluded."""
+        """Test the number of Documents in dataset status Excluded."""
         assert len(self.prj.excluded_documents) == 1
 
     def test_all_labels_have_threshold(self):
-        """Test that all labels have the attribute threshold."""
+        """Test that all Labels have the attribute threshold."""
         for label in self.prj.labels:
             assert hasattr(label, 'threshold')
 
     def test_number_preparation_documents(self):
-        """Test the number of Documents in data set status preparation."""
+        """Test the number of Documents in dataset status Preparation."""
         assert len(self.prj.preparation_documents) == 0
 
     def test_annotation_of_label(self):
-        """Test the number of Annotations across all Documents in training."""
+        """Test the number of Annotations across all Documents in Training."""
         label = self.prj.get_label_by_id(867)
         annotations = label.annotations(categories=[self.prj.get_category_by_id(63)])
         assert len(annotations) == self.annotations_correct
 
     def test_annotation_hashable(self):
-        """Test if an annotation can be hashed."""
+        """Test if an Annotation can be hashed."""
         set(self.prj.get_document_by_id(TEST_DOCUMENT_ID).annotations())
 
     def test_get_all_spans_of_a_document(self):
         """Test to get all Spans in a Document."""
         # Before we had 21 Spans after the a code change to allow overlapping Annotations we have 23 Spans
         # due to the fact that one Span is not identical, so one Annotation relates to one Span.
-        # One more for a total of 24 since we are not filtering out the rejected annotations.
+        # One more for a total of 24 since we are not filtering out the rejected Annotations.
         assert len(self.prj.get_document_by_id(TEST_DOCUMENT_ID).spans()) == 24
 
     def test_span_hashable(self):
@@ -1762,7 +1935,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert not self.prj.get_label_set_by_name('Lohnabrechnung').has_multiple_annotation_sets
 
     def test_default_label_set(self):
-        """Test the main Label Set incl. it's labels."""
+        """Test the main Label Set incl. its Labels."""
         default_label_set = self.prj.get_label_set_by_name('Lohnabrechnung')
         assert default_label_set.labels.__len__() == 10
 
@@ -1779,22 +1952,26 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert self.prj.label_sets[0].categories[0].id_ == 63
 
     def test_category_documents(self):
-        """Test category of Documents associated to a Category."""
+        """Test Category of Documents associated to a Category."""
         category = self.prj.get_category_by_id(63)
         category_documents = category.documents()
 
         assert len(category_documents) == 25
         for document in category_documents:
             assert document.category == category
+            for page in document.pages():
+                assert page.category == category
 
     def test_category_test_documents(self):
-        """Test category of Test Documents associated to a Category."""
+        """Test Category of Test Documents associated to a Category."""
         category = self.prj.get_category_by_id(63)
         category_test_documents = category.test_documents()
 
         assert len(category_test_documents) == 3
         for document in category_test_documents:
             assert document.category == category
+            for page in document.pages():
+                assert page.category == category
 
     def test_category_annotations_by_label(self):
         """Test getting Annotations of a Category by Labels."""
@@ -1804,6 +1981,8 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         for annotation in label.annotations(categories=[category]):
             if annotation.document.category is not None:
                 assert annotation.document.category == category
+                for page in annotation.document.pages():
+                    assert page.category == category
 
     def test_category_annotations_by_document(self):
         """Test getting Annotations of a Category by Documents."""
@@ -1851,7 +2030,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         payslips_category = self.prj.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID)
         assert payslips_category.name == 'Lohnabrechnung'
         # We have 5 Label Sets, Lohnabrechnung is Category and a Label Set as it hold labels, however a Category
-        # cannot hold labels
+        # cannot hold Labels
         assert sorted([label_set.name for label_set in self.prj.categories[1].label_sets]) == [
             'Brutto-Bezug',
             'Lohnabrechnung',
@@ -1863,7 +2042,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         receipts_category = self.prj.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID)
         assert receipts_category.name == 'Quittung (GERMAN)'
         # We have 5 Label Sets, Quittung is Category and a Label Set as it hold labels, however a Category
-        # cannot hold labels
+        # cannot hold Labels
         assert sorted([label_set.name for label_set in self.prj.categories[1].label_sets]) == [
             'Brutto-Bezug',
             'Lohnabrechnung',
@@ -1874,12 +2053,12 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         ]
 
     def test_get_images(self):
-        """Test get paths to the images of the first training document."""
+        """Test get paths to the images of the first Training Document."""
         document = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
         assert len(document.pages()) == 1
 
     def test_get_file(self):
-        """Test get path to the file of the first training document."""
+        """Test get path to the file of the first Training Document."""
         self.prj.documents[0].get_file()
         assert self.prj.documents[0].ocr_file_path
 
@@ -2134,7 +2313,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert len(doc.annotation_sets()) == 24  # After Update to use the TEST_DOCUMENT_ID
 
     def test_get_annotation_set_after_removal(self):
-        """Test get an annotation set that no longer exists."""
+        """Test get an Annotation Set that no longer exists."""
         with self.assertRaises(IndexError) as _:
             # create annotation for a certain annotation set in a document
             doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
@@ -2157,7 +2336,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert doc.category.name == 'Lohnabrechnung'
 
     def test_assignee_of_document(self):
-        """Test Assignee of a Document."""
+        """Test assignee of a Document."""
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
         assert doc.assignee == 1043  # Document has Assignee ch+test@konfuzio.com with user ID 1043
 
@@ -2169,7 +2348,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert len(self.prj.documents) == self.document_count
 
     def test_correct_annotations(self):
-        """Test correct Annotations of a certain Label in a specific document."""
+        """Test correct Annotations of a certain Label in a specific Document."""
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
         label = self.prj.get_label_by_id(867)
         assert len(doc.annotations(label=label)) == 1
@@ -2181,7 +2360,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert doc.annotations()[0].start_offset == 66
 
     def test_multiline_annotation(self):
-        """Test to convert a multiline span Annotation to a dict."""
+        """Test to convert a multiline Span Annotation to a dict."""
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
         assert len(doc.annotations()[0].eval_dict) == 2
 
@@ -2258,7 +2437,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert virtual_doc.bboxes
 
     def test_document_check_bbox(self):
-        """Test bbox check."""
+        """Test Bbox check."""
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
         virtual_doc = deepcopy(doc)
         self.assertTrue(virtual_doc.bboxes)
@@ -2302,9 +2481,9 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     @unittest.skip(reason='Waiting for API to support to add to default Annotation Set')
     def test_document_add_new_annotation(self):
         """Test adding a new annotation."""
-        doc = self.prj.labels[0].documents[5]  # the latest document
+        doc = self.prj.labels[0].documents[5]  # the latest Document
         # we create a revised Annotations, as only revised Annotation can be deleted
-        # if we would delete an unrevised annotation, we would provide feedback and thereby keep the
+        # if we would delete an unrevised Annotation, we would provide feedback and thereby keep the
         # Annotation as "wrong" but "revised"
         assert len(doc.annotations(use_correct=False)) == 23
         label = self.prj.labels[0]
@@ -2312,7 +2491,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
             start_offset=225,
             end_offset=237,
             label=label.id_,
-            label_set_id=None,  # hand selected document section label
+            label_set_id=None,  # hand selected Document Label Set
             revised=True,
             is_correct=True,
             accuracy=0.98765431,
@@ -2334,13 +2513,13 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     @unittest.skip(reason="Skip: Changes in Trainer Annotation needed to require a Label for every Annotation init.")
     def test_document_add_new_annotation_without_label(self):
-        """Test adding a new annotation."""
+        """Test adding a new Annotation."""
         with self.assertRaises(AttributeError) as _:
             _ = Annotation(
                 start_offset=225,
                 end_offset=237,
                 label=None,
-                label_set_id=0,  # hand selected document section label
+                label_set_id=0,  # hand selected Document section Label
                 revised=True,
                 is_correct=True,
                 accuracy=0.98765431,
@@ -2350,7 +2529,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     @unittest.skip(reason="Skip: Changes in Trainer Annotation needed to require a Document for every Annotation init.")
     def test_init_annotation_without_document(self):
-        """Test adding a new annotation."""
+        """Test adding a new Annotation."""
         with self.assertRaises(AttributeError) as _:
             _ = Annotation(
                 start_offset=225,
@@ -2406,7 +2585,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert bio_annotations[8][1] == 'B-Austellungsdatum'
 
     def test_number_of_all_documents(self):
-        """Count the number of all available documents online."""
+        """Count the number of all available Documents online."""
         project = Project(id_=None, project_folder=OFFLINE_PROJECT)
         assert len(project._documents) == 57
 
@@ -2414,8 +2593,8 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         """
         Create an empty Annotation and get the start offset.
 
-        The empty annotation should be added to the document as this represents the way the tokenizer
-        creates empty annotations.
+        The empty Annotation should be added to the Document as this represents the way the tokenizer
+        creates empty Annotations.
         """
         prj = Project(id_=TEST_PROJECT_ID)
         label = Label(project=prj)
@@ -2426,7 +2605,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         _ = Annotation(label=label, annotation_set=annotation_set, label_set=label_set, document=doc, spans=[span])
 
     def test_get_annotations_for_offset_of_first_and_last_name(self):
-        """Get Annotations for all offsets in the document."""
+        """Get Annotations for all offsets in the Document."""
         doc = self.prj.get_document_by_id(TEST_DOCUMENT_ID)
         filtered_annotations = doc.annotations(start_offset=1500, end_offset=1530)
         self.assertEqual(len(filtered_annotations), 3)  # 3 is correct even 4 Spans!
@@ -2482,7 +2661,7 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
         prj = Project(id_=TEST_PROJECT_ID)
         prj.set_offline()
         self.assertFalse(prj.is_online)
-        # all Data belonging to that project should be offline without setting individual instances offline
+        # all Data belonging to that Project should be offline without setting individual instances offline
         category = Category(prj, id_=1)
         self.assertFalse(category.is_online)
         label_set = LabelSet(prj, categories=[category], id_=1)
@@ -2565,7 +2744,7 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
         prj.delete()
 
     def test_view_annotations(self):
-        """Test that Document.view_annotations() gets all the right annotations."""
+        """Test that Document.view_annotations() gets all the right Annotations."""
         project = LocalTextProject()
         document = project.get_document_by_id(7)
         annotations = document.view_annotations()
@@ -2573,7 +2752,7 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
         assert sorted([ann.id_ for ann in annotations]) == [16, 17, 18, 19, 24]  # [16, 18, 19, 24]
 
     def test_document_lose_weight(self):
-        """Test that Document.lose_weight() removes all the right annotations."""
+        """Test that Document.lose_weight() removes all the right Annotations."""
         project = LocalTextProject()
         document = project.get_document_by_id(7)
 
@@ -2614,7 +2793,7 @@ class TestKonfuzioForceOfflineData(unittest.TestCase):
         assert al_tokenizer in label_span.regex_matching
 
     def test_offline_project_creates_no_files(self):
-        """Test that an offline Project does not create any files, even if documents have IDs."""
+        """Test that an offline Project does not create any files, even if Documents have IDs."""
         virtual_project = Project(id_=None)
         virtual_project.set_offline()
         assert not os.path.isdir(virtual_project.project_folder)
@@ -2656,11 +2835,11 @@ class TestFillOperation(unittest.TestCase):
         assert cls.doc.text[1498:1590] == cls.text
 
     def test_number_of_annotations(self):
-        """Get Annotations for all offsets in the document."""
+        """Get Annotations for all offsets in the Document."""
         self.assertEqual(len(self.annotations), 7)  # 2 single line Annotation, one multiline with two spans
 
     def test_number_of_spans(self):
-        """Get Annotations for all offsets in the document."""
+        """Get Annotations for all offsets in the Document."""
         self.assertEqual(len([span for annotation in self.annotations for span in annotation.spans]), 10)
 
     @unittest.skip(reason="Documents without Category cannot be processed.")
@@ -2676,7 +2855,7 @@ class TestFillOperation(unittest.TestCase):
             assert "is a duplicate of" in context.exception
 
     def test_correct_text_offset(self):
-        """Test if the the sorted spans can create the offset text."""
+        """Test if the the sorted Spans can create the offset text."""
         offsets = [sorted_span.offset_string for sorted_span in self.sorted_spans]
         span_text = "".join(offsets)
         self.assertEqual(self.doc.text[1498:1590], span_text)
