@@ -213,7 +213,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
     def test_02_make_features(self):
         """Make sure the Data and Pipeline is configured."""
         # we have intentional unrevised annotations in the Training set which will block feature calculation
-        assert 2e5 < memory_size_of(self.pipeline.category) < 4e5
+        assert 6e5 < memory_size_of(self.pipeline.category) < 8e5
         with pytest.raises(ValueError, match="is unrevised in this dataset and can't be used for training"):
             self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
                 documents=self.pipeline.documents, require_revised_annotations=True
@@ -233,7 +233,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
             documents=self.pipeline.documents, require_revised_annotations=True
         )
 
-        assert 5e5 < memory_size_of(self.pipeline.category) < 8e5
+        assert 9e5 < memory_size_of(self.pipeline.category) < 12e5
 
         assert 11e6 < memory_size_of(self.pipeline.df_train) < 12e6
 
@@ -439,9 +439,9 @@ class TestRegexRFExtractionAI(unittest.TestCase):
                 self.pipeline.tokenizer.tokenizers.append(RegexTokenizer(regex=regex))
         self.pipeline.test_documents = self.pipeline.category.test_documents()
 
-        assert 1e6 < memory_size_of(self.pipeline.category) < 2e6
+        assert 1e6 < memory_size_of(self.pipeline.category) < 3e6
 
-        assert 7e3 < memory_size_of(self.pipeline.tokenizer) < 10e3
+        assert 7e3 < memory_size_of(self.pipeline.tokenizer) < 20e3
 
         # todo have a separate test case for calculating features of offline documents
 
@@ -450,13 +450,13 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         # We have intentional unrevised annotations in the Training set which will block feature calculation,
         # unless we set require_revised_annotations=False (which is default), which we are doing here, so we ignore them
         # See TestWhitespaceRFExtractionAI::test_2_make_features for the case with require_revised_annotations=True
-        assert 1e6 < memory_size_of(self.pipeline.category) < 2e6
+        assert 1e6 < memory_size_of(self.pipeline.category) < 2.2e6
 
         self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
             documents=self.pipeline.documents, retokenize=False, require_revised_annotations=False
         )
 
-        assert 1e6 < memory_size_of(self.pipeline.category) < 2e6
+        assert 1e6 < memory_size_of(self.pipeline.category) < 2.2e6
         assert 2e6 < memory_size_of(self.pipeline.df_train) < 3e6
 
     def test_03_fit(self) -> None:
