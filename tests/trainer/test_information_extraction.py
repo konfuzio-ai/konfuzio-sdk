@@ -42,6 +42,7 @@ from konfuzio_sdk.trainer.information_extraction import (
 )
 from konfuzio_sdk.api import upload_ai_model
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer
+from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer
 from konfuzio_sdk.tokenizer.base import ListTokenizer
 from tests.variables import OFFLINE_PROJECT, TEST_DOCUMENT_ID
 from konfuzio_sdk.samples import LocalTextProject
@@ -616,6 +617,75 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         if os.path.isfile(cls.pipeline.pipeline_path):
             os.remove(cls.pipeline.pipeline_path)  # cleanup
             os.remove(cls.pipeline.pipeline_path_no_konfuzio_sdk)
+
+
+@parameterized.parameterized_class(
+    ('use_separate_labels', 'mode', 'n_extracted_annotations', 'n_extracted_spans'),
+    [
+        (False, 'detectron', 26, 99),
+        (True, 'line_distance', 29, 99),
+    ],
+)
+class TestParagraphRFExtractionAI(unittest.TestCase):
+    """Test New SDK Information Extraction."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set up the Data and Pipeline."""
+        cls.project = Project(id_=458)
+        category = cls.project.get_category_by_id(16436)
+        cls.pipeline = RFExtractionAI(category=category, use_separate_labels=cls.use_separate_labels)
+
+        cls.tests_annotations_spans = list()
+
+    def test_01_configure_pipeline(self):
+        """Make sure the Data and Pipeline is configured."""
+        self.pipeline.tokenizer = ParagraphTokenizer(mode=self.mode)
+
+        train_doc_ids = {601418}
+        for doc in self.pipeline.category.documents():
+            if doc.id_ not in train_doc_ids:
+                doc.dataset_status = 1
+        self.pipeline.documents = self.pipeline.category.documents()
+
+    def test_02_make_features(self):
+        """Make sure the Data and Pipeline is configured."""
+        self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
+            documents=self.pipeline.documents, retokenize=False, require_revised_annotations=False
+        )
+
+    def test_03_fit(self) -> None:
+        """Start to train the Model."""
+        self.pipeline.fit()
+
+    def test_04_save_model(self):
+        """Save the model."""
+        self.pipeline.pipeline_path = self.pipeline.save(
+            output_dir=self.project.model_folder,
+            include_konfuzio=True,
+            reduce_weight=True,
+            keep_documents=False,
+            max_ram="500KB",
+        )
+
+        assert os.path.isfile(self.pipeline.pipeline_path)
+        os.remove(self.pipeline.pipeline_path)
+
+    def test_05_extract_document(self):
+        """Test document extraction."""
+        document = self.pipeline.documents[0]  # 601418
+        assert len(document.annotations()) == 22
+        assert len(document.spans()) == 97
+
+        virtual_document = self.pipeline.extract(document)
+        assert len(virtual_document.annotations(use_correct=False)) == self.n_extracted_annotations
+        assert len(virtual_document.spans(use_correct=False)) == self.n_extracted_spans
+
+    def test_06_data_quality(self):
+        """Evaluate on training documents."""
+        evaluation = self.pipeline.evaluate_full(use_training_docs=True)  # only one training doc available for eval
+        assert evaluation.f1() >= 0.98
+        assert evaluation.fp() == 2  # 2 lines are left unannotated in the original document
 
 
 @unittest.skip(reason='Slow. Only use to debug memory use.')
