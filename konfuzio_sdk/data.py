@@ -248,6 +248,31 @@ class Page(Data):
 
         return sorted(spans)
 
+    def lines(self) -> List['Span']:
+        """Return sorted list of Spans for each line in the Page."""
+        lines_spans = []
+        char_bboxes = self.get_bbox().values()
+        char_bboxes = sorted(char_bboxes, key=lambda x: x['char_index'])
+
+        # iterate over each line_number and all of the character bboxes with that line number
+
+        for _, line_char_bboxes in itertools.groupby(char_bboxes, lambda x: x['line_number']):
+
+            # (a line should never start with a space char)
+            trimmed_line_char_bboxes = [char for char in line_char_bboxes if not char['text'].isspace()]
+
+            if len(trimmed_line_char_bboxes) == 0:
+                continue
+
+            # create Span from the line characters bboxes
+            start_offset = min((char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes))
+            end_offset = max((char_bbox['char_index'] for char_bbox in trimmed_line_char_bboxes)) + 1
+            span = Span(start_offset=start_offset, end_offset=end_offset, document=self.document)
+
+            lines_spans.append(span)
+
+        return lines_spans
+
     def get_bbox(self):
         """Get bbox information per character of Page."""
         page_bbox = self.document.get_bbox_by_page(self.index)
@@ -1131,7 +1156,14 @@ class Label(Data):
 class Span(Data):
     """A Span is a sequence of characters or whitespaces without line break."""
 
-    def __init__(self, start_offset: int, end_offset: int, annotation=None, strict_validation: bool = True):
+    def __init__(
+        self,
+        start_offset: int,
+        end_offset: int,
+        annotation: 'Annotation' = None,
+        document: 'Document' = None,
+        strict_validation: bool = True,
+    ):
         """
         Initialize the Span without bbox, to save storage.
 
@@ -1144,7 +1176,14 @@ class Span(Data):
         See https://dev.konfuzio.com/sdk/data_validation.html.
         """
         self.id_local = next(Data.id_iter)
+
+        self.document: Document = document
+        if annotation and document:
+            assert annotation.document is document
         self.annotation: Annotation = annotation
+        if annotation:
+            self.document = annotation.document
+
         self.start_offset = start_offset
         self.end_offset = end_offset
         self.top = None
@@ -1198,23 +1237,23 @@ class Span(Data):
     @property
     def page(self) -> Page:
         """Return Page of Span."""
-        if self.annotation is None or self.annotation.document is None:
+        if self.document is None:
             raise NotImplementedError
-        elif self.annotation.document.text is None:
-            logger.error(f'{self.annotation.document} does not provide text.')
+        elif self.document.text is None:
+            logger.error(f'{self.document} does not provide text.')
             pass
-        elif self._page is None and self.annotation.document.pages():
-            text = self.annotation.document.text[: self.start_offset]
+        elif self._page is None and self.document.pages():
+            text = self.document.text[: self.start_offset]
             page_index = len(text.split('\f')) - 1
-            self._page = self.annotation.document.get_page_by_index(page_index=page_index)
+            self._page = self.document.get_page_by_index(page_index=page_index)
         return self._page
 
     @property
     def line_index(self) -> int:
         """Return index of the line of the Span."""
         self._valid()
-        if self.annotation.document.text and self._line_index is None:
-            line_number = len(self.annotation.document.text[: self.start_offset].replace('\f', '\n').split('\n'))
+        if self.document.text and self._line_index is None:
+            line_number = len(self.document.text[: self.start_offset].replace('\f', '\n').split('\n'))
             self._line_index = line_number - 1
 
         return self._line_index
@@ -1233,7 +1272,19 @@ class Span(Data):
 
     def __repr__(self):
         """Return string representation."""
-        return f"{self.__class__.__name__} ({self.start_offset}, {self.end_offset})"
+        if self.offset_string and len(self.offset_string) < 12:
+            offset_string_repr = self.offset_string
+        elif self.offset_string:
+            offset_string_repr = f"{self.offset_string[:10]}(...)"
+        else:
+            offset_string_repr = ''
+
+        if not self.annotation:
+            return (
+                f"Virtual {self.__class__.__name__} ({self.start_offset}, {self.end_offset}): \"{offset_string_repr}\""
+            )
+        else:
+            return f"{self.__class__.__name__} ({self.start_offset}, {self.end_offset}): \"{offset_string_repr}\""
 
     def __hash__(self):
         """Make any online or local concept hashable. See https://stackoverflow.com/a/7152650."""
@@ -1253,13 +1304,13 @@ class Span(Data):
 
     def bbox(self) -> Bbox:
         """Calculate the bounding box of a text sequence."""
-        if not self.annotation:
+        if not self.document:
             raise NotImplementedError
         if not self.page:
             logger.warning(f'{self} does not have a Page.')
             return None
-        if not self.annotation.document.bboxes_available:
-            logger.warning(f'{self.annotation.document} of {self} does not provide Bboxes.')
+        if not self.document.bboxes_available:
+            logger.warning(f'{self.document} of {self} does not provide Bboxes.')
             return None
         _ = self.line_index  # quick validate if start and end is in the same line of text
 
@@ -1267,19 +1318,17 @@ class Span(Data):
             warn('WIP: Modifications before the next stable release expected.', FutureWarning, stacklevel=2)
             # todo: verify that one Span relates to Character in on line of text
             character_range = range(self.start_offset, self.end_offset)
-            document = self.annotation.document
+            document = self.document
             characters = {key: document.bboxes.get(key) for key in character_range if document.text[key] != ' '}
             if not all(characters.values()):
-                logger.error(
-                    f'{self} in {self.annotation.document} contains Characters that don\'t provide a Bounding Box.'
-                )
+                logger.error(f'{self} in {self.document} contains Characters that don\'t provide a Bounding Box.')
             self._bbox = Bbox(
                 x0=min([ch.x0 for c, ch in characters.items() if ch is not None]),
                 x1=max([ch.x1 for c, ch in characters.items() if ch is not None]),
                 y0=min([ch.y0 for c, ch in characters.items() if ch is not None]),
                 y1=max([ch.y1 for c, ch in characters.items() if ch is not None]),
                 page=self.page,
-                validation=self.annotation.document._bbox_validation_type,
+                validation=self.document._bbox_validation_type,
             )
         return self._bbox
 
@@ -1309,8 +1358,8 @@ class Span(Data):
     @property
     def offset_string(self) -> Union[str, None]:
         """Calculate the offset string of a Span."""
-        if self.annotation and self.annotation.document and self.annotation.document.text:
-            return self.annotation.document.text[self.start_offset : self.end_offset]
+        if self.document and self.document.text:
+            return self.document.text[self.start_offset : self.end_offset]
         else:
             return None
 
@@ -1376,9 +1425,9 @@ class Span(Data):
                 "label_set_id": self.annotation.label_set.id_,
                 "annotation_id": self.annotation.id_,
                 "annotation_set_id": self.annotation.annotation_set.id_,
-                "document_id": self.annotation.document.id_,
-                "document_id_local": self.annotation.document.id_local,
-                "category_id": self.annotation.document.category.id_,
+                "document_id": self.document.id_,
+                "document_id_local": self.document.id_local,
+                "category_id": self.document.category.id_,
                 "line_index": self.line_index,
                 "data_type": self.annotation.label.data_type,
             }
@@ -1401,13 +1450,9 @@ class Span(Data):
                 span_dict["x1_relative"] = self.bbox().x1 / self.page.width
                 span_dict["y0_relative"] = self.bbox().y0 / self.page.height
                 span_dict["y1_relative"] = self.bbox().y1 / self.page.height
-                span_dict["page_index_relative"] = self.page.index / self.annotation.document.number_of_pages
+                span_dict["page_index_relative"] = self.page.index / self.document.number_of_pages
 
-            document_id = (
-                self.annotation.document.id_
-                if self.annotation.document.id_ is not None
-                else self.annotation.document.copy_of_id
-            )
+            document_id = self.document.id_ if self.document.id_ is not None else self.document.copy_of_id
             span_dict["document_id"] = document_id
             span_dict["label_name"] = self.annotation.label.name if self.annotation.label else None
             span_dict["label_set_name"] = self.annotation.label_set.name if self.annotation.label_set else None
@@ -1667,6 +1712,7 @@ class Annotation(Data):
                 raise ValueError(f'{span} should be added to {self} but relates to {span.annotation}.')
             else:
                 span.annotation = self  # todo feature to link one Span to many Annotations
+                span.document = self.document
         else:
             raise ValueError(f'In {self} the {span} is a duplicate and will not be added.')
         return self

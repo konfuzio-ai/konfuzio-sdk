@@ -2,13 +2,12 @@
 import logging
 from typing import List, Dict, Union
 import collections
-import itertools
 import time
 
 from konfuzio_sdk.data import Annotation, Document, Span, Bbox
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer, ProcessingStep
 
-from konfuzio_sdk.utils import sdk_isinstance, group_bboxes_per_line, detectron_get_paragraph_bbox
+from konfuzio_sdk.utils import sdk_isinstance, detectron_get_paragraph_bbox
 from konfuzio_sdk.api import get_results_from_segmentation
 
 logger = logging.getLogger(__name__)
@@ -148,10 +147,9 @@ class ParagraphTokenizer(AbstractTokenizer):
             # go through lines to find paragraphs
             previous_y0 = None
             paragraph_spans = []
-            for line_span in group_bboxes_per_line(page_char_bboxes, page_index=page.index):
-                span = Span(start_offset=line_span['start_offset'], end_offset=line_span['end_offset'])
+            for span in page.lines():
 
-                if not paragraph_spans or previous_y0 - line_span['y1'] < line_threshold:
+                if not paragraph_spans or previous_y0 - span.bbox().y1 < line_threshold:
                     paragraph_spans.append(span)
                 else:
                     _ = Annotation(
@@ -165,7 +163,7 @@ class ParagraphTokenizer(AbstractTokenizer):
                     paragraph_spans = [span]
 
                 # Update botton edge of previous Paragraph to the Paragraph we just assigned
-                previous_y0 = line_span['y0']
+                previous_y0 = span.bbox().y0
 
             _ = Annotation(
                 document=document,
@@ -329,27 +327,15 @@ class SentenceTokenizer(AbstractTokenizer):
             else:
                 line_threshold = self.height
 
-            # page_lines = []
-            # line_bboxes = []
-            # for bbox in sorted(page_char_bboxes, key=lambda x: x['char_index']):
-            #     if not line_bboxes or line_bboxes[-1]['line_number'] == bbox['line_number']:
-            #         line_bboxes.append(bbox)
-            #     else:
-            #         page_lines.append(line_bboxes)
-            #         line_bboxes = [bbox]
-            # page_lines.append(line_bboxes)
-
             # assemble bboxes by line and Page
-            span_bboxes = []
             sentence_spans = []
             previous_y0 = None
             page_char_bboxes = sorted(page_char_bboxes, key=lambda x: x['char_index'])
 
-            for _, line_char_bboxes in itertools.groupby(page_char_bboxes, lambda x: x['line_number']):
+            for line_span in page.lines():
+                new_span_start_offset = line_span.start_offset
+                max_y1 = line_span.bbox().y1
 
-                line_char_bboxes = list(line_char_bboxes)
-                max_y1 = max([bbox['y1'] for bbox in line_char_bboxes])
-                min_y0 = min([bbox['y0'] for bbox in line_char_bboxes])
                 if sentence_spans and previous_y0 - max_y1 >= line_threshold:
                     _ = Annotation(
                         document=document,
@@ -360,13 +346,12 @@ class SentenceTokenizer(AbstractTokenizer):
                         spans=sentence_spans,
                     )
                     sentence_spans = []
-                for bbox in line_char_bboxes:
-                    if span_bboxes and span_bboxes[-1]['text'] in self.punctuation:
-                        sentence_spans.append(
-                            Span(
-                                start_offset=span_bboxes[0]['char_index'], end_offset=span_bboxes[-1]['char_index'] + 1
-                            )
-                        )
+                for i, line_character in enumerate(line_span.offset_string):
+                    if line_character and line_character in self.punctuation:
+                        start_offset = new_span_start_offset
+                        end_offset = line_span.start_offset + i + 1
+                        new_span_start_offset = end_offset
+                        sentence_spans.append(Span(start_offset=start_offset, end_offset=end_offset))
                         _ = Annotation(
                             document=document,
                             annotation_set=document.no_label_annotation_set,
@@ -376,15 +361,9 @@ class SentenceTokenizer(AbstractTokenizer):
                             spans=sentence_spans,
                         )
                         sentence_spans = []
-                        span_bboxes = [bbox]
-                    else:
-                        span_bboxes.append(bbox)
-                if span_bboxes:
-                    sentence_spans.append(
-                        Span(start_offset=span_bboxes[0]['char_index'], end_offset=span_bboxes[-1]['char_index'] + 1)
-                    )
-                    span_bboxes = []
-                previous_y0 = min_y0
+                if new_span_start_offset < line_span.end_offset:
+                    sentence_spans.append(Span(start_offset=new_span_start_offset, end_offset=line_span.end_offset))
+                previous_y0 = line_span.bbox().y0
 
         if sentence_spans:
             _ = Annotation(
