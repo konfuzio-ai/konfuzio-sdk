@@ -105,7 +105,7 @@ class Page(Data):
         end_offset: int,
         number: int,
         original_size: Tuple[float, float],
-        full_size: Tuple[int, int] = (None, None),  # rename to size
+        image_size: Tuple[int, int] = (None, None),
     ):
         """Create a Page for a Document."""
         self.id_ = id_
@@ -117,11 +117,11 @@ class Page(Data):
         self.end_offset = end_offset
         self.image = None
         self._original_size = original_size
-        self.width = self._original_size[0]  # This should be original_width
-        self.height = self._original_size[1]  # This should be original_height
-        self._full_size = full_size  # This should be size, width and height.
-        self.full_width = self._full_size[0]
-        self.full_height = self._full_size[1]
+        self.width = self._original_size[0]
+        self.height = self._original_size[1]
+        self._image_size = image_size
+        self.image_width = self._image_size[0]
+        self.image_height = self._image_size[1]
 
         self.image_path = os.path.join(self.document.document_folder, f'page_{self.number}.png')
         self.is_first_page = None
@@ -446,22 +446,16 @@ class Bbox:
 
     @classmethod
     def from_image_size(self, x0, x1, y0, y1, page: Page) -> 'Bbox':
-        """
-        Create Bbox from the image dimensions based result to the scale of the characters bboxes of the document.
+        """Create Bbox from the image dimensions based result to the scale of the characters bboxes of the document.
 
-        :param bbox: Bounding box from the segmentation result
-        :param page: Page information
-        :return: Converted bounding box.
+        :return: Bbox with the rescaled .
         """
-        # original_size = self.page._original_size
-        # image_size = self.page._full_size
-        # self.page = page
-        factor_y = page.height / page.full_height  # original_size[1] / image_size[1]
-        factor_x = page.width / page.full_width  # original_size[0] / image_size[0]
-        full_height = page.full_height  # image_size[1]
+        factor_y = page.height / page.image_height
+        factor_x = page.width / page.image_width
+        image_height = page.image_height
 
-        temp_y0 = (full_height - y0) * factor_y
-        temp_y1 = (full_height - y1) * factor_y
+        temp_y0 = (image_height - y0) * factor_y
+        temp_y1 = (image_height - y1) * factor_y
         y0 = temp_y1
         y1 = temp_y0
         x0 = x0 * factor_x
@@ -2246,7 +2240,7 @@ class Document(Data):
                 end_offset=page.end_offset,
                 number=page.number,
                 original_size=(page.width, page.height),
-                full_size=(page.full_width, page.full_height),
+                image_size=(page.image_width, page.image_height),
             )
         return document
 
@@ -2760,7 +2754,7 @@ class Document(Data):
                     document=self,
                     number=page_data['number'],
                     original_size=page_data['original_size'],
-                    full_size=page_data['size'],
+                    image_size=page_data['size'],
                     start_offset=start_offset,
                     end_offset=end_offset,
                 )
