@@ -46,7 +46,8 @@ def exception_or_log_error(
     Log error or raise an exception.
 
     This function is needed to control error handling in production. If `fail_loudly` is set to `True`, the function
-    raises an exception to type `exception_type` with a message and handler in the format `{"message" : msg, "handler" : handler}`.
+    raises an exception to type `exception_type` with a message and handler in the format `{"message" : msg,
+                                                                                            "handler" : handler}`.
     If `fail_loudly` is set to `False`, the function logs an error with `msg` using the logger.
 
     :param msg: (str): The error message to be logged or raised.
@@ -461,9 +462,10 @@ def map_offsets(characters_bboxes: list) -> dict:
     return offsets_map
 
 
-def detectron_get_paragraph_bbox(detectron_results: List, document: 'Document') -> List[List['Bbox']]:
+def detectron_get_paragraph_bbox(detectron_results: List, document) -> List[List]:
     """Call detectron Bbox corresponding to each paragraph."""
     from konfuzio_sdk.data import Bbox
+
     assert isinstance(document.project.id_, int)
     assert len(detectron_results) == document.number_of_pages
 
@@ -472,13 +474,13 @@ def detectron_get_paragraph_bbox(detectron_results: List, document: 'Document') 
         paragraph_bboxes.append([])
         for bbox in detectron_results[page.index]:
             paragraph_bboxes[-1].append(
-                Bbox(
+                Bbox.from_image_size(
                     x0=bbox['x0'],
                     x1=bbox['x1'],
-                    y1=page.height - bbox['y0'],
-                    y0=page.height - bbox['y1'],
+                    y1=bbox['y1'],
+                    y0=bbox['y0'],
                     page=page,
-                ).convert_from_size_to_original_size()
+                )  # .convert_from_size_to_original_size()
             )
     assert len(document.pages()) == len(paragraph_bboxes)
 
@@ -509,7 +511,7 @@ def select_bboxes(selection_bbox: dict, page_bboxes: list, tolerance: int = 10) 
     return selected_char_bboxes
 
 
-def group_bboxes_per_line(char_bboxes: list, page_index: int) -> List['Span']:
+def group_bboxes_per_line(char_bboxes: list, page_index: int) -> List[Dict]:
     """
     Group characters bounding boxes per line.
 
@@ -521,8 +523,10 @@ def group_bboxes_per_line(char_bboxes: list, page_index: int) -> List['Span']:
     """
     # warn('Method needs testing and revision. Please create a Ticket if you use it.', DeprecationWarning, stacklevel=2)
     lines_bboxes = []
+    char_bboxes = sorted(char_bboxes, key=lambda x: x['char_index'])
 
     # iterate over each line_number and all of the character bboxes with that line number
+
     for line_number, line_char_bboxes in itertools.groupby(char_bboxes, lambda x: x['line_number']):
         # set the default values which we overwrite with the actual character bbox values
         x0 = 100000000

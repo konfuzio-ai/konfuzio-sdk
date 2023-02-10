@@ -401,29 +401,6 @@ class Bbox:
                 handler=handler,
             )
 
-    def convert_from_size_to_original_size(self) -> 'Bbox':
-        """
-        Convert bounding box from the image based result to the scale of the characters bboxes of the document.
-
-        :param bbox: Bounding box from the segmentation result
-        :param page: Page information
-        :return: Converted bounding box.
-        """
-        original_size = self.page._original_size
-        image_size = self.page._full_size
-        factor_y = original_size[1] / image_size[1]
-        factor_x = original_size[0] / image_size[0]
-        height = image_size[1]
-
-        temp_y0 = (height - self.y0) * factor_y
-        temp_y1 = (height - self.y1) * factor_y
-        self.y0 = temp_y1
-        self.y1 = temp_y0
-        self.x0 = self.x0 * factor_x
-        self.x1 = self.x1 * factor_x
-
-        return self
-
     def check_overlap(self, bbox: Union['Bbox', Dict]) -> bool:
         """Verify if there's overlap between two Bboxes."""
         if type(bbox) is dict and (
@@ -441,6 +418,31 @@ class Bbox:
     def area(self):
         """Return area covered by the Bbox."""
         return round(abs(self.x0 - self.x1) * abs(self.y0 - self.y1), 3)
+
+    @classmethod
+    def from_image_size(self, x0, x1, y0, y1, page: Page) -> 'Bbox':
+        """
+        Create Bbox from the image dimensions based result to the scale of the characters bboxes of the document.
+
+        :param bbox: Bounding box from the segmentation result
+        :param page: Page information
+        :return: Converted bounding box.
+        """
+        # original_size = self.page._original_size
+        # image_size = self.page._full_size
+        # self.page = page
+        factor_y = page.height / page.full_height  # original_size[1] / image_size[1]
+        factor_x = page.width / page.full_width  # original_size[0] / image_size[0]
+        full_height = page.full_height  # image_size[1]
+
+        temp_y0 = (full_height - y0) * factor_y
+        temp_y1 = (full_height - y1) * factor_y
+        y0 = temp_y1
+        y1 = temp_y0
+        x0 = x0 * factor_x
+        x1 = x1 * factor_x
+
+        return Bbox(x0=x0, x1=x1, y0=y0, y1=y1, page=page)
 
 
 class AnnotationSet(Data):

@@ -2,6 +2,7 @@
 import logging
 from typing import List, Dict, Union
 import collections
+import itertools
 import time
 
 from konfuzio_sdk.data import Annotation, Document, Span, Bbox
@@ -67,7 +68,8 @@ class ParagraphTokenizer(AbstractTokenizer):
 
     def _detectron_tokenize(self, document: Document) -> Document:
         """Create one multiline Annotation per paragraph detected by detectron2."""
-        detectron_results = get_results_from_segmentation(document.id_, document.project.id_)
+        document_id = document.id_ if document.id_ else document.copy_of_id
+        detectron_results = get_results_from_segmentation(document_id, document.project.id_)
         paragraph_bboxes = detectron_get_paragraph_bbox(detectron_results, document)
 
         # for _, (page, page_paragraph_bboxes) in enumerate(zip(document.pages(), paragraph_bboxes)):
@@ -126,16 +128,12 @@ class ParagraphTokenizer(AbstractTokenizer):
 
         return document
 
-    def found_spans(self, document: Document):
-        """Sentence found spans."""
-        pass
-
     def _line_distance_tokenize(self, document: Document) -> Document:
         """Create one multiline Annotation per paragraph detected by line distance based rule based algorithm."""
         from statistics import median
 
         for page in document.pages():
-            page_char_bboxes = page.get_bbox().values()
+            page_char_bboxes = list(page.get_bbox().values())
 
             # set line_threshold
             if self.height is None:
@@ -179,6 +177,10 @@ class ParagraphTokenizer(AbstractTokenizer):
             )
         return document
 
+    def found_spans(self, document: Document):
+        """Sentence found spans."""
+        pass
+
 
 class SentenceTokenizer(AbstractTokenizer):
     """Tokenizer splitting Document into Sentences."""
@@ -200,9 +202,43 @@ class SentenceTokenizer(AbstractTokenizer):
         self.height = height
         self.punctuation = {'.', '!', '?'}
 
+    def __repr__(self):
+        """Return string representation of the class."""
+        return f"{self.__class__.__name__}: {self.mode=}"
+
+    def __hash__(self):
+        """Get unique hash for RegexTokenizer."""
+        return hash(repr(self))
+
+    def tokenize(self, document: Document) -> Document:
+        """Create one multiline Annotation per paragraph detected."""
+        assert sdk_isinstance(document, Document)
+
+        before_none = len(document.annotations(use_correct=False, label=document.project.no_label))
+
+        t0 = time.monotonic()
+
+        if not document.bboxes_available:
+            raise ValueError(
+                f"Cannot tokenize Document {document} with tokenizer {self}: Missing Character Bbox information."
+            )
+
+        if self.mode == 'detectron':
+            self._detectron_tokenize(document=document)
+        elif self.mode == 'line_distance':
+            self._line_distance_tokenize(document=document)
+
+        after_none = len(document.annotations(use_correct=False, label=document.project.no_label))
+        logger.info(f'{after_none - before_none} new Annotations in {document} by {repr(self)}.')
+
+        self.processing_steps.append(ProcessingStep(self, document, time.monotonic() - t0))
+
+        return document
+
     def _detectron_tokenize(self, document: Document) -> Document:
         """Create one multiline Annotation per sentence detected in paragraph detected by detectron."""
-        detectron_results = get_results_from_segmentation(document.id_, document.project.id_)
+        document_id = document.id_ if document.id_ else document.copy_of_id
+        detectron_results = get_results_from_segmentation(document_id, document.project.id_)
         paragraph_bboxes = detectron_get_paragraph_bbox(detectron_results, document)
 
         for _, (page, page_paragraph_bboxes) in enumerate(zip(document.pages(), paragraph_bboxes)):
@@ -293,23 +329,27 @@ class SentenceTokenizer(AbstractTokenizer):
             else:
                 line_threshold = self.height
 
-            page_lines = []
-            line_bboxes = []
-            for bbox in sorted(page_char_bboxes, key=lambda x: x['char_index']):
-                if not line_bboxes or line_bboxes[-1]['line_number'] == bbox['line_number']:
-                    line_bboxes.append(bbox)
-                else:
-                    page_lines.append(line_bboxes)
-                    line_bboxes = [bbox]
-            page_lines.append(line_bboxes)
+            # page_lines = []
+            # line_bboxes = []
+            # for bbox in sorted(page_char_bboxes, key=lambda x: x['char_index']):
+            #     if not line_bboxes or line_bboxes[-1]['line_number'] == bbox['line_number']:
+            #         line_bboxes.append(bbox)
+            #     else:
+            #         page_lines.append(line_bboxes)
+            #         line_bboxes = [bbox]
+            # page_lines.append(line_bboxes)
 
             # assemble bboxes by line and Page
             span_bboxes = []
             sentence_spans = []
             previous_y0 = None
-            for line in page_lines:
-                max_y1 = max([bbox['y1'] for bbox in line])
-                min_y0 = min([bbox['y0'] for bbox in line])
+            page_char_bboxes = sorted(page_char_bboxes, key=lambda x: x['char_index'])
+
+            for _, line_char_bboxes in itertools.groupby(page_char_bboxes, lambda x: x['line_number']):
+
+                line_char_bboxes = list(line_char_bboxes)
+                max_y1 = max([bbox['y1'] for bbox in line_char_bboxes])
+                min_y0 = min([bbox['y0'] for bbox in line_char_bboxes])
                 if sentence_spans and previous_y0 - max_y1 >= line_threshold:
                     _ = Annotation(
                         document=document,
@@ -320,7 +360,7 @@ class SentenceTokenizer(AbstractTokenizer):
                         spans=sentence_spans,
                     )
                     sentence_spans = []
-                for bbox in line:
+                for bbox in line_char_bboxes:
                     if span_bboxes and span_bboxes[-1]['text'] in self.punctuation:
                         sentence_spans.append(
                             Span(
@@ -357,3 +397,7 @@ class SentenceTokenizer(AbstractTokenizer):
             )
 
         return document
+
+    def found_spans(self, document: Document):
+        """Sentence found spans."""
+        pass

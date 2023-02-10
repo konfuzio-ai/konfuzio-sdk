@@ -41,7 +41,7 @@ from tabulate import tabulate
 
 from konfuzio_sdk.data import Data, Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span
 
-from konfuzio_sdk.tokenizer.block import BlockTokenizer
+from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer, SentenceTokenizer
 
 from konfuzio_sdk.normalize import (
     normalize_to_float,
@@ -1960,7 +1960,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         no_label_res_dict = self.remove_empty_dataframes_from_extraction(no_label_res_dict)
 
         # res_dict = self.filter_low_confidence_extractions(res_dict)
-        if not issubclass(type(self.tokenizer), BlockTokenizer):
+        if not type(self.tokenizer) not in {ParagraphTokenizer, SentenceTokenizer}:
             res_dict = self.merge_horizontal(res_dict, inference_document.text)
 
         # Try to calculate sections based on template classifier.
@@ -1975,7 +1975,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         self.tokenizer.found_spans(virtual_doc)
 
-        if not issubclass(type(self.tokenizer), BlockTokenizer):
+        if not type(self.tokenizer) not in {ParagraphTokenizer, SentenceTokenizer}:
             # join document Spans into multi-line Annotation
             virtual_doc.merge_vertical()
         else:

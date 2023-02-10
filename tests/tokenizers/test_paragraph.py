@@ -5,7 +5,7 @@ import unittest
 from copy import deepcopy
 from konfuzio_sdk.data import Project, Span, Annotation
 
-from konfuzio_sdk.tokenizer.block import ParagraphTokenizer
+from konfuzio_sdk.tokenizer.paragraph_and_sentence import ParagraphTokenizer
 
 
 logger = logging.getLogger(__name__)
