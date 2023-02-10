@@ -1960,7 +1960,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         no_label_res_dict = self.remove_empty_dataframes_from_extraction(no_label_res_dict)
 
         # res_dict = self.filter_low_confidence_extractions(res_dict)
-        if not type(self.tokenizer) not in {ParagraphTokenizer, SentenceTokenizer}:
+        if type(self.tokenizer) not in {ParagraphTokenizer, SentenceTokenizer}:
             res_dict = self.merge_horizontal(res_dict, inference_document.text)
 
         # Try to calculate sections based on template classifier.
@@ -1975,7 +1975,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         self.tokenizer.found_spans(virtual_doc)
 
-        if not type(self.tokenizer) not in {ParagraphTokenizer, SentenceTokenizer}:
+        if type(self.tokenizer) not in {ParagraphTokenizer, SentenceTokenizer}:
             # join document Spans into multi-line Annotation
             virtual_doc.merge_vertical()
         else:
