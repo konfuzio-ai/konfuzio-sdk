@@ -40,7 +40,7 @@ response codes based on the success or failure of the request.
 ### Authentication
 
 Most of our endpoints, excluding those that deal
-with [public documents](http://help.konfuzio.com/integrations/public-documents/), strictly require authentication. We
+with [public documents](https://help.konfuzio.com/integrations/public-documents/), strictly require authentication. We
 support three types of authentication.
 
 #### Basic HTTP authentication
