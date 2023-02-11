@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Split multi-file Document into Separate files &mdash; Konfuzio  documentation</title>
+  <title>Split a file into separate Documents &mdash; Konfuzio  documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
@@ -82,7 +82,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Split multi-file Document into Separate files</li>
+      <li>Split a file into separate Documents</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../../../_sources/sdk/examples/file-splitting-class-out-of-the-box-usage/index.md.txt" rel="nofollow"> View page source</a>
       </li>
@@ -92,9 +92,9 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="split-multi-file-document-into-separate-files">
-<h1>Split multi-file Document into Separate files<a class="headerlink" href="#split-multi-file-document-into-separate-files" title="Permalink to this headline">¶</a></h1>
-<p>Let’s see how to use the <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> to automatically split documents consisting of several files. We will be using
+  <section id="split-a-file-into-separate-documents">
+<h1>Split a file into separate Documents<a class="headerlink" href="#split-a-file-into-separate-documents" title="Permalink to this headline">¶</a></h1>
+<p>Let’s see how to use the <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> to automatically split a file into several Documents. We will be using
 a pre-built class <code class="docutils literal notranslate"><span class="pre">SplittingAI</span></code> and an instance of a trained <code class="docutils literal notranslate"><span class="pre">ContextAwareFileSplittingModel</span></code>. The latter uses a
 context-aware logic. By context-aware we mean a rule-based approach that looks for common strings between the first
 Pages of all Category’s Documents. Upon predicting whether a Page is a potential splitting point (meaning whether it is

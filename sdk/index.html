@@ -158,12 +158,12 @@ is the tool for you. You can customize pipelines for automatic document Categori
 <section id="three-steps-to-customize-document-ai-pipelines">
 <h3>Three steps to customize document AI pipelines<a class="headerlink" href="#three-steps-to-customize-document-ai-pipelines" title="Permalink to this headline">¶</a></h3>
 <ol class="arabic simple">
-<li><p>The Konfuzio SDK defines abstract Python classes and interfaces for <a class="reference external" href="sourcecode.html#document-categorization">Categorization</a>, <a class="reference external" href="sourcecode.html#file-splitting">File Splitting</a>, and <a class="reference external" href="sourcecode.html#extraction-ai">Extraction</a> AI pipelines.
+<li><p>The Konfuzio SDK defines abstract Python classes and interfaces for <a class="reference external" href="sourcecode.html#categorization-ai">Categorization</a>, <a class="reference external" href="sourcecode.html#file-splitting-ai">File Splitting</a>, and <a class="reference external" href="sourcecode.html#extraction-ai">Extraction</a> AI pipelines.
 By implementing the abstract methods in a custom subclass, custom behaviours can be defined for each AI pipeline. Make
-sure to familiarize yourself with the <a class="reference external" href="sourcecode.html#data-layer-concepts">Data Layer concepts</a> so that you can
+sure to familiarize yourself with the <a class="reference external" href="explanations.html#data-layer-concepts">Data Layer concepts</a> so that you can
 manipulate data effectively within your custom pipelines.</p></li>
-<li><p>All AIs inherit from <a class="reference external" href="sourcecode.html#basemodel">BaseModel</a>, which provides <code class="docutils literal notranslate"><span class="pre">BaseModel.save</span></code> to generate a pickle file,
-to be directly uploaded to the Konfuzio Server (see <a class="reference external" href="../web/on_premises.html#upload-extraction-or-category-ai-to-target-instance">Upload Extraction or Category AI to target instance</a>).</p></li>
+<li><p>All AIs inherit from <a class="reference external" href="sourcecode.html#base-model">BaseModel</a>, which provides <code class="docutils literal notranslate"><span class="pre">BaseModel.save</span></code> to generate a pickle file,
+to be directly uploaded to the Konfuzio Server (see <a class="reference external" href="https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance">Upload Extraction or Category AI to target instance</a>).</p></li>
 <li><p>Finally, activating the uploaded AI on the web interface will enable the custom pipeline on your self-hosted installation.</p></li>
 </ol>
 </section>
@@ -222,7 +222,7 @@ the following interface:</p>
 </section>
 <section id="customize-categorization-ai-coming-february-17th-2023">
 <h3>Customize Categorization AI (coming February 17th, 2023)<a class="headerlink" href="#customize-categorization-ai-coming-february-17th-2023" title="Permalink to this headline">¶</a></h3>
-<p>Any custom <a class="reference external" href="sourcecode.html#document-categorization">Categorization AI</a> (derived from the Konfuzio <code class="docutils literal notranslate"><span class="pre">AbstractCategorizationModel</span></code> class)<span class="raw-html-m2r"><br></span>
+<p>Any custom <a class="reference external" href="sourcecode.html#categorization-ai">Categorization AI</a> (derived from the Konfuzio <code class="docutils literal notranslate"><span class="pre">AbstractCategorizationModel</span></code> class)<span class="raw-html-m2r"><br></span>
 should implement the following interface:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">AbstractCategorizationModel</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Document</span>
@@ -274,11 +274,11 @@ should implement the following interface:</p>
 </pre></div>
 </div>
 <p>For a more in depth tutorial about the usage of Categorization AIs in the SDK see
-<a class="reference external" href="examples/examples.html#document-categorization">Tutorials - Document Categorization</a>.</p>
+<a class="reference external" href="tutorials.html#document-categorization">Tutorials - Document Categorization</a>.</p>
 </section>
 <section id="customize-file-splitting-ai">
 <h3>Customize File Splitting AI<a class="headerlink" href="#customize-file-splitting-ai" title="Permalink to this headline">¶</a></h3>
-<p>Any Custom <a class="reference external" href="sourcecode.html#file-splitting">File Splitting AI</a> (derived from the Konfuzio <code class="docutils literal notranslate"><span class="pre">AbstractFileSplittingModel</span></code> class)
+<p>Any Custom <a class="reference external" href="sourcecode.html#file-splitting-ai">File Splitting AI</a> (derived from the Konfuzio <code class="docutils literal notranslate"><span class="pre">AbstractFileSplittingModel</span></code> class)
 should implement the following interface:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.file_spltting</span> <span class="kn">import</span> <span class="n">AbstractFileSplittingModel</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Document</span><span class="p">,</span> <span class="n">Page</span>
@@ -337,7 +337,7 @@ should implement the following interface:</p>
 </pre></div>
 </div>
 <p>For a more in depth tutorial about the usage of File Splitting AIs in the SDK see
-<a class="reference external" href="examples/examples.html#file-splitting">Splitting for multi-file Documents: Step-by-step guide</a>.</p>
+<a class="reference external" href="tutorials.html#splitting-for-multi-document-files-step-by-step-guide">Splitting for multi-file Documents: Step-by-step guide</a>.</p>
 </section>
 <section id="other-use-cases-around-documents">
 <h3>Other use cases around documents<a class="headerlink" href="#other-use-cases-around-documents" title="Permalink to this headline">¶</a></h3>

@@ -156,6 +156,9 @@ metrics to <code class="docutils literal notranslate"><span class="pre">None</sp
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.evaluate</span> <span class="kn">import</span> <span class="n">FileSplittingEvaluation</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.file_splitting</span> <span class="kn">import</span> <span class="n">SplittingAI</span>
 
+<span class="c1"># This example builds the Documents from scratch and without uploading a Supported File.</span>
+<span class="c1"># If you uploaded your Document to the Konfuzio Server, you can just retrieve it with:</span>
+<span class="c1"># document_1 = project.get_document_by_id(YOUR_DOCUMENT_ID)</span>
 <span class="n">text_1</span> <span class="o">=</span> <span class="s2">&quot;Hi all,</span><span class="se">\n</span><span class="s2">I like bread.</span><span class="se">\n</span><span class="s2">I hope to get everything done soon.</span><span class="se">\n</span><span class="s2">Have you seen it?&quot;</span>
 <span class="n">document_1</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">YOUR_PROJECT</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">YOUR_CATEGORY_1</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">text_1</span><span class="p">,</span> <span class="n">dataset_status</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span>
@@ -184,6 +187,8 @@ metrics to <code class="docutils literal notranslate"><span class="pre">None</sp
     <span class="n">number</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
 <span class="p">)</span>
 
+<span class="c1"># As with the previous example Document, you can just retrieve an online Document with</span>
+<span class="c1"># document_2 = project.get_document_by_id(YOUR_DOCUMENT_ID)</span>
 <span class="n">text_2</span> <span class="o">=</span> <span class="s2">&quot;Good evening,</span><span class="se">\n</span><span class="s2">thank you for coming.</span><span class="se">\n</span><span class="s2">Can you give me that?</span><span class="se">\n</span><span class="s2">I need it.</span><span class="se">\n</span><span class="s2">Send it to me.&quot;</span>
 <span class="n">document_2</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">YOUR_PROJECT</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">YOUR_CATEGORY_2</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">text_2</span><span class="p">,</span> <span class="n">dataset_status</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span>

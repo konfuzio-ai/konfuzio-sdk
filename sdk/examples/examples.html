@@ -108,8 +108,155 @@ i.e. Name, Date, Recipient, or any other custom Labels.</p>
 <a class="reference external" href="explanations.html#architecture-sdk-to-server">Architecture Diagram</a> that reflects each step of the
 document-processing pipeline.</p>
 </section>
-<section id="splitting-for-multi-file-documents-step-by-step-guide">
-<h2>Splitting for multi-file Documents: Step-by-step guide<a class="headerlink" href="#splitting-for-multi-file-documents-step-by-step-guide" title="Permalink to this headline">¶</a></h2>
+<section id="data-validation-rules">
+<h2>Data Validation Rules<a class="headerlink" href="#data-validation-rules" title="Permalink to this headline">¶</a></h2>
+<p>Konfuzio automatically applies a set of rules for validating data within a <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#project">Project</a>.
+Data Validation Rules ensure that Training and Test data is consistent and well formed for training an
+<a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai">Extraction AI</a> with Konfuzio.</p>
+<p>In general, if a Document fails any of the checks described in the next sections, it will not be possible to train an
+AI with that Document.</p>
+<p>More specifically:</p>
+<ul class="simple">
+<li><p>If a Document fails any of the checks described in the <a class="reference external" href="#id4">Bbox Validation Rules</a> section, it
+will not be possible to initialize the Project as a Python object (such as with
+<code class="docutils literal notranslate"><span class="pre">project</span> <span class="pre">=</span> <span class="pre">Project(YOUR_PROJECT_ID)</span></code>), and a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> will be raised. All other Documents in the Project will be
+able to be initialized.</p></li>
+<li><p>If a Document fails any of the checks described in the sections
+<a class="reference external" href="#id2">Annotation Validation Rules</a> and <a class="reference external" href="#id3">Span Validation Rules</a>, it
+will not be possible to retrieve the Annotations (including their Spans) that fail the specific checks (such as with
+<code class="docutils literal notranslate"><span class="pre">annotation</span> <span class="pre">=</span> <span class="pre">document.get_annotation_by_id(YOUR_ANNOTATION_ID)</span></code>), and a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> will be raised. All other
+Annotations in the Document will be retrievable.</p></li>
+</ul>
+<section id="initializing-a-project-with-the-data-validation-rules-enabled">
+<h3>Initializing a Project with the Data Validation Rules enabled<a class="headerlink" href="#initializing-a-project-with-the-data-validation-rules-enabled" title="Permalink to this headline">¶</a></h3>
+<p>By default, any <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#project">Project</a> has the Data Validation Rules enabled, so nothing
+special needs to be done to enable it.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>  <span class="c1"># all the data in this project will be validated</span>
+</pre></div>
+</div>
+</section>
+<section id="document-validation-rules">
+<h3>Document Validation Rules<a class="headerlink" href="#document-validation-rules" title="Permalink to this headline">¶</a></h3>
+<p>A <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#document">Document</a> passes the Data Validation Rules only if all the
+contained Annotations, Spans and Bboxes pass the Data Validation Rules.
+If at least one Annotation, Span, or Bbox within a Document fails one of the following checks, the entire Document is
+marked as unsuitable for training an Extraction AI.</p>
+</section>
+<section id="id2">
+<h3>Annotation Validation Rules<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>An <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#annotation">Annotation</a> passes the Data Validation Rules only if:</p>
+<ol class="arabic simple">
+<li><p>The Annotation is not from a Category different from the Document’s Category</p></li>
+<li><p>The Annotation is not entirely overlapping with another Annotation with the same Label</p>
+<ul class="simple">
+<li><p>It implies that partial overlaps with same Labels are allowed</p></li>
+<li><p>It implies that full overlaps with different Labels are allowed</p></li>
+</ul>
+</li>
+<li><p>The Annotation has at least one Span</p></li>
+</ol>
+<p>Please note that the Annotation Validation Rules are indifferent about the values of <code class="docutils literal notranslate"><span class="pre">Annotation.is_correct</span></code> or <code class="docutils literal notranslate"><span class="pre">Annotation.revised</span></code>.
+For more information about what these boolean values mean, see <a class="reference external" href="https://help.konfuzio.com/modules/annotations/index.html">Konfuzio Server - Annotations</a>.</p>
+</section>
+<section id="id3">
+<h3>Span Validation Rules<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>A <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#span">Span</a> passes the Data Validation Rules only if:</p>
+<ol class="arabic simple">
+<li><p>The Span contains non-empty text (the start offset must be strictly greater than the end offset)</p></li>
+<li><p>The Span is contained within a single line of text (must not be distributed across multiple lines)</p></li>
+</ol>
+</section>
+<section id="id4">
+<h3>Bbox Validation Rules<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<p>A <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#bbox">Bbox</a> passes the Data Validation Rules only if:</p>
+<ol class="arabic simple">
+<li><p>The Bbox has non-negative width and height (zero is allowed for compatibility reasons with many OCR engines)</p></li>
+<li><p>The Bbox is entirely contained within the bounds of a Page</p></li>
+<li><p>The character that is mapped by the Bbox must correspond to the text in the Document</p></li>
+</ol>
+</section>
+<section id="initializing-a-project-with-the-data-validation-rules-disabled">
+<h3>Initializing a Project with the Data Validation Rules disabled<a class="headerlink" href="#initializing-a-project-with-the-data-validation-rules-disabled" title="Permalink to this headline">¶</a></h3>
+<p>By default, any <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#project">Project</a> has the Data Validation Rules enabled.</p>
+<p>A possible reason for choosing to disable the Data Validation Rules that come with the Konfuzio SDK, is that an expert user
+wants to define a custom data structure or training pipeline which violates some assumptions normally present in Konfuzio
+Extraction AIs and pipelines.
+If you don’t want to validate your data, you should initialize the Project with <code class="docutils literal notranslate"><span class="pre">strict_data_validation=False</span></code>.</p>
+<p>We highly recommend to keep the Data Validation Rules enabled at all times, as it ensures that Training and Test data
+is consistent for training an Extraction AI. Disabling the Data Validation Rules and training an
+<a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#extraction-ai">Extraction AI</a> with potentially duplicated, malformed,
+or inconsistent data can <strong>decrease the quality of an Extraction AI</strong>. Only disable them if you know what you are doing.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">,</span> <span class="n">strict_data_validation</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="split-a-file-into-separate-documents">
+<h2>Split a file into separate Documents<a class="headerlink" href="#split-a-file-into-separate-documents" title="Permalink to this headline">¶</a></h2>
+<p>Let’s see how to use the <code class="docutils literal notranslate"><span class="pre">konfuzio_sdk</span></code> to automatically split a file into several Documents. We will be using
+a pre-built class <code class="docutils literal notranslate"><span class="pre">SplittingAI</span></code> and an instance of a trained <code class="docutils literal notranslate"><span class="pre">ContextAwareFileSplittingModel</span></code>. The latter uses a
+context-aware logic. By context-aware we mean a rule-based approach that looks for common strings between the first
+Pages of all Category’s Documents. Upon predicting whether a Page is a potential splitting point (meaning whether it is
+first or not), we compare Page’s contents to these common first-page strings; if there is occurrence of at least one
+such string, we mark a Page to be first (thus meaning it is a splitting point).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.tokenizer.regex</span> <span class="kn">import</span> <span class="n">ConnectedTextTokenizer</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.file_splitting</span> <span class="kn">import</span> <span class="n">ContextAwareFileSplittingModel</span><span class="p">,</span> <span class="n">SplittingAI</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.information_extraction</span> <span class="kn">import</span> <span class="n">load_model</span>
+
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+<span class="n">test_document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+
+<span class="c1"># initialize a ContextAwareFileSplittingModel and fit it</span>
+
+<span class="n">file_splitting_model</span> <span class="o">=</span> <span class="n">ContextAwareFileSplittingModel</span><span class="p">(</span><span class="n">categories</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">categories</span><span class="p">,</span> <span class="n">tokenizer</span><span class="o">=</span><span class="n">ConnectedTextTokenizer</span><span class="p">())</span>
+<span class="n">file_splitting_model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+
+<span class="c1"># save the model</span>
+<span class="n">file_splitting_model</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">model_folder</span>
+<span class="n">file_splitting_model</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+<span class="c1"># run the prediction</span>
+<span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">test_document</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
+    <span class="n">pred</span> <span class="o">=</span> <span class="n">file_splitting_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">pred</span><span class="o">.</span><span class="n">is_first_page</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the first.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the non-first.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">))</span>
+
+<span class="c1"># usage with the SplittingAI – you can load a pre-saved model or pass an initialized instance as the input</span>
+<span class="c1"># in this example, we load a previously saved one</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">model_folder</span><span class="p">)</span>
+
+<span class="c1"># initialize the SplittingAI</span>
+<span class="n">splitting_ai</span> <span class="o">=</span> <span class="n">SplittingAI</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+<span class="c1"># SplittingAI is a more high-level interface to ContextAwareFileSplittingModel and any other models that can be</span>
+<span class="c1"># developed for file-splitting purposes. It takes a Document as an input, rather than individual Pages, because it</span>
+<span class="c1"># utilizes page-level prediction of possible split points and returns Document or Documents with changes depending on</span>
+<span class="c1"># the prediction mode.</span>
+
+<span class="c1"># SplittingAI can be ran in two modes: returning a list of Sub-Documents as the result of the input Document</span>
+<span class="c1"># splitting or returning a copy of the input Document with Pages predicted as first having an attribute</span>
+<span class="c1"># &quot;is_first_page&quot;. The flag &quot;return_pages&quot; has to be True for the latter; let&#39;s use it</span>
+<span class="n">new_document</span> <span class="o">=</span> <span class="n">splitting_ai</span><span class="o">.</span><span class="n">propose_split_documents</span><span class="p">(</span><span class="n">test_document</span><span class="p">,</span> <span class="n">return_pages</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">new_document</span><span class="p">)</span>
+<span class="c1"># output: [predicted_document]</span>
+
+<span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">new_document</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">page</span><span class="o">.</span><span class="n">is_first_page</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the first.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Page </span><span class="si">{}</span><span class="s1"> is predicted as the non-first.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+<section id="splitting-for-multi-document-files-step-by-step-guide">
+<h2>Splitting for multi-Document files: Step-by-step guide<a class="headerlink" href="#splitting-for-multi-document-files-step-by-step-guide" title="Permalink to this headline">¶</a></h2>
 <section id="intro">
 <h3>Intro<a class="headerlink" href="#intro" title="Permalink to this headline">¶</a></h3>
 <p>It’s common for multipage files to not be perfectly organized, and in some cases, multiple independent Documents may be
@@ -122,7 +269,7 @@ single file. Our approach involves analyzing the contents of each Page and ident
 of the Document. This will allow us to define splitting points and divide the Document into multiple Sub-documents. It’s
 important to note that this approach is only effective for Documents written in the same language and that the process
 must be repeated for each Category.</p>
-<p>If you are unfamiliar with the SDK’s main concepts (like Page or Span), you can get to know them on the <a class="reference external" href="https://dev.konfuzio.com/sdk/home/index.html">Quickstart</a> page.</p>
+<p>If you are unfamiliar with the SDK’s main concepts (like Page or Span), you can get to know them at <a class="reference external" href="https://dev.konfuzio.com/sdk/explanations.html#data-layer-concepts">Data Layer Concepts</a>.</p>
 </section>
 <section id="quick-explanation">
 <h3>Quick explanation<a class="headerlink" href="#quick-explanation" title="Permalink to this headline">¶</a></h3>
@@ -466,6 +613,9 @@ metrics to <code class="docutils literal notranslate"><span class="pre">None</sp
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.evaluate</span> <span class="kn">import</span> <span class="n">FileSplittingEvaluation</span>
 <span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.file_splitting</span> <span class="kn">import</span> <span class="n">SplittingAI</span>
 
+<span class="c1"># This example builds the Documents from scratch and without uploading a Supported File.</span>
+<span class="c1"># If you uploaded your Document to the Konfuzio Server, you can just retrieve it with:</span>
+<span class="c1"># document_1 = project.get_document_by_id(YOUR_DOCUMENT_ID)</span>
 <span class="n">text_1</span> <span class="o">=</span> <span class="s2">&quot;Hi all,</span><span class="se">\n</span><span class="s2">I like bread.</span><span class="se">\n</span><span class="s2">I hope to get everything done soon.</span><span class="se">\n</span><span class="s2">Have you seen it?&quot;</span>
 <span class="n">document_1</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">YOUR_PROJECT</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">YOUR_CATEGORY_1</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">text_1</span><span class="p">,</span> <span class="n">dataset_status</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span>
@@ -494,6 +644,8 @@ metrics to <code class="docutils literal notranslate"><span class="pre">None</sp
     <span class="n">number</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
 <span class="p">)</span>
 
+<span class="c1"># As with the previous example Document, you can just retrieve an online Document with</span>
+<span class="c1"># document_2 = project.get_document_by_id(YOUR_DOCUMENT_ID)</span>
 <span class="n">text_2</span> <span class="o">=</span> <span class="s2">&quot;Good evening,</span><span class="se">\n</span><span class="s2">thank you for coming.</span><span class="se">\n</span><span class="s2">Can you give me that?</span><span class="se">\n</span><span class="s2">I need it.</span><span class="se">\n</span><span class="s2">Send it to me.&quot;</span>
 <span class="n">document_2</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">YOUR_PROJECT</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">YOUR_CATEGORY_2</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">text_2</span><span class="p">,</span> <span class="n">dataset_status</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span>
@@ -649,6 +801,115 @@ specify the metrics accordingly at the class’s initialization). Example usage:
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">EvaluationCalculator</span><span class="p">(</span><span class="n">tp</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">fp</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">fn</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">tn</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">metrics_logging</span><span class="p">()</span>
 </pre></div>
 </div>
+</section>
+</section>
+<section id="document-categorization">
+<h2>Document Categorization<a class="headerlink" href="#document-categorization" title="Permalink to this headline">¶</a></h2>
+<section id="categorization-fallback-logic">
+<h3>Categorization Fallback Logic<a class="headerlink" href="#categorization-fallback-logic" title="Permalink to this headline">¶</a></h3>
+<p>Use the name of the category as an effective fallback logic to categorize documents when no categorization AI is available:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.data</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">FallbackCategorizationModel</span>
+
+<span class="c1"># Set up your project.</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">YOUR_PROJECT_ID</span><span class="p">)</span>
+
+<span class="c1"># Initialize the categorization model.</span>
+<span class="n">categorization_model</span> <span class="o">=</span> <span class="n">FallbackCategorizationModel</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
+<span class="n">categorization_model</span><span class="o">.</span><span class="n">categories</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">categories</span>
+
+<span class="c1"># Retrieve a document to categorize.</span>
+<span class="n">test_document</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">YOUR_DOCUMENT_ID</span><span class="p">)</span>
+
+<span class="c1"># The categorization model returns a copy of the SDK Document with category attribute</span>
+<span class="c1"># (use inplace=True to maintain the original document instead).</span>
+<span class="c1"># If the input document is already categorized, the already present category is used</span>
+<span class="c1"># (use recategorize=True if you want to force a recategorization).</span>
+<span class="n">result_doc</span> <span class="o">=</span> <span class="n">categorization_model</span><span class="o">.</span><span class="n">categorize</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">test_document</span><span class="p">)</span>
+
+<span class="c1"># Each page is categorized individually.</span>
+<span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">result_doc</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found category </span><span class="si">{</span><span class="n">page</span><span class="o">.</span><span class="n">category</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">page</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># The category of the document is defined when all pages&#39; categories are equal.</span>
+<span class="c1"># If the document contains mixed categories, only the page level category will be defined,</span>
+<span class="c1"># and the document level category will be None.</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found category </span><span class="si">{</span><span class="n">result_doc</span><span class="o">.</span><span class="n">category</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">result_doc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="working-with-the-category-of-a-document-and-its-individual-pages">
+<h3>Working with the Category of a Document and its individual Pages<a class="headerlink" href="#working-with-the-category-of-a-document-and-its-individual-pages" title="Permalink to this headline">¶</a></h3>
+<p>You can initialize a Document with a Category, which will count as if a human manually revised it.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">MY_PROJECT_ID</span><span class="p">:</span> <span class="nb">int</span>
+<span class="n">my_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">id_</span><span class="o">=</span><span class="n">MY_PROJECT_ID</span><span class="p">)</span>
+
+<span class="n">MY_CATEGORY_ID</span><span class="p">:</span> <span class="nb">int</span>
+<span class="n">my_category</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_category_by_id</span><span class="p">(</span><span class="n">MY_CATEGORY_ID</span><span class="p">)</span>
+
+<span class="n">my_document</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;My text.&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">my_category</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">my_document</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="n">my_category</span>
+<span class="k">assert</span> <span class="n">my_document</span><span class="o">.</span><span class="n">category_is_revised</span> <span class="o">==</span> <span class="kc">True</span>
+</pre></div>
+</div>
+<p>If a Document is initialized with no Category, it can be manually set later.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">DOCUMENT_ID</span><span class="p">:</span> <span class="nb">int</span>
+<span class="n">document</span> <span class="o">=</span> <span class="n">my_project</span><span class="o">.</span><span class="n">get_document_by_id</span><span class="p">(</span><span class="n">DOCUMENT_ID</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">document</span><span class="o">.</span><span class="n">category</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="n">document</span><span class="o">.</span><span class="n">set_category</span><span class="p">(</span><span class="n">my_category</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">document</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="n">my_category</span>
+<span class="k">assert</span> <span class="n">document</span><span class="o">.</span><span class="n">category_is_revised</span> <span class="o">==</span> <span class="kc">True</span>
+<span class="c1"># This will set it for all of its pages as well.</span>
+<span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">document</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
+    <span class="k">assert</span> <span class="n">page</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="n">my_category</span>
+</pre></div>
+</div>
+<p>If you use a Categorization AI to automatically assign a Category to a Document (such as the
+<a class="reference external" href="tutorials.html#categorization-fallback-logic">FallbackCategorizationModel</a>), each Page will be assigned a
+Category Annotation with predicted confidence information, and the following properties will be accessible. You can
+also find these documented under <a class="reference external" href="sourcecode.html#document">API Reference - Document</a>,
+<a class="reference external" href="sourcecode.html#page">API Reference - Page</a> and
+<a class="reference external" href="sourcecode.html#category-annotation">API Reference - Category Annotation</a>.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Property</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">CategoryAnnotation.category</span></code></p></td>
+<td><p>The AI predicted Category of this Category<span class="raw-html-m2r"><br></span>Annotation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">CategoryAnnotation.confidence</span></code></p></td>
+<td><p>The AI predicted confidence of this Category<span class="raw-html-m2r"><br></span>Annotation.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Document.category_annotations</span></code></p></td>
+<td><p>List of predicted Category Annotations at the<span class="raw-html-m2r"><br></span>Document level.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Document.maximum_confidence_category_annotation</span></code></p></td>
+<td><p>Get the maximum confidence predicted Category<span class="raw-html-m2r"><br></span>Annotation, or the human revised one if present.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Document.maximum_confidence_category</span></code></p></td>
+<td><p>Get the maximum confidence predicted Category<span class="raw-html-m2r"><br></span>or the human revised one if present.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Document.category</span></code></p></td>
+<td><p>Returns a Category only if all Pages have same<span class="raw-html-m2r"><br></span>Category, otherwise None. In that case, it hints<span class="raw-html-m2r"><br></span>to the fact that the Document should probably<span class="raw-html-m2r"><br></span>be revised or split into Documents with<span class="raw-html-m2r"><br></span>consistently categorized Pages.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Page.category_annotations</span></code></p></td>
+<td><p>List of predicted Category Annotations at the<span class="raw-html-m2r"><br></span>Page level.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Page.maximum_confidence_category_annotation</span></code></p></td>
+<td><p>Get the maximum confidence predicted Category<span class="raw-html-m2r"><br></span>Annotation or the one revised by the user for this<span class="raw-html-m2r"><br></span>Page.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Page.category</span></code></p></td>
+<td><p>Get the maximum confidence predicted Category<span class="raw-html-m2r"><br></span>or the one revised by user for this Page.</p></td>
+</tr>
+</tbody>
+</table>
 </section>
 </section>
 <section id="train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents">

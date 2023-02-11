@@ -72,21 +72,31 @@
 <li class="toctree-l3"><a class="reference internal" href="#regex-tokenizer">Regex Tokenizer</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#filesplitting-ai">FileSplitting AI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#extraction-ai">Extraction AI</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#base-model">Base Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trainer">Trainer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#random-forest-extraction-ai">Random Forest Extraction AI</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#load-saved-ai-model">Load Saved AI Model</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#document-categorization">Document Categorization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#categorization-ai">Categorization AI</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#abstract-categorization-ai">Abstract Categorization AI</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#fallback-categorization-model">Fallback Categorization Model</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#evaluation">Evaluation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#extraction-ai-evaluation">Extraction AI Evaluation</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#compare">compare</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#file-splitting-ai">File Splitting AI</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#abstract-file-splitting-model">Abstract File Splitting Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#context-aware-file-splitting-model">Context Aware File Splitting Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#splitting-ai">Splitting AI</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#categorization-ai-evaluation">Categorization AI Evaluation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ai-evaluation">AI Evaluation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#extraction-ai-evaluation">Extraction AI Evaluation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#compare">compare</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#categorization-ai-evaluation">Categorization AI Evaluation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#file-splitting-ai-evaluation">File Splitting AI Evaluation</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="contribution.html">Contribution Guide</a></li>
@@ -1748,140 +1758,6 @@ argument.</p>
 
 </section>
 </section>
-<section id="filesplitting-ai">
-<h2>FileSplitting AI<a class="headerlink" href="#filesplitting-ai" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/konfuzio_sdk/trainer/file_splitting.py">[source]</a></p>
-<span class="target" id="module-konfuzio_sdk.trainer.file_splitting"></span><p>Process Documents that consist of several files and propose splitting them into the Sub-Documents accordingly.</p>
-<p>We suggest a context-aware approach based on scanning Category’s Documents and finding strings exclusive for first
-Pages of all Documents within the Category. Upon predicting whether a Page is a potential splitting point (meaning
-whether it is first or not), we compare Page’s contents to these exclusive first-page strings; if there is occurrence of
-at least one such string, we mark a Page to be first (thus meaning it is a splitting point).</p>
-<p>A ContextAwareFileSplittingModel instance can be used with an interface provided by SplittingAI – this class accepts a
-whole Document instead of a single Page and proposes splitting points or splits the original Documents.</p>
-<p>For developing a custom file-splitting approach, we propose an abstract class.</p>
-<dl class="py class">
-<dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.trainer.file_splitting.</span></span><span class="sig-name descname"><span class="pre">AbstractFileSplittingModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Category</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Abstract class for the filesplitting model.</p>
-<dl class="py method">
-<dt class="sig sig-object py">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Fit the custom model on the training Documents.</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pkl_file_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em></dt>
-<dd><p>Generate a path for a resulting pickle file.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.Page</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.data.Page</span></span></span></dt>
-<dd><p>Take a Page as an input and reassign is_first_page attribute’s value if necessary.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>page</strong> (<em>Page</em>) – A Page to label first or non-first.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Page.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">temp_pkl_file_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em></dt>
-<dd><p>Generate a path for temporary pickle file.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.trainer.file_splitting.</span></span><span class="sig-name descname"><span class="pre">ContextAwareFileSplittingModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Category</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokenizer</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Fallback definition of a File Splitting Model.</p>
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">check_is_ready</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Check file splitting model is ready for inference.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">allow_empty_categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Gather the strings exclusive for first Pages in a given stream of Documents.</p>
-<p>Exclusive means that each of these strings appear only on first Pages of Documents within a Category.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>allow_empty_categories</strong> – To allow returning empty list for a Category if no exclusive first-page strings</p>
-</dd>
-</dl>
-<p>were found during fitting (which means prediction would be impossible for a Category).
-:type allow_empty_categories: bool
-:raises ValueError: When allow_empty_categories is False and no exclusive first-page strings were found for
-at least one Category.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.Page</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.data.Page</span></span></span></dt>
-<dd><p>Predict a Page as first or non-first.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>page</strong> (<em>Page</em>) – A Page to receive first or non-first label.</p>
-</dd>
-<dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>ValueError</strong> – When at least one Category does not have exclusive_first_page_strings.</p>
-</dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>A Page with a newly predicted is_first_page attribute.</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.trainer.file_splitting.</span></span><span class="sig-name descname"><span class="pre">SplittingAI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Split a given Document and return a list of resulting shorter Documents.</p>
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">evaluate_full</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_training_docs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.evaluate.FileSplittingEvaluation</span></span></span></dt>
-<dd><p>Evaluate the SplittingAI’s performance.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>use_training_docs</strong> – If enabled, runs evaluation on the training data to define its quality; if disabled,</p>
-</dd>
-</dl>
-<p>runs evaluation on the test data.
-:type use_training_docs: bool
-:return: Evaluation information for the filesplitting context-aware logic.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">propose_split_documents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.Document</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_pages</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Document</span><span class="p"><span class="pre">]</span></span></span></span></dt>
-<dd><p>Propose a set of resulting documents from a single Documents.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>document</strong> (<em>Document</em>) – An input Document to be split.</p></li>
-<li><p><strong>inplace</strong> (<em>bool</em>) – Whether changes are applied to the input Document, changing it, or to a deepcopy of it.</p></li>
-<li><p><strong>return_pages</strong> – A flag to enable returning a copy of an old Document with Pages marked .is_first_page on</p></li>
-</ul>
-</dd>
-</dl>
-<p>splitting points instead of a set of Sub-Documents.
-:type return_pages: bool
-:return: A list of suggested new Sub-Documents built from the original Document or a list with a Document
-with Pages marked .is_first_page on splitting points.</p>
-</dd></dl>
-
-</dd></dl>
-
-</section>
 <section id="extraction-ai">
 <h2>Extraction AI<a class="headerlink" href="#extraction-ai" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/trainer/information_extraction.py">[source]</a></p>
@@ -1896,6 +1772,167 @@ features and spatial relations can benefit key information extraction.</p>
 replacing the end-to-end pipeline into two parts.</p>
 <p>Sun, H., Kuang, Z., Yue, X., Lin, C., &amp; Zhang, W. (2021). Spatial Dual-Modality Graph Reasoning for Key Information
 Extraction. arXiv. <a class="reference external" href="https://doi.org/10.48550/ARXIV.2103.14470">https://doi.org/10.48550/ARXIV.2103.14470</a></p>
+<section id="base-model">
+<h3>Base Model<a class="headerlink" href="#base-model" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.trainer.information_extraction.</span></span><span class="sig-name descname"><span class="pre">BaseModel</span></span></dt>
+<dd><p>Base model to define common methods for all AIs.</p>
+<dl class="py method">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">check_is_ready</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Check if the Model is ready for inference.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">ensure_model_memory_usage_within_limit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_ram</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Ensure that a model is not exceeding allowed max_ram.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>max_ram</strong> (<em>str</em>) – Specify maximum memory usage condition to save model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span></dt>
+<dd><p>Model class name.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">name_lower</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Convert class name to machine-readable name.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pkl_file_path</span></span></dt>
+<dd><p>Generate a path for a resulting pickle file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">reduce_model_weight</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Remove all non-strictly necessary parameters before saving.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_konfuzio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduce_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_documents</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_ram</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Save the label model as bz2 compressed pickle object to the release directory.</p>
+<p>Saving is done by: getting the serialized pickle object (via cloudpickle), “optimizing” the serialized object
+with the built-in pickletools.optimize function (see: <a class="reference external" href="https://docs.python.org/3/library/pickletools.html">https://docs.python.org/3/library/pickletools.html</a>),
+saving the optimized serialized object.</p>
+<p>We then compress the pickle file with bz2 using shutil.copyfileobject which writes in chunks to avoid loading
+the entire pickle file in memory.</p>
+<p>Finally, we delete the cloudpickle file and are left with the bz2 file which has a .pkl extension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output_dir</strong> – Folder to save AI model in. If None, the default Project folder is used.</p></li>
+<li><p><strong>include_konfuzio</strong> – Enables pickle serialization as a value, not as a reference (for more info, read</p></li>
+</ul>
+</dd>
+</dl>
+<p><a class="reference external" href="https://github.com/cloudpipe/cloudpickle#overriding-pickles-serialization-mechanism-for-importable-constructs">https://github.com/cloudpipe/cloudpickle#overriding-pickles-serialization-mechanism-for-importable-constructs</a>).
+:param reduce_weight: Remove all non-strictly necessary parameters before saving.
+:param max_ram: Specify maximum memory usage condition to save model.
+:raises MemoryError: When the size of the model in memory is greater than the maximum value.
+:return: Path of the saved model file.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">temp_pkl_file_path</span></span></dt>
+<dd><p>Generate a path for temporary pickle file.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="trainer">
+<h3>Trainer<a class="headerlink" href="#trainer" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.trainer.information_extraction.</span></span><span class="sig-name descname"><span class="pre">Trainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Parent class for all Extraction AIs, to extract information from unstructured human readable text.</p>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Use as placeholder Function.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">extract</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Use as placeholder Function.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">extraction_result_to_document</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.Document</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extraction_result</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.data.Document</span></span></span></dt>
+<dd><p>Return a virtual Document annotated with AI Model output.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Use as placeholder Function.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">flush_buffer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pandas.core.series.Series</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc_text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span></dt>
+<dd><p>Merge a buffer of entities into a dictionary (which will eventually be turned into a DataFrame).</p>
+<p>A buffer is a list of pandas.Series objects.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_valid_horizontal_merge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">row</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.core.series.Series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pandas.core.series.Series</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc_text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_offset_distance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span></dt>
+<dd><p>Verify if the merging that we are trying to do is valid.</p>
+<dl class="simple">
+<dt>A merging is valid only if:</dt><dd><ul class="simple">
+<li><p>All spans have the same predicted Label</p></li>
+<li><p>Confidence of predicted Label is above the Label threshold</p></li>
+<li><p>All spans are on the same line</p></li>
+<li><p>No extraneous characters in between spans</p></li>
+<li><p>A maximum of 5 spaces in between spans</p></li>
+<li><p>The Label type is not one of the following: ‘Number’, ‘Positive Number’, ‘Percentage’, ‘Date’
+OR the resulting merging create a span normalizable to the same type</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>row</strong> – Row candidate to be merged to what is already in the buffer.</p></li>
+<li><p><strong>buffer</strong> – Previous information.</p></li>
+<li><p><strong>doc_text</strong> – Text of the document.</p></li>
+<li><p><strong>max_offset_distance</strong> – Maximum distance between two entities that can be merged.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>If the merge is valid or not.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">merge_horizontal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc_text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span></dt>
+<dd><p>Merge contiguous spans with same predicted label.</p>
+<p>See more details at <a class="reference external" href="https://dev.konfuzio.com/sdk/explanations.html#horizontal-merge">https://dev.konfuzio.com/sdk/explanations.html#horizontal-merge</a></p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="random-forest-extraction-ai">
+<h3>Random Forest Extraction AI<a class="headerlink" href="#random-forest-extraction-ai" title="Permalink to this headline">¶</a></h3>
 <dl class="py class">
 <dt class="sig sig-object py">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.trainer.information_extraction.</span></span><span class="sig-name descname"><span class="pre">RFExtractionAI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_nearest</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_word</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_estimators</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_depth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_label_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_nearest_across_lines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_separate_labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">category</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Category</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokenizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
@@ -2108,6 +2145,7 @@ NotFittedError: When CLF is not fitted</p>
 
 </dd></dl>
 
+</section>
 <section id="load-saved-ai-model">
 <h3>Load Saved AI Model<a class="headerlink" href="#load-saved-ai-model" title="Permalink to this headline">¶</a></h3>
 <dl class="py function">
@@ -2133,10 +2171,68 @@ NotFittedError: When CLF is not fitted</p>
 
 </section>
 </section>
-<section id="document-categorization">
-<h2>Document Categorization<a class="headerlink" href="#document-categorization" title="Permalink to this headline">¶</a></h2>
+<section id="categorization-ai">
+<h2>Categorization AI<a class="headerlink" href="#categorization-ai" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/trainer/document_categorization.py">[source]</a></p>
 <span class="target" id="module-konfuzio_sdk.trainer.document_categorization"></span><p>Implements a Categorization Model.</p>
+<section id="abstract-categorization-ai">
+<h3>Abstract Categorization AI<a class="headerlink" href="#abstract-categorization-ai" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.trainer.document_categorization.</span></span><span class="sig-name descname"><span class="pre">AbstractCategorizationAI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Category</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Abstract definition of a CategorizationAI.</p>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">categorize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.Document</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recategorize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.data.Document</span></span></span></dt>
+<dd><p>Run categorization on a Document.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>document</strong> – Input Document</p></li>
+<li><p><strong>recategorize</strong> – If the input Document is already categorized, the already present Category is used unless</p></li>
+</ul>
+</dd>
+</dl>
+<p>this flag is True</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>inplace</strong> – Option to categorize the provided Document in place, which would assign the Category attribute</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Copy of the input Document with added CategoryAnnotation information</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_training_docs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.evaluate.CategorizationEvaluation</span></span></span></dt>
+<dd><p>Evaluate the full Categorization pipeline on the pipeline’s Test Documents.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>use_training_docs</strong> – Bool for whether to evaluate on the Training Documents instead of Test Documents.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Evaluation object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></dt>
+<dd><p>Train the Categorization AI.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_konfuzio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Save the model to disk.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
 <section id="fallback-categorization-model">
 <h3>Fallback Categorization Model<a class="headerlink" href="#fallback-categorization-model" title="Permalink to this headline">¶</a></h3>
 <dl class="py class">
@@ -2162,12 +2258,154 @@ is available.</p>
 
 </section>
 </section>
-<section id="evaluation">
-<h2>Evaluation<a class="headerlink" href="#evaluation" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/evaluate.py">[source]</a></p>
+<section id="file-splitting-ai">
+<h2>File Splitting AI<a class="headerlink" href="#file-splitting-ai" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/konfuzio_sdk/trainer/file_splitting.py">[source]</a></p>
+<span class="target" id="module-konfuzio_sdk.trainer.file_splitting"></span><p>Process Documents that consist of several files and propose splitting them into the Sub-Documents accordingly.</p>
+<p>We suggest a context-aware approach based on scanning Category’s Documents and finding strings exclusive for first
+Pages of all Documents within the Category. Upon predicting whether a Page is a potential splitting point (meaning
+whether it is first or not), we compare Page’s contents to these exclusive first-page strings; if there is occurrence of
+at least one such string, we mark a Page to be first (thus meaning it is a splitting point).</p>
+<p>A ContextAwareFileSplittingModel instance can be used with an interface provided by SplittingAI – this class accepts a
+whole Document instead of a single Page and proposes splitting points or splits the original Documents.</p>
+<p>For developing a custom file-splitting approach, we propose an abstract class.</p>
+<section id="abstract-file-splitting-model">
+<h3>Abstract File Splitting Model<a class="headerlink" href="#abstract-file-splitting-model" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.trainer.file_splitting.</span></span><span class="sig-name descname"><span class="pre">AbstractFileSplittingModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Category</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Abstract class for the filesplitting model.</p>
+<dl class="py method">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Fit the custom model on the training Documents.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pkl_file_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em></dt>
+<dd><p>Generate a path for a resulting pickle file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.Page</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.data.Page</span></span></span></dt>
+<dd><p>Take a Page as an input and reassign is_first_page attribute’s value if necessary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>page</strong> (<em>Page</em>) – A Page to label first or non-first.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Page.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">temp_pkl_file_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em></dt>
+<dd><p>Generate a path for temporary pickle file.</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
+<section id="context-aware-file-splitting-model">
+<h3>Context Aware File Splitting Model<a class="headerlink" href="#context-aware-file-splitting-model" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.trainer.file_splitting.</span></span><span class="sig-name descname"><span class="pre">ContextAwareFileSplittingModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Category</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokenizer</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Fallback definition of a File Splitting Model.</p>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">check_is_ready</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Check file splitting model is ready for inference.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">allow_empty_categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Gather the strings exclusive for first Pages in a given stream of Documents.</p>
+<p>Exclusive means that each of these strings appear only on first Pages of Documents within a Category.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>allow_empty_categories</strong> – To allow returning empty list for a Category if no exclusive first-page strings</p>
+</dd>
+</dl>
+<p>were found during fitting (which means prediction would be impossible for a Category).
+:type allow_empty_categories: bool
+:raises ValueError: When allow_empty_categories is False and no exclusive first-page strings were found for
+at least one Category.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.Page</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.data.Page</span></span></span></dt>
+<dd><p>Predict a Page as first or non-first.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>page</strong> (<em>Page</em>) – A Page to receive first or non-first label.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – When at least one Category does not have exclusive_first_page_strings.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A Page with a newly predicted is_first_page attribute.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="splitting-ai">
+<h3>Splitting AI<a class="headerlink" href="#splitting-ai" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.trainer.file_splitting.</span></span><span class="sig-name descname"><span class="pre">SplittingAI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Split a given Document and return a list of resulting shorter Documents.</p>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">evaluate_full</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_training_docs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">konfuzio_sdk.evaluate.FileSplittingEvaluation</span></span></span></dt>
+<dd><p>Evaluate the SplittingAI’s performance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>use_training_docs</strong> – If enabled, runs evaluation on the training data to define its quality; if disabled,</p>
+</dd>
+</dl>
+<p>runs evaluation on the test data.
+:type use_training_docs: bool
+:return: Evaluation information for the filesplitting context-aware logic.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">propose_split_documents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">konfuzio_sdk.data.Document</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_pages</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Document</span><span class="p"><span class="pre">]</span></span></span></span></dt>
+<dd><p>Propose a set of resulting documents from a single Documents.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>document</strong> (<em>Document</em>) – An input Document to be split.</p></li>
+<li><p><strong>inplace</strong> (<em>bool</em>) – Whether changes are applied to the input Document, changing it, or to a deepcopy of it.</p></li>
+<li><p><strong>return_pages</strong> – A flag to enable returning a copy of an old Document with Pages marked .is_first_page on</p></li>
+</ul>
+</dd>
+</dl>
+<p>splitting points instead of a set of Sub-Documents.
+:type return_pages: bool
+:return: A list of suggested new Sub-Documents built from the original Document or a list with a Document
+with Pages marked .is_first_page on splitting points.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="ai-evaluation">
+<h2>AI Evaluation<a class="headerlink" href="#ai-evaluation" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/evaluate.py">[source]</a></p>
 <section id="extraction-ai-evaluation">
-<h2>Extraction AI Evaluation<a class="headerlink" href="#extraction-ai-evaluation" title="Permalink to this headline">¶</a></h2>
+<h3>Extraction AI Evaluation<a class="headerlink" href="#extraction-ai-evaluation" title="Permalink to this headline">¶</a></h3>
 <dl class="py class">
 <dt class="sig sig-object py">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.evaluate.</span></span><span class="sig-name descname"><span class="pre">Evaluation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">documents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Document</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">konfuzio_sdk.data.Document</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span></dt>
@@ -2317,6 +2555,7 @@ https://arxiv.org/pdf/1911.03347.pdf</p>
 
 </dd></dl>
 
+</section>
 <section id="compare">
 <h3>compare<a class="headerlink" href="#compare" title="Permalink to this headline">¶</a></h3>
 <dl class="py function">
@@ -2343,9 +2582,8 @@ exact with “5,55”</p></li>
 </dd></dl>
 
 </section>
-</section>
 <section id="categorization-ai-evaluation">
-<h2>Categorization AI Evaluation<a class="headerlink" href="#categorization-ai-evaluation" title="Permalink to this headline">¶</a></h2>
+<h3>Categorization AI Evaluation<a class="headerlink" href="#categorization-ai-evaluation" title="Permalink to this headline">¶</a></h3>
 <dl class="py class">
 <dt class="sig sig-object py">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">konfuzio_sdk.evaluate.</span></span><span class="sig-name descname"><span class="pre">CategorizationEvaluation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Category</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">documents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">konfuzio_sdk.data.Document</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">konfuzio_sdk.data.Document</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span></dt>
@@ -2446,6 +2684,10 @@ exact with “5,55”</p></li>
 
 </dd></dl>
 
+</section>
+<section id="file-splitting-ai-evaluation">
+<h3>File Splitting AI Evaluation<a class="headerlink" href="#file-splitting-ai-evaluation" title="Permalink to this headline">¶</a></h3>
+</section>
 </section>
 </section>
 
