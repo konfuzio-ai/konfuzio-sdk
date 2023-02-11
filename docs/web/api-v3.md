@@ -76,7 +76,7 @@ returns a token string that you can use in lieu of your actual credentials for s
 HTTP header in the format `Authorization: Token <token>`.
 
 This token doesn't currently expire, so you can use indefinitely, but you can delete it (and regenerated) via
-the [authentication DELETE endpoint](link).
+the [authentication DELETE endpoint](https://app.konfuzio.com/v3/swagger/#/auth/auth_destroy).
 
 .. note::
 This is the authentication method you **should** use if you're building an external service that consumes the Konfuzio
@@ -627,7 +627,7 @@ documents.
 
 Our document dashboard is based on Vue.js and completely implemented with the API v3. You can check out our solution
 [on GitHub](https://github.com/konfuzio-ai/document-validation-ui) and customize it to your needs. You will find a
-technical overview and component description [here](../dvui/index.md).
+technical overview and component description [here](/dvui/index.html).
 
 #### Start from scratch
 

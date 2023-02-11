@@ -535,11 +535,11 @@ To start and set up keycloak server:
 4. Create admin user
 5. Login to Administration Console
 6. You can add new Realm or use default (Master)
-![add-realm.png](keycloak/add-realm.png)
+![add-realm.png](./keycloak/add-realm.png)
 7. Create new client from `Clients` navbar item
-![add-client.png](keycloak/add-client.png)
+![add-client.png](./keycloak/add-client.png)
 8. Fill client form correctly (`Access Type` and `Valid Redirect URIs` fields)
-![client-form.png](keycloak/client-form.png)
+![client-form.png](./keycloak/client-form.png)
 9. Move to `Credentials` tab and save `Secret` value
 10. In `Users` navbar item create users
 
@@ -553,7 +553,7 @@ To integrate konfuzio with keycloak you need to set the following environment va
 - `SSO_ENABLED` (set `True` to activate integration)
 
 Click `SSO` on login page to log in to Konfuzio using keycloak
-![sso-button.png](keycloak/sso-button.png)
+![sso-button.png](./keycloak/sso-button.png)
 
 ### Important notes
 
