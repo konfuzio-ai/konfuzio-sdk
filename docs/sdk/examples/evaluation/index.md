@@ -59,6 +59,9 @@ from konfuzio_sdk.data import Category, Project, Document, Page
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
 from konfuzio_sdk.trainer.file_splitting import SplittingAI
 
+# This example builds the Documents from scratch and without uploading a Supported File.
+# If you uploaded your Document to the Konfuzio Server, you can just retrieve it with:
+# document_1 = project.get_document_by_id(YOUR_DOCUMENT_ID)
 text_1 = "Hi all,\nI like bread.\nI hope to get everything done soon.\nHave you seen it?"
 document_1 = Document(id_=None, project=YOUR_PROJECT, category=YOUR_CATEGORY_1, text=text_1, dataset_status=3)
 _ = Page(
@@ -87,6 +90,8 @@ _ = Page(
     number=3,
 )
 
+# As with the previous example Document, you can just retrieve an online Document with
+# document_2 = project.get_document_by_id(YOUR_DOCUMENT_ID)
 text_2 = "Good evening,\nthank you for coming.\nCan you give me that?\nI need it.\nSend it to me."
 document_2 = Document(id_=None, project=YOUR_PROJECT, category=YOUR_CATEGORY_2, text=text_2, dataset_status=3)
 _ = Page(

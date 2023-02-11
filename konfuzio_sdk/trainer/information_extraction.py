@@ -1046,7 +1046,7 @@ def add_extractions_as_annotations(
 
 
 class BaseModel(metaclass=abc.ABCMeta):
-    """Base model to define common methods for child classes."""
+    """Base model to define common methods for all AIs."""
 
     def __init__(self):
         """Initialize a BaseModel class."""
@@ -1199,7 +1199,7 @@ class BaseModel(metaclass=abc.ABCMeta):
 
 
 class Trainer(BaseModel):
-    """Base Model to extract information from unstructured human readable text."""
+    """Parent class for all Extraction AIs, to extract information from unstructured human readable text."""
 
     def __init__(self, *args, **kwargs):
         """Initialize ExtractionModel."""
