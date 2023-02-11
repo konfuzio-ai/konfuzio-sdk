@@ -7,13 +7,15 @@ Tutorials
 
 .. mdinclude:: examples/overview/index.md
 
-.. mdinclude:: examples/file-splitting-class/index.md
+.. mdinclude:: examples/data_validation/index.md
 
-.. mdinclude:: examples/ile-splitting-class-out-of-the-box-usage/index.md
+.. mdinclude:: examples/file-splitting-class-out-of-the-box-usage/index.md
+
+.. mdinclude:: examples/file-splitting-class/index.md
 
 .. mdinclude:: examples/evaluation/index.md
 
-.. mdinclude:: examples/document_categorization.md
+.. mdinclude:: examples/document_categorization/index.md
 
 Train a Konfuzio SDK Model to Extract Information From Payslip Documents
 -----------------------------------------------------------

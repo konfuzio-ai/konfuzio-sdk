@@ -1,4 +1,4 @@
-## Splitting for multi-file Documents: Step-by-step guide
+## Splitting for multi-Document files: Step-by-step guide
 
 ### Intro
 
@@ -16,7 +16,7 @@ of the Document. This will allow us to define splitting points and divide the Do
 important to note that this approach is only effective for Documents written in the same language and that the process 
 must be repeated for each Category.
 
-If you are unfamiliar with the SDK's main concepts (like Page or Span), you can get to know them on the [Quickstart](https://dev.konfuzio.com/sdk/home/index.html) page.
+If you are unfamiliar with the SDK's main concepts (like Page or Span), you can get to know them at [Data Layer Concepts](https://dev.konfuzio.com/sdk/explanations.html#data-layer-concepts).
 
 
 ### Quick explanation
