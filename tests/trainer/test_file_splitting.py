@@ -72,15 +72,6 @@ class TestFileSplittingModel(unittest.TestCase):
         with pytest.raises(ValueError, match="does not have test Documents"):
             ContextAwareFileSplittingModel(categories=[_], tokenizer=ConnectedTextTokenizer())
 
-    # def test_init_file_splitting_model_categories_different_project(self):
-    #     """Test passing Categories from different Projects."""
-    #     project = Project(id_=46)
-    #     with pytest.raises(ValueError, match="Categories have to belong to the same Project"):
-    #         ContextAwareFileSplittingModel(
-    #             categories=[self.file_splitting_model.categories[0], project.get_category_by_id(63)],
-    #             tokenizer=ConnectedTextTokenizer(),
-    #         )
-
     def test_load_model_from_different_class(self):
         """Test initializing SplittingAI with a model that does not inherit from AbstractFileSplittingModel."""
         wrong_class = FallbackCategorizationModel(LocalTextProject())
