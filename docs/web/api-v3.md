@@ -71,7 +71,7 @@ KeyCloak integration can be found on our
 
 #### Token authentication
 
-You send a `POST` request with your Konfuzio username (email) and password to our [authentication endpoint](link), which
+You send a `POST` request with your Konfuzio username (email) and password to our [authentication endpoint](https://app.konfuzio.com/v3/swagger/#/auth), which
 returns a token string that you can use in lieu of your actual credentials for subsequent requests, providing it with a
 HTTP header in the format `Authorization: Token <token>`.
 
