@@ -308,7 +308,7 @@ class TestOfflineExampleData(unittest.TestCase):
             copy(data)
 
     def test_deepcopy(self):
-        """Test that deeepcopy is not allowed as it needs to be implemented for every SDK concept."""
+        """Test that deepcopy is not allowed as it needs to be implemented for every SDK concept."""
         data = Data()
         with pytest.raises(NotImplementedError):
             deepcopy(data)

@@ -3187,10 +3187,10 @@ class Project(Data):
         """
         self.id_local = next(Data.id_iter)
         self.id_ = id_  # A Project with None ID is not retrieved from the HOST
+        self.categories: List[Category] = []
         if self.id_ is None:
             self.set_offline()
         self._project_folder = project_folder
-        self.categories: List[Category] = []
         self._label_sets: List[LabelSet] = []
         self._labels: List[Label] = []
         self._documents: List[Document] = []
@@ -3218,6 +3218,14 @@ class Project(Data):
     def __repr__(self):
         """Return string representation."""
         return f"Project {self.id_}"
+
+    def set_offline(self):
+        """Force Data into offline mode."""
+        self._force_offline = True
+        self._update = False
+        self.no_category = Category(project=self)
+        self.no_category.name_clean = "NO_CATEGORY"
+        self.no_category.name = "NO_CATEGORY"
 
     @property
     def documents(self):
