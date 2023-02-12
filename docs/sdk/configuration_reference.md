@@ -15,7 +15,7 @@ are using PyCharm have a look at [Quickstart with Pycharm](quickstart_pycharm.ht
 
 *Notes*:
 
-* Your coding environment should have a Python version >= 3.6.
+* Your coding environment should have Python 3.8, 3.9 or 3.10.
 * If you are not using a virtual environment, you may need to add the installation directory to your PATH.
 
 ### 3. Initialize the package

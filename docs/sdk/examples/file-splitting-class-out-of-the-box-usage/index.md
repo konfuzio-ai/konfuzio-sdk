@@ -1,6 +1,6 @@
-## Split multi-file Document into Separate files
+## Split a file into separate Documents
 
-Let's see how to use the `konfuzio_sdk` to automatically split Documents consisting of several Sub-Documents. We will be using 
+Let's see how to use the `konfuzio_sdk` to automatically split a file into several Documents. We will be using 
 a pre-built class `SplittingAI` and an instance of a trained `ContextAwareFileSplittingModel`. The latter uses a 
 context-aware logic. By context-aware we mean a rule-based approach that looks for common strings between the first 
 Pages of all Category's Documents. Upon predicting whether a Page is a potential splitting point (meaning whether it is 

@@ -26,15 +26,15 @@ is the tool for you. You can customize pipelines for automatic document Categori
 
 ### Three steps to customize document AI pipelines
 
-1. The Konfuzio SDK defines abstract Python classes and interfaces for [Categorization](sourcecode.html#document-categorization), [File Splitting](sourcecode.html#file-splitting), and [Extraction](sourcecode.html#extraction-ai) AI pipelines. 
+1. The Konfuzio SDK defines abstract Python classes and interfaces for [Categorization](sourcecode.html#categorization-ai), [File Splitting](sourcecode.html#file-splitting-ai), and [Extraction](sourcecode.html#extraction-ai) AI pipelines. 
 By implementing the abstract methods in a custom subclass, custom behaviours can be defined for each AI pipeline. Make
-sure to familiarize yourself with the [Data Layer concepts](sourcecode.html#data-layer-concepts) so that you can 
+sure to familiarize yourself with the [Data Layer concepts](explanations.html#data-layer-concepts) so that you can 
 manipulate data effectively within your custom pipelines.
 
-2. All AIs inherit from [BaseModel](sourcecode.html#basemodel), which provides `BaseModel.save` to generate a pickle file, 
-to be directly uploaded to the Konfuzio Server (see [Upload Extraction or Category AI to target instance](../web/on_premises.html#upload-extraction-or-category-ai-to-target-instance)). 
+2. All AIs inherit from [BaseModel](sourcecode.html#base-model), which provides `BaseModel.save` to generate a pickle file, 
+to be directly uploaded to the Konfuzio Server (see [Upload Extraction or Category AI to target instance](https://help.konfuzio.com/tutorials/migrate-trained-ai-to-an-new-project-to-annotate-documents-faster/index.html#upload-extraction-or-category-ai-to-target-instance)). 
 
-3. Finally, activating the uploaded AI on the web interface will enable the custom pipeline on your self-hosted installation.
+4. Finally, activating the uploaded AI on the web interface will enable the custom pipeline on your self-hosted installation.
 
 ### Customize Extraction AI
 
@@ -93,7 +93,7 @@ For a more in depth tutorial about the usage of Extraction AIs in the SDK see
 
 ### Customize Categorization AI (coming February 17th, 2023)
 
-Any custom [Categorization AI](sourcecode.html#document-categorization) (derived from the Konfuzio `AbstractCategorizationModel` class)  
+Any custom [Categorization AI](sourcecode.html#categorization-ai) (derived from the Konfuzio `AbstractCategorizationModel` class)  
 should implement the following interface:
 ```python
 from konfuzio_sdk.trainer.document_categorization import AbstractCategorizationModel
@@ -147,11 +147,11 @@ categorization_pipeline_loaded = load_model(pickle_model_path)
 ```
 
 For a more in depth tutorial about the usage of Categorization AIs in the SDK see 
-[Tutorials - Document Categorization](examples/examples.html#document-categorization).
+[Tutorials - Document Categorization](tutorials.html#document-categorization).
 
 ### Customize File Splitting AI
 
-Any Custom [File Splitting AI](sourcecode.html#file-splitting) (derived from the Konfuzio `AbstractFileSplittingModel` class) 
+Any Custom [File Splitting AI](sourcecode.html#file-splitting-ai) (derived from the Konfuzio `AbstractFileSplittingModel` class) 
 should implement the following interface:
 ```python
 from konfuzio_sdk.trainer.file_spltting import AbstractFileSplittingModel
@@ -212,7 +212,7 @@ file_splitting_pipeline_loaded = SplittingAI(file_splitting_model_loaded)
 ```
 
 For a more in depth tutorial about the usage of File Splitting AIs in the SDK see 
-[Splitting for multi-file Documents: Step-by-step guide](examples/examples.html#file-splitting).
+[Splitting for multi-file Documents: Step-by-step guide](tutorials.html#splitting-for-multi-document-files-step-by-step-guide).
 
 ### Other use cases around documents
 

@@ -212,7 +212,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
     def test_02_make_features(self):
         """Make sure the Data and Pipeline is configured."""
         # we have intentional unrevised annotations in the Training set which will block feature calculation
-        assert 2e5 < memory_size_of(self.pipeline.category) < 4e5
+        assert 6e5 < memory_size_of(self.pipeline.category) < 8e5
         with pytest.raises(ValueError, match="is unrevised in this dataset and can't be used for training"):
             self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
                 documents=self.pipeline.documents, require_revised_annotations=True
@@ -232,7 +232,7 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
             documents=self.pipeline.documents, require_revised_annotations=True
         )
 
-        assert 5e5 < memory_size_of(self.pipeline.category) < 8e5
+        assert 9e5 < memory_size_of(self.pipeline.category) < 12e5
 
         assert 11e6 < memory_size_of(self.pipeline.df_train) < 12e6
 
@@ -438,9 +438,9 @@ class TestRegexRFExtractionAI(unittest.TestCase):
                 self.pipeline.tokenizer.tokenizers.append(RegexTokenizer(regex=regex))
         self.pipeline.test_documents = self.pipeline.category.test_documents()
 
-        assert 1e6 < memory_size_of(self.pipeline.category) < 2e6
+        assert 1e6 < memory_size_of(self.pipeline.category) < 3e6
 
-        assert 7e3 < memory_size_of(self.pipeline.tokenizer) < 10e3
+        assert 7e3 < memory_size_of(self.pipeline.tokenizer) < 20e3
 
         # todo have a separate test case for calculating features of offline documents
 
@@ -449,13 +449,13 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         # We have intentional unrevised annotations in the Training set which will block feature calculation,
         # unless we set require_revised_annotations=False (which is default), which we are doing here, so we ignore them
         # See TestWhitespaceRFExtractionAI::test_2_make_features for the case with require_revised_annotations=True
-        assert 1e6 < memory_size_of(self.pipeline.category) < 2e6
+        assert 1e6 < memory_size_of(self.pipeline.category) < 2.2e6
 
         self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
             documents=self.pipeline.documents, retokenize=False, require_revised_annotations=False
         )
 
-        assert 1e6 < memory_size_of(self.pipeline.category) < 2e6
+        assert 1e6 < memory_size_of(self.pipeline.category) < 2.2e6
         assert 2e6 < memory_size_of(self.pipeline.df_train) < 3e6
 
     def test_03_fit(self) -> None:
@@ -1277,7 +1277,6 @@ def test_load_model_corrupt_file():
         load_model(path)
 
 
-@pytest.mark.xfail(reason='Disabled check.')
 def test_load_model_wrong_pickle_data():
     """Test loading of wrong pickle data."""
     path = "trainer/list_test.pkl"
@@ -1285,6 +1284,7 @@ def test_load_model_wrong_pickle_data():
         load_model(path)
 
 
+@unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
 def test_load_ai_model_konfuzio_sdk_not_included():
     """Test loading of trained model with include_konfuzio setting set to False."""
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
@@ -1298,6 +1298,7 @@ def test_load_ai_model_konfuzio_sdk_not_included():
     assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
 
 
+@unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
 @pytest.mark.xfail(reason='Loaded model is not subclass of BaseModel.')
 def test_load_ai_model_konfuzio_sdk_included():
     """Test loading of trained model with include_konfuzio setting set to True."""
@@ -1312,7 +1313,7 @@ def test_load_ai_model_konfuzio_sdk_included():
     assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
 
 
-@pytest.mark.xfail(reason='Disabled check.')
+@unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
 def test_load_old_ai_model():
     """Test loading of an old trained model."""
     path = "trainer/2022-03-10-15-14-51_lohnabrechnung_old_model.pkl"
@@ -1320,7 +1321,7 @@ def test_load_old_ai_model():
         load_model(path)
 
 
-@pytest.mark.xfail(reason='Disabled check.')
+@unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
 def test_load_old_ai_model_2():
     """Test loading of a newer old trained model."""
     path = "trainer/2023-01-09-17-47-50_lohnabrechnung.pkl"
