@@ -2210,7 +2210,7 @@ class Document(Data):
 
         :return: The found Category Annotation, or None if not present.
         """
-        if self._category is not self.project.no_category:
+        if self._category not in [self.project.no_category, None]:
             # there is a unique Category Annotation per Category associated to this Document
             # by construction in Document.category_annotations
             return [
