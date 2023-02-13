@@ -43,7 +43,7 @@ After that we continue with the setup of Fakturia.
   - Vertrag gekündigt 
   - Vertrag beendet (Vertragsende erreicht)  
 
-![webhook.png](webhook.png)
+.. image:: ./webhook.png
 
 Click `Webhook speichern` button
 
