@@ -69,6 +69,13 @@ Category
    :noindex:
 
 
+Category Annotation
+---------------------
+.. autoclass:: CategoryAnnotation
+   :members:
+   :noindex:
+
+
 Document
 ---------------------
 .. autoclass:: Document
@@ -123,32 +130,29 @@ Regex Tokenizer
 .. automodule:: konfuzio_sdk.tokenizer.regex
     :members:
 
-FileSplitting AI
-=====================
-
-`[source] <https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/konfuzio_sdk/trainer/file_splitting.py>`__
-
-.. automodule:: konfuzio_sdk.trainer.file_splitting
-
-.. autoclass:: AbstractFileSplittingModel
-   :members:
-   :noindex:
-
-.. autoclass:: ContextAwareFileSplittingModel
-   :members:
-   :noindex:
-
-.. autoclass:: SplittingAI
-   :members:
-   :noindex:
-
 Extraction AI
 =====================
 
 `[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/trainer/information_extraction.py>`__
 
-
 .. automodule:: konfuzio_sdk.trainer.information_extraction
+
+Base Model
+---------------------
+
+.. autoclass:: BaseModel
+   :members:
+   :noindex:
+
+Trainer
+---------------------
+
+.. autoclass:: Trainer
+   :members:
+   :noindex:
+
+Random Forest Extraction AI
+---------------------
 
 .. autoclass:: RFExtractionAI
    :members:
@@ -160,13 +164,18 @@ Load Saved AI Model
 .. autofunction:: konfuzio_sdk.trainer.information_extraction.load_model
    :noindex:
 
-Document Categorization
+Categorization AI
 =====================
 
 `[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/trainer/document_categorization.py>`__
 
 .. automodule:: konfuzio_sdk.trainer.document_categorization
 
+Abstract Categorization AI
+---------------------
+.. autoclass:: AbstractCategorizationAI
+   :members:
+   :noindex:
 
 Fallback Categorization Model
 ---------------------
@@ -174,13 +183,37 @@ Fallback Categorization Model
    :members:
    :noindex:
 
+File Splitting AI
+=====================
 
-Evaluation
+`[source] <https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/konfuzio_sdk/trainer/file_splitting.py>`__
+
+.. automodule:: konfuzio_sdk.trainer.file_splitting
+
+Abstract File Splitting Model
+---------------------
+.. autoclass:: AbstractFileSplittingModel
+   :members:
+   :noindex:
+
+Context Aware File Splitting Model
+---------------------
+.. autoclass:: ContextAwareFileSplittingModel
+   :members:
+   :noindex:
+
+Splitting AI
+---------------------
+.. autoclass:: SplittingAI
+   :members:
+   :noindex:
+
+AI Evaluation
 =====================
 
 `[source] <https://github.com/konfuzio-ai/document-ai-python-sdk/blob/master/konfuzio_sdk/evaluate.py>`__
 
-Evaluation
+Extraction AI Evaluation
 ---------------------
 .. autoclass:: konfuzio_sdk.evaluate.Evaluation
    :members:
@@ -191,8 +224,14 @@ compare
 .. autofunction:: konfuzio_sdk.evaluate.compare
    :noindex:
 
-FileSplittingEvaluation
+Categorization AI Evaluation
 ---------------------
-.. autoclass:: konfuzio_sdk.evaluate.FileSplittingEvaluation
+.. autoclass:: konfuzio_sdk.evaluate.CategorizationEvaluation
+   :members:
+   :noindex:
+
+File Splitting AI Evaluation
+---------------------
+.. autoclass:: konfuzio_sdk.evaluate.FileSplittinEvaluation
    :members:
    :noindex:
