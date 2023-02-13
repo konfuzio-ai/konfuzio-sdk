@@ -1918,7 +1918,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_number_of_label_sets(self):
         """Test Label Sets numbers."""
         # Online Label Sets + added during tests +  no_label_set
-        assert len(self.prj.label_sets) == 14
+        assert len(self.prj.label_sets) == 13
 
     # def test_check_tokens(self):
     #     """Test to find not matched Annotations."""
@@ -2630,7 +2630,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         span = Span(start_offset=1, end_offset=2)
         annotation_set = AnnotationSet(document=test_document, label_set=label_set)
         test_document._category = project.no_category
-        with pytest.raises(ValueError, match='where the Category is'):
+        with pytest.raises(ValueError, match='We cannot add'):
             _ = Annotation(
                 label=label, annotation_set=annotation_set, label_set=label_set, document=test_document, spans=[span]
             )
