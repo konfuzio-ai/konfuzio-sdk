@@ -297,9 +297,9 @@ class TestOfflineExampleData(unittest.TestCase):
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
         assert len(cls.payslips_category.documents()) == 25
-        assert len(cls.receipts_category.documents()) == 25
+        assert len(cls.receipts_category.documents()) == 24
         assert cls.project.get_document_by_id(44864).category.name == cls.project.no_category.name
-        assert len(cls.project.documents) == 25 + 24 + 2
+        assert len(cls.project.documents) == 25 + 24 + 1
 
     def test_copy(self):
         """Test that copy is not allowed as it needs to be implemented for every SDK concept."""
@@ -731,7 +731,7 @@ class TestOfflineDataSetup(unittest.TestCase):
                 assert page.maximum_confidence_category_annotation is None
                 assert len(page.category_annotations) == 0
         assert len(document.category_annotations) == 3
-        assert document.category is None
+        assert document.category == document.project.no_category
 
     def test_categorize_with_no_pages(self):
         """Test categorizing a Document with no Pages."""

@@ -2249,13 +2249,13 @@ class Document(Data):
         if all_pages_have_same_category:
             self._category = self.pages()[0].category
         else:
-            self._category = None
+            self._category = self.project.no_category
         return self._category
 
     def set_category(self, category: Union[None, Category]) -> None:
         """Set the Category of the Document and the Category of all of its Pages as revised."""
         if (
-            (self._category is not None)
+            (self._category not in [None, self.project.no_category])
             and (category != self._category)
             and (category is not None)
             and (category != self.project.no_category)

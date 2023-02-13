@@ -55,7 +55,7 @@ class AbstractCategorizationAI(metaclass=abc.ABCMeta):
             virtual_doc = document
         else:
             virtual_doc = deepcopy(document)
-        if (document.category is not None) and (not recategorize):
+        if (document.category not in [None, document.project.no_category]) and (not recategorize):
             logger.info(
                 f'In {document}, the Category was already specified as {document.category}, so it wasn\'t categorized '
                 f'again. Please use recategorize=True to force running the Categorization AI again on this Document.'
