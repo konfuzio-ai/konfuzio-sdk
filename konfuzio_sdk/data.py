@@ -2210,7 +2210,7 @@ class Document(Data):
 
         :return: The found Category Annotation, or None if not present.
         """
-        if self._category is not None:
+        if self._category is not self.project.no_category:
             # there is a unique Category Annotation per Category associated to this Document
             # by construction in Document.category_annotations
             return [
@@ -2254,7 +2254,12 @@ class Document(Data):
 
     def set_category(self, category: Union[None, Category]) -> None:
         """Set the Category of the Document and the Category of all of its Pages as revised."""
-        if (self._category is not None) and (category != self._category) and (category is not None):
+        if (
+            (self._category is not None)
+            and (category != self._category)
+            and (category is not None)
+            and (category != self.project.no_category)
+        ):
             raise ValueError(
                 "We forbid changing Category when already existing, because this requires some validations that are "
                 "currently implemented in the Konfuzio Server. We recommend changing the Category of a Document via "
@@ -3188,8 +3193,6 @@ class Project(Data):
         self.id_local = next(Data.id_iter)
         self.id_ = id_  # A Project with None ID is not retrieved from the HOST
         self.categories: List[Category] = []
-        if self.id_ is None:
-            self.set_offline()
         self._project_folder = project_folder
         self._label_sets: List[LabelSet] = []
         self._labels: List[Label] = []
@@ -3203,10 +3206,13 @@ class Project(Data):
         self.labels_file_path = os.path.join(self.project_folder, "labels.json5")
         self.label_sets_file_path = os.path.join(self.project_folder, "label_sets.json5")
 
-        self.no_category = None
-
         if self.id_ or self._project_folder:
             self.get(update=update)
+        else:
+            self.set_offline()
+            self.no_category = Category(project=self)
+            self.no_category.name_clean = "NO_CATEGORY"
+            self.no_category.name = "NO_CATEGORY"
 
         # todo: list of Categories related to NO LABEL SET can be outdated, i.e. if the number of Categories changes
         self.no_label_set = LabelSet(project=self, categories=self.categories)
@@ -3218,14 +3224,6 @@ class Project(Data):
     def __repr__(self):
         """Return string representation."""
         return f"Project {self.id_}"
-
-    def set_offline(self):
-        """Force Data into offline mode."""
-        self._force_offline = True
-        self._update = False
-        self.no_category = Category(project=self)
-        self.no_category.name_clean = "NO_CATEGORY"
-        self.no_category.name = "NO_CATEGORY"
 
     @property
     def documents(self):

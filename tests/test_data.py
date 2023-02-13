@@ -361,20 +361,20 @@ class TestOfflineExampleData(unittest.TestCase):
     def test_document_with_no_category_has_category_annotations_with_zero_confidence(self):
         """Test that a Document with no Category has only Category Annotations with zero confidence."""
         document = deepcopy(self.project.get_document_by_id(89928))
-        document.set_category(None)
+        document.set_category(self.project.no_category)
         for page in document.pages():
-            assert page.category_annotations == []
+            assert page.category_annotations[0].category == self.project.no_category
         assert len(document.category_annotations) == len(self.project.categories)
         assert document.category_annotations[1].category == self.payslips_category
         assert document.category_annotations[1].confidence == 0.0
         assert document.category_annotations[2].category == self.receipts_category
         assert document.category_annotations[2].confidence == 0.0
-        assert document.maximum_confidence_category_annotation is None
-        assert document.maximum_confidence_category is None
+        assert document.maximum_confidence_category_annotation.category == self.project.no_category
+        assert document.maximum_confidence_category == self.project.no_category
         # test that no annotations are attached to the Pages
         for page in document.pages():
-            assert page.category_annotations == []
-            assert page.category is None
+            assert page.category_annotations[0].category == self.project.no_category
+            assert page.category == self.project.no_category
 
     def test_category_annotations_no_predictions(self):
         """Test Category Annotations for a Document with a user defined Category but with no AI Category predictions."""
@@ -605,8 +605,8 @@ class TestOfflineDataSetup(unittest.TestCase):
         """Initialize the test Project."""
         cls.project = Project(id_=None)
         cls.label = Label(project=cls.project, text='First Offline Label')
-        cls.category = Category(project=cls.project, id_=1)
-        cls.category2 = Category(project=cls.project, id_=2)
+        cls.category = Category(project=cls.project, id_=2)
+        cls.category2 = Category(project=cls.project, id_=3)
         cls.document = Document(project=cls.project, category=cls.category, text="Hello.")
         cls.label_set = LabelSet(project=cls.project, categories=[cls.category], id_=421)
         cls.label_set.add_label(cls.label)
@@ -675,11 +675,11 @@ class TestOfflineDataSetup(unittest.TestCase):
         document = Document(project=self.project, text="hello")
         for i in range(2):
             page = Page(id_=None, document=document, start_offset=0, end_offset=0, number=i + 1, original_size=(0, 0))
-            assert page.category is None
+            assert page.category is document.project.no_category
             assert page.maximum_confidence_category_annotation is None
             assert len(page.category_annotations) == 0
-        assert document.maximum_confidence_category is None
-        assert document.category is None
+        assert document.maximum_confidence_category is document.project.no_category
+        assert document.category is document.project.no_category
 
     def test_categorize_when_pages_have_different_categories(self):
         """Test categorizing a Document when Pages have different Category."""
