@@ -698,8 +698,8 @@ class TestOfflineDataSetup(unittest.TestCase):
             assert page.maximum_confidence_category_annotation.category == page_category
             assert page.maximum_confidence_category_annotation.confidence == 1.0
             assert len(page.category_annotations) == 1
-        assert len(document.category_annotations) == 2
-        assert document.category is None
+        assert len(document.category_annotations) == 3
+        assert document.category == document.project.no_category
         # as each page got assigned a different Category with confidence all equal to 1,
         # the maximum confidence Category of the Document will be a random one
         assert document.maximum_confidence_category in [self.category, self.category2]
@@ -730,13 +730,13 @@ class TestOfflineDataSetup(unittest.TestCase):
                 assert page.category is None
                 assert page.maximum_confidence_category_annotation is None
                 assert len(page.category_annotations) == 0
-        assert len(document.category_annotations) == 2
+        assert len(document.category_annotations) == 3
         assert document.category is None
 
     def test_categorize_with_no_pages(self):
         """Test categorizing a Document with no Pages."""
         document = Document(project=self.project, text="hello")
-        assert document.category is None
+        assert document.category == document.project.no_category
         assert document.pages() == []
 
     def test_span_negative_offset(self):
@@ -1470,7 +1470,7 @@ class TestOfflineDataSetup(unittest.TestCase):
 
         # Add annotation for the first time
         span = Span(start_offset=1, end_offset=2)
-        with pytest.raises(ValueError, match="without Category must not have Annotations"):
+        with pytest.raises(ValueError, match="where the Сategory is"):
             _ = Annotation(
                 document=document,
                 is_correct=True,
@@ -1918,7 +1918,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_number_of_label_sets(self):
         """Test Label Sets numbers."""
         # Online Label Sets + added during tests +  no_label_set
-        assert len(self.prj.label_sets) == 13
+        assert len(self.prj.label_sets) == 14
 
     # def test_check_tokens(self):
     #     """Test to find not matched Annotations."""
@@ -2630,7 +2630,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         span = Span(start_offset=1, end_offset=2)
         annotation_set = AnnotationSet(document=test_document, label_set=label_set)
         test_document._category = project.no_category
-        with pytest.raises(ValueError, match='where the category is'):
+        with pytest.raises(ValueError, match='where the Category is'):
             _ = Annotation(
                 label=label, annotation_set=annotation_set, label_set=label_set, document=test_document, spans=[span]
             )
