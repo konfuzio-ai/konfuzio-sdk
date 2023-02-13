@@ -3,7 +3,7 @@
 Conventional template matching based approaches fail to generalize well to document images of unseen templates,
 and are not robust against text recognition errors.
 
-We follow the approach proposed by Sun et. al (2021) to encode both the visual and textual
+We follow the approach proposed by Sun et al. (2021) to encode both the visual and textual
 features of detected text regions, and edges of which represent the spatial relations between neighboring text
 regions. Their experiments validate that all information including visual features, textual
 features and spatial relations can benefit key information extraction.
@@ -27,8 +27,10 @@ import shutil
 import sys
 import time
 import unicodedata
+
 from copy import deepcopy
 from heapq import nsmallest
+from inspect import signature
 from typing import Tuple, Optional, List, Union, Callable, Dict
 from warnings import warn
 
@@ -48,6 +50,8 @@ from konfuzio_sdk.normalize import (
     normalize_to_positive_float,
 )
 from konfuzio_sdk.regex import regex_matches
+from konfuzio_sdk.trainer.document_categorization import FallbackCategorizationModel
+from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel
 from konfuzio_sdk.utils import get_timestamp, get_bbox, normalize_memory, get_sdk_version, memory_size_of
 
 from konfuzio_sdk.evaluate import Evaluation
@@ -65,6 +69,7 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     Load a pkl file.
 
     :param pickle_path: Path to the pickled model.
+    :type pickle_path: str
     :raises FileNotFoundError: If the path is invalid.
     :raises OSError: When the data is corrupted or invalid and cannot be loaded.
     :raises TypeError: When the loaded pickle isn't recognized as a Konfuzio AI model.
@@ -94,9 +99,6 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
             raise ValueError("Pickle saved with incompatible Python version.") from err
         raise
 
-    if not issubclass(type(model), BaseModel):
-        raise TypeError("Loaded model is not inheriting from the BaseModel class.")
-
     if hasattr(model, 'python_version'):
         logger.info(f"Loaded AI model trained with Python {model.python_version}")
     if hasattr(model, 'konfuzio_sdk_version'):
@@ -105,6 +107,16 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     max_ram = normalize_memory(max_ram)
     if max_ram and memory_size_of(model) > max_ram:
         logger.error(f"Loaded model's memory use ({memory_size_of(model)}) is greater than max_ram ({max_ram})")
+
+    if not (
+        RFExtractionAI.has_compatible_interface(model)
+        or ContextAwareFileSplittingModel.has_compatible_interface(model)
+        or FallbackCategorizationModel.has_compatible_interface(model)
+    ):
+        raise TypeError(
+            "Loaded model's interface is not compatible with any AIs. Provide a model that has all"
+            "the abstract methods implemented."
+        )
 
     if not hasattr(model, "name"):
         raise TypeError("Saved model file needs to be a Konfuzio Trainer instance.")
@@ -1079,6 +1091,15 @@ class BaseModel(metaclass=abc.ABCMeta):
     def pkl_file_path(self):
         """Generate a path for a resulting pickle file."""
 
+    @staticmethod
+    @abc.abstractmethod
+    def has_compatible_interface(external):
+        """
+        Validate that an instance of an external model is similar to that of the class.
+
+        :param external: An instance of an external model to compare with.
+        """
+
     def reduce_model_weight(self):
         """Remove all non-strictly necessary parameters before saving."""
         self.project.lose_weight()
@@ -1398,6 +1419,15 @@ class Trainer(BaseModel):
             merge = normalize_to_positive_float(text)
 
         return merge is not None
+
+    @staticmethod
+    @abc.abstractmethod
+    def has_compatible_interface(external):
+        """
+        Validate that an instance of an external model is similar to that of the class.
+
+        :param external: An instance of an external model to compare with.
+        """
 
 
 class GroupAnnotationSets:
@@ -2427,3 +2457,27 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         """Remove all non-strictly necessary parameters before saving."""
         super().reduce_model_weight()
         self.df_train = None
+
+    @staticmethod
+    def has_compatible_interface(external):
+        """
+        Validate that an instance of an external model is similar to that of the class.
+
+        :param external: An instance of an external model to compare with.
+        """
+        try:
+            if (
+                signature(external.save).parameters['output_dir'].annotation is str
+                and signature(external.save).parameters['keep_documents'].annotation is bool
+                and signature(external.save).parameters['include_konfuzio'].annotation
+                and signature(external.has_compatible_interface).parameters['external']
+                and signature(external.has_compatible_interface).return_annotation is bool
+                and signature(external.check_is_ready)
+            ):
+                return True
+            else:
+                return False
+        except KeyError:
+            return False
+        except AttributeError:
+            return False

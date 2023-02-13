@@ -72,6 +72,11 @@ class TestFileSplittingModel(unittest.TestCase):
         with pytest.raises(ValueError, match="does not have test Documents"):
             ContextAwareFileSplittingModel(categories=[_], tokenizer=ConnectedTextTokenizer())
 
+    def test_load_incompatible_model(self):
+        """Test initializing a model that does not pass has_compatible_interface check."""
+        wrong_class = FallbackCategorizationModel(LocalTextProject())
+        assert not self.file_splitting_model.has_compatible_interface(external=wrong_class)
+
     def test_load_model_from_different_class(self):
         """Test initializing SplittingAI with a model that does not inherit from AbstractFileSplittingModel."""
         wrong_class = FallbackCategorizationModel(LocalTextProject())

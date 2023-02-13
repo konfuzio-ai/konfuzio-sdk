@@ -16,6 +16,7 @@ from tests.variables import (
 from konfuzio_sdk.trainer.document_categorization import (
     FallbackCategorizationModel,
 )
+from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel
 
 logger = logging.getLogger(__name__)
 
@@ -166,10 +167,15 @@ class TestFallbackCategorizationModel(unittest.TestCase):
     def test_9c_categorize_defaults_not_in_place(self):
         """Test cannot re-extract Category for a selected Test Document that already contain a Category attribute."""
         # This Document can be recategorized successfully because its text contains the word "quittung" (receipt) in it.
-        # Recall that the check is case insensitive.
+        # Recall that the check is case-insensitive.
         test_receipt_document = self.project.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID)
         test_receipt_document.set_category(None)
         self.categorization_pipeline.categorize(document=test_receipt_document)
         assert test_receipt_document.category is None
         for page in test_receipt_document.pages():
             assert page.category is None
+
+    def test_10_run_model_incompatible_interface(self):
+        """Test initializing a model that does not pass has_compatible_interface check."""
+        wrong_class = ContextAwareFileSplittingModel(categories=[self.receipts_category], tokenizer=None)
+        assert not self.categorization_pipeline.has_compatible_interface(external=wrong_class)

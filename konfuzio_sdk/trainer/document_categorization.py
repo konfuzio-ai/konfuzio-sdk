@@ -1,8 +1,11 @@
 """Implements a Categorization Model."""
 
 import abc
+import inspect
 import logging
+
 from copy import deepcopy
+from inspect import signature
 from typing import List
 from warnings import warn
 
@@ -89,6 +92,15 @@ class AbstractCategorizationAI(metaclass=abc.ABCMeta):
 
         return self.evaluation
 
+    @staticmethod
+    @abc.abstractmethod
+    def has_compatible_interface(external):
+        """
+        Validate that an instance of an external model is similar to that of the class.
+
+        :param external: An instance of an external model to compare with.
+        """
+
 
 class FallbackCategorizationModel(AbstractCategorizationAI):
     """A simple, non-trainable model that predicts a Category for a given Document based on a predefined rule.
@@ -128,3 +140,29 @@ class FallbackCategorizationModel(AbstractCategorizationAI):
             first_page = page.document.pages()[0]
             _ = CategoryAnnotation(category=first_page.category, confidence=1.0, page=page)
         return page
+
+    @staticmethod
+    def has_compatible_interface(external):
+        """
+        Validate that an instance of an external model is similar to that of the class.
+
+        :param external: An instance of an external model to compare with.
+        """
+        try:
+            if (
+                signature(external.__init__).parameters['categories'].annotation is List[Category]
+                and signature(external.save).parameters['output_dir'].annotation is str
+                and signature(external.save).parameters['include_konfuzio'].annotation
+                and signature(external.fit).return_annotation is inspect._empty
+                and signature(external._categorize_page).parameters['page'].annotation is Page
+                and signature(external._categorize_page).return_annotation is Page
+                and signature(external.has_compatible_interface).parameters['external']
+                and signature(external.has_compatible_interface).return_annotation is bool
+            ):
+                return True
+            else:
+                return False
+        except KeyError:
+            return False
+        except AttributeError:
+            return False

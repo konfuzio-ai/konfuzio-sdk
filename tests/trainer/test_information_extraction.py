@@ -40,6 +40,7 @@ from konfuzio_sdk.trainer.information_extraction import (
     Trainer,
     BaseModel,
 )
+from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel
 from konfuzio_sdk.api import upload_ai_model
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer
 from konfuzio_sdk.tokenizer.base import ListTokenizer
@@ -909,6 +910,14 @@ class TestInformationExtraction(unittest.TestCase):
 
         assert list(res_test_reparate_dict['NO_LABEL_SET'].keys()) == ['NO_LABEL']
 
+    def test_run_model_incompatible_interface(self):
+        """Test initializing a model that does not pass has_compatible_interface check."""
+        pipeline = RFExtractionAI()
+        wrong_class = ContextAwareFileSplittingModel(
+            categories=[self.project.get_category_by_id(id_=63)], tokenizer=None
+        )
+        assert not pipeline.has_compatible_interface(external=wrong_class)
+
 
 class TestAddExtractionAsAnnotation(unittest.TestCase):
     """Test add an Extraction result as Annotation to a Document."""
@@ -1317,7 +1326,7 @@ def test_load_ai_model_konfuzio_sdk_included():
 def test_load_old_ai_model():
     """Test loading of an old trained model."""
     path = "trainer/2022-03-10-15-14-51_lohnabrechnung_old_model.pkl"
-    with pytest.raises(TypeError, match=" not inheriting from the BaseModel class."):
+    with pytest.raises(TypeError, match="Loaded model's interface is not compatible with any AIs"):
         load_model(path)
 
 
@@ -1325,7 +1334,7 @@ def test_load_old_ai_model():
 def test_load_old_ai_model_2():
     """Test loading of a newer old trained model."""
     path = "trainer/2023-01-09-17-47-50_lohnabrechnung.pkl"
-    with pytest.raises(TypeError, match="not inheriting from the BaseModel class."):
+    with pytest.raises(TypeError, match="Loaded model's interface is not compatible with any AIs"):
         load_model(path)
 
 

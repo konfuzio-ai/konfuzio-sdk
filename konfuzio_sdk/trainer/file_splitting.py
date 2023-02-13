@@ -18,6 +18,7 @@ import logging
 import os
 
 from copy import deepcopy
+from inspect import signature
 from typing import List
 
 from konfuzio_sdk.data import Document, Page, Category
@@ -50,9 +51,6 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
                 raise ValueError(f'{category} does not have Documents and cannot be used for training.')
             if not category.test_documents():
                 raise ValueError(f'{category} does not have test Documents.')
-        # projects = set([category.project for category in categories])
-        # if len(projects) > 1:
-        #     raise ValueError("All Categories have to belong to the same Project.")
         self.categories = categories
         self.project = self.categories[0].project  # we ensured that at least one Category is present
         self.documents = [document for category in self.categories for document in category.documents()]
@@ -92,6 +90,15 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
             f'{get_timestamp()}_{self.name_lower()}_{self.project.id_}' f'.pkl',
         )
         return pkl_file_path
+
+    @staticmethod
+    @abc.abstractmethod
+    def has_compatible_interface(external):
+        """
+        Validate that an instance of an external model is similar to that of the class.
+
+        :param external: An instance of an external model to compare with.
+        """
 
 
 class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
@@ -188,6 +195,32 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
                 f"_exclusive_first_page_strings."
             )
 
+    @staticmethod
+    def has_compatible_interface(external) -> bool:
+        """
+        Validate that an instance of an external model is similar to that of the class.
+
+        :param external: An instance of an external model to compare with.
+        """
+        try:
+            if (
+                signature(external.__init__).parameters['categories'].annotation is List[Category]
+                and signature(external.__init__).parameters['tokenizer']
+                and signature(external.fit).parameters['allow_empty_categories'].annotation is bool
+                and signature(external.predict).parameters['page'].annotation is Page
+                and signature(external.predict).return_annotation is Page
+                and signature(external.has_compatible_interface).parameters['external']
+                and signature(external.has_compatible_interface).return_annotation is bool
+                and signature(external.check_is_ready)
+            ):
+                return True
+            else:
+                return False
+        except KeyError:
+            return False
+        except AttributeError:
+            return False
+
 
 class SplittingAI:
     """Split a given Document and return a list of resulting shorter Documents."""
@@ -201,7 +234,9 @@ class SplittingAI:
         :raises ValueError: When the model is not inheriting from AbstractFileSplittingModel class.
         """
         self.model = load_model(model) if isinstance(model, str) else model
-        if not issubclass(type(self.model), AbstractFileSplittingModel):
+        if not issubclass(
+            type(self.model), AbstractFileSplittingModel
+        ) or not ContextAwareFileSplittingModel.has_compatible_interface(self.model):
             raise ValueError("The model is not inheriting from AbstractFileSplittingModel class.")
         self.tokenizer = self.model.tokenizer
 
