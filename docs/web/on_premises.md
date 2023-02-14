@@ -437,18 +437,22 @@ docker run --name flower -d --add-host=host:10.0.0.1 \
   python manage.py scan_email
 ```
 
-#### [Optional] 8. Use Azure Read API on-premise
-The [Azure Read API](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2) can be installed on-premise and used togehter with Konfuzio.
+#### [Optional] 8. Use Azure Read API (On-Premises or as Service)
+
+The Konfuzio Server can work together with the [Azure Read API]. There are two options to use the Azure Read API in an on-premises setup.
+1. Use the Azure Read API as a service from the putblic Azure cloud.
+2. Install the Read API Container on your on-premises infrastructure.
+
+
+In order to use the first option, 
+
+The [Azure Read API](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2) can be installed on-premises and used together with Konfuzio.
 
 Please install the Read API Container according to the current [manual](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/computer-vision-how-to-install-containers?tabs=version-3-2)
 
 Once the Azure Read API container is running you need to set the following variables in the .env file. This for example look like the following:
 
-```
-AZURE_OCR_KEY=123456789 # The Azure OCR API key  
-AZURE_OCR_BASE_URL=http://host:5000 # The URL of the READ API  
-AZURE_OCR_VERSION=v3.2 # The version of the READ API
-```
+
 
 #### [Optional] 9. Install document segmentation container
 
