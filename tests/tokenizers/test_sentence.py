@@ -58,7 +58,7 @@ class TestDetectronSentenceTokenizer(unittest.TestCase):
         assert len(pages[6].annotations(use_correct=False)) == 112
 
 
-class TestLineDistanceParagraphTokenizer(unittest.TestCase):
+class TestLineDistanceSentenceTokenizer(unittest.TestCase):
     """Test Line Distance Sentence Tokenizer."""
 
     @classmethod
@@ -69,18 +69,18 @@ class TestLineDistanceParagraphTokenizer(unittest.TestCase):
 
         cls.document_1 = cls.project.get_document_by_id(601418)  # Lorem ipsum test document
 
-    def test_paragraph_document_1(self):
+    def test_sentence_document_1(self):
         """Test detectron Sentence tokenizer on Lorem ipsum Document."""
         virtual_doc = deepcopy(self.document_1)
 
         doc = self.tokenizer.tokenize(virtual_doc)
 
-        assert len(doc.annotations(use_correct=False)) == 160
+        assert len(doc.annotations(use_correct=False)) == 165
 
         pages = doc.pages()
 
         assert len(pages) == 3
 
-        assert len(pages[0].annotations(use_correct=False)) == 49
-        assert len(pages[1].annotations(use_correct=False)) == 56
-        assert len(pages[2].annotations(use_correct=False)) == 55
+        assert len(pages[0].annotations(use_correct=False)) == 51
+        assert len(pages[1].annotations(use_correct=False)) == 57
+        assert len(pages[2].annotations(use_correct=False)) == 57

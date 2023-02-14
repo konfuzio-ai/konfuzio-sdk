@@ -107,7 +107,17 @@ class Page(Data):
         original_size: Tuple[float, float],
         image_size: Tuple[int, int] = (None, None),
     ):
-        """Create a Page for a Document."""
+        """
+        Create a Page for a Document.
+
+        :param id_: ID of the Page
+        :param document: Document the Page belongs to
+        :param start_offset: Start of the Page in the text of the Document
+        :param end_offset: End of the Page in the text of the Document
+        :param number: Page number in Document (1-based indexing)
+        :param original_size: Size of original Document file Page (all Document Bboxes are based on this scale)
+        :param image_size: Size of the image representation of the Page
+        """
         self.id_ = id_
         self.document = document
         self.number = number
@@ -522,7 +532,7 @@ class Bbox:
 
     @classmethod
     def from_image_size(self, x0, x1, y0, y1, page: Page) -> 'Bbox':
-        """Create Bbox from the image dimensions based result to the scale of the characters bboxes of the document.
+        """Create Bbox from the image dimensions based result to the scale of the characters Bboxes of the Document.
 
         :return: Bbox with the rescaled dimensions.
         """

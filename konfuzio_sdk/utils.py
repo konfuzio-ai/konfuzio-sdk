@@ -12,7 +12,7 @@ import zipfile
 from contextlib import contextmanager
 from io import BytesIO
 from pympler import asizeof
-from typing import Union, List, Tuple, Dict, Optional, Type
+from typing import Union, List, Tuple, Dict, Optional, Type, TYPE_CHECKING
 from warnings import warn
 
 import filetype
@@ -21,6 +21,9 @@ from PIL import Image
 from konfuzio_sdk import IMAGE_FILE, PDF_FILE, OFFICE_FILE, SUPPORTED_FILE_TYPES
 
 logger = logging.getLogger(__name__)
+
+if TYPE_CHECKING:
+    from konfuzio_sdk.data import Bbox
 
 
 def sdk_isinstance(instance, klass):
@@ -462,7 +465,7 @@ def map_offsets(characters_bboxes: list) -> dict:
     return offsets_map
 
 
-def detectron_get_paragraph_bbox(detectron_results: List, document) -> List[List]:
+def detectron_get_paragraph_bbox(detectron_results: List, document) -> List[List['Bbox']]:
     """Call detectron Bbox corresponding to each paragraph."""
     from konfuzio_sdk.data import Bbox
 
@@ -480,7 +483,7 @@ def detectron_get_paragraph_bbox(detectron_results: List, document) -> List[List
                     y1=bbox['y1'],
                     y0=bbox['y0'],
                     page=page,
-                )  # .convert_from_size_to_original_size()
+                )
             )
     assert len(document.pages()) == len(paragraph_bboxes)
 
