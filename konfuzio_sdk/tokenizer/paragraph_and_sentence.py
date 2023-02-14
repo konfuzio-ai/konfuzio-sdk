@@ -71,7 +71,6 @@ class ParagraphTokenizer(AbstractTokenizer):
         detectron_results = get_results_from_segmentation(document_id, document.project.id_)
         paragraph_bboxes = detectron_get_paragraph_bbox(detectron_results, document)
 
-        # for _, (page, page_paragraph_bboxes) in enumerate(zip(document.pages(), paragraph_bboxes)):
         for page in document.pages():
             page_paragraph_bboxes = paragraph_bboxes[page.index]
             paragraph_span_bboxes = collections.defaultdict(list)
