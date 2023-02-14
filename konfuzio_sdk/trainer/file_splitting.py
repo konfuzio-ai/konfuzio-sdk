@@ -1,10 +1,12 @@
 """
 Process Documents that consist of several files and propose splitting them into the Sub-Documents accordingly.
 
-We suggest a context-aware approach based on scanning Category's Documents and finding strings exclusive for first
-Pages of all Documents within the Category. Upon predicting whether a Page is a potential splitting point (meaning
-whether it is first or not), we compare Page's contents to these exclusive first-page strings; if there is occurrence of
-at least one such string, we mark a Page to be first (thus meaning it is a splitting point).
+A ContextAwareFileSplittingModel uses a simple hands-on logic based on scanning Category's Documents and finding strings
+exclusive for first Pages of all Documents within the Category. Upon predicting whether a Page is a potential splitting
+point (meaning whether it is first or not), we compare Page's contents to these exclusive first-page strings; if there
+is occurrence of at least one such string, we mark a Page to be first (thus meaning it is a splitting point). An
+instance of the ContextAwareFileSplittingModel can be used to initially build a file-splitting pipeline and can later
+be replaced with more complex solutions (like the one that's coming soon: MultimodalFileSplittingModel).
 
 A ContextAwareFileSplittingModel instance can be used with an interface provided by SplittingAI – this class accepts a
 whole Document instead of a single Page and proposes splitting points or splits the original Documents.
@@ -64,9 +66,9 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
                 raise ValueError(f'{category} does not have Documents and cannot be used for training.')
             if not category.test_documents():
                 raise ValueError(f'{category} does not have test Documents.')
-        projects = set([category.project for category in categories])
-        if len(projects) > 1:
-            raise ValueError("All Categories have to belong to the same Project.")
+        # projects = set([category.project for category in categories])
+        # if len(projects) > 1:
+        #     raise ValueError("All Categories have to belong to the same Project.")
         self.categories = categories
         self.project = self.categories[0].project  # we ensured that at least one Category is present
         self.documents = [document for category in self.categories for document in category.documents()]
@@ -390,7 +392,6 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
 
         :param page: A Page to receive first or non-first label.
         :type page: Page
-        :raises ValueError: When at least one Category does not have exclusive_first_page_strings.
         :return: A Page with a newly predicted is_first_page attribute.
         """
         self.check_is_ready()
@@ -406,18 +407,28 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         return page
 
     def check_is_ready(self):
-        """Check file splitting model is ready for inference."""
+        """
+        Check file splitting model is ready for inference.
+
+        :raises AttributeError: When no tokenizer or no Categories were passed.
+        :raises ValueError: When no Categories have _exclusive_first_page_strings.
+        """
         if self.tokenizer is None:
             raise AttributeError(f'{self} missing Tokenizer.')
 
         if not self.categories:
             raise AttributeError(f'{self} requires Categories.')
 
-        for category in self.categories:
-            if not category.exclusive_first_page_strings(tokenizer=self.tokenizer):
-                # exclusive_first_page_strings calls an implicit _exclusive_first_page_strings attribute once it was
-                # already calculated during fit() method so it is not a recurrent calculation each time.
-                raise ValueError(f"Cannot run prediction as {category} does not have _exclusive_first_page_strings.")
+        empty_first_page_strings = [
+            category
+            for category in self.categories
+            if not category.exclusive_first_page_strings(tokenizer=self.tokenizer)
+        ]
+        if len(empty_first_page_strings) == len(self.categories):
+            raise ValueError(
+                f"Cannot run prediction as none of the Categories in {self.project} have "
+                f"_exclusive_first_page_strings."
+            )
 
 
 class SplittingAI:
@@ -470,8 +481,8 @@ class SplittingAI:
         """
         suggested_splits = []
         if self.tokenizer:
-            document = self.tokenizer.tokenize(deepcopy(document))
-        for page in document.pages():
+            document_tokenized = self.tokenizer.tokenize(deepcopy(document))
+        for page in document_tokenized.pages():
             if page.number == 1:
                 suggested_splits.append(page)
             else:
@@ -481,20 +492,22 @@ class SplittingAI:
             return [document]
         else:
             split_docs = []
-            first_page = document.pages()[0]
-            last_page = document.pages()[-1]
+            first_page = document_tokenized.pages()[0]
+            last_page = document_tokenized.pages()[-1]
             for page_i, split_i in enumerate(suggested_splits):
                 if page_i == 0:
                     split_docs.append(
-                        document.create_subdocument_from_page_range(
+                        document_tokenized.create_subdocument_from_page_range(
                             first_page, suggested_splits[page_i + 1], include=False
                         )
                     )
                 elif page_i == len(suggested_splits) - 1:
-                    split_docs.append(document.create_subdocument_from_page_range(split_i, last_page, include=True))
+                    split_docs.append(
+                        document_tokenized.create_subdocument_from_page_range(split_i, last_page, include=True)
+                    )
                 else:
                     split_docs.append(
-                        document.create_subdocument_from_page_range(
+                        document_tokenized.create_subdocument_from_page_range(
                             split_i, suggested_splits[page_i + 1], include=False
                         )
                     )
@@ -516,6 +529,8 @@ class SplittingAI:
         :return: A list of suggested new Sub-Documents built from the original Document or a list with a Document
         with Pages marked .is_first_page on splitting points.
         """
+        if not document.category:
+            raise AttributeError("A Document without Category cannot be split.")
         if self.model.requires_images:
             document.get_images()
         if return_pages:
