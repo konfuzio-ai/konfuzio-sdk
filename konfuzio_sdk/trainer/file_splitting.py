@@ -480,8 +480,11 @@ class SplittingAI:
         :returns: A list of Sub-Documents created from the original Document, split at predicted first Pages.
         """
         suggested_splits = []
+
         if self.tokenizer:
             document_tokenized = self.tokenizer.tokenize(deepcopy(document))
+        else:
+            document_tokenized = document
         for page in document_tokenized.pages():
             if page.number == 1:
                 suggested_splits.append(page)
