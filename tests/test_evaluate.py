@@ -1221,12 +1221,12 @@ class TestCategorizationEvaluation(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Test evaluation when changing filtered Category and Documents."""
         cls.project = LocalTextProject()
-        cls.cat1_doca = cls.project.categories[1].documents()[0]
-        cls.cat1_docb = cls.project.categories[1].test_documents()[0]
-        cls.cat2_doca = cls.project.categories[2].documents()[0]
-        cls.cat2_docb = cls.project.categories[2].test_documents()[0]
+        cls.cat1_doca = cls.project.categories[0].documents()[0]
+        cls.cat1_docb = cls.project.categories[0].test_documents()[0]
+        cls.cat2_doca = cls.project.categories[1].documents()[0]
+        cls.cat2_docb = cls.project.categories[1].test_documents()[0]
         cls.cat_eval = CategorizationEvaluation(
-            cls.project.categories[1:],
+            cls.project.categories,
             documents=[
                 (cls.cat1_doca, cls.cat1_docb),
                 (cls.cat2_doca, cls.cat2_docb),
@@ -1260,23 +1260,23 @@ class TestCategorizationEvaluation(unittest.TestCase):
 
     def test_filtered_metrics(self):
         """Test metrics for a categorization problem while filtering for categories."""
+        assert self.cat_eval.tp(category=self.project.categories[0]) == 1
+        assert self.cat_eval.fp(category=self.project.categories[0]) == 0
+        assert self.cat_eval.fn(category=self.project.categories[0]) == 2
+        assert self.cat_eval.tn(category=self.project.categories[0]) == 1
+
+        assert self.cat_eval.precision(category=self.project.categories[0]) == 1.0
+        assert self.cat_eval.recall(category=self.project.categories[0]) == 1 / 3
+        assert self.cat_eval.f1(category=self.project.categories[0]) == 0.5
+
         assert self.cat_eval.tp(category=self.project.categories[1]) == 1
-        assert self.cat_eval.fp(category=self.project.categories[1]) == 0
-        assert self.cat_eval.fn(category=self.project.categories[1]) == 2
+        assert self.cat_eval.fp(category=self.project.categories[1]) == 2
+        assert self.cat_eval.fn(category=self.project.categories[1]) == 0
         assert self.cat_eval.tn(category=self.project.categories[1]) == 1
 
-        assert self.cat_eval.precision(category=self.project.categories[1]) == 1.0
-        assert self.cat_eval.recall(category=self.project.categories[1]) == 1 / 3
+        assert self.cat_eval.precision(category=self.project.categories[1]) == 1 / 3
+        assert self.cat_eval.recall(category=self.project.categories[1]) == 1.0
         assert self.cat_eval.f1(category=self.project.categories[1]) == 0.5
-
-        assert self.cat_eval.tp(category=self.project.categories[2]) == 1
-        assert self.cat_eval.fp(category=self.project.categories[2]) == 2
-        assert self.cat_eval.fn(category=self.project.categories[2]) == 0
-        assert self.cat_eval.tn(category=self.project.categories[2]) == 1
-
-        assert self.cat_eval.precision(category=self.project.categories[2]) == 1 / 3
-        assert self.cat_eval.recall(category=self.project.categories[2]) == 1.0
-        assert self.cat_eval.f1(category=self.project.categories[2]) == 0.5
 
 
 class TestEvaluationCalculator(unittest.TestCase):

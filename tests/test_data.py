@@ -284,7 +284,7 @@ class TestOnlineProject(unittest.TestCase):
 
     def test_no_category(self):
         """Test that NO_CATEGORY is present in the Project."""
-        assert "NO_CATEGORY" in [category.name for category in self.project.categories]
+        assert self.project.no_category
 
     def test_no_category_document(self):
         """Test that a categoriless Document gets NO_CATEGORY assigned upon creation."""
@@ -373,17 +373,17 @@ class TestOfflineExampleData(unittest.TestCase):
         document = deepcopy(self.project.get_document_by_id(89928))
         document.set_category(self.project.no_category)
         for page in document.pages():
-            assert page.category_annotations[0].category == self.project.no_category
+            assert page.category_annotations == []
         assert len(document.category_annotations) == len(self.project.categories)
-        assert document.category_annotations[1].category == self.payslips_category
+        assert document.category_annotations[0].category == self.payslips_category
+        assert document.category_annotations[0].confidence == 0.0
+        assert document.category_annotations[1].category == self.receipts_category
         assert document.category_annotations[1].confidence == 0.0
-        assert document.category_annotations[2].category == self.receipts_category
-        assert document.category_annotations[2].confidence == 0.0
-        assert document.maximum_confidence_category_annotation.category == self.project.no_category
-        assert document.maximum_confidence_category == self.project.no_category
+        assert document.maximum_confidence_category_annotation is None
+        assert document.maximum_confidence_category is None
         # test that no annotations are attached to the Pages
         for page in document.pages():
-            assert page.category_annotations[0].category == self.project.no_category
+            assert page.category_annotations == []
             assert page.category == self.project.no_category
 
     def test_category_annotations_no_predictions(self):
@@ -393,10 +393,10 @@ class TestOfflineExampleData(unittest.TestCase):
         for page in document.pages():
             assert page.category_annotations == []
         assert len(document.category_annotations) == len(self.project.categories)
-        assert document.category_annotations[1].category == self.payslips_category
-        assert document.category_annotations[1].confidence == 0.0
-        assert document.category_annotations[2].category == self.receipts_category
-        assert document.category_annotations[2].confidence == 1.0
+        assert document.category_annotations[0].category == self.payslips_category
+        assert document.category_annotations[0].confidence == 0.0
+        assert document.category_annotations[1].category == self.receipts_category
+        assert document.category_annotations[1].confidence == 1.0
         assert document.maximum_confidence_category_annotation.category == self.receipts_category
         assert document.maximum_confidence_category == self.receipts_category
         # test that no annotations are attached to the Pages while still having their Category defined
@@ -416,10 +416,10 @@ class TestOfflineExampleData(unittest.TestCase):
             assert page.maximum_confidence_category_annotation.category == self.receipts_category
             assert page.category == self.receipts_category
         assert len(document.category_annotations) == len(self.project.categories)
-        assert document.category_annotations[1].category == self.payslips_category
-        assert round(document.category_annotations[1].confidence, 2) == 0.3  # 0.6/2
-        assert document.category_annotations[2].category == self.receipts_category
-        assert round(document.category_annotations[2].confidence, 2) == 0.45  # 0.9/2
+        assert document.category_annotations[0].category == self.payslips_category
+        assert round(document.category_annotations[0].confidence, 2) == 0.3  # 0.6/2
+        assert document.category_annotations[1].category == self.receipts_category
+        assert round(document.category_annotations[1].confidence, 2) == 0.45  # 0.9/2
         assert document.maximum_confidence_category_annotation.category == self.receipts_category
         assert document.maximum_confidence_category == self.receipts_category
 
@@ -437,18 +437,18 @@ class TestOfflineExampleData(unittest.TestCase):
         # test a user defined Category that is different from the maximum confidence predicted Category will override
         document.set_category(self.payslips_category)
         assert len(document.category_annotations) == len(self.project.categories)
-        assert document.category_annotations[1].category == self.payslips_category
-        assert round(document.category_annotations[1].confidence, 2) == 0.3  # 0.6/2
-        assert document.category_annotations[2].category == self.receipts_category
+        assert document.category_annotations[0].category == self.payslips_category
+        assert round(document.category_annotations[0].confidence, 2) == 0.3  # 0.6/2
+        assert document.category_annotations[1].category == self.receipts_category
         # Test that a user revised Category overrides predictions
-        assert round(document.category_annotations[2].confidence, 2) == 0.45  # 0.9/2
+        assert round(document.category_annotations[1].confidence, 2) == 0.45  # 0.9/2
         assert document.maximum_confidence_category_annotation.category == self.payslips_category
         assert round(document.maximum_confidence_category_annotation.confidence, 2) == 0.3
         assert document.maximum_confidence_category == self.payslips_category
 
     def test_no_category(self):
         """Test that NO_CATEGORY is present in the offline Project."""
-        assert "NO_CATEGORY" in [category.name for category in self.project.categories]
+        assert self.project.no_category
 
 
 class TestEqualityAnnotation(unittest.TestCase):
@@ -689,10 +689,10 @@ class TestOfflineDataSetup(unittest.TestCase):
         document = Document(project=self.project, text="hello")
         for i in range(2):
             page = Page(id_=None, document=document, start_offset=0, end_offset=0, number=i + 1, original_size=(0, 0))
-            assert page.category is document.project.no_category
+            assert page.category == self.project.no_category
             assert page.maximum_confidence_category_annotation is None
             assert len(page.category_annotations) == 0
-        assert document.maximum_confidence_category is document.project.no_category
+        assert document.maximum_confidence_category is None
         assert document.category is document.project.no_category
 
     def test_categorize_when_pages_have_different_categories(self):
@@ -712,7 +712,7 @@ class TestOfflineDataSetup(unittest.TestCase):
             assert page.maximum_confidence_category_annotation.category == page_category
             assert page.maximum_confidence_category_annotation.confidence == 1.0
             assert len(page.category_annotations) == 1
-        assert len(document.category_annotations) == 3
+        assert len(document.category_annotations) == 2
         assert document.category == document.project.no_category
         # as each page got assigned a different Category with confidence all equal to 1,
         # the maximum confidence Category of the Document will be a random one
@@ -736,7 +736,7 @@ class TestOfflineDataSetup(unittest.TestCase):
             )
             page_category = [self.category, self.category2, None][i]
             page.set_category(page_category)
-            if page_category is not None:
+            if page_category not in [None, self.project.no_category]:
                 assert page.maximum_confidence_category_annotation.category == page_category
                 assert page.maximum_confidence_category_annotation.confidence == 1.0
                 assert len(page.category_annotations) == 1
@@ -744,7 +744,7 @@ class TestOfflineDataSetup(unittest.TestCase):
                 assert page.category is None
                 assert page.maximum_confidence_category_annotation is None
                 assert len(page.category_annotations) == 0
-        assert len(document.category_annotations) == 3
+        assert len(document.category_annotations) == 2
         assert document.category == document.project.no_category
 
     def test_categorize_with_no_pages(self):
@@ -1876,13 +1876,12 @@ class TestKonfuzioDataSetup(unittest.TestCase):
     def test_get_labels_of_category(self):
         """Return only related Labels as Information Extraction can be trained per Category."""
         # we calculate the set to avoid double counting the NO_LABEL
-        assert len(set(self.prj.categories[1].labels + self.prj.categories[2].labels)) == len(self.prj.labels)
+        assert len(set(self.prj.categories[0].labels + self.prj.categories[1].labels)) == len(self.prj.labels)
 
     def test_no_category_after_update(self):
         """Test that NO_CATEGORY is not lost after updating a Project."""
         self.prj = Project(id_=None, project_folder=OFFLINE_PROJECT, update=True)
         assert self.prj.no_category
-        assert self.prj.no_category in self.prj.categories
 
     def test_document_with_no_category_has_only_no_label_annotations(self):
         """Test if we skip Annotations except for NO_LABEL in no Category Documents."""
@@ -1961,8 +1960,8 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_category(self):
         """Test if Category of main Label Set is initialized correctly."""
-        assert len(self.prj.categories) == 3
-        assert self.prj.categories[1].id_ == 63
+        assert len(self.prj.categories) == 2
+        assert self.prj.categories[0].id_ == 63
         assert self.prj.label_sets[0].categories[0].id_ == 63
 
     def test_category_documents(self):
@@ -2040,12 +2039,12 @@ class TestKonfuzioDataSetup(unittest.TestCase):
 
     def test_categories(self):
         """Test get Labels in the Project."""
-        assert self.prj.categories.__len__() == 3
+        assert self.prj.categories.__len__() == 2
         payslips_category = self.prj.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID)
         assert payslips_category.name == 'Lohnabrechnung'
         # We have 5 Label Sets, Lohnabrechnung is Category and a Label Set as it hold labels, however a Category
         # cannot hold Labels
-        assert sorted([label_set.name for label_set in self.prj.categories[1].label_sets]) == [
+        assert sorted([label_set.name for label_set in self.prj.categories[0].label_sets]) == [
             'Brutto-Bezug',
             'Lohnabrechnung',
             'NO_LABEL_SET',
@@ -2057,7 +2056,7 @@ class TestKonfuzioDataSetup(unittest.TestCase):
         assert receipts_category.name == 'Quittung (GERMAN)'
         # We have 5 Label Sets, Quittung is Category and a Label Set as it hold labels, however a Category
         # cannot hold Labels
-        assert sorted([label_set.name for label_set in self.prj.categories[1].label_sets]) == [
+        assert sorted([label_set.name for label_set in self.prj.categories[0].label_sets]) == [
             'Brutto-Bezug',
             'Lohnabrechnung',
             'NO_LABEL_SET',

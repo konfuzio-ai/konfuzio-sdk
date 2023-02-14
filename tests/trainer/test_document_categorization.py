@@ -27,7 +27,7 @@ class TestFallbackCategorizationModel(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Set up the Data and Categorization Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-        cls.categorization_pipeline = FallbackCategorizationModel(cls.project.categories[1:])
+        cls.categorization_pipeline = FallbackCategorizationModel(cls.project.categories)
         cls.payslips_category = cls.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID)
         cls.receipts_category = cls.project.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID)
 

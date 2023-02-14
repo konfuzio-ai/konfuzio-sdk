@@ -270,12 +270,13 @@ class Page(Data):
 
     def add_category_annotation(self, category_annotation: 'CategoryAnnotation'):
         """Annotate a Page with a Category and confidence information."""
-        duplicated = [x for x in self.category_annotations if x == category_annotation]
-        if duplicated:
-            raise ValueError(
-                f'In {self} the {category_annotation} is a duplicate of {duplicated} and will not be added.'
-            )
-        self.category_annotations.append(category_annotation)
+        if category_annotation.category != self.document.project.no_category:
+            duplicated = [x for x in self.category_annotations if x == category_annotation]
+            if duplicated:
+                raise ValueError(
+                    f'In {self} the {category_annotation} is a duplicate of {duplicated} and will not be added.'
+                )
+            self.category_annotations.append(category_annotation)
 
     def get_category_annotation(self, category, add_if_not_present: bool = False) -> 'CategoryAnnotation':
         """
@@ -293,6 +294,7 @@ class Page(Data):
             category_annotation
             for category_annotation in self.category_annotations
             if category_annotation.category == category
+            and category_annotation.category != self.document.project.no_category
         ]
         # if the list is not empty it means there is exactly one CategoryAnnotation with the assigned Category
         # (see Page.add_category_annotation for duplicate checking)
@@ -306,7 +308,7 @@ class Page(Data):
                 new_category_annotation = CategoryAnnotation(category=category)
             return new_category_annotation
 
-    def set_category(self, category: Union[None, 'Category']) -> None:
+    def set_category(self, category: 'Category') -> None:
         """
         Set the Category of the Page.
 
@@ -327,7 +329,10 @@ class Page(Data):
 
         :return: The found Category Annotation, or None if not present.
         """
-        if self._human_chosen_category_annotation is not None:
+        if (
+            self._human_chosen_category_annotation is not None
+            and self._human_chosen_category_annotation.category != self.document.project.no_category
+        ):
             return self._human_chosen_category_annotation
         elif self.category_annotations:
             # return the highest confidence CategoryAnnotation if no human revised it
@@ -340,7 +345,8 @@ class Page(Data):
         """Get the Category of the Page, based on human revised Category Annotation, or on highest confidence."""
         if self.maximum_confidence_category_annotation is not None:
             return self.maximum_confidence_category_annotation.category
-        return self._category
+        else:
+            return self._category
 
 
 class BboxValidationTypes(Enum):
@@ -2193,14 +2199,15 @@ class Document(Data):
         """
         category_annotations = []
         for category in self.project.categories:
-            confidence = 0
-            for page in self.pages():
-                confidence += page.get_category_annotation(category).confidence
-            confidence /= self.number_of_pages
-            if (confidence == 0.0) and (category == self._category):
-                confidence = self._category_confidence
-            category_annotation = CategoryAnnotation(category=category, document=self, confidence=confidence)
-            category_annotations.append(category_annotation)
+            if category != self.project.no_category:
+                confidence = 0
+                for page in self.pages():
+                    confidence += page.get_category_annotation(category).confidence
+                confidence /= self.number_of_pages
+                if (confidence == 0.0) and (category == self._category):
+                    confidence = self._category_confidence
+                category_annotation = CategoryAnnotation(category=category, document=self, confidence=confidence)
+                category_annotations.append(category_annotation)
         return category_annotations
 
     @property
@@ -2252,13 +2259,10 @@ class Document(Data):
             self._category = self.project.no_category
         return self._category
 
-    def set_category(self, category: Union[None, Category]) -> None:
+    def set_category(self, category: Category) -> None:
         """Set the Category of the Document and the Category of all of its Pages as revised."""
-        if (
-            (self._category not in [None, self.project.no_category])
-            and (category != self._category)
-            and (category is not None)
-            and (category != self.project.no_category)
+        if (self._category not in [None, self.project.no_category]) and (
+            category not in [self._category, None, self.project.no_category]
         ):
             raise ValueError(
                 "We forbid changing Category when already existing, because this requires some validations that are "
@@ -3211,10 +3215,7 @@ class Project(Data):
         if self.id_ or self._project_folder:
             self.get(update=update)
         else:
-            self.no_category = Category(project=self)
-            self.no_category.name_clean = "NO_CATEGORY"
-            self.no_category.name = "NO_CATEGORY"
-
+            self.no_category = Category(project=self, name_clean="NO_CATEGORY", name="NO_CATEGORY")
         # todo: list of Categories related to NO LABEL SET can be outdated, i.e. if the number of Categories changes
         self.no_label_set = LabelSet(project=self, categories=self.categories)
         self.no_label_set.name_clean = 'NO_LABEL_SET'
@@ -3344,10 +3345,11 @@ class Project(Data):
 
         :param category: Category to add in the Project
         """
-        if category not in self.categories:
-            self.categories.append(category)
-        else:
-            raise ValueError(f'In {self} the {category} is a duplicate and will not be added.')
+        if category.name != "NO_CATEGORY":
+            if category not in self.categories:
+                self.categories.append(category)
+            else:
+                raise ValueError(f'In {self} the {category} is a duplicate and will not be added.')
 
     def add_label(self, label: Label):
         """
@@ -3412,9 +3414,7 @@ class Project(Data):
 
             # adding a NO_CATEGORY at this step because we need to preserve it after Project is updated
             if "NO_CATEGORY" not in [category.name for category in self.categories]:
-                self.no_category = Category(project=self)
-                self.no_category.name_clean = "NO_CATEGORY"
-                self.no_category.name = "NO_CATEGORY"
+                self.no_category = Category(project=self, name_clean="NO_CATEGORY", name="NO_CATEGORY")
             for label_set_data in label_sets_data:
                 label_set = LabelSet(project=self, id_=label_set_data['id'], **label_set_data)
                 if label_set.is_default:
