@@ -282,6 +282,16 @@ class TestOnlineProject(unittest.TestCase):
         with pytest.raises(IndexError, match="was not found in"):
             doc = self.project.get_document_by_id(doc_id)
 
+    def test_no_category(self):
+        """Test that NO_CATEGORY is present in the Project."""
+        assert "NO_CATEGORY" in [category.name for category in self.project.categories]
+
+    def test_no_category_document(self):
+        """Test that a categoriless Document gets NO_CATEGORY assigned upon creation."""
+        _ = Document(project=self.project)
+        assert _.category == self.project.no_category
+        _.delete()
+
 
 class TestOfflineExampleData(unittest.TestCase):
     """Test data features without real data."""
@@ -435,6 +445,10 @@ class TestOfflineExampleData(unittest.TestCase):
         assert document.maximum_confidence_category_annotation.category == self.payslips_category
         assert round(document.maximum_confidence_category_annotation.confidence, 2) == 0.3
         assert document.maximum_confidence_category == self.payslips_category
+
+    def test_no_category(self):
+        """Test that NO_CATEGORY is present in the offline Project."""
+        assert "NO_CATEGORY" in [category.name for category in self.project.categories]
 
 
 class TestEqualityAnnotation(unittest.TestCase):
