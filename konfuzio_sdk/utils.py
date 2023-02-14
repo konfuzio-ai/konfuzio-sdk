@@ -465,29 +465,31 @@ def map_offsets(characters_bboxes: list) -> dict:
     return offsets_map
 
 
-def detectron_get_paragraph_bbox(detectron_results: List, document) -> List[List['Bbox']]:
+def detectron_get_paragraph_bbox(detectron_document_results: List[List[Dict]], document) -> List[List['Bbox']]:
     """Call detectron Bbox corresponding to each paragraph."""
     from konfuzio_sdk.data import Bbox
 
     assert isinstance(document.project.id_, int)
-    assert len(detectron_results) == document.number_of_pages
+    assert len(detectron_document_results) == document.number_of_pages
 
-    paragraph_bboxes: List[List['Bbox']] = []
-    for page in document.pages():
-        paragraph_bboxes.append([])
-        for bbox in detectron_results[page.index]:
-            paragraph_bboxes[-1].append(
+    paragraph_document_bboxes: List[List['Bbox']] = []
+
+    for page_index, detectron_page_results in enumerate(detectron_document_results):
+        paragraph_page_bboxes = []
+        for detectron_result in detectron_page_results:
+            paragraph_page_bboxes.append(
                 Bbox.from_image_size(
-                    x0=bbox['x0'],
-                    x1=bbox['x1'],
-                    y1=bbox['y1'],
-                    y0=bbox['y0'],
-                    page=page,
+                    x0=detectron_result['x0'],
+                    x1=detectron_result['x1'],
+                    y1=detectron_result['y1'],
+                    y0=detectron_result['y0'],
+                    page=document.get_page_by_index(page_index=page_index),
                 )
             )
-    assert len(document.pages()) == len(paragraph_bboxes)
+        paragraph_document_bboxes.append(paragraph_page_bboxes)
+    assert len(document.pages()) == len(paragraph_document_bboxes)
 
-    return paragraph_bboxes
+    return paragraph_document_bboxes
 
 
 def select_bboxes(selection_bbox: dict, page_bboxes: list, tolerance: int = 10) -> list:

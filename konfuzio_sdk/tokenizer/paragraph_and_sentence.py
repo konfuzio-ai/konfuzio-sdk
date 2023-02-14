@@ -68,8 +68,8 @@ class ParagraphTokenizer(AbstractTokenizer):
     def _detectron_tokenize(self, document: Document) -> Document:
         """Create one multiline Annotation per paragraph detected by detectron2."""
         document_id = document.id_ if document.id_ else document.copy_of_id
-        detectron_results = get_results_from_segmentation(document_id, document.project.id_)
-        paragraph_bboxes = detectron_get_paragraph_bbox(detectron_results, document)
+        detectron_document_results = get_results_from_segmentation(document_id, document.project.id_)
+        paragraph_bboxes = detectron_get_paragraph_bbox(detectron_document_results, document)
 
         for page in document.pages():
             page_paragraph_bboxes = paragraph_bboxes[page.index]
@@ -235,8 +235,8 @@ class SentenceTokenizer(AbstractTokenizer):
     def _detectron_tokenize(self, document: Document) -> Document:
         """Create one multiline Annotation per sentence detected in paragraph detected by detectron."""
         document_id = document.id_ if document.id_ else document.copy_of_id
-        detectron_results = get_results_from_segmentation(document_id, document.project.id_)
-        paragraph_bboxes = detectron_get_paragraph_bbox(detectron_results, document)
+        detectron_document_results = get_results_from_segmentation(document_id, document.project.id_)
+        paragraph_bboxes = detectron_get_paragraph_bbox(detectron_document_results, document)
 
         for _, (page, page_paragraph_bboxes) in enumerate(zip(document.pages(), paragraph_bboxes)):
             paragraph_span_bboxes = collections.defaultdict(list)
