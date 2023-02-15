@@ -465,7 +465,9 @@ def map_offsets(characters_bboxes: list) -> dict:
     return offsets_map
 
 
-def detectron_get_paragraph_bbox(detectron_document_results: List[List[Dict]], document) -> List[List['Bbox']]:
+def detectron_get_paragraph_bbox_and_label(
+    detectron_document_results: List[List[Dict]], document
+) -> List[List[Tuple['Bbox', str]]]:
     """Call detectron Bbox corresponding to each paragraph."""
     from konfuzio_sdk.data import Bbox
 
@@ -477,15 +479,15 @@ def detectron_get_paragraph_bbox(detectron_document_results: List[List[Dict]], d
     for page_index, detectron_page_results in enumerate(detectron_document_results):
         paragraph_page_bboxes = []
         for detectron_result in detectron_page_results:
-            paragraph_page_bboxes.append(
-                Bbox.from_image_size(
-                    x0=detectron_result['x0'],
-                    x1=detectron_result['x1'],
-                    y1=detectron_result['y1'],
-                    y0=detectron_result['y0'],
-                    page=document.get_page_by_index(page_index=page_index),
-                )
+            paragraph_bbox = Bbox.from_image_size(
+                x0=detectron_result['x0'],
+                x1=detectron_result['x1'],
+                y1=detectron_result['y1'],
+                y0=detectron_result['y0'],
+                page=document.get_page_by_index(page_index=page_index),
             )
+            label_name = detectron_result['label']
+            paragraph_page_bboxes.append((paragraph_bbox, label_name))
         paragraph_document_bboxes.append(paragraph_page_bboxes)
     assert len(document.pages()) == len(paragraph_document_bboxes)
 

@@ -620,7 +620,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
 
 @parameterized.parameterized_class(
-    ('use_separate_labels', 'mode', 'n_extracted_annotations', 'n_extracted_spans'),
+    ('mode', 'n_extracted_annotations', 'n_extracted_spans'),
     [
         ('detectron', 26, 99),
         ('line_distance', 29, 99),
@@ -701,7 +701,7 @@ class TestSentenceRFExtractionAI(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the Data and Pipeline."""
-        cls.project = Project(id_=458, update=True)
+        cls.project = Project(id_=458)
         category = cls.project.get_category_by_id(16436)
         cls.pipeline = RFExtractionAI(category=category, use_separate_labels=True)
 

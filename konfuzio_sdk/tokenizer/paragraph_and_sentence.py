@@ -1,13 +1,13 @@
 """Sentence and Paragraph tokenizers."""
 import logging
-from typing import List, Dict, Union
+from typing import List, Dict, Tuple, Union
 import collections
 import time
 
-from konfuzio_sdk.data import Annotation, Document, Span, Bbox
+from konfuzio_sdk.data import Annotation, Document, Span, Bbox, Label, AnnotationSet
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer, ProcessingStep
 
-from konfuzio_sdk.utils import sdk_isinstance, detectron_get_paragraph_bbox
+from konfuzio_sdk.utils import sdk_isinstance, detectron_get_paragraph_bbox_and_label
 from konfuzio_sdk.api import get_results_from_segmentation
 
 logger = logging.getLogger(__name__)
@@ -16,13 +16,21 @@ logger = logging.getLogger(__name__)
 class ParagraphTokenizer(AbstractTokenizer):
     """Tokenizer splitting Document into paragraphs."""
 
-    def __init__(self, mode: str = 'detectron', line_height_ratio: float = 0.8, height: Union[int, float, None] = None):
+    def __init__(
+        self,
+        mode: str = 'detectron',
+        line_height_ratio: float = 0.8,
+        height: Union[int, float, None] = None,
+        create_detectron_labels: bool = False,
+    ):
         """
         Initialize Paragraph Tokenizer.
 
         :param mode: line_distance or detectron
         :param line_height_ratio: ratio of the median line height to use as threshold to create new paragraph.
         :param height: Height line threshold to use instead of the automatically calculated one.
+        :param create_detectron_labels: Apply the labels given by the detectron model. If they don't exist, they are
+        created.
         """
         super().__init__()
         self.mode = mode
@@ -31,6 +39,7 @@ class ParagraphTokenizer(AbstractTokenizer):
             if not (isinstance(height, int) or isinstance(height, float)):
                 raise TypeError(f'Parameter must be of type int or float. It is {type(height)}.')
         self.height = height
+        self.create_detectron_labels = create_detectron_labels
 
     def __repr__(self):
         """Return string representation of the class."""
@@ -69,33 +78,51 @@ class ParagraphTokenizer(AbstractTokenizer):
         """Create one multiline Annotation per paragraph detected by detectron2."""
         document_id = document.id_ if document.id_ else document.copy_of_id
         detectron_document_results = get_results_from_segmentation(document_id, document.project.id_)
-        paragraph_bboxes = detectron_get_paragraph_bbox(detectron_document_results, document)
+        paragraph_bboxes_and_labels = detectron_get_paragraph_bbox_and_label(detectron_document_results, document)
+
+        if self.create_detectron_labels:
+            category_label_set = document.category.project.get_label_set_by_name(document.category.name)
+            default_annotation_set = AnnotationSet(document=document, label_set=category_label_set, id_=1)
 
         for page in document.pages():
-            page_paragraph_bboxes = paragraph_bboxes[page.index]
+            page_paragraph_bboxes_and_labels = paragraph_bboxes_and_labels[page.index]
             paragraph_span_bboxes = collections.defaultdict(list)
             current_paragraph: Bbox = None
             paragraph_annotations: Dict[Bbox, Annotation] = {}
             for bbox in sorted(page.get_bbox().values(), key=lambda x: x['char_index']):
                 if bbox['text'] == ' ':
                     continue
-                for paragraph_bbox in page_paragraph_bboxes:
-                    if paragraph_bbox.check_overlap(bbox):
+                for paragraph_bbox_and_label in page_paragraph_bboxes_and_labels:
+                    paragraph_bbox_and_label: Tuple[Bbox, str]
+                    if paragraph_bbox_and_label[0].check_overlap(bbox):
                         if not current_paragraph:
-                            current_paragraph = paragraph_bbox
+                            current_paragraph = paragraph_bbox_and_label
                         if paragraph_span_bboxes[current_paragraph] and (
                             (paragraph_span_bboxes[current_paragraph][-1]['line_number'] != bbox['line_number'])
-                            or (paragraph_bbox is not current_paragraph)
+                            or (paragraph_bbox_and_label is not current_paragraph)
                         ):
                             span = Span(
                                 start_offset=paragraph_span_bboxes[current_paragraph][0]['char_index'],
                                 end_offset=paragraph_span_bboxes[current_paragraph][-1]['char_index'] + 1,
                             )
                             if current_paragraph not in paragraph_annotations:
+                                if self.create_detectron_labels:
+                                    label_set = category_label_set
+                                    annotation_set = default_annotation_set
+                                    label_name = current_paragraph[1]
+                                    try:
+                                        label = document.project.get_label_by_name(label_name)
+                                    except IndexError:
+                                        label = Label(project=document.project, text=label_name, label_sets=[label_set])
+                                else:
+                                    label = document.project.no_label
+                                    annotation_set = document.no_label_annotation_set
+                                    label_set = document.project.no_label_set
+
                                 annotation = Annotation(
                                     document=document,
-                                    annotation_set=document.no_label_annotation_set,
-                                    label=document.project.no_label,
+                                    annotation_set=annotation_set,
+                                    label=label,
                                     label_set=document.project.no_label_set,
                                     category=document.category,
                                     spans=[span],
@@ -105,19 +132,32 @@ class ParagraphTokenizer(AbstractTokenizer):
                                 paragraph_annotations[current_paragraph].add_span(span)
                             paragraph_span_bboxes[current_paragraph] = []
 
-                            current_paragraph = paragraph_bbox
+                            current_paragraph = paragraph_bbox_and_label
                             paragraph_span_bboxes[current_paragraph] = [bbox]
                         else:
                             paragraph_span_bboxes[current_paragraph].append(bbox)
                         break
-            for paragraph_bbox, span_bboxes in paragraph_span_bboxes.items():
+            for paragraph_bbox_and_label, span_bboxes in paragraph_span_bboxes.items():
                 if span_bboxes:
                     span = Span(start_offset=span_bboxes[0]['char_index'], end_offset=span_bboxes[-1]['char_index'] + 1)
-                    if paragraph_bbox not in paragraph_annotations:
+                    if paragraph_bbox_and_label not in paragraph_annotations:
+                        if self.create_detectron_labels:
+                            label_set = category_label_set
+                            annotation_set = default_annotation_set
+                            label_name = current_paragraph[1]
+                            try:
+                                label = document.project.get_label_by_name(label_name)
+                            except IndexError:
+                                label = Label(project=document.project, text=label_name, label_sets=[label_set])
+                        else:
+                            label = document.project.no_label
+                            annotation_set = document.no_label_annotation_set
+                            label_set = document.project.no_label_set
+
                         annotation = Annotation(
                             document=document,
-                            annotation_set=document.no_label_annotation_set,
-                            label=document.project.no_label,
+                            annotation_set=annotation_set,
+                            label=label,
                             label_set=document.project.no_label_set,
                             category=document.category,
                             spans=[span],
@@ -184,7 +224,13 @@ class ParagraphTokenizer(AbstractTokenizer):
 class SentenceTokenizer(AbstractTokenizer):
     """Tokenizer splitting Document into Sentences."""
 
-    def __init__(self, mode: str = 'detectron', line_height_ratio: float = 0.8, height: Union[int, float, None] = None):
+    def __init__(
+        self,
+        mode: str = 'detectron',
+        line_height_ratio: float = 0.8,
+        height: Union[int, float, None] = None,
+        create_detectron_labels: bool = False,
+    ):
         """
         Initialize Sentence Tokenizer.
 
@@ -200,6 +246,7 @@ class SentenceTokenizer(AbstractTokenizer):
                 raise TypeError(f'Parameter must be of type int or float. It is {type(height)}.')
         self.height = height
         self.punctuation = {'.', '!', '?'}
+        self.create_detectron_labels = create_detectron_labels
 
     def __repr__(self):
         """Return string representation of the class."""
@@ -238,22 +285,29 @@ class SentenceTokenizer(AbstractTokenizer):
         """Create one multiline Annotation per sentence detected in paragraph detected by detectron."""
         document_id = document.id_ if document.id_ else document.copy_of_id
         detectron_document_results = get_results_from_segmentation(document_id, document.project.id_)
-        paragraph_bboxes = detectron_get_paragraph_bbox(detectron_document_results, document)
+        paragraph_bboxes_and_labels = detectron_get_paragraph_bbox_and_label(detectron_document_results, document)
 
-        for _, (page, page_paragraph_bboxes) in enumerate(zip(document.pages(), paragraph_bboxes)):
+        if self.create_detectron_labels:
+            category_label_set = document.category.project.get_label_set_by_name(document.category.name)
+            default_annotation_set = AnnotationSet(document=document, label_set=category_label_set, id_=1)
+
+        for _, (page, page_paragraph_bboxes_and_labels) in enumerate(
+            zip(document.pages(), paragraph_bboxes_and_labels)
+        ):
             paragraph_span_bboxes = collections.defaultdict(list)
             current_paragraph = None
             paragraph_sentence_anns: Dict[Bbox, List[Annotation]] = {}
             for bbox in sorted(page.get_bbox().values(), key=lambda x: x['char_index']):
                 if bbox['text'] == ' ':
                     continue
-                for paragraph_bbox in page_paragraph_bboxes:
-                    if paragraph_bbox.check_overlap(bbox):
+                for paragraph_bbox_and_label in page_paragraph_bboxes_and_labels:
+                    paragraph_bbox_and_label: Tuple[Bbox, str]
+                    if paragraph_bbox_and_label[0].check_overlap(bbox):
                         if not current_paragraph:
-                            current_paragraph = paragraph_bbox
+                            current_paragraph = paragraph_bbox_and_label
                         if paragraph_span_bboxes[current_paragraph] and (
                             (paragraph_span_bboxes[current_paragraph][-1]['line_number'] != bbox['line_number'])
-                            or (paragraph_bbox is not current_paragraph)
+                            or (paragraph_bbox_and_label is not current_paragraph)
                             or (paragraph_span_bboxes[current_paragraph][-1]['text'] in self.punctuation)
                         ):
                             span = Span(
@@ -268,10 +322,23 @@ class SentenceTokenizer(AbstractTokenizer):
                                 or paragraph_sentence_anns[current_paragraph][-1].spans[-1].offset_string[-1]
                                 in self.punctuation
                             ):
+                                if self.create_detectron_labels:
+                                    label_set = category_label_set
+                                    annotation_set = default_annotation_set
+                                    label_name = current_paragraph[1]
+                                    try:
+                                        label = document.project.get_label_by_name(label_name)
+                                    except IndexError:
+                                        label = Label(project=document.project, text=label_name, label_sets=[label_set])
+                                else:
+                                    label = document.project.no_label
+                                    annotation_set = document.no_label_annotation_set
+                                    label_set = document.project.no_label_set
+
                                 annotation = Annotation(
                                     document=document,
-                                    annotation_set=document.no_label_annotation_set,
-                                    label=document.project.no_label,
+                                    annotation_set=annotation_set,
+                                    label=label,
                                     label_set=document.project.no_label_set,
                                     category=document.category,
                                     spans=[span],
@@ -282,13 +349,13 @@ class SentenceTokenizer(AbstractTokenizer):
 
                             paragraph_span_bboxes[current_paragraph] = []
 
-                            current_paragraph = paragraph_bbox
+                            current_paragraph = paragraph_bbox_and_label
                             paragraph_span_bboxes[current_paragraph] = [bbox]
                         else:
                             paragraph_span_bboxes[current_paragraph].append(bbox)
                         break
 
-            for paragraph_bbox, span_bboxes in paragraph_span_bboxes.items():
+            for paragraph_bbox_and_label, span_bboxes in paragraph_span_bboxes.items():
                 if span_bboxes:
                     span = Span(start_offset=span_bboxes[0]['char_index'], end_offset=span_bboxes[-1]['char_index'] + 1)
                     if current_paragraph not in paragraph_sentence_anns:
@@ -299,10 +366,23 @@ class SentenceTokenizer(AbstractTokenizer):
                         or paragraph_sentence_anns[current_paragraph][-1].spans[-1].offset_string[-1]
                         in self.punctuation
                     ):
+                        if self.create_detectron_labels:
+                            label_set = category_label_set
+                            annotation_set = default_annotation_set
+                            label_name = current_paragraph[1]
+                            try:
+                                label = document.project.get_label_by_name(label_name)
+                            except IndexError:
+                                label = Label(project=document.project, text=label_name, label_sets=[label_set])
+                        else:
+                            label = document.project.no_label
+                            annotation_set = document.no_label_annotation_set
+                            label_set = document.project.no_label_set
+
                         annotation = Annotation(
                             document=document,
-                            annotation_set=document.no_label_annotation_set,
-                            label=document.project.no_label,
+                            annotation_set=annotation_set,
+                            label=label,
                             label_set=document.project.no_label_set,
                             category=document.category,
                             spans=[span],
