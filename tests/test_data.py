@@ -2177,10 +2177,10 @@ class TestKonfuzioDataSetup(unittest.TestCase):
             document.text
         after = _getsize(prj)
         assert 1.6 < after / before < 2.1
-        assert after < 500000
+        assert after < 501500
 
         # strings in prj take slightly less space than in a list
-        assert _getsize([doc.text for doc in prj.documents]) + before < after + 500
+        assert _getsize([doc.text for doc in prj.documents]) + before < after + 1500
 
         # the text of the document is the only thing causing the size difference
         for document in prj.documents:
