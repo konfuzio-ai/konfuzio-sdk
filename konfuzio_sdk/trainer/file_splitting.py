@@ -308,7 +308,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
         image = preprocess_input(image)
         img_data = np.concatenate([image])
-        preprocessed = [img_data.reshape((1, 224, 224, 3)), txt_data.reshape((1, 1, 768))]
+        preprocessed = [img_data.reshape((1, 224, 224, 4)), txt_data.reshape((1, 1, 768))]
         if not use_gpu:
             with tf.device('/cpu:0'):
                 prediction = round(self.model.predict(preprocessed, verbose=0)[0, 0])
