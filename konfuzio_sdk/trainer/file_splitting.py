@@ -14,7 +14,6 @@ whole Document instead of a single Page and proposes splitting points or splits 
 For developing a custom file-splitting approach, we propose an abstract class.
 """
 import abc
-import cv2
 import logging
 import os
 import torch
@@ -23,6 +22,7 @@ import numpy as np
 import tensorflow as tf
 
 from copy import deepcopy
+from PIL import Image
 from tensorflow.keras import Input
 from tensorflow.keras.applications.vgg19 import preprocess_input
 from tensorflow.keras.layers import Dense, Conv2D, MaxPool2D, Flatten, Concatenate
@@ -66,9 +66,6 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
                 raise ValueError(f'{category} does not have Documents and cannot be used for training.')
             if not category.test_documents():
                 raise ValueError(f'{category} does not have test Documents.')
-        # projects = set([category.project for category in categories])
-        # if len(projects) > 1:
-        #     raise ValueError("All Categories have to belong to the same Project.")
         self.categories = categories
         self.project = self.categories[0].project  # we ensured that at least one Category is present
         self.documents = [document for category in self.categories for document in category.documents()]
@@ -187,8 +184,8 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         """
         images = []
         for page_image_path in page_image_paths:
-            image = cv2.imread(page_image_path)
-            image = cv2.resize(image, (224, 224), interpolation=cv2.INTER_AREA)
+            image = Image.open(page_image_path)
+            image = image.resize((224, 224))
             image = img_to_array(image)
             image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
             image = preprocess_input(image)
@@ -247,8 +244,8 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         txt_x = Dense(units=768, activation="relu")(txt_input)
         txt_x = Flatten()(txt_x)
         txt_x = Dense(units=4096, activation="relu")(txt_x)
-        img_input = Input(shape=(224, 224, 3), name='image')
-        img_x = Conv2D(input_shape=(224, 224, 3), filters=64, kernel_size=(3, 3), padding="same", activation="relu")(
+        img_input = Input(shape=(224, 224, 4), name='image')
+        img_x = Conv2D(input_shape=(224, 224, 4), filters=64, kernel_size=(3, 3), padding="same", activation="relu")(
             img_input
         )
         img_x = Conv2D(filters=64, kernel_size=(3, 3), padding="same", activation="relu")(img_x)
@@ -305,8 +302,8 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         txt_data = [output.pooler_output]
         txt_data = [np.asarray(x).astype('float32') for x in txt_data]
         txt_data = np.asarray(txt_data)
-        image = cv2.imread(page.image_path)
-        image = cv2.resize(image, (224, 224), interpolation=cv2.INTER_AREA)
+        image = Image.open(page.image_path)
+        image = image.resize((224, 224))
         image = img_to_array(image)
         image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
         image = preprocess_input(image)

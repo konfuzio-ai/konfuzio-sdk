@@ -78,7 +78,6 @@ setuptools.setup(
         'filetype==1.0.7',  # Used to check that files are in the correct format
         'nltk',
         'numpy>=1.21.6',
-        'opencv-python==4.6.0.66',
         'pandas>=1.3.5',
         'Pillow>=7.1.2',
         'python-dateutil',
