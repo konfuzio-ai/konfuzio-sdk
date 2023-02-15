@@ -1961,6 +1961,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         # res_dict = self.filter_low_confidence_extractions(res_dict)
         if type(self.tokenizer) not in {ParagraphTokenizer, SentenceTokenizer}:
+            # We assume that Paragraph or Sentence tokenizers have correctly tokenized the Document
             res_dict = self.merge_horizontal(res_dict, inference_document.text)
 
         # Try to calculate sections based on template classifier.
@@ -1979,6 +1980,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             # join document Spans into multi-line Annotation
             virtual_doc.merge_vertical()
         else:
+            # When using the Paragraph or Sentence tokenizer, we restore the multi-line Annotations they created.
             virtual_doc.merge_vertical_like(inference_document)
 
         return virtual_doc

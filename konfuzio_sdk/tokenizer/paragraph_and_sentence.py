@@ -77,6 +77,8 @@ class ParagraphTokenizer(AbstractTokenizer):
             current_paragraph: Bbox = None
             paragraph_annotations: Dict[Bbox, Annotation] = {}
             for bbox in sorted(page.get_bbox().values(), key=lambda x: x['char_index']):
+                if bbox['text'] == ' ':
+                    continue
                 for paragraph_bbox in page_paragraph_bboxes:
                     if paragraph_bbox.check_overlap(bbox):
                         if not current_paragraph:
@@ -243,7 +245,8 @@ class SentenceTokenizer(AbstractTokenizer):
             current_paragraph = None
             paragraph_sentence_anns: Dict[Bbox, List[Annotation]] = {}
             for bbox in sorted(page.get_bbox().values(), key=lambda x: x['char_index']):
-
+                if bbox['text'] == ' ':
+                    continue
                 for paragraph_bbox in page_paragraph_bboxes:
                     if paragraph_bbox.check_overlap(bbox):
                         if not current_paragraph:

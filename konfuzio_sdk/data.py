@@ -196,6 +196,7 @@ class Page(Data):
         draw = ImageDraw.Draw(image)
 
         try:
+            # We try to get a ttf font to be able to change bounding box label text size
             font = ImageFont.truetype(
                 "/usr/share/fonts/truetype/liberation/LiberationSerif-Bold.ttf", 24, encoding="unic"
             )
@@ -1350,7 +1351,8 @@ class Span(Data):
 
         :param start_offset: Start of the offset string (int)
         :param end_offset: Ending of the offset string (int)
-        :param annotation: The Annotation the Span belong to
+        :param annotation: The Annotation the Span belongs to. If not set, the Span is considered "virtual"
+        :param document: Document the Span belongs to. If not specified, the annotation document is used.
         :param strict_validation: Whether to apply strict validation rules.
         See https://dev.konfuzio.com/sdk/data_validation.html.
         """
@@ -2918,7 +2920,7 @@ class Document(Data):
 
         return bbox
 
-    def get_bbox_by_page(self, page_index: int):
+    def get_bbox_by_page(self, page_index: int) -> Dict[str, Dict]:
         """Return list of all bboxes in a Page."""
         if not self._pages_char_bboxes:
             self._pages_char_bboxes: List[Dict[str, Dict]] = [{} for _ in self.pages()]
@@ -3148,7 +3150,17 @@ class Document(Data):
                     buffer.append(span)
 
     def merge_vertical_like(self, document: 'Document'):
-        """Merge Annotations the same way as in another version of the Document."""
+        """
+        Merge Annotations the same way as in another copy of the same Document.
+
+        All single-Span Annotations in the current Document (self) are matched with corresponding multi-line
+        Spans in the given Document and are merged in the same way.
+        The Label of the new multi-line Annotations is taken to be the most common Label among the original
+        single-line Annotations that are being merged.
+
+        :param document: Document with multi-line Annotations
+        """
+        logger.info(f"Vertical merging Annotations like {document}.")
         assert self.text == document.text, f"{self} and {document} need to have the same ocr text."
         span_to_annotation = {
             (span.start_offset, span.end_offset): hash(span.annotation) for span in document.spans(use_correct=False)

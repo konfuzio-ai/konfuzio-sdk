@@ -34,7 +34,7 @@ class TestDetectronParagraphTokenizer(unittest.TestCase):
 
         assert len(doc.annotations(use_correct=False)[10].spans) == 7
         assert doc.annotations(use_correct=False)[10].spans[0].start_offset == 3145
-        assert doc.annotations(use_correct=False)[10].spans[0].start_offset == 3233
+        assert doc.annotations(use_correct=False)[10].spans[0].end_offset == 3233
 
         pages = doc.pages()
 
