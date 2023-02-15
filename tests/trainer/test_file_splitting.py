@@ -191,6 +191,15 @@ class TestFileSplittingModel(unittest.TestCase):
         assert splitting_ai.full_evaluation.recall() == 1.0
         assert splitting_ai.full_evaluation.f1() == 1.0
 
+    def test_splitting_no_category_document(self):
+        """Test running SplittingAI on a Document with Category == NO_CATEGORY."""
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        test_document = self.project.get_document_by_id(19)
+        assert test_document._category == self.project.no_category
+        pred = splitting_ai.propose_split_documents(test_document, return_pages=False)
+        assert len(pred) == 1
+        assert pred[0].text == test_document.text
+
     def test_splitting_with_inplace(self):
         """Test ContextAwareFileSplittingModel's predict method with inplace=True."""
         splitting_ai = SplittingAI(self.file_splitting_model)
