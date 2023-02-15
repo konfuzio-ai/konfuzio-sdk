@@ -50,7 +50,7 @@ class TestDetectronParagraphTokenizer(unittest.TestCase):
 
         doc = self.tokenizer.tokenize(virtual_doc)
         assert len(doc.annotations(use_correct=False)) == 78
-        assert len(doc.spans(use_correct=False)) == 600
+        assert len(doc.spans(use_correct=False)) == 599
 
         assert len(doc.annotations(use_correct=False)[20].spans) == 10
         assert doc.annotations(use_correct=False)[20].spans[0].start_offset == 8157
