@@ -40,7 +40,7 @@ response codes based on the success or failure of the request.
 ### Authentication
 
 Most of our endpoints, excluding those that deal
-with [public documents](http://help.konfuzio.com/integrations/public-documents/), strictly require authentication. We
+with [public documents](https://help.konfuzio.com/integrations/public-documents/), strictly require authentication. We
 support three types of authentication.
 
 #### Basic HTTP authentication
@@ -71,12 +71,12 @@ KeyCloak integration can be found on our
 
 #### Token authentication
 
-You send a `POST` request with your Konfuzio username (email) and password to our [authentication endpoint](link), which
+You send a `POST` request with your Konfuzio username (email) and password to our [authentication endpoint](https://app.konfuzio.com/v3/swagger/#/auth), which
 returns a token string that you can use in lieu of your actual credentials for subsequent requests, providing it with a
 HTTP header in the format `Authorization: Token <token>`.
 
 This token doesn't currently expire, so you can use indefinitely, but you can delete it (and regenerated) via
-the [authentication DELETE endpoint](link).
+the [authentication DELETE endpoint](https://app.konfuzio.com/v3/swagger/#/auth/auth_destroy).
 
 .. note::
 This is the authentication method you **should** use if you're building an external service that consumes the Konfuzio
@@ -145,7 +145,7 @@ response = requests.get(url, headers=headers)
 print(response.json())
 ```
 
-#### Konfuzio SDK example
+#### Accessing and using the token via the Konfuzio SDK
 
 To get a token, access it via `from konfuzio_sdk import KONFUZIO_TOKEN` (available only after `konfuzio_sdk init`).
 
@@ -627,7 +627,7 @@ documents.
 
 Our document dashboard is based on Vue.js and completely implemented with the API v3. You can check out our solution
 [on GitHub](https://github.com/konfuzio-ai/document-validation-ui) and customize it to your needs. You will find a
-technical overview and component description [here](../dvui/index.md).
+technical overview and component description [here](/dvui/index.html).
 
 #### Start from scratch
 

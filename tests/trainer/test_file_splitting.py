@@ -6,7 +6,7 @@ import unittest
 
 from copy import deepcopy
 
-from konfuzio_sdk.data import Category, Document, Project
+from konfuzio_sdk.data import Category, Document
 from konfuzio_sdk.samples import LocalTextProject
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
 from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI
@@ -72,15 +72,6 @@ class TestFileSplittingModel(unittest.TestCase):
         with pytest.raises(ValueError, match="does not have test Documents"):
             ContextAwareFileSplittingModel(categories=[_], tokenizer=ConnectedTextTokenizer())
 
-    def test_init_file_splitting_model_categories_different_project(self):
-        """Test passing Categories from different Projects."""
-        project = Project(id_=46)
-        with pytest.raises(ValueError, match="Categories have to belong to the same Project"):
-            ContextAwareFileSplittingModel(
-                categories=[self.file_splitting_model.categories[0], project.get_category_by_id(63)],
-                tokenizer=ConnectedTextTokenizer(),
-            )
-
     def test_load_model_from_different_class(self):
         """Test initializing SplittingAI with a model that does not inherit from AbstractFileSplittingModel."""
         wrong_class = FallbackCategorizationModel(LocalTextProject())
@@ -115,6 +106,15 @@ class TestFileSplittingModel(unittest.TestCase):
             if page.number in (3, 5):
                 assert intersection == {'Morning,'}
                 assert page.is_first_page
+
+    def test_predict_with_empty_categories(self):
+        """Test predicting with all empty Categories."""
+        model = ContextAwareFileSplittingModel(
+            categories=[self.project.get_category_by_id(2)], tokenizer=self.file_splitting_model.tokenizer
+        )
+        model.fit(allow_empty_categories=True)
+        with pytest.raises(ValueError, match="Cannot run prediction as none of the Categories in"):
+            model.predict(self.test_document.pages()[0])
 
     def test_pickle_model_save_load(self):
         """Test saving ContextAwareFileSplittingModel to pickle."""
@@ -180,7 +180,6 @@ class TestFileSplittingModel(unittest.TestCase):
         """Test SplittingAI's evaluate_full on testing Documents."""
         splitting_ai = SplittingAI(self.file_splitting_model)
         splitting_ai.evaluate_full()
-        print(splitting_ai.full_evaluation.evaluation_results)
         assert splitting_ai.full_evaluation.tp() == 9
         assert splitting_ai.full_evaluation.fp() == 0
         assert splitting_ai.full_evaluation.fn() == 0
@@ -188,6 +187,15 @@ class TestFileSplittingModel(unittest.TestCase):
         assert splitting_ai.full_evaluation.precision() == 1.0
         assert splitting_ai.full_evaluation.recall() == 1.0
         assert splitting_ai.full_evaluation.f1() == 1.0
+
+    def test_splitting_no_category_document(self):
+        """Test running SplittingAI on a Document with Category == NO_CATEGORY."""
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        test_document = self.project.get_document_by_id(19)
+        assert test_document._category == self.project.no_category
+        pred = splitting_ai.propose_split_documents(test_document, return_pages=False)
+        assert len(pred) == 1
+        assert pred[0].text == test_document.text
 
     def test_splitting_with_inplace(self):
         """Test ContextAwareFileSplittingModel's predict method with inplace=True."""

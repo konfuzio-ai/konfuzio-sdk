@@ -323,12 +323,13 @@ class Page(Data):
 
     def add_category_annotation(self, category_annotation: 'CategoryAnnotation'):
         """Annotate a Page with a Category and confidence information."""
-        duplicated = [x for x in self.category_annotations if x == category_annotation]
-        if duplicated:
-            raise ValueError(
-                f'In {self} the {category_annotation} is a duplicate of {duplicated} and will not be added.'
-            )
-        self.category_annotations.append(category_annotation)
+        if category_annotation.category != self.document.project.no_category:
+            duplicated = [x for x in self.category_annotations if x == category_annotation]
+            if duplicated:
+                raise ValueError(
+                    f'In {self} the {category_annotation} is a duplicate of {duplicated} and will not be added.'
+                )
+            self.category_annotations.append(category_annotation)
 
     def get_category_annotation(self, category, add_if_not_present: bool = False) -> 'CategoryAnnotation':
         """
@@ -346,6 +347,7 @@ class Page(Data):
             category_annotation
             for category_annotation in self.category_annotations
             if category_annotation.category == category
+            and category_annotation.category != self.document.project.no_category
         ]
         # if the list is not empty it means there is exactly one CategoryAnnotation with the assigned Category
         # (see Page.add_category_annotation for duplicate checking)
@@ -359,7 +361,7 @@ class Page(Data):
                 new_category_annotation = CategoryAnnotation(category=category)
             return new_category_annotation
 
-    def set_category(self, category: Union[None, 'Category']) -> None:
+    def set_category(self, category: 'Category') -> None:
         """
         Set the Category of the Page.
 
@@ -380,7 +382,10 @@ class Page(Data):
 
         :return: The found Category Annotation, or None if not present.
         """
-        if self._human_chosen_category_annotation is not None:
+        if (
+            self._human_chosen_category_annotation is not None
+            and self._human_chosen_category_annotation.category != self.document.project.no_category
+        ):
             return self._human_chosen_category_annotation
         elif self.category_annotations:
             # return the highest confidence CategoryAnnotation if no human revised it
@@ -393,7 +398,8 @@ class Page(Data):
         """Get the Category of the Page, based on human revised Category Annotation, or on highest confidence."""
         if self.maximum_confidence_category_annotation is not None:
             return self.maximum_confidence_category_annotation.category
-        return self._category
+        else:
+            return self._category
 
 
 class BboxValidationTypes(Enum):
@@ -1924,6 +1930,10 @@ class Annotation(Data):
         :param document_annotations: Annotations in the Document (list)
         :return: True if new Annotation was created
         """
+        if self.label == self.document.project.no_label:
+            raise ValueError("You cannot save Annotations with Label NO_LABEL.")
+        if self.document.category == self.document.project.no_category:
+            raise ValueError(f"You cannot save Annotations of Documents with {self.document.category}.")
         new_annotation_added = False
         if not self.label_set:
             label_set_id = None
@@ -2151,7 +2161,7 @@ class Document(Data):
         elif category:
             self._category = category
         else:
-            self._category = None
+            self._category = project.no_category
         self._category_confidence = category_confidence
         self.category_is_revised = category_is_revised
 
@@ -2338,14 +2348,15 @@ class Document(Data):
         """
         category_annotations = []
         for category in self.project.categories:
-            confidence = 0
-            for page in self.pages():
-                confidence += page.get_category_annotation(category).confidence
-            confidence /= self.number_of_pages
-            if (confidence == 0.0) and (category == self._category):
-                confidence = self._category_confidence
-            category_annotation = CategoryAnnotation(category=category, document=self, confidence=confidence)
-            category_annotations.append(category_annotation)
+            if category != self.project.no_category:
+                confidence = 0
+                for page in self.pages():
+                    confidence += page.get_category_annotation(category).confidence
+                confidence /= self.number_of_pages
+                if (confidence == 0.0) and (category == self._category):
+                    confidence = self._category_confidence
+                category_annotation = CategoryAnnotation(category=category, document=self, confidence=confidence)
+                category_annotations.append(category_annotation)
         return category_annotations
 
     @property
@@ -2355,7 +2366,7 @@ class Document(Data):
 
         :return: The found Category Annotation, or None if not present.
         """
-        if self._category is not None:
+        if self._category not in [self.project.no_category, None]:
             # there is a unique Category Annotation per Category associated to this Document
             # by construction in Document.category_annotations
             return [
@@ -2394,12 +2405,14 @@ class Document(Data):
         if all_pages_have_same_category:
             self._category = self.pages()[0].category
         else:
-            self._category = None
+            self._category = self.project.no_category
         return self._category
 
-    def set_category(self, category: Union[None, Category]) -> None:
+    def set_category(self, category: Category) -> None:
         """Set the Category of the Document and the Category of all of its Pages as revised."""
-        if (self._category is not None) and (category != self._category) and (category is not None):
+        if (self._category not in [None, self.project.no_category]) and (
+            category not in [self._category, None, self.project.no_category]
+        ):
             raise ValueError(
                 "We forbid changing Category when already existing, because this requires some validations that are "
                 "currently implemented in the Konfuzio Server. We recommend changing the Category of a Document via "
@@ -2787,7 +2800,7 @@ class Document(Data):
             # Hotfix Text Annotation Server:
             #  Annotation belongs to a Label / Label Set that does not relate to the Category of the Document.
             # todo: add test that the Label and Label Set of an Annotation belong to the Category of the Document
-            if self.category is not None:
+            if self.category != self.project.no_category:
                 if annotation.label_set is not None:
                     if annotation.label_set.categories:
                         if self.category in annotation.label_set.categories:
@@ -2804,7 +2817,10 @@ class Document(Data):
                 else:
                     raise ValueError(f'{annotation} has no Label Set, which cannot be added to {self}.')
             else:
-                raise ValueError(f'We cannot add {annotation} to {self} where the Category is {self.category}')
+                if annotation.label.name == "NO_LABEL" and annotation.label_set.name_clean == "NO_LABEL_SET":
+                    self._annotations.append(annotation)
+                else:
+                    raise ValueError(f'We cannot add {annotation} to {self} where the Сategory is {self.category}')
         else:
             duplicated = [x for x in self._annotations if x == annotation]
             exception_or_log_error(
@@ -3265,11 +3281,17 @@ class Document(Data):
             with open(self.annotation_file_path, 'r') as f:
                 raw_annotations = json.load(f)
 
-            for raw_annotation in raw_annotations:
-                raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
-                raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
-                _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
-            self._update = None  # Make sure we don't repeat to load once loaded.
+            if self.category == self.project.no_category:
+                raw_annotations = [
+                    annotation for annotation in raw_annotations if annotation['label_text'] == 'NO_LABEL'
+                ]
+
+            if raw_annotations:
+                for raw_annotation in raw_annotations:
+                    raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
+                    raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
+                    _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
+                self._update = None  # Make sure we don't repeat to load once loaded.
 
         if self._annotations is None:
             self.annotation_sets()
@@ -3279,10 +3301,16 @@ class Document(Data):
                 with open(self.annotation_file_path, 'r') as f:
                     raw_annotations = json.load(f)
 
-                for raw_annotation in raw_annotations:
-                    raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
-                    raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
-                    _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
+                if self.category == self.project.no_category:
+                    raw_annotations = [
+                        annotation for annotation in raw_annotations if annotation['label_text'] == 'NO_LABEL'
+                    ]
+
+                if raw_annotations:
+                    for raw_annotation in raw_annotations:
+                        raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
+                        raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
+                        _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
 
         return self._annotations
 
@@ -3384,7 +3412,8 @@ class Project(Data):
 
         if self.id_ or self._project_folder:
             self.get(update=update)
-
+        else:
+            self.no_category = Category(project=self, name_clean="NO_CATEGORY", name="NO_CATEGORY")
         # todo: list of Categories related to NO LABEL SET can be outdated, i.e. if the number of Categories changes
         self.no_label_set = LabelSet(project=self, categories=self.categories)
         self.no_label_set.name_clean = 'NO_LABEL_SET'
@@ -3514,10 +3543,11 @@ class Project(Data):
 
         :param category: Category to add in the Project
         """
-        if category not in self.categories:
-            self.categories.append(category)
-        else:
-            raise ValueError(f'In {self} the {category} is a duplicate and will not be added.')
+        if category.name != "NO_CATEGORY":
+            if category not in self.categories:
+                self.categories.append(category)
+            else:
+                raise ValueError(f'In {self} the {category} is a duplicate and will not be added.')
 
     def add_label(self, label: Label):
         """
@@ -3579,6 +3609,10 @@ class Project(Data):
 
             self._label_sets = []  # clean up Label Sets to not create duplicates
             self.categories = []  # clean up Labels to not create duplicates
+
+            # adding a NO_CATEGORY at this step because we need to preserve it after Project is updated
+            if "NO_CATEGORY" not in [category.name for category in self.categories]:
+                self.no_category = Category(project=self, name_clean="NO_CATEGORY", name="NO_CATEGORY")
             for label_set_data in label_sets_data:
                 label_set = LabelSet(project=self, id_=label_set_data['id'], **label_set_data)
                 if label_set.is_default:
