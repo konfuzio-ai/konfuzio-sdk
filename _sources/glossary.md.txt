@@ -4,6 +4,7 @@ Glossary
 We use several concepts in the Konfuzio Platform. We are capitalize concepts in the documentation and in docstrings.
 
 - AI
+- AI Evaluation
 - Bbox
 - Bbox Validation Rules
 - Annotation
