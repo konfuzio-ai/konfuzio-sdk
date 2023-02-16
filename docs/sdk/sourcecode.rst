@@ -202,6 +202,12 @@ Context Aware File Splitting Model
    :members:
    :noindex:
 
+Multimodal File Splitting Model
+---------------------
+.. autoclass:: MultimodalFileSplittingModel
+   :members:
+   :noindex:
+
 Splitting AI
 ---------------------
 .. autoclass:: SplittingAI
@@ -235,3 +241,4 @@ File Splitting AI Evaluation
 .. autoclass:: konfuzio_sdk.evaluate.FileSplittingEvaluation
    :members:
    :noindex:
+

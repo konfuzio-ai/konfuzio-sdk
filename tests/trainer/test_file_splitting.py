@@ -210,6 +210,7 @@ class TestFileSplittingModel(unittest.TestCase):
                 assert page.is_first_page
             else:
                 assert not page.is_first_page
+            assert page.is_first_page_confidence == 1
         assert pred == test_document
 
     def test_suggest_first_pages(self):
@@ -222,6 +223,7 @@ class TestFileSplittingModel(unittest.TestCase):
                 assert page.is_first_page
             else:
                 assert not page.is_first_page
+            assert page.is_first_page_confidence == 1
         pathlib.Path(self.file_splitting_model.path).unlink()
 
 
@@ -254,6 +256,7 @@ class TestFusionFileSplittingModel(unittest.TestCase):
                 page.is_first_page = None
                 page = self.file_splitting_model.predict(page)
                 assert page.is_first_page
+                assert page.is_first_page_confidence
 
     def test_run_splitting_ai_prediction(self):
         """Test SplittingAI integration with the Fusion model."""
@@ -263,8 +266,10 @@ class TestFusionFileSplittingModel(unittest.TestCase):
         for page in pred[0].pages():
             if page.number == 1:
                 assert page.is_first_page
+                assert page.is_first_page_confidence == 1
             else:
                 assert not page.is_first_page
+                assert page.is_first_page_confidence
 
     @pytest.mark.skip(reason="Takes too long to test upon pushing; skipping can be removed for local testing.")
     def test_save_load_model(self):
@@ -279,7 +284,10 @@ class TestFusionFileSplittingModel(unittest.TestCase):
         """Test SplittingAI's evaluate_full on training Documents."""
         splitting_ai = SplittingAI(self.file_splitting_model)
         splitting_ai.evaluate_full(use_training_docs=True)
-        assert splitting_ai.full_evaluation.tp() == 10
+        if TEST_WITH_FULL_DATASET:
+            assert splitting_ai.full_evaluation.tp() == 25
+        else:
+            assert splitting_ai.full_evaluation.tp() == 10
         assert splitting_ai.full_evaluation.fp() == 0
         assert splitting_ai.full_evaluation.fn() == 0
         assert splitting_ai.full_evaluation.tn() == 0

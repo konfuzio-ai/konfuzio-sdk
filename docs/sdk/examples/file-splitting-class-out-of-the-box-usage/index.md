@@ -7,6 +7,9 @@ Pages of all Category's Documents. Upon predicting whether a Page is a potential
 first or not), we compare Page's contents to these common first-page strings; if there is occurrence of at least one 
 such string, we mark a Page to be first (thus meaning it is a splitting point).
 
+This tutorial can also be used with the `MultimodalFileSplittingModel`; the only difference in the initialization is 
+that it does not require specifying a tokenizer explicitly. 
+
 ```python
 from konfuzio_sdk.data import Project
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
@@ -19,6 +22,12 @@ test_document = project.get_document_by_id(YOUR_DOCUMENT_ID)
 # initialize a ContextAwareFileSplittingModel and fit it
 
 file_splitting_model = ContextAwareFileSplittingModel(categories=project.categories, tokenizer=ConnectedTextTokenizer())
+# to run a MultimodalFileSplittingModel instead, replace the line above with the following lines. note that training 
+# a MultimodalFileSplittingModel can take longer that ContextAwareFileSplittingModel.
+#
+# from konfuzio_sdk.trainer.file_splitting import MultimodalFileSplittingModel
+# file_splitting_model = MultimodalFileSplittingModel(categories=project.categories)
+
 file_splitting_model.fit()
 
 # save the model

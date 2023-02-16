@@ -134,8 +134,23 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
     https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=9684474
     """
 
-    def __init__(self, categories: List[Category], *args, **kwargs):
-        """Initialize the Fusion filesplitting model."""
+    def __init__(
+        self,
+        categories: List[Category],
+        text_processing_model: str = 'nlpaueb/legal-bert-base-uncased',
+        *args,
+        **kwargs,
+    ):
+        """
+        Initialize the Fusion filesplitting model.
+
+        :param categories: Categories from which Documents for training and testing are used.
+        :type categories: List[Category]
+        :param text_processing_model: A path to the HuggingFace model that is used for processing the textual
+        data from the Documents, can be a path in the HuggingFace repo or a local path to a checkpoint of a pre-trained
+        HuggingFace model. Default is LegalBERT.
+        :type text_processing_model: str
+        """
         logging.info('Initializing MultimodalFileSplittingModel.')
         super().__init__(categories=categories)
         self.output_dir = self.project.model_folder
@@ -150,12 +165,12 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         self.input_shape = None
         self.model = None
         logger.info('Initializing BERT components of the MultimodalFileSplittingModel.')
-        configuration = AutoConfig.from_pretrained('nlpaueb/legal-bert-base-uncased')
+        configuration = AutoConfig.from_pretrained(text_processing_model)
         configuration.num_labels = 2
         configuration.output_hidden_states = True
-        self.bert_model = AutoModel.from_pretrained('nlpaueb/legal-bert-base-uncased', config=configuration)
+        self.bert_model = AutoModel.from_pretrained(text_processing_model, config=configuration)
         self.bert_tokenizer = BertTokenizer.from_pretrained(
-            'nlpaueb/legal-bert-base-uncased', do_lower_case=True, max_length=2000, padding="max_length", truncate=True
+            text_processing_model, do_lower_case=True, max_length=2000, padding="max_length", truncate=True
         )
 
     def _preprocess_documents(self, data: List[Document]) -> (List[str], List[str], List[int]):
@@ -316,14 +331,15 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         preprocessed = [img_data.reshape((1, 224, 224, 4)), txt_data.reshape((1, 1, 768))]
         if not use_gpu:
             with tf.device('/cpu:0'):
-                prediction = round(self.model.predict(preprocessed, verbose=0)[0, 0])
+                prediction = self.model.predict(preprocessed, verbose=0)[0, 0]
         else:
             if tf.config.list_physical_devices('GPU'):
                 with tf.device('/gpu:0'):
-                    prediction = round(self.model.predict(preprocessed, verbose=0)[0, 0])
+                    prediction = self.model.predict(preprocessed, verbose=0)[0, 0]
             else:
                 raise ValueError('Predicting on the GPU is impossible because there is no GPU available on the device.')
-        if prediction == 1:
+        page.is_first_page_confidence = prediction
+        if round(prediction) == 1:
             page.is_first_page = True
         else:
             page.is_first_page = False
@@ -411,6 +427,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
             if len(intersection) > 0:
                 page.is_first_page = True
                 break
+        page.is_first_page_confidence = 1
         return page
 
     def check_is_ready(self):
