@@ -232,6 +232,6 @@ Categorization AI Evaluation
 
 File Splitting AI Evaluation
 ---------------------
-.. autoclass:: konfuzio_sdk.evaluate.FileSplittinEvaluation
+.. autoclass:: konfuzio_sdk.evaluate.FileSplittingEvaluation
    :members:
    :noindex:

@@ -6,10 +6,15 @@ exclusive for first Pages of all Documents within the Category. Upon predicting 
 point (meaning whether it is first or not), we compare Page's contents to these exclusive first-page strings; if there
 is occurrence of at least one such string, we mark a Page to be first (thus meaning it is a splitting point). An
 instance of the ContextAwareFileSplittingModel can be used to initially build a file-splitting pipeline and can later
-be replaced with more complex solutions (like the one that's coming soon: MultimodalFileSplittingModel).
+be replaced with more complex solutions.
 
 A ContextAwareFileSplittingModel instance can be used with an interface provided by SplittingAI – this class accepts a
 whole Document instead of a single Page and proposes splitting points or splits the original Documents.
+
+A MultimodalFileSplittingModel is a model that uses an approach that processes both visual and textual parts of the
+Pages and processes them independently via the combined VGG19 architecture (simplified) and LegalBERT, and passing the
+resulting outputs together to a Multi-Layered Perceptron. Model's output is also a prediction of a Page being first or
+non-first.
 
 For developing a custom file-splitting approach, we propose an abstract class.
 """
@@ -334,7 +339,12 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
 
 
 class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
-    """Fallback definition of a File Splitting Model."""
+    """
+    A File Splitting Model that uses a context-aware logic.
+
+    Context-aware logic implies a rule-based approach that looks for common strings between the first Pages of all
+    Category's Documents.
+    """
 
     def __init__(self, categories: List[Category], tokenizer, *args, **kwargs):
         """
