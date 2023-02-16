@@ -17,7 +17,7 @@ class TestDetectronSentenceTokenizer(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the tokenizer and test setup."""
-        cls.project = Project(id_=458, update=True)
+        cls.project = Project(id_=458)
         cls.tokenizer = SentenceTokenizer(mode='detectron')
 
         cls.document_1 = cls.project.get_document_by_id(601418)  # Lorem ipsum test document
@@ -64,7 +64,7 @@ class TestLineDistanceSentenceTokenizer(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the tokenizer and test setup."""
-        cls.project = Project(id_=458, update=True)
+        cls.project = Project(id_=458)
         cls.tokenizer = SentenceTokenizer(mode='line_distance')
 
         cls.document_1 = cls.project.get_document_by_id(601418)  # Lorem ipsum test document

@@ -632,7 +632,7 @@ class TestParagraphRFExtractionAI(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the Data and Pipeline."""
-        cls.project = Project(id_=458)
+        cls.project = Project(id_=458, update=True)
         category = cls.project.get_category_by_id(16436)
         cls.pipeline = RFExtractionAI(category=category, use_separate_labels=True)
 
@@ -691,8 +691,8 @@ class TestParagraphRFExtractionAI(unittest.TestCase):
 @parameterized.parameterized_class(
     ('mode', 'n_extracted_annotations', 'n_extracted_spans', 'min_eval_f1', 'eval_tp', 'eval_fp'),
     [
-        ('detectron', 403, 886, 0.9, 22, 1),
-        ('line_distance', 384, 816, 0.4, 9, 7),  # line distance method does not work well with 2 column documents
+        ('detectron', 102, 225, 0.8, 26, 11),
+        ('line_distance', 97, 222, 0.25, 9, 25),  # line distance method does not work well with 2 column documents
     ],
 )
 class TestSentenceRFExtractionAI(unittest.TestCase):
@@ -701,8 +701,8 @@ class TestSentenceRFExtractionAI(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the Data and Pipeline."""
-        cls.project = Project(id_=458)
-        category = cls.project.get_category_by_id(16436)
+        cls.project = Project(id_=458, update=True)
+        category = cls.project.get_category_by_id(16587)
         cls.pipeline = RFExtractionAI(category=category, use_separate_labels=True)
 
         cls.tests_annotations_spans = list()
@@ -711,10 +711,6 @@ class TestSentenceRFExtractionAI(unittest.TestCase):
         """Make sure the Data and Pipeline is configured."""
         self.pipeline.tokenizer = SentenceTokenizer(mode=self.mode)
 
-        train_doc_ids = {601419}
-        for doc in self.pipeline.category.documents():
-            if doc.id_ not in train_doc_ids:
-                doc.dataset_status = 1
         self.pipeline.documents = self.pipeline.category.documents()
 
     def test_02_make_features(self):
@@ -742,9 +738,9 @@ class TestSentenceRFExtractionAI(unittest.TestCase):
 
     def test_05_extract_document(self):
         """Test document extraction."""
-        document = self.pipeline.documents[0]  # 601419
-        assert len(document.annotations()) == 8
-        assert len(document.spans()) == 24
+        document = self.pipeline.documents[0]  # 615403
+        assert len(document.annotations()) == 13
+        assert len(document.spans()) == 27
 
         virtual_document = self.pipeline.extract(document)
         assert len(virtual_document.annotations(use_correct=False)) == self.n_extracted_annotations
