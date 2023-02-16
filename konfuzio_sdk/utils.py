@@ -465,7 +465,7 @@ def map_offsets(characters_bboxes: list) -> dict:
     return offsets_map
 
 
-def detectron_get_paragraph_bbox_and_label(
+def detectron_get_paragraph_bbox_and_label_name(
     detectron_document_results: List[List[Dict]], document
 ) -> List[List[Tuple['Bbox', str]]]:
     """Call detectron Bbox corresponding to each paragraph."""

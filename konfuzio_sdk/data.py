@@ -188,7 +188,7 @@ class Page(Data):
             self.image = Image.open(self.image_path)
         return self.image
 
-    def get_annotations_image(self) -> Image:
+    def get_annotations_image(self, display_all: bool = False) -> Image:
         """Get Document Page as PNG with Annotations shown."""
         image = self.get_image()
         image = image.convert('RGB')
@@ -204,7 +204,10 @@ class Page(Data):
             logger.warning('Font not found. Loading default.')
             font = ImageFont.load_default()
 
-        annotations = self.view_annotations()
+        if not display_all:
+            annotations = self.view_annotations()
+        else:
+            annotations = self.annotations(use_correct=False)
         for annotation in annotations:
             annotation_image_bbox = (
                 annotation.bbox().x0_image,
@@ -3165,7 +3168,7 @@ class Document(Data):
                             buffer.remove(candidate)
                     buffer.append(span)
 
-    def merge_vertical_like(self, document: 'Document'):
+    def merge_vertical_like(self, document: 'Document'):  # drawing
         """
         Merge Annotations the same way as in another copy of the same Document.
 

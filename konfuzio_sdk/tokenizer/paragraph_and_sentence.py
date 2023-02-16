@@ -7,7 +7,7 @@ import time
 from konfuzio_sdk.data import Annotation, Document, Span, Bbox, Label, AnnotationSet
 from konfuzio_sdk.tokenizer.base import AbstractTokenizer, ProcessingStep
 
-from konfuzio_sdk.utils import sdk_isinstance, detectron_get_paragraph_bbox_and_label
+from konfuzio_sdk.utils import sdk_isinstance, detectron_get_paragraph_bbox_and_label_name
 from konfuzio_sdk.api import get_results_from_segmentation
 
 logger = logging.getLogger(__name__)
@@ -78,7 +78,7 @@ class ParagraphTokenizer(AbstractTokenizer):
         """Create one multiline Annotation per paragraph detected by detectron2."""
         document_id = document.id_ if document.id_ else document.copy_of_id
         detectron_document_results = get_results_from_segmentation(document_id, document.project.id_)
-        paragraph_bboxes_and_labels = detectron_get_paragraph_bbox_and_label(detectron_document_results, document)
+        paragraph_bboxes_and_labels = detectron_get_paragraph_bbox_and_label_name(detectron_document_results, document)
 
         if self.create_detectron_labels:
             category_label_set = document.category.project.get_label_set_by_name(document.category.name)
@@ -288,7 +288,7 @@ class SentenceTokenizer(AbstractTokenizer):
         """Create one multiline Annotation per sentence detected in paragraph detected by detectron."""
         document_id = document.id_ if document.id_ else document.copy_of_id
         detectron_document_results = get_results_from_segmentation(document_id, document.project.id_)
-        paragraph_bboxes_and_labels = detectron_get_paragraph_bbox_and_label(detectron_document_results, document)
+        paragraph_bboxes_and_labels = detectron_get_paragraph_bbox_and_label_name(detectron_document_results, document)
 
         if self.create_detectron_labels:
             category_label_set = document.category.project.get_label_set_by_name(document.category.name)
