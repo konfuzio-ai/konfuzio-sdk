@@ -145,7 +145,10 @@ response = requests.get(url, headers=headers)
 print(response.json())
 ```
 
-#### Authenticating with a Token as a Query Parameter
+#### Authenticating with a Token as a Query Parameter (_Upcoming feature_)
+
+.. Note::
+    Please open a [support ticket](https://konfuzio.com/support/) if you would like to have early access to this feature.
 
 Sometimes you might need to use one of our endpoints with a third party service that doesn't allow you to specify
 certain types of information (like authentication tokens) in the request. In these cases, you can use a special method
