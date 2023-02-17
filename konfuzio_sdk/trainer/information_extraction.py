@@ -37,7 +37,6 @@ import pandas
 import cloudpickle
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.validation import check_is_fitted
-from tabulate import tabulate
 
 from konfuzio_sdk.data import Data, Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span
 
@@ -124,26 +123,6 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     Data.id_iter = itertools.count(max(prev_local_id, curr_local_id))
 
     return model
-
-
-def substring_count(list: list, substring: str) -> list:
-    """Given a list of strings returns the occurrence of a certain substring and returns the results as a list."""
-    r_list = [0] * len(list)
-
-    for index in range(len(list)):
-        r_list[index] = list[index].lower().count(substring)
-
-    return r_list
-
-
-def dict_to_dataframe(res_dict):
-    """Convert a Dict to Dataframe add label as column."""
-    df = pandas.DataFrame()
-    for name in res_dict.keys():
-        label_df = res_dict[name]
-        label_df['result_name'] = name
-        df = df.append(label_df, sort=True)
-    return df
 
 
 # # existent model classes
@@ -320,7 +299,7 @@ def dict_to_dataframe(res_dict):
 
 def convert_to_feat(offset_string_list: list, ident_str: str = '') -> pandas.DataFrame:
     """Return a df containing all the features generated using the offset_string."""
-    df = pandas.DataFrame()
+    df = dict()  # pandas.DataFrame()
 
     # strip all accents
     offset_string_list_accented = offset_string_list
@@ -389,7 +368,19 @@ def convert_to_feat(offset_string_list: list, ident_str: str = '') -> pandas.Dat
     df[ident_str + "feat_ends_with_plus"] = ends_with_substring(offset_string_list, "+")
     df[ident_str + "feat_ends_with_minus"] = ends_with_substring(offset_string_list, "-")
 
+    df = pandas.DataFrame(df)
+
     return df
+
+
+def substring_count(list: list, substring: str) -> list:
+    """Given a list of strings returns the occurrence of a certain substring and returns the results as a list."""
+    r_list = [0] * len(list)
+
+    for index in range(len(list)):
+        r_list[index] = list[index].lower().count(substring)
+
+    return r_list
 
 
 def starts_with_substring(list: list, substring: str) -> list:
@@ -458,11 +449,13 @@ def date_count(s: str) -> int:
     # checks the format
     if len(s) > 5:
         if (s[2] == '.' and s[5] == '.') or (s[2] == '/' and s[5] == '/'):
-            date1 = pandas.to_datetime("01.01.2010")
-            date2 = pandas.to_datetime(s, errors='ignore')
+            date1 = pandas.to_datetime("01.01.2010", dayfirst=True)
+            date2 = normalize_to_date(s)
+            if not date2:
+                return 0
+            date2 = pandas.to_datetime(date2, errors='ignore')
             if date2 == s:
                 return 0
-
             else:
                 try:
                     diff = int((date2 - date1) / numpy.timedelta64(1, 'D'))
@@ -555,75 +548,76 @@ def unique_char_count(s: str) -> int:
     return len(set(list(s)))
 
 
-def _convert_to_relative_dict(dict: dict):
-    """Convert a dict with absolute numbers as values to the same dict with the relative probabilities as values."""
-    return_dict = {}
-    abs_num = sum(dict.values())
-    for key, value in dict.items():
-        return_dict[key] = value / abs_num
-    return return_dict
+# def _convert_to_relative_dict(dict: dict):
+#     """Convert a dict with absolute numbers as values to the same dict with the relative probabilities as values."""
+#     return_dict = {}
+#     abs_num = sum(dict.values())
+#     for key, value in dict.items():
+#         return_dict[key] = value / abs_num
+#     return return_dict
 
 
-def plot_label_distribution(df_list: list, df_name_list=None) -> None:
-    """Plot the label-distribution of given DataFrames side-by-side."""
-    # check if any of the input df are empty
-    for df in df_list:
-        if df.empty:
-            logger.error('One of the Dataframes in df_list is empty.')
-            return None
+# def plot_label_distribution(df_list: list, df_name_list=None) -> None:
+#     """Plot the label-distribution of given DataFrames side-by-side."""
+#     from tabulate import tabulate
+#     # check if any of the input df are empty
+#     for df in df_list:
+#         if df.empty:
+#             logger.error('One of the Dataframes in df_list is empty.')
+#             return None
 
-    # helper function
-    def Convert(tup, di):
-        for a, b in tup:
-            di.setdefault(a, []).append(b)
-        return di
+#     # helper function
+#     def Convert(tup, di):
+#         for a, b in tup:
+#             di.setdefault(a, []).append(b)
+#         return di
 
-    # plot the relative distributions
-    logger.info('Percentage of total samples (per dataset) that have a certain label:')
-    rel_dict_list = []
-    for df in df_list:
-        rel_dict_list.append(_convert_to_relative_dict(collections.Counter(list(df['label_name']))))
-    logger.info(
-        '\n'
-        + tabulate(
-            pandas.DataFrame(rel_dict_list, index=df_name_list).transpose(),
-            floatfmt=".1%",
-            headers="keys",
-            tablefmt="pipe",
-        )
-        + '\n'
-    )
+#     # plot the relative distributions
+#     logger.info('Percentage of total samples (per dataset) that have a certain label:')
+#     rel_dict_list = []
+#     for df in df_list:
+#         rel_dict_list.append(_convert_to_relative_dict(collections.Counter(list(df['label_name']))))
+#     logger.info(
+#         '\n'
+#         + tabulate(
+#             pandas.DataFrame(rel_dict_list, index=df_name_list).transpose(),
+#             floatfmt=".1%",
+#             headers="keys",
+#             tablefmt="pipe",
+#         )
+#         + '\n'
+#     )
 
-    # print the number of documents in total and in the splits given
-    # total_count = 0
-    for index, df in enumerate(df_list):
-        doc_name = df_name_list[index] if df_name_list else str(index)
-        doc_count = len(set(df['document_id']))
-        logger.info(doc_name + ' contains ' + str(doc_count) + ' different documents.')
-        # total_count += doc_count
-    # logger.info(str(total_count) + ' documents in total.')
+#     # print the number of documents in total and in the splits given
+#     # total_count = 0
+#     for index, df in enumerate(df_list):
+#         doc_name = df_name_list[index] if df_name_list else str(index)
+#         doc_count = len(set(df['document_id']))
+#         logger.info(doc_name + ' contains ' + str(doc_count) + ' different documents.')
+#         # total_count += doc_count
+#     # logger.info(str(total_count) + ' documents in total.')
 
-    # plot the number of documents with at least one of a certain label
-    logger.info('Percentage of documents per split that contain a certain label at least once:')
-    doc_count_dict_list = []
-    for df in df_list:
-        doc_count_dict = {}
-        doc_count = len(set(df['document_id']))
-        toup_list = list(zip(list(df['label_name']), list(df['document_id'])))
-        list_dict = Convert(toup_list, {})
-        for key, value in list_dict.items():
-            doc_count_dict[key] = float(len(set(value)) / doc_count)
-        doc_count_dict_list.append(doc_count_dict)
-    logger.info(
-        '\n'
-        + tabulate(
-            pandas.DataFrame(doc_count_dict_list, index=df_name_list).transpose(),
-            floatfmt=".1%",
-            headers="keys",
-            tablefmt="pipe",
-        )
-        + '\n'
-    )
+#     # plot the number of documents with at least one of a certain label
+#     logger.info('Percentage of documents per split that contain a certain label at least once:')
+#     doc_count_dict_list = []
+#     for df in df_list:
+#         doc_count_dict = {}
+#         doc_count = len(set(df['document_id']))
+#         toup_list = list(zip(list(df['label_name']), list(df['document_id'])))
+#         list_dict = Convert(toup_list, {})
+#         for key, value in list_dict.items():
+#             doc_count_dict[key] = float(len(set(value)) / doc_count)
+#         doc_count_dict_list.append(doc_count_dict)
+#     logger.info(
+#         '\n'
+#         + tabulate(
+#             pandas.DataFrame(doc_count_dict_list, index=df_name_list).transpose(),
+#             floatfmt=".1%",
+#             headers="keys",
+#             tablefmt="pipe",
+#         )
+#         + '\n'
+#     )
 
 
 def get_first_candidate(document_text, document_bbox, line_list):
@@ -1647,11 +1641,21 @@ class GroupAnnotationSets:
         global_df['text'] = lines
         return global_df.fillna(0)
 
+    @classmethod
+    def dict_to_dataframe(cls, res_dict):
+        """Convert a Dict to Dataframe add label as column."""
+        df = pandas.DataFrame()
+        for name in res_dict.keys():
+            label_df = res_dict[name]
+            label_df['result_name'] = name
+            df = df.append(label_df, sort=True)
+        return df
+
     def extract_template_with_clf(self, text, res_dict):
         """Run template classifier to calculate sections."""
         logger.info('Extract sections.')
         n_nearest = self.n_nearest_template if hasattr(self, 'n_nearest_template') else 0
-        feature_df = self.build_document_template_feature_X(text, dict_to_dataframe(res_dict)).filter(
+        feature_df = self.build_document_template_feature_X(text, self.dict_to_dataframe(res_dict)).filter(
             self.template_feature_list, axis=1
         )
         feature_df = feature_df.reindex(columns=self.template_feature_list).fillna(0)
@@ -2151,6 +2155,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         :param documents: List of documents to extract features from.
         :param no_label_limit: Int or Float to limit number of new annotations to create during tokenization.
         :param retokenize: Bool for whether to recreate annotations from scratch or use already existing annotations.
+        :param require_revised_annotations: Only allow calculation of features if no unrevised Annotation present.
         :return: Dataframe of features and list of feature names.
         """
         logger.info(f'Start generating features for {len(documents)} documents.')

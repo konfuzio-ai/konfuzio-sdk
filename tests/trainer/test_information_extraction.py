@@ -867,6 +867,27 @@ class TestInformationExtraction(unittest.TestCase):
         assert feature_names[-1] == 'first_word_y1'
         assert feature_names[42] == 'feat_substring_count_h'
 
+    def test_time_feature_extraction(self):
+        """Test time it takes to extract the features from a Document."""
+        project = Project(id_=458)
+        category = project.get_category_by_id(16436)
+        pipeline = RFExtractionAI(category=category, use_separate_labels=True)
+
+        pipeline.tokenizer = WhitespaceTokenizer()
+
+        document = deepcopy(pipeline.category.project.get_document_by_id(601418))
+        pipeline.tokenizer.tokenize(document)
+
+        its = []
+        for _ in range(1):
+            start_t = time.process_time()
+            pipeline.features(document)
+            its.append(time.process_time() - start_t)
+
+        logger.info(f"This took {sum(its)/len(its)}s on average.")
+
+        assert sum(its) / len(its) < 2
+
     def test_extract_with_unfitted_clf(self):
         """Test to extract a Document."""
         document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
