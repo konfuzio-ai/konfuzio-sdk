@@ -543,12 +543,18 @@ To start and set up keycloak server:
 4. Create admin user
 5. Login to Administration Console
 6. You can add new Realm or use default (Master)
+
 .. image:: ./keycloak/add-realm.png
-7. Create new client from `Clients` navbar item
+
+8. Create new client from `Clients` navbar item
+
 .. image:: ./keycloak/add-client.png
-8. Fill client form correctly (`Access Type` and `Valid Redirect URIs` fields)
+
+9. Fill client form correctly (`Access Type` and `Valid Redirect URIs` fields)
+
 .. image:: ./keycloak/client-form.png
-9. Move to `Credentials` tab and save `Secret` value
+
+10. Move to `Credentials` tab and save `Secret` value
 10. In `Users` navbar item create users
 
 ###  Environment Variables
