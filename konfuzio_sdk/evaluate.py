@@ -708,16 +708,17 @@ class FileSplittingEvaluation:
                     fn += 1
                 elif not page_gt.is_first_page and not page_pr.is_first_page:
                     tn += 1
+        evaluation_calculator = EvaluationCalculator(tp=tp, fp=fp, fn=fn, tn=tn)
         if tp + fp != 0:  # excess evaluation calculator usage, can be called once
-            precision = EvaluationCalculator(tp=tp, fp=fp, fn=fn, tn=tn).precision
+            precision = evaluation_calculator.precision
         else:
             raise ZeroDivisionError("TP and FP are zero.")
         if tp + fn != 0:
-            recall = EvaluationCalculator(tp=tp, fp=fp, fn=fn, tn=tn).recall
+            recall = evaluation_calculator.recall
         else:
             raise ZeroDivisionError("TP and FN are zero.")
         if precision + recall != 0:
-            f1 = EvaluationCalculator(tp=tp, fp=fp, fn=fn, tn=tn).f1
+            f1 = evaluation_calculator.f1
         else:
             raise ZeroDivisionError("FP and FN are zero.")
         return tp, fp, fn, tn, precision, recall, f1

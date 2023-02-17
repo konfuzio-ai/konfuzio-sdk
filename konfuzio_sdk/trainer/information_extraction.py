@@ -118,7 +118,7 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     ):
         raise TypeError(
             "Loaded model's interface is not compatible with any AIs. Provide a model that has all"
-            "the abstract methods implemented."
+            " the abstract methods implemented."
         )
 
     if not hasattr(model, "name"):
@@ -2462,7 +2462,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         self.df_train = None
 
     @staticmethod
-    def has_compatible_interface(external):
+    def has_compatible_interface(external) -> bool:
         """
         Validate that an instance of an external model is similar to that of the class.
 
@@ -2471,7 +2471,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         try:
             if (
                 signature(external.save).parameters['output_dir'].annotation is str
-                and signature(external.save).parameters['keep_documents'].annotation is bool
+                and signature(external.save).parameters['keep_documents'].annotation
                 and signature(external.save).parameters['include_konfuzio'].annotation
                 and signature(external.has_compatible_interface).parameters['external']
                 and signature(external.has_compatible_interface).return_annotation is bool
