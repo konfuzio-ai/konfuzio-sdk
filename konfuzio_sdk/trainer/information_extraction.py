@@ -50,7 +50,6 @@ from konfuzio_sdk.normalize import (
     normalize_to_positive_float,
 )
 from konfuzio_sdk.regex import regex_matches
-from konfuzio_sdk.trainer.document_categorization import FallbackCategorizationModel
 from konfuzio_sdk.utils import get_timestamp, get_bbox, normalize_memory, get_sdk_version, memory_size_of
 
 from konfuzio_sdk.evaluate import Evaluation
@@ -108,17 +107,17 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
         logger.error(f"Loaded model's memory use ({memory_size_of(model)}) is greater than max_ram ({max_ram})")
 
     # to avoid circular import issue
-    from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, MultimodalFileSplittingModel
+    from konfuzio_sdk.trainer.document_categorization import AbstractCategorizationAI
+    from konfuzio_sdk.trainer.file_splitting import AbstractFileSplittingModel
 
     if not (
-        RFExtractionAI.has_compatible_interface(model)
-        or ContextAwareFileSplittingModel.has_compatible_interface(model)
-        or MultimodalFileSplittingModel.has_compatible_interface(model)
-        or FallbackCategorizationModel.has_compatible_interface(model)
+        Trainer.has_compatible_interface(model)
+        or AbstractFileSplittingModel.has_compatible_interface(model)
+        or AbstractCategorizationAI.has_compatible_interface(model)
     ):
         raise TypeError(
-            "Loaded model's interface is not compatible with any AIs. Provide a model that has all"
-            " the abstract methods implemented."
+            "Loaded model's interface is not compatible with any AIs. Please provide a model that has all the "
+            "abstract methods implemented."
         )
 
     if not hasattr(model, "name"):
@@ -1096,11 +1095,11 @@ class BaseModel(metaclass=abc.ABCMeta):
 
     @staticmethod
     @abc.abstractmethod
-    def has_compatible_interface(external):
+    def has_compatible_interface(other):
         """
-        Validate that an instance of an external model is similar to that of the class.
+        Validate that an instance of an AI implements the same interface defined by this AI class.
 
-        :param external: An instance of an external model to compare with.
+        :param other: An instance of an AI to compare with.
         """
 
     def reduce_model_weight(self):
@@ -1225,11 +1224,12 @@ class BaseModel(metaclass=abc.ABCMeta):
 class Trainer(BaseModel):
     """Parent class for all Extraction AIs, to extract information from unstructured human readable text."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, category: Category, *args, **kwargs):
         """Initialize ExtractionModel."""
         # Go through keyword arguments, and either save their values to our
         # instance, or raise an error.
         super().__init__()
+        self.category = Category
         self.clf = None
         self.label_feature_list = None  # will be set later
 
@@ -1424,13 +1424,30 @@ class Trainer(BaseModel):
         return merge is not None
 
     @staticmethod
-    @abc.abstractmethod
-    def has_compatible_interface(external):
+    def has_compatible_interface(other) -> bool:
         """
-        Validate that an instance of an external model is similar to that of the class.
+        Validate that an instance of an Extraction AI implements the same interface as Trainer.
 
-        :param external: An instance of an external model to compare with.
+        An Extraction AI should implement methods with the same signature as:
+        - Trainer.__init__
+        - Trainer.fit
+        - Trainer.extract
+        - Trainer.check_is_ready
+
+        :param other: An instance of an Extraction AI to compare with.
         """
+        try:
+            return (
+                signature(other.__init__).parameters['category'].annotation is Category
+                and signature(other.extract).parameters['document'].annotation is Document
+                and signature(other.extract).return_annotation is Document
+                and signature(other.fit)
+                and signature(other.check_is_ready)
+            )
+        except KeyError:
+            return False
+        except AttributeError:
+            return False
 
 
 class GroupAnnotationSets:
@@ -2460,27 +2477,3 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         """Remove all non-strictly necessary parameters before saving."""
         super().reduce_model_weight()
         self.df_train = None
-
-    @staticmethod
-    def has_compatible_interface(external) -> bool:
-        """
-        Validate that an instance of an external model is similar to that of the class.
-
-        :param external: An instance of an external model to compare with.
-        """
-        try:
-            if (
-                signature(external.save).parameters['output_dir'].annotation is str
-                and signature(external.save).parameters['keep_documents'].annotation
-                and signature(external.save).parameters['include_konfuzio'].annotation
-                and signature(external.has_compatible_interface).parameters['external']
-                and signature(external.has_compatible_interface).return_annotation is bool
-                and signature(external.check_is_ready)
-            ):
-                return True
-            else:
-                return False
-        except KeyError:
-            return False
-        except AttributeError:
-            return False

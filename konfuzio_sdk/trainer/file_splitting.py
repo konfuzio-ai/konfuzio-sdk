@@ -121,13 +121,30 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         return pkl_file_path
 
     @staticmethod
-    @abc.abstractmethod
-    def has_compatible_interface(external) -> bool:
+    def has_compatible_interface(other) -> bool:
         """
-        Validate that an instance of an external model is similar to that of the class.
+        Validate that an instance of a File Splitting Model implements the same interface as AbstractFileSplittingModel.
 
-        :param external: An instance of an external model to compare with.
+        A File Splitting Model should implement methods with the same signature as:
+        - AbstractFileSplittingModel.__init__
+        - AbstractFileSplittingModel.predict
+        - AbstractFileSplittingModel.fit
+        - AbstractFileSplittingModel.check_is_ready
+
+        :param other: An instance of a File Splitting Model to compare with.
         """
+        try:
+            return (
+                signature(other.__init__).parameters['categories'].annotation is List[Category]
+                and signature(other.predict).parameters['page'].annotation is Page
+                and signature(other.predict).return_annotation is Page
+                and signature(other.fit)
+                and signature(other.check_is_ready)
+            )
+        except KeyError:
+            return False
+        except AttributeError:
+            return False
 
 
 class MultimodalFileSplittingModel(AbstractFileSplittingModel):
@@ -363,30 +380,6 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         if not self.model:
             raise AttributeError(f'{self} has to be fitted before running a prediction.')
 
-    @staticmethod
-    def has_compatible_interface(external) -> bool:
-        """
-        Validate that an instance of an external model is similar to that of the class.
-
-        :param external: An instance of an external model to compare with.
-        """
-        try:
-            if (
-                signature(external.__init__).parameters['categories'].annotation is List[Category]
-                and signature(external.predict).parameters['page'].annotation is Page
-                and signature(external.predict).return_annotation is Page
-                and signature(external.has_compatible_interface).parameters['external']
-                and signature(external.has_compatible_interface).return_annotation is bool
-                and signature(external.check_is_ready)
-            ):
-                return True
-            else:
-                return False
-        except KeyError:
-            return False
-        except AttributeError:
-            return False
-
 
 class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
     """
@@ -487,32 +480,6 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
                 f"_exclusive_first_page_strings."
             )
 
-    @staticmethod
-    def has_compatible_interface(external) -> bool:
-        """
-        Validate that an instance of an external model is similar to that of the class.
-
-        :param external: An instance of an external model to compare with.
-        """
-        try:
-            if (
-                signature(external.__init__).parameters['categories'].annotation is List[Category]
-                and signature(external.__init__).parameters['tokenizer']
-                and signature(external.fit).parameters['allow_empty_categories'].annotation is bool
-                and signature(external.predict).parameters['page'].annotation is Page
-                and signature(external.predict).return_annotation is Page
-                and signature(external.has_compatible_interface).parameters['external']
-                and signature(external.has_compatible_interface).return_annotation is bool
-                and signature(external.check_is_ready)
-            ):
-                return True
-            else:
-                return False
-        except KeyError:
-            return False
-        except AttributeError:
-            return False
-
 
 class SplittingAI:
     """Split a given Document and return a list of resulting shorter Documents."""
@@ -525,12 +492,9 @@ class SplittingAI:
         :raises ValueError: When the model is not inheriting from AbstractFileSplittingModel class.
         """
         self.tokenizer = None
-        self.model = model
-        if not (
-            ContextAwareFileSplittingModel.has_compatible_interface(self.model)
-            or MultimodalFileSplittingModel.has_compatible_interface(self.model)
-        ):
+        if not AbstractFileSplittingModel.has_compatible_interface(model):
             raise ValueError("The model is not inheriting from AbstractFileSplittingModel class.")
+        self.model = model
         if type(self.model) == ContextAwareFileSplittingModel:
             self.tokenizer = self.model.tokenizer
 

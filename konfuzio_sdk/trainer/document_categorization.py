@@ -1,7 +1,6 @@
 """Implements a Categorization Model."""
 
 import abc
-import inspect
 import logging
 
 from copy import deepcopy
@@ -93,13 +92,30 @@ class AbstractCategorizationAI(metaclass=abc.ABCMeta):
         return self.evaluation
 
     @staticmethod
-    @abc.abstractmethod
-    def has_compatible_interface(external):
+    def has_compatible_interface(other):
         """
-        Validate that an instance of an external model is similar to that of the class.
+        Validate that an instance of a Categorization AI implements the same interface as AbstractCategorizationAI.
 
-        :param external: An instance of an external model to compare with.
+        A Categorization AI should implement methods with the same signature as:
+        - AbstractCategorizationAI.__init__
+        - AbstractCategorizationAI.fit
+        - AbstractCategorizationAI._categorize_page
+        - AbstractCategorizationAI.check_is_ready
+
+        :param other: An instance of a Categorization AI to compare with.
         """
+        try:
+            return (
+                signature(other.__init__).parameters['categories'].annotation is List[Category]
+                and signature(other._categorize_page).parameters['page'].annotation is Page
+                and signature(other._categorize_page).return_annotation is Page
+                and signature(other.fit)
+                and signature(other.check_is_ready)
+            )
+        except KeyError:
+            return False
+        except AttributeError:
+            return False
 
 
 class FallbackCategorizationModel(AbstractCategorizationAI):
@@ -140,29 +156,3 @@ class FallbackCategorizationModel(AbstractCategorizationAI):
             first_page = page.document.pages()[0]
             _ = CategoryAnnotation(category=first_page.category, confidence=1.0, page=page)
         return page
-
-    @staticmethod
-    def has_compatible_interface(external):
-        """
-        Validate that an instance of an external model is similar to that of the class.
-
-        :param external: An instance of an external model to compare with.
-        """
-        try:
-            if (
-                signature(external.__init__).parameters['categories'].annotation is List[Category]
-                and signature(external.save).parameters['output_dir'].annotation is str
-                and signature(external.save).parameters['include_konfuzio'].annotation
-                and signature(external.fit).return_annotation is inspect._empty
-                and signature(external._categorize_page).parameters['page'].annotation is Page
-                and signature(external._categorize_page).return_annotation is Page
-                and signature(external.has_compatible_interface).parameters['external']
-                and signature(external.has_compatible_interface).return_annotation is bool
-            ):
-                return True
-            else:
-                return False
-        except KeyError:
-            return False
-        except AttributeError:
-            return False
