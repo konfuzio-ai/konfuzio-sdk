@@ -541,7 +541,9 @@ class CategorizationEvaluation:
             fp = sum_columns[ind] - tp
             fn = sum_rows[ind] - tp
             tn = sum_all - fn - fp - tp
-            results[category_id] = EvaluationCalculator(tp=tp, fp=fp, fn=fn, tn=tn)
+            results[category_id] = EvaluationCalculator(
+                tp=tp, fp=fp, fn=fn, tn=tn
+            )  # the value is evaluation calculator, not a tuple as a result
 
         return results
 
@@ -706,7 +708,7 @@ class FileSplittingEvaluation:
                     fn += 1
                 elif not page_gt.is_first_page and not page_pr.is_first_page:
                     tn += 1
-        if tp + fp != 0:
+        if tp + fp != 0:  # excess evaluation calculator usage, can be called once
             precision = EvaluationCalculator(tp=tp, fp=fp, fn=fn, tn=tn).precision
         else:
             raise ZeroDivisionError("TP and FP are zero.")
