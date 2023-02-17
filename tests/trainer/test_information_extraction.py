@@ -1289,7 +1289,7 @@ def test_load_model_corrupt_file():
 def test_load_model_wrong_pickle_data():
     """Test loading of wrong pickle data."""
     path = "trainer/list_test.pkl"
-    with pytest.raises(TypeError, match="not inheriting from the BaseModel class."):
+    with pytest.raises(TypeError, match="Loaded model's interface is not compatible with any AIs"):
         load_model(path)
 
 
