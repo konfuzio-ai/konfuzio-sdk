@@ -50,7 +50,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#customizing-document-processes-with-the-konfuzio-sdk">Customizing document processes with the Konfuzio SDK</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#three-steps-to-customize-document-ai-pipelines">Three steps to customize document AI pipelines</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#customize-extraction-ai">Customize Extraction AI</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#customize-categorization-ai-coming-february-17th-2023">Customize Categorization AI (coming February 17th, 2023)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#customize-categorization-ai">Customize Categorization AI</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#customize-file-splitting-ai">Customize File Splitting AI</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#other-use-cases-around-documents">Other use cases around documents</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#build-your-own-pdf-form-generator">Build your own PDF Form Generator</a></li>
@@ -220,8 +220,8 @@ the following interface:</p>
 <p>For a more in depth tutorial about the usage of Extraction AIs in the SDK see
 <a class="reference external" href="examples/examples.html#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents">Train a Konfuzio SDK Model to Extract Information From Payslip Documents</a>.</p>
 </section>
-<section id="customize-categorization-ai-coming-february-17th-2023">
-<h3>Customize Categorization AI (coming February 17th, 2023)<a class="headerlink" href="#customize-categorization-ai-coming-february-17th-2023" title="Permalink to this headline">¶</a></h3>
+<section id="customize-categorization-ai">
+<h3>Customize Categorization AI<a class="headerlink" href="#customize-categorization-ai" title="Permalink to this headline">¶</a></h3>
 <p>Any custom <a class="reference external" href="sourcecode.html#categorization-ai">Categorization AI</a> (derived from the Konfuzio <code class="docutils literal notranslate"><span class="pre">AbstractCategorizationModel</span></code> class)<span class="raw-html-m2r"><br></span>
 should implement the following interface:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">konfuzio_sdk.trainer.document_categorization</span> <span class="kn">import</span> <span class="n">AbstractCategorizationModel</span>
@@ -337,7 +337,7 @@ should implement the following interface:</p>
 </pre></div>
 </div>
 <p>For a more in depth tutorial about the usage of File Splitting AIs in the SDK see
-<a class="reference external" href="tutorials.html#splitting-for-multi-document-files-step-by-step-guide">Splitting for multi-file Documents: Step-by-step guide</a>.</p>
+<a class="reference external" href="tutorials.html#splitting-for-multi-document-files-step-by-step-guide">Splitting for multi-Document files: Step-by-step guide</a>.</p>
 </section>
 <section id="other-use-cases-around-documents">
 <h3>Other use cases around documents<a class="headerlink" href="#other-use-cases-around-documents" title="Permalink to this headline">¶</a></h3>
