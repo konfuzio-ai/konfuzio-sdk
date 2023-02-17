@@ -1,4 +1,4 @@
-"""Test sentence tokenizers."""
+"""Test Sentence Tokenizer."""
 import logging
 import unittest
 
@@ -57,7 +57,7 @@ class TestDetectronSentenceTokenizer(unittest.TestCase):
 
         assert virtual_doc.annotations(use_correct=False)[0].label.name == 'title'
         assert virtual_doc.annotations(use_correct=False)[1].label.name == 'text'
-        assert virtual_doc.annotations(use_correct=False)[4].label.name == 'title'
+        assert virtual_doc.annotations(use_correct=False)[5].label.name == 'title'
 
 
 class TestLineDistanceSentenceTokenizer(unittest.TestCase):

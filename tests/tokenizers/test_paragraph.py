@@ -1,4 +1,4 @@
-"""Test paragraph tokenizers."""
+"""Test Paragraph Tokenizer."""
 import logging
 import unittest
 
