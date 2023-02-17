@@ -43,7 +43,7 @@ These changes are for the tokenizers/new SDK branch.
 
 Upcoming...
 
-## released-2023-02-08_10-58-15
+## released-2023-02-17_14-27-57
 
 This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Document Validation UI in version [0.1.1](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
 
