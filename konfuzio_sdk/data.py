@@ -369,7 +369,7 @@ class Bbox:
     This option is available for compatibility reasons since some OCR engines can sometimes return character level
     bboxes with zero width or height. If STRICT, it doesn't allow zero size bboxes. If DISABLED, it allows bboxes that
     have negative size, or coordinates beyond the Page bounds.
-    For the default behaviour see https://dev.konfuzio.com/sdk/data_validations.html#bbox-validation-rules.
+    For the default behaviour see https://dev.konfuzio.com/sdk/tutorials.html#data-validation-rules.
 
     :param validation: One of ALLOW_ZERO_SIZE (default), STRICT, or DISABLED.
     """
@@ -1247,7 +1247,7 @@ class Span(Data):
         :param end_offset: Ending of the offset string (int)
         :param annotation: The Annotation the Span belong to
         :param strict_validation: Whether to apply strict validation rules.
-        See https://dev.konfuzio.com/sdk/data_validation.html.
+        See https://dev.konfuzio.com/sdk/tutorials.html#data-validation-rules.
         """
         self.id_local = next(Data.id_iter)
         self.annotation: Annotation = annotation
@@ -1267,7 +1267,7 @@ class Span(Data):
         Validate containted data.
 
         :param strict: If False, it allows Spans to have zero length, or span more than one visual line. For more
-        details see https://dev.konfuzio.com/sdk/data_validations.html#span-validation-rules.
+        details see https://dev.konfuzio.com/sdk/tutorials.html#data-validation-rules.
         """
         if self.end_offset == self.start_offset == 0:
             logger.error(f"{self} is intentionally left empty.")
@@ -2639,7 +2639,7 @@ class Document(Data):
         """Add an Annotation to a Document.
 
         The Annotation is only added to the Document if the data validation tests are passing for this Annotation.
-        See https://dev.konfuzio.com/sdk/data_validations.html#annotation-validation-rules.
+        See https://dev.konfuzio.com/sdk/tutorials.html#data-validation-rules.
 
         :param annotation: Annotation to add in the Document
         :return: Input Annotation.
@@ -3192,7 +3192,7 @@ class Project(Data):
         :param update: Whether to sync local files with the Project online.
         :param max_ram: Maximum RAM used by AI models trained on this Project.
         :param strict_data_validation: Whether to apply strict data validation rules.
-        See https://dev.konfuzio.com/sdk/data_validations.html.
+        See https://dev.konfuzio.com/sdk/tutorials.html#data-validation-rules.
         """
         self.id_local = next(Data.id_iter)
         self.id_ = id_  # A Project with None ID is not retrieved from the HOST
