@@ -1,22 +1,22 @@
 """
 Process Documents that consist of several files and propose splitting them into the Sub-Documents accordingly.
 
-A ContextAwareFileSplittingModel uses a simple hands-on logic based on scanning Category's Documents and finding strings
-exclusive for first Pages of all Documents within the Category. Upon predicting whether a Page is a potential splitting
-point (meaning whether it is first or not), we compare Page's contents to these exclusive first-page strings; if there
-is occurrence of at least one such string, we mark a Page to be first (thus meaning it is a splitting point). An
-instance of the ContextAwareFileSplittingModel can be used to initially build a file-splitting pipeline and can later
-be replaced with more complex solutions.
+A Context Aware File Splitting Model uses a simple hands-on logic based on scanning Category's Documents and finding
+strings exclusive for first Pages of all Documents within the Category. Upon predicting whether a Page is a potential
+splitting point (meaning whether it is first or not), we compare Page's contents to these exclusive first-page strings;
+if there is occurrence of at least one such string, we mark a Page to be first (thus meaning it is a splitting point).
+An instance of the Context Aware File Splitting Model can be used to initially build a File Splitting pipeline and can
+later be replaced with more complex solutions.
 
-A ContextAwareFileSplittingModel instance can be used with an interface provided by SplittingAI – this class accepts a
-whole Document instead of a single Page and proposes splitting points or splits the original Documents.
+A Context Aware File Splitting Model instance can be used with an interface provided by Splitting AI – this class
+accepts a whole Document instead of a single Page and proposes splitting points or splits the original Documents.
 
-A MultimodalFileSplittingModel is a model that uses an approach that processes both visual and textual parts of the
-Pages and processes them independently via the combined VGG19 architecture (simplified) and LegalBERT, and passing the
+A Multimodal File Splitting Model is a model that uses an approach that takes both visual and textual parts of the
+Pages and processes them independently via the combined VGG19 architecture (simplified) and LegalBERT, passing the
 resulting outputs together to a Multi-Layered Perceptron. Model's output is also a prediction of a Page being first or
 non-first.
 
-For developing a custom file-splitting approach, we propose an abstract class.
+For developing a custom File Splitting approach, we propose an abstract class.
 """
 import abc
 import logging
@@ -39,19 +39,19 @@ from typing import List
 
 from konfuzio_sdk.data import Document, Page, Category
 from konfuzio_sdk.evaluate import FileSplittingEvaluation
-from konfuzio_sdk.trainer.information_extraction import load_model, BaseModel
+from konfuzio_sdk.trainer.information_extraction import BaseModel
 from konfuzio_sdk.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
 
-# for proper compiling of MultimodalFileSplittingModel that requires eager running instead of lazy
+# proper compiling of Multimodal File Splitting Model requires eager running instead of lazy
 # because of multiple inputs (read more about eager vs lazy (graph) here)
 # https://towardsdatascience.com/eager-execution-vs-graph-execution-which-is-better-38162ea4dbf6
 tf.config.experimental_run_functions_eagerly(True)
 
 
 class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
-    """Abstract class for the filesplitting model."""
+    """Abstract class for the File Splitting model."""
 
     @abc.abstractmethod
     def __init__(self, categories: List[Category], *args, **kwargs):
@@ -64,7 +64,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         super().__init__()
         self.output_dir = None
         if not categories:
-            raise ValueError("Cannot initialize ContextAwareFileSplittingModel on an empty list.")
+            raise ValueError("Cannot initialize ContextAwareFileSplittingModel class on an empty list.")
         for category in categories:
             if not isinstance(category, Category):
                 raise ValueError("All elements of the list have to be Categories.")
@@ -149,7 +149,7 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
 
 class MultimodalFileSplittingModel(AbstractFileSplittingModel):
     """
-    Split a multi-Document file into a list of shorter documents based on model's prediction.
+    Split a multi-Document file into a list of shorter Documents based on model's prediction.
 
     We use an approach suggested by Guha et al.(2022) that incorporates steps for accepting separate visual and textual
     inputs and processing them independently via the VGG19 architecture and LegalBERT model which is essentially
@@ -169,7 +169,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         **kwargs,
     ):
         """
-        Initialize the Fusion filesplitting model.
+        Initialize the Multimodal File Splitting Model.
 
         :param categories: Categories from which Documents for training and testing are used.
         :type categories: List[Category]
@@ -178,7 +178,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         HuggingFace model. Default is LegalBERT.
         :type text_processing_model: str
         """
-        logging.info('Initializing MultimodalFileSplittingModel.')
+        logging.info('Initializing Multimodal File Splitting Model.')
         super().__init__(categories=categories)
         self.output_dir = self.project.model_folder
         self.requires_images = True
@@ -191,7 +191,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         self.test_labels = None
         self.input_shape = None
         self.model = None
-        logger.info('Initializing BERT components of the MultimodalFileSplittingModel.')
+        logger.info('Initializing BERT components of the Multimodal File Splitting Model.')
         configuration = AutoConfig.from_pretrained(text_processing_model)
         configuration.num_labels = 2
         configuration.output_hidden_states = True
@@ -202,11 +202,11 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
 
     def _preprocess_documents(self, data: List[Document]) -> (List[str], List[str], List[int]):
         """
-        Take a list of Documents and extract paths to its pages' images, texts and labels of first or non-first class.
+        Take a list of Documents and extract paths to its Pages' images, texts and labels of first or non-first class.
 
         :param data: A list of Documents to preprocess.
         :type data: List[Document]
-        :returns: Three lists of strings – paths to pages' images, pages' texts and pages' labels.
+        :returns: Three lists of strings – paths to Pages' images, Pages' texts and Pages' labels.
         """
         page_image_paths = []
         texts = []
@@ -225,7 +225,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         """
         Take an image and transform it into the format acceptable by the model's architecture.
 
-        :param page_image_paths: A list of pages' images to be transformed.
+        :param page_image_paths: A list of Pages' images to be transformed.
         :type page_image_paths: List[str]
         :returns: A list of processed images.
         """
@@ -248,7 +248,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         :param use_gpu: Run training on GPU if available.
         :type use_gpu: bool
         """
-        logger.info('Fitting MultimodalFileSplittingModel.')
+        logger.info('Fitting Multimodal File Splitting Model.')
         for doc in self.documents + self.test_documents:
             for page in doc.pages():
                 if not os.path.exists(page.image_path):
@@ -265,7 +265,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         self.test_labels = tf.cast(np.asarray(test_labels).reshape((-1, 1)), tf.float32)
         self.train_img_data = np.concatenate(train_images)
         self.test_img_data = np.concatenate(test_images)
-        logger.info('Image data preprocessing finished')
+        logger.info('Image data preprocessing finished.')
         for text in train_texts:
             inputs = self.bert_tokenizer(text, truncation=True, return_tensors='pt')
             with torch.no_grad():
@@ -282,7 +282,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         self.test_txt_data = [np.asarray(x).astype('float32') for x in self.test_txt_data]
         self.test_txt_data = np.asarray(self.test_txt_data)
         logger.info('Text data preprocessing finished.')
-        logger.info('MultimodalFileSplittingModel compiling started.')
+        logger.info('Multimodal File Splitting Model compiling started.')
         # we combine an output of a simplified VGG19 architecture for image processing (read more about it
         # at https://iq.opengenus.org/vgg19-architecture/) and an output of BERT in an MLP-like
         # architecture (read more about it at http://shorturl.at/puKN3). a scheme of our custom architecture can be
@@ -318,7 +318,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         output = Dense(1, activation='sigmoid')(x)
         self.model = Model(inputs=[img_input, txt_input], outputs=output)
         self.model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-        logger.info('MultimodalFileSplittingModel compiling finished.')
+        logger.info('Multimodal File Splitting Model compiling finished.')
         if not use_gpu:
             with tf.device('/cpu:0'):
                 self.model.fit([self.train_img_data, self.train_txt_data], self.train_labels, epochs=epochs, verbose=1)
@@ -330,7 +330,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
                     )
             else:
                 raise ValueError('Fitting on the GPU is impossible because there is no GPU available on the device.')
-        logger.info('MultimodalFileSplittingModel fitting finished.')
+        logger.info('Multimodal File Splitting Model fitting finished.')
 
     def predict(self, page: Page, use_gpu: bool = False) -> Page:
         """
@@ -373,7 +373,7 @@ class MultimodalFileSplittingModel(AbstractFileSplittingModel):
         return page
 
     def check_is_ready(self):
-        """Check if Fusion model instance is ready for inference."""
+        """Check if Multimodal File Splitting Model instance is ready for inference."""
         if not self.categories:
             raise AttributeError(f'{self} requires Categories.')
 
@@ -391,7 +391,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
 
     def __init__(self, categories: List[Category], tokenizer, *args, **kwargs):
         """
-        Initialize the ContextAwareFileSplittingModel.
+        Initialize the Context Aware File Splitting Model.
 
         :param categories: A list of Categories to run training/prediction of the model on.
         :type categories: List[Category]
@@ -399,9 +399,8 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         strings.
         :raises ValueError: When an empty list of Categories is passed into categories argument.
         :raises ValueError: When a list passed into categories contains elements other than Categories.
-        :raises ValueError: When a list passed into categories contains at least one Category with no documents or test
-        documents.
-        :raises ValueError: When a list passed into categories contains Categories from different Projects.
+        :raises ValueError: When a list passed into categories contains at least one Category with no Documents or test
+        Documents.
         """
         super().__init__(categories=categories)
         self.output_dir = self.project.model_folder
@@ -459,9 +458,9 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
 
     def check_is_ready(self):
         """
-        Check file splitting model is ready for inference.
+        Check File Splitting Model is ready for inference.
 
-        :raises AttributeError: When no tokenizer or no Categories were passed.
+        :raises AttributeError: When no Tokenizer or no Categories were passed.
         :raises ValueError: When no Categories have _exclusive_first_page_strings.
         """
         if self.tokenizer is None:
@@ -489,12 +488,11 @@ class SplittingAI:
         """
         Initialize the class.
 
-        :param model: A path to an existing .cloudpickle model or to a previously trained instance of
-        ContextAwareFileSplittingModel().
+        :param model: A previously trained instance of the File Splitting Model.
         :raises ValueError: When the model is not inheriting from AbstractFileSplittingModel class.
         """
         self.tokenizer = None
-        self.model = load_model(model) if isinstance(model, str) else model
+        self.model = model
         if not issubclass(
             type(self.model), AbstractFileSplittingModel
         ) or not ContextAwareFileSplittingModel.has_compatible_interface(self.model):
@@ -528,7 +526,7 @@ class SplittingAI:
         """
         Create a list of Sub-Documents built from the original Document, split.
 
-        :param document: The document to suggest Page splits for.
+        :param document: The Document to suggest Page splits for.
         :type document: Document
         :returns: A list of Sub-Documents created from the original Document, split at predicted first Pages.
         """
@@ -573,7 +571,7 @@ class SplittingAI:
         self, document: Document, return_pages: bool = False, inplace: bool = False
     ) -> List[Document]:
         """
-        Propose a set of resulting documents from a single Documents.
+        Propose a set of resulting Documents from a single Document.
 
         :param document: An input Document to be split.
         :type document: Document
@@ -597,12 +595,12 @@ class SplittingAI:
 
     def evaluate_full(self, use_training_docs: bool = False) -> FileSplittingEvaluation:
         """
-        Evaluate the SplittingAI's performance.
+        Evaluate the Splitting AI's performance.
 
         :param use_training_docs: If enabled, runs evaluation on the training data to define its quality; if disabled,
         runs evaluation on the test data.
         :type use_training_docs: bool
-        :return: Evaluation information for the filesplitting context-aware logic.
+        :return: Evaluation information for the model.
         """
         pred_docs = []
         if not use_training_docs:
