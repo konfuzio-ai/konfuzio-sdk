@@ -27,6 +27,7 @@ import numpy as np
 import tensorflow as tf
 
 from copy import deepcopy
+from inspect import signature
 from PIL import Image
 from tensorflow.keras import Input
 from tensorflow.keras.applications.vgg19 import preprocess_input
@@ -118,6 +119,32 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
             f'{get_timestamp()}_{self.name_lower()}_{self.project.id_}' f'.pkl',
         )
         return pkl_file_path
+
+    @staticmethod
+    def has_compatible_interface(external) -> bool:
+        """
+        Validate that an instance of an external model is similar to that of the class.
+
+        :param external: An instance of an external model to compare with.
+        """
+        try:
+            if (
+                signature(external.__init__).parameters['categories'].annotation is List[Category]
+                and signature(external.__init__).parameters['tokenizer']
+                and signature(external.fit).parameters['allow_empty_categories'].annotation is bool
+                and signature(external.predict).parameters['page'].annotation is Page
+                and signature(external.predict).return_annotation is Page
+                and signature(external.has_compatible_interface).parameters['external']
+                and signature(external.has_compatible_interface).return_annotation is bool
+                and signature(external.check_is_ready)
+            ):
+                return True
+            else:
+                return False
+        except KeyError:
+            return False
+        except AttributeError:
+            return False
 
 
 class MultimodalFileSplittingModel(AbstractFileSplittingModel):
@@ -468,7 +495,9 @@ class SplittingAI:
         """
         self.tokenizer = None
         self.model = load_model(model) if isinstance(model, str) else model
-        if not issubclass(type(self.model), AbstractFileSplittingModel):
+        if not issubclass(
+            type(self.model), AbstractFileSplittingModel
+        ) or not ContextAwareFileSplittingModel.has_compatible_interface(self.model):
             raise ValueError("The model is not inheriting from AbstractFileSplittingModel class.")
         if type(self.model) == ContextAwareFileSplittingModel:
             self.tokenizer = self.model.tokenizer
