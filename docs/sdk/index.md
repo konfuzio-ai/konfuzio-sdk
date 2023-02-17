@@ -91,7 +91,7 @@ extraction_pipeline_loaded = load_model(pickle_model_path)
 For a more in depth tutorial about the usage of Extraction AIs in the SDK see 
 [Train a Konfuzio SDK Model to Extract Information From Payslip Documents](examples/examples.html#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents).
 
-### Customize Categorization AI (coming February 17th, 2023)
+### Customize Categorization AI
 
 Any custom [Categorization AI](sourcecode.html#categorization-ai) (derived from the Konfuzio `AbstractCategorizationModel` class)  
 should implement the following interface:
@@ -212,7 +212,7 @@ file_splitting_pipeline_loaded = SplittingAI(file_splitting_model_loaded)
 ```
 
 For a more in depth tutorial about the usage of File Splitting AIs in the SDK see 
-[Splitting for multi-file Documents: Step-by-step guide](tutorials.html#splitting-for-multi-document-files-step-by-step-guide).
+[Splitting for multi-Document files: Step-by-step guide](tutorials.html#splitting-for-multi-document-files-step-by-step-guide).
 
 ### Other use cases around documents
 

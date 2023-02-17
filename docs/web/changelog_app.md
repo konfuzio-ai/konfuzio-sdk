@@ -39,16 +39,30 @@ These changes are for the tokenizers/new SDK branch.
 - A bug during the extraction post-processing steps, which was causing the first line items of each page to be skipped ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9561))
 -->
 
-## Next Release (estimated release date: 20th February 2023)
+## Next Release (estimated release date: 3th March 2023)
 
 Upcoming...
+
+## released-2023-02-17_14-27-57
+
+This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Document Validation UI in version [0.1.1](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
+
+### Added
+- [Allow to add multiple Annotations and Annotation Sets in one API request](https://app.konfuzio.com/v3/swagger/#/annotations/annotations_create) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10315)).
+- [Allow to edit multiple Documents at once](https://help.konfuzio.com/modules/documents/index.html#bulk-edit) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/5898)).
+
+### Fixed
+- When using Keycloak, logging out now also terminates the Keycloak session ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10361)).
+- Handle the upload of corrupted Documents with a proper error message ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10113)
+- When using an AI in a other Project then it was trained on, a potentiall conflict with existing Labels is now avoided ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10191))
+
 
 ## released-2023-02-08_10-58-15
 
 This version uses Konfuzio Trainer in version v.0.3.23, the Konfuzio Python SDK in version v.0.1.16 and Konfuzio Capture Vue in version [0.1.1](https://github.com/konfuzio-ai/konfuzio-capture-vue/releases/).
 
 ### Added
-- [For self-hosted installations, allow to upload customized AIs](https://testing.konfuzio.com/v3/swagger/#/extraction-ais/extraction_ais_upload_create) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9432)).
+- [For self-hosted installations, allow to upload customized AIs](https://app.konfuzio.com/v3/swagger/#/extraction-ais/extraction_ais_upload_create) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9432)).
 - [Track if a User accepts a suggested Category in the DVUI](https://github.com/konfuzio-ai/document-validation-ui) ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/9995)).
 - [Allow to change the Category of Documents wth existing Annotations](https://help.konfuzio.com/modules/documents/index.html#category)  ([Internal Ticket](https://git.konfuzio.com/konfuzio/objectives/-/issues/10564)).
 
