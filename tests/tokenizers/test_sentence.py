@@ -20,42 +20,44 @@ class TestDetectronSentenceTokenizer(unittest.TestCase):
         cls.project = Project(id_=458)
         cls.tokenizer = SentenceTokenizer(mode='detectron')
 
-        cls.document_1 = cls.project.get_document_by_id(601418)  # Lorem ipsum test document
-        cls.document_2 = cls.project.get_document_by_id(601419)  # Two column paper
+        cls.document_1 = cls.project.get_document_by_id(615403)  # first 2 pages from YOLO9000 paper
 
     def test_sentence_document_1(self):
-        """Test detectron Sentence tokenizer on Lorem ipsum Document."""
+        """Test detectron Sentence tokenizer on 2 Page YOLO9000 Document."""
         virtual_doc = deepcopy(self.document_1)
 
         doc = self.tokenizer.tokenize(virtual_doc)
 
-        assert len(doc.annotations(use_correct=False)) == 166
+        assert len(doc.annotations(use_correct=False)) == 102
 
         pages = doc.pages()
 
-        assert len(pages) == 3
+        assert len(pages) == 2
 
-        assert len(pages[0].annotations(use_correct=False)) == 51
-        assert len(pages[1].annotations(use_correct=False)) == 58
-        assert len(pages[2].annotations(use_correct=False)) == 57
+        assert len(pages[0].annotations(use_correct=False)) == 37
+        assert len(pages[1].annotations(use_correct=False)) == 65
 
-    def test_sentence_document_2(self):
-        """Test detectron Setence tokenizer on two column paper."""
-        virtual_doc = deepcopy(self.document_2)
+    def test_sentence_document_1_use_detectron_labels(self):
+        """Test detectron Sentence tokenizer on 2 Page YOLO9000 Document with create_detectron_labels option."""
+        virtual_doc = deepcopy(self.document_1)
 
-        doc = self.tokenizer.tokenize(virtual_doc)
-        assert len(doc.annotations(use_correct=False)) == 403
+        tokenizer = SentenceTokenizer(mode='detectron', create_detectron_labels=True)
 
-        pages = doc.pages()
-        assert len(pages) == 7
+        virtual_doc = tokenizer(virtual_doc)
 
-        assert len(pages[0].annotations(use_correct=False)) == 45
-        assert len(pages[1].annotations(use_correct=False)) == 29
-        assert len(pages[2].annotations(use_correct=False)) == 62
-        assert len(pages[3].annotations(use_correct=False)) == 58
-        assert len(pages[4].annotations(use_correct=False)) == 49
-        assert len(pages[5].annotations(use_correct=False)) == 48
-        assert len(pages[6].annotations(use_correct=False)) == 112
+        assert len(virtual_doc.annotations(use_correct=False)) == 102
+        assert len(virtual_doc.spans(use_correct=False)) == 225
+
+        pages = virtual_doc.pages()
+
+        assert len(pages) == 2
+
+        assert len(pages[0].annotations(use_correct=False)) == 37
+        assert len(pages[1].annotations(use_correct=False)) == 65
+
+        assert virtual_doc.annotations(use_correct=False)[0].label.name == 'title'
+        assert virtual_doc.annotations(use_correct=False)[1].label.name == 'text'
+        assert virtual_doc.annotations(use_correct=False)[4].label.name == 'title'
 
 
 class TestLineDistanceSentenceTokenizer(unittest.TestCase):
@@ -67,20 +69,19 @@ class TestLineDistanceSentenceTokenizer(unittest.TestCase):
         cls.project = Project(id_=458)
         cls.tokenizer = SentenceTokenizer(mode='line_distance')
 
-        cls.document_1 = cls.project.get_document_by_id(601418)  # Lorem ipsum test document
+        cls.document_1 = cls.project.get_document_by_id(615403)  # first 2 pages from YOLO9000 paper
 
     def test_sentence_document_1(self):
-        """Test detectron Sentence tokenizer on Lorem ipsum Document."""
+        """Test detectron Sentence tokenizer on 2 Page YOLO9000 Document."""
         virtual_doc = deepcopy(self.document_1)
 
         doc = self.tokenizer.tokenize(virtual_doc)
 
-        assert len(doc.annotations(use_correct=False)) == 165
+        assert len(doc.annotations(use_correct=False)) == 97
 
         pages = doc.pages()
 
-        assert len(pages) == 3
+        assert len(pages) == 2
 
-        assert len(pages[0].annotations(use_correct=False)) == 51
-        assert len(pages[1].annotations(use_correct=False)) == 57
-        assert len(pages[2].annotations(use_correct=False)) == 57
+        assert len(pages[0].annotations(use_correct=False)) == 35
+        assert len(pages[1].annotations(use_correct=False)) == 62

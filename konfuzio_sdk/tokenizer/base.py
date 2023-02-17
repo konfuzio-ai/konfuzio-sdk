@@ -47,6 +47,10 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
         """Check if two Tokenizers are the same."""
         return hash(self) == hash(other)
 
+    def __call__(self, document: Document) -> Document:
+        """Tokenize the Document with this Tokenizer."""
+        return self.tokenize(document=document)
+
     @abc.abstractmethod
     def __hash__(self):
         """Get unique hash for Tokenizer."""

@@ -27,22 +27,44 @@ class TestDetectronParagraphTokenizer(unittest.TestCase):
         """Test detectron Paragraph tokenizer on Lorem ipsum Document."""
         virtual_doc = deepcopy(self.document_1)
 
-        doc = self.tokenizer.tokenize(virtual_doc)
+        virtual_doc = self.tokenizer.tokenize(virtual_doc)
 
-        assert len(doc.annotations(use_correct=False)) == 26
-        assert len(doc.spans(use_correct=False)) == 99
+        assert len(virtual_doc.annotations(use_correct=False)) == 26
+        assert len(virtual_doc.spans(use_correct=False)) == 99
 
-        assert len(doc.annotations(use_correct=False)[10].spans) == 7
-        assert doc.annotations(use_correct=False)[10].spans[0].start_offset == 3145
-        assert doc.annotations(use_correct=False)[10].spans[0].end_offset == 3233
+        assert len(virtual_doc.annotations(use_correct=False)[10].spans) == 7
+        assert virtual_doc.annotations(use_correct=False)[10].spans[0].start_offset == 3145
+        assert virtual_doc.annotations(use_correct=False)[10].spans[0].end_offset == 3233
 
-        pages = doc.pages()
+        pages = virtual_doc.pages()
 
         assert len(pages) == 3
 
         assert len(pages[0].annotations(use_correct=False)) == 8
         assert len(pages[1].annotations(use_correct=False)) == 10
         assert len(pages[2].annotations(use_correct=False)) == 8
+
+    def test_paragraph_document_1_use_detectron_labels(self):
+        """Test detectron Paragraph tokenizer on Lorem ipsum Document with create_detectron_labels option."""
+        virtual_doc = deepcopy(self.document_1)
+
+        tokenizer = ParagraphTokenizer(mode='detectron', create_detectron_labels=True)
+
+        virtual_doc = tokenizer(virtual_doc)
+
+        assert len(virtual_doc.annotations(use_correct=False)) == 26
+        assert len(virtual_doc.spans(use_correct=False)) == 99
+
+        pages = virtual_doc.pages()
+
+        assert len(pages) == 3
+
+        assert len(pages[0].annotations(use_correct=False)) == 8
+        assert len(pages[1].annotations(use_correct=False)) == 10
+        assert len(pages[2].annotations(use_correct=False)) == 8
+
+        assert virtual_doc.annotations(use_correct=False)[0].label.name == 'title'
+        assert virtual_doc.annotations(use_correct=False)[1].label.name == 'text'
 
     def test_paragraph_document_2(self):
         """Test detectron Paragraph tokenizer on two column paper."""
