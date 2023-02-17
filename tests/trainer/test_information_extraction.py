@@ -40,7 +40,7 @@ from konfuzio_sdk.trainer.information_extraction import (
     Trainer,
     BaseModel,
 )
-from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel
+
 from konfuzio_sdk.api import upload_ai_model
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer
 from konfuzio_sdk.tokenizer.base import ListTokenizer
@@ -913,9 +913,12 @@ class TestInformationExtraction(unittest.TestCase):
     def test_run_model_incompatible_interface(self):
         """Test initializing a model that does not pass has_compatible_interface check."""
         pipeline = RFExtractionAI()
-        wrong_class = ContextAwareFileSplittingModel(
-            categories=[self.project.get_category_by_id(id_=63)], tokenizer=None
-        )
+
+        class WrongClass:
+            def __init__(self):
+                pass
+
+        wrong_class = WrongClass()
         assert not pipeline.has_compatible_interface(external=wrong_class)
 
 
