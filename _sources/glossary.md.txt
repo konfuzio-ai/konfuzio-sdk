@@ -17,6 +17,7 @@ We use several concepts in the Konfuzio Platform. We are capitalize concepts in 
 - False Negative
 - False Positive
 - File Splitting AI
+- File Splitting Model
 - Form Generator
 - Flower
 - Konfuzio Platform
