@@ -212,7 +212,7 @@ file_splitting_pipeline_loaded = SplittingAI(file_splitting_model_loaded)
 ```
 
 For a more in depth tutorial about the usage of File Splitting AIs in the SDK see 
-[Splitting for multi-file Documents: Step-by-step guide](tutorials.html#splitting-for-multi-document-files-step-by-step-guide).
+[Splitting for multi-Document files: Step-by-step guide](tutorials.html#splitting-for-multi-document-files-step-by-step-guide).
 
 ### Other use cases around documents
 
