@@ -120,8 +120,8 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         )
         return pkl_file_path
 
-    @abc.abstractmethod
     @staticmethod
+    @abc.abstractmethod
     def has_compatible_interface(external) -> bool:
         """
         Validate that an instance of an external model is similar to that of the class.
