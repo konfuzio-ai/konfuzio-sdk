@@ -526,7 +526,10 @@ class SplittingAI:
         """
         self.tokenizer = None
         self.model = model
-        if not ContextAwareFileSplittingModel.has_compatible_interface(self.model):
+        if not (
+            ContextAwareFileSplittingModel.has_compatible_interface(self.model)
+            or MultimodalFileSplittingModel.has_compatible_interface(self.model)
+        ):
             raise ValueError("The model is not inheriting from AbstractFileSplittingModel class.")
         if type(self.model) == ContextAwareFileSplittingModel:
             self.tokenizer = self.model.tokenizer
