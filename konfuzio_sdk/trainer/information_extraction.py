@@ -51,7 +51,7 @@ from konfuzio_sdk.normalize import (
 )
 from konfuzio_sdk.regex import regex_matches
 from konfuzio_sdk.trainer.document_categorization import FallbackCategorizationModel
-from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel
+from konfuzio_sdk.trainer.file_splitting import AbstractFileSplittingClass
 from konfuzio_sdk.utils import get_timestamp, get_bbox, normalize_memory, get_sdk_version, memory_size_of
 
 from konfuzio_sdk.evaluate import Evaluation
@@ -110,7 +110,7 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
 
     if not (
         RFExtractionAI.has_compatible_interface(model)
-        or ContextAwareFileSplittingModel.has_compatible_interface(model)
+        or AbstractFileSplittingClass.has_compatible_interface(model)
         or FallbackCategorizationModel.has_compatible_interface(model)
     ):
         raise TypeError(

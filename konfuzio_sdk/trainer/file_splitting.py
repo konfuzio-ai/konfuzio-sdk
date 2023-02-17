@@ -92,13 +92,30 @@ class AbstractFileSplittingModel(BaseModel, metaclass=abc.ABCMeta):
         return pkl_file_path
 
     @staticmethod
-    @abc.abstractmethod
-    def has_compatible_interface(external):
+    def has_compatible_interface(external) -> bool:
         """
         Validate that an instance of an external model is similar to that of the class.
 
         :param external: An instance of an external model to compare with.
         """
+        try:
+            if (
+                signature(external.__init__).parameters['categories'].annotation is List[Category]
+                and signature(external.__init__).parameters['tokenizer']
+                and signature(external.fit).parameters['allow_empty_categories'].annotation is bool
+                and signature(external.predict).parameters['page'].annotation is Page
+                and signature(external.predict).return_annotation is Page
+                and signature(external.has_compatible_interface).parameters['external']
+                and signature(external.has_compatible_interface).return_annotation is bool
+                and signature(external.check_is_ready)
+            ):
+                return True
+            else:
+                return False
+        except KeyError:
+            return False
+        except AttributeError:
+            return False
 
 
 class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
@@ -194,32 +211,6 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
                 f"Cannot run prediction as none of the Categories in {self.project} have "
                 f"_exclusive_first_page_strings."
             )
-
-    @staticmethod
-    def has_compatible_interface(external) -> bool:
-        """
-        Validate that an instance of an external model is similar to that of the class.
-
-        :param external: An instance of an external model to compare with.
-        """
-        try:
-            if (
-                signature(external.__init__).parameters['categories'].annotation is List[Category]
-                and signature(external.__init__).parameters['tokenizer']
-                and signature(external.fit).parameters['allow_empty_categories'].annotation is bool
-                and signature(external.predict).parameters['page'].annotation is Page
-                and signature(external.predict).return_annotation is Page
-                and signature(external.has_compatible_interface).parameters['external']
-                and signature(external.has_compatible_interface).return_annotation is bool
-                and signature(external.check_is_ready)
-            ):
-                return True
-            else:
-                return False
-        except KeyError:
-            return False
-        except AttributeError:
-            return False
 
 
 class SplittingAI:
