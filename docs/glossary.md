@@ -14,7 +14,10 @@ We use several concepts in the Konfuzio Platform. We are capitalize concepts in 
 - Document
 - Data Validation Rule
 - Extraction AI
+- False Negative
+- False Positive
 - File Splitting AI
+- File Splitting Model
 - Form Generator
 - Flower
 - Konfuzio Platform
@@ -32,3 +35,6 @@ We use several concepts in the Konfuzio Platform. We are capitalize concepts in 
 - Span Validation Rule
 - Regex Tokenizer
 - Tokenizer
+- True Negative
+- True Positive
+
