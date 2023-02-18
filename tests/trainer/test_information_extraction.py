@@ -919,7 +919,7 @@ class TestInformationExtraction(unittest.TestCase):
                 pass
 
         wrong_class = WrongClass()
-        assert not pipeline.has_compatible_interface(external=wrong_class)
+        assert not pipeline.has_compatible_interface(wrong_class)
 
 
 class TestAddExtractionAsAnnotation(unittest.TestCase):

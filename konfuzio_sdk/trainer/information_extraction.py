@@ -1838,7 +1838,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
     ):
         """RFExtractionAI."""
         logger.info("Initializing RFExtractionAI.")
-        super().__init__(*args, **kwargs)
+        super().__init__(category, *args, **kwargs)
         GroupAnnotationSets.__init__(self)
 
         self.label_feature_list = None
