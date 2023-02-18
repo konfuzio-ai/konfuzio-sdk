@@ -40,6 +40,7 @@ from konfuzio_sdk.trainer.information_extraction import (
     Trainer,
     BaseModel,
 )
+
 from konfuzio_sdk.api import upload_ai_model
 from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, RegexTokenizer
 from konfuzio_sdk.tokenizer.base import ListTokenizer
@@ -909,6 +910,17 @@ class TestInformationExtraction(unittest.TestCase):
 
         assert list(res_test_reparate_dict['NO_LABEL_SET'].keys()) == ['NO_LABEL']
 
+    def test_run_model_incompatible_interface(self):
+        """Test initializing a model that does not pass has_compatible_interface check."""
+        pipeline = RFExtractionAI()
+
+        class WrongClass:
+            def __init__(self):
+                pass
+
+        wrong_class = WrongClass()
+        assert not pipeline.has_compatible_interface(wrong_class)
+
 
 class TestAddExtractionAsAnnotation(unittest.TestCase):
     """Test add an Extraction result as Annotation to a Document."""
@@ -1280,11 +1292,10 @@ def test_load_model_corrupt_file():
 def test_load_model_wrong_pickle_data():
     """Test loading of wrong pickle data."""
     path = "trainer/list_test.pkl"
-    with pytest.raises(TypeError, match="not inheriting from the BaseModel class."):
+    with pytest.raises(TypeError, match="Loaded model's interface is not compatible with any AIs"):
         load_model(path)
 
 
-@unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
 def test_load_ai_model_konfuzio_sdk_not_included():
     """Test loading of trained model with include_konfuzio setting set to False."""
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
@@ -1298,7 +1309,6 @@ def test_load_ai_model_konfuzio_sdk_not_included():
     assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
 
 
-@unittest.skipIf(sys.version_info[:2] != (3, 8), 'This AI can only be loaded on Python 3.8.')
 @pytest.mark.xfail(reason='Loaded model is not subclass of BaseModel.')
 def test_load_ai_model_konfuzio_sdk_included():
     """Test loading of trained model with include_konfuzio setting set to True."""
@@ -1317,7 +1327,7 @@ def test_load_ai_model_konfuzio_sdk_included():
 def test_load_old_ai_model():
     """Test loading of an old trained model."""
     path = "trainer/2022-03-10-15-14-51_lohnabrechnung_old_model.pkl"
-    with pytest.raises(TypeError, match=" not inheriting from the BaseModel class."):
+    with pytest.raises(TypeError, match="Loaded model's interface is not compatible with any AIs"):
         load_model(path)
 
 
@@ -1325,7 +1335,7 @@ def test_load_old_ai_model():
 def test_load_old_ai_model_2():
     """Test loading of a newer old trained model."""
     path = "trainer/2023-01-09-17-47-50_lohnabrechnung.pkl"
-    with pytest.raises(TypeError, match="not inheriting from the BaseModel class."):
+    with pytest.raises(TypeError, match="Loaded model's interface is not compatible with any AIs"):
         load_model(path)
 
 

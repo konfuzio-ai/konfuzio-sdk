@@ -123,9 +123,11 @@ class Page(Data):
         self.category_annotations: List['CategoryAnnotation'] = []
         self._human_chosen_category_annotation: Optional[CategoryAnnotation] = None
         self.is_first_page = None
+        self.is_first_page_confidence = None
         if self.document.dataset_status in (2, 3):
             if self.number == 1:
                 self.is_first_page = True
+                self.is_first_page_confidence = 1
             else:
                 self.is_first_page = False
 

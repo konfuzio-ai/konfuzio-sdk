@@ -2,7 +2,9 @@
 
 import abc
 import logging
+
 from copy import deepcopy
+from inspect import signature
 from typing import List
 from warnings import warn
 
@@ -88,6 +90,32 @@ class AbstractCategorizationAI(metaclass=abc.ABCMeta):
         self.evaluation = CategorizationEvaluation(self.categories, eval_list)
 
         return self.evaluation
+
+    @staticmethod
+    def has_compatible_interface(other):
+        """
+        Validate that an instance of a Categorization AI implements the same interface as AbstractCategorizationAI.
+
+        A Categorization AI should implement methods with the same signature as:
+        - AbstractCategorizationAI.__init__
+        - AbstractCategorizationAI.fit
+        - AbstractCategorizationAI._categorize_page
+        - AbstractCategorizationAI.check_is_ready
+
+        :param other: An instance of a Categorization AI to compare with.
+        """
+        try:
+            return (
+                signature(other.__init__).parameters['categories'].annotation is List[Category]
+                and signature(other._categorize_page).parameters['page'].annotation is Page
+                and signature(other._categorize_page).return_annotation is Page
+                and signature(other.fit)
+                and signature(other.check_is_ready)
+            )
+        except KeyError:
+            return False
+        except AttributeError:
+            return False
 
 
 class FallbackCategorizationModel(AbstractCategorizationAI):

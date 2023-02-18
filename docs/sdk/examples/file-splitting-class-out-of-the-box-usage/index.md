@@ -7,6 +7,9 @@ Pages of all Category's Documents. Upon predicting whether a Page is a potential
 first or not), we compare Page's contents to these common first-page strings; if there is occurrence of at least one 
 such string, we mark a Page to be first (thus meaning it is a splitting point).
 
+This tutorial can also be used with the `MultimodalFileSplittingModel`; the only difference in the initialization is 
+that it does not require specifying a Tokenizer explicitly. 
+
 ```python
 from konfuzio_sdk.data import Project
 from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
@@ -16,9 +19,15 @@ from konfuzio_sdk.trainer.information_extraction import load_model
 project = Project(id_=YOUR_PROJECT_ID)
 test_document = project.get_document_by_id(YOUR_DOCUMENT_ID)
 
-# initialize a ContextAwareFileSplittingModel and fit it
+# initialize a Context Aware File Splitting Model and fit it
 
 file_splitting_model = ContextAwareFileSplittingModel(categories=project.categories, tokenizer=ConnectedTextTokenizer())
+# to run a Multimodal File Splitting Model instead, replace the line above with the following lines. note that training 
+# a Multimodal File Splitting Model can take longer that Context Aware File Splitting Model.
+#
+# from konfuzio_sdk.trainer.file_splitting import MultimodalFileSplittingModel
+# file_splitting_model = MultimodalFileSplittingModel(categories=project.categories)
+
 file_splitting_model.fit()
 
 # save the model
@@ -33,19 +42,19 @@ for page in test_document.pages():
     else:
         print('Page {} is predicted as the non-first.'.format(page.number))
 
-# usage with the SplittingAI – you can load a pre-saved model or pass an initialized instance as the input
+# usage with the Splitting AI – you can load a pre-saved model or pass an initialized instance as the input
 # in this example, we load a previously saved one
 model = load_model(project.model_folder)
 
-# initialize the SplittingAI
+# initialize the Splitting AI
 splitting_ai = SplittingAI(model)
 
-# SplittingAI is a more high-level interface to ContextAwareFileSplittingModel and any other models that can be 
-# developed for file-splitting purposes. It takes a Document as an input, rather than individual Pages, because it 
+# Splitting AI is a more high-level interface to Context Aware File Splitting Model and any other models that can be 
+# developed for File Splitting purposes. It takes a Document as an input, rather than individual Pages, because it 
 # utilizes page-level prediction of possible split points and returns Document or Documents with changes depending on 
 # the prediction mode.
 
-# SplittingAI can be ran in two modes: returning a list of Sub-Documents as the result of the input Document
+# Splitting AI can be run in two modes: returning a list of Sub-Documents as the result of the input Document
 # splitting or returning a copy of the input Document with Pages predicted as first having an attribute
 # "is_first_page". The flag "return_pages" has to be True for the latter; let's use it
 new_document = splitting_ai.propose_split_documents(test_document, return_pages=True)
