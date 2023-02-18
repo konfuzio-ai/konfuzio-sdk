@@ -94,21 +94,22 @@
              
   <section id="filesplittingevaluation-class">
 <h1>FileSplittingEvaluation class<a class="headerlink" href="#filesplittingevaluation-class" title="Permalink to this headline">¶</a></h1>
-<p>FileSplittingEvaluation class can be used to evaluate performance of ContextAwareFileSplittingModel, returning a set of
-metrics that includes precision, recall, f1 measure, true positives, false positives and false negatives.</p>
+<p><code class="docutils literal notranslate"><span class="pre">FileSplittingEvaluation</span></code> class can be used to evaluate performance of Context-Aware File Splitting Model, returning a
+set of metrics that includes precision, recall, f1 measure, True Positives, False Positives, True Negatives, and False
+Negatives.</p>
 <p>The class’s methods <code class="docutils literal notranslate"><span class="pre">calculate()</span></code> and <code class="docutils literal notranslate"><span class="pre">calculate_by_category()</span></code> are run at initialization. The class receives two lists
 of Documents as an input – first list consists of ground-truth Documents where all first Pages are marked as such,
-second is of Documents on Pages of which FileSplittingModel ran a prediction of them being first or non-first.</p>
+second is of Documents on Pages of which File Splitting Model ran a prediction of them being first or non-first.</p>
 <p>The initialization would look like this:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">evaluation</span> <span class="o">=</span> <span class="n">FileSplittingEvaluation</span><span class="p">(</span><span class="n">ground_truth_documents</span><span class="o">=</span><span class="n">YOUR_GROUND_TRUTH_LIST</span><span class="p">,</span>
                                      <span class="n">prediction_documents</span><span class="o">=</span><span class="n">YOUR_PREDICTION_LIST</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The class compares each pair of Pages. If a Page is labeled as first and the model also predicted it as first, it is
-considered a true positive. If a Page is labeled as first but the model predicted it as non-first, it is considered a
-false negative. If a Page is labeled as non-first but the model predicted it as first, it is considered a false
-positive. If a Page is labeled as non-first and the model also predicted it as non-first, it is considered a true
-negative.</p>
+considered a True Positive. If a Page is labeled as first but the model predicted it as non-first, it is considered a
+False Negative. If a Page is labeled as non-first but the model predicted it as first, it is considered a False
+Positive. If a Page is labeled as non-first and the model also predicted it as non-first, it is considered a True
+Negative.</p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 33%" />
@@ -138,14 +139,18 @@ metrics to <code class="docutils literal notranslate"><span class="pre">None</sp
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">fn</span><span class="p">())</span>
 </pre></div>
 </div>
-<p>It is also possible to look at the metrics calculated by each Category independently. For this, pass <code class="docutils literal notranslate"><span class="pre">search=YOUR_CATEGORY_HERE</span></code> when calling the wanted metric’s method:</p>
+<p>It is also possible to look at the metrics calculated by each Category independently. For this, pass
+<code class="docutils literal notranslate"><span class="pre">search=YOUR_CATEGORY_HERE</span></code> when calling the wanted metric’s method:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="o">.</span><span class="n">fn</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">YOUR_CATEGORY_HERE</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>For more details, see the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#evaluation">Python API Documentation</a> on Evaluation.</p>
+<p>For more details, see the <a class="reference external" href="https://dev.konfuzio.com/sdk/sourcecode.html#evaluation">Python API Documentation</a> on
+Evaluation.</p>
 <section id="example-of-evaluation-input-and-output">
 <h2>Example of evaluation input and output<a class="headerlink" href="#example-of-evaluation-input-and-output" title="Permalink to this headline">¶</a></h2>
-<p>Suppose in our test dataset we have 2 Documents of 2 Categories: one 3-paged, consisting of a single file (-&gt; it has only one ground-truth first Page) of a first Category, and one 5-paged, consisting of three files: two 2-paged and one 1-paged (-&gt; it has three ground-truth first Pages), of a second Category.</p>
+<p>Suppose in our test dataset we have 2 Documents of 2 Categories: one 3-paged, consisting of a single file (-&gt; it has
+only one ground-truth first Page) of a first Category, and one 5-paged, consisting of three files: two 2-paged and one
+1-paged (-&gt; it has three ground-truth first Pages), of a second Category.</p>
 <img alt="../../../_images/document_example_1.png" src="../../../_images/document_example_1.png" />
 <p><em>First document</em></p>
 <img alt="../../../_images/document_example_2.png" src="../../../_images/document_example_2.png" />
@@ -236,9 +241,9 @@ metrics to <code class="docutils literal notranslate"><span class="pre">None</sp
 </pre></div>
 </div>
 <p>We need to pass two lists of Documents into the <code class="docutils literal notranslate"><span class="pre">FileSplittingEvaluation</span></code> class. So, before that, we need to run each
-page of the documents through the model’s prediction.</p>
-<p>Let’s say the evaluation gave good results, with only one first page being predicted as non-first and all the other
-pages being predicted correctly. An example of how the evaluation would be implemented would be:</p>
+Page of the Documents through the model’s prediction.</p>
+<p>Let’s say the evaluation gave good results, with only one first Page being predicted as non-first and all the other
+Pages being predicted correctly. An example of how the evaluation would be implemented would be:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">splitting_ai</span> <span class="o">=</span> <span class="n">SplittingAI</span><span class="p">(</span><span class="n">YOUR_MODEL_HERE</span><span class="p">)</span>
 <span class="n">pred_1</span><span class="p">:</span> <span class="n">Document</span> <span class="o">=</span> <span class="n">splitting_ai</span><span class="o">.</span><span class="n">propose_split_documents</span><span class="p">(</span><span class="n">document_1</span><span class="p">,</span> <span class="n">return_pages</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">pred_2</span><span class="p">:</span> <span class="n">Document</span> <span class="o">=</span> <span class="n">splitting_ai</span><span class="o">.</span><span class="n">propose_split_documents</span><span class="p">(</span><span class="n">document_2</span><span class="p">,</span> <span class="n">return_pages</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
