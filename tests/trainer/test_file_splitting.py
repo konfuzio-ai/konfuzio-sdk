@@ -80,7 +80,7 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
     def test_load_incompatible_model(self):
         """Test initializing a model that does not pass has_compatible_interface check."""
         wrong_class = FallbackCategorizationModel(LocalTextProject())
-        assert not self.file_splitting_model.has_compatible_interface(external=wrong_class)
+        assert not self.file_splitting_model.has_compatible_interface(wrong_class)
 
     def test_load_model_from_different_class(self):
         """Test initializing Splitting AI with a model that does not inherit from AbstractFileSplittingModel class."""

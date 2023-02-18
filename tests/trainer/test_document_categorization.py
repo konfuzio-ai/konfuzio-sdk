@@ -178,4 +178,4 @@ class TestFallbackCategorizationModel(unittest.TestCase):
     def test_10_run_model_incompatible_interface(self):
         """Test initializing a model that does not pass has_compatible_interface check."""
         wrong_class = ContextAwareFileSplittingModel(categories=[self.receipts_category], tokenizer=None)
-        assert not self.categorization_pipeline.has_compatible_interface(external=wrong_class)
+        assert not self.categorization_pipeline.has_compatible_interface(wrong_class)
