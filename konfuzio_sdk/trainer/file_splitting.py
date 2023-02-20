@@ -495,7 +495,7 @@ class SplittingAI:
         if not AbstractFileSplittingModel.has_compatible_interface(model):
             raise ValueError("The model is not inheriting from AbstractFileSplittingModel class.")
         self.model = model
-        if type(self.model) == ContextAwareFileSplittingModel:
+        if not self.model.requires_images:
             self.tokenizer = self.model.tokenizer
 
     def _suggest_first_pages(self, document: Document, inplace: bool = False) -> List[Document]:

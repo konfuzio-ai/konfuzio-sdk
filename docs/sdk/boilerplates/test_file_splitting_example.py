@@ -1,10 +1,4 @@
-"""docstr."""
-
-from konfuzio_sdk.samples import LocalTextProject
-
-# YOUR_PROJECT = LocalTextProject()
-# YOUR_DOCUMENT_ID = 9
-
+"""Test a code example for the File Splitting section of the documentation."""
 import logging
 
 from typing import List
@@ -79,8 +73,9 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         :type page: Page
         :return: A Page with a newly predicted is_first_page attribute.
 
-        >>> model.fit()
-        >>> model.predict(Project(id_=YOUR_PROJECT_ID).get_document_by_id(YOUR_DOCUMENT_ID).pages()[0]).is_first_page
+        >>> model.predict(
+        >>>    model.tokenizer.tokenize(Project(id_=YOUR_PROJECT_ID).get_document_by_id(YOUR_DOCUMENT_ID)
+        >>>     ).pages()[0]).is_first_page
         True
         """
         self.check_is_ready()
@@ -100,6 +95,9 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
 
         :raises AttributeError: When no Tokenizer or no Categories were passed.
         :raises ValueError: When no Categories have _exclusive_first_page_strings.
+
+        >>> model.check_is_ready()
+        True
         """
         if self.tokenizer is None:
             raise AttributeError(f'{self} missing Tokenizer.')
@@ -120,18 +118,22 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
 
 
 # initialize a Project and fetch a test Document of your choice
-YOUR_PROJECT = LocalTextProject()
-project = Project(id_=YOUR_PROJECT)
-YOUR_DOCUMENT_ID = 9
+YOUR_PROJECT_ID = 46
+project = Project(id_=YOUR_PROJECT_ID)
+YOUR_DOCUMENT_ID = 44865
 test_document = project.get_document_by_id(YOUR_DOCUMENT_ID)
 
 # initialize a Context Aware File Splitting Model and fit it
 
 file_splitting_model = ContextAwareFileSplittingModel(categories=project.categories, tokenizer=ConnectedTextTokenizer())
-file_splitting_model.fit()
+
+# for an example run, you can take only a slice of training documents to make fitting faster
+file_splitting_model.documents = file_splitting_model.documents[:10]
+
+file_splitting_model.fit(allow_empty_categories=True)
 
 # save the model
-file_splitting_model.save()
+save_path = file_splitting_model.save(include_konfuzio=True)
 
 # run the prediction
 for page in test_document.pages():
@@ -143,7 +145,7 @@ for page in test_document.pages():
 
 # usage with the Splitting AI – you can load a pre-saved model or pass an initialized instance as the input
 # in this example, we load a previously saved one
-model = load_model(project.model_folder)
+model = load_model(save_path)
 
 # initialize the Splitting AI
 splitting_ai = SplittingAI(model)
@@ -172,8 +174,6 @@ if __name__ == "__main__":
 
     doctest.testmod(
         extraglobs={
-            'model': ContextAwareFileSplittingModel(categories=project.categories, tokenizer=ConnectedTextTokenizer()),
-            'YOUR_PROJECT_ID': 46,
-            'YOUR_DOCUMENT_ID': 44865,
+            'model': model,
         }
     )
