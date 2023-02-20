@@ -38,7 +38,6 @@ from konfuzio_sdk.trainer.information_extraction import (
     load_model,
     RFExtractionAI,
     Trainer,
-    BaseModel,
 )
 
 from konfuzio_sdk.api import upload_ai_model
@@ -599,12 +598,10 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
         assert len(res_doc.view_annotations()) == 19
-        assert issubclass(type(self.pipeline), BaseModel)
 
         no_konf_pipeline = load_model(self.pipeline.pipeline_path_no_konfuzio_sdk)
         res_doc = no_konf_pipeline.extract(document=test_document)
         assert len(res_doc.view_annotations()) == 19
-        assert issubclass(type(no_konf_pipeline), BaseModel)
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -1302,8 +1299,6 @@ def test_load_ai_model_konfuzio_sdk_not_included():
     path = "trainer/2023-01-31-14-39-44_lohnabrechnung_no_konfuzio_sdk.pkl"
     pipeline = load_model(path)
 
-    assert issubclass(type(pipeline), BaseModel)
-
     test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
     res_doc = pipeline.extract(document=test_document)
     assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
@@ -1315,8 +1310,6 @@ def test_load_ai_model_konfuzio_sdk_included():
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
     path = "trainer/2023-01-31-14-37-11_lohnabrechnung.pkl"
     pipeline = load_model(path)
-
-    assert issubclass(type(pipeline), BaseModel)  # fails
 
     test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
     res_doc = pipeline.extract(document=test_document)

@@ -1438,9 +1438,9 @@ class Trainer(BaseModel):
         """
         try:
             return (
-                signature(other.__init__).parameters['category'].annotation is Category
-                and signature(other.extract).parameters['document'].annotation is Document
-                and signature(other.extract).return_annotation is Document
+                signature(other.__init__).parameters['category'].annotation.__name__ == 'Category'
+                and signature(other.extract).parameters['document'].annotation.__name__ == 'Document'
+                and signature(other.extract).return_annotation.__name__ == 'Document'
                 and signature(other.fit)
                 and signature(other.check_is_ready)
             )
