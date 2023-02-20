@@ -16,6 +16,7 @@ from tests.variables import (
 from konfuzio_sdk.trainer.document_categorization import (
     FallbackCategorizationModel,
 )
+from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel
 
 logger = logging.getLogger(__name__)
 
@@ -173,3 +174,8 @@ class TestFallbackCategorizationModel(unittest.TestCase):
         assert test_receipt_document.category == self.project.no_category
         for page in test_receipt_document.pages():
             assert page.category is None
+
+    def test_10_run_model_incompatible_interface(self):
+        """Test initializing a model that does not pass has_compatible_interface check."""
+        wrong_class = ContextAwareFileSplittingModel(categories=[self.receipts_category], tokenizer=None)
+        assert not self.categorization_pipeline.has_compatible_interface(wrong_class)
