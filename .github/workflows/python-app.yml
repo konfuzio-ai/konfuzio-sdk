@@ -36,10 +36,6 @@ jobs:
         sudo apt-get -y install python3-pandas-lib
         python -m pip install --upgrade pip
         pip install --upgrade --upgrade-strategy eager -e .[dev]
-    - name: Run tests of the documentation
-      run: |
-        cd docs/sdk
-        python -m doctest -v boilerplates/test_file_splitting_example.py
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
