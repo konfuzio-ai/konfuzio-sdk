@@ -1922,7 +1922,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             check_is_fitted(self.clf)
 
         if self.label_set_clf is None:
-            logger.warning('{self} does not provide a LabelSet Classfier.')
+            logger.warning(f'{self} does not provide a LabelSet Classfier.')
 
     @property
     def project(self):
