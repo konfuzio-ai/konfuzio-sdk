@@ -71,7 +71,7 @@ And download any project via the id:
 
 You can find detailed examples about how to set up and run document AI pipelines in our 
 [Tutorials](https://dev.konfuzio.com/sdk/tutorials.html), including:
-- [Split multi-file Document into Separate files](https://dev.konfuzio.com/sdk/tutorials.html#split-multi-file-document-into-separate-files-without-training-a-model)
+- [Split multi-file Document into Separate files](https://dev.konfuzio.com/sdk/tutorials.html#split-a-file-into-separate-documents)
 - [Document Categorization](https://dev.konfuzio.com/sdk/tutorials.html#document-categorization)
 - [Train a Konfuzio SDK Model to Extract Information From Payslip Documents](https://dev.konfuzio.com/sdk/tutorials.html#train-a-konfuzio-sdk-model-to-extract-information-from-payslip-documents)
 

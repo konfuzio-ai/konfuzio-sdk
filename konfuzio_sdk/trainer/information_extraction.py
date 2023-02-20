@@ -3,7 +3,7 @@
 Conventional template matching based approaches fail to generalize well to document images of unseen templates,
 and are not robust against text recognition errors.
 
-We follow the approach proposed by Sun et. al (2021) to encode both the visual and textual
+We follow the approach proposed by Sun et al. (2021) to encode both the visual and textual
 features of detected text regions, and edges of which represent the spatial relations between neighboring text
 regions. Their experiments validate that all information including visual features, textual
 features and spatial relations can benefit key information extraction.
@@ -27,8 +27,10 @@ import shutil
 import sys
 import time
 import unicodedata
+
 from copy import deepcopy
 from heapq import nsmallest
+from inspect import signature
 from typing import Tuple, Optional, List, Union, Callable, Dict
 from warnings import warn
 
@@ -66,6 +68,7 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     Load a pkl file.
 
     :param pickle_path: Path to the pickled model.
+    :type pickle_path: str
     :raises FileNotFoundError: If the path is invalid.
     :raises OSError: When the data is corrupted or invalid and cannot be loaded.
     :raises TypeError: When the loaded pickle isn't recognized as a Konfuzio AI model.
@@ -95,9 +98,6 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
             raise ValueError("Pickle saved with incompatible Python version.") from err
         raise
 
-    if not issubclass(type(model), BaseModel):
-        raise TypeError("Loaded model is not inheriting from the BaseModel class.")
-
     if hasattr(model, 'python_version'):
         logger.info(f"Loaded AI model trained with Python {model.python_version}")
     if hasattr(model, 'konfuzio_sdk_version'):
@@ -106,6 +106,20 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     max_ram = normalize_memory(max_ram)
     if max_ram and memory_size_of(model) > max_ram:
         logger.error(f"Loaded model's memory use ({memory_size_of(model)}) is greater than max_ram ({max_ram})")
+
+    # to avoid circular import issue
+    from konfuzio_sdk.trainer.document_categorization import AbstractCategorizationAI
+    from konfuzio_sdk.trainer.file_splitting import AbstractFileSplittingModel
+
+    if not (
+        Trainer.has_compatible_interface(model)
+        or AbstractFileSplittingModel.has_compatible_interface(model)
+        or AbstractCategorizationAI.has_compatible_interface(model)
+    ):
+        raise TypeError(
+            "Loaded model's interface is not compatible with any AIs. Please provide a model that has all the "
+            "abstract methods implemented."
+        )
 
     if not hasattr(model, "name"):
         raise TypeError("Saved model file needs to be a Konfuzio Trainer instance.")
@@ -1075,6 +1089,15 @@ class BaseModel(metaclass=abc.ABCMeta):
     def pkl_file_path(self):
         """Generate a path for a resulting pickle file."""
 
+    @staticmethod
+    @abc.abstractmethod
+    def has_compatible_interface(other):
+        """
+        Validate that an instance of an AI implements the same interface defined by this AI class.
+
+        :param other: An instance of an AI to compare with.
+        """
+
     def reduce_model_weight(self):
         """Remove all non-strictly necessary parameters before saving."""
         self.project.lose_weight()
@@ -1197,11 +1220,12 @@ class BaseModel(metaclass=abc.ABCMeta):
 class Trainer(BaseModel):
     """Parent class for all Extraction AIs, to extract information from unstructured human readable text."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, category: Category, *args, **kwargs):
         """Initialize ExtractionModel."""
         # Go through keyword arguments, and either save their values to our
         # instance, or raise an error.
         super().__init__()
+        self.category = Category
         self.clf = None
         self.label_feature_list = None  # will be set later
 
@@ -1394,6 +1418,32 @@ class Trainer(BaseModel):
             merge = normalize_to_positive_float(text)
 
         return merge is not None
+
+    @staticmethod
+    def has_compatible_interface(other) -> bool:
+        """
+        Validate that an instance of an Extraction AI implements the same interface as Trainer.
+
+        An Extraction AI should implement methods with the same signature as:
+        - Trainer.__init__
+        - Trainer.fit
+        - Trainer.extract
+        - Trainer.check_is_ready
+
+        :param other: An instance of an Extraction AI to compare with.
+        """
+        try:
+            return (
+                signature(other.__init__).parameters['category'].annotation is Category
+                and signature(other.extract).parameters['document'].annotation is Document
+                and signature(other.extract).return_annotation is Document
+                and signature(other.fit)
+                and signature(other.check_is_ready)
+            )
+        except KeyError:
+            return False
+        except AttributeError:
+            return False
 
 
 class GroupAnnotationSets:
@@ -1794,7 +1844,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
     ):
         """RFExtractionAI."""
         logger.info("Initializing RFExtractionAI.")
-        super().__init__(*args, **kwargs)
+        super().__init__(category, *args, **kwargs)
         GroupAnnotationSets.__init__(self)
 
         self.label_feature_list = None

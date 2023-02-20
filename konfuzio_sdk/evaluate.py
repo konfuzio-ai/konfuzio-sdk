@@ -541,7 +541,9 @@ class CategorizationEvaluation:
             fp = sum_columns[ind] - tp
             fn = sum_rows[ind] - tp
             tn = sum_all - fn - fp - tp
-            results[category_id] = EvaluationCalculator(tp=tp, fp=fp, fn=fn, tn=tn)
+            results[category_id] = EvaluationCalculator(
+                tp=tp, fp=fp, fn=fn, tn=tn
+            )  # the value is evaluation calculator, not a tuple as a result
 
         return results
 
@@ -662,7 +664,7 @@ class FileSplittingEvaluation:
                         f'of is_first_page.'
                     )
         for ground_truth, prediction in zip(ground_truth_documents, prediction_documents):
-            if ground_truth.id_ != prediction.copy_of_id:
+            if ground_truth.id_ not in [prediction.copy_of_id, prediction.id_]:
                 raise ValueError(
                     f"Incorrect prediction passed for {ground_truth}. Prediction has to be a copy of a "
                     f"ground truth Document."
@@ -706,16 +708,17 @@ class FileSplittingEvaluation:
                     fn += 1
                 elif not page_gt.is_first_page and not page_pr.is_first_page:
                     tn += 1
-        if tp + fp != 0:
-            precision = EvaluationCalculator(tp=tp, fp=fp, fn=fn, tn=tn).precision
+        evaluation_calculator = EvaluationCalculator(tp=tp, fp=fp, fn=fn, tn=tn)
+        if tp + fp != 0:  # excess evaluation calculator usage, can be called once
+            precision = evaluation_calculator.precision
         else:
             raise ZeroDivisionError("TP and FP are zero.")
         if tp + fn != 0:
-            recall = EvaluationCalculator(tp=tp, fp=fp, fn=fn, tn=tn).recall
+            recall = evaluation_calculator.recall
         else:
             raise ZeroDivisionError("TP and FN are zero.")
         if precision + recall != 0:
-            f1 = EvaluationCalculator(tp=tp, fp=fp, fn=fn, tn=tn).f1
+            f1 = evaluation_calculator.f1
         else:
             raise ZeroDivisionError("FP and FN are zero.")
         return tp, fp, fn, tn, precision, recall, f1
