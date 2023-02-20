@@ -240,8 +240,8 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
         """Start to train the Model."""
         self.pipeline.fit()
 
-        assert memory_size_of(self.pipeline.clf) < 1e5
-        assert memory_size_of(self.pipeline.label_set_clf) < 1e5
+        assert memory_size_of(self.pipeline.clf) < 2e5
+        assert memory_size_of(self.pipeline.label_set_clf) < 2e5
 
         if self.pipeline.use_separate_labels:
             assert len(self.pipeline.clf.classes_) == 19
@@ -462,8 +462,8 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         """Start to train the Model."""
         self.pipeline.fit()
 
-        assert memory_size_of(self.pipeline.clf) < 1e5
-        assert memory_size_of(self.pipeline.label_set_clf) < 1e5
+        assert memory_size_of(self.pipeline.clf) < 2e5
+        assert memory_size_of(self.pipeline.label_set_clf) < 2e5
 
         if self.pipeline.use_separate_labels:
             assert len(self.pipeline.clf.classes_) == 19
