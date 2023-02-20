@@ -78,7 +78,7 @@ class RegexTokenizer(AbstractTokenizer):
             else:
                 if self not in document_spans[span_key].regex_matching:
                     document_spans[span_key].regex_matching.append(self)  # add tokenizer to Span.regex_matches:
-                logger.warning(f'{document} contains {span} already. It will not be added by the Tokenizer.')
+                logger.debug(f'{document} contains {span} already. It will not be added by the Tokenizer.')
         after_none = len(document.annotations(use_correct=False, label=document.project.no_label))
         logger.info(f'{after_none - before_none} new Annotations in {document} by {repr(self)}.')
 

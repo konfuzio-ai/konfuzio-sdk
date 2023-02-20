@@ -3661,11 +3661,15 @@ class Project(Data):
 
         :param from_online: If True, all Document metadata info is first reloaded with latest changes in the server
         """
+        logger.info(f"Running init_or_update_document({from_online=}) on {self}")
         local_docs_dict = self.online_documents_dict
         if from_online:
             self.write_meta_of_files()
             self.get_meta(reload=True)
         updated_docs_ids_set = set()  # delete all docs not in the list at the end
+        n_updated_documents = 0
+        n_new_documents = 0
+        n_unchanged_documents = 0
         for document_data in self.meta_data:
             updated_docs_ids_set.add(document_data['id'])
             if document_data['status'][0] == 2:  # NOQA - hotfix for Text Annotation Server # todo add test
@@ -3681,20 +3685,31 @@ class Project(Data):
                     doc = local_docs_dict[document_data['id']]
                     doc.update_meta_data(**document_data)
                     doc.update()
-                    logger.info(f'{doc} was updated, we will download it again as soon you use it.')
+                    logger.debug(f'{doc} was updated, we will download it again as soon you use it.')
+                    n_updated_documents += 1
                 elif new:
                     doc = Document(project=self, update=True, id_=document_data['id'], **document_data)
-                    logger.info(f'{doc} is not available on your machine, we will download it as soon you use it.')
+                    logger.debug(f'{doc} is not available on your machine, we will download it as soon you use it.')
+                    n_new_documents += 1
                 else:
                     doc = local_docs_dict[document_data['id']]
                     doc.update_meta_data(**document_data)  # reset any Document level meta data changes
                     logger.debug(f'Unchanged local version of {doc} from {new_date}.')
+                    n_unchanged_documents += 1
             else:
                 logger.debug(f"Not loading Document {[document_data['id']]} with status {document_data['status'][0]}.")
 
         to_delete_ids = set(local_docs_dict.keys()) - updated_docs_ids_set
+        n_deleted_documents = len(to_delete_ids)
         for to_del_id in to_delete_ids:
             local_docs_dict[to_del_id].delete(delete_online=False)
+
+        logger.info(
+            f"{n_updated_documents} Documents were updated,"
+            f" {n_new_documents} Documents are new,"
+            f" {n_unchanged_documents} Documents are unchanged,"
+            f" and {n_deleted_documents} Documents were deleted."
+        )
 
     def get_document_by_id(self, document_id: int) -> Document:
         """Return Document by its ID."""
