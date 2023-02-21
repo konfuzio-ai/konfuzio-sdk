@@ -168,8 +168,7 @@ Just replace 123456 with your own authentication token, and you'll be able to us
 request.
 
 .. Note::
-    This functionality is offered as part of the 
-    [Google-Sheet export](https://help.konfuzio.com/integrations/google-sheet/index.html) function, as well as usable on
+    This functionality is offered as part of the Google-Sheet export function, as well as usable on
     any other csv importable software (SAP, Excel, etc).
 
 ### Response codes
