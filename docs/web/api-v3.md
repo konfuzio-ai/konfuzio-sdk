@@ -167,6 +167,33 @@ print(response.json())
 
 To access this and other information via SDK's Data layer concepts, see [SDK Quickstart](https://dev.konfuzio.com/sdk/home/index.html) page.
 
+#### Authenticating with a Token as a Query Parameter (_Upcoming feature_)
+
+.. Note::
+    Please open a [support ticket](https://konfuzio.com/support/) if you would like to have early access to this feature.
+
+Sometimes you might need to use one of our endpoints with a third party service that doesn't allow you to specify
+certain types of information (like authentication tokens) in the request. In these cases, you can use a special method
+to authenticate your request using a token as a query parameter.
+
+To do this, you'll first need to generate an authentication token using the steps we provided earlier. Then, you can
+include the token in your request by adding it as a query parameter at the end of the URL.
+
+Here's an example of what that might look like:
+
+```html
+http://app.konfuzio.com/api/v3/projects/3/export/all.csv?token=123456
+
+```
+
+Just replace 123456 with your own authentication token, and you'll be able to use this method to authenticate your
+request.
+
+.. Note::
+    This functionality is offered as part of the Google-Sheet export function, as well as usable on
+    any other csv importable software (SAP, Excel, etc).
+
+
 ### Response codes
 
 All endpoints return an HTTP code that indicates the success of the request. Following the standard, codes starting
