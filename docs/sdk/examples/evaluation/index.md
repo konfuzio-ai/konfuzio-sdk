@@ -1,4 +1,4 @@
-## FileSplittingEvaluation class
+### FileSplittingEvaluation class
 
 `FileSplittingEvaluation` class can be used to evaluate performance of Context-Aware File Splitting Model, returning a 
 set of metrics that includes precision, recall, f1 measure, True Positives, False Positives, True Negatives, and False 
@@ -42,7 +42,7 @@ print(evaluation.fn(search=YOUR_CATEGORY_HERE))
 For more details, see the [Python API Documentation](https://dev.konfuzio.com/sdk/sourcecode.html#evaluation) on 
 Evaluation.
 
-### Example of evaluation input and output 
+#### Example of evaluation input and output 
 
 Suppose in our test dataset we have 2 Documents of 2 Categories: one 3-paged, consisting of a single file (-> it has 
 only one ground-truth first Page) of a first Category, and one 5-paged, consisting of three files: two 2-paged and one 

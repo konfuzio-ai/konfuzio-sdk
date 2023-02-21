@@ -117,15 +117,22 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
             )
 
 
-# initialize a Project and fetch a test Document of your choice
 YOUR_PROJECT_ID = 46
-project = Project(id_=YOUR_PROJECT_ID)
 YOUR_DOCUMENT_ID = 44865
+
+# initialize a Project and fetch a test Document of your choice
+
+project = Project(id_=YOUR_PROJECT_ID)
 test_document = project.get_document_by_id(YOUR_DOCUMENT_ID)
 
 # initialize a Context Aware File Splitting Model and fit it
 
 file_splitting_model = ContextAwareFileSplittingModel(categories=project.categories, tokenizer=ConnectedTextTokenizer())
+# to run a Multimodal File Splitting Model instead, replace the line above with the following lines. note that training
+# a Multimodal File Splitting Model can take longer that Context Aware File Splitting Model.
+#
+# from konfuzio_sdk.trainer.file_splitting import MultimodalFileSplittingModel
+# file_splitting_model = MultimodalFileSplittingModel(categories=project.categories)
 
 # for an example run, you can take only a slice of training documents to make fitting faster
 file_splitting_model.documents = file_splitting_model.documents[:10]
@@ -172,8 +179,4 @@ for page in new_document[0].pages():
 if __name__ == "__main__":
     import doctest
 
-    doctest.testmod(
-        extraglobs={
-            'model': model,
-        }
-    )
+    doctest.testmod(extraglobs={'model': model})

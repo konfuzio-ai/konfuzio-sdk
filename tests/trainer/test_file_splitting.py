@@ -93,7 +93,7 @@ class TestContextAwareFileSplittingModel(unittest.TestCase):
         test_document = self.file_splitting_model.tokenizer.tokenize(
             deepcopy(self.project.get_category_by_id(3).test_documents()[0])
         )
-        # deepcopying because we do not want changes in an original test Document.
+        # deep copying because we do not want changes in an original test Document.
         # typically this happens in one of the private methods, but since here we pass a Document Page by Page, we
         # need to tokenize it explicitly (compared to when we pass a full Document to the Splitting AI).
         for page in test_document.pages():
