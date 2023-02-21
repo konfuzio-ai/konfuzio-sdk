@@ -1,4 +1,4 @@
-**Internal Documentation. This does not apply to on-premise Konfuzio Server installations.**
+**Internal Documentation. This does not apply to on-premises Konfuzio Server installations.**
 
 # Overview
 
@@ -43,7 +43,7 @@ After that we continue with the setup of Fakturia.
   - Vertrag gekündigt 
   - Vertrag beendet (Vertragsende erreicht)  
 
-![webhook.png](webhook.png)
+.. image:: ./webhook.png
 
 Click `Webhook speichern` button
 

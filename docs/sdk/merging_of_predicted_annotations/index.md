@@ -1,7 +1,7 @@
 .. meta::
    :description: Documentation of the ExtractionAI merge logic.
 
-# Merging Logic
+# Merging of predicted Annotations
 
 Our extraction AI runs a merging logic at two steps in the extraction process. The first is a horizontal merging of Spans right after the Label classifier. This can be particularly useful when using the [Whitespace tokenizer](https://dev.konfuzio.com/sdk/sourcecode.html#konfuzio_sdk.tokenizer.regex.WhitespaceTokenizer) as it can find Spans containing spaces. The second merging logic is a vertical merging of Spans into a single multiline Annotation. Checkout the [architecture diagram](https://dev.konfuzio.com/sdk/contribution.html#architecture-sdk-to-server) for more detail.
 

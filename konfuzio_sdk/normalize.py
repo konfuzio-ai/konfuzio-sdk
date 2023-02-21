@@ -459,6 +459,9 @@ def _check_for_dates_with_day_count(offset_string: str, org_str: str, month_dict
     elif len(offset_string) == 10 and offset_string[2] == '.' and offset_string[5] == '.':
         _date = offset_string  # => 01.01.2001
         translation = _date
+    elif len(offset_string) == 9 and offset_string[2] == '.' and offset_string[4] == '.':
+        _date = f'{offset_string[:2]}.0{offset_string[3]}.{offset_string[5:]}'
+        translation = _date
     # check for 01/01/2001
     elif len(offset_string) == 10 and offset_string[2] == '/' and offset_string[5] == '/':
         _date = offset_string.replace('/', '.')  # => 01.01.2001
@@ -611,14 +614,14 @@ def _final_date_check(date_string: str):
             and date_string[:2].isdecimal()
             and date_string[3:5].isdecimal()
         ):
-            logger.info('Could not convert >>' + date_string + '<< to date (date contains letters)')
+            logger.debug('Could not convert >>' + date_string + '<< to date (date contains letters)')
             date_string = None
         elif (
             not ((1900 < int(date_string[-4:]) < 2100) or int(date_string[-4:]) == 0)
             or not (int(date_string[:2]) < 32)
             or not (int(date_string[3:5]) < 13)
         ):
-            logger.info('Could not convert >>' + date_string + '<< to date (invalid date)')
+            logger.debug('Could not convert >>' + date_string + '<< to date (invalid date)')
             date_string = None
     return date_string
 

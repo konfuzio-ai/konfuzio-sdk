@@ -9,15 +9,17 @@ import regex as re
 import shutil
 import time
 import zipfile
+from copy import deepcopy
 from typing import Optional, List, Union, Tuple, Dict
 from warnings import warn
+from enum import Enum
 
 import dateutil.parser
 from PIL import Image, ImageDraw, ImageFont
 from tqdm import tqdm
 
 from konfuzio_sdk.api import (
-    _konfuzio_session,
+    konfuzio_session,
     download_file_konfuzio_api,
     get_meta_of_files,
     get_project_details,
@@ -26,12 +28,20 @@ from konfuzio_sdk.api import (
     update_document_konfuzio_api,
     get_page_image,
     delete_document_annotation,
+    delete_file_konfuzio_api,
+    upload_file_konfuzio_api,
 )
 from konfuzio_sdk.normalize import normalize
 from konfuzio_sdk.regex import get_best_regex, regex_matches, suggest_regex_for_string, merge_regex
 from konfuzio_sdk.urls import get_annotation_view_url
-from konfuzio_sdk.utils import get_missing_offsets
-from konfuzio_sdk.utils import is_file, convert_to_bio_scheme, amend_file_name, sdk_isinstance
+from konfuzio_sdk.utils import (
+    is_file,
+    convert_to_bio_scheme,
+    amend_file_name,
+    sdk_isinstance,
+    exception_or_log_error,
+    get_missing_offsets,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -42,12 +52,12 @@ class Data:
     id_iter = itertools.count()
     id_ = None
     id_local = None
-    session = _konfuzio_session()
+    session = konfuzio_session()
     _update = False
     _force_offline = False
 
     def __eq__(self, other) -> bool:
-        """Compare any point of data with their ID, overwrite if needed."""
+        """Compare any point of Data with their ID, overwrite if needed."""
         if self.id_ is None and other and other.id_ is None:
             # Compare to virtual instances
             return self.id_local == other.id_local
@@ -78,13 +88,13 @@ class Data:
         return self
 
     def set_offline(self):
-        """Force data into offline mode."""
+        """Force Data into offline mode."""
         self._force_offline = True
         self._update = False
 
 
 class Page(Data):
-    """Access the information about one Page of a document."""
+    """Access the information about one Page of a Document."""
 
     def __init__(
         self,
@@ -108,6 +118,18 @@ class Page(Data):
         self.width = self._original_size[0]
         self.height = self._original_size[1]
         self.image_path = os.path.join(self.document.document_folder, f'page_{self.number}.png')
+
+        self._category = self.document._category
+        self.category_annotations: List['CategoryAnnotation'] = []
+        self._human_chosen_category_annotation: Optional[CategoryAnnotation] = None
+        self.is_first_page = None
+        self.is_first_page_confidence = None
+        if self.document.dataset_status in (2, 3):
+            if self.number == 1:
+                self.is_first_page = True
+                self.is_first_page_confidence = 1
+            else:
+                self.is_first_page = False
 
         check_page = True
         if self.index is None:
@@ -145,7 +167,7 @@ class Page(Data):
         return self.image
 
     def get_annotations_image(self, image: Image = None):
-        """Get Document Page as PNG with annotations shown."""
+        """Get Document Page as PNG with Annotations shown."""
         if image is None and self.document.id_ is not None:
             image = self.get_image()
         elif image is None and self.document.copy_of_id is not None:
@@ -248,17 +270,113 @@ class Page(Data):
         page_view_anns = self.document.view_annotations(start_offset=self.start_offset, end_offset=self.end_offset)
         return page_view_anns
 
+    def add_category_annotation(self, category_annotation: 'CategoryAnnotation'):
+        """Annotate a Page with a Category and confidence information."""
+        if category_annotation.category != self.document.project.no_category:
+            duplicated = [x for x in self.category_annotations if x == category_annotation]
+            if duplicated:
+                raise ValueError(
+                    f'In {self} the {category_annotation} is a duplicate of {duplicated} and will not be added.'
+                )
+            self.category_annotations.append(category_annotation)
+
+    def get_category_annotation(self, category, add_if_not_present: bool = False) -> 'CategoryAnnotation':
+        """
+        Get the Category Annotation corresponding to a Category in this Page.
+
+        If no Category Annotation is found with the provided Category, one is created. See the `add_if_not_present`
+        argument.
+
+        :param category: The Category to filter for.
+        :param add_if_not_present: Adds the Category Annotation to the current Page if not present. Otherwise it creates
+        a dummy Category Annotation, not linked to any Document or Page.
+        :return: The found or created Category Annotation.
+        """
+        filtered_category_annotations = [
+            category_annotation
+            for category_annotation in self.category_annotations
+            if category_annotation.category == category
+            and category_annotation.category != self.document.project.no_category
+        ]
+        # if the list is not empty it means there is exactly one CategoryAnnotation with the assigned Category
+        # (see Page.add_category_annotation for duplicate checking)
+        if filtered_category_annotations:
+            return filtered_category_annotations[0]
+        else:  # otherwise a new one will be created
+            if add_if_not_present:
+                new_category_annotation = CategoryAnnotation(category=category, page=self)
+            else:
+                # dummy CategoryAnnotation (not associated to any Document or Page)
+                new_category_annotation = CategoryAnnotation(category=category)
+            return new_category_annotation
+
+    def set_category(self, category: 'Category') -> None:
+        """
+        Set the Category of the Page.
+
+        :param category: The Category to set for the Page.
+        """
+        self._category = category
+        if category is None:
+            self.category_annotations = []
+            self._human_chosen_category_annotation = None
+            return
+        category_annotation = self.get_category_annotation(category, add_if_not_present=True)
+        self._human_chosen_category_annotation = category_annotation
+
+    @property
+    def maximum_confidence_category_annotation(self) -> Optional['CategoryAnnotation']:
+        """
+        Get the human revised Category Annotation of this Page, or the highest confidence one if not revised.
+
+        :return: The found Category Annotation, or None if not present.
+        """
+        if (
+            self._human_chosen_category_annotation is not None
+            and self._human_chosen_category_annotation.category != self.document.project.no_category
+        ):
+            return self._human_chosen_category_annotation
+        elif self.category_annotations:
+            # return the highest confidence CategoryAnnotation if no human revised it
+            return sorted(self.category_annotations, key=lambda x: x.confidence)[-1]
+        else:
+            return None
+
+    @property
+    def category(self) -> Optional['Category']:
+        """Get the Category of the Page, based on human revised Category Annotation, or on highest confidence."""
+        if self.maximum_confidence_category_annotation is not None:
+            return self.maximum_confidence_category_annotation.category
+        else:
+            return self._category
+
+
+class BboxValidationTypes(Enum):
+    """Define validation strictness for bounding boxes.
+
+    For more details see the `Bbox` class.
+    """
+
+    STRICT = 'strict'
+    ALLOW_ZERO_SIZE = 'allow zero size'
+    DISABLED = 'disabled'
+
 
 class Bbox:
     """
     A bounding box relates to an area of a Document Page.
 
-    :param strict_validation: If False, it allows bounding boxes to have zero width or height. This option is available
-    and defaults to False for compatibility reasons since some OCR engines can sometimes return character level bboxes
-    with zero width or height.
+    What consistutes a valid Bbox changes depending on the value of the `validation` param.
+    If ALLOW_ZERO_SIZE (default), it allows bounding boxes to have zero width or height.
+    This option is available for compatibility reasons since some OCR engines can sometimes return character level
+    bboxes with zero width or height. If STRICT, it doesn't allow zero size bboxes. If DISABLED, it allows bboxes that
+    have negative size, or coordinates beyond the Page bounds.
+    For the default behaviour see https://dev.konfuzio.com/sdk/tutorials.html#data-validation-rules.
+
+    :param validation: One of ALLOW_ZERO_SIZE (default), STRICT, or DISABLED.
     """
 
-    def __init__(self, x0: int, x1: int, y0: int, y1: int, page: Page, strict_validation: bool = False):
+    def __init__(self, x0: int, x1: int, y0: int, y1: int, page: Page, validation=BboxValidationTypes.ALLOW_ZERO_SIZE):
         """Store information and validate."""
         self.x0: int = x0
         self.x1: int = x1
@@ -266,7 +384,7 @@ class Bbox:
         self.y1: int = y1
         self.angle: float = 0.0  # not yet used
         self.page: Page = page
-        self._valid(strict_validation)
+        self._valid(validation)
 
     def __repr__(self):
         """Represent the Box."""
@@ -280,51 +398,75 @@ class Bbox:
         """Define that one Bounding Box on the same page is identical."""
         return self.__hash__() == other.__hash__()
 
-    def _valid(self, strict: bool = False):
+    def _valid(self, validation=BboxValidationTypes.ALLOW_ZERO_SIZE, handler="sdk_validation"):
         """
         Validate contained data.
 
-        :param strict: If False, it allows bounding boxes to have zero width or height. This option is available
-        and defaults to False for compatibility reasons since some OCR engines can sometimes return character level
-        bboxes with zero width or height.
+        :param validation: One of ALLOW_ZERO_SIZE (default), STRICT, or DISABLED. Also see the `Bbox` class.
         """
         if self.x0 == self.x1:
-            if strict:
-                raise ValueError(f'{self} has no width in {self.page}.')
-            else:
-                # todo add link to documentation page relating to feature calculation for the RandomForest ExtractionAI
-                logger.error(
-                    f'{self} has no width in {self.page}. Some of our AIs use the area of bboxes as a feature'
-                    f'during training and prediction, which will be zero.'
-                )
+            exception_or_log_error(
+                msg=f'{self} has no width in {self.page}.',
+                fail_loudly=validation is BboxValidationTypes.STRICT,
+                exception_type=ValueError,
+                handler=handler,
+            )
 
         if self.x0 > self.x1:
-            raise ValueError(f'{self} has negative width in {self.page}.')
+            exception_or_log_error(
+                msg=f'{self} has negative width in {self.page}.',
+                fail_loudly=validation is not BboxValidationTypes.DISABLED,
+                exception_type=ValueError,
+                handler=handler,
+            )
 
         if self.y0 == self.y1:
-            if strict:
-                raise ValueError(f'{self} has no height in {self.page}.')
-            else:
-                # todo add link to documentation page relating to feature calculation for the RandomForest ExtractionAI
-                logger.error(
-                    f'{self} has no height in {self.page}. Some of our AIs use the area of bboxes as a feature'
-                    f'during training and prediction, which will be zero.'
-                )
+            exception_or_log_error(
+                msg=f'{self} has no height in {self.page}.',
+                fail_loudly=validation is BboxValidationTypes.STRICT,
+                exception_type=ValueError,
+                handler=handler,
+            )
 
         if self.y0 > self.y1:
-            raise ValueError(f'{self} has negative height in {self.page}.')
+            exception_or_log_error(
+                msg=f'{self} has negative height in {self.page}.',
+                fail_loudly=validation is not BboxValidationTypes.DISABLED,
+                exception_type=ValueError,
+                handler=handler,
+            )
 
         if self.y1 > self.page.height:
-            raise ValueError(f'{self} exceeds height of {self.page}.')
+            exception_or_log_error(
+                msg=f'{self} exceeds height of {self.page}.',
+                fail_loudly=validation is not BboxValidationTypes.DISABLED,
+                exception_type=ValueError,
+                handler=handler,
+            )
 
         if self.x1 > self.page.width:
-            raise ValueError(f'{self} exceeds width of {self.page}.')
+            exception_or_log_error(
+                msg=f'{self} exceeds width of {self.page}.',
+                fail_loudly=validation is not BboxValidationTypes.DISABLED,
+                exception_type=ValueError,
+                handler=handler,
+            )
 
         if self.y0 < 0:
-            raise ValueError(f'{self} has negative y coordinate in {self.page}.')
+            exception_or_log_error(
+                msg=f'{self} has negative y coordinate in {self.page}.',
+                fail_loudly=validation is not BboxValidationTypes.DISABLED,
+                exception_type=ValueError,
+                handler=handler,
+            )
 
         if self.x0 < 0:
-            raise ValueError(f'{self} has negative x coordinate in {self.page}.')
+            exception_or_log_error(
+                msg=f'{self} has negative x coordinate in {self.page}.',
+                fail_loudly=validation is not BboxValidationTypes.DISABLED,
+                exception_type=ValueError,
+                handler=handler,
+            )
 
     @property
     def area(self):
@@ -389,7 +531,7 @@ class AnnotationSet(Data):
 
 
 class LabelSet(Data):
-    """A Label Set is a group of labels."""
+    """A Label Set is a group of Labels."""
 
     def __init__(
         self,
@@ -514,10 +656,12 @@ class Category(Data):
         self._force_offline = project._force_offline
         self.label_sets: List[LabelSet] = []
         self.project.add_category(category=self)
+        self._exclusive_first_page_strings = None
+        self._exclusive_span_tokenizer = None
 
     @property
     def labels(self):
-        """Return the Labels that belong to the Category and it's Label Sets."""
+        """Return the Labels that belong to the Category and its Label Sets."""
         labels = []
         # for label in self.project.labels:
         #     if self in label.label_sets:
@@ -529,7 +673,7 @@ class Category(Data):
 
     @property
     def fallback_name(self) -> str:
-        """Turn the category name to lowercase, remove parentheses along with their contents, and trim spaces."""
+        """Turn the Category name to lowercase, remove parentheses along with their contents, and trim spaces."""
         parentheses_removed = re.sub(r'\([^)]*\)', '', self.name.lower()).strip()
         single_spaces = parentheses_removed.replace("  ", " ")
         return single_spaces
@@ -549,6 +693,52 @@ class Category(Data):
         else:
             raise ValueError(f'In {self} the {label_set} is a duplicate and will not be added.')
 
+    def _collect_exclusive_first_page_strings(self, tokenizer):
+        """
+        Collect exclusive first-page string across the Documents within the Category.
+
+        :param tokenizer: A tokenizer to re-tokenize Documents within the Category before gathering the strings.
+        """
+        cur_first_page_strings = []
+        cur_non_first_page_strings = []
+        for doc in self.documents():
+            doc = deepcopy(doc)
+            doc = tokenizer.tokenize(doc)
+            for page in doc.pages():
+                if page.number == 1:
+                    cur_first_page_strings.append({span.offset_string for span in page.spans()})
+                else:
+                    cur_non_first_page_strings.append({span.offset_string for span in page.spans()})
+            doc.delete()
+        if cur_first_page_strings:
+            true_first_page_strings = set.intersection(*cur_first_page_strings)
+        else:
+            true_first_page_strings = set()
+        if cur_non_first_page_strings:
+            true_not_first_page_strings = set.intersection(*cur_non_first_page_strings)
+        else:
+            true_not_first_page_strings = set()
+        true_first_page_strings = true_first_page_strings - true_not_first_page_strings
+        self._exclusive_first_page_strings = true_first_page_strings
+
+    def exclusive_first_page_strings(self, tokenizer) -> set:
+        """
+        Return a set of strings exclusive for first Pages of Documents within the Category.
+
+        :param tokenizer: A tokenizer to process Documents before gathering strings.
+        """
+        if self._exclusive_span_tokenizer is not None:
+            if tokenizer != self._exclusive_span_tokenizer:
+                logger.warning(
+                    "Assigned tokenizer does not correspond to the one previously used within this instance."
+                    "All previously found exclusive first-page strings within each Category will be removed "
+                    "and replaced with the newly generated ones."
+                )
+                self._collect_exclusive_first_page_strings(tokenizer)
+        if not self._exclusive_first_page_strings:
+            self._collect_exclusive_first_page_strings(tokenizer)
+        return self._exclusive_first_page_strings
+
     def __lt__(self, other: 'Category'):
         """Sort Categories by name."""
         try:
@@ -560,6 +750,85 @@ class Category(Data):
     def __repr__(self):
         """Return string representation of the Category."""
         return f"{self.name} ({self.id_})"
+
+
+class CategoryAnnotation(Data):
+    """Annotate the Category of a Page."""
+
+    def __init__(
+        self,
+        category: Category,
+        confidence: Optional[float] = None,
+        page: Optional[Page] = None,
+        document: Optional['Document'] = None,
+        id_: Optional[int] = None,
+    ):
+        """
+        Create a CategoryAnnotation and link it to a Document or to a specific Page in a Document.
+
+        :param id_: ID of the CategoryAnnotation.
+        :param category: The Category to annotate the Page with.
+        :param page: The Page to be annotated. Only use when not providing a Document.
+        :param document: The Document to be annotated. Only use when not providing a Page.
+        :param confidence: Predicted confidence of the CategoryAnnotation.
+        """
+        self.id_local = next(Data.id_iter)
+        self.id_ = id_
+        self.category = category
+        self.page = page
+        self.document = document
+        if page is not None:
+            if (document is not None) and (page.document != document):
+                raise ValueError(
+                    f"The provided {page} comes from {page.document} but the provided {document} does not correspond. "
+                    f"You can provide just the Document argument if this CategoryAnnotation is not linked to a Page, "
+                    f"otherwise only provide the Page argument; the corresponding Document will be found automatically."
+                )
+            self.document = self.page.document
+        self._confidence = confidence
+        # Call add_category_annotation to Page at the end, so all attributes for duplicate checking are available.
+        if self.page is not None:
+            self.page.add_category_annotation(self)
+
+    def __repr__(self):
+        """Return string representation."""
+        return f"Category Annotation: ({self.category}, {self.confidence}) in {self.page or self.document}"
+
+    def __eq__(self, other):
+        """Define equality condition for CategoryAnnotations.
+
+        A CategoryAnnotation is equal to another if both the linked Page and the predicted Category are the same.
+        """
+        return (other is not None) and (self.page == other.page) and (self.category == other.category)
+
+    def set_revised(self) -> None:
+        """Set this Category Annotation as revised by human, and thus the correct one for the linked Page."""
+        if self.page is not None:
+            self.page.set_category(self.category)
+        elif self.document is not None:
+            self.document.set_category(self.category)
+
+    @property
+    def confidence(self) -> float:
+        """
+        Get the confidence of this Category Annotation.
+
+        If the confidence was not set, it means it was never predicted by an AI. Thus, the returned value will
+        be 0, unless it was set by a human, in which case it defaults to 1.
+
+        :return: Confidence between 0.0 and 1.0 included.
+        """
+        # if confidence is None it means it was never predicted by an AI
+        if self._confidence is None:
+            # if this CategoryAnnotation was added by a human then the confidence is 1
+            if (self.page is not None) and (self.page._human_chosen_category_annotation == self):
+                return 1.0
+            elif (self.document is not None) and (self.document._category == self.category):
+                return 1.0
+            else:
+                # otherwise there is no prediction and no human revision so the confidence is 0
+                return 0.0
+        return self._confidence
 
 
 class Label(Data):
@@ -583,12 +852,12 @@ class Label(Data):
         Create a named Label.
 
         :param project: Project where the Label belongs
-        :param id_: ID of the label
-        :param text: Name of the label
-        :param get_data_type_display: Data type of the label
-        :param text_clean: Normalized name of the label
-        :param description: Description of the label
-        :param label_sets: Label sets that use this label
+        :param id_: ID of the Label
+        :param text: Name of the Label
+        :param get_data_type_display: Data type of the Label
+        :param text_clean: Normalized name of the Label
+        :param description: Description of the Label
+        :param label_sets: Label Sets that use this Label
         """
         self.id_local = next(Data.id_iter)
         self.id_ = id_
@@ -613,6 +882,8 @@ class Label(Data):
         # self._combined_tokens = None
         self.regex_file_path = os.path.join(self.project.regex_folder, f'{self.name_clean}.json5')
         self._evaluations = {}  # used to do the duplicate check on Annotation level
+
+        self._has_multiline_annotations = None
 
     def __repr__(self):
         """Return string representation."""
@@ -643,20 +914,28 @@ class Label(Data):
 
         return annotations
 
-    def has_multiline_annotations(self, categories: List[Category]) -> bool:
+    def has_multiline_annotations(self, categories: List[Category] = None) -> bool:
         """Return if any Label annotations are multi-line."""
-        for category in categories:
-            for document in category.documents():
-                for annotation in document.annotations(label=self):
-                    if len(annotation.spans) > 1:
-                        return True
-        return False
+        if categories is None and self._has_multiline_annotations is None:
+            raise TypeError(
+                "This value has never been computed. Please provide a value for keyword argument: 'categories'"
+            )
+        elif type(categories) is list:
+            self._has_multiline_annotations = False
+            for category in categories:
+                for document in category.documents():
+                    for annotation in document.annotations(label=self):
+                        if len(annotation.spans) > 1:
+                            self._has_multiline_annotations = True
+                            return True
+
+        return self._has_multiline_annotations
 
     def add_label_set(self, label_set: "LabelSet"):
         """
         Add Label Set to label, if it does not exist.
 
-        :param label_set: Label set to add
+        :param label_set: Label Set to add
         """
         if label_set not in self.label_sets:
             self.label_sets.append(label_set)
@@ -859,7 +1138,7 @@ class Label(Data):
                     regex_found.add(new_regex)
 
         logger.info(
-            f'For Label {self.name} we found {len(regex_made)} regex proposals for {len(all_annotations)} annotations.'
+            f'For Label {self.name} we found {len(regex_made)} regex proposals for {len(all_annotations)} Annotations.'
         )
 
         # todo replace by compare
@@ -960,7 +1239,7 @@ class Label(Data):
 class Span(Data):
     """A Span is a sequence of characters or whitespaces without line break."""
 
-    def __init__(self, start_offset: int, end_offset: int, annotation=None):
+    def __init__(self, start_offset: int, end_offset: int, annotation=None, strict_validation: bool = True):
         """
         Initialize the Span without bbox, to save storage.
 
@@ -969,6 +1248,8 @@ class Span(Data):
         :param start_offset: Start of the offset string (int)
         :param end_offset: Ending of the offset string (int)
         :param annotation: The Annotation the Span belong to
+        :param strict_validation: Whether to apply strict validation rules.
+        See https://dev.konfuzio.com/sdk/tutorials.html#data-validation-rules.
         """
         self.id_local = next(Data.id_iter)
         self.annotation: Annotation = annotation
@@ -981,22 +1262,45 @@ class Span(Data):
         self._bbox: Union[Bbox, None] = None
         self.regex_matching = []
         annotation and annotation.add_span(self)  # only add if Span has access to an Annotation
-        self._valid()
+        self._valid(strict_validation)
 
-    def _valid(
-        self,
-    ):
-        """Validate containted data."""
+    def _valid(self, strict: bool = True, handler: str = "sdk_validation"):
+        """
+        Validate containted data.
+
+        :param strict: If False, it allows Spans to have zero length, or span more than one visual line. For more
+        details see https://dev.konfuzio.com/sdk/tutorials.html#data-validation-rules.
+        """
         if self.end_offset == self.start_offset == 0:
-            logger.error(f'{self} is intentionally left empty.')
-        elif self.end_offset < 0:
-            raise ValueError(f'{self} must span text.')
+            logger.error(f"{self} is intentionally left empty.")
+        elif self.start_offset < 0 or self.end_offset < 0:
+            exception_or_log_error(
+                msg=f"{self} must span text.",
+                fail_loudly=strict,
+                exception_type=ValueError,
+                handler=handler,
+            )
         elif self.start_offset == self.end_offset:
-            raise ValueError(f"{self} must span text: Start {self.start_offset} equals end.")
+            exception_or_log_error(
+                msg=f"{self} must span text: Start {self.start_offset} equals end.",
+                fail_loudly=strict,
+                exception_type=ValueError,
+                handler=handler,
+            )
         elif self.end_offset < self.start_offset:
-            raise ValueError(f"{self} length must be positive.")
-        elif self.offset_string and ('\n' in self.offset_string or '\f' in self.offset_string):
-            raise ValueError(f'{self} must not span more than one visual line.')
+            exception_or_log_error(
+                msg=f"{self} length must be positive.",
+                fail_loudly=strict,
+                exception_type=ValueError,
+                handler=handler,
+            )
+        elif self.offset_string and ("\n" in self.offset_string or "\f" in self.offset_string):
+            exception_or_log_error(
+                msg=f"{self} must not span more than one visual line.",
+                fail_loudly=strict,
+                exception_type=ValueError,
+                handler=handler,
+            )
         return True
 
     @property
@@ -1024,7 +1328,7 @@ class Span(Data):
         return self._line_index
 
     def __eq__(self, other) -> bool:
-        """Compare any point of data with their position is equal."""
+        """Twp Spans are equal if their start_offset and end_offset are both equal."""
         return (
             type(self) == type(other)
             and self.start_offset == other.start_offset
@@ -1083,8 +1387,27 @@ class Span(Data):
                 y0=min([ch.y0 for c, ch in characters.items() if ch is not None]),
                 y1=max([ch.y1 for c, ch in characters.items() if ch is not None]),
                 page=self.page,
+                validation=self.annotation.document._bbox_validation_type,
             )
         return self._bbox
+
+    def bbox_dict(self) -> Dict:
+        """Return Span Bbox info as a serializable Dict format for external integration with the Konfuzio Server."""
+        span_dict = {
+            'start_offset': self.start_offset,
+            'end_offset': self.end_offset,
+            'line_number': self.line_index + 1,
+            'offset_string': self.offset_string,
+            'offset_string_original': self.offset_string,
+            'page_index': self.bbox().page.index,
+            'top': self.bbox().page.height - self.bbox().y1,
+            'bottom': self.bbox().page.height - self.bbox().y0,
+            'x0': self.bbox().x0,
+            'x1': self.bbox().x1,
+            'y0': self.bbox().y0,
+            'y1': self.bbox().y1,
+        }
+        return span_dict
 
     @property
     def normalized(self):
@@ -1257,11 +1580,11 @@ class Annotation(Data):
         self.id_ = id_  # Annotations can have None id_, if they are not saved online and are only available locally
         self._spans: List[Span] = []
 
-        if accuracy is not None:  # its a confidence
+        if accuracy is not None:  # it's a confidence
             self.confidence = accuracy
         elif confidence is not None:
             self.confidence = confidence
-        elif self.id_ is not None and accuracy is None:  # hotfix: it's an online annotation crated by a human
+        elif self.id_ is not None and accuracy is None:  # hotfix: it's an online Annotation crated by a human
             self.confidence = 1
         elif accuracy is None and confidence is None:
             self.confidence = None
@@ -1292,8 +1615,8 @@ class Annotation(Data):
         if isinstance(annotation_set_id, int):
             self.annotation_set: AnnotationSet = self.document.get_annotation_set_by_id(annotation_set_id)
         elif sdk_isinstance(annotation_set, AnnotationSet):
-            # it's a save way to look up the annotation set first. Otherwise users can add annotation sets which
-            # do not relate to the document
+            # it's a safe way to look up the Annotation Set first. Otherwise users can add Annotation Sets which
+            # do not relate to the Document
             self.annotation_set: AnnotationSet = self.document.get_annotation_set_by_id(annotation_set.id_)
         else:
             self.annotation_set = None
@@ -1341,7 +1664,6 @@ class Annotation(Data):
             self.y0 = bbox.get('y0')
             self.y1 = bbox.get('y1')
 
-        self.bboxes = kwargs.get('bboxes', None)
         self.selection_bbox = kwargs.get('selection_bbox', None)
         self.page_number = kwargs.get('page_number', None)
         # END LEGACY -
@@ -1360,7 +1682,11 @@ class Annotation(Data):
         if not self.label:
             raise NotImplementedError(f'{self} has no Label and cannot be created.')
         if not self.spans:
-            raise NotImplementedError(f'{self} has no Spans and cannot be created.')
+            exception_or_log_error(
+                msg=f'{self} has no Spans and cannot be created.',
+                fail_loudly=self.document.project._strict_data_validation,
+                exception_type=NotImplementedError,
+            )
 
     def __repr__(self):
         """Return string representation."""
@@ -1470,6 +1796,10 @@ class Annotation(Data):
         :param document_annotations: Annotations in the Document (list)
         :return: True if new Annotation was created
         """
+        if self.label == self.document.project.no_label:
+            raise ValueError("You cannot save Annotations with Label NO_LABEL.")
+        if self.document.category == self.document.project.no_category:
+            raise ValueError(f"You cannot save Annotations of Documents with {self.document.category}.")
         new_annotation_added = False
         if not self.label_set:
             label_set_id = None
@@ -1502,7 +1832,7 @@ class Annotation(Data):
             elif response.status_code == 403:
                 logger.error(response.text)
                 try:
-                    if "In one project you cannot label the same text twice." in response.text:
+                    if "In one Project you cannot label the same text twice." in response.text:
                         if document_annotations is None:
                             # get the Annotation
                             self.document.update()
@@ -1528,7 +1858,7 @@ class Annotation(Data):
                     else:
                         logger.exception(f"Unknown issue to create Annotation {self} in {self.document}")
                 except KeyError:
-                    logger.error(f"Not able to save annotation online: {response}")
+                    logger.error(f"Not able to save Annotation online: {response}")
         return new_annotation_added
 
     def regex_annotation_generator(self, regex_list) -> List[Span]:
@@ -1585,7 +1915,7 @@ class Annotation(Data):
 
     # todo can we circumvent the combined tokens
     def regex(self):
-        """Return regex of this annotation."""
+        """Return regex of this Annotation."""
         return self.label.combined_tokens(categories=[self.document.category])
 
     def delete(self, delete_online: bool = True) -> None:
@@ -1604,6 +1934,14 @@ class Annotation(Data):
         """Return default entry to get all Spans of the Annotation."""
         return sorted(self._spans)
 
+    @property
+    def bboxes(self) -> List[Dict]:
+        """Return the Bbox information for all Spans in serialized format.
+
+        This is useful for external integration (e.g. Konfuzio Server)."
+        """
+        return [span.bbox_dict() for span in self.spans]
+
     def lose_weight(self):
         """Delete data of the instance."""
         super().lose_weight()
@@ -1611,14 +1949,14 @@ class Annotation(Data):
 
 
 class Document(Data):
-    """Access the information about one document, which is available online."""
+    """Access the information about one Document, which is available online."""
 
     def __init__(
         self,
         project: 'Project',
         id_: Union[int, None] = None,
         file_url: str = None,
-        status=None,
+        status: List[Union[int, str]] = None,  # ?
         data_file_name: str = None,
         is_dataset: bool = None,
         dataset_status: int = None,
@@ -1626,9 +1964,11 @@ class Document(Data):
         assignee: int = None,
         category_template: int = None,  # fix for Konfuzio Server API, it's actually an ID of a Category
         category: Category = None,
+        category_confidence: Optional[float] = None,
+        category_is_revised: bool = False,
         text: str = None,
         bbox: dict = None,
-        strict_bbox_validation: bool = False,
+        bbox_validation_type=None,
         pages: list = None,
         update: bool = None,
         copy_of_id: Union[int, None] = None,
@@ -1640,17 +1980,15 @@ class Document(Data):
 
         :param id_: ID of the Document
         :param project: Project where the Document belongs to
-        :param file_url: URL of the document
-        :param status: Status of the document
-        :param data_file_name: File name of the document
+        :param file_url: URL of the Document
+        :param status: Status of the Document
+        :param data_file_name: File name of the Document
         :param is_dataset: Is dataset or not. (bool)
-        :param dataset_status: Dataset status of the Document (e.g. training)
+        :param dataset_status: Dataset status of the Document (e.g. Training)
         :param updated_at: Updated information
         :param assignee: Assignee of the Document
         :param bbox: Bounding box information per character in the PDF (dict)
-        :param strict_bbox_validation: If False, it allows bounding boxes to have zero width or height. This option is
-                        available and defaults to False for compatibility reasons since some OCR engines can sometimes
-                        return character level bboxes with zero width or height.
+        :param bbox_validation_type: One of ALLOW_ZERO_SIZE (default), STRICT, or DISABLED. Also see the `Bbox` class.
         :param pages: List of page sizes.
         :param update: Annotations, Annotation Sets will not be loaded by default. True will load it from the API.
                         False from local files
@@ -1665,16 +2003,21 @@ class Document(Data):
         self.file_url = file_url
         self.is_dataset = is_dataset
         self.dataset_status = dataset_status
-        self.assignee = assignee
         self._update = update
         self.copy_of_id = copy_of_id
 
+        # The following variables come from the Server API
+        # self._category -> document level category from the "category" field
+        # self._category_confidence -> document level category confidence from the "category_confidence" field
+        # self.category_is_revised -> document level boolean flag from the "category_is_revised" field
         if project and category_template:
-            self.category = project.get_category_by_id(category_template)
+            self._category = project.get_category_by_id(category_template)
         elif category:
-            self.category = category
+            self._category = category
         else:
-            self.category = None
+            self._category = project.no_category
+        self._category_confidence = category_confidence
+        self.category_is_revised = category_is_revised
 
         if updated_at:
             self.updated_at = dateutil.parser.isoparse(updated_at)
@@ -1682,7 +2025,7 @@ class Document(Data):
             self.updated_at = None
 
         self.name = data_file_name
-        self.status = status  # status of document online
+        self.status = status  # status of Document online
         self.project = project
         self._force_offline = project._force_offline
         project.add_document(self)  # check for duplicates by ID before adding the Document to the project
@@ -1694,12 +2037,17 @@ class Document(Data):
         self._bbox_hash = None
         self._bbox_json = bbox
         self.bboxes_available: bool = True if (self.is_online or self._bbox_json) else False
-        self._strict_bbox_validation = strict_bbox_validation
+        self._bbox_validation_type = bbox_validation_type
+        if bbox_validation_type is None:
+            if self.project._strict_data_validation:
+                self._bbox_validation_type = BboxValidationTypes.ALLOW_ZERO_SIZE
+            else:
+                self._bbox_validation_type = BboxValidationTypes.DISABLED
         self._hocr = None
         self._pages: List[Page] = []
         self._n_pages = None
 
-        # prepare local setup for document
+        # prepare local setup for Document
         if self.is_online:
             pathlib.Path(self.document_folder).mkdir(parents=True, exist_ok=True)
         self.annotation_file_path = os.path.join(self.document_folder, "annotations.json5")
@@ -1710,20 +2058,223 @@ class Document(Data):
         self.bbox_file_path = os.path.join(self.document_folder, "bbox.zip")
         self.bio_scheme_file_path = os.path.join(self.document_folder, "bio_scheme.txt")
 
+        bbox_file_exists = is_file(self.bbox_file_path, raise_exception=False)
+        self.bboxes_available: bool = self.is_online or self._bbox_json or bbox_file_exists
+
         if pages:
-            self.pages()  # create page instances
+            self.pages()  # create Page instances
 
     def __repr__(self):
         """Return the name of the Document incl. the ID."""
-        if self.copy_of_id:
-            return f"Document {self.name} ({self.copy_of_id})"
+        if self.id_ is None:
+            return f"Virtual Document {self.name} ({self.copy_of_id})"
         else:
             return f"Document {self.name} ({self.id_})"
+
+    def update_meta_data(
+        self,
+        assignee: int = None,
+        category_template: int = None,
+        category: Category = None,
+        data_file_name: str = None,
+        dataset_status: int = None,
+        status: List[Union[int, str]] = None,
+        **kwargs,
+    ):
+        """Update document metadata information."""
+        self.assignee = assignee
+
+        if self.project and category_template:
+            self._category = self.project.get_category_by_id(category_template)
+        elif category:
+            self._category = category
+        else:
+            self._category = None
+
+        self.name = data_file_name
+
+        self.status = status
+
+        self.dataset_status = dataset_status
+
+    def save_meta_data(self):
+        """Save local changes to Document metadata to server."""
+        update_document_konfuzio_api(
+            document_id=self.id_, file_name=self.name, dataset_status=self.dataset_status, assignee=self.assignee
+        )
+
+    def save(self):
+        """Save all local changes to Document to server."""
+        self.save_meta_data()
+
+        for annotation in self.annotations(use_correct=False):
+            if not annotation.is_online:
+                annotation.save()
+
+    @classmethod
+    def from_file_sync(
+        self,
+        path: str,
+        project: 'Project',
+        dataset_status: int = 0,
+        category_id: Union[None, int] = None,
+        callback_url: str = '',
+    ) -> 'Document':
+        """
+        Initialize Document from file with synchronous API call.
+
+        This class method will wait for the document to be processed by the server
+        and then return the new Document. This may take a bit of time. When uploading
+        many documents, it is advised to use the Document.from_file_async method.
+
+        :param path: Path to file to be uploaded
+        :param project: If to filter by correct annotations
+        :param dataset_status: Dataset status of the document (None: 0 Preparation: 1 Training: 2 Test: 3 Excluded: 4)
+        :param category_id: Category the Document belongs to (if unset, it will be assigned one by the server)
+        :param callback_url: Callback URL receiving POST call once extraction is done
+        :return: New Document
+        """
+        response = upload_file_konfuzio_api(
+            path,
+            project_id=project.id_,
+            dataset_status=dataset_status,
+            category_id=category_id,
+            callback_url=callback_url,
+            sync=True,
+        )
+
+        new_document_id = json.loads(response.text)['id']
+
+        project.init_or_update_document(from_online=True)
+        doc = project.get_document_by_id(new_document_id)
+
+        return doc
+
+    @classmethod
+    def from_file_async(
+        self,
+        path: str,
+        project: 'Project',
+        dataset_status: int = 0,
+        category_id: Union[None, int] = None,
+        callback_url: str = '',
+    ) -> int:
+        """
+        Initialize Document from file with asynchrinous API call.
+
+        This class method asynchronously uploads a file, to the Konfuzio API and returns the ID of
+        the newly created document. Use this method to create a new Document and don't want to wait
+        for the document to be processed by the server. This requires to update the Project at a
+        later point to be able to work with the new Document.
+
+        :param path: Path to file to be uploaded
+        :param project: If to filter by correct annotations
+        :param dataset_status: Dataset status of the document (None: 0 Preparation: 1 Training: 2 Test: 3 Excluded: 4)
+        :param category_id: Category the Document belongs to (if unset, it will be assigned one by the server)
+        :param callback_url: Callback URL receiving POST call once extraction is done
+        :return: ID of new Document
+        """
+        response = upload_file_konfuzio_api(
+            path,
+            project_id=project.id_,
+            dataset_status=dataset_status,
+            category_id=category_id,
+            callback_url=callback_url,
+            sync=False,
+        )
+
+        new_document_id = json.loads(response.text)['id']
+
+        return new_document_id
 
     @property
     def file_path(self):
         """Return path to file."""
         return os.path.join(self.document_folder, amend_file_name(self.name))
+
+    @property
+    def category_annotations(self) -> List[CategoryAnnotation]:
+        """
+        Collect Category Annotations and average confidence across all Pages.
+
+        :return: List of Category Annotations, one for each Category.
+        """
+        category_annotations = []
+        for category in self.project.categories:
+            if category != self.project.no_category:
+                confidence = 0
+                for page in self.pages():
+                    confidence += page.get_category_annotation(category).confidence
+                confidence /= self.number_of_pages
+                if (confidence == 0.0) and (category == self._category):
+                    confidence = self._category_confidence
+                category_annotation = CategoryAnnotation(category=category, document=self, confidence=confidence)
+                category_annotations.append(category_annotation)
+        return category_annotations
+
+    @property
+    def maximum_confidence_category_annotation(self) -> Optional[CategoryAnnotation]:
+        """
+        Get the human revised Category Annotation of this Document, or the highest confidence one if not revised.
+
+        :return: The found Category Annotation, or None if not present.
+        """
+        if self._category not in [self.project.no_category, None]:
+            # there is a unique Category Annotation per Category associated to this Document
+            # by construction in Document.category_annotations
+            return [
+                category_annotation
+                for category_annotation in self.category_annotations
+                if category_annotation.category == self._category
+            ][0]
+        category_annotation = sorted(self.category_annotations, key=lambda x: x.confidence)[-1]
+        if category_annotation.confidence != 0.0:
+            return category_annotation
+        return None
+
+    @property
+    def maximum_confidence_category(self) -> Optional[Category]:
+        """
+        Get the human revised Category of this Document, or the highest confidence one if not revised.
+
+        :return: The found Category, or None if not present.
+        """
+        if self.maximum_confidence_category_annotation is not None:
+            return self.maximum_confidence_category_annotation.category
+        return None
+
+    @property
+    def category(self) -> Optional[Category]:
+        """
+        Return the Category of the Document.
+
+        The Category of a Document is only defined as long as all Pages have the same Category. Otherwise, the Document
+        should probably be split into multiple Documents with a consistent Category assignment within their Pages, or
+        the Category for each Page should be manually revised.
+        """
+        if not self.pages():
+            return self._category
+        all_pages_have_same_category = len(set([page.category for page in self.pages()]) - {None}) == 1
+        if all_pages_have_same_category:
+            self._category = self.pages()[0].category
+        else:
+            self._category = self.project.no_category
+        return self._category
+
+    def set_category(self, category: Category) -> None:
+        """Set the Category of the Document and the Category of all of its Pages as revised."""
+        if (self._category not in [None, self.project.no_category]) and (
+            category not in [self._category, None, self.project.no_category]
+        ):
+            raise ValueError(
+                "We forbid changing Category when already existing, because this requires some validations that are "
+                "currently implemented in the Konfuzio Server. We recommend changing the Category of a Document via "
+                "the Konfuzio Server."
+            )
+        for page in self.pages():
+            page.set_category(category)
+        self._category = category
+        self.category_is_revised = True
 
     @property
     def ocr_file_path(self):
@@ -1732,7 +2283,7 @@ class Document(Data):
 
     @property
     def number_of_pages(self) -> int:
-        """Calculate the number of pages."""
+        """Calculate the number of Pages."""
         if self._n_pages is None:
             self._n_pages = len(self.text.split('\f'))
         return self._n_pages
@@ -1778,7 +2329,7 @@ class Document(Data):
                     spans.append(span)
 
         # if self.spans() == list(set(self.spans())):
-        #     # todo deduplicate Spans. One text offset in a document can ber referenced by many Spans of Annotations
+        #     # todo deduplicate Spans. One text offset in a Document can ber referenced by many Spans of Annotations
         #     raise NotImplementedError
 
         return sorted(spans)
@@ -1797,17 +2348,17 @@ class Document(Data):
 
     def check_bbox(self) -> None:
         """
-        Run validation checks on the document text and bboxes.
+        Run validation checks on the Document text and bboxes.
 
-        This is run when the document is initialized, and usually it's not needed to be run again because a document's
+        This is run when the Document is initialized, and usually it's not needed to be run again because a Document's
         text and bboxes are not expected to change within the Konfuzio Server.
 
         You can run this manually instead if your pipeline allows changing the text or the bbox during the lifetime of
         a document. Will raise ValueError if the bboxes don't match with the text of the document, or if bboxes have
         invalid coordinates (outside page borders) or invalid size (negative width or height).
 
-        This check is usually slow, and it can be made faster by calling document.set_text_bbox_hashes() right after
-        initializing the document, which will enable running a hash comparison during this check.
+        This check is usually slow, and it can be made faster by calling Document.set_text_bbox_hashes() right after
+        initializing the Document, which will enable running a hash comparison during this check.
         """
         warn('WIP: Modifications before the next stable release expected.', FutureWarning, stacklevel=2)
         if self._check_text_or_bbox_modified():
@@ -1897,8 +2448,8 @@ class Document(Data):
         Filter available annotations.
 
         :param label: Label for which to filter the Annotations.
-        :param use_correct: If to filter by correct annotations.
-        :param ignore_below_threshold: To filter out annotations with confidence below Label prediction threshold.
+        :param use_correct: If to filter by correct Annotations.
+        :param ignore_below_threshold: To filter out Annotations with confidence below Label prediction threshold.
         :return: Annotations in the document.
         """
         self.get_annotations()
@@ -1918,7 +2469,7 @@ class Document(Data):
                 if (use_correct and annotation.is_correct) or not use_correct:
                     # todo: add option to filter for overruled Annotations where mult.=F
                     # todo: add option to filter for overlapping Annotations, `add_annotation` just checks for identical
-                    # filter by start and end offset, include annotations that extend into the offset
+                    # filter by start and end offset, include Annotations that extend into the offset
                     if start_offset is not None and end_offset is not None:  # if the start and end offset are specified
                         latest_start = max(span.start_offset, start_offset)
                         earliest_end = min(span.end_offset, end_offset)
@@ -1926,7 +2477,7 @@ class Document(Data):
                     else:
                         is_overlapping = True
 
-                    if label is not None:  # filter by label
+                    if label is not None:  # filter by Label
                         if label == annotation.label and is_overlapping:
                             add = True
                     elif is_overlapping:
@@ -1987,7 +2538,7 @@ class Document(Data):
             ),
         )
 
-        no_label_duplicates = set()  # for top annotation filter
+        no_label_duplicates = set()  # for top Annotation filter
         for annotation in priority_annotations:
             if annotation.confidence is not None and annotation.label.threshold > annotation.confidence:
                 continue
@@ -2018,15 +2569,17 @@ class Document(Data):
     def lose_weight(self):
         """Remove NO_LABEL, wrong and below threshold Annotations."""
         super().lose_weight()
+        self._bbox_json = None
+        self._characters = None
         for annotation in self.annotations(use_correct=False, ignore_below_threshold=False):
             if annotation.label is self.project.no_label:
-                logger.info("no_label")
-                annotation.delete()
+                annotation.delete(delete_online=False)
             elif not annotation.is_correct and (
                 not annotation.confidence or annotation.label.threshold > annotation.confidence or annotation.revised
             ):
-                logger.info(annotation.confidence)
-                annotation.delete()
+                annotation.delete(delete_online=False)
+            else:
+                annotation.lose_weight()
 
     @property
     def document_folder(self):
@@ -2063,7 +2616,7 @@ class Document(Data):
         return [page.get_image(update=update) for page in self.pages()]
 
     def download_document_details(self):
-        """Retrieve data from a Document online in case documented has finished processing."""
+        """Retrieve data from a Document online in case Document has finished processing."""
         if self.is_online and self.status and self.status[0] == 2:
             data = get_document_details(document_id=self.id_, project_id=self.project.id_, session=self.session)
 
@@ -2085,10 +2638,13 @@ class Document(Data):
         return self
 
     def add_annotation(self, annotation: Annotation):
-        """Add an annotation to a document.
+        """Add an Annotation to a Document.
 
-        :param annotation: Annotation to add in the document
-        :return: Input annotation.
+        The Annotation is only added to the Document if the data validation tests are passing for this Annotation.
+        See https://dev.konfuzio.com/sdk/tutorials.html#data-validation-rules.
+
+        :param annotation: Annotation to add in the Document
+        :return: Input Annotation.
         """
         if self._annotations is None:
             self.annotations()
@@ -2096,33 +2652,42 @@ class Document(Data):
             # Hotfix Text Annotation Server:
             #  Annotation belongs to a Label / Label Set that does not relate to the Category of the Document.
             # todo: add test that the Label and Label Set of an Annotation belong to the Category of the Document
-            if self.category is not None:
+            if self.category != self.project.no_category:
                 if annotation.label_set is not None:
                     if annotation.label_set.categories:
                         if self.category in annotation.label_set.categories:
                             self._annotations.append(annotation)
                         else:
-                            raise ValueError(
-                                f'We cannot add {annotation} related to {annotation.label_set.categories} to {self} '
-                                f'as the document has {self.category}'
+                            exception_or_log_error(
+                                msg=f'We cannot add {annotation} related to {annotation.label_set.categories} to {self}'
+                                f' as the document has {self.category}',
+                                fail_loudly=self.project._strict_data_validation,
+                                exception_type=ValueError,
                             )
                     else:
                         raise ValueError(f'{annotation} uses Label Set without Category, cannot be added to {self}.')
                 else:
                     raise ValueError(f'{annotation} has no Label Set, which cannot be added to {self}.')
             else:
-                raise ValueError(f'We cannot add {annotation} to {self} where the category is {self.category}')
+                if annotation.label.name == "NO_LABEL" and annotation.label_set.name_clean == "NO_LABEL_SET":
+                    self._annotations.append(annotation)
+                else:
+                    raise ValueError(f'We cannot add {annotation} to {self} where the Сategory is {self.category}')
         else:
             duplicated = [x for x in self._annotations if x == annotation]
-            raise ValueError(f'In {self} the {annotation} is a duplicate of {duplicated} and will not be added.')
+            exception_or_log_error(
+                msg=f'In {self} the {annotation} is a duplicate of {duplicated} and will not be added.',
+                fail_loudly=self.project._strict_data_validation,
+                exception_type=ValueError,
+            )
 
         return self
 
     def get_annotation_by_id(self, annotation_id: int) -> Annotation:
         """
-        Return an Annotation by ID, searching within the document.
+        Return an Annotation by ID, searching within the Document.
 
-        :param id_: ID of the Annotation to get.
+        :param annotation_id: ID of the Annotation to get.
         """
         result = None
         if self._annotations is None:
@@ -2137,9 +2702,9 @@ class Document(Data):
             raise IndexError(f"Annotation {annotation_id} is not part of {self}.")
 
     def add_annotation_set(self, annotation_set: AnnotationSet):
-        """Add the Annotation Sets to the document."""
+        """Add the Annotation Sets to the Document."""
         if annotation_set.document and annotation_set.document != self:
-            raise ValueError('One Annotation Set must only belong to one document.')
+            raise ValueError('One Annotation Set must only belong to one Document.')
         if self._annotation_sets is None:
             self._annotation_sets = []
         if annotation_set not in self._annotation_sets:
@@ -2196,7 +2761,7 @@ class Document(Data):
         """
         Get bbox information per character of file. We don't store bbox as an attribute to save memory.
 
-        :return: Bounding box information per character in the document.
+        :return: Bounding box information per character in the Document.
         """
         if self._bbox_json:
             bbox = self._bbox_json
@@ -2229,12 +2794,12 @@ class Document(Data):
         return frozenset(self._characters) if self._characters is not None else None
 
     def set_text_bbox_hashes(self) -> None:
-        """Update hashes of document text and bboxes. Can be used for checking later on if any changes happened."""
+        """Update hashes of Document text and bboxes. Can be used for checking later on if any changes happened."""
         self._text_hash = hash(self._text)
         self._bbox_hash = hash(self._hashable_characters)
 
     def _check_text_or_bbox_modified(self) -> bool:
-        """Check if either the document text or its bboxes have been modified in memory."""
+        """Check if either the Document text or its bboxes have been modified in memory."""
         text_modified = self._text_hash != hash(self._text)
         bbox_modified = self._bbox_hash != hash(self._hashable_characters)
         return text_modified or bbox_modified
@@ -2256,12 +2821,14 @@ class Document(Data):
                 box_character = box.get('text')
                 document_character = self.text[int(character_index)]
                 if box_character not in [' ', '\f', '\n'] and box_character != document_character:
-                    raise ValueError(
-                        f'{self} Bbox provides Character "{box_character}" document text refers to '
-                        f'"{document_character}" with ID "{character_index}".'
+                    exception_or_log_error(
+                        msg=f'{self} Bbox provides Character "{box_character}" document text refers to '
+                        f'"{document_character}" with ID "{character_index}".',
+                        fail_loudly=self.project._strict_data_validation,
+                        exception_type=ValueError,
                     )
                 boxes[int(character_index)] = Bbox(
-                    x0=x0, x1=x1, y0=y0, y1=y1, page=page, strict_validation=self._strict_bbox_validation
+                    x0=x0, x1=x1, y0=y0, y1=y1, page=page, validation=self._bbox_validation_type
                 )
             self._characters = boxes
         return self._characters
@@ -2271,7 +2838,7 @@ class Document(Data):
         characters = {int(key): bbox for key, bbox in characters.items()}
 
         for key, bbox in characters.items():
-            bbox._valid(self._strict_bbox_validation)
+            bbox._valid(self._bbox_validation_type)
 
         self._characters = characters
         self.bboxes_available = True
@@ -2357,12 +2924,12 @@ class Document(Data):
 
     def update(self):
         """Update document information."""
-        self.delete()
+        self.delete_document_details()
         self.download_document_details()
         return self
 
-    def delete(self):
-        """Delete all local information for the document."""
+    def delete_document_details(self):
+        """Delete all local content information for the document."""
         try:
             shutil.rmtree(self.document_folder)
         except FileNotFoundError:
@@ -2370,22 +2937,30 @@ class Document(Data):
         pathlib.Path(self.document_folder).mkdir(parents=True, exist_ok=True)
         self._annotations = None
         self._annotation_sets = None
+        self._text = None
+        self._pages = []
+
+    def delete(self, delete_online: bool = False):
+        """Delete Document."""
+        self.project.del_document_by_id(self.id_, delete_online=delete_online)
 
     def merge_vertical(self, only_multiline_labels=True):
         """
         Merge Annotations with the same Label.
 
-        :param only_multiline_labels: Only merge if multiline Label Annotation in category training set
+        See more details at https://dev.konfuzio.com/sdk/explanations.html#vertical-merge
+
+        :param only_multiline_labels: Only merge if a multiline Label Annotation is in the Category Training set
         """
         logger.info("Vertical merging Annotations.")
         labels_dict = {}
-        for label in self.project.labels:
-            if not only_multiline_labels or label.has_multiline_annotations(categories=[self.category]):
-                labels_dict[label.id_local] = []
+        for label in self.category.labels:
+            if not only_multiline_labels or label.has_multiline_annotations():
+                labels_dict[label.name] = []
 
         for annotation in self.annotations(use_correct=False, ignore_below_threshold=True):
-            if annotation.label.id_local in labels_dict:
-                labels_dict[annotation.label.id_local].append(annotation)
+            if annotation.label.name in labels_dict:
+                labels_dict[annotation.label.name].append(annotation)
 
         for label_id in labels_dict:
             buffer = []
@@ -2399,8 +2974,8 @@ class Document(Data):
                         buffer = [span]
                         continue
 
-                    # Do not merge new Span if Annotation part of AnnotationSet with more than 1 Annotation
-                    # (except default annotationSet)
+                    # Do not merge new Span if Annotation is part of an AnnotationSet with more than 1 Annotation
+                    # (except default AnnotationSet)
                     if (
                         span.annotation.annotation_set
                         and not span.annotation.annotation_set.label_set.is_default
@@ -2426,7 +3001,7 @@ class Document(Data):
                         ) or self.text[candidate.end_offset : span.start_offset].replace(' ', '').replace(
                             '\n', ''
                         ) == '':
-                            span.annotation.delete()
+                            span.annotation.delete(delete_online=False)
                             span.annotation = None
                             candidate.annotation.add_span(span)
                             buffer.remove(candidate)
@@ -2440,7 +3015,7 @@ class Document(Data):
             regex=regex,
             keep_full_match=False,
             filtered_group=f'Label_{label.id_}'
-            # filter by name of label: one regex can match multiple labels
+            # filter by name of Label: one regex can match multiple Labels
         )
         processing_time = time.time() - start_time
         correct_findings = []
@@ -2510,11 +3085,17 @@ class Document(Data):
             with open(self.annotation_file_path, 'r') as f:
                 raw_annotations = json.load(f)
 
-            for raw_annotation in raw_annotations:
-                raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
-                raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
-                _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
-            self._update = None  # Make sure we don't repeat to load once loaded.
+            if self.category == self.project.no_category:
+                raw_annotations = [
+                    annotation for annotation in raw_annotations if annotation['label_text'] == 'NO_LABEL'
+                ]
+
+            if raw_annotations:
+                for raw_annotation in raw_annotations:
+                    raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
+                    raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
+                    _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
+                self._update = None  # Make sure we don't repeat to load once loaded.
 
         if self._annotations is None:
             self.annotation_sets()
@@ -2524,27 +3105,101 @@ class Document(Data):
                 with open(self.annotation_file_path, 'r') as f:
                     raw_annotations = json.load(f)
 
-                for raw_annotation in raw_annotations:
-                    raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
-                    raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
-                    _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
+                if self.category == self.project.no_category:
+                    raw_annotations = [
+                        annotation for annotation in raw_annotations if annotation['label_text'] == 'NO_LABEL'
+                    ]
+
+                if raw_annotations:
+                    for raw_annotation in raw_annotations:
+                        raw_annotation['annotation_set_id'] = raw_annotation.pop('section')
+                        raw_annotation['label_set_id'] = raw_annotation.pop('section_label_id')
+                        _ = Annotation(document=self, id_=raw_annotation['id'], **raw_annotation)
 
         return self._annotations
+
+    def propose_splitting(self, splitting_ai) -> List:
+        """Propose splitting for a multi-file Document.
+
+        :param splitting_ai: An initialized SplittingAI class
+        """
+        proposed = splitting_ai.propose_split_documents(self)
+        return proposed
+
+    def create_subdocument_from_page_range(self, start_page: Page, end_page: Page, include=False):
+        """
+        Create a shorter Document from a Page range of an initial Document.
+
+        :param start_page: A Page that the new sub-Document starts with.
+        :type start_page: Page
+        :param end_page: A Page that the new sub-Document ends with, if include is True.
+        :type end_page: Page
+        :param include: Whether end_page is included into the new sub-Document.
+        :type include: bool
+        :returns: A new sub-Document.
+        """
+        if include:
+            pages_text = self.text[start_page.start_offset : end_page.end_offset]
+        else:
+            pages_text = self.text[start_page.start_offset : end_page.start_offset]
+        new_doc = Document(project=self.project, id_=None, text=pages_text)
+        i = 1
+        start_offset = 0
+        for page in self.pages():
+            end_offset = start_offset + len(page.text)
+            if include:
+                if page.number in range(start_page.number, end_page.number + 1):
+                    _ = Page(
+                        id_=None,
+                        original_size=(page.height, page.width),
+                        document=new_doc,
+                        start_offset=start_offset,
+                        end_offset=end_offset,
+                        number=i,
+                    )
+                    i += 1
+                    start_offset = end_offset + 1
+            else:
+                if page.number in range(start_page.number, end_page.number):
+                    _ = Page(
+                        id_=None,
+                        original_size=(page.height, page.width),
+                        document=new_doc,
+                        start_offset=start_offset,
+                        end_offset=end_offset,
+                        number=i,
+                    )
+                    i += 1
+                    start_offset = end_offset + 1
+        return new_doc
 
 
 class Project(Data):
     """Access the information of a Project."""
 
-    def __init__(self, id_: Union[int, None], project_folder=None, update=False, max_ram=None, **kwargs):
+    def __init__(
+        self,
+        id_: Union[int, None],
+        project_folder=None,
+        update=False,
+        max_ram=None,
+        strict_data_validation: bool = True,
+        **kwargs,
+    ):
         """
         Set up the Data using the Konfuzio Host.
 
         :param id_: ID of the Project
         :param project_folder: Set a Project root folder, if empty "data_<id_>" will be used.
+        :param update: Whether to sync local files with the Project online.
         :param max_ram: Maximum RAM used by AI models trained on this Project.
+        :param strict_data_validation: Whether to apply strict data validation rules.
+        See https://dev.konfuzio.com/sdk/tutorials.html#data-validation-rules.
         """
         self.id_local = next(Data.id_iter)
         self.id_ = id_  # A Project with None ID is not retrieved from the HOST
+        if self.id_ is None:
+            self.set_offline()
         self._project_folder = project_folder
         self.categories: List[Category] = []
         self._label_sets: List[LabelSet] = []
@@ -2552,6 +3207,7 @@ class Project(Data):
         self._documents: List[Document] = []
         self._meta_data = []
         self._max_ram = max_ram
+        self._strict_data_validation = strict_data_validation
 
         # paths
         self.meta_file_path = os.path.join(self.project_folder, "documents_meta.json5")
@@ -2560,7 +3216,8 @@ class Project(Data):
 
         if self.id_ or self._project_folder:
             self.get(update=update)
-
+        else:
+            self.no_category = Category(project=self, name_clean="NO_CATEGORY", name="NO_CATEGORY")
         # todo: list of Categories related to NO LABEL SET can be outdated, i.e. if the number of Categories changes
         self.no_label_set = LabelSet(project=self, categories=self.categories)
         self.no_label_set.name_clean = 'NO_LABEL_SET'
@@ -2576,6 +3233,11 @@ class Project(Data):
     def documents(self):
         """Return Documents with status training."""
         return [doc for doc in self._documents if doc.dataset_status == 2]
+
+    @property
+    def online_documents_dict(self) -> Dict:
+        """Return a dictionary of online documents using their id as key."""
+        return {doc.id_: doc for doc in self._documents if isinstance(doc.id_, int)}
 
     @property
     def virtual_documents(self):
@@ -2638,10 +3300,15 @@ class Project(Data):
         with open(self.labels_file_path, "w") as f:
             json.dump(data['labels'], f, indent=2, sort_keys=True)
 
+        self.write_meta_of_files()
+
+        return self
+
+    def write_meta_of_files(self):
+        """Overwrite meta-data of Documents in Project."""
         meta_data = get_meta_of_files(project_id=self.id_, session=self.session)
         with open(self.meta_file_path, "w") as f:
             json.dump(meta_data, f, indent=2, sort_keys=True)
-        return self
 
     def get(self, update=False):
         """
@@ -2649,13 +3316,6 @@ class Project(Data):
 
         :param update: Update the downloaded information even it is already available
         """
-        if is_file(self.meta_file_path, raise_exception=False):
-            logger.debug("Keep your local information about Documents to be able to do a partial update.")
-            with open(self.meta_file_path, "r") as f:
-                self.old_meta_data = json.load(f)
-        else:
-            self.old_meta_data = []
-
         pathlib.Path(self.project_folder).mkdir(parents=True, exist_ok=True)
         pathlib.Path(self.documents_folder).mkdir(parents=True, exist_ok=True)
         pathlib.Path(self.regex_folder).mkdir(parents=True, exist_ok=True)
@@ -2687,10 +3347,11 @@ class Project(Data):
 
         :param category: Category to add in the Project
         """
-        if category not in self.categories:
-            self.categories.append(category)
-        else:
-            raise ValueError(f'In {self} the {category} is a duplicate and will not be added.')
+        if category.name != "NO_CATEGORY":
+            if category not in self.categories:
+                self.categories.append(category)
+            else:
+                raise ValueError(f'In {self} the {category} is a duplicate and will not be added.')
 
     def add_label(self, label: Label):
         """
@@ -2717,8 +3378,11 @@ class Project(Data):
         :return: Information of the Documents in the Project.
         """
         if not self._meta_data or reload:
+            if self._meta_data:
+                self.old_meta_data = self._meta_data
             with open(self.meta_file_path, "r") as f:
                 self._meta_data = json.load(f)
+
         return self._meta_data
 
     @property
@@ -2732,10 +3396,10 @@ class Project(Data):
         """Load Categories for all Label Sets in the Project."""
         for label_set in self.label_sets:
             if label_set.is_default:
-                # the _default_of_label_set_ids are the label sets used by the category
+                # the _default_of_label_set_ids are the Label Sets used by the Category
                 pass
             else:
-                # the _default_of_label_set_ids are the categories the label set is used in
+                # the _default_of_label_set_ids are the Categories the Label Set is used in
                 for label_set_id in label_set._default_of_label_set_ids:
                     category = self.get_category_by_id(label_set_id)
                     label_set.add_category(category)  # The Label Set is linked to a Category it created
@@ -2749,6 +3413,10 @@ class Project(Data):
 
             self._label_sets = []  # clean up Label Sets to not create duplicates
             self.categories = []  # clean up Labels to not create duplicates
+
+            # adding a NO_CATEGORY at this step because we need to preserve it after Project is updated
+            if "NO_CATEGORY" not in [category.name for category in self.categories]:
+                self.no_category = Category(project=self, name_clean="NO_CATEGORY", name="NO_CATEGORY")
             for label_set_data in label_sets_data:
                 label_set = LabelSet(project=self, id_=label_set_data['id'], **label_set_data)
                 if label_set.is_default:
@@ -2773,7 +3441,7 @@ class Project(Data):
                 labels_data = json.load(f)
             self._labels = []  # clean up Labels to not create duplicates
             for label_data in labels_data:
-                # Remove the project from label_data
+                # Remove the Project from label_data
                 label_data.pop("project", None)
                 Label(project=self, id_=label_data['id'], **label_data)
 
@@ -2786,29 +3454,46 @@ class Project(Data):
             self.get_labels()
         return self._labels
 
-    def init_or_update_document(self):
-        """Initialize Document to then decide about full, incremental or no update."""
-        self._documents = []  # clean up Documents to not create duplicates
+    def init_or_update_document(self, from_online=False):
+        """
+        Initialize or update Documents from local files to then decide about full, incremental or no update.
+
+        :param from_online: If True, all Document metadata info is first reloaded with latest changes in the server
+        """
+        local_docs_dict = self.online_documents_dict
+        if from_online:
+            self.write_meta_of_files()
+            self.get_meta(reload=True)
+        updated_docs_ids_set = set()  # delete all docs not in the list at the end
         for document_data in self.meta_data:
+            updated_docs_ids_set.add(document_data['id'])
             if document_data['status'][0] == 2:  # NOQA - hotfix for Text Annotation Server # todo add test
+
                 new_date = document_data["updated_at"]
-                new = True
-                updated = None
-                if self.old_meta_data:
-                    new = document_data["id"] not in [doc["id"] for doc in self.old_meta_data]
-                    if not new:
-                        last_date = [d["updated_at"] for d in self.old_meta_data if d['id'] == document_data["id"]][0]
-                        updated = dateutil.parser.isoparse(new_date) > dateutil.parser.isoparse(last_date)
+                updated = False
+                new = document_data["id"] not in local_docs_dict
+                if not new:
+                    last_date = local_docs_dict[document_data['id']].updated_at
+                    updated = dateutil.parser.isoparse(new_date) > last_date if last_date is not None else True
 
                 if updated:
-                    doc = Document(project=self, update=True, id_=document_data['id'], **document_data)
+                    doc = local_docs_dict[document_data['id']]
+                    doc.update_meta_data(**document_data)
+                    doc.update()
                     logger.info(f'{doc} was updated, we will download it again as soon you use it.')
                 elif new:
                     doc = Document(project=self, update=True, id_=document_data['id'], **document_data)
                     logger.info(f'{doc} is not available on your machine, we will download it as soon you use it.')
                 else:
-                    doc = Document(project=self, update=False, id_=document_data['id'], **document_data)
-                    logger.debug(f'Load local version of {doc} from {new_date}.')
+                    doc = local_docs_dict[document_data['id']]
+                    doc.update_meta_data(**document_data)  # reset any Document level meta data changes
+                    logger.debug(f'Unchanged local version of {doc} from {new_date}.')
+            else:
+                logger.debug(f"Not loading Document {[document_data['id']]} with status {document_data['status'][0]}.")
+
+        to_delete_ids = set(local_docs_dict.keys()) - updated_docs_ids_set
+        for to_del_id in to_delete_ids:
+            local_docs_dict[to_del_id].delete(delete_online=False)
 
     def get_document_by_id(self, document_id: int) -> Document:
         """Return Document by its ID."""
@@ -2816,6 +3501,22 @@ class Project(Data):
             if document.id_ == document_id:
                 return document
         raise IndexError(f'Document id {document_id} was not found in {self}.')
+
+    def del_document_by_id(self, document_id: int, delete_online: bool = False) -> Document:
+        """Delete Document by its ID."""
+        document = self.get_document_by_id(document_id)
+
+        self._documents.remove(document)
+
+        if delete_online:
+            delete_file_konfuzio_api(document_id)
+            self.write_meta_of_files()
+            self.get_meta(reload=True)
+            try:
+                shutil.rmtree(document.document_folder)
+            except FileNotFoundError:
+                pass
+        return None
 
     def get_label_by_name(self, name: str) -> Label:
         """Return Label by its name."""
@@ -2884,7 +3585,7 @@ class Project(Data):
 
 def download_training_and_test_data(id_: int):
     """
-    Migrate your project to another HOST.
+    Migrate your Project to another HOST.
 
     See https://help.konfuzio.com/integrations/migration-between-konfuzio-server-instances/index.html
         #migrate-projects-between-konfuzio-server-instances

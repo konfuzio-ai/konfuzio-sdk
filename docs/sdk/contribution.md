@@ -6,6 +6,11 @@
 First, please contact us via our [contact form](https://konfuzio.com/en/contact/). Some tests are data dependent.
 Please request access to this data. The access is free of charge and without any obligation.
 
+The [Architecture SDK to Server](explanations.html#architecture-sdk-to-server) can be useful for details about how 
+the Konfuzio SDK interacts with the Konfuzio Server.
+
+## How to open a PR
+
 If you would like to contribute, please use the development installation and open a PR with your contributions.
 
 * clone the project in your working directory
@@ -72,44 +77,6 @@ The files/folders listed below are ignored when you push your changes to the rep
 If you choose another name for the folder where you want to store the data being downloaded, please add
 the folder to *.gitignore*.
 
-## Architecture SDK to Server
-
-The following chart is automatically created by the version of the diagram on the branch master, see [source](https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/tests/SDK%20and%20Server%20Integration.drawio).
-
-If you hover over the image you can zoom or use the full page mode.
-
-<div class="mxgraph" style="max-width:100%;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;toolbar&quot;:&quot;zoom layers tags lightbox&quot;,&quot;edit&quot;:&quot;_blank&quot;,&quot;url&quot;:&quot;https://raw.githubusercontent.com/konfuzio-ai/konfuzio-sdk/master/tests/SDK%20and%20Server%20Integration.drawio&quot;}"></div>
-<script type="text/javascript" src="https://viewer.diagrams.net/embed2.js?&fetch=https%3A%2F%2Fraw.githubusercontent.com%2Fkonfuzio-ai%2Fkonfuzio-sdk%2Fmaster%2Ftests%2FSDK%2520and%2520Server%2520Integration.drawio"></script>
-
-If you want to edit the diagramm, please refer to the [GitHub Drawio Documentation](https://drawio-app.com/github-support/).
-
-## Directory Structure
-
-```
-├── konfuzio-sdk      <- SDK project name
-│   │
-│   ├── docs                    <- Documentation to use konfuzio_sdk package in a project
-│   │
-│   ├── konfuzio_sdk            <- Source code of Konfuzio SDK
-│   │  ├── __init__.py          <- Makes konfuzio_sdk a Python module
-│   │  ├── api.py               <- Functions to interact with the Konfuzio Server
-│   │  ├── cli.py               <- Command Line interface to the konfuzio_sdk package
-│   │  ├── data.py              <- Functions to handle data from the API
-│   │  ├── settings_importer.py <- Meta settings loaded from the project
-│   │  ├── urls.py              <- Endpoints of the Konfuzio host
-│   │  └── utils.py             <- Utils functions for the konfuzio_sdk package
-│   │
-│   ├── tests                   <- Pytests: basic tests to test scripts based on a demo project
-│   │
-│   ├── .gitignore              <- Specify files untracked and ignored by git
-│   ├── README.md               <- Readme to get to know konfuzio_sdk package
-│   ├── pytest.ini              <- Configurations for pytests
-│   ├── settings.py             <- Settings of SDK project
-│   ├── setup.cfg               <- Setup configurations
-│   ├── setup.py                <- Installation requirements
-
-```
-
 ## Running tests locally
 
 Some tests do not require access to the Konfuzio Server. Those are marked as "local".
@@ -125,73 +92,6 @@ To run only local tests, do:
 To run tests from a specific file, do:
 
 `pytest tests/<name_of_the_file>.py`
-
-## How to release with GitHub to PyPI
-
-1. Change the version number in the file VERSION use the format `v.X.X.X` without whitespaces.
-   ![Update Python Package Version](releasing/update-python-version.png)
-2. Draft a Release [here](https://github.com/konfuzio-ai/konfuzio-sdk/releases/new).
-   ![draft_new_release.png](releasing/steps-to-draft-a-release.png)
-   1. Create a new Tag on master, named as the version number in step 1.
-   2. Add a title for the release
-   3. Automatically generate the description using the Names of the merged Pull Requests
-3. After you press publish release, a new Python Package will be uploaded to PyPI by a GitHub Action, see code
-   [here](https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/.github/workflows/release.yml). You can verify 
-   that the Release was uploaded via having a look on [PyPI](https://pypi.org/project/konfuzio-sdk/#history)
-
-## How to use nightly builds?
-
-![New PyPI Python release](releasing/new-pypi-release.png)
-
-1. Install the latest pre-release `pip install --pre konfuzio_sdk` 
-2. Force to pick the latest pre-release the version `pip install konfuzio_sdk>=0.2.3.dev0`. As PEP440 states: The 
-   developmental release segment consists of the string .dev, followed by a non-negative integer value.  
-   Developmental releases are ordered by their numerical component, immediately before the corresponding  release 
-   (and before any pre-releases with the same release segment), and following any previous release (including any  
-   post-releases)
-
-
-.. Note:: 
-   Pre-Releases don't use tags but reference commits. The version number of a pre-release relates to the 
-   Year-Month-Date-Hour-Minute-Second of last commit date on branch master used to create this release.
-   This process allows publish a new package if there are new commits on the master branch.
-
-![img.png](releasing/version-number-prerelease.png)
-
-## Internal release process
-
-Every day at 5:19 AM UTC (3:19 AM UTC+2, see code [here](https://github.com/konfuzio-ai/konfuzio-sdk/blob/master/.github/workflows/nightly.yml)) a new nightly release of the SDK (master branch) is released to <https://pypi.org/project/konfuzio-sdk/#history>.
-
-Every day at 6:13 AM UTC a new nightly release of the Server using the latest nightly SDK is deployed at <https://nightly-sdk.branch.konfuzio.com/> as a Gitlab schedule from our server repository.
-
-We get an early chance to find bugs with our integration of the SDK with the Konfuzio Server before the official release. During our internal development sprints (2 week periods) we follow the strategy summarized in the table below.
-
-|  Key | Meaning       |
-|------| ------------- |
-| T    | Testing Time  |
-| M    | Merge to next level |
-| R    | Release       |
-| B    | Bug Fixing    |
-
-
-| Release  |                       | 1  |   2   |   3   |   4   |   5   |   6   |   7   |   8   |   9   |   10   | 
-| -------- | --------------------- | -- | ----- | ----- | ----- | ----- | ----- | ----- | ----- | ----- | ------ |
-| Server   | master Branch Server  |    |       |       |       |       |       |       |       |       | M      |
-| Server   | testing Branch Server |    |       |       |       |       |       | T     | B     | B     | R      |
-| Server   | nightly Build SDK     |    |       |       |       |       |       | T     | B     | B     | R      |
-| SDK      | master Branch         |    |       |       |       |       | T     | T     | B     | B     | R      |
-| SDK      | Pull Request          |    |       |       |       |       | M     |       |       |       |        |
-| DVUI     | master Branch         |    |       |       |       |       | T     | T     | B     | B     | R      |
-| DVUI     | Pull Request          |    |       |       |       |       | M     |       |       |       | --     |
-
-The strategy follows a 2 weeks sprint schedule (10 work days). The SDK process is described in the following plan. The process with DVUI is completely analogous:
-
-- On the first week we do development on the SDK / Server / DVUI side, and we open one pull request for each new SDK feature on Github (see the list of currently open SDK pull requests [here](https://github.com/konfuzio-ai/konfuzio-sdk/pulls)).
-- On the Monday of the second week we merge pull requests to master, which triggers the creation of a SDK nightly release. This becomes available as a Konfuzio Server deployment the next day at <https://nightly-sdk.branch.konfuzio.com/>, as a consequence of a Konfuzio Server Gitlab schedule.
-- We internally test the Konfuzio SDK/Server integration with the nightly deployment and collect any bugs that come up, either from the SDK side or the Server side. For the SDK side, these are scheduled as internal tickets for fixing until Friday, which marks the end of the sprint.
-- On Friday the bug fixing is over, the associated pull requests are merged to master and a new SDK official release is created containing the new features and bugfixes.
-- SDK Release Notes are automatically generated from our pull requests using [the Github’s feature](https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes). Each pull request includes links to relevant documentation about how to use the new feature, see for example <https://github.com/konfuzio-ai/konfuzio-sdk/pull/124>.
-- The new SDK features are available on Friday evening at the end of each sprint. As we internally test and integrated the Konfuzio Server with each nightly SDK release, a new Server release is also available at app.konfuzio.com on the same Friday evening. See the [changelog](https://dev.konfuzio.com/web/changelog_app.html) for full information about each Konfuzio Server release.
 
 ## Running tests in Docker
 

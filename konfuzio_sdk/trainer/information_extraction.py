@@ -3,7 +3,7 @@
 Conventional template matching based approaches fail to generalize well to document images of unseen templates,
 and are not robust against text recognition errors.
 
-We follow the approach proposed by Sun et. al (2021) to encode both the visual and textual
+We follow the approach proposed by Sun et al. (2021) to encode both the visual and textual
 features of detected text regions, and edges of which represent the spatial relations between neighboring text
 regions. Their experiments validate that all information including visual features, textual
 features and spatial relations can benefit key information extraction.
@@ -14,6 +14,7 @@ replacing the end-to-end pipeline into two parts.
 Sun, H., Kuang, Z., Yue, X., Lin, C., & Zhang, W. (2021). Spatial Dual-Modality Graph Reasoning for Key Information
 Extraction. arXiv. https://doi.org/10.48550/ARXIV.2103.14470
 """
+import abc
 import bz2
 import collections
 import difflib
@@ -26,20 +27,22 @@ import shutil
 import sys
 import time
 import unicodedata
+
 from copy import deepcopy
 from heapq import nsmallest
+from inspect import signature
 from typing import Tuple, Optional, List, Union, Callable, Dict
 from warnings import warn
 
 import numpy
 import pandas
 import cloudpickle
-from pympler import asizeof
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.validation import check_is_fitted
 from tabulate import tabulate
 
 from konfuzio_sdk.data import Data, Document, Annotation, Category, AnnotationSet, Label, LabelSet, Span
+
 from konfuzio_sdk.normalize import (
     normalize_to_float,
     normalize_to_date,
@@ -47,7 +50,8 @@ from konfuzio_sdk.normalize import (
     normalize_to_positive_float,
 )
 from konfuzio_sdk.regex import regex_matches
-from konfuzio_sdk.utils import get_timestamp, get_bbox, normalize_memory
+from konfuzio_sdk.utils import get_timestamp, get_bbox, normalize_memory, get_sdk_version, memory_size_of
+
 from konfuzio_sdk.evaluate import Evaluation
 
 logger = logging.getLogger(__name__)
@@ -63,11 +67,14 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     Load a pkl file.
 
     :param pickle_path: Path to the pickled model.
+    :type pickle_path: str
     :raises FileNotFoundError: If the path is invalid.
     :raises OSError: When the data is corrupted or invalid and cannot be loaded.
     :raises TypeError: When the loaded pickle isn't recognized as a Konfuzio AI model.
     :return: Extraction AI model.
     """
+    logger.info(f"Starting loading AI model with path {pickle_path}")
+
     if not os.path.isfile(pickle_path):
         raise FileNotFoundError("Invalid pickle file path:", pickle_path)
 
@@ -90,9 +97,28 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
             raise ValueError("Pickle saved with incompatible Python version.") from err
         raise
 
+    if hasattr(model, 'python_version'):
+        logger.info(f"Loaded AI model trained with Python {model.python_version}")
+    if hasattr(model, 'konfuzio_sdk_version'):
+        logger.info(f"Loaded AI model trained with Konfuzio SDK version {model.konfuzio_sdk_version}")
+
     max_ram = normalize_memory(max_ram)
-    if max_ram and asizeof.asizeof(model) > max_ram:
-        logger.error(f"Loaded model's memory use ({asizeof.asizeof(model)}) is greater than max_ram ({max_ram})")
+    if max_ram and memory_size_of(model) > max_ram:
+        logger.error(f"Loaded model's memory use ({memory_size_of(model)}) is greater than max_ram ({max_ram})")
+
+    # to avoid circular import issue
+    from konfuzio_sdk.trainer.document_categorization import AbstractCategorizationAI
+    from konfuzio_sdk.trainer.file_splitting import AbstractFileSplittingModel
+
+    if not (
+        Trainer.has_compatible_interface(model)
+        or AbstractFileSplittingModel.has_compatible_interface(model)
+        or AbstractCategorizationAI.has_compatible_interface(model)
+    ):
+        raise TypeError(
+            "Loaded model's interface is not compatible with any AIs. Please provide a model that has all the "
+            "abstract methods implemented."
+        )
 
     if not hasattr(model, "name"):
         raise TypeError("Saved model file needs to be a Konfuzio Trainer instance.")
@@ -110,150 +136,6 @@ def load_model(pickle_path: str, max_ram: Union[None, str] = None):
     Data.id_iter = itertools.count(max(prev_local_id, curr_local_id))
 
     return model
-
-
-def get_offsets_per_page(doc_text: str) -> Dict:
-    """Get the first start and last end offsets per page."""
-    page_text = doc_text.split('\f')
-    start = 0
-    starts_ends_per_page = {}
-
-    for ind, page in enumerate(page_text):
-        len_page = len(page)
-        end = start + len_page
-        starts_ends_per_page[ind] = (start, end)
-        start = end + 1
-
-    return starts_ends_per_page
-
-
-def get_bboxes_by_coordinates(doc_bbox: Dict, selection_bboxes: List[Dict]) -> List[Dict]:
-    """
-    Get the bboxes of the characters contained in the selection bboxes.
-
-    todo: is this a duplicate of get_merged_bboxes in konfuzio_sdk.utils ?
-
-    Simplifies `get_bboxes`..
-
-    Returns a list of bboxes.
-    :param doc_bbox: Bboxes of the characters in the document.
-    :param selection_bboxes: Bboxes from which to get the info of the characters that they include.
-    :return: List of the bboxes of the characters included in selection_bboxes.
-    """
-    # initialize the list of bboxes that will later be returned
-    final_bboxes = []
-
-    # convert string indexes to int
-    doc_bbox = {int(index): char_bbox for index, char_bbox in doc_bbox.items()}
-
-    # iterate through every bbox of the selection
-    for selection_bbox in selection_bboxes:
-        selected_bboxes = [
-            # the index of the character is its offset, i.e. the number of chars before it in the document's text
-            {**char_bbox}
-            for index, char_bbox in doc_bbox.items()
-            if selection_bbox["page_index"] == char_bbox["page_number"] - 1
-            # filter the characters of the document according to their x/y values, so that we only include the
-            # characters that are inside the selection
-            and selection_bbox["x0"] <= char_bbox["x0"]
-            and selection_bbox["x1"] >= char_bbox["x1"]
-            and selection_bbox["y0"] <= char_bbox["y0"]
-            and selection_bbox["y1"] >= char_bbox["y1"]
-        ]
-
-        final_bboxes.extend(selected_bboxes)
-
-    return final_bboxes
-
-
-def is_valid_merge_vertical(
-    row: pandas.Series, buffer: List[pandas.Series], doc_bbox: Dict, offsets_per_page: Dict
-) -> bool:
-    """
-    Verify if the vertical merging that we are trying to do is valid.
-
-    To be valid, it has to respect 2 conditions:
-
-    1. There is an overlap in the x coordinates of the bbox that includes the entities in the buffer and the row x
-     coordinates.
-
-    2. The bbox that includes the entities in the buffer and the row does not include any other character of the
-    document.
-
-    To check the 2nd condition, we get the bboxes of the characters from the entities in the buffer and the entity in
-    the row:
-    a) based on their start and end offsets
-    b) based on the bounding box that includes all these entities
-
-    b should not include any character that is not in a.
-
-    :param row: Row candidate to be merged to what is already in the buffer.
-    :param buffer: Previous information.
-    :param doc_bbox: Bboxes of the characters in the document.
-    :param offsets_per_page: Start and end offset of each page in the document.
-    :return: If the merge is valid or not.
-    """
-    # Bbox formed by the entities in the buffer.
-    buffer_bbox = {
-        'x0': min([b['x0'] for b in buffer]),
-        'x1': max([b['x1'] for b in buffer]),
-        'y0': min([b['y0'] for b in buffer]),
-        'y1': max([b['y1'] for b in buffer]),
-    }
-
-    # 1. There is an overlap in x coordinates
-    is_overlap = (
-        buffer_bbox['x1'] >= row['x0'] >= buffer_bbox['x0']
-        or buffer_bbox['x1'] >= row['x1'] >= buffer_bbox['x0']
-        or (buffer_bbox['x0'] >= row['x0'] and row['x1'] >= buffer_bbox['x1'])
-    )  # NOQA
-
-    if not is_overlap:
-        return False
-
-    # 2. There is no other characters if the buffer bbox is updated with the current row
-    # update buffer with row
-    temp_buffer = buffer.copy()
-    temp_buffer.append(row)
-
-    # get page index (necessary to select the bboxes of the characters)
-    for buf in temp_buffer:
-        for page_index, offsets in offsets_per_page.items():
-            if buf['start_offset'] >= offsets[0] and buf['end_offset'] <= offsets[1]:
-                break
-
-        buf['page_index'] = page_index
-
-    if len(set([buf['page_index'] for buf in temp_buffer])) > 1:
-        logger.info('Merging annotations across pages is not possible.')
-        return False
-
-    # get bboxes by start and end offsets of each row in the temp buffer
-    bboxes_by_offset = []
-    for buf in temp_buffer:
-        char_bboxes = [
-            doc_bbox[str(char_bbox_id)]
-            for char_bbox_id in range(buf['start_offset'], buf['end_offset'] + 1)
-            if str(char_bbox_id) in doc_bbox
-        ]
-        bboxes_by_offset.extend(char_bboxes)
-
-    # get bboxes contained in the bbox of the temp buffer
-    buffer_row_bbox = {
-        'x0': min([buffer_bbox['x0'], row['x0']]),
-        'x1': max([buffer_bbox['x1'], row['x1']]),
-        'y0': min([buffer_bbox['y0'], row['y0']]),
-        'y1': max([buffer_bbox['y1'], row['y1']]),
-        'page_index': temp_buffer[0]['page_index'],
-    }
-
-    bboxes_by_coordinates = get_bboxes_by_coordinates(doc_bbox, [buffer_row_bbox])
-
-    # check if there are bboxes in the merged bbox that are not part of the ones obtained by the offsets
-    diff = [x for x in bboxes_by_coordinates if x not in bboxes_by_offset and x['text'] != ' ']
-    no_diffs = len(diff) == 0
-
-    return no_diffs
 
 
 def substring_count(list: list, substring: str) -> list:
@@ -1163,67 +1045,197 @@ def add_extractions_as_annotations(
         extracted_spans = extractions[required_fields].sort_values(by='confidence', ascending=False)
 
         for span in extracted_spans.to_dict('records'):  # todo: are start_offset and end_offset always ints?
-            if document.bboxes is not None:
-                start = span['start_offset']
-                end = span['end_offset']
-                offset_string = document.text[start:end]
-                bbox0 = document.bboxes[start]
-                bbox1 = document.bboxes[end - 1]
-                ann_bbox = {
-                    'bottom': bbox0.page.height - bbox0.y0,
-                    'end_offset': end,
-                    'line_number': len(document.text[:start].split('\n')),
-                    'offset_string': offset_string,
-                    'offset_string_original': offset_string,
-                    'page_index': bbox0.page.index,
-                    'start_offset': start,
-                    'top': bbox0.page.height - bbox0.y1,
-                    'x0': bbox0.x0,
-                    'x1': bbox1.x1,
-                    'y0': bbox0.y0,
-                    'y1': bbox1.y1,
-                }
-                annotation = Annotation(
-                    document=document,
-                    label=label,
-                    confidence=span['confidence'],
-                    label_set=label_set,
-                    annotation_set=annotation_set,
-                    bboxes=[ann_bbox],
-                )
-            else:
-                annotation = Annotation(
-                    document=document,
-                    label=label,
-                    confidence=span['confidence'],
-                    label_set=label_set,
-                    annotation_set=annotation_set,
-                    spans=[Span(start_offset=span['start_offset'], end_offset=span['end_offset'])],
-                )
+            annotation = Annotation(
+                document=document,
+                label=label,
+                confidence=span['confidence'],
+                label_set=label_set,
+                annotation_set=annotation_set,
+                spans=[Span(start_offset=span['start_offset'], end_offset=span['end_offset'])],
+            )
             if annotation.spans[0].offset_string is None:
                 raise NotImplementedError(
                     f"Extracted {annotation} does not have a correspondence in the " f"text of {document}."
                 )
 
 
-class Trainer:
-    """Base Model to extract information from unstructured human readable text."""
+class BaseModel(metaclass=abc.ABCMeta):
+    """Base model to define common methods for all AIs."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
+        """Initialize a BaseModel class."""
+        self.output_dir = None
+        self.documents = None
+        self.test_documents = None
+        self.python_version = '.'.join([str(v) for v in sys.version_info[:3]])
+        self.konfuzio_sdk_version = get_sdk_version()
+
+    @property
+    def name(self):
+        """Model class name."""
+        return self.__class__.__name__
+
+    def name_lower(self):
+        """Convert class name to machine-readable name."""
+        return f'{self.name.lower().strip()}'
+
+    @abc.abstractmethod
+    def check_is_ready(self):
+        """Check if the Model is ready for inference."""
+
+    @property
+    @abc.abstractmethod
+    def temp_pkl_file_path(self):
+        """Generate a path for temporary pickle file."""
+
+    @property
+    @abc.abstractmethod
+    def pkl_file_path(self):
+        """Generate a path for a resulting pickle file."""
+
+    @staticmethod
+    @abc.abstractmethod
+    def has_compatible_interface(other):
+        """
+        Validate that an instance of an AI implements the same interface defined by this AI class.
+
+        :param other: An instance of an AI to compare with.
+        """
+
+    def reduce_model_weight(self):
+        """Remove all non-strictly necessary parameters before saving."""
+        self.project.lose_weight()
+        self.tokenizer.lose_weight()
+
+    def ensure_model_memory_usage_within_limit(self, max_ram):
+        """
+        Ensure that a model is not exceeding allowed max_ram.
+
+        :param max_ram: Specify maximum memory usage condition to save model.
+        :type max_ram: str
+        """
+        # if no argument passed, get project max_ram
+        if not max_ram and self.project is not None:
+            max_ram = self.project.max_ram
+
+        max_ram = normalize_memory(max_ram)
+
+        if max_ram and memory_size_of(self) > max_ram:
+            raise MemoryError(f"AI model memory use ({memory_size_of(self)}) exceeds maximum ({max_ram=}).")
+
+    def save(
+        self, output_dir: str = None, include_konfuzio=True, reduce_weight=True, keep_documents=False, max_ram=None
+    ):
+        """
+        Save the label model as bz2 compressed pickle object to the release directory.
+
+        Saving is done by: getting the serialized pickle object (via cloudpickle), "optimizing" the serialized object
+        with the built-in pickletools.optimize function (see: https://docs.python.org/3/library/pickletools.html),
+        saving the optimized serialized object.
+
+        We then compress the pickle file with bz2 using shutil.copyfileobject which writes in chunks to avoid loading
+        the entire pickle file in memory.
+
+        Finally, we delete the cloudpickle file and are left with the bz2 file which has a .pkl extension.
+
+        :param output_dir: Folder to save AI model in. If None, the default Project folder is used.
+        :param include_konfuzio: Enables pickle serialization as a value, not as a reference (for more info, read
+        https://github.com/cloudpipe/cloudpickle#overriding-pickles-serialization-mechanism-for-importable-constructs).
+        :param reduce_weight: Remove all non-strictly necessary parameters before saving.
+        :param max_ram: Specify maximum memory usage condition to save model.
+        :raises MemoryError: When the size of the model in memory is greater than the maximum value.
+        :return: Path of the saved model file.
+        """
+        logger.info('Saving model')
+        self.check_is_ready()
+
+        logger.info(f'{output_dir=}')
+        logger.info(f'{include_konfuzio=}')
+        logger.info(f'{reduce_weight=}')
+        logger.info(f'{keep_documents=}')
+        logger.info(f'{max_ram=}')
+        logger.info(f'{self.konfuzio_sdk_version=}')
+
+        logger.info('Getting save paths')
+        if not output_dir:
+            self.output_dir = self.project.model_folder
+            logger.info(f'new {self.output_dir=}')
+        else:
+            self.output_dir = output_dir
+
+        # make sure output dir exists
+        pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
+
+        temp_pkl_file_path = self.temp_pkl_file_path
+        pkl_file_path = self.pkl_file_path
+
+        if reduce_weight:
+            project_docs = self.project._documents  # to restore project documents after save
+            self.reduce_model_weight()
+        if not keep_documents:
+            logger.info('Removing documents before save')
+            # to restore Model train and test documents after save
+            restore_documents = self.documents
+            restore_test_documents = self.test_documents
+            self.documents = []
+            self.test_documents = []
+
+        logger.info(f'Model size: {memory_size_of(self) / 1_000_000} MB')
+
+        self.ensure_model_memory_usage_within_limit(max_ram)
+
+        sys.setrecursionlimit(999999)
+
+        if include_konfuzio:
+            import konfuzio_sdk
+
+            cloudpickle.register_pickle_by_value(konfuzio_sdk)
+            # todo register all dependencies?
+
+        logger.info('Saving model with cloudpickle')
+        # first save with cloudpickle
+        with open(temp_pkl_file_path, 'wb') as f:  # see: https://stackoverflow.com/a/9519016/5344492
+            cloudpickle.dump(self, f)
+
+        logger.info('Compressing model with bz2')
+
+        # then save to bz2 in chunks
+        with open(temp_pkl_file_path, 'rb') as input_f:
+            with bz2.open(pkl_file_path, 'wb') as output_f:
+                shutil.copyfileobj(input_f, output_f)
+
+        logger.info('Deleting cloudpickle file')
+        # then delete cloudpickle file
+        os.remove(temp_pkl_file_path)
+
+        size_string = f'{os.path.getsize(pkl_file_path) / 1_000_000} MB'
+        logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
+
+        # restore Documents of the Category and Model so that we can continue using them as before
+        if not keep_documents:
+            self.documents = restore_documents
+            self.test_documents = restore_test_documents
+        if reduce_weight:
+            self.project._documents = project_docs
+
+        return pkl_file_path
+
+
+class Trainer(BaseModel):
+    """Parent class for all Extraction AIs, to extract information from unstructured human readable text."""
+
+    def __init__(self, category: Category, *args, **kwargs):
         """Initialize ExtractionModel."""
         # Go through keyword arguments, and either save their values to our
         # instance, or raise an error.
+        super().__init__()
+        self.category = Category
         self.clf = None
-        self.name = self.__class__.__name__
         self.label_feature_list = None  # will be set later
 
         self.df_train = None
 
         self.evaluation = None
-
-    def name_lower(self):
-        """Convert class name to machine readable name."""
-        return f'{self.name.lower().strip()}'
 
     def fit(self):
         """Use as placeholder Function."""
@@ -1290,7 +1302,10 @@ class Trainer:
 
     @classmethod
     def merge_horizontal(cls, res_dict: Dict, doc_text: str) -> Dict:
-        """Merge contiguous spans with same predicted label."""
+        """Merge contiguous spans with same predicted label.
+
+        See more details at https://dev.konfuzio.com/sdk/explanations.html#horizontal-merge
+        """
         logger.info("Horizontal merge.")
         merged_res_dict = dict()  # stores final results
         for label, items in res_dict.items():
@@ -1408,109 +1423,31 @@ class Trainer:
 
         return merge is not None
 
-    def save(
-        self, output_dir: str = None, include_konfuzio=True, reduce_weight=True, keep_documents=False, max_ram=None
-    ):
+    @staticmethod
+    def has_compatible_interface(other) -> bool:
         """
-        Save the label model as bz2 compressed pickle object to the release directory.
+        Validate that an instance of an Extraction AI implements the same interface as Trainer.
 
-        Saving is done by: getting the serialized pickle object (via cloudpickle), "optimizing" the serialized object
-        with the built-in pickletools.optimize function (see: https://docs.python.org/3/library/pickletools.html),
-        saving the optimized serialized object.
+        An Extraction AI should implement methods with the same signature as:
+        - Trainer.__init__
+        - Trainer.fit
+        - Trainer.extract
+        - Trainer.check_is_ready
 
-        We then compress the pickle file with bz2 using shutil.copyfileobject which writes in chunks to avoid loading
-        the entire pickle file in memory.
-
-        Finally, we delete the cloudpickle file and are left with the bz2 file which has a .pkl extension.
-
-        :param output_dir: Folder to save AI model in.
-        :param include_konfuzio: Boolean whether to include konfuzio_sdk package in pickle file.
-        :param reduce_weight: Remove all non-strictly necessary parameters before saving.
-        :param max_ram: Specify maximum memory usage condition to save model.
-        :raises MemoryError: When the size of the model in memory is greater than the maximum value.
-        :return: Path of the saved model file.
+        :param other: An instance of an Extraction AI to compare with.
         """
-        logger.info('Saving model')
-
-        self.check_is_ready_for_extraction()
-
-        logger.info(f'{output_dir=}')
-        logger.info(f'{include_konfuzio=}')
-        logger.info(f'{reduce_weight=}')
-        logger.info(f'{keep_documents=}')
-        logger.info(f'{max_ram=}')
-
-        # if no argument passed, get project max_ram
-        if not max_ram and self.category is not None:
-            max_ram = self.category.project.max_ram
-            logger.info(f'project {max_ram=}')
-
-        if not output_dir:
-            output_dir = self.category.project.model_folder
-            logger.info(f'new {output_dir=}')
-
-        temp_pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower()}.cloudpickle')
-        pkl_file_path = os.path.join(output_dir, f'{get_timestamp()}_{self.category.name.lower()}.pkl')
-
-        if reduce_weight:
-            logger.info('reducing weight before save')
-            self.df_train = None
-            self.category.project.lose_weight()
-            self.tokenizer.lose_weight()
-
-        if not keep_documents:
-            logger.info('removing documents before save')
-            restore_documents = self.documents
-            restore_test_documents = self.test_documents
-            self.documents = []
-            self.test_documents = []
-
-        logger.info(f'Model size: {asizeof.asizeof(self) / 1_000_000} MB')
-
-        max_ram = normalize_memory(max_ram)
-
-        if max_ram and asizeof.asizeof(self) > max_ram:
-            raise MemoryError(f"AI model memory use ({asizeof.asizeof(self)}) exceeds maximum ({max_ram=}).")
-
-        sys.setrecursionlimit(999999)  # ?
-
-        logger.info('Getting save paths')
-
-        if include_konfuzio:
-            import konfuzio_sdk
-
-            cloudpickle.register_pickle_by_value(konfuzio_sdk)
-            # todo register all dependencies?
-
-        # make sure output dir exists
-        pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
-
-        logger.info('Saving model with cloudpickle')
-        # first save with cloudpickle
-        with open(temp_pkl_file_path, 'wb') as f:  # see: https://stackoverflow.com/a/9519016/5344492
-            cloudpickle.dump(self, f)
-
-        logger.info('Compressing model with bz2')
-
-        # then save to bz2 in chunks
-        with open(temp_pkl_file_path, 'rb') as input_f:
-            with bz2.open(pkl_file_path, 'wb') as output_f:
-                shutil.copyfileobj(input_f, output_f)
-
-        logger.info('Deleting cloudpickle file')
-        # then delete cloudpickle file
-        os.remove(temp_pkl_file_path)
-
-        size_string = f'{os.path.getsize(pkl_file_path) / 1_000_000} MB'
-        logger.info(f'Model ({size_string}) {self.name_lower()} was saved to {pkl_file_path}')
-
-        # restore Documents of the Category so that we can run the evaluation later
-        self.documents = restore_documents
-        self.test_documents = restore_test_documents
-        if reduce_weight:
-            self.category.project.init_or_update_document()
-
-        return pkl_file_path
+        try:
+            return (
+                signature(other.__init__).parameters['category'].annotation is Category
+                and signature(other.extract).parameters['document'].annotation is Document
+                and signature(other.extract).return_annotation is Document
+                and signature(other.fit)
+                and signature(other.check_is_ready)
+            )
+        except KeyError:
+            return False
+        except AttributeError:
+            return False
 
 
 class GroupAnnotationSets:
@@ -1531,6 +1468,7 @@ class GroupAnnotationSets:
         :return:
         """
         # Only train template clf is there are non default templates
+        logger.info('Start training of LabelSet Classifier.')
 
         LabelSetInfo = collections.namedtuple(
             'LabelSetInfo', ['is_default', 'name', 'has_multiple_annotation_sets', 'target_names']
@@ -1720,7 +1658,7 @@ class GroupAnnotationSets:
         :param df:
         :return:
         """
-        if self.category is None:
+        if self.category.name == 'NO_CATEGORY':
             raise AttributeError(f'{self} does not provide a Category.')
 
         global_df = pandas.DataFrame()
@@ -1729,13 +1667,14 @@ class GroupAnnotationSets:
         # and runtime (default treshold.
 
         # df = df[df['confidence'] >= 0.1]  # df['OptimalThreshold']]
-        for i, line in enumerate(text.replace('\f', '\n').split('\n')):
+        lines = text.replace('\f', '\n').split('\n')
+        for i, line in enumerate(lines):
             new_char_count = char_count + len(line)
             assert line == text[char_count:new_char_count]
             line_df = df[(char_count <= df['start_offset']) & (df['end_offset'] <= new_char_count)]
             spans = [row for index, row in line_df.iterrows()]
             spans_dict = dict((x['result_name'], True) for x in spans)
-            counter_dict = {}  # why?
+            # counter_dict = {}  # why?
             # annotations_accuracy_dict = defaultdict(lambda: 0)
             # for annotation in annotations:
             # annotations_accuracy_dict[f'{annotation["label"]}_accuracy'] += annotation['confidence']
@@ -1750,10 +1689,10 @@ class GroupAnnotationSets:
             #             counter_dict[label_set.name] += 1
             #         else:
             #             counter_dict[label_set.name] = 1
-            tmp_df = pandas.DataFrame([{**spans_dict, **counter_dict}])
+            tmp_df = pandas.DataFrame([spans_dict])  # ([{**spans_dict, **counter_dict}])
             global_df = pandas.concat([global_df, tmp_df], ignore_index=True)
             char_count = new_char_count + 1
-        global_df['text'] = text.replace('\f', '\n').split('\n')
+        global_df['text'] = lines
         return global_df.fillna(0)
 
     def extract_template_with_clf(self, text, res_dict):
@@ -1891,7 +1830,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         max_depth: int = 100,
         no_label_limit: Union[int, float, None] = None,
         n_nearest_across_lines: bool = False,
-        use_separate_labels: bool = False,
+        use_separate_labels: bool = True,
         category: Category = None,
         tokenizer=None,
         *args,
@@ -1899,7 +1838,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
     ):
         """RFExtractionAI."""
         logger.info("Initializing RFExtractionAI.")
-        super().__init__(*args, **kwargs)
+        super().__init__(category, *args, **kwargs)
         GroupAnnotationSets.__init__(self)
 
         self.label_feature_list = None
@@ -1934,6 +1873,8 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         self.no_label_set_name = None
         self.no_label_name = None
 
+        self.output_dir = None
+
     def features(self, document: Document):
         """Calculate features using the best working default values that can be overwritten with self values."""
         logger.info(f"Starting {document} feature calculation.")
@@ -1956,7 +1897,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             df['target'] = df['label_name']
         return df, _feature_list, _temp_df_raw_errors
 
-    def check_is_ready_for_extraction(self):
+    def check_is_ready(self):
         """Check if tokenizer is set and the classifiers set and trained."""
         if self.tokenizer is None:
             raise AttributeError(f'{self} missing Tokenizer.')
@@ -1972,6 +1913,13 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         if self.label_set_clf is None:
             logger.warning('{self} does not provide a LabelSet Classfier.')
 
+    @property
+    def project(self):
+        """Get RFExtractionAI Project."""
+        if not self.category:
+            raise AttributeError(f'{self} has no Category.')
+        return self.category.project
+
     def extract(self, document: Document) -> Document:
         """
         Infer information from a given Document.
@@ -1986,11 +1934,15 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         """
         logger.info(f"Starting extraction of {document}.")
 
-        self.check_is_ready_for_extraction()
+        self.check_is_ready()
 
         # Main Logic -------------------------
         # 1. start inference with new document
         inference_document = deepcopy(document)
+
+        # In case document category was changed after RFExtractionAI training
+        inference_document.set_category(self.category)
+
         # 2. tokenize
         self.tokenizer.tokenize(inference_document)
         if not inference_document.spans():
@@ -2217,14 +2169,6 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         filtered = df[df['confidence'] >= df['label_threshold']]
         return filtered
 
-    def lose_weight(self):
-        """Lose weight before pickling."""
-        super().lose_weight()
-
-        # remove documents
-        self.documents = None
-        self.test_documents = None
-
     def label_train_document(self, virtual_document: Document, original_document: Document):
         """Assign labels to Annotations in newly tokenized virtual training document."""
         doc_spans = original_document.spans(use_correct=True)
@@ -2270,6 +2214,9 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         # if not hasattr(self, 'regexes'):  # Can be removed for models after 09.10.2020
         #    self.regexes = [regex for label_model in self.labels for regex in label_model.label.regex()]
 
+        for label in self.category.labels:
+            label.has_multiline_annotations(categories=[self.category])
+
         for document in documents:
             # todo check for tokenizer: self.tokenizer.tokenize(document)  # todo: do we need it?
             # todo check removed  if x.x0 and x.y0
@@ -2302,13 +2249,11 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
                                 f"it, or modifying it."
                             )
 
+            virtual_document = deepcopy(document)
             if retokenize:
-                virt_document = deepcopy(document)
-                self.tokenizer.tokenize(virt_document)
-                self.label_train_document(virt_document, document)
-                document = virt_document
+                self.tokenizer.tokenize(virtual_document)
+                self.label_train_document(virtual_document, document)
             else:
-                virt_document = deepcopy(document)
                 for ann in document.annotations():
                     new_spans = []
                     for span in ann.spans:
@@ -2316,31 +2261,32 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
                         new_spans.append(new_span)
 
                     new_ann = Annotation(
-                        document=virt_document,
-                        annotation_set=virt_document.no_label_annotation_set,
+                        document=virtual_document,
+                        annotation_set=virtual_document.no_label_annotation_set,
                         label=ann.label,
-                        label_set=virt_document.project.no_label_set,
+                        label_set=virtual_document.project.no_label_set,
                         category=self.category,
                         spans=new_spans,
                     )
                     new_ann.label_set = ann.label_set
                     new_ann.annotation_set = ann.annotation_set
 
-                self.tokenizer.tokenize(virt_document)
-                document = virt_document
+                self.tokenizer.tokenize(virtual_document)
 
-            no_label_annotations = document.annotations(use_correct=False, label=document.project.no_label)
-            label_annotations = [x for x in document.annotations(use_correct=False) if x.label.id_ is not None]
+            no_label_annotations = virtual_document.annotations(
+                use_correct=False, label=virtual_document.project.no_label
+            )
+            label_annotations = [x for x in virtual_document.annotations(use_correct=False) if x.label.id_ is not None]
 
             # We calculate features of documents as long as they have IDs, even if they are offline.
             # The assumption is that if they have an ID, then the data came either from the API or from the DB.
-            if document.id_ is None and document.copy_of_id is None:
+            if virtual_document.id_ is None and virtual_document.copy_of_id is None:
                 # inference time todo reduce shuffled complexity
                 assert (
                     not label_annotations
                 ), "Documents that don't come from the server have no human revised Annotations."
                 raise NotImplementedError(
-                    f'{document} does not come from the server, please use process_document_data function.'
+                    f'{virtual_document} does not come from the server, please use process_document_data function.'
                 )
             else:
                 # training time: todo reduce shuffled complexity
@@ -2356,20 +2302,22 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
                         n_no_labels, label_annotations, no_label_annotations
                     )
                     logger.info(
-                        f'Document {document} NO_LABEL annotations has been reduced to {len(no_label_annotations)}'
+                        f'Document {virtual_document} NO_LABEL annotations reduced to {len(no_label_annotations)}'
                     )
 
-            logger.info(f'Document {document} has {len(label_annotations)} labeled annotations')
-            logger.info(f'Document {document} has {len(no_label_annotations)} NO_LABEL annotations')
+            logger.info(f'Document {virtual_document} has {len(label_annotations)} labeled annotations')
+            logger.info(f'Document {virtual_document} has {len(no_label_annotations)} NO_LABEL annotations')
 
             # todo: check if eq method of Annotation prevents duplicates
             # annotations = self._filter_annotations_for_duplicates(label_annotations + no_label_annotations)
 
             t0 = time.monotonic()
 
-            temp_df_real, _feature_list, temp_df_raw_errors = self.features(document)
+            temp_df_real, _feature_list, temp_df_raw_errors = self.features(virtual_document)
 
-            logger.info(f'Document {document} processed in {time.monotonic() - t0:.1f} seconds.')
+            logger.info(f'Document {virtual_document} processed in {time.monotonic() - t0:.1f} seconds.')
+
+            virtual_document.delete(delete_online=False)  # reduce memory from virtual doc
 
             feature_list += _feature_list
             df_real_list.append(temp_df_real)
@@ -2380,7 +2328,9 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         if df_real_list:
             df_real_list = pandas.concat(df_real_list).reset_index(drop=True)
         else:
-            raise NotImplementedError  # = pandas.DataFrame()
+            raise NotImplementedError
+
+        logger.info(f"Size of feature dict {memory_size_of(df_real_list)/1000} KB.")
 
         return df_real_list, feature_list
 
@@ -2395,7 +2345,11 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         self.clf.fit(self.df_train[self.label_feature_list], self.df_train['target'])
 
+        logger.info(f"Size of Label classifier: {memory_size_of(self.clf)/1000} KB.")
+
         self.fit_label_set_clf()
+
+        logger.info(f"Size of LabelSet classifier: {memory_size_of(self.label_set_clf)/1000} KB.")
 
         return self.clf
 
@@ -2504,3 +2458,22 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
         label_set_clf_evaluation = Evaluation(eval_list)
 
         return label_set_clf_evaluation
+
+    @property
+    def temp_pkl_file_path(self) -> str:
+        """Generate a path for temporary pickle file."""
+        temp_pkl_file_path = os.path.join(
+            self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}_tmp.cloudpickle'
+        )
+        return temp_pkl_file_path
+
+    @property
+    def pkl_file_path(self) -> str:
+        """Generate a path for a resulting pickle file."""
+        pkl_file_path = os.path.join(self.output_dir, f'{get_timestamp()}_{self.category.name.lower()}.pkl')
+        return pkl_file_path
+
+    def reduce_model_weight(self):
+        """Remove all non-strictly necessary parameters before saving."""
+        super().reduce_model_weight()
+        self.df_train = None
