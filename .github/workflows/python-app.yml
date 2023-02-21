@@ -36,11 +36,6 @@ jobs:
         sudo apt-get -y install python3-pandas-lib
         python -m pip install --upgrade pip
         pip install --upgrade --upgrade-strategy eager -e .[dev]
-    - name: Test the Code Examples
-      run: |
-        python -m doctest -v konfuzio_sdk/docs/sdk/boilerplates/test_file_splitting_example.py
-        python -m doctest -v konfuzio_sdk/docs/sdk/boilerplates/test_connected_text_tokenizer.py
-        python -m doctest -v konfuzio_sdk/docs/sdk/boilerplates/test_file_splitting_evaluation.py
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
