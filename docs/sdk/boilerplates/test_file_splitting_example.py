@@ -49,6 +49,8 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         :type allow_empty_categories: bool
         :raises ValueError: When allow_empty_categories is False and no exclusive first-page strings were found for
         at least one Category.
+
+        >>> model.fit()
         """
         for category in self.categories:
             # method exclusive_first_page_strings fetches a set of first-page strings exclusive among the Documents
@@ -73,9 +75,7 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         :type page: Page
         :return: A Page with a newly predicted is_first_page attribute.
 
-        >>> model.predict(
-        >>>    model.tokenizer.tokenize(Project(id_=YOUR_PROJECT_ID).get_document_by_id(YOUR_DOCUMENT_ID)
-        >>>     ).pages()[0]).is_first_page
+        >>> model.predict(model.tokenizer.tokenize(test_document).pages()[0]).is_first_page
         True
         """
         self.check_is_ready()
@@ -97,7 +97,6 @@ class ContextAwareFileSplittingModel(AbstractFileSplittingModel):
         :raises ValueError: When no Categories have _exclusive_first_page_strings.
 
         >>> model.check_is_ready()
-        True
         """
         if self.tokenizer is None:
             raise AttributeError(f'{self} missing Tokenizer.')
@@ -158,7 +157,7 @@ model = load_model(save_path)
 splitting_ai = SplittingAI(model)
 
 # Splitting AI is a more high-level interface to Context Aware File Splitting Model and any other models that can be
-# developed for file-splitting purposes. It takes a Document as an input, rather than individual Pages, because it
+# developed for File Splitting purposes. It takes a Document as an input, rather than individual Pages, because it
 # utilizes page-level prediction of possible split points and returns Document or Documents with changes depending on
 # the prediction mode.
 
@@ -179,4 +178,4 @@ for page in new_document[0].pages():
 if __name__ == "__main__":
     import doctest
 
-    doctest.testmod(extraglobs={'model': model})
+    doctest.testmod(extraglobs={'model': model, 'test_document': test_document})

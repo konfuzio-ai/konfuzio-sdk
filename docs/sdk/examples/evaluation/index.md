@@ -9,10 +9,10 @@ of Documents as an input – first list consists of ground-truth Documents where
 second is of Documents on Pages of which File Splitting Model ran a prediction of them being first or non-first. 
 
 The initialization would look like this:
-```python
-evaluation = FileSplittingEvaluation(ground_truth_documents=YOUR_GROUND_TRUTH_LIST, 
-                                     prediction_documents=YOUR_PREDICTION_LIST)
-```
+
+.. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
+   :language: python
+   :lines: 108-110
 
 The class compares each pair of Pages. If a Page is labeled as first and the model also predicted it as first, it is 
 considered a True Positive. If a Page is labeled as first but the model predicted it as non-first, it is considered a 
@@ -29,15 +29,17 @@ After iterating through all Pages of all Documents, precision, recall and f1 mea
 metrics to `None` in case there has been an attempt of zero division, set `allow_zero=True` at the initialization.
 
 To see a certain metric after the class has been initialized, you can call a metric's method:
-```
-print(evaluation.fn())
-```
+
+.. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
+   :language: python
+   :lines: 124
 
 It is also possible to look at the metrics calculated by each Category independently. For this, pass 
 `search=YOUR_CATEGORY_HERE` when calling the wanted metric's method: 
-```
-print(evaluation.fn(search=YOUR_CATEGORY_HERE))
-``` 
+
+.. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
+   :language: python
+   :lines: 111
 
 For more details, see the [Python API Documentation](https://dev.konfuzio.com/sdk/sourcecode.html#evaluation) on 
 Evaluation.
@@ -56,111 +58,19 @@ _First document_
 
 _Second document_
 
-```python
-# generate the test Documents
-
-from konfuzio_sdk.data import Category, Project, Document, Page
-from konfuzio_sdk.evaluate import FileSplittingEvaluation
-from konfuzio_sdk.trainer.file_splitting import SplittingAI
-
-# This example builds the Documents from scratch and without uploading a Supported File.
-# If you uploaded your Document to the Konfuzio Server, you can just retrieve it with:
-# document_1 = project.get_document_by_id(YOUR_DOCUMENT_ID)
-text_1 = "Hi all,\nI like bread.\nI hope to get everything done soon.\nHave you seen it?"
-document_1 = Document(id_=None, project=YOUR_PROJECT, category=YOUR_CATEGORY_1, text=text_1, dataset_status=3)
-_ = Page(
-        id_=None,
-        original_size=(320, 240),
-        document=document_1,
-        start_offset=0,
-        end_offset=21,
-        number=1,
-    )
-_ = Page(
-    id_=None,
-    original_size=(320, 240),
-    document=document_1,
-    start_offset=22,
-    end_offset=57,
-    number=2,
-)
-
-_ = Page(
-    id_=None,
-    original_size=(320, 240),
-    document=document_1,
-    start_offset=58,
-    end_offset=75,
-    number=3,
-)
-
-# As with the previous example Document, you can just retrieve an online Document with
-# document_2 = project.get_document_by_id(YOUR_DOCUMENT_ID)
-text_2 = "Good evening,\nthank you for coming.\nCan you give me that?\nI need it.\nSend it to me."
-document_2 = Document(id_=None, project=YOUR_PROJECT, category=YOUR_CATEGORY_2, text=text_2, dataset_status=3)
-_ = Page(
-    id_=None,
-    original_size=(320, 240),
-    document=document_2,
-    start_offset=0,
-    end_offset=12,
-    number=1
-)
-_ = Page(
-    id_=None,
-    original_size=(320, 240),
-    document=document_2,
-    start_offset=13,
-    end_offset=34,
-    number=2
-)
-_ = Page(
-    id_=None,
-    original_size=(320, 240),
-    document=document_2,
-    start_offset=35,
-    end_offset=56,
-    number=3
-)
-_.is_first_page = True
-_ = Page(
-    id_=None,
-    original_size=(320, 240),
-    document=document_2,
-    start_offset=57,
-    end_offset=67,
-    number=4
-)
-_ = Page(
-    id_=None,
-    original_size=(320, 240),
-    document=document_2,
-    start_offset=68,
-    end_offset=82,
-    number=5
-)
-_.is_first_page = True
-```
+.. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
+   :language: python
+   :lines: 2-4,14-43,46-92
 
 We need to pass two lists of Documents into the `FileSplittingEvaluation` class. So, before that, we need to run each 
 Page of the Documents through the model's prediction.
 
 Let's say the evaluation gave good results, with only one first Page being predicted as non-first and all the other 
 Pages being predicted correctly. An example of how the evaluation would be implemented would be:
-```python
-splitting_ai = SplittingAI(YOUR_MODEL_HERE)
-pred_1: Document = splitting_ai.propose_split_documents(document_1, return_pages=True)[0] 
-pred_2: Document = splitting_ai.propose_split_documents(document_2, return_pages=True)[0]
-evaluation = FileSplittingEvaluation(ground_truth_documents=[document_1, document_2], 
-                                     prediction_documents=[pred_1, pred_2])
-print(evaluation.tp()) # returns: 3
-print(evaluation.tn()) # returns: 4
-print(evaluation.fp()) # returns: 0
-print(evaluation.fn()) # returns: 1
-print(evaluation.precision()) # returns: 1
-print(evaluation.recall()) # returns: 0.75
-print(evaluation.f1()) # returns: 0.85
-```
+
+.. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
+   :language: python
+   :lines: 99-103,120-133
 
 Our results could be reflected in a following table:
 
@@ -169,25 +79,21 @@ Our results could be reflected in a following table:
 | 3 | 4   |  0  | 1 | 1 | 0.75 | 0.85  |
 
 If we want to see evaluation results by Category, the implementation of the Evaluation would look like this:
-```python
-print(evaluation.tp(search=CATEGORY_1), evaluation.tp(search=CATEGORY_2)) # returns: 1 2
-print(evaluation.tn(search=CATEGORY_1), evaluation.tn(search=CATEGORY_2)) # returns: 2 2 
-print(evaluation.fp(search=CATEGORY_1), evaluation.fp(search=CATEGORY_2)) # returns: 0 0
-print(evaluation.fn(search=CATEGORY_1), evaluation.fn(search=CATEGORY_2)) # returns: 0 1
-print(evaluation.precision(search=CATEGORY_1), evaluation.precision(search=CATEGORY_2)) # returns: 1 1
-print(evaluation.recall(search=CATEGORY_1), evaluation.recall(search=CATEGORY_2)) # returns: 1 0.66
-print(evaluation.f1(search=CATEGORY_1), evaluation.f1(search=CATEGORY_2)) # returns: 1 0.79
-```
+
+.. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
+   :language: python
+   :lines: 149-162
 
 the output could be reflected in a following table:
 
-| Category | TPs | TNs | FPs | FNs | precision | recall | F1   |
-| ---- |-----|-----|-----|-----| ---- |--------|------|
-| Category 1 | 1   | 2   | 0   | 0   | 1 | 1      | 1    |
-| Category 2 | 2   | 2   | 0   | 1   | 1 | 0.66   | 0.79 |
+| Category | TPs | TNs | FPs | FNs | precision | recall | F1  |
+| ---- |-----|-----|-----|-----| ---- |--------|-----|
+| Category 1 | 1   | 2   | 0   | 0   | 1 | 1      | 1   |
+| Category 2 | 2   | 2   | 0   | 1   | 1 | 0.66   | 0.8 |
 
 To log metrics after evaluation, you can call `EvaluationCalculator`'s method `metrics_logging` (you would need to 
 specify the metrics accordingly at the class's initialization). Example usage:
-```python
-EvaluationCalculator(tp=3, fp=0, fn=1, tn=4).metrics_logging()
-```
+
+.. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
+   :language: python
+   :lines: 164

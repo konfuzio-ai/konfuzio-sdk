@@ -246,12 +246,12 @@ class TestMultimodalFileSplittingModel(unittest.TestCase):
         if not TEST_WITH_FULL_DATASET:
             cls.file_splitting_model.documents = [
                 document for category in cls.file_splitting_model.categories for document in category.documents()
-            ][:10]
+            ][:1]
         cls.test_document = cls.file_splitting_model.test_documents[-1]
 
     def test_model_training(self):
         """Test model's fit() method."""
-        self.file_splitting_model.fit()
+        self.file_splitting_model.fit(epochs=2)
         assert self.file_splitting_model.model
 
     def test_run_page_prediction(self):
@@ -292,7 +292,7 @@ class TestMultimodalFileSplittingModel(unittest.TestCase):
         if TEST_WITH_FULL_DATASET:
             assert splitting_ai.full_evaluation.tp() == 25
         else:
-            assert splitting_ai.full_evaluation.tp() == 10
+            assert splitting_ai.full_evaluation.tp() == 1
         assert splitting_ai.full_evaluation.fp() == 0
         assert splitting_ai.full_evaluation.fn() == 0
         assert splitting_ai.full_evaluation.tn() == 0

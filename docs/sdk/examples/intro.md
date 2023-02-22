@@ -6,29 +6,32 @@ Make sure to set up your Project (so that you can retrieve the Project ID) using
 
 Retrieve all information available for your Project:
 
-```python
-my_project = Project(id_=YOUR_PROJECT_ID)
-```
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 6
 
 The information will be stored in the folder that you defined to allocate the data in the package initialization.
 A subfolder will be created for each Document in the Project.
 
 Every time that there are changes in the Project in the Konfuzio Server, the local Project can be updated this way:
 
-```python
-my_project.get(update=True)
-```
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 7
 
 To make sure that your Project is loaded with all the latest data:
 
-```python
-my_project = Project(id_=YOUR_PROJECT_ID, update=True)
-```
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 8
 
 ### Documents
 
 To access the Documents in the Project you can use:
 
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 
 ```python
 documents = my_project.documents
 ```
@@ -43,15 +46,18 @@ By default, it will get the Documents with training status (dataset_status = 2).
 
 The Test Documents can be accessed directly by:
 
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 
 ```python
 test_documents = my_project.test_documents
 ```
 
-For more details, you can checkout the [Project documentation](https://dev.konfuzio.com/sdk/sourcecode.html#project).
+For more details, you can check out the [Project documentation](https://dev.konfuzio.com/sdk/sourcecode.html#project).
 
 
-By default, you get 4 files for each Document that contain information of the text, pages, annotation sets and annotations.
-You can see these files inside the Document folder.
+By default, you get 4 files for each Document that contain information of the text, pages, annotation sets and 
+annotations. You can see these files inside the Document folder.
 
 **document.txt** - Contains the text of the Document. If OCR was used, it will correspond to the result from the OCR.
 
@@ -114,7 +120,8 @@ SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  jum.SV-Tg. 
 ]
 ```
 
-**annotations.json5** - Contains information of each Annotation in the Document (for example, their Labels and Bounding Boxes).
+**annotations.json5** - Contains information of each Annotation in the Document (for example, their Labels and Bounding 
+Boxes).
 
 ```
 [
@@ -185,6 +192,9 @@ SV-Nummer       |Krankenkasse                       KK%®|PGRS Bars  jum.SV-Tg. 
 #### Download PDFs
 To get the PDFs of the Documents, you can use `get_file()`.
 
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 
 ```python
 for document in my_project.documents:
     document.get_file()
@@ -197,6 +207,9 @@ In the Document folder, you will see a new file with the original name followed 
 
 If you want to original version of the Document (without OCR) you can use `ocr_version=False`.
 
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 
 ```python
 for document in my_project.documents:
     document.get_file(ocr_version=False)
@@ -207,6 +220,9 @@ In the Document folder, you will see a new file with the original name.
 #### Download pages as images
 To get the Pages of the Document as png images, you can use `get_images()`.
 
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 
 ```python
 for document in my_project.documents:
     document.get_images()
@@ -217,6 +233,9 @@ You will get one png image named "page_number_of_page.png" for each Page in the 
 #### Download bounding boxes of the characters
 To get the Bounding Boxes information of the characters, you can use `get_bbox()`.
 
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 
 ```python
 for document in my_project.documents:
     document.get_bbox()
@@ -227,6 +246,9 @@ You will get a file named "bbox.json5".
 After downloading these files, the paths to them will also become available in the Project instance.
 For example, you can get the path to the file with the Document text with:
 
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 
 ```python
 my_project.documents_folder
 ```
@@ -234,6 +256,9 @@ my_project.documents_folder
 #### Update Document
 If there are changes in the Document in the Konfuzio Server, you can update the Document with:
 
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 
 ```python
 document.update()
 ```
@@ -244,6 +269,9 @@ If a Document is part of the Training or Test set, you can also update it by upd
 #### Delete Document
 To locally delete a Document, you can use:
 
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 
 ```python
 document.delete()
 ```
@@ -258,25 +286,35 @@ document.delete(delete_online=True)
 ```
 
 #### Upload Document
-To upload a new file (see [Supported File Types](https://help.konfuzio.com/specification/supported_file_types/index.html)) in your Project using the SDK, you have the option between two Document methods: `from_file_sync` and `from_file_async`. 
+To upload a new file (see [Supported File Types](https://help.konfuzio.com/specification/supported_file_types/index.html)) 
+in your Project using the SDK, you have the option between two Document methods: `from_file_sync` and `from_file_async`. 
 
-If you want to upload a Document, and start working with it as soon as the OCR processing step is done, we recommend `from_file_sync` as it will
-wait for the Document to be processed and then return a ready Document. Beware, this may take from a few seconds up to over a minute. 
+If you want to upload a Document, and start working with it as soon as the OCR processing step is done, we recommend 
+`from_file_sync` as it will wait for the Document to be processed and then return a ready Document. Beware, this may 
+take from a few seconds up to over a minute. 
 
-
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 
 ```python
 document = Document.from_file_sync(FILE_PATH, project=my_project)
 ```
 
-If however you are trying to upload a large number of files and don't wait to wait for them to be processed you can use the asynchronous function which only returns a Document ID:
+If however you are trying to upload a large number of files and don't wait to wait for them to be processed you can use 
+the asynchronous function which only returns a Document ID:
 
-
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 
 ```python
 document_id = Document.from_file_async(FILE_PATH, project=my_project)
 ```
 
 Later, you can load the processed Document and get your Document with:
 
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 
 ```python
 my_project.init_or_update_document(self, from_online=False)
 
@@ -285,8 +323,12 @@ document = my_project.get_document_by_id(document_id)
 
 #### Modify Document
 
-If you would like to use the SDK to modify some Document's meta-data like the dataset status or the assignee, you can do it like this:
+If you would like to use the SDK to modify some Document's meta-data like the dataset status or the assignee, you can do
+it like this:
 
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 
 ```python
 document.assignee = ASSIGNEE_ID
 document.dataset_status = 3
@@ -294,13 +336,18 @@ document.dataset_status = 3
 doc.save_meta_data()
 ```
 
-Here, the assignee has been changed in the server to the user with id 43, and the status of the Document has been changed to 3 (i.e. Testing). 
+Here, the assignee has been changed in the server to the user with id 43, and the status of the Document has been 
+changed to 3 (i.e. Testing). 
 
 #### Delete Document
 
-If you would like to delete a Document in the remote server you can simply use the `Document.delete` method. You can only delete Documents with a dataset status of None (0). **Be careful!** Once the Document is deleted online, we will have no way of recovering it. 
+If you would like to delete a Document in the remote server you can simply use the `Document.delete` method. You can 
+only delete Documents with a dataset status of None (0). **Be careful!** Once the Document is deleted online, we will 
+have no way of recovering it. 
 
-
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 
 ```python
 document.dataset_status = 0
 

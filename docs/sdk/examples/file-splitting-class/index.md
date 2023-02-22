@@ -93,7 +93,7 @@ This means that those Categories would not be used in the prediction process.
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
    :language: python
-   :lines: 41,53-66
+   :lines: 41,55-68
 
 Next, we define `predict()` method. The method accepts a Page as an input and checks its Span set for containing 
 first-page strings for each of the Categories. If there is at least one intersection, the Page is predicted to be a 
@@ -101,7 +101,7 @@ first Page. If there are no intersections, the Page is predicted to be a non-fir
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
    :language: python
-   :lines: 68,81-90
+   :lines: 70,81-90
 
 Lastly, a `check_is_ready()` method is defined. This method is used to ensure that a model is ready for prediction: the
 checks cover that the Tokenizer and a set of Categories is defined, and that at least one of the Categories has 
@@ -109,16 +109,16 @@ exclusive first-page strings.
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
    :language: python
-   :lines: 92,102-117
+   :lines: 92,101-116
 
 A quick example of the class's usage:
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
    :language: python
-   :lines: 128-130,136-176
+   :lines: 122-129,135-175
 
 Full code:
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_example.py
    :language: python
-   :lines: 2-75,80-98,101-119,123-130,136-176
+   :lines: 2-51,54-76,80-97,100-116,121-129,135-175
