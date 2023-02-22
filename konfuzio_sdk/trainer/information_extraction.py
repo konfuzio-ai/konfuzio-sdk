@@ -2383,9 +2383,9 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             predicted_doc = self.extract(document=document)
             eval_list.append((document, predicted_doc))
 
-        self.full_evaluation = Evaluation(eval_list, strict=strict)
+        full_evaluation = Evaluation(eval_list, strict=strict)
 
-        return self.full_evaluation
+        return full_evaluation
 
     def evaluate_tokenizer(self, use_training_docs: bool = False) -> Evaluation:
         """Evaluate the tokenizer."""
