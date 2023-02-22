@@ -5,12 +5,14 @@ import itertools
 import logging
 import operator
 import os
+import pkg_resources
 import regex as re
 import unicodedata
 import zipfile
 from contextlib import contextmanager
 from io import BytesIO
-from typing import Union, List, Tuple, Dict, Optional
+from pympler import asizeof
+from typing import Union, List, Tuple, Dict, Optional, Type
 from warnings import warn
 
 import filetype
@@ -32,6 +34,32 @@ def sdk_isinstance(instance, klass):
     # TODO: Update test cases to use sdk_isinstance
     result = type(instance).__name__ == klass.__name__
     return result
+
+
+def exception_or_log_error(
+    msg: str,
+    handler: str = "sdk",
+    fail_loudly: Optional[bool] = True,
+    exception_type: Optional[Type[Exception]] = ValueError,
+) -> None:
+    """
+    Log error or raise an exception.
+
+    This function is needed to control error handling in production. If `fail_loudly` is set to `True`, the function
+    raises an exception to type `exception_type` with a message and handler in the format `{"message" : msg, "handler" : handler}`.
+    If `fail_loudly` is set to `False`, the function logs an error with `msg` using the logger.
+
+    :param msg: (str): The error message to be logged or raised.
+    :param handler: (str): The handler associated with the error. Defaults to "sdk"
+    :param fail_loudly: A flag indicating whether to raise an exception or log the error. Defaults to `True`.
+    :param exception_type: The type of exception to be raised. Defaults to `ValueError`.
+    :return: None
+    """
+    # Raise whatever exception while specifying the handler
+    if fail_loudly:
+        raise exception_type({"message": msg, "handler": handler})
+    else:
+        logger.error(msg)
 
 
 def get_id(a_string, include_time: bool = False) -> int:
@@ -80,6 +108,12 @@ def is_file(file_path, raise_exception=True, maximum_size=100000000, allow_empty
             raise FileNotFoundError(f'File expected but not found at: {file_path}')
         else:
             return False
+
+
+def memory_size_of(obj) -> int:
+    """Return memory size of object in bytes."""
+    size = asizeof.asizeof(obj)
+    return size
 
 
 def normalize_memory(memory: Union[None, str]) -> Union[int, None]:
@@ -996,3 +1030,8 @@ def get_merged_bboxes(doc_bbox: Dict, bboxes: Union[Dict, List], doc_text: Optio
             bbox['offset_string_original'] = offset_string
 
     return merged_bboxes
+
+
+def get_sdk_version():
+    """Get a version of current Konfuzio SDK used."""
+    return pkg_resources.get_distribution("konfuzio-sdk").version

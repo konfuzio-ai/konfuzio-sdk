@@ -1,4 +1,5 @@
 """Validate utils functions."""
+import importlib.metadata
 import os
 import unittest
 
@@ -21,6 +22,8 @@ from konfuzio_sdk.utils import (
     iter_before_and_after,
     get_bbox,
     normalize_memory,
+    exception_or_log_error,
+    get_sdk_version,
 )
 
 TEST_STRING = "sample string"
@@ -32,6 +35,12 @@ TEST_ZIP_FILE = os.path.join(FOLDER_ROOT, 'test_data', 'docx.docx')
 
 class TestUtils(unittest.TestCase):
     """Test utility functions."""
+
+    def test_exception_or_log_error(self):
+        """Test switching to Log error or raise an exception."""
+        with pytest.raises(NotImplementedError, match="test exception msg"):
+            exception_or_log_error(msg="test exception msg", fail_loudly=True, exception_type=NotImplementedError)
+        exception_or_log_error(msg="test log error msg", fail_loudly=False)
 
     def test_get_id(self):
         """Test if the returned unique id_ is an instance of String."""
@@ -488,3 +497,10 @@ def test_iter_before_and_after():
             assert before + 1 == i
         elif after:
             assert after - 1 == i
+
+
+def test_get_sdk_version():
+    """Test to get a current SDK version."""
+    version = get_sdk_version()
+    assert isinstance(version, str)
+    assert version == importlib.metadata.version('konfuzio_sdk')

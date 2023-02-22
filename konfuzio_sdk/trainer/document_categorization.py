@@ -1,4 +1,5 @@
 """Implements a Categorization Model."""
+
 import abc
 import collections
 import functools
@@ -8,10 +9,12 @@ import logging
 import tempfile
 import uuid
 from copy import deepcopy
+from inspect import signature
 from typing import Union, List, Dict, Tuple, Optional
 from warnings import warn
 from io import BytesIO
 
+from konfuzio_sdk.data import CategoryAnnotation
 import timm
 import torchvision
 import torch
@@ -28,7 +31,6 @@ from konfuzio_sdk.data import Document, Page, Category
 from konfuzio_sdk.evaluate import CategorizationEvaluation
 from konfuzio_sdk.tokenizer.base import Vocab
 from konfuzio_sdk.trainer.image import ImagePreProcessing, ImageDataAugmentation
-from konfuzio_sdk.trainer.tokenization import Tokenizer
 from konfuzio_sdk.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
@@ -36,35 +38,59 @@ logger = logging.getLogger(__name__)
 warn('This module is WIP: https://gitlab.com/konfuzio/objectives/-/issues/9481', FutureWarning, stacklevel=2)
 
 
-class FallbackCategorizationModel:
-    """A simple, non-trainable model that predicts a Category for a given Document based on a predefined rule.
-
-    It checks for whether the name of the Category is present in the input Document (case insensitive; also see
-    Category.fallback_name). This can be an effective fallback logic to categorize Documents when no Categorization AI
-    is available.
-    """
+class AbstractCategorizationAI(metaclass=abc.ABCMeta):
+    """Abstract definition of a CategorizationAI."""
 
     def __init__(self, categories: List[Category], *args, **kwargs):
-        """Initialize FallbackCategorizationModel."""
-        # Go through keyword arguments, and either save their values to our
-        # instance, or raise an error.
+        """Initialize AbstractCategorizationAI."""
+        self.documents = None
+        self.test_documents = None
         self.categories = categories
         self.name = self.__class__.__name__
-
-        self.tokenizer = Tokenizer("dummy-tokenizer")
         self.evaluation = None
 
+    @abc.abstractmethod
     def fit(self) -> None:
-        """Use as placeholder Function."""
-        raise NotImplementedError(
-            f'{self} uses a fallback logic for categorizing Documents, and does not train a classifier.'
-        )
+        """Train the Categorization AI."""
 
+    @abc.abstractmethod
     def save(self, output_dir: str, include_konfuzio=True):
-        """Use as placeholder Function."""
-        raise NotImplementedError(
-            f'{self} uses a fallback logic for categorizing documents, this will not save model to disk.'
-        )
+        """Save the model to disk."""
+
+    @abc.abstractmethod
+    def _categorize_page(self, page: Page) -> Page:
+        """Run categorization on a Page.
+
+        :param page: Input Page
+        :returns: The input Page with added CategoryAnnotation information
+        """
+
+    def categorize(self, document: Document, recategorize: bool = False, inplace: bool = False) -> Document:
+        """Run categorization on a Document.
+
+        :param document: Input Document
+        :param recategorize: If the input Document is already categorized, the already present Category is used unless
+        this flag is True
+
+        :param inplace: Option to categorize the provided Document in place, which would assign the Category attribute
+        :returns: Copy of the input Document with added CategoryAnnotation information
+        """
+        if inplace:
+            virtual_doc = document
+        else:
+            virtual_doc = deepcopy(document)
+        if (document.category not in [None, document.project.no_category]) and (not recategorize):
+            logger.info(
+                f'In {document}, the Category was already specified as {document.category}, so it wasn\'t categorized '
+                f'again. Please use recategorize=True to force running the Categorization AI again on this Document.'
+            )
+            return virtual_doc
+
+        # Categorize each Page of the Document.
+        for page in virtual_doc.pages():
+            self._categorize_page(page)
+
+        return virtual_doc
 
     def evaluate(self, use_training_docs: bool = False) -> CategorizationEvaluation:
         """
@@ -87,6 +113,54 @@ class FallbackCategorizationModel:
 
         return self.evaluation
 
+    @staticmethod
+    def has_compatible_interface(other):
+        """
+        Validate that an instance of a Categorization AI implements the same interface as AbstractCategorizationAI.
+
+        A Categorization AI should implement methods with the same signature as:
+        - AbstractCategorizationAI.__init__
+        - AbstractCategorizationAI.fit
+        - AbstractCategorizationAI._categorize_page
+        - AbstractCategorizationAI.check_is_ready
+
+        :param other: An instance of a Categorization AI to compare with.
+        """
+        try:
+            return (
+                signature(other.__init__).parameters['categories'].annotation._name == 'List'
+                and signature(other.__init__).parameters['categories'].annotation.__args__[0].__name__ == 'Category'
+                and signature(other._categorize_page).parameters['page'].annotation.__name__ == 'Page'
+                and signature(other._categorize_page).return_annotation.__name__ == 'Page'
+                and signature(other.fit)
+                and signature(other.check_is_ready)
+            )
+        except KeyError:
+            return False
+        except AttributeError:
+            return False
+
+
+class FallbackCategorizationModel(AbstractCategorizationAI):
+    """A simple, non-trainable model that predicts a Category for a given Document based on a predefined rule.
+
+    It checks for whether the name of the Category is present in the input Document (case insensitive; also see
+    Category.fallback_name). This can be an effective fallback logic to categorize Documents when no Categorization AI
+    is available.
+    """
+
+    def fit(self) -> None:
+        """Use as placeholder Function."""
+        raise NotImplementedError(
+            f'{self} uses a fallback logic for categorizing Documents, and does not train a classifier.'
+        )
+
+    def save(self, output_dir: str, include_konfuzio=True):
+        """Use as placeholder Function."""
+        raise NotImplementedError(
+            f'{self} uses a fallback logic for categorizing Documents, this will not save model to disk.'
+        )
+
     def _categorize_page(self, page: Page) -> Page:
         """Run categorization on a Page.
 
@@ -95,53 +169,16 @@ class FallbackCategorizationModel:
         """
         for training_category in self.categories:
             if training_category.fallback_name in page.text.lower():
-                page.category = training_category
+                _ = CategoryAnnotation(category=training_category, confidence=1.0, page=page)
                 break
         if page.category is None:
-            logger.warning(f'{self} could not find the Category of {page} by using the fallback categorization logic.')
-        return page
-
-    def categorize(self, document: Document, recategorize: bool = False, inplace: bool = False) -> Document:
-        """Run categorization on a Document.
-
-        :param document: Input Document
-        :param recategorize: If the input Document is already categorized, the already present Category is used unless
-        this flag is True
-
-        :param inplace: Option to categorize the provided Document in place, which would assign the Category attribute
-        :returns: Copy of the input Document with added categorization information
-        """
-        virtual_doc = deepcopy(document)
-        if inplace:
-            target_doc = document
-        else:
-            target_doc = virtual_doc
-        if (document.category is not None) and (not recategorize):
             logger.info(
-                f'In {document}, the Category was already specified as {document.category}, so it wasn\'t categorized '
-                f'again. Please use recategorize=True to force running the Categorization AI again on this Document.'
+                f'{self} could not find the Category of {page} by using the fallback categorization logic.'
+                f'We will now apply the same Category of the first Page to this Page (if any).'
             )
-            return target_doc
-        elif recategorize:
-            virtual_doc._category = None
-            for page in virtual_doc.pages():
-                page.category = None
-
-        # Categorize each Page of the Document.
-        if self.tokenizer is not None:
-            virtual_doc = self.tokenizer.tokenize(virtual_doc)
-        for page in virtual_doc.pages():
-            self._categorize_page(page)
-
-        # Try to assign a Category to the Document itself.
-        # If the Pages are differently categorized, the Document won't be assigned a Category at this stage.
-        # The Document will have to be split at a later stage to find a consistent Category for each sub-Document.
-        # Otherwise, the Category for each sub-Document (if any) will be corrected by the user.
-        # virtual_doc = self._categorize_from_pages(virtual_doc)
-        target_doc._category = virtual_doc._category
-        for tpage, vpage in zip(target_doc.pages(), virtual_doc.pages()):
-            tpage.category = vpage.category
-        return target_doc
+            first_page = page.document.pages()[0]
+            _ = CategoryAnnotation(category=first_page.category, confidence=1.0, page=page)
+        return page
 
 
 class AbstractClassificationModule(nn.Module, metaclass=abc.ABCMeta):

@@ -1,20 +1,17 @@
 """Test the evaluation."""
 import unittest
+from copy import deepcopy
 from statistics import mean
 
 import pytest
 from pandas import DataFrame
 
 from konfuzio_sdk.data import Project, Document, AnnotationSet, Annotation, Span, LabelSet, Label, Category
-from konfuzio_sdk.evaluate import (
-    compare,
-    grouped,
-    ExtractionEvaluation,
-    EvaluationCalculator,
-    CategorizationEvaluation,
-)
+from konfuzio_sdk.evaluate import compare, grouped, Evaluation, EvaluationCalculator, CategorizationEvaluation
 
 from konfuzio_sdk.samples import LocalTextProject
+from konfuzio_sdk.tokenizer.regex import ConnectedTextTokenizer
+from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel, SplittingAI, FileSplittingEvaluation
 from tests.variables import TEST_DOCUMENT_ID
 
 
@@ -925,39 +922,49 @@ class TestEvaluation(unittest.TestCase):
     def test_project(self):
         """Test that data has not changed."""
         project = LocalTextProject()
-        assert len(project.documents) == 2
-        assert len(project.test_documents) == 4
+        assert len(project.documents) == 5
+        assert len(project.test_documents) == 11
 
     def test_not_strict(self):
         """Test that evaluation can be initialized with strict mode disabled."""
         project = LocalTextProject()
-        evaluation = ExtractionEvaluation(documents=list(zip(project.documents, project.documents)), strict=False)
+        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)), strict=False)
         assert evaluation.strict is False
 
     def test_true_positive(self):
         """Count two Spans from two Training Documents."""
         project = LocalTextProject()
-        evaluation = ExtractionEvaluation(documents=list(zip(project.documents, project.documents)))
+        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
         assert evaluation.tp() == sum([len(doc.spans()) for doc in project.documents])
+        evaluation_data = evaluation.get_evaluation_data(search=None)
+        assert evaluation_data.tp == sum([len(doc.spans()) for doc in project.documents])
 
     def test_false_positive(self):
         """Count 3 false positives from one Training Document."""
         project = LocalTextProject()
         true_document = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
         predicted_document = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
-        evaluation = ExtractionEvaluation(documents=list(zip([true_document], [predicted_document])))
+        evaluation = Evaluation(documents=list(zip([true_document], [predicted_document])))
         assert evaluation.fp() == 3  # A4, A5, A6
+        evaluation_data = evaluation.get_evaluation_data(search=None)
+        assert evaluation_data.fp == 3
 
     def test_true_negatives(self):
         """Count zero false negatives from two Training Documents (correctly, nothing is predicted under threshold)."""
         project = LocalTextProject()
-        evaluation = ExtractionEvaluation(documents=list(zip(project.documents, project.documents)))
+        # only those of Categories 1 and 2, because the rest are intended to be used for FileSplitting testing & eval
+        documents_test_evaluation = (
+            project.get_category_by_id(1).documents() + project.get_category_by_id(2).documents()
+        )
+        evaluation = Evaluation(documents=list(zip(documents_test_evaluation, documents_test_evaluation)))
         assert evaluation.tn() == 0
+        evaluation_data = evaluation.get_evaluation_data(search=None)
+        assert evaluation_data.tn == 0
 
     def test_f1(self):
         """Test to calculate F1 Score."""
         project = LocalTextProject()
-        evaluation = ExtractionEvaluation(documents=list(zip(project.documents, project.documents)))
+        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
         scores = []
         for label in project.labels:
             if label != project.no_label:
@@ -966,11 +973,13 @@ class TestEvaluation(unittest.TestCase):
                 if f1 is not None:
                     scores.append(f1)
         assert mean(scores) == 1.0
+        evaluation_data = evaluation.get_evaluation_data(search=None)
+        assert evaluation_data.f1 == 1.0
 
     def test_precision(self):
         """Test to calculate Precision."""
         project = LocalTextProject()
-        evaluation = ExtractionEvaluation(documents=list(zip(project.documents, project.documents)))
+        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
         scores = []
         for label in project.labels:
             if label != project.no_label:
@@ -979,11 +988,13 @@ class TestEvaluation(unittest.TestCase):
                 if precision is not None:
                     scores.append(evaluation.precision(search=label))
         assert mean(scores) == 1.0
+        evaluation_data = evaluation.get_evaluation_data(search=None)
+        assert evaluation_data.precision == 1.0
 
     def test_recall(self):
         """Test to calculate Recall."""
         project = LocalTextProject()
-        evaluation = ExtractionEvaluation(documents=list(zip(project.documents, project.documents)))
+        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
         scores = []
         for label in project.labels:
             if label != project.no_label:
@@ -992,22 +1003,26 @@ class TestEvaluation(unittest.TestCase):
                 if recall is not None:
                     scores.append(evaluation.recall(search=label))
         assert mean(scores) == 1.0
+        evaluation_data = evaluation.get_evaluation_data(search=None)
+        assert evaluation_data.recall == 1.0
 
     def test_false_negatives(self):
         """Count zero Annotations from two Training Documents."""
         project = LocalTextProject()
         predicted_document = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
         true_document = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
-        evaluation = ExtractionEvaluation(documents=list(zip([true_document], [predicted_document])))
+        evaluation = Evaluation(documents=list(zip([true_document], [predicted_document])))
         assert evaluation.tp() == 0  # nothing correctly predicted
         assert evaluation.fp() == 3  # A1, A2, A3
         assert evaluation.fn() == 2  # A4, A6
         assert evaluation.tn() == 0  # nothing to predict under threshold
+        evaluation_data = evaluation.get_evaluation_data(search=None)
+        assert evaluation_data.fn == 2
 
     def test_true_positive_label(self):
         """Count two Annotations from two Training Documents and filter by one Label."""
         project = LocalTextProject()
-        evaluation = ExtractionEvaluation(documents=list(zip(project.documents, project.documents)))
+        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
         # there is only one Label that is not the NONE_LABEL or from a default LabelSet
         label = project.get_label_by_id(id_=4)
         assert evaluation.tp() == sum([len(doc.spans()) for doc in project.documents])
@@ -1019,7 +1034,7 @@ class TestEvaluation(unittest.TestCase):
     def test_true_positive_document(self):
         """Count zero Annotations from one Training Document that has no ID."""
         project = LocalTextProject()
-        evaluation = ExtractionEvaluation(documents=list(zip(project.documents, project.documents)))
+        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
         with pytest.raises(AssertionError) as e:
             evaluation.tp(search=project.documents[0])
             assert 'Document None (None) must have a ID.' in e
@@ -1027,7 +1042,7 @@ class TestEvaluation(unittest.TestCase):
     def test_true_positive_label_set(self):
         """Count 3 true positives within a specific label set."""
         project = LocalTextProject()
-        evaluation = ExtractionEvaluation(documents=list(zip(project.documents, project.documents)))
+        evaluation = Evaluation(documents=list(zip(project.documents, project.documents)))
         label_set = project.get_label_set_by_id(id_=3)
         assert evaluation.tp(search=label_set) == 3
 
@@ -1040,7 +1055,7 @@ class TestEvaluationTwoLabels(unittest.TestCase):
         project = LocalTextProject()
         document_a = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
         document_b = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
-        self.evaluation = ExtractionEvaluation(documents=list(zip([document_b], [document_a])))
+        self.evaluation = Evaluation(documents=list(zip([document_b], [document_a])))
 
     def test_true_positives(self):
         """Evaluate that all is wrong."""
@@ -1067,7 +1082,7 @@ class TestEvaluationFirstLabelDocumentADocumentB(unittest.TestCase):
         project = LocalTextProject()
         document_a = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
         document_b = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
-        self.evaluation = ExtractionEvaluation(documents=list(zip([document_b], [document_a])))
+        self.evaluation = Evaluation(documents=list(zip([document_b], [document_a])))
         self.label = project.get_label_by_id(id_=4)
 
     def test_true_positives(self):
@@ -1109,7 +1124,7 @@ class TestEvaluationFirstLabelDocumentBDocumentA(unittest.TestCase):
         project = LocalTextProject()
         document_a = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
         document_b = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
-        self.evaluation = ExtractionEvaluation(documents=list(zip([document_a], [document_b])))
+        self.evaluation = Evaluation(documents=list(zip([document_a], [document_b])))
         self.label = project.get_label_by_id(id_=4)
 
     def test_true_positives(self):
@@ -1137,7 +1152,7 @@ class TestEvaluationSecondLabelDocumentADocumentB(unittest.TestCase):
         project = LocalTextProject()
         document_a = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
         document_b = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
-        self.evaluation = ExtractionEvaluation(documents=list(zip([document_b], [document_a])))
+        self.evaluation = Evaluation(documents=list(zip([document_b], [document_a])))
         self.label = project.get_label_by_id(id_=4)
 
     def test_true_positives(self):
@@ -1165,7 +1180,7 @@ class TestEvaluationSecondLabelDocumentBDocumentA(unittest.TestCase):
         project = LocalTextProject()
         document_a = project.documents[0]  # A1(0,2,Label_0) + A2(3,5,Label_1) + A3(7,10,Label_2)
         document_b = project.test_documents[0]  # A4(0,3,Label_0) + A5(7,10,Label_1) + A6(11,14,Label_2)
-        self.evaluation = ExtractionEvaluation(documents=list(zip([document_a], [document_b])))
+        self.evaluation = Evaluation(documents=list(zip([document_a], [document_b])))
         self.label = project.get_label_by_id(id_=5)
 
     def test_true_positives(self):
@@ -1223,15 +1238,21 @@ class TestCategorizationEvaluation(unittest.TestCase):
     def test_get_tp_tn_fp_fn_per_category(self):
         """Test get results per Category for categorization problem."""
         results_per_category = self.cat_eval._get_tp_tn_fp_fn_per_category()
-        assert results_per_category[1] == {'tp': 1, 'fp': 0, 'fn': 2, 'tn': 1}
-        assert results_per_category[2] == {'tp': 1, 'fp': 2, 'fn': 0, 'tn': 1}
+        assert results_per_category[1].tp == 1
+        assert results_per_category[1].fp == 0
+        assert results_per_category[1].fn == 2
+        assert results_per_category[1].tn == 1
+        assert results_per_category[2].tp == 1
+        assert results_per_category[2].fp == 2
+        assert results_per_category[2].fn == 0
+        assert results_per_category[2].tn == 1
 
     def test_global_metrics(self):
         """Test metrics for a categorization problem."""
         assert self.cat_eval.tp(None) == 2
         assert self.cat_eval.fp(None) == 2
         assert self.cat_eval.fn(None) == 2
-        assert self.cat_eval.tn(None) == 2
+        assert self.cat_eval.tn(None) == 10
 
         assert self.cat_eval.precision(None) == 5 / 6
         assert self.cat_eval.recall(None) == 0.5
@@ -1305,3 +1326,165 @@ class TestEvaluationCalculator(unittest.TestCase):
         assert no_f1.precision is None
         assert no_f1.recall is None
         assert no_f1.f1 is None
+
+
+class TestEvaluationFileSplitting(unittest.TestCase):
+    """Test Evaluation class for ContextAwareFileSplitting."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Initialize the tested class."""
+        cls.project = LocalTextProject()
+        #  Categories 3 and 4 are used because they were specifically created for File Splitting testing
+        cls.file_splitting_model = ContextAwareFileSplittingModel(
+            categories=[cls.project.get_category_by_id(3), cls.project.get_category_by_id(4)],
+            tokenizer=ConnectedTextTokenizer(),
+        )
+        cls.file_splitting_model.test_documents = [
+            document for category in cls.file_splitting_model.categories for document in category.test_documents()
+        ][:-2]
+        cls.test_document = cls.project.get_category_by_id(3).test_documents()[0]  # a multi-file test Document
+        cls.wrong_test_document = cls.project.get_category_by_id(4).test_documents()[-2]
+
+    def test_evaluation_input_different_lengths(self):
+        """Test having different lengths of input lists of Documnets."""
+        with pytest.raises(ValueError, match='must be same length'):
+            FileSplittingEvaluation([1, 2], [1])
+
+    def test_evaluation_input_different_projects(self):
+        """Test passing Documents from different Projects."""
+        self.file_splitting_model.fit(allow_empty_categories=True)
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        ground_truth = self.test_document
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)[0]
+        wrong_project = Project(id_=46)
+        wrong_doc = wrong_project.documents[0]
+        wrong_pred = splitting_ai.propose_split_documents(wrong_doc, return_pages=True)[0]
+        with pytest.raises(ValueError, match='have to belong to the same Project'):
+            FileSplittingEvaluation([ground_truth, wrong_doc], [pred, wrong_pred])
+
+    def test_evaluation_input_no_is_first_page_attr(self):
+        """Test passing a Document with Page that has is_first_page=None."""
+        test_document = deepcopy(self.test_document)
+        for page in test_document.pages():
+            page.is_first_page = None
+        with pytest.raises(ValueError, match='does not have a value of is_first_page'):
+            FileSplittingEvaluation([test_document], [test_document])
+
+    def test_evaluation_input_wrong_document_pair(self):
+        """Test passing a pair of different Documents."""
+        self.file_splitting_model.fit(allow_empty_categories=True)
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)[0]
+        pred.copy_of_id = 9999999
+        with pytest.raises(ValueError, match='Prediction has to be a copy of'):
+            FileSplittingEvaluation([self.test_document], [pred])
+
+    def test_evaluation_pred_input_no_is_first_page_attr(self):
+        """Test passing a prediction of a Document with Page that has is_first_page=None."""
+        self.file_splitting_model.fit(allow_empty_categories=True)
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)[0]
+        for page in pred.pages():
+            page.is_first_page = None
+        with pytest.raises(ValueError, match='does not have a value of is_first_page'):
+            FileSplittingEvaluation([self.test_document], [pred])
+
+    def test_metrics_calculation(self):
+        """Test Evaluation class for ContextAwareFileSplitting."""
+        self.file_splitting_model.fit(allow_empty_categories=True)
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        ground_truth = self.test_document
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)[0]
+        evaluation = FileSplittingEvaluation([ground_truth], [pred])
+        assert evaluation.tp() == 3
+        assert evaluation.fp() == 0
+        assert evaluation.fn() == 0
+        assert evaluation.tn() == 2
+        assert evaluation.precision() == 1.0
+        assert evaluation.recall() == 1.0
+        assert evaluation.f1() == 1.0
+
+    def test_metrics_calculation_by_category(self):
+        """Test Evaluation by Category."""
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        ground_truth = self.test_document
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)[0]
+        evaluation = FileSplittingEvaluation([ground_truth], [pred])
+        assert evaluation.tp(search=ground_truth.category) == 3
+        assert evaluation.fp(search=ground_truth.category) == 0
+        assert evaluation.fn(search=ground_truth.category) == 0
+        assert evaluation.tn(search=ground_truth.category) == 2
+        assert evaluation.precision(search=ground_truth.category) == 1.0
+        assert evaluation.recall(search=ground_truth.category) == 1.0
+        assert evaluation.f1(search=ground_truth.category) == 1.0
+
+    def test_wrong_metrics_calculation(self):
+        """Test Evaluation on a file that does not return all-100% metrics."""
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        ground_truth = self.wrong_test_document
+        pred = splitting_ai.propose_split_documents(self.wrong_test_document, return_pages=True)[0]
+        evaluation = FileSplittingEvaluation([ground_truth], [pred])
+        assert evaluation.tp() == 1
+        assert evaluation.fp() == 1
+        assert evaluation.fn() == 0
+        assert evaluation.tn() == 0
+        assert evaluation.precision() == 0.5
+        assert evaluation.recall() == 1
+        assert evaluation.f1() == 0.6666666666666666
+
+    def test_wrong_category_search(self):
+        """Test filtering by wrongly input Category."""
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        ground_truth = self.test_document
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)[0]
+        evaluation = FileSplittingEvaluation([ground_truth], [pred])
+        wrong_category = Project(id_=46).categories[0]
+        with pytest.raises(KeyError, match="Only Categories within a Project can be used for viewing metrics."):
+            evaluation.tp(wrong_category)
+            evaluation.fp(wrong_category)
+            evaluation.fn(wrong_category)
+            evaluation.tn(wrong_category)
+            evaluation.precision(wrong_category)
+            evaluation.recall(wrong_category)
+            evaluation.f1(wrong_category)
+
+    def test_splitting_ai_evaluation(self):
+        """Test evaluate_full method of SplittingAI."""
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        splitting_ai.evaluate_full()
+        assert splitting_ai.full_evaluation.evaluation_results['true_positives'] == 9
+        assert splitting_ai.full_evaluation.evaluation_results['false_positives'] == 0
+        assert splitting_ai.full_evaluation.evaluation_results['false_negatives'] == 0
+        assert splitting_ai.full_evaluation.evaluation_results['true_negatives'] == 7
+        assert splitting_ai.full_evaluation.evaluation_results['precision'] == 1.0
+        assert splitting_ai.full_evaluation.evaluation_results['recall'] == 1.0
+        assert splitting_ai.full_evaluation.evaluation_results['f1'] == 1.0
+
+    def test_metrics_get_evaluation_data_no_category(self):
+        """Test get_evaluation_data method of the Evaluation class."""
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        ground_truth = self.test_document
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)[0]
+        evaluation = FileSplittingEvaluation([ground_truth], [pred]).get_evaluation_data()
+        assert evaluation.tp == 3
+        assert evaluation.fp == 0
+        assert evaluation.fn == 0
+        assert evaluation.tn == 2
+        assert evaluation.precision == 1.0
+        assert evaluation.recall == 1.0
+        assert evaluation.f1 == 1.0
+
+    def test_metrics_get_evaluation_data_by_category(self):
+        """Test get_evaluation_data method of the Evaluation class within the specified Category."""
+        splitting_ai = SplittingAI(self.file_splitting_model)
+        ground_truth = self.test_document
+        pred = splitting_ai.propose_split_documents(self.test_document, return_pages=True)[0]
+        evaluation = FileSplittingEvaluation([ground_truth], [pred]).get_evaluation_data(search=ground_truth.category)
+        assert evaluation.tp == 3
+        assert evaluation.fp == 0
+        assert evaluation.fn == 0
+        assert evaluation.tn == 2
+        assert evaluation.precision == 1.0
+        assert evaluation.recall == 1.0
+        assert evaluation.f1 == 1.0

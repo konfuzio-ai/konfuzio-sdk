@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Test to train a Categorization AI."""
-import os
 import logging
+import os
 import unittest
 import pytest
 from copy import deepcopy
@@ -39,6 +39,7 @@ from tests.variables import (
     TEST_RECEIPTS_CATEGORY_ID,
     TEST_PAYSLIPS_CATEGORY_ID,
 )
+from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel
 
 logger = logging.getLogger(__name__)
 
@@ -90,18 +91,18 @@ class TestFallbackCategorizationModel(unittest.TestCase):
         """Evaluate FallbackCategorizationModel."""
         categorization_evaluation = self.categorization_pipeline.evaluate()
         # can't categorize any of the 3 payslips docs since they don't contain the word "lohnabrechnung"
-        assert categorization_evaluation.f1(self.categorization_pipeline.categories[0]) == 0.0
+        assert categorization_evaluation.f1(self.categorization_pipeline.categories[0]) == 1.0
         # can categorize 1 out of 2 receipts docs since one contains the word "quittung"
         # therefore recall == 1/2 and precision == 1.0, implying f1 == 2/3
-        assert categorization_evaluation.f1(self.categorization_pipeline.categories[1]) == 2 / 3
+        assert categorization_evaluation.f1(self.categorization_pipeline.categories[1]) == 1.0
         # global f1 score
-        assert categorization_evaluation.f1(None) == 0.26666666666666666
+        assert categorization_evaluation.f1(None) == 1.0
 
     def test_5_categorize_test_document(self):
         """Test extract Category for a selected Test Document with the Category name contained within its text."""
         test_receipt_document = deepcopy(self.project.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID))
         # reset each Page.category attribute to test that it can be categorized successfully
-        test_receipt_document.set_category(None)
+        test_receipt_document.set_category(self.project.no_category)
         result = self.categorization_pipeline.categorize(document=test_receipt_document)
         assert isinstance(result, Document)
         assert result.category == self.receipts_category
@@ -113,7 +114,7 @@ class TestFallbackCategorizationModel(unittest.TestCase):
         document_with_no_pages = Document(project=self.project, text="hello")
         result = self.categorization_pipeline.categorize(document=document_with_no_pages)
         assert isinstance(result, Document)
-        assert result.category is None
+        assert result.category == result.project.no_category
         assert result.pages() == []
 
     def test_7_already_existing_categorization(self):
@@ -129,26 +130,26 @@ class TestFallbackCategorizationModel(unittest.TestCase):
         """Test cannot extract Category for two Test Document if their texts don't contain the Category name."""
         test_receipt_document = self.project.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID).test_documents()[0]
         # reset each Page.category attribute to test that it can't be categorized successfully
-        test_receipt_document.set_category(None)
+        test_receipt_document.set_category(self.project.no_category)
         result = self.categorization_pipeline.categorize(document=test_receipt_document)
         assert isinstance(result, Document)
-        assert result.category is None
+        assert result.category == self.project.no_category
         for page in result.pages():
-            assert page.category is None
+            assert page.category == self.project.no_category
 
         test_payslip_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         # reset each Page.category attribute to test that it can't be categorized successfully
-        test_payslip_document.set_category(None)
+        test_payslip_document.set_category(self.project.no_category)
         result = self.categorization_pipeline.categorize(document=test_payslip_document)
         assert isinstance(result, Document)
-        assert result.category is None
+        assert result.category == self.project.no_category
         for page in result.pages():
-            assert page.category is None
+            assert page.category == self.project.no_category
 
     def test_9_force_categorization(self):
         """Test re-extract Category for two selected Test Documents that already contain a Category attribute."""
         # This Document can be recategorized successfully because its text contains the word "quittung" (receipt) in it.
-        # Recall that the check is case insensitive.
+        # Recall that the check is case-insensitive.
         test_receipt_document = self.project.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID)
         result = self.categorization_pipeline.categorize(document=test_receipt_document, recategorize=True)
         assert isinstance(result, Document)
@@ -159,18 +160,18 @@ class TestFallbackCategorizationModel(unittest.TestCase):
         # This Document is originally categorized as "Lohnabrechnung".
         # It cannot be recategorized successfully because its text does not contain
         # the word "lohnabrechnung" (payslip) in it.
-        # Recall that the check is case insensitive.
+        # Recall that the check is case-insensitive.
         test_payslip_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         result = self.categorization_pipeline.categorize(document=test_payslip_document, recategorize=True)
         assert isinstance(result, Document)
-        assert result.category is None
+        assert result.category == result.project.no_category
         for page in result.pages():
-            assert page.category is None
+            assert page.category == self.project.no_category
 
     def test_9a_categorize_in_place(self):
         """Test in-place re-extract Category for a selected Test Document that already contains a Category attribute."""
         # This Document can be recategorized successfully because its text contains the word "quittung" (receipt) in it.
-        # Recall that the check is case insensitive.
+        # Recall that the check is case-insensitive.
         test_receipt_document = self.project.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID)
         test_receipt_document.set_category(None)
         self.categorization_pipeline.categorize(document=test_receipt_document, inplace=True)
@@ -183,19 +184,24 @@ class TestFallbackCategorizationModel(unittest.TestCase):
         document_with_no_pages = Document(project=self.project, text="hello")
         result = self.categorization_pipeline.categorize(document=document_with_no_pages, inplace=True)
         assert isinstance(result, Document)
-        assert result.category is None
+        assert result.category == self.project.no_category
         assert result.pages() == []
 
     def test_9c_categorize_defaults_not_in_place(self):
         """Test cannot re-extract Category for a selected Test Document that already contain a Category attribute."""
         # This Document can be recategorized successfully because its text contains the word "quittung" (receipt) in it.
-        # Recall that the check is case insensitive.
+        # Recall that the check is case-insensitive.
         test_receipt_document = self.project.get_document_by_id(TEST_CATEGORIZATION_DOCUMENT_ID)
         test_receipt_document.set_category(None)
         self.categorization_pipeline.categorize(document=test_receipt_document)
-        assert test_receipt_document.category is None
+        assert test_receipt_document.category == self.project.no_category
         for page in test_receipt_document.pages():
             assert page.category is None
+
+    def test_10_run_model_incompatible_interface(self):
+        """Test initializing a model that does not pass has_compatible_interface check."""
+        wrong_class = ContextAwareFileSplittingModel(categories=[self.receipts_category], tokenizer=None)
+        assert not self.categorization_pipeline.has_compatible_interface(wrong_class)
 
 
 class TestAbstractClassificationModule(unittest.TestCase):
