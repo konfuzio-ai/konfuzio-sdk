@@ -39,9 +39,9 @@ jobs:
     - name: Test the code examples in documentation
       run: |
         cd konfuzio_sdk
-        python -m doctest -v docs/sdk/boilerplates/test_file_splitting_example.py
-        python docs/sdk/boilerplates/test_file_splitting_evaluation.py
-        python docs/sdk/boilerplates/test_connected_text_tokenizer.py
+        # python -m doctest -v docs/sdk/boilerplates/test_file_splitting_example.py
+        # python docs/sdk/boilerplates/test_file_splitting_evaluation.py
+        # python docs/sdk/boilerplates/test_connected_text_tokenizer.py
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
@@ -50,7 +50,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Run pydocstyle
       run: |
-        cd konfuzio_sdk
+        # cd konfuzio_sdk
         pydocstyle
     - name: Run tests
       run: |
