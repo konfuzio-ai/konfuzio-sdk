@@ -1459,8 +1459,8 @@ class Span(Data):
         )
 
     def __lt__(self, other: 'Span'):
-        """If we sort spans we do so by start offset."""
-        return self.start_offset < other.start_offset
+        """We compare Spans by their start offset. If start offsets are equal, we use end offsets."""
+        return (self.start_offset, self.end_offset) < (other.start_offset, other.end_offset)
 
     def __repr__(self):
         """Return string representation."""

@@ -1388,6 +1388,7 @@ class Trainer(BaseModel):
         elif buffer[-1]['confidence'] < buffer[-1]['label_threshold']:
             return False
 
+        # Do not merge if any character in between the two Spans
         if not all([c == ' ' for c in doc_text[buffer[-1]['end_offset'] : row['start_offset']]]):
             return False
 
@@ -1397,6 +1398,10 @@ class Trainer(BaseModel):
 
         # only merge if text is on same line
         if '\n' in doc_text[buffer[0]['start_offset'] : row['end_offset']]:
+            return False
+
+        # Do not merge overlapping spans
+        if row['start_offset'] < buffer[-1]['end_offset']:
             return False
 
         data_type = row['data_type']
