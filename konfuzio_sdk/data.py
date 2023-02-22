@@ -126,9 +126,6 @@ class Page(Data):
             else self.document.project.get_document_by_id(self.document.copy_of_id).document_folder
         )
         self.image_path = os.path.join(document_folder, f'page_{self.number}.png')
-        self.category = category
-        if self.category is None:
-            self.category = self.document._category
 
         self._category = self.document._category
         self.category_annotations: List['CategoryAnnotation'] = []

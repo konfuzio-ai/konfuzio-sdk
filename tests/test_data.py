@@ -307,9 +307,9 @@ class TestOfflineExampleData(unittest.TestCase):
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
         assert len(cls.payslips_category.documents()) == 25
-        assert len(cls.receipts_category.documents()) == 24
+        assert len(cls.receipts_category.documents()) == 23
         assert cls.project.get_document_by_id(44864).category.name == cls.project.no_category.name
-        assert len(cls.project.documents) == 25 + 24 + 1
+        assert len(cls.project.documents) == 25 + 23 + 1
 
     def test_copy(self):
         """Test that copy is not allowed as it needs to be implemented for every SDK concept."""
@@ -621,7 +621,6 @@ class TestOfflineDataSetup(unittest.TestCase):
         cls.label = Label(project=cls.project, text='First Offline Label')
         cls.category = Category(project=cls.project, id_=2)
         cls.category2 = Category(project=cls.project, id_=3)
-        cls.category2 = Category(project=cls.project, id_=2)
         cls.document = Document(project=cls.project, category=cls.category, text="Hello.")
         cls.label_set = LabelSet(project=cls.project, categories=[cls.category], id_=421)
         cls.label_set.add_label(cls.label)
@@ -1855,8 +1854,8 @@ class TestKonfuzioOneVirtualTwoRealCategories(unittest.TestCase):
 class TestKonfuzioDataSetup(unittest.TestCase):
     """Test handle data."""
 
-    document_count = 50
-    test_document_count = 5
+    document_count = 49
+    test_document_count = 6
     annotations_correct = 24
     # 24 created by human
     # https://app.konfuzio.com/admin/server/sequenceannotation/?
