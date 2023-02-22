@@ -714,7 +714,7 @@ class LabelSet(Data):
 
     def __repr__(self):
         """Return string representation of the Label Set."""
-        return f"{self.name} ({self.id_})"
+        return f"LabelSet: {self.name} ({self.id_})"
 
     def add_category(self, category: 'Category'):
         """
@@ -857,7 +857,7 @@ class Category(Data):
 
     def __repr__(self):
         """Return string representation of the Category."""
-        return f"{self.name} ({self.id_})"
+        return f"Category: {self.name} ({self.id_})"
 
 
 class CategoryAnnotation(Data):
@@ -1162,9 +1162,10 @@ class Label(Data):
 
     def find_regex(self, category: 'Category', max_findings_per_page=100) -> List[str]:
         """Find the best combination of regex for Label with before and after context."""
+        logger.info(f"Running find_regex({category=}, {max_findings_per_page=}) for {self}.")
         all_annotations = self.annotations(categories=[category])  # default is use_correct = True
         if all_annotations == []:
-            logger.error(f"We cannot find annotations for Label {self} and Category {category}.")
+            logger.error(f"We cannot find annotations for {self} and {category}.")
             return []
 
         label_regex_token = self.base_regex(category=category, annotations=all_annotations)
@@ -1256,8 +1257,7 @@ class Label(Data):
         ]
 
         logger.info(
-            f'We compare {len(evaluations)} regex for {len(all_annotations)} correct Annotations for Category '
-            f'{category}.'
+            f'We compare {len(evaluations)} regex for {len(all_annotations)} correct Annotations for {category}.'
         )
 
         try:
