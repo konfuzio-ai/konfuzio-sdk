@@ -87,13 +87,11 @@ setuptools.setup(
         'tabulate==0.9.0',  # Used to pretty print DataFrames
         'tensorflow==2.9.1',
         'torch==1.12.1',
-        'transformers==4.21.2',
         'tqdm',
         'pympler==1.0.1',  # Use to get pickle file size.
         'scikit-learn==1.0.2',
         'timm==0.6.11',  # for extra pytorch models, i.e. EfficientNet
-        'torch==1.11.0',  # PyTorch
-        'torchvision==0.12.0',  # Related version to torch==1.6.0
+        'torchvision==0.12.0',
         'transformers==4.23.1',  # huggingface transformers and tokenizers
         'spacy==2.3.4',  # used for spaCy tokenization
         'parameterized',
