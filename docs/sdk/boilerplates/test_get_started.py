@@ -3,7 +3,7 @@ from konfuzio_sdk.data import Project, Document
 
 YOUR_PROJECT_ID = 46
 FILE_PATH = 'docs/sdk/boilerplates/pdf.pdf'
-ASSIGNEE_ID = 1
+ASSIGNEE_ID = 1043
 
 my_project = Project(id_=YOUR_PROJECT_ID)
 document = Document.from_file_sync(FILE_PATH, project=my_project)
@@ -35,13 +35,7 @@ document_id = document.id_
 
 document = my_project.get_document_by_id(document_id)
 
+document = my_project.documents[0]
 document.assignee = ASSIGNEE_ID
-document.dataset_status = 3
 
 document.save_meta_data()
-
-document.dataset_status = 0
-
-document.save_meta_data()
-
-document.delete(delete_online=True)

@@ -345,9 +345,6 @@ If you would like to delete a Document in the remote server you can simply use t
 only delete Documents with a dataset status of None (0). **Be careful!** Once the Document is deleted online, we will 
 have no way of recovering it. 
 
-.. literalinclude:: /sdk/boilerplates/test_get_started.py
-   :language: python
-   :lines: 
 ```python
 document.dataset_status = 0
 

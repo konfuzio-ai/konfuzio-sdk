@@ -40,7 +40,7 @@ jobs:
       run: |
         cd konfuzio_sdk
         # python -m doctest -v docs/sdk/boilerplates/test_file_splitting_example.py
-        # python docs/sdk/boilerplates/test_file_splitting_evaluation.py
+        python docs/sdk/boilerplates/test_file_splitting_evaluation.py
         # python docs/sdk/boilerplates/test_connected_text_tokenizer.py
     - name: Lint with flake8
       run: |
