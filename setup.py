@@ -91,7 +91,7 @@ setuptools.setup(
         'pympler==1.0.1',  # Use to get pickle file size.
         'scikit-learn==1.0.2',
         'timm==0.6.11',  # for extra pytorch models, i.e. EfficientNet
-        'torchvision==0.12.0',
+        'torchvision==0.13.0',
         'transformers==4.23.1',  # huggingface transformers and tokenizers
         'spacy==2.3.4',  # used for spaCy tokenization
         'parameterized',
