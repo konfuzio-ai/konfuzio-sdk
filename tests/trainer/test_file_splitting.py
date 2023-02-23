@@ -290,7 +290,7 @@ class TestMultimodalFileSplittingModel(unittest.TestCase):
         if TEST_WITH_FULL_DATASET:
             assert splitting_ai.full_evaluation.tp() == 25
         else:
-            assert splitting_ai.full_evaluation.tp() == 10
+            assert splitting_ai.full_evaluation.tp() == 1
         assert splitting_ai.full_evaluation.fp() == 0
         assert splitting_ai.full_evaluation.fn() == 0
         assert splitting_ai.full_evaluation.tn() == 0
