@@ -21,7 +21,7 @@ Once the package is installed, you can configure the application in two ways:
 
 You can use the compiled version under the `dist` folder on the package source, by pointing to it from the `index.html` and making any necessary changes to the `HTML` properties on the `App` tag.
 
-![dist-example.png](./images/dist-example.png)
+![dist-npm-package.png](./images/dist-npm-package.png)
 
 ##### Using a JavaScript bundler
 
