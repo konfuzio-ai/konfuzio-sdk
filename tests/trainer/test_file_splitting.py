@@ -241,7 +241,6 @@ class TestMultimodalFileSplittingModel(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Initialize the tested class."""
-        return
         cls.project = Project(id_=46)
         cls.file_splitting_model = MultimodalFileSplittingModel(categories=cls.project.categories)
         if not TEST_WITH_FULL_DATASET:
