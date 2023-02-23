@@ -15,7 +15,7 @@ from konfuzio_sdk.tokenizer.regex import WhitespaceTokenizer, ConnectedTextToken
 from konfuzio_sdk.trainer.tokenization import PhraseMatcherTokenizer
 
 from konfuzio_sdk.trainer.document_categorization import (
-    FallbackCategorizationModel,
+    NameBasedCategorizationAI,
     AbstractClassificationModule,
     AbstractTextClassificationModule,
     CategorizationAI,
@@ -44,14 +44,14 @@ from konfuzio_sdk.trainer.file_splitting import ContextAwareFileSplittingModel
 logger = logging.getLogger(__name__)
 
 
-class TestFallbackCategorizationModel(unittest.TestCase):
+class TestNameBasedCategorizationAI(unittest.TestCase):
     """Test the fallback logic for predicting the Category of a Document."""
 
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the Data and Categorization Pipeline."""
         cls.project = Project(id_=None, project_folder=OFFLINE_PROJECT)
-        cls.categorization_pipeline = FallbackCategorizationModel(cls.project.categories)
+        cls.categorization_pipeline = NameBasedCategorizationAI(cls.project.categories)
         cls.payslips_category = cls.project.get_category_by_id(TEST_PAYSLIPS_CATEGORY_ID)
         cls.receipts_category = cls.project.get_category_by_id(TEST_RECEIPTS_CATEGORY_ID)
 
@@ -88,7 +88,7 @@ class TestFallbackCategorizationModel(unittest.TestCase):
             )
 
     def test_4_evaluate(self):
-        """Evaluate FallbackCategorizationModel."""
+        """Evaluate NameBasedCategorizationAI."""
         categorization_evaluation = self.categorization_pipeline.evaluate()
         # can't categorize any of the 3 payslips docs since they don't contain the word "lohnabrechnung"
         assert categorization_evaluation.f1(self.categorization_pipeline.categories[0]) == 1.0

@@ -141,7 +141,7 @@ class AbstractCategorizationAI(metaclass=abc.ABCMeta):
             return False
 
 
-class FallbackCategorizationModel(AbstractCategorizationAI):
+class NameBasedCategorizationAI(AbstractCategorizationAI):
     """A simple, non-trainable model that predicts a Category for a given Document based on a predefined rule.
 
     It checks for whether the name of the Category is present in the input Document (case insensitive; also see
