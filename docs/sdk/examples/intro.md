@@ -301,12 +301,5 @@ have no way of recovering it.
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
    :lines: 48-49,58,53
-```python
-document.dataset_status = 0
-
-doc.save_meta_data()
-
-doc.delete(delete_online=True)
-```
 
 If `delete_online` is set to False (the default), the Document will only be deleted on your local machine, and will be reloaded next time you load the Project, or if you run the `Project.init_or_update_document` method directly.

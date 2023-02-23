@@ -39,6 +39,7 @@ jobs:
     - name: Test the code examples in documentation
       run: |
         cd konfuzio_sdk
+        ls
         # python -m doctest -v docs/sdk/boilerplates/test_file_splitting_example.py
         python docs/sdk/boilerplates/test_file_splitting_evaluation.py
         python docs/sdk/boilerplates/test_connected_text_tokenizer.py
