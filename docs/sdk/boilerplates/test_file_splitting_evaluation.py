@@ -24,6 +24,7 @@ _ = Page(
     end_offset=21,
     number=1,
 )
+
 _ = Page(
     id_=None,
     original_size=(320, 240),
@@ -129,8 +130,3 @@ print(evaluation.f1(search=YOUR_CATEGORY_1), evaluation.f1(search=YOUR_CATEGORY_
 # returns: 1 0.8
 
 EvaluationCalculator(tp=3, fp=0, fn=1, tn=4).metrics_logging()
-
-if __name__ == "__main__":
-    import doctest
-
-    doctest.testmod(extraglobs={'document_1': document_1, 'document_2': document_2})

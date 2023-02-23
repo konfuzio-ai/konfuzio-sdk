@@ -12,7 +12,7 @@ The initialization would look like this:
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
    :language: python
-   :lines: 108-110
+   :lines: 76-78
 
 The class compares each pair of Pages. If a Page is labeled as first and the model also predicted it as first, it is 
 considered a True Positive. If a Page is labeled as first but the model predicted it as non-first, it is considered a 
@@ -32,14 +32,14 @@ To see a certain metric after the class has been initialized, you can call a met
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
    :language: python
-   :lines: 124
+   :lines: 94
 
 It is also possible to look at the metrics calculated by each Category independently. For this, pass 
 `search=YOUR_CATEGORY_HERE` when calling the wanted metric's method: 
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
    :language: python
-   :lines: 111
+   :lines: 79
 
 For more details, see the [Python API Documentation](https://dev.konfuzio.com/sdk/sourcecode.html#evaluation) on 
 Evaluation.
@@ -60,7 +60,7 @@ _Second document_
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
    :language: python
-   :lines: 2-4,14-43,46-92
+   :lines: 2-4,13-44,47-58
 
 We need to pass two lists of Documents into the `FileSplittingEvaluation` class. So, before that, we need to run each 
 Page of the Documents through the model's prediction.
@@ -70,7 +70,7 @@ Pages being predicted correctly. An example of how the evaluation would be imple
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
    :language: python
-   :lines: 99-103,120-133
+   :lines: 66-71,88-101
 
 Our results could be reflected in a following table:
 
@@ -82,7 +82,7 @@ If we want to see evaluation results by Category, the implementation of the Eval
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
    :language: python
-   :lines: 149-162
+   :lines: 117-130
 
 the output could be reflected in a following table:
 
@@ -96,4 +96,4 @@ specify the metrics accordingly at the class's initialization). Example usage:
 
 .. literalinclude:: /sdk/boilerplates/test_file_splitting_evaluation.py
    :language: python
-   :lines: 164
+   :lines: 132

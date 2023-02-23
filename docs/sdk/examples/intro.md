@@ -246,14 +246,14 @@ To locally delete a Document, you can use:
    :language: python
    :lines: 40
 
-The Document will be deleted from your local data folder but it will remain in the Konfuzio Server.
+The Document will be deleted from your local data folder, but it will remain in the Konfuzio Server.
 If you want to get it again you can update the Project.
 
 If you want to delete a document permanently you can do it like so:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 45
+   :lines: 46
 
 #### Upload Document
 To upload a new file (see [Supported File Types](https://help.konfuzio.com/specification/supported_file_types/index.html)) 
@@ -272,7 +272,7 @@ the asynchronous function which only returns a Document ID:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 46
+   :lines: 47
 
 Later, you can load the processed Document and get your Document with:
 
@@ -289,9 +289,6 @@ it like this:
    :language: python
    :lines: 55-58
 
-Here, the assignee has been changed in the server to the user with id 43, and the status of the Document has been 
-changed to 3 (i.e. Testing). 
-
 #### Delete Document
 
 If you would like to delete a Document in the remote server you can simply use the `Document.delete` method. You can 
@@ -300,6 +297,7 @@ have no way of recovering it.
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 48-49,58,53
+   :lines: 45,49,58,46
 
-If `delete_online` is set to False (the default), the Document will only be deleted on your local machine, and will be reloaded next time you load the Project, or if you run the `Project.init_or_update_document` method directly.
+If `delete_online` is set to False (the default), the Document will only be deleted on your local machine, and will be 
+reloaded next time you load the Project, or if you run the `Project.init_or_update_document` method directly.
