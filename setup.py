@@ -86,7 +86,7 @@ setuptools.setup(
         'regex>=2020.6.8',  # re module but better
         'tabulate==0.9.0',  # Used to pretty print DataFrames
         'tensorflow==2.9.1',
-        'torch==1.12.1',
+        'torch==1.12.0',
         'tqdm',
         'pympler==1.0.1',  # Use to get pickle file size.
         'scikit-learn==1.0.2',
