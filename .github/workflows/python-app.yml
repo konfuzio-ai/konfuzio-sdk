@@ -41,7 +41,8 @@ jobs:
         cd konfuzio_sdk
         # python -m doctest -v docs/sdk/boilerplates/test_file_splitting_example.py
         python docs/sdk/boilerplates/test_file_splitting_evaluation.py
-        # python docs/sdk/boilerplates/test_connected_text_tokenizer.py
+        python docs/sdk/boilerplates/test_connected_text_tokenizer.py
+        python docs/sdk/boilerplates/test_get_started.py
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names

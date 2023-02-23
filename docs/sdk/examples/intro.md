@@ -8,7 +8,7 @@ Retrieve all information available for your Project:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 6
+   :lines: 10
 
 The information will be stored in the folder that you defined to allocate the data in the package initialization.
 A subfolder will be created for each Document in the Project.
@@ -17,13 +17,13 @@ Every time that there are changes in the Project in the Konfuzio Server, the loc
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 7
+   :lines: 12
 
 To make sure that your Project is loaded with all the latest data:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 8
+   :lines: 13
 
 ### Documents
 
@@ -31,10 +31,8 @@ To access the Documents in the Project you can use:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 
-```python
-documents = my_project.documents
-```
+   :lines: 15
+
 
 By default, it will get the Documents with training status (dataset_status = 2). The code for the status is:
 
@@ -48,10 +46,7 @@ The Test Documents can be accessed directly by:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 
-```python
-test_documents = my_project.test_documents
-```
+   :lines: 16
 
 For more details, you can check out the [Project documentation](https://dev.konfuzio.com/sdk/sourcecode.html#project).
 
@@ -194,11 +189,7 @@ To get the PDFs of the Documents, you can use `get_file()`.
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 
-```python
-for document in my_project.documents:
-    document.get_file()
-```
+   :lines: 20-21
 
 This will download the OCR version of the Document which contains the text, the Bounding Boxes
 information of the characters and the image of the Document.
@@ -209,11 +200,7 @@ If you want to original version of the Document (without OCR) you can use `ocr_v
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 
-```python
-for document in my_project.documents:
-    document.get_file(ocr_version=False)
-```
+   :lines: 23-24
 
 In the Document folder, you will see a new file with the original name.
 
@@ -222,11 +209,7 @@ To get the Pages of the Document as png images, you can use `get_images()`.
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 
-```python
-for document in my_project.documents:
-    document.get_images()
-```
+   :lines: 27-28
 
 You will get one png image named "page_number_of_page.png" for each Page in the Document.
 
@@ -235,11 +218,7 @@ To get the Bounding Boxes information of the characters, you can use `get_bbox()
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 
-```python
-for document in my_project.documents:
-    document.get_bbox()
-```
+   :lines: 32-33
 
 You will get a file named "bbox.json5".
 
@@ -248,20 +227,14 @@ For example, you can get the path to the file with the Document text with:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 
-```python
-my_project.documents_folder
-```
+   :lines: 37
 
 #### Update Document
 If there are changes in the Document in the Konfuzio Server, you can update the Document with:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 
-```python
-document.update()
-```
+   :lines: 39
 
 If a Document is part of the Training or Test set, you can also update it by updating the entire Project via
 `project.get(update=True)`. However, for Projects with many Documents it can be faster to update only the relevant Documents.
@@ -271,19 +244,16 @@ To locally delete a Document, you can use:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 
-```python
-document.delete()
-```
+   :lines: 40
 
 The Document will be deleted from your local data folder but it will remain in the Konfuzio Server.
 If you want to get it again you can update the Project.
 
 If you want to delete a document permanently you can do it like so:
 
-```python
-document.delete(delete_online=True)
-```
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 45
 
 #### Upload Document
 To upload a new file (see [Supported File Types](https://help.konfuzio.com/specification/supported_file_types/index.html)) 
@@ -295,31 +265,20 @@ take from a few seconds up to over a minute.
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 
-```python
-document = Document.from_file_sync(FILE_PATH, project=my_project)
-```
+   :lines: 43
 
 If however you are trying to upload a large number of files and don't wait to wait for them to be processed you can use 
 the asynchronous function which only returns a Document ID:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 
-```python
-document_id = Document.from_file_async(FILE_PATH, project=my_project)
-```
+   :lines: 46
 
 Later, you can load the processed Document and get your Document with:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 
-```python
-my_project.init_or_update_document(self, from_online=False)
-
-document = my_project.get_document_by_id(document_id)
-```
+   :lines: 50-52
 
 #### Modify Document
 
@@ -328,13 +287,7 @@ it like this:
 
 .. literalinclude:: /sdk/boilerplates/test_get_started.py
    :language: python
-   :lines: 
-```python
-document.assignee = ASSIGNEE_ID
-document.dataset_status = 3
-
-doc.save_meta_data()
-```
+   :lines: 55-58
 
 Here, the assignee has been changed in the server to the user with id 43, and the status of the Document has been 
 changed to 3 (i.e. Testing). 
@@ -345,6 +298,9 @@ If you would like to delete a Document in the remote server you can simply use t
 only delete Documents with a dataset status of None (0). **Be careful!** Once the Document is deleted online, we will 
 have no way of recovering it. 
 
+.. literalinclude:: /sdk/boilerplates/test_get_started.py
+   :language: python
+   :lines: 48-49,58,53
 ```python
 document.dataset_status = 0
 
