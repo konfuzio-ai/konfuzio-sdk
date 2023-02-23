@@ -25,12 +25,7 @@ special needs to be done to enable it.
 
 .. literalinclude:: /sdk/boilerplates/test_data_validation.py
    :language: python
-   :lines: 
-```python
-from konfuzio_sdk.data import Project
-
-project = Project(id_=YOUR_PROJECT_ID)  # all the data in this project will be validated
-```
+   :lines: 4-5,8
 
 ### Document Validation Rules
 
@@ -83,9 +78,4 @@ or inconsistent data can **decrease the quality of an Extraction AI**. Only disa
 
 .. literalinclude:: /sdk/boilerplates/test_data_validation.py
    :language: python
-   :lines: 
-```python
-from konfuzio_sdk.data import Project
-
-project = Project(id_=YOUR_PROJECT_ID, strict_data_validation=False)
-```
+   :lines: 4-5,10
