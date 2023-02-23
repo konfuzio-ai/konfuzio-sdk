@@ -5,7 +5,7 @@
 
 ## How to integrate the Document Validation UI into custom solutions?
 
-The app requires `node` and `npm` to run. It also requires a connection to the [Konfuzio Server API version 3](https://app.konfuzio.com/v3/swagger/). See [full documentation](https://dev.konfuzio.com/web/api-v3.html).
+The application requires `node` and `npm` to run. It also requires a connection to the [Konfuzio Server API version 3](https://app.konfuzio.com/v3/swagger/). See [full documentation](https://dev.konfuzio.com/web/api-v3.html).
 
 There are a few different options to integrate the Document Validation UI into your Project, which we will explain next.
 
@@ -13,18 +13,28 @@ There are a few different options to integrate the Document Validation UI into y
 
 If you want to integrate the Document Validation UI to an existing application, we recommend installing the available package on the [npm repository](https://www.npmjs.com/package/@konfuzio/capture-vue).
 
-#### Configure the app
+#### Configure the application
 
-Once the package is installed, you can configure the app using a JavaScript bundler. You can find an example using [Webpack](https://webpack.js.org/guides/getting-started/) below:
+Once the package is installed, you can configure the application in two ways:
 
-##### webpack.config.js
+##### Pointing to the dist folder
+
+You can use the compiled version under the `dist` folder on the package source, by pointing to it from the `index.html` and making any necessary changes to the `HTML` properties on the `App` tag.
+
+![dist-example.png](./images/dist-example.png)
+
+##### Using a JavaScript bundler
+
+If you want more integration with your current configuration, you can use a JavaScript bundler. You can find an example using [Webpack](https://webpack.js.org/guides/getting-started/) below:
+
+###### webpack.config.js
 
 ```
 const VueLoaderPlugin = require("vue-loader/lib/plugin");
 
 module.exports = {
     entry: {
-        capture_vue: "./node_modules/@konfuzio/document-validation-ui/src/main.js",
+        document_validation_ui: "./node_modules/@konfuzio/document-validation-ui/src/main.js",
     },
     output: {
         path: "/server/bundle",
@@ -51,31 +61,63 @@ module.exports = {
 
 ##### HTML
 
-In the HTML we should load the script we created with webpack and customise the variables we want. Please note that customising the variables is optional and that, as previously mentioned, any variable in the `.env` will have priority from the variables defined in the `index.html`.
+In the `HTML` we should load the script we created with Webpack or the compiled version under the `dist` folder, and customise the variables we want. Please note that customising the variables is optional and that any variable in the `.env` will have priority from the variables defined in the `index.html`.
 
-The following example includes the custom variables (Document ID, User Token, Locale), but it is not mandatory to add these, which should still be added to the `.env` file.
+The following examples, based on the two configuration options mentioned before, include the custom variables (Document ID, User Token, Locale), but it is not mandatory to add these, which should still be added to the `.env` file.
+
+###### Webpack bundle
 
 ```
  <div id="app">
     <App document="DOCUMENT_ID" user_token:”USER_TOKEN” locale="LOCALE"></App>
   </div>
 
-  <script src="/server/bundle/capture_vue.js"></script>
+   <script src="/server/bundle/document_validation_ui.js"></script>
+
 ```
 
-### Integrate by deploying the app
+###### Imports from dist folder
 
-You can also deploy the app by following the steps below:
+```
+<head>
+    <script
+      defer="defer"
+      src="node_modules/@konfuzio/document-validation-ui/dist/js/chunk-vendors.a48fca3f.js"
+    ></script>
+    <script
+      defer="defer"
+      src="node_modules/@konfuzio/document-validation-ui/dist/js/app.17fe48c4.js"
+    ></script>
+    <link
+      href="node_modules/@konfuzio/document-validation-ui/dist/css/chunk-vendors.053b6b6e.css"
+      rel="stylesheet"
+    />
+    <link
+      href="node_modules/@konfuzio/document-validation-ui/dist/css/app.0c8973f8.css"
+      rel="stylesheet"
+    />
+</head>
+
+<body>
+ <div id="app">
+    <App document="DOCUMENT_ID" user_token:”USER_TOKEN” locale="LOCALE"></App>
+  </div>
+</body>
+```
+
+### Integrate by deploying the application
+
+You can also deploy the application by following the steps below:
 
 1. Clone the repository
 
-You can download the app by cloning our [GitHub repository](https://github.com/konfuzio-ai/document-validation-ui) or downloading the source code.
+You can download the application by cloning our [GitHub repository](https://github.com/konfuzio-ai/document-validation-ui) or downloading the source code.
 
 `git clone git@github.com:konfuzio-ai/document-validation-ui.git`
 
-2. Configure the App
+2. Configure the Application
 
-Decide if the app will be run as [Read Only or Full Mode](./modes.md).
+Decide if the application will be run as [Read Only or Full Mode](./modes.md).
 
 3. Install all packages
 
@@ -83,21 +125,21 @@ Install all the dependencies by running:
 
 `npm install`
 
-4. Run the App
+4. Run the Application
 
 #### Deploy
 
-If you want to deploy this app in a web server environment then you should run:
+If you want to deploy this application in a web server environment then you should run:
 
 `npm run build`
 
-When succeeded, you should export the `dist` folder generated from that command to the destination source in the host server and configure the web server engine in order to have the `index.html` file as the entry point. If everything is correctly configured you should be able to open the server URL and the app will load.
+When succeeded, you should export the `dist` folder generated from that command to the destination source in the host server and configure the web server engine in order to have the `index.html` file as the entry point. If everything is correctly configured you should be able to open the server URL and the application will load.
 
 ![dist.png](./images/dist.png)
 
 #### Local Development
 
-If you want to serve the app locally to run on a browser (default URL: http://localhost:3000) you should run:
+If you want to serve the application locally to run on a browser (default URL: http://localhost:3000) you should run:
 
 `npm run serve`
 
