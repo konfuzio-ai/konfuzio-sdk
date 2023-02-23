@@ -4,6 +4,9 @@
 
 Use the name of the category as an effective fallback logic to categorize documents when no categorization AI is available:
 
+.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
+   :language: python
+   :lines: 
 ```python
 from konfuzio_sdk.data import Project
 from konfuzio_sdk.trainer.document_categorization import FallbackCategorizationModel
@@ -38,6 +41,9 @@ print(f"Found category {result_doc.category} for {result_doc}")
 
 You can initialize a Document with a Category, which will count as if a human manually revised it.
 
+.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
+   :language: python
+   :lines:
 ```python
 MY_PROJECT_ID: int
 my_project = Project(id_=MY_PROJECT_ID)
@@ -52,6 +58,9 @@ assert my_document.category_is_revised == True
 
 If a Document is initialized with no Category, it can be manually set later.
 
+.. literalinclude:: /sdk/boilerplates/test_document_categorization.py
+   :language: python
+   :lines:
 ```python
 DOCUMENT_ID: int
 document = my_project.get_document_by_id(DOCUMENT_ID)
