@@ -630,7 +630,7 @@ class TestOfflineDataSetup(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Control the number of Documents created in the Test."""
-        assert len(cls.project.virtual_documents) == 59
+        assert len(cls.project.virtual_documents) == 62
 
     def test_document_only_needs_project(self):
         """Test that a Document can be created without Category."""
