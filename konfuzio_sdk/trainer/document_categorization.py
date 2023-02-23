@@ -856,7 +856,7 @@ def get_optimizer(classifier: DocumentClassifier, config: dict) -> torch.optim.O
         return optimizer
 
 
-class CategorizationAI(FallbackCategorizationModel):
+class CategorizationAI(AbstractCategorizationAI):
     """A trainable model that predicts a category for a given document."""
 
     def __init__(
@@ -1353,7 +1353,7 @@ class CategorizationAI(FallbackCategorizationModel):
 
         for category in self.categories:
             if category.id_ == predicted_category_id:
-                page.category = category
+                _ = CategoryAnnotation(category=category, confidence=predicted_confidence, page=page)
                 break
         return page
 
