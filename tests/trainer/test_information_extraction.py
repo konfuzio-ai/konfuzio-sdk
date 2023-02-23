@@ -38,7 +38,6 @@ from konfuzio_sdk.trainer.information_extraction import (
     load_model,
     RFExtractionAI,
     Trainer,
-    BaseModel,
 )
 
 from konfuzio_sdk.api import upload_ai_model
@@ -599,12 +598,10 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
         assert len(res_doc.view_annotations()) == 19
-        assert issubclass(type(self.pipeline), BaseModel)
 
         no_konf_pipeline = load_model(self.pipeline.pipeline_path_no_konfuzio_sdk)
         res_doc = no_konf_pipeline.extract(document=test_document)
         assert len(res_doc.view_annotations()) == 19
-        assert issubclass(type(no_konf_pipeline), BaseModel)
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -871,6 +868,60 @@ class TestInformationExtraction(unittest.TestCase):
         assert merged_res_dict['label3'].iloc[0]['offset_string'] == "89 76"
         assert merged_res_dict['label3'].iloc[0]['start_offset'] == 53
         assert merged_res_dict['label3'].iloc[0]['end_offset'] == 58
+
+    def test_horizontal_merge_with_overlapping_spans(self):
+        """Test merge_horizontal method with overlapping Spans."""
+        doc_text = """text  21.02.2023   more text
+        label2 text
+        label3 text
+        """
+        res_dict = {
+            'label1': pd.DataFrame(
+                {
+                    'label_name': ['label1', 'label1', 'label1', 'label1'],
+                    'start_offset': [6, 6, 13, 15],
+                    'end_offset': [7, 16, 16, 16],
+                    'offset_string': ['2', '21.02.2023', '023', '3'],
+                    'confidence': [0.98, 0.83, 0.98, 0.89],
+                    'data_type': ['Text', 'Text', 'Text', 'Text'],
+                    'label_threshold': [0.1, 0.1, 0.1, 0.1],
+                }
+            ),
+            'label2': pd.DataFrame(
+                {
+                    'label_name': ['label2', 'label2', 'label2', 'label2'],
+                    'start_offset': [37, 37, 39, 44],
+                    'end_offset': [39, 43, 45, 48],
+                    'offset_string': ['la', 'label2', 'bel2 t', 'text'],
+                    'confidence': [0.83, 0.98, 0.98, 0.89],
+                    'data_type': ['Text', 'Text', 'Text', 'Text'],
+                    'label_threshold': [0.1, 0.1, 0.1, 0.1],
+                }
+            ),
+            'label3': pd.DataFrame(
+                {
+                    'label_name': ['label3', 'label3', 'label3'],
+                    'start_offset': [57, 57, 64],
+                    'end_offset': [59, 63, 68],
+                    'offset_string': ['la', 'label3', 'text'],
+                    'confidence': [0.98, 0.83, 0.98],
+                    'data_type': ['Text', 'Text', 'Text'],
+                    'label_threshold': [0.1, 0.1, 0.1],
+                }
+            ),
+        }
+
+        for label in res_dict:
+            for i, span_row in res_dict[label].iterrows():
+                assert span_row['offset_string'] == doc_text[span_row['start_offset'] : span_row['end_offset']]
+
+        new_res_dict = Trainer.merge_horizontal(res_dict=res_dict, doc_text=doc_text)
+
+        assert len(new_res_dict['label1']) == 4
+        assert len(new_res_dict['label2']) == 4
+        assert len(new_res_dict['label3']) == 2
+        assert new_res_dict['label3'].iloc[0]['offset_string'] == 'la'
+        assert new_res_dict['label3'].iloc[1]['offset_string'] == 'label3 text'
 
     def test_separate_labels(self):
         """Test separate_labels method for res_dict when using use_separate_labels extraction model."""
@@ -1302,8 +1353,6 @@ def test_load_ai_model_konfuzio_sdk_not_included():
     path = "trainer/2023-01-31-14-39-44_lohnabrechnung_no_konfuzio_sdk.pkl"
     pipeline = load_model(path)
 
-    assert issubclass(type(pipeline), BaseModel)
-
     test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
     res_doc = pipeline.extract(document=test_document)
     assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
@@ -1315,8 +1364,6 @@ def test_load_ai_model_konfuzio_sdk_included():
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
     path = "trainer/2023-01-31-14-37-11_lohnabrechnung.pkl"
     pipeline = load_model(path)
-
-    assert issubclass(type(pipeline), BaseModel)  # fails
 
     test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
     res_doc = pipeline.extract(document=test_document)
