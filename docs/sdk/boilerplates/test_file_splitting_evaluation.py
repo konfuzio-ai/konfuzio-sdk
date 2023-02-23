@@ -103,8 +103,8 @@ assert evaluation.tp(search=YOUR_CATEGORY_1) == 1
 assert evaluation.tp(search=YOUR_CATEGORY_2) == 2
 assert evaluation.tn(search=YOUR_CATEGORY_1) == 2
 assert evaluation.tn(search=YOUR_CATEGORY_2) == 2
-assert evaluation.tp(search=YOUR_CATEGORY_1) == 0
-assert evaluation.tp(search=YOUR_CATEGORY_2) == 0
+assert evaluation.fp(search=YOUR_CATEGORY_1) == 0
+assert evaluation.fp(search=YOUR_CATEGORY_2) == 0
 assert evaluation.fn(search=YOUR_CATEGORY_1) == 0
 assert evaluation.fn(search=YOUR_CATEGORY_2) == 1
 assert evaluation.precision(search=YOUR_CATEGORY_1) == 1
