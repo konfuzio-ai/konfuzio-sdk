@@ -3,15 +3,18 @@ from konfuzio_sdk.data import Project, Document
 
 YOUR_PROJECT_ID = 46
 FILE_PATH = 'docs/sdk/boilerplates/pdf.pdf'
-ASSIGNEE_ID = 1043
+ASSIGNEE_ID = None
 
 my_project = Project(id_=YOUR_PROJECT_ID)
 document = Document.from_file_sync(FILE_PATH, project=my_project)
+assert len(my_project._documents) == 74
 my_project.get(update=True)
 my_project = Project(id_=YOUR_PROJECT_ID, update=True)
 
 documents = my_project.documents
 test_documents = my_project.test_documents
+assert len(documents) == 26
+assert len(test_documents) == 3
 
 for document in my_project.documents:
     document.get_file()
@@ -35,7 +38,7 @@ document_id = document.id_
 
 document = my_project.get_document_by_id(document_id)
 
-document = my_project.documents[0]
+document = my_project.documents[1]
 document.assignee = ASSIGNEE_ID
 
 document.save_meta_data()
