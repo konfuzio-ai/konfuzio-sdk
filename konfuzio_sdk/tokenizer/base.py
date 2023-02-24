@@ -96,7 +96,7 @@ class AbstractTokenizer(metaclass=abc.ABCMeta):
             virtual_doc = deepcopy(document)
             self.tokenize(virtual_doc)
             eval_list.append((document, virtual_doc))
-        return Evaluation(eval_list)
+        return Evaluation(eval_list, use_view_annotations=False)
 
     def missing_spans(self, document: Document) -> List[Span]:
         """
