@@ -2374,7 +2374,9 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
         return self.clf
 
-    def evaluate_full(self, strict: bool = True, use_training_docs: bool = False) -> Evaluation:
+    def evaluate_full(
+        self, strict: bool = True, use_training_docs: bool = False, use_view_annotations: bool = True
+    ) -> Evaluation:
         """
         Evaluate the full pipeline on the pipeline's Test Documents.
 
@@ -2392,9 +2394,9 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             predicted_doc = self.extract(document=document)
             eval_list.append((document, predicted_doc))
 
-        self.full_evaluation = Evaluation(eval_list, strict=strict)
+        full_evaluation = Evaluation(eval_list, strict=strict, use_view_annotations=use_view_annotations)
 
-        return self.full_evaluation
+        return full_evaluation
 
     def evaluate_tokenizer(self, use_training_docs: bool = False) -> Evaluation:
         """Evaluate the tokenizer."""
@@ -2437,7 +2439,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
             predicted_doc = self.extract_from_df(feats_df, virtual_doc)
             eval_list.append((document, predicted_doc))
 
-        clf_evaluation = Evaluation(eval_list)
+        clf_evaluation = Evaluation(eval_list, use_view_annotations=False)
 
         return clf_evaluation
 
@@ -2476,7 +2478,7 @@ class RFExtractionAI(Trainer, GroupAnnotationSets):
 
             eval_list.append((document, predicted_doc))
 
-        label_set_clf_evaluation = Evaluation(eval_list)
+        label_set_clf_evaluation = Evaluation(eval_list, use_view_annotations=False)
 
         return label_set_clf_evaluation
 

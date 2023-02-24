@@ -311,18 +311,28 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
     def test_06_evaluate_full(self):
         """Evaluate Whitespace RFExtractionAI Model."""
-        evaluation = self.pipeline.evaluate_full()
+        evaluation = self.pipeline.evaluate_full(use_view_annotations=False)
 
         assert evaluation.f1(None) == self.evaluate_full_result
 
         assert 5e5 < memory_size_of(evaluation.data) < 6e5
 
+        view_evaluation = self.pipeline.evaluate_full(use_view_annotations=True)
+        assert view_evaluation.f1(None) == self.evaluate_full_result == evaluation.f1(None)
+
+        assert 1e5 < memory_size_of(view_evaluation.data) < 2e5
+
     def test_07_data_quality(self):
         """Evaluate on training documents."""
-        evaluation = self.pipeline.evaluate_full(use_training_docs=True)
+        evaluation = self.pipeline.evaluate_full(use_training_docs=True, use_view_annotations=False)
         assert evaluation.f1(None) == self.data_quality_result
 
         assert 22e5 < memory_size_of(evaluation.data) < 24e5
+
+        view_evaluation = self.pipeline.evaluate_full(use_training_docs=True, use_view_annotations=True)
+        assert view_evaluation.f1(None) == self.data_quality_result == evaluation.f1(None)
+
+        assert 2e5 < memory_size_of(view_evaluation.data) < 4e5
 
     def test_08_tokenizer_quality(self):
         """Evaluate the tokenizer quality."""
@@ -534,17 +544,27 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
     def test_06_evaluate_full(self):
         """Evaluate DocumentEntityMultiClassModel."""
-        evaluation = self.pipeline.evaluate_full()
+        evaluation = self.pipeline.evaluate_full(use_view_annotations=False)
         assert evaluation.f1(None) == self.evaluate_full_result
 
         assert 1e5 < memory_size_of(evaluation.data) < 2e5
 
+        view_evaluation = self.pipeline.evaluate_full(use_view_annotations=True)
+        assert view_evaluation.f1(None) == self.evaluate_full_result == evaluation.f1(None)
+
+        assert 1e5 < memory_size_of(view_evaluation.data) < 2e5
+
     def test_07_data_quality(self):
         """Evaluate on training documents."""
-        evaluation = self.pipeline.evaluate_full(use_training_docs=True)
+        evaluation = self.pipeline.evaluate_full(use_training_docs=True, use_view_annotations=False)
         assert evaluation.f1(None) >= 0.94
 
         assert 4e5 < memory_size_of(evaluation.data) < 6e5
+
+        view_evaluation = self.pipeline.evaluate_full(use_training_docs=True, use_view_annotations=True)
+        assert view_evaluation.f1(None) >= 0.94
+
+        assert 2e5 < memory_size_of(view_evaluation.data) < 4e5
 
     def test_08_tokenizer_quality(self):
         """Evaluate the tokenizer quality."""

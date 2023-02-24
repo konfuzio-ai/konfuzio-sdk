@@ -84,7 +84,7 @@ def grouped(group, target: str):
     return group
 
 
-def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFrame:
+def compare(doc_a, doc_b, only_use_correct=False, use_view_annotations=True, strict=True) -> pandas.DataFrame:
     """Compare the Annotations of two potentially empty Documents wrt. to **all** Annotations.
 
     :param doc_a: Document which is assumed to be correct
@@ -96,7 +96,7 @@ def compare(doc_a, doc_b, only_use_correct=False, strict=True) -> pandas.DataFra
     :return: Evaluation DataFrame
     """
     df_a = pandas.DataFrame(doc_a.eval_dict(use_correct=only_use_correct))
-    df_b = pandas.DataFrame(doc_b.eval_dict(use_correct=False))
+    df_b = pandas.DataFrame(doc_b.eval_dict(use_view_annotations=use_view_annotations, use_correct=False))
     if doc_a.category != doc_b.category:
         raise ValueError(f'Categories of {doc_a} with {doc_a.category} and {doc_b} with {doc_a.category} do not match.')
     if strict:  # many to many inner join to keep all Spans of both Documents
@@ -290,16 +290,22 @@ class EvaluationCalculator:
 class Evaluation:
     """Calculated accuracy measures by using the detailed comparison on Span Level."""
 
-    def __init__(self, documents: List[Tuple[Document, Document]], strict: bool = True):
+    def __init__(
+        self, documents: List[Tuple[Document, Document]], strict: bool = True, use_view_annotations: bool = True
+    ):
         """
         Relate to the two document instances.
 
         :param documents: A list of tuple Documents that should be compared.
         :param strict: A boolean passed to the `compare` function.
+        :param use_view_annotations:
+            Bool for whether to filter evaluated Document with view_annotations. Will filter out all overlapping Spans
+            and below threshold Annotations. Should lead to faster evaluation.
         """
         logger.info(f"Initializing Evaluation object with {len(documents)} documents. Evaluation mode {strict=}.")
         self.documents = documents
         self.strict = strict
+        self.use_view_annotations = use_view_annotations
         self.only_use_correct = True
         self.data = None
         self.calculate()
@@ -310,7 +316,11 @@ class Evaluation:
         evaluations = []  # start anew, the configuration of the Evaluation might have changed.
         for ground_truth, predicted in self.documents:
             evaluation = compare(
-                doc_a=ground_truth, doc_b=predicted, only_use_correct=self.only_use_correct, strict=self.strict
+                doc_a=ground_truth,
+                doc_b=predicted,
+                only_use_correct=self.only_use_correct,
+                strict=self.strict,
+                use_view_annotations=self.use_view_annotations,
             )
             evaluations.append(evaluation)
 
