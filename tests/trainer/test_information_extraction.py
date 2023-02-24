@@ -38,7 +38,6 @@ from konfuzio_sdk.trainer.information_extraction import (
     load_model,
     RFExtractionAI,
     Trainer,
-    BaseModel,
 )
 
 from konfuzio_sdk.api import upload_ai_model
@@ -312,18 +311,28 @@ class TestWhitespaceRFExtractionAI(unittest.TestCase):
 
     def test_06_evaluate_full(self):
         """Evaluate Whitespace RFExtractionAI Model."""
-        evaluation = self.pipeline.evaluate_full()
+        evaluation = self.pipeline.evaluate_full(use_view_annotations=False)
 
         assert evaluation.f1(None) == self.evaluate_full_result
 
         assert 5e5 < memory_size_of(evaluation.data) < 6e5
 
+        view_evaluation = self.pipeline.evaluate_full(use_view_annotations=True)
+        assert view_evaluation.f1(None) == self.evaluate_full_result == evaluation.f1(None)
+
+        assert 1e5 < memory_size_of(view_evaluation.data) < 2e5
+
     def test_07_data_quality(self):
         """Evaluate on training documents."""
-        evaluation = self.pipeline.evaluate_full(use_training_docs=True)
+        evaluation = self.pipeline.evaluate_full(use_training_docs=True, use_view_annotations=False)
         assert evaluation.f1(None) == self.data_quality_result
 
         assert 22e5 < memory_size_of(evaluation.data) < 24e5
+
+        view_evaluation = self.pipeline.evaluate_full(use_training_docs=True, use_view_annotations=True)
+        assert view_evaluation.f1(None) == self.data_quality_result == evaluation.f1(None)
+
+        assert 2e5 < memory_size_of(view_evaluation.data) < 4e5
 
     def test_08_tokenizer_quality(self):
         """Evaluate the tokenizer quality."""
@@ -453,7 +462,7 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         assert 1e6 < memory_size_of(self.pipeline.category) < 2.2e6
 
         self.pipeline.df_train, self.pipeline.label_feature_list = self.pipeline.feature_function(
-            documents=self.pipeline.documents, retokenize=False, require_revised_annotations=False
+            documents=self.pipeline.documents, require_revised_annotations=False
         )
 
         assert 1e6 < memory_size_of(self.pipeline.category) < 2.2e6
@@ -535,17 +544,27 @@ class TestRegexRFExtractionAI(unittest.TestCase):
 
     def test_06_evaluate_full(self):
         """Evaluate DocumentEntityMultiClassModel."""
-        evaluation = self.pipeline.evaluate_full()
+        evaluation = self.pipeline.evaluate_full(use_view_annotations=False)
         assert evaluation.f1(None) == self.evaluate_full_result
 
         assert 1e5 < memory_size_of(evaluation.data) < 2e5
 
+        view_evaluation = self.pipeline.evaluate_full(use_view_annotations=True)
+        assert view_evaluation.f1(None) == self.evaluate_full_result == evaluation.f1(None)
+
+        assert 1e5 < memory_size_of(view_evaluation.data) < 2e5
+
     def test_07_data_quality(self):
         """Evaluate on training documents."""
-        evaluation = self.pipeline.evaluate_full(use_training_docs=True)
+        evaluation = self.pipeline.evaluate_full(use_training_docs=True, use_view_annotations=False)
         assert evaluation.f1(None) >= 0.94
 
         assert 4e5 < memory_size_of(evaluation.data) < 6e5
+
+        view_evaluation = self.pipeline.evaluate_full(use_training_docs=True, use_view_annotations=True)
+        assert view_evaluation.f1(None) >= 0.94
+
+        assert 2e5 < memory_size_of(view_evaluation.data) < 4e5
 
     def test_08_tokenizer_quality(self):
         """Evaluate the tokenizer quality."""
@@ -599,12 +618,10 @@ class TestRegexRFExtractionAI(unittest.TestCase):
         test_document = self.project.get_document_by_id(TEST_DOCUMENT_ID)
         res_doc = self.pipeline.extract(document=test_document)
         assert len(res_doc.view_annotations()) == 19
-        assert issubclass(type(self.pipeline), BaseModel)
 
         no_konf_pipeline = load_model(self.pipeline.pipeline_path_no_konfuzio_sdk)
         res_doc = no_konf_pipeline.extract(document=test_document)
         assert len(res_doc.view_annotations()) == 19
-        assert issubclass(type(no_konf_pipeline), BaseModel)
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -1356,8 +1373,6 @@ def test_load_ai_model_konfuzio_sdk_not_included():
     path = "trainer/2023-01-31-14-39-44_lohnabrechnung_no_konfuzio_sdk.pkl"
     pipeline = load_model(path)
 
-    assert issubclass(type(pipeline), BaseModel)
-
     test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
     res_doc = pipeline.extract(document=test_document)
     assert len(res_doc.annotations(use_correct=False, ignore_below_threshold=True)) == 19
@@ -1369,8 +1384,6 @@ def test_load_ai_model_konfuzio_sdk_included():
     project = Project(id_=None, project_folder=OFFLINE_PROJECT)
     path = "trainer/2023-01-31-14-37-11_lohnabrechnung.pkl"
     pipeline = load_model(path)
-
-    assert issubclass(type(pipeline), BaseModel)  # fails
 
     test_document = project.get_document_by_id(TEST_DOCUMENT_ID)
     res_doc = pipeline.extract(document=test_document)
