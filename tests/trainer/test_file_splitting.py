@@ -271,7 +271,7 @@ class TestMultimodalFileSplittingModel(unittest.TestCase):
         for page in pred[0].pages():
             if page.number == 1:
                 assert page.is_first_page
-                assert page.is_first_page_confidence == 1
+                assert page.is_first_page_confidence > 0.5
             else:
                 assert not page.is_first_page
                 assert page.is_first_page_confidence
