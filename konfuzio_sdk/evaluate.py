@@ -84,7 +84,7 @@ def grouped(group, target: str):
     return group
 
 
-def compare(doc_a, doc_b, only_use_correct=False, use_view_annotations=True, strict=True) -> pandas.DataFrame:
+def compare(doc_a, doc_b, only_use_correct=False, use_view_annotations=False, strict=True) -> pandas.DataFrame:
     """Compare the Annotations of two potentially empty Documents wrt. to **all** Annotations.
 
     :param doc_a: Document which is assumed to be correct
